@@ -153,6 +153,127 @@ QSqlError DataAccessLayer::getLastRecentSQLError()
     return lastRecentSQLError;
 }
 
+QStandardItemModel*
+DataAccessLayer::getGenres()
+{
+    const QString q("SELECT DISTINCT genre FROM record");
+    QSqlQuery query(q);
+    qDebug() << "query=" << q;
+
+    //	Retrieve all possible tags, split by '/' and create list
+    QStringList sl;
+    while(query.next())
+    {
+        QString tag=query.value(0).toString();
+        tag.replace(",","/");
+        sl << tag.split('/');
+    }
+    sl.removeDuplicates();
+    sl.sort(Qt::CaseInsensitive);
+    qDebug() << "sl=" << sl;
+
+    //	Iterate through list, add to model
+    QStandardItemModel* genreList=new QStandardItemModel();
+    QStringListIterator i(sl);
+    while(i.hasNext())
+    {
+        QString toInsert=i.next().trimmed();
+        toInsert=toInsert.at(0).toUpper()+toInsert.mid(1);	//	Poor man's Title Case...
+        if(toInsert.length()>0 && toInsert.at(0).isNull()==0)
+        {
+            qDebug() << "toInsert.at(0)='" << toInsert.at(0).isNull();
+            qDebug() << "toInsert='" << toInsert << "':length=" << toInsert.length();
+            QStandardItem* item=new QStandardItem(toInsert);
+            genreList->appendRow(item);
+        }
+    }
+
+    return genreList;
+
+
+    QStandardItemModel* genreTree=new QStandardItemModel();
+    QStandardItem* parentItem=NULL;
+
+    while(query.next())
+    {
+        QString i=query.value(0).toString();
+        if(i.length()!=0)
+        {
+            parentItem=genreTree->invisibleRootItem();
+            qDebug() << i << "start";
+
+            QStringList l=i.split('/');
+
+            for(int j=0;j<l.size();j++)
+            {
+                QString item=l.at(j);
+                item=item.at(0).toUpper()+item.mid(1);	//	Poor man's Title Case...
+
+
+                qDebug() << i << "looking for " << item << " at level " << j;
+
+                if(j==0)
+                {
+                    //	Level 0
+                    QList<QStandardItem *> found = genreTree->findItems(item,Qt::MatchExactly,j);
+
+                    if(found.count()==0)
+                    {
+                        QStandardItem* toInsert=new QStandardItem(item);
+                        toInsert->setText(item);
+                        qDebug() << i << "to be inserted(0)=" << toInsert->data(Qt::DisplayRole);
+
+                        parentItem->appendRow(toInsert);
+                        parentItem=toInsert;
+                        qDebug() << i << "insert(0)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
+                    }
+                    else
+                    {
+                        parentItem=found.at(0);
+                        qDebug() << i << "found node(0)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
+                    }
+                }
+                else
+                {
+                    //	Given a parentItem, start searching in parentItem for item
+                    QStandardItem* c=NULL;
+                    qDebug() << i << "start traversing " << parentItem->data(Qt::DisplayRole);
+                    for(int k=0;k<parentItem->rowCount();k++)
+                    {
+                        c=parentItem->child(k,0);
+
+                        //	NEED TO DO COMPARISON BETWEEN DATA OF C AND WHAT WE ARE LOOKING FOR.
+                        //	IF FOUND, EXIT LOOP with BREAK
+
+                        QVariant v=c->data(Qt::DisplayRole);
+                        qDebug() << i <<  "current " << v.toString() << ", finding " << item ;
+                        if(v.toString()==item)
+                        {
+                            qDebug() << i <<  "current " << v.toString() << ", FOUND";
+                            break;
+                        }
+                    }
+                    if(c==NULL)
+                    {
+                        QStandardItem* toInsert=new QStandardItem(item);
+                        toInsert->setText(item);
+
+                        parentItem->appendRow(toInsert);
+                        parentItem=toInsert;
+                        qDebug() << i << "insert(n)" << item;
+                    }
+                    else
+                    {
+                        parentItem=c;
+                        qDebug() << i << "insert(n)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
+                    }
+                }
+            }
+        }
+    }
+
+    return genreTree;
+}
 
 DataAccessLayer::~DataAccessLayer()
 {

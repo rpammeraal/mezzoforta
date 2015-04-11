@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QtSql>
 #include <QSqlError>
+#include <QStandardItemModel>
+#include <QSqlQuery>
 
 #define SB_DATABASE_ENTRY "DatabasePath"
 #define ___SB_SQL_QUERY_WHERECLAUSE___ ___WHERECLAUSE___
@@ -22,6 +24,7 @@ public:
 
     QSqlQueryModel* getSonglist(const int playlistID=-1,const QString& filter="");
     QSqlQueryModel* getAllPlaylists();
+    QStandardItemModel* getGenres();
 
     ~DataAccessLayer();
 

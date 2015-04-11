@@ -40,6 +40,7 @@ protected:
 
 private slots:
     void playlistSelected(const QItemSelection &selected, const QItemSelection &deselected);
+    void genreSelected(const QItemSelection &selected, const QItemSelection &deselected);
     void applyFilter(const QString& filter="");
     void newFile();
     void open();

@@ -80,7 +80,6 @@ void MainWindow::createLayout()
     //	hide row number, index column
     ui.songList->verticalHeader()->hide();
     hideColumns(ui.songList);
-    resizeWindow();
 
     //	playlist
     QSqlQueryModel* playlistSource=dal->getAllPlaylists();
@@ -90,6 +89,13 @@ void MainWindow::createLayout()
     QItemSelectionModel* m=ui.playlistList->selectionModel();
     connect(m, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)), this, SLOT(playlistSelected(const QItemSelection &,const QItemSelection &)));
 
+    ui.genreList->setModel(dal->getGenres());
+    QItemSelectionModel* n=ui.genreList->selectionModel();
+    connect(n, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)), this, SLOT(genreSelected(const QItemSelection &,const QItemSelection &)));
+
+    //	no can do resizing :(
+    //resizeWindow();
+    //this->resize(this->geometry().width()+1, this->geometry().height()+1);
     return;
 }
 
@@ -102,7 +108,6 @@ MainWindow::playlistSelected(const QItemSelection &selected, const QItemSelectio
     foreach (index, items)
     {
         //	Since only one item can be selected, return after 1st item
-        QString text = QString("(%1,%2)").arg(index.row()).arg(index.column());
         const int i= index.row();
         const int j= index.column();
         const long playlistID= ui.playlistList->model()->data(index.sibling(i,j-1)).toInt();
@@ -113,6 +118,32 @@ MainWindow::playlistSelected(const QItemSelection &selected, const QItemSelectio
         ;
         setPlaylist(playlistID);
         return;
+    }
+}
+
+void
+MainWindow::genreSelected(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    QModelIndex index;
+    QModelIndexList items = selected.indexes();
+
+    qDebug() << "genreSelected";
+
+    foreach (index, items)
+    {
+        const int i= index.row();
+        const int j= index.column();
+        const QString& selectedGenre= ui.genreList->model()->data(index.sibling(i,j)).toString();
+        qDebug() << "\tselectedGenre" << selectedGenre ;
+    }
+
+    items=deselected.indexes();
+    foreach (index, items)
+    {
+        const int i= index.row();
+        const int j= index.column();
+        const QString& selectedGenre= ui.genreList->model()->data(index.sibling(i,j)).toString();
+        qDebug() << "\tDEselectedGenre" << selectedGenre ;
     }
 }
 
@@ -166,8 +197,6 @@ MainWindow::keyPressEvent(QKeyEvent * event)
 
 void MainWindow::resizeWindow()
 {
-    //ui.songList->resizeColumnsToContents(); does not work
-
     const int hSize=ui.songList->width();
     const int numColumns=songListFilter->columnCount();
     int numVisibleColumns=0;
@@ -189,10 +218,10 @@ void MainWindow::resizeWindow()
     {
         if(ui.songList->isColumnHidden(i)==0)
         {
-            //ui.songList->setColumnWidth(i,width);
             hv->resizeSection(i,width);
         }
     }
+    qDebug() << "resizeWindow:width=" << width;
     return;
 }
 
