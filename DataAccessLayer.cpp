@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QFileDialog>
 
+#include "Common.h"
+
 //	Public methods
 DataAccessLayer*
 DataAccessLayer::createDataAccessLayer()
@@ -11,7 +13,6 @@ DataAccessLayer::createDataAccessLayer()
     DataAccessLayer* dal=new DataAccessLayer();
     lastRecentSQLError=dal->initDb();
 
-    prevFilter='_';
     if (lastRecentSQLError.type() != QSqlError::NoError)
     {
         dal=NULL;
@@ -20,8 +21,9 @@ DataAccessLayer::createDataAccessLayer()
 }
 
 QSqlQueryModel*
-DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
+DataAccessLayer::getSonglist(const int playlistID, const QStringList& genres, const QString& filter,const bool doExactSearch)
 {
+    //	Main query
     QString query=
         "SELECT  "
             "SB_KEYWORDS, "
@@ -47,9 +49,10 @@ DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
                             "rp.artist_id=a.artist_id "
                         "JOIN record r ON  "
                             "rp.record_id=r.record_id "
+                            "___SB_SQL_QUERY_GENRE_JOIN___ "
                         "JOIN song s ON  "
                             "rp.song_id=s.song_id "
-                        "___SB_SQL_QUERY_PLAYLIST_JOIN___ "
+                            "___SB_SQL_QUERY_PLAYLIST_JOIN___ "
             ") a "
         "___SB_SQL_QUERY_WHERECLAUSE___ "
         "ORDER BY 1 ";
@@ -59,30 +62,61 @@ DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
     QString f=filter;
     QStringList fl;
 
-    f.replace(QString("  "),QString(" "));	//	CWIP: replace with regex
-
-    if(f.length()>=2)
+    //	Handle filter
+    if(doExactSearch==0)
     {
-        fl=f.split(" ");
+        //	search based on keywords
+        f.replace(QString("  "),QString(" "));	//	CWIP: replace with regex
 
-        QStringList::const_iterator constIterator;
-        for (constIterator = fl.constBegin(); constIterator != fl.constEnd(); ++constIterator)
+        if(f.length()>=2)
         {
-            QString word=(*constIterator);
+            fl=f.split(" ");
 
-            word.replace(QString("  "),QString(" "));
-            word.replace(QString("  "),QString(" "));
-            if(word.length()>0)
+            QStringList::const_iterator constIterator;
+            for (constIterator = fl.constBegin(); constIterator != fl.constEnd(); ++constIterator)
             {
-                if(whereClause.length()!=0)
+                QString word=(*constIterator);
+
+                word.replace(QString("  "),QString(" "));
+                word.replace(QString("  "),QString(" "));
+                if(word.length()>0)
                 {
-                    whereClause+=" AND ";
+                    Common::escapeSingleQuotes(word);
+                    if(whereClause.length()!=0)
+                    {
+                        whereClause+=" AND ";
+                    }
+                    whereClause+=" SB_KEYWORDS LIKE '%"+word+"%' ";
                 }
-                whereClause+=" SB_KEYWORDS LIKE '%"+word+"%' ";
             }
         }
     }
+    else
+    {
+        //	exact search based on title or name
+        QString arg=filter;
+        Common::escapeSingleQuotes(arg);
+        whereClause=QString(" songTitle='%1' OR artistName='%1' OR recordTitle='%1' ").arg(arg);
+    }
 
+    QString genreJoin="";
+
+    QStringListIterator i(genres);
+    while(i.hasNext())
+    {
+        QString arg=i.next().toLower();
+        Common::escapeSingleQuotes(arg);
+        genreJoin += QString("AND "
+        "("
+            "LOWER(LTRIM(RTRIM(genre)))=       '%1'   OR "  // complete match
+            "LOWER(LTRIM(RTRIM(genre))) LIKE '%|%1'   OR "  // <genre>..|old genre
+            "LOWER(LTRIM(RTRIM(genre))) LIKE   '%1|%' OR "  // old genre|<genre>..
+            "LOWER(LTRIM(RTRIM(genre))) LIKE '%|%1|%'  "    // <genre>..|old genre|<genre>..
+        ") ").arg(arg);
+
+    }
+
+    //	Handle playlist
     if(playlistID>=0)
     {
         playlistJoin=QString(
@@ -93,9 +127,9 @@ DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
             "JOIN playlist p ON "
                 "pp.playlist_id=p.playlist_id AND "
                 "p.playlist_id= %1 ").arg(playlistID);
-        qDebug() << "playlistID=" << playlistID;
-        qDebug() << "playlistJoin=" << playlistJoin;
     }
+
+    //	Complete where clause
     if(whereClause.length()>0)
     {
         whereClause="WHERE "+whereClause;
@@ -103,7 +137,7 @@ DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
 
     query.replace("___SB_SQL_QUERY_WHERECLAUSE___",whereClause);
     query.replace("___SB_SQL_QUERY_PLAYLIST_JOIN___",playlistJoin);
-    prevFilter=f;
+    query.replace("___SB_SQL_QUERY_GENRE_JOIN___",genreJoin);
 
     qDebug() << "query=" << query;
 
@@ -111,41 +145,24 @@ DataAccessLayer::getSonglist(const int playlistID,const QString& filter)
     model->setQuery(query);
 
     while (model->canFetchMore())
+    {
         model->fetchMore();
+    }
 
     return model;
 }
 
-
-QSqlQueryModel*
+QSqlTableModel*
 DataAccessLayer::getAllPlaylists()
 {
     qDebug() << "getAllPlaylists:start";
+    QSqlTableModel* m=new QSqlTableModel(this);
+    m->setTable("playlist");
+    m->setEditStrategy(QSqlTableModel::OnFieldChange);
+    m->setSort(1,Qt::AscendingOrder);
+    m->select();
 
-    QString query=
-        "SELECT  "
-            "SB_KEYWORDS, "
-            "SB_PLAYLIST_ID, "
-            "playListName "
-        "FROM "
-            "( "
-                "SELECT "
-                    "pl.playlist_id AS SB_PLAYLIST_ID, "
-                    "pl.name AS playListName, "
-                    "pl.name AS SB_KEYWORDS  "
-                "FROM "
-                    "playlist pl  "
-            ") a "
-        "ORDER BY 1 ";
-
-    qDebug() << "query final=" << query;
-    QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery(query);
-
-    while (model->canFetchMore())
-        model->fetchMore();
-
-    return model;
+    return m;
 }
 
 QSqlError DataAccessLayer::getLastRecentSQLError()
@@ -156,123 +173,67 @@ QSqlError DataAccessLayer::getLastRecentSQLError()
 QStandardItemModel*
 DataAccessLayer::getGenres()
 {
-    const QString q("SELECT DISTINCT genre FROM record");
-    QSqlQuery query(q);
-    qDebug() << "query=" << q;
+    _retrieveGenres();
+    return &genreList;
+}
 
-    //	Retrieve all possible tags, split by '/' and create list
-    QStringList sl;
-    while(query.next())
+void
+DataAccessLayer::updateGenre(QModelIndex i)
+{
+    const int row=i.row();
+    QString newGenre=genreList.item(row,0)->data(Qt::DisplayRole).toString();
+    QString oldGenre=genreList.item(row,1)->data(Qt::DisplayRole).toString().toLower();
+
+    Common::escapeSingleQuotes(newGenre);
+    Common::escapeSingleQuotes(oldGenre);
+
+    qDebug() << "dal:updateGenre"
+        << ":oldGenre=" << oldGenre
+        << ":newGenre=" << newGenre
+    ;
+
+    //	Update database
+    QString s=QString(
+        "UPDATE "
+            "record "
+        "SET "
+            "genre=REPLACE(LOWER(genre),LOWER('%1'),'%2') "
+        "WHERE "
+            "LOWER(LTRIM(RTRIM(genre)))=       '%1'   OR "  // complete match
+            "LOWER(LTRIM(RTRIM(genre))) LIKE '%|%1'   OR "  // <genre>..|old genre
+            "LOWER(LTRIM(RTRIM(genre))) LIKE   '%1|%' OR "  // old genre|<genre>..
+            "LOWER(LTRIM(RTRIM(genre))) LIKE '%|%1|%'  "    // <genre>..|old genre|<genre>..
+    );
+
+
+    s=s.arg(oldGenre).arg(newGenre);
+    qDebug() << s;
+
+    QSqlQuery q;
+    q.exec(s);
+
+    //	Update model
+    QStandardItem *n=new QStandardItem(newGenre);
+    genreList.setItem(row,1,n);
+}
+
+QSqlQueryModel*
+DataAccessLayer::getCompleterModel()
+{
+    QString query=
+        "SELECT DISTINCT title FROM song UNION "
+        "SELECT DISTINCT title FROM record UNION "
+        "SELECT DISTINCT name  FROM artist";
+
+    QSqlQueryModel* model = new QSqlQueryModel();
+    model->setQuery(query);
+
+    while (model->canFetchMore())
     {
-        QString tag=query.value(0).toString();
-        tag.replace(",","/");
-        sl << tag.split('/');
-    }
-    sl.removeDuplicates();
-    sl.sort(Qt::CaseInsensitive);
-    qDebug() << "sl=" << sl;
-
-    //	Iterate through list, add to model
-    QStandardItemModel* genreList=new QStandardItemModel();
-    QStringListIterator i(sl);
-    while(i.hasNext())
-    {
-        QString toInsert=i.next().trimmed();
-        toInsert=toInsert.at(0).toUpper()+toInsert.mid(1);	//	Poor man's Title Case...
-        if(toInsert.length()>0 && toInsert.at(0).isNull()==0)
-        {
-            qDebug() << "toInsert.at(0)='" << toInsert.at(0).isNull();
-            qDebug() << "toInsert='" << toInsert << "':length=" << toInsert.length();
-            QStandardItem* item=new QStandardItem(toInsert);
-            genreList->appendRow(item);
-        }
-    }
-
-    return genreList;
-
-
-    QStandardItemModel* genreTree=new QStandardItemModel();
-    QStandardItem* parentItem=NULL;
-
-    while(query.next())
-    {
-        QString i=query.value(0).toString();
-        if(i.length()!=0)
-        {
-            parentItem=genreTree->invisibleRootItem();
-            qDebug() << i << "start";
-
-            QStringList l=i.split('/');
-
-            for(int j=0;j<l.size();j++)
-            {
-                QString item=l.at(j);
-                item=item.at(0).toUpper()+item.mid(1);	//	Poor man's Title Case...
-
-
-                qDebug() << i << "looking for " << item << " at level " << j;
-
-                if(j==0)
-                {
-                    //	Level 0
-                    QList<QStandardItem *> found = genreTree->findItems(item,Qt::MatchExactly,j);
-
-                    if(found.count()==0)
-                    {
-                        QStandardItem* toInsert=new QStandardItem(item);
-                        toInsert->setText(item);
-                        qDebug() << i << "to be inserted(0)=" << toInsert->data(Qt::DisplayRole);
-
-                        parentItem->appendRow(toInsert);
-                        parentItem=toInsert;
-                        qDebug() << i << "insert(0)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
-                    }
-                    else
-                    {
-                        parentItem=found.at(0);
-                        qDebug() << i << "found node(0)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
-                    }
-                }
-                else
-                {
-                    //	Given a parentItem, start searching in parentItem for item
-                    QStandardItem* c=NULL;
-                    qDebug() << i << "start traversing " << parentItem->data(Qt::DisplayRole);
-                    for(int k=0;k<parentItem->rowCount();k++)
-                    {
-                        c=parentItem->child(k,0);
-
-                        //	NEED TO DO COMPARISON BETWEEN DATA OF C AND WHAT WE ARE LOOKING FOR.
-                        //	IF FOUND, EXIT LOOP with BREAK
-
-                        QVariant v=c->data(Qt::DisplayRole);
-                        qDebug() << i <<  "current " << v.toString() << ", finding " << item ;
-                        if(v.toString()==item)
-                        {
-                            qDebug() << i <<  "current " << v.toString() << ", FOUND";
-                            break;
-                        }
-                    }
-                    if(c==NULL)
-                    {
-                        QStandardItem* toInsert=new QStandardItem(item);
-                        toInsert->setText(item);
-
-                        parentItem->appendRow(toInsert);
-                        parentItem=toInsert;
-                        qDebug() << i << "insert(n)" << item;
-                    }
-                    else
-                    {
-                        parentItem=c;
-                        qDebug() << i << "insert(n)" << item << ":parentItem now set to" << parentItem->data(Qt::DisplayRole);
-                    }
-                }
-            }
-        }
+        model->fetchMore();
     }
 
-    return genreTree;
+    return model;
 }
 
 DataAccessLayer::~DataAccessLayer()
@@ -334,4 +295,58 @@ DataAccessLayer::initDb()
     qDebug() << "Saved DatabasePath:" << databasePath;
 
     return QSqlError();
+}
+
+void
+DataAccessLayer::_retrieveGenres()
+{
+    //	Perform some data cleanup
+    //	1.	Use '|' as separator
+    QSqlQuery c1;
+    c1.exec("UPDATE record SET genre=replace(genre,',','|') ");
+    c1.exec("UPDATE record SET genre=replace(genre,'/','|') ");
+    c1.exec("UPDATE record SET genre=replace(genre,'| ','|') ");
+    c1.exec("UPDATE record SET genre=LTRIM(RTRIM(genre))");
+
+    const QString q("SELECT DISTINCT genre FROM record");
+    QSqlQuery query(q);
+
+    //	Retrieve all possible tags, split by '/' and create list
+    QStringList sl;
+    while(query.next())
+    {
+        QString tag=query.value(0).toString().toLower();
+        sl << tag.split('|');
+    }
+    sl.sort(Qt::CaseInsensitive);
+
+    //	Iterate through list, add to model
+    genreList.clear();
+
+    QStringListIterator i(sl);
+    int index=0;
+
+    while(i.hasNext())
+    {
+        QString toInsert=i.next().trimmed();
+        Common::toTitleCase(toInsert);
+        if(toInsert.length()>0 && toInsert.at(0).isNull()==0)
+        {
+            //	Find if exists, otherwise insert
+            QList<QStandardItem *> r=genreList.findItems(toInsert,Qt::MatchExactly);
+            if(r.count()==0)
+            {
+                QStandardItem* item1=new QStandardItem(toInsert);
+                QStandardItem* item2=new QStandardItem(toInsert);
+                genreList.setItem(index,0,item1);
+                genreList.setItem(index,1,item2);	//	maintain old value in here
+                index++;
+            }
+        }
+    }
+
+    QVariant headerTitle("genre");
+    genreList.setHeaderData(0,Qt::Horizontal,headerTitle);
+
+    //	Hide 2nd column
 }

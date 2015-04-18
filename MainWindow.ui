@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1132</width>
+    <width>1159</width>
     <height>601</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Songbase [Crown Princess Demo]</string>
+   <string>Songbase [McGregor Test Site]</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -102,7 +102,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QListView" name="genreList">
+           <widget class="QTableView" name="genreList">
             <property name="horizontalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOn</enum>
             </property>
@@ -111,6 +111,9 @@
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="gridStyle">
+             <enum>Qt::NoPen</enum>
             </property>
            </widget>
           </item>
@@ -141,6 +144,9 @@
            <widget class="QLineEdit" name="searchEdit">
             <property name="placeholderText">
              <string>Search...</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

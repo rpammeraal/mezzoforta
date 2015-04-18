@@ -10,10 +10,10 @@
 #define SB_DATABASE_ENTRY "DatabasePath"
 #define ___SB_SQL_QUERY_WHERECLAUSE___ ___WHERECLAUSE___
 #define ___SB_SQL_QUERY_PLAYLIST_JOIN___ ___SB_SQL_QUERY_PLAYLIST_JOIN___
-
-//	Field definitions
+#define ___SB_SQL_QUERY_GENRE_JOIN___ ___SB_SQL_QUERY_GENRE_JOIN___
 
 class DataAccessLayer;
+class QStringList;
 
 class DataAccessLayer : public QObject
 {
@@ -22,20 +22,23 @@ public:
 
     static QSqlError getLastRecentSQLError();
 
-    QSqlQueryModel* getSonglist(const int playlistID=-1,const QString& filter="");
-    QSqlQueryModel* getAllPlaylists();
+    QSqlQueryModel* getSonglist(const int playlistID, const QStringList& genres, const QString& filter,const bool doExactSearch);
+    QSqlTableModel* getAllPlaylists();
     QStandardItemModel* getGenres();
+    void updateGenre(QModelIndex i);
+    QSqlQueryModel* getCompleterModel();
 
     ~DataAccessLayer();
 
 private:
     DataAccessLayer();
     QSqlError initDb();
+    QStandardItemModel genreList;
 
+    void _retrieveGenres();
 };
 
 //	For whatever reason, gcc does not let me declare this inside the class.
 static QSqlError lastRecentSQLError;
-static QString prevFilter;
 
 #endif // DATAACCESSLAYER_H

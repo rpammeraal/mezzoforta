@@ -7,24 +7,14 @@
 #include "ui_mainwindow.h"
 #include "DataAccessLayer.h"
 
-class QAction;
-class QActionGroup;
-class QDialogButtonBox;
-class QGroupBox;
 class QLabel;
-class QLineEdit;
-class QMenu;
-class QMenuBar;
-class QPushButton;
-class QTableView;
-class QTextEdit;
-class QGridLayout;
-class QTreeView;
-class QSortFilterProxyModel;
+class Controller;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    friend class Controller;
 
 public:
     MainWindow();
@@ -32,16 +22,13 @@ public:
     QString getErrorDescription();
 
 protected:
-    //void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
     virtual void resizeEvent(QResizeEvent * event);
     virtual void keyPressEvent(QKeyEvent * event);
 
     void resizeWindow();
 
 private slots:
-    void playlistSelected(const QItemSelection &selected, const QItemSelection &deselected);
-    void genreSelected(const QItemSelection &selected, const QItemSelection &deselected);
-    void applyFilter(const QString& filter="");
     void newFile();
     void open();
     void save();
@@ -63,32 +50,19 @@ private slots:
     void aboutQt();
 
 private:
+    Controller* c;
+
     void createMenus();
     void createActions();
     Ui::MainWindow ui;
 
-
     //	Common
-    QGridLayout* layoutGrid;
     int hasFatalError;
     QString errorDescription;
     DataAccessLayer* dal;
-    void createLayout();
-    QSortFilterProxyModel* songListFilter;
-
-    void setPlaylist(const int playlistID);
 
     void hideColumns(QTableView* tv);
     void setErrorState(const QString& errorState);
-
-    //	Search
-    QLineEdit* searchEdit;
-
-    //	Main
-    QTableView* songList;
-
-    //	Tree
-    QTableView* metaList;
 
     //	Menu
     QMenu *fileMenu;

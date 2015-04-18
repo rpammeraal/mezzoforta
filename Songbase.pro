@@ -3,12 +3,18 @@ QT += widgets sql
 HEADERS     = \
     MainWindow.h \
     DataAccessLayer.h \
-    SBSortFilterProxyModel.h
+    SBSortFilterProxyModel.h \
+    Controller.h \
+    Common.h \
+    DisplayOnlyDelegate.h
 SOURCES     = \
     main.cpp \
     MainWindow.cpp \
     DataAccessLayer.cpp \
-    SBSortFilterProxyModel.cpp
+    SBSortFilterProxyModel.cpp \
+    Controller.cpp \
+    Common.cpp \
+    DisplayOnlyDelegate.cpp
 
 # install
 target.path = .
@@ -23,3 +29,6 @@ RESOURCES += \
 
 ICON = resources/moose.icns
 RC_ICONS = resources/moose.ico
+
+DISTFILES += \
+    PlacesDeveloped.txt

@@ -1,15 +1,10 @@
 #include <QtWidgets>
-#include <QSizePolicy>
-#include <QTreeView>
-#include <QFont>
-#include <QHeaderView>
-#include <QItemSelectionModel>
 #include <QDebug>
-#include <QIcon>
 
 #include "DataAccessLayer.h"
 #include "MainWindow.h"
 #include "SBSortFilterProxyModel.h"
+#include "Controller.h"
 
 MainWindow::MainWindow()
 {
@@ -20,14 +15,13 @@ MainWindow::MainWindow()
         this->setErrorState(DataAccessLayer::getLastRecentSQLError().text());
         return;
     }
-
     ui.setupUi(this);
+    c=new Controller(this,dal);
 
-    createLayout();
     resizeWindow();
 
     //createMenus();
-    //createActions();
+    createActions();
 
     return;
 }
@@ -44,134 +38,17 @@ MainWindow::getErrorDescription()
     return errorDescription;
 }
 
-void MainWindow::createLayout()
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
-    qDebug() << "createLayout:start";
-
-    //	access data source
-    QSqlQueryModel* songListSource=dal->getSonglist();
-
-    qDebug() << "createLayout:set up search & sort";
-
-    //	set up search & sort
-    //SBSortFilterProxyModel* songListFilter=new SBSortFilterProxyModel(this);
-    songListFilter=new QSortFilterProxyModel(this);
-
-    //	connect data source -> proxy (filter et al)
-    songListFilter->setSourceModel(songListSource);
-    songListFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    songListFilter->setDynamicSortFilter(1);
-    songListFilter->setFilterKeyColumn(3);
-
-    //	filter using QT
-    //connect(this->searchEdit, SIGNAL(textChanged(QString)), songListFilter, SLOT(setFilterFixedString(QString)));
-    //	filter using database
-    //connect(this->searchEdit, SIGNAL(textChanged(QString)), this, SLOT(applyFilter(QString)));
-    connect(ui.searchEdit, SIGNAL(textChanged(QString)), this, SLOT(applyFilter(QString)));
-
-    //	connect proxy -> table view
-    ui.songList->setModel(songListFilter);
-    ui.songList->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    //	set sorting
-    ui.songList->setSortingEnabled(1);
-    ui.songList->sortByColumn(0,Qt::AscendingOrder);
-
-    //	hide row number, index column
-    ui.songList->verticalHeader()->hide();
-    hideColumns(ui.songList);
-
-    //	playlist
-    QSqlQueryModel* playlistSource=dal->getAllPlaylists();
-    ui.playlistList->setModel(playlistSource);
-    ui.playlistList->setSelectionMode(QAbstractItemView::SingleSelection);
-    hideColumns(ui.playlistList);
-    QItemSelectionModel* m=ui.playlistList->selectionModel();
-    connect(m, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)), this, SLOT(playlistSelected(const QItemSelection &,const QItemSelection &)));
-
-    ui.genreList->setModel(dal->getGenres());
-    QItemSelectionModel* n=ui.genreList->selectionModel();
-    connect(n, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)), this, SLOT(genreSelected(const QItemSelection &,const QItemSelection &)));
-
-    //	no can do resizing :(
-    //resizeWindow();
-    //this->resize(this->geometry().width()+1, this->geometry().height()+1);
-    return;
+    qDebug() << "contextMenuEvent"
+        ":event=" << event
+    ;
+    QMenu menu(this);
+    menu.addAction(cutAct);
+    menu.addAction(copyAct);
+    menu.addAction(pasteAct);
+    menu.exec(event->globalPos());
 }
-
-void
-MainWindow::playlistSelected(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    QModelIndex index;
-    QModelIndexList items = selected.indexes();
-
-    foreach (index, items)
-    {
-        //	Since only one item can be selected, return after 1st item
-        const int i= index.row();
-        const int j= index.column();
-        const long playlistID= ui.playlistList->model()->data(index.sibling(i,j-1)).toInt();
-        qDebug() << "playlistSected"
-            << ":i=" << i
-            << ":j=" << j
-            << ":playlistID=" << playlistID
-        ;
-        setPlaylist(playlistID);
-        return;
-    }
-}
-
-void
-MainWindow::genreSelected(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    QModelIndex index;
-    QModelIndexList items = selected.indexes();
-
-    qDebug() << "genreSelected";
-
-    foreach (index, items)
-    {
-        const int i= index.row();
-        const int j= index.column();
-        const QString& selectedGenre= ui.genreList->model()->data(index.sibling(i,j)).toString();
-        qDebug() << "\tselectedGenre" << selectedGenre ;
-    }
-
-    items=deselected.indexes();
-    foreach (index, items)
-    {
-        const int i= index.row();
-        const int j= index.column();
-        const QString& selectedGenre= ui.genreList->model()->data(index.sibling(i,j)).toString();
-        qDebug() << "\tDEselectedGenre" << selectedGenre ;
-    }
-}
-
-void
-MainWindow::setPlaylist(const int playlistID)
-{
-    QSqlQueryModel* songListSource=dal->getSonglist(playlistID);
-    songListFilter->setSourceModel(songListSource);
-}
-
-void
-MainWindow::applyFilter(const QString &filter)
-{
-    QSqlQueryModel* songListSource=dal->getSonglist(-1,filter);
-    if(songListSource)
-    {
-        songListFilter->setSourceModel(songListSource);
-    }
-}
-
-//void MainWindow::contextMenuEvent(QContextMenuEvent *event)
-//vo{
-    //voQMenu menu(this);
-    //vomenu.addAction(cutAct);
-    //vomenu.addAction(copyAct);
-    //vomenu.addAction(pasteAct);
-    //vomenu.exec(event->globalPos());
-//vo}
 
 void
 MainWindow::resizeEvent(QResizeEvent * event)
@@ -183,22 +60,16 @@ MainWindow::resizeEvent(QResizeEvent * event)
 void
 MainWindow::keyPressEvent(QKeyEvent * event)
 {
-    if(event->key()==0x1000000)
-    {
-        //	Catch escape key, blank searchEdit
-        ui.searchEdit->setText(tr(""));
-        this->setPlaylist(-1);
-    }
-    else
-    {
-        QMainWindow::keyPressEvent(event);
-    }
+    c->keyPressEvent(event);
+    QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::resizeWindow()
 {
     const int hSize=ui.songList->width();
-    const int numColumns=songListFilter->columnCount();
+    //const int hSize=ui.songlistTab->width();
+    qDebug() << "resizeWindow:hSize=" << hSize;
+    const int numColumns=c->songListFilter->columnCount();
     int numVisibleColumns=0;
 
     //	Count visible columns in numVisibleColumns
