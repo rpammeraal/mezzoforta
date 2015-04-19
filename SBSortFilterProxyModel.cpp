@@ -9,7 +9,6 @@ SBSortFilterProxyModel::SBSortFilterProxyModel(QObject* parent) : QSortFilterPro
         << "ctor"
     ;
 
-    searchDefined=0;
     return;
 }
 
