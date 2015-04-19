@@ -22,4 +22,5 @@ private:
 };
 
 #endif // SBSORTFILTERPROXYMODEL_H
+static int searchDefined=0;
 static QStringList searchList;
