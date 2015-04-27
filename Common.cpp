@@ -41,7 +41,5 @@ Common::escapeSingleQuotes(QString &s)
     const QString before("'");
     const QString after("''");
 
-    qDebug() << "escapeSingleQuotes:before=" << s;
     s=s.replace(before,after);
-    qDebug() << "escapeSingleQuotes:after=" << s;
 }

@@ -1,2 +1,8 @@
-<RCC/>
-
+<RCC>
+    <qresource prefix="/images">
+        <file alias="logo">resources/moose7.2.bmp</file>
+    </qresource>
+    <qresource prefix="/qss">
+        <file alias="default">resources/default.qss</file>
+    </qresource>
+</RCC>

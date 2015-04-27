@@ -9,9 +9,13 @@ class QItemSelection;
 class QSortFilterProxyModel;
 class QKeyEvent;
 class QStandardItemModel;
+class QSqlDatabase;
 
 class MainWindow;
 class DataAccessLayer;
+class SBModelSonglist;
+class SBModelPlaylist;
+class SBModelGenrelist;
 
 #define SB_TAB_UNDEF    -1
 #define SB_TAB_PLAYLIST  0
@@ -24,18 +28,22 @@ class Controller : public QObject
     friend class MainWindow;
 
 public:
-    explicit Controller(MainWindow* mw,DataAccessLayer *dal);
+    explicit Controller(int argc, char* argv[]);
     ~Controller();
+    bool initSuccessFull() const;
 
 signals:
 
 public slots:
 
+    //	MENU::FILE
+    void openDatabase();
+
     //	Apply filters and selections
     void applySongListFilter(const QString& filter="");
     void applyPlaylistSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
-    void changeCurrentTab(int index);
+    void changeSchema(const QString& newSchema);
 
     //	Data Updates
     void updateGenre(QModelIndex i,QModelIndex j);
@@ -46,9 +54,8 @@ protected:
 private:
     MainWindow* mw;
     DataAccessLayer* dal;
-    Controller* c;
-    QSortFilterProxyModel* songListFilter;
     bool doExactSearch;
+    bool _initSuccessFull;
 
     //	Keep track of what is selected
     int selectedPlaylistID;     //	-1 indicates none
@@ -57,6 +64,7 @@ private:
 
     //	Handle filters and selections
     void updateCurrentSongList();
+    int getSelectedTab();
 
     //	Handle reset of filters and selections
     void resetAllFiltersAndSelections();
@@ -64,12 +72,25 @@ private:
     void clearGenreSelection();
     void clearSearchFilter();
 
-    //	UI related
-    void populateUI();
-    int getSelectedTab();
+    //	UI config
+    bool openMainWindow(bool startup);
+        void setupModels();
+        void setupUI();
+        void configureMenus();
 
-    //	Data config
-    QStandardItemModel* configGenreData();
+    void initAttributes();
+
+    //	For whatever silly reason, we need to keep track of these pointers
+    //	so these instances won't go out of scope
+    QSortFilterProxyModel* slP;
+    QSortFilterProxyModel* pllP;
+    QSortFilterProxyModel* glP;
+
+    //	Keep track of models, so we can change the data underneath
+    SBModelSonglist* sm;
+    SBModelPlaylist* plm;
+    SBModelGenrelist* gm;
 };
+
 
 #endif // CONTROLLER_H

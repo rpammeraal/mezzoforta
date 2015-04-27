@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QtSql>
@@ -17,9 +17,7 @@ class MainWindow : public QMainWindow
     friend class Controller;
 
 public:
-    MainWindow();
-    int getErrorState();
-    QString getErrorDescription();
+    MainWindow(Controller* nc);
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
@@ -30,7 +28,7 @@ protected:
 
 private slots:
     void newFile();
-    void open();
+    void openDatabase();
     void save();
     void print();
     void undo();
@@ -56,13 +54,7 @@ private:
     void createActions();
     Ui::MainWindow ui;
 
-    //	Common
-    int hasFatalError;
-    QString errorDescription;
-    DataAccessLayer* dal;
-
     void hideColumns(QTableView* tv);
-    void setErrorState(const QString& errorState);
 
     //	Menu
     QMenu *fileMenu;
@@ -71,7 +63,7 @@ private:
     QMenu *helpMenu;
     QActionGroup *alignmentGroup;
     QAction *newAct;
-    QAction *openAct;
+    QAction *openDatabaseAction;
     QAction *saveAct;
     QAction *printAct;
     QAction *exitAct;
@@ -94,4 +86,4 @@ private:
 
 };
 
-#endif // DIALOG_H
+#endif // MAINWINDOW_H

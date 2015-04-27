@@ -1,27 +1,32 @@
 #include <QApplication>
 #include <QMessageBox>
+#include <QFile>
 
-#include "MainWindow.h"
+#include "Common.h"
+#include "Controller.h"
 
 int main(int argc, char *argv[])
 {
-
     QApplication app(argc, argv);
     app.setOrganizationName("Moose!");
     app.setOrganizationDomain("bargie.net");
     app.setApplicationName("Songbase");
-    MainWindow mainWin;
 
-    if(mainWin.getErrorState()==0)
+//    QFile file(":/qss/default");
+//    file.open(QFile::ReadOnly);
+//    QString styleSheet = QLatin1String(file.readAll());
+//    app.setStyleSheet(styleSheet);
+
+    Controller c(argc, argv);
+    if(c.initSuccessFull())
     {
-        mainWin.show();
-
-        mainWin.resize(1200,600);
-        return app.exec();
+        app.exec();
     }
     else
     {
-        QMessageBox::critical(NULL,mainWin.getErrorDescription(),mainWin.getErrorDescription());
+        QMessageBox d;
+        d.setText("No database selected. Terminating");
+        d.exec();
     }
-    return -1;
+    return 0;
 }
