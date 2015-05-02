@@ -223,7 +223,7 @@ DatabaseSelector::openSqliteDB(DatabaseCredentials& dc)
 
     //	Clone tmp to current
     QSqlDatabase db=QSqlDatabase::cloneDatabase(tmpdb,SB_DEFAULT_CONNECTION_NAME);
-    SB_UNUSED(db);
+    Q_UNUSED(db);
 
     //	Close tmp
     if(QSqlDatabase::contains(SB_TEMPORARY_CONNECTION_NAME))

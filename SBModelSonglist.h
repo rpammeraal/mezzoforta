@@ -16,7 +16,10 @@ public:
     ~SBModelSonglist();
 
     void applyFilter(const int playlistID, const QStringList& genres);
+    virtual QByteArray getID(const QModelIndex &i) const;
+    virtual SBID::sb_type getSBType(int column) const;
     virtual void resetFilter();
+    virtual const char* whoami() const;
 
 };
 

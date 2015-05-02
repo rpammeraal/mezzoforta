@@ -44,9 +44,13 @@ public slots:
     void applyPlaylistSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void changeSchema(const QString& newSchema);
+    void songCellSelectionChanged(const QItemSelection &s, const QItemSelection& o);
 
     //	Data Updates
     void updateGenre(QModelIndex i,QModelIndex j);
+
+    //	General UI
+    void tabChanged(int n);
 
 protected:
     virtual void keyPressEvent(QKeyEvent * event);

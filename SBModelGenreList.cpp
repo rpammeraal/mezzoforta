@@ -17,8 +17,8 @@ SBModelGenrelist::~SBModelGenrelist()
 void
 SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
 {
-    SB_UNUSED(filter);
-    SB_UNUSED(doExactSearch);
+    Q_UNUSED(filter);
+    Q_UNUSED(doExactSearch);
 
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
@@ -29,14 +29,18 @@ SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
     //	1.	Use '|' as separator
     QSqlQuery c1(db);
 
-    c1.exec(QString("UPDATE %1record SET genre=replace(genre,',','|')  ").arg(dal->_getSchemaName()));
-    c1.exec(QString("UPDATE %1record SET genre=replace(genre,'/','|')  ").arg(dal->_getSchemaName()));
-    c1.exec(QString("UPDATE %1record SET genre=replace(genre,'| ','|') ").arg(dal->_getSchemaName()));
-    c1.exec(QString("UPDATE %1record SET genre=LTRIM(RTRIM(genre))     ").arg(dal->_getSchemaName()));
+    q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=replace(genre,',','|')  ");
+    c1.exec(dal->customize(q));
+    q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=replace(genre,'/','|')  ");
+    c1.exec(dal->customize(q));
+    q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=replace(genre,'| ','|') ");
+    c1.exec(dal->customize(q));
+    q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=LTRIM(RTRIM(genre))     ");
+    c1.exec(dal->customize(q));
 
-    q=QString("SELECT DISTINCT genre FROM %1record").arg(dal->_getSchemaName());
+    q=QString("SELECT DISTINCT genre FROM ___SB_SCHEMA_NAME___record");
     QSqlQuery q1(db);
-    q1.exec(q);
+    q1.exec(dal->customize(q));
 
     //	Retrieve all possible tags, split by '/' and create list
     QStringList sl;
@@ -85,10 +89,54 @@ SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
     {
         QSqlQueryModel::fetchMore();
     }
+    handleSQLError();
+}
+
+bool
+SBModelGenrelist::assign(const QString& dstID, const SBID& id)
+{
+    if(dstID.length()>0)
+    {
+        QString q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=genre || '|%1' WHERE record_id=%2 AND genre NOT "+dal->_ilike+" '\%%1\%'").arg(dstID).arg(id.sb_record_id);
+        qDebug() << SB_DEBUG_INFO << q;
+
+        QSqlQuery c1(QSqlDatabase::database(dal->getConnectionName()));
+        c1.exec(dal->customize(q));
+        handleSQLError();
+
+        return 1;
+    }
+    return 0;
+}
+
+QByteArray
+SBModelGenrelist::getID(const QModelIndex &i) const
+{
+    QByteArray encodedData;
+    QDataStream ds(&encodedData, QIODevice::WriteOnly);
+
+    ds << headerData(i.column()-1,Qt::Horizontal,Qt::DisplayRole).toString();
+    const QModelIndex n=this->index(i.row(),i.column()-1);
+    ds << data(n, Qt::DisplayRole).toString();
+
+    return encodedData;
+}
+
+SBID::sb_type
+SBModelGenrelist::getSBType(int column) const
+{
+    Q_UNUSED(column);
+    return SBID::sb_type_none;
 }
 
 void
 SBModelGenrelist::resetFilter()
 {
     applyFilter(QString(),0);
+}
+
+const char*
+SBModelGenrelist::whoami() const
+{
+    return "SBModelGenrelist";
 }

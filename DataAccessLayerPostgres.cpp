@@ -10,6 +10,8 @@ DataAccessLayerPostgres::DataAccessLayerPostgres(const QString& connectionName) 
 {
     initAvailableSchemas();
     setILike("ILIKE");
+    setIsNull("COALESCE");
+    setGetDate("NOW()");
 }
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const DataAccessLayerPostgres &c) : DataAccessLayer(c)
@@ -54,7 +56,7 @@ DataAccessLayerPostgres::initAvailableSchemas()
 
     qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:schemas=" << availableSchemas;
 
-    _schemaName="Rock";	//	common::titlecase
+    _setSchema("Rock");	//	common::titlecase
 
     qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:end";
 }

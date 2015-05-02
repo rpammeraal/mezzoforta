@@ -22,8 +22,8 @@
 
 Controller::Controller(int argc, char *argv[])
 {
-    SB_UNUSED(argc);
-    SB_UNUSED(argv);
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
 
     mw=NULL;
     dal=NULL;
@@ -88,7 +88,7 @@ Controller::applyPlaylistSelection(const QItemSelection &selected, const QItemSe
     QModelIndex index;
     QModelIndexList items = selected.indexes();
 
-    SB_UNUSED(deselected);
+    Q_UNUSED(deselected);
 
     qDebug() << "playlistSected:start";
 
@@ -161,12 +161,19 @@ Controller::changeSchema(const QString& newSchema)
     }
 }
 
+void
+Controller::songCellSelectionChanged(const QItemSelection &s, const QItemSelection &o)
+{
+    Q_UNUSED(o);
+    sm->setSelectedColumn(s.indexes().at(0).column());
+}
+
 //	Data Updates
 void
 Controller::updateGenre(QModelIndex i, QModelIndex j)
 {
     static int updateInProgress=0;
-    SB_UNUSED(j);
+    Q_UNUSED(j);
 
     if(updateInProgress==0)
     {
@@ -179,6 +186,27 @@ Controller::updateGenre(QModelIndex i, QModelIndex j)
             updateCurrentSongList();
 
         updateInProgress=0;
+    }
+}
+
+void
+Controller::tabChanged(int n)
+{
+    qDebug() << SB_DEBUG_INFO << n;
+    switch(n)
+    {
+    case SB_TAB_PLAYLIST:
+        sm->setDragableColumn(-1);
+        plm->setDragableColumn(1);
+        gm->setDragableColumn(0);
+
+        break;
+
+    case SB_TAB_GENRE:
+        sm->setDragableColumn(6);
+        gm->setDragableColumn(1);
+        gm->setDragableColumn(0);
+        break;
     }
 }
 
@@ -493,6 +521,10 @@ Controller::setupUI()
     hv->hide();
     mw->hideColumns(mw->ui.songList);
 
+    //	set up signals
+    sm=mw->ui.songList->selectionModel();
+    connect(sm, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(songCellSelectionChanged(QItemSelection,QItemSelection)));
 
     ///	COMPLETER
 
@@ -538,7 +570,6 @@ Controller::setupUI()
     connect(
         sm, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
         this, SLOT(applyPlaylistSelection(const QItemSelection &,const QItemSelection &)));
-
 
     ///	GENRE
 
@@ -588,27 +619,34 @@ Controller::setupUI()
         mw->ui.labelSchemaComboBox->hide();
     }
 
-    mw->ui.playlistGenreTab->setCurrentIndex(0);
 
     //	drag & drop revisited.
     QTableView* songList=mw->ui.songList;
     QTableView* playList=mw->ui.playlistList;
     QTableView* genreList=mw->ui.genreList;
 
-    songList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     songList->setDragEnabled(true);
     //songList->setAcceptDrops(true);
     songList->setDropIndicatorShown(true);
 
-    playList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     //playList->setDragEnabled(true);
     playList->setAcceptDrops(true);
+    playList->viewport()->setAcceptDrops(true);
     playList->setDropIndicatorShown(true);
 
-    genreList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     //genreList->setDragEnabled(true);
     genreList->setAcceptDrops(true);
+    genreList->viewport()->setAcceptDrops(true);
     genreList->setDropIndicatorShown(true);
+
+    ///	Statusbar
+    mw->ui.statusBar->setReadOnly(true);
+
+    ///	COMMON
+    connect(mw->ui.playlistGenreTab,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
+
+    tabChanged(SB_TAB_PLAYLIST);
+    mw->ui.playlistGenreTab->setCurrentIndex(0);
 
     return;
 }

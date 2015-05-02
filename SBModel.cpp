@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QSqlQuery>
+#include <QMessageBox>
 
 #include "Common.h"
 #include "DataAccessLayer.h"
@@ -10,7 +11,7 @@ SBModel::SBModel(DataAccessLayer* d): dal(d)
 {
     qDebug() << SB_DEBUG_INFO;
     //_aim=NULL;
-    SB_UNUSED(dal);
+    Q_UNUSED(dal);
 }
 
 SBModel::~SBModel()
@@ -18,26 +19,84 @@ SBModel::~SBModel()
 
 }
 
-//int
-//SBModel::columnCount(const QModelIndex & parent) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->columnCount(parent);
-//}
-//
-//QVariant
-//SBModel::data(const QModelIndex& index, int role) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->data(index,role);
-//}
+bool
+SBModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+{
+    Q_UNUSED(data);
+    Q_UNUSED(action);
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
+
+    return true;
+}
+
+bool
+SBModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+{
+    qDebug() << SB_DEBUG_INFO;
+    if(parent.row()==-1)
+    {
+        return false;
+    }
+
+    if (!canDropMimeData(data, action, row, column, parent))
+    {
+        return false;
+    }
+
+    if (action == Qt::IgnoreAction)
+    {
+        return true;
+    }
+
+    QByteArray encodedData = data->data("application/vnd.text.list");
+    SBID id=SBID(encodedData);
+
+    const QModelIndex n=this->index(parent.row(),0);
+    QString dstID=this->data(n, Qt::DisplayRole).toString();
+
+    assign(dstID,id);
+
+    return 1;
+}
 
 Qt::ItemFlags
 SBModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
-    defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | defaultFlags;
+    if(dragableColumn==-1 || dragableColumn==index.column())
+    {
+        defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;// | defaultFlags;
+    }
     return defaultFlags;
+}
+
+QMimeData*
+SBModel::mimeData(const QModelIndexList & indexes) const
+{
+    QMimeData* mimeData = new QMimeData();
+
+    QByteArray encodedData;
+
+    foreach (const QModelIndex &i, indexes)
+    {
+        if (i.isValid())
+        {
+            encodedData=getID(i);
+            mimeData->setData("application/vnd.text.list", encodedData);
+            return mimeData;
+        }
+    }
+    return NULL;
+}
+
+QStringList
+SBModel::mimeTypes() const
+{
+    QStringList types;
+    types << "application/vnd.text.list";
+    return types;
 }
 
 void
@@ -56,106 +115,47 @@ SBModel::setData(const QModelIndex& index, const QVariant& value, int role)
     return 1;
 }
 
-//bool
-//SBModel::hasChildren(const QModelIndex& parent) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->hasChildren(parent);
-//}
-//
-//QVariant
-//SBModel::headerData(int section, Qt::Orientation orientation, int role) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->headerData(section,orientation,role);
-//}
-//
-//QModelIndex
-//SBModel::index(int row, int column, const QModelIndex& parent) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->index(row,column,parent);
-//}
-//
-//QMap<int, QVariant>
-//SBModel::itemData(const QModelIndex & index) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->itemData(index);
-//}
-//
-//QModelIndex
-//SBModel::parent(const QModelIndex& index) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->parent(index);
-//}
-//
-//int
-//SBModel::rowCount(const QModelIndex& parent) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->rowCount(parent);
-//}
-//
-//bool
-//SBModel::setData(const QModelIndex &index, const QVariant &value, int role)
-//{
-//    qDebug() << "SBModelPlaylist:setData called:index=" << index << ":value=" << value << ":role=" << role;
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return 0;
-//}
-//
-//QModelIndex
-//SBModel::sibling(int row, int column, const QModelIndex & index) const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->sibling(row,column,index);
-//}
-//
-//void
-//SBModel::sort(int column, Qt::SortOrder order)
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return _aim->sort(column,order);
-//}
-//
-//Qt::DropActions
-//SBModel::supportedDragActions() const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return Qt::CopyAction | Qt::MoveAction | Qt::LinkAction;
-//}
-//
-//Qt::DropActions
-//SBModel::supportedDropActions() const
-//{
-//    if(_aim==NULL) { qDebug() << SB_DEBUG_INFO << "NULL ptr"; }
-//    return Qt::CopyAction | Qt::MoveAction | Qt::LinkAction;
-//}
-//
-///// PROTECTED
-//void
-//SBModel::populateModel(const QString &q)
-//{
-//    QSqlQuery query(q,dal->db);
-//
-//    QStandardItemModel::clear();
-//
-//    int row=0;
-//    while(query.next())
-//    {
-//        qDebug() << SB_DEBUG_INFO << ":row=" << row;
-//        QSqlRecord r=query.record();
-//        for(int column=0;column<r.count();column++)
-//        {
-//            QStandardItem* si=new QStandardItem(r.value(column).toString());
-//            QStandardItemModel::setItem(row,column,si);
-//        }
-//        row++;
-//    }
-//}
-//
+///	NATIVE METHODS
+bool
+SBModel::assign(const QString& dstID, const SBID& id)
+{
+    qDebug() << SB_DEBUG_INFO << "********************************** uninherited assign call()";
+    qDebug() << SB_DEBUG_INFO << dstID << id;
+    return 0;
+}
+
+void
+SBModel::handleSQLError() const
+{
+    QSqlError e=this->lastError();
+    qDebug() << SB_DEBUG_INFO << e;
+    if(e.isValid()==1 || e.type()!=QSqlError::NoError)
+    {
+        qDebug() << e.text();
+        QMessageBox m;
+        m.setText(e.text());
+        m.exec();
+    }
+}
+
+int
+SBModel::getSelectedColumn() const
+{
+    return selectedColumn;
+}
+
+void
+SBModel::setSelectedColumn(int c)
+{
+    selectedColumn=c;
+}
+
+void
+SBModel::setDragableColumn(int c)
+{
+    dragableColumn=c;
+    qDebug() << "dragableCOlumn=" << dragableColumn;
+}
 
 ///	SLOTS
 void
@@ -163,4 +163,13 @@ SBModel::schemaChanged()
 {
     qDebug() << SB_DEBUG_INFO;
     resetFilter();
+}
+
+
+///	PRIVATE
+void
+SBModel::init()
+{
+    dragableColumn=-1;
+    selectedColumn=0;
 }

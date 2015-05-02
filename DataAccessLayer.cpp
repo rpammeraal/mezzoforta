@@ -25,7 +25,11 @@ DataAccessLayer::DataAccessLayer(const QString& c)
     //	Retrieve database from connection name
     init();
     _connectionName=c;
-    _ilike="LIKE";
+
+    //	Modelling after sqlite
+    setILike("LIKE");
+    setIsNull("IFNULL");
+    setGetDate("DATE('now')");
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
 }
 
@@ -96,6 +100,14 @@ DataAccessLayer::setSchema(const QString &newSchema)
     return rc;
 }
 
+QString
+DataAccessLayer::customize(QString &s) const
+{
+    return s.replace("___SB_SCHEMA_NAME___",_getSchemaName()).
+      replace("___SB_DB_ISNULL___",getIsNull()).
+      replace("___SB_DB_GETDATE___",getGetDate());
+}
+
 const QString&
 DataAccessLayer::getConnectionName() const
 {
@@ -107,6 +119,24 @@ DataAccessLayer::getDriverName() const
 {
     QSqlDatabase db=QSqlDatabase::database(_connectionName);
     return db.driverName();
+}
+
+const QString&
+DataAccessLayer::getGetDate() const
+{
+    return _getdate;
+}
+
+const QString&
+DataAccessLayer::getILike() const
+{
+    return _ilike;
+}
+
+const QString&
+DataAccessLayer::getIsNull() const
+{
+    return _isnull;
 }
 
 SBModelSonglist*
@@ -181,11 +211,11 @@ QSqlQueryModel*
 DataAccessLayer::getCompleterModel()
 {
     QString query=
-        "SELECT DISTINCT title FROM ___SB_SQL_QUERY_SCHEMA___song UNION "
-        "SELECT DISTINCT title FROM ___SB_SQL_QUERY_SCHEMA___record UNION "
-        "SELECT DISTINCT name  FROM ___SB_SQL_QUERY_SCHEMA___artist";
-    query.replace("___SB_SQL_QUERY_SCHEMA___",_getSchemaName());
+        "SELECT DISTINCT title FROM ___SB_SCHEMA_NAME___song UNION "
+        "SELECT DISTINCT title FROM ___SB_SCHEMA_NAME___record UNION "
+        "SELECT DISTINCT name  FROM ___SB_SCHEMA_NAME___artist";
 
+    this->customize(query);
     QSqlQueryModel* model = new QSqlQueryModel();
     model->setQuery(query,QSqlDatabase::database(getConnectionName()));
 
@@ -198,17 +228,11 @@ DataAccessLayer::getCompleterModel()
 }
 
 ///	Protected
-QString
-DataAccessLayer::_getSchemaName() const
-{
-    return (_schemaName.length()>0) ? _schemaName+'.' : "";
-}
 
-const QString&
-DataAccessLayer::getILike() const
+void
+DataAccessLayer::setGetDate(const QString& n)
 {
-    qDebug() << SB_DEBUG_INFO;
-    return _ilike;
+    _getdate=n;
 }
 
 void
@@ -217,7 +241,26 @@ DataAccessLayer::setILike(const QString& n)
     _ilike=n;
 }
 
-///	PRIVATE
+void
+DataAccessLayer::setIsNull(const QString& n)
+{
+    _isnull=n;
+}
+
+//	To be called during initialization only (cwip)
+void
+DataAccessLayer::_setSchema(const QString &n)
+{
+    _schemaName=n;
+}
+
+///	Private
+QString
+DataAccessLayer::_getSchemaName() const
+{
+    return (_schemaName.length()>0) ? _schemaName+'.' : "";
+}
+
 void
 DataAccessLayer::init()
 {
@@ -225,6 +268,8 @@ DataAccessLayer::init()
     _schemaName="";
     _connectionName="";
     _ilike="";
+    _isnull="";
+    _getdate="";
 }
 
 void
@@ -233,4 +278,6 @@ DataAccessLayer::init(const DataAccessLayer& c)
     _schemaName=c._schemaName;
     _connectionName=c._connectionName;
     _ilike=c._ilike;
+    _isnull=c._isnull;
+    _getdate=c._getdate;
 }

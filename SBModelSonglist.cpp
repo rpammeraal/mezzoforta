@@ -15,13 +15,11 @@ SBModelSonglist::~SBModelSonglist()
 }
 
 void
-SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//, const QString& filter, const bool doExactSearch)
+SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)
 {
     qDebug() << "SBModelSonglist:applyFilter:start"
         << ":playlistID" << playlistID
         << ":genres=" << genres
-        //<< ":filter=" << filter
-        //<< ":doExactSearch=" << doExactSearch
     ;
 
     qDebug() << SB_DEBUG_INFO;
@@ -35,7 +33,8 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//,
             "SB_ARTIST_ID, "
             "artistName AS \"artist name\", "
             "SB_RECORD_ID, "
-            "recordTitle AS \"record title\" "
+            "recordTitle AS \"album title\", "
+            "SB_RECORD_POSITION_ID "
         "FROM "
             "( "
                 "SELECT "
@@ -45,15 +44,16 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//,
                     "a.name AS artistName, "
                     "r.record_id AS SB_RECORD_ID, "
                     "r.title AS recordTitle, "
+                    "rp.record_position AS SB_RECORD_POSITION_ID, "
                     "s.title || ' ' || a.name || ' ' || r.title  AS SB_KEYWORDS "
                 "FROM "
-                    "___SB_SQL_QUERY_SCHEMA___record_performance rp  "
-                        "JOIN ___SB_SQL_QUERY_SCHEMA___artist a ON  "
+                    "___SB_SCHEMA_NAME___record_performance rp  "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
                             "rp.artist_id=a.artist_id "
-                        "JOIN ___SB_SQL_QUERY_SCHEMA___record r ON  "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON  "
                             "rp.record_id=r.record_id "
                             "___SB_SQL_QUERY_GENRE_JOIN___ "
-                        "JOIN ___SB_SQL_QUERY_SCHEMA___song s ON  "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON  "
                             "rp.song_id=s.song_id "
                             "___SB_SQL_QUERY_PLAYLIST_JOIN___ "
             ") a "
@@ -62,48 +62,6 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//,
 
     QString whereClause="";
     QString playlistJoin="";
-//    QString f=filter;
-//    QStringList fl;
-//
-//    //	Handle filter
-//    if(doExactSearch==0)
-//    {
-//        //	search based on keywords
-//        f.replace(QString("  "),QString(" "));	//	CWIP: replace with regex
-//
-//        if(f.length()>=2)
-//        {
-//            fl=f.split(" ");
-//
-//            QStringList::const_iterator constIterator;
-//            for (constIterator = fl.constBegin(); constIterator != fl.constEnd(); ++constIterator)
-//            {
-//                QString word=(*constIterator);
-//
-//                word.replace(QString("  "),QString(" "));
-//                word.replace(QString("  "),QString(" "));
-//                if(word.length()>0)
-//                {
-//                    Common::escapeSingleQuotes(word);
-//                    if(whereClause.length()!=0)
-//                    {
-//                        whereClause+=" AND ";
-//                    }
-//                    whereClause+=" SB_KEYWORDS "+dal->_ilike+" '%"+word+"%' ";
-//                }
-//            }
-//        }
-//    }
-//    else
-//    {
-//        if(filter.length()>0)
-//        {
-//            //	exact search based on title or name
-//            QString arg=filter;
-//            Common::escapeSingleQuotes(arg);
-//            whereClause=QString(" songTitle='%1' OR artistName='%1' OR recordTitle='%1' ").arg(arg);
-//        }
-//    }
 
     QString genreJoin="";
 
@@ -126,11 +84,11 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//,
     if(playlistID>=0)
     {
         playlistJoin=QString(
-            "JOIN ___SB_SQL_QUERY_SCHEMA___playlist_performance pp ON "
+            "JOIN ___SB_SCHEMA_NAME___playlist_performance pp ON "
                 "a.artist_id=pp.artist_id AND "
                 "r.record_id=pp.record_id AND "
                 "s.song_id=pp.song_id "
-            "JOIN ___SB_SQL_QUERY_SCHEMA___playlist p ON "
+            "JOIN ___SB_SCHEMA_NAME___playlist p ON "
                 "pp.playlist_id=p.playlist_id AND "
                 "p.playlist_id= %1 ").arg(playlistID);
     }
@@ -144,19 +102,55 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)//,
     q.replace("___SB_SQL_QUERY_WHERECLAUSE___",whereClause);
     q.replace("___SB_SQL_QUERY_PLAYLIST_JOIN___",playlistJoin);
     q.replace("___SB_SQL_QUERY_GENRE_JOIN___",genreJoin);
-    q.replace("___SB_SQL_QUERY_SCHEMA___",dal->_getSchemaName());
 
-    qDebug() << SB_DEBUG_INFO;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
-    qDebug() << SB_DEBUG_INFO;
 
     while(QSqlQueryModel::canFetchMore())
     {
-    qDebug() << SB_DEBUG_INFO;
         QSqlQueryModel::fetchMore();
     }
-    qDebug() << SB_DEBUG_INFO;
+    handleSQLError();
 }
+
+QByteArray
+SBModelSonglist::getID(const QModelIndex &i) const
+{
+    QModelIndex n;
+    QByteArray encodedData;
+    QDataStream ds(&encodedData, QIODevice::WriteOnly);
+
+    SBID id;
+
+    id.sb_type_id=this->getSBType(this->getSelectedColumn());
+    n=this->index(i.row(),1); id.sb_song_id        =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),3); id.sb_artist_id      =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),5); id.sb_record_id      =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),7); id.sb_record_position=data(n, Qt::DisplayRole).toInt();
+
+    return id.encode();
+}
+
+SBID::sb_type
+SBModelSonglist::getSBType(int column) const
+{
+    qDebug() << SB_DEBUG_INFO << "column=" << column;
+    switch(column)
+    {
+        case 6:
+            return SBID::sb_type_album;
+
+        case 4:
+            return SBID::sb_type_artist;
+
+        case 2:
+            return SBID::sb_type_song;
+    }
+    return SBID::sb_type_none;
+}
+
 
 void
 SBModelSonglist::resetFilter()
@@ -165,4 +159,8 @@ SBModelSonglist::resetFilter()
     applyFilter(-1,QStringList());//,QString(),0);
 }
 
-
+const char*
+SBModelSonglist::whoami() const
+{
+    return "SBModelSonglist";
+}

@@ -3,24 +3,33 @@ On board: San Pedro - Puerto Vallarta - Mazatlan - Cabo San Lucas - San Pedro
 Enroute: LAX - DFW, DFW - LAX
 Waco, TX
 
-Crown Princess Demo:
+Crown Princess Demo (20150407):
 -	Proof of concept to test out QT.
 -	Basic search using requerying database.
 -	Playlists.
 
-McGregor Test Site:
+McGregor Test Site (20150418):
 -	Genres added.
 -	Updates of playlist names and genre names
 -	Search context sensitive
 -	Use completer, enable search on either completer provided title/name or free search using keywords
 
 <new>:
+4/26
 -	Refactoring of main.cpp, MainWindow, Controller classes, Controller being in charge of it all
 -	Selecting database added
 -	Support for Postgres/songbase databases.
 -	Header w/ dropdown for postgresql schemas (find out way to refresh views)
+-	Refactoring of classes, subclassing of QSqlQueryModel to prepare for drag & drop
+<current>
 -	Drag & drop
+-	based on selected cell in song, sbid should be populated accordingly -- if record is selected, only populate record_id
+-	Updates to playlist, genres
+<future>
+-	context menu fails
+-	status bar
 
 todo:
-- cancel on open db when no db is found at runtime.
-- if genre changed, try to select genre that was changed (much later).
+-	QCompleter needs to be made context sensitive of playlist or genre selected.
+-	cancel on open db when no db is found at runtime.
+-	if genre changed, try to select genre that was changed (much later).
