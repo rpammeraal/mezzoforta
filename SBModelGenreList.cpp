@@ -1,11 +1,13 @@
 #include <QSqlQuery>
 
 #include "Common.h"
+#include "Context.h"
+#include "Controller.h"
 #include "DataAccessLayer.h"
 #include "SBModelGenrelist.h"
 
 
-SBModelGenrelist::SBModelGenrelist(DataAccessLayer* d) : SBModel(d)
+SBModelGenrelist::SBModelGenrelist() : SBModel()
 {
     applyFilter(QString(),0);
 }
@@ -20,7 +22,9 @@ SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
     Q_UNUSED(filter);
     Q_UNUSED(doExactSearch);
 
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
     QString q;
     //	Genre data is stored as an attribute of record. Need to extract this, split by '|',
     //	unify and store in a tmp table so a QSqlQueryModel can be used on it.
@@ -97,6 +101,7 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
 {
     if(dstID.length()>0)
     {
+        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         QString q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=genre || '|%1' WHERE record_id=%2 AND genre NOT "+dal->_ilike+" '\%%1\%'").arg(dstID).arg(id.sb_record_id);
         qDebug() << SB_DEBUG_INFO << q;
 
@@ -107,19 +112,6 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
         return 1;
     }
     return 0;
-}
-
-QByteArray
-SBModelGenrelist::getID(const QModelIndex &i) const
-{
-    QByteArray encodedData;
-    QDataStream ds(&encodedData, QIODevice::WriteOnly);
-
-    ds << headerData(i.column()-1,Qt::Horizontal,Qt::DisplayRole).toString();
-    const QModelIndex n=this->index(i.row(),i.column()-1);
-    ds << data(n, Qt::DisplayRole).toString();
-
-    return encodedData;
 }
 
 SBID::sb_type
@@ -140,3 +132,23 @@ SBModelGenrelist::whoami() const
 {
     return "SBModelGenrelist";
 }
+
+///	PROTECTED
+SBID
+SBModelGenrelist::getSBID(const QModelIndex &i) const
+{
+    Q_UNUSED(i);
+    qDebug() << SB_DEBUG_INFO;
+    SBID id;
+    return id;
+
+//    QByteArray encodedData;
+//    QDataStream ds(&encodedData, QIODevice::WriteOnly);
+//
+//    ds << headerData(i.column()-1,Qt::Horizontal,Qt::DisplayRole).toString();
+//    const QModelIndex n=this->index(i.row(),i.column()-1);
+//    ds << data(n, Qt::DisplayRole).toString();
+//
+//    return encodedData;
+}
+

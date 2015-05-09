@@ -2,14 +2,14 @@
 #include <QDebug>
 
 #include "Common.h"
+#include "Context.h"
 #include "DataAccessLayer.h"
 #include "MainWindow.h"
 #include "Controller.h"
 
-MainWindow::MainWindow(Controller* nc)
+MainWindow::MainWindow()
 {
     ui.setupUi(this);
-    c=nc;
 
     //createMenus();
     createActions();
@@ -30,48 +30,11 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 }
 
 void
-MainWindow::resizeEvent(QResizeEvent * event)
-{
-    QMainWindow::resizeEvent(event);
-    this->resizeWindow();
-}
-
-void
 MainWindow::keyPressEvent(QKeyEvent * event)
 {
-    c->keyPressEvent(event);
+    Context::instance()->getController()->keyPressEvent(event);
     QMainWindow::keyPressEvent(event);
 }
-
-void MainWindow::resizeWindow()
-{
-    const int hSize=ui.songList->width();
-    const int numColumns=ui.songList->model()->columnCount();
-    int numVisibleColumns=0;
-
-    //	Count visible columns in numVisibleColumns
-    for(int i=0;i<numColumns;i++)
-    {
-        if(ui.songList->isColumnHidden(i)==0)
-        {
-            numVisibleColumns++;
-        }
-    }
-
-    //	Resize columns to available width / numVisibleColumns
-    const int width=(numVisibleColumns==0? 100: hSize/numVisibleColumns)-6;
-    QHeaderView* hv=ui.songList->horizontalHeader();
-
-    for(int i=0;i<numColumns;i++)
-    {
-        if(ui.songList->isColumnHidden(i)==0)
-        {
-            hv->resizeSection(i,width-1);
-        }
-    }
-    return;
-}
-
 
 void MainWindow::createMenus()
 {
@@ -238,25 +201,6 @@ void MainWindow::createActions()
 //    alignmentGroup->addAction(justifyAct);
 //    alignmentGroup->addAction(centerAct);
 //    leftAlignAct->setChecked(true);
-}
-
-void
-MainWindow::hideColumns(QTableView* tv)
-{
-    const QAbstractItemModel* m=tv->model();
-    int lastColumnIndexVisible=0;
-    for(int i=0;i<m->columnCount();i++)
-    {
-        if(m->headerData(i,Qt::Horizontal).toString().toLower().startsWith("sb_")==1)
-        {
-            tv->hideColumn(i);
-        }
-        else
-        {
-            lastColumnIndexVisible=i;
-        }
-    }
-    tv->verticalHeader()->hide();
 }
 
 void MainWindow::newFile()

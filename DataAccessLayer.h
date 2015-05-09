@@ -17,7 +17,6 @@
 #define ___SB_SQL_QUERY_PLAYLIST_JOIN___ ___SB_SQL_QUERY_PLAYLIST_JOIN___
 #define ___SB_SQL_QUERY_GENRE_JOIN___ ___SB_SQL_QUERY_GENRE_JOIN___
 
-class DataAccessLayer;
 class QStringList;
 class QSqlQueryModel;
 class QSqlTableModel;
@@ -26,6 +25,8 @@ class SBModelSonglist;
 class SBModelPlaylist;
 class SBModelGenrelist;
 class QDebug;
+
+class DataAccessLayer;
 
 class DataAccessLayer : public QObject
 {

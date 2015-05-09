@@ -9,22 +9,21 @@
 
 class QLabel;
 class Controller;
+class SonglistScreenHandler;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
     friend class Controller;
+    friend class SonglistScreenHandler;
 
 public:
-    MainWindow(Controller* nc);
+    MainWindow();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-    virtual void resizeEvent(QResizeEvent * event);
     virtual void keyPressEvent(QKeyEvent * event);
-
-    void resizeWindow();
 
 private slots:
     void newFile();
@@ -48,13 +47,10 @@ private slots:
     void aboutQt();
 
 private:
-    Controller* c;
 
     void createMenus();
     void createActions();
     Ui::MainWindow ui;
-
-    void hideColumns(QTableView* tv);
 
     //	Menu
     QMenu *fileMenu;

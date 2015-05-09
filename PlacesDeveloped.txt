@@ -21,11 +21,13 @@ McGregor Test Site (20150418):
 -	Support for Postgres/songbase databases.
 -	Header w/ dropdown for postgresql schemas (find out way to refresh views)
 -	Refactoring of classes, subclassing of QSqlQueryModel to prepare for drag & drop
-<current>
--	Drag & drop
 -	based on selected cell in song, sbid should be populated accordingly -- if record is selected, only populate record_id
--	Updates to playlist, genres
+-	title tab not populated with song title
+<current>
 <future>
+-
+-	Drag & drop
+-	Updates to playlist, genres
 -	context menu fails
 -	status bar
 

@@ -6,12 +6,11 @@
 #include "DataAccessLayer.h"
 
 #include "SBModel.h"
+#include "Controller.h"
 
-SBModel::SBModel(DataAccessLayer* d): dal(d)
+SBModel::SBModel()
 {
     qDebug() << SB_DEBUG_INFO;
-    //_aim=NULL;
-    Q_UNUSED(dal);
 }
 
 SBModel::~SBModel()
@@ -67,7 +66,7 @@ SBModel::flags(const QModelIndex &index) const
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
     if(dragableColumn==-1 || dragableColumn==index.column())
     {
-        defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;// | defaultFlags;
+        defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled; // | Qt::ItemIsEditable;// | defaultFlags;
     }
     return defaultFlags;
 }
@@ -77,14 +76,13 @@ SBModel::mimeData(const QModelIndexList & indexes) const
 {
     QMimeData* mimeData = new QMimeData();
 
-    QByteArray encodedData;
-
     foreach (const QModelIndex &i, indexes)
     {
         if (i.isValid())
         {
-            encodedData=getID(i);
-            mimeData->setData("application/vnd.text.list", encodedData);
+            SBID id=getSBID(i);
+            QByteArray ba=id.encode();
+            mimeData->setData("application/vnd.text.list", ba);
             return mimeData;
         }
     }
@@ -108,6 +106,7 @@ SBModel::resetFilter()
 bool
 SBModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+    Q_UNUSED(value);
     qDebug() << SB_DEBUG_INFO;
     QVector<int> v;
     v.append(role);

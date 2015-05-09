@@ -10,6 +10,7 @@
 #include <QStyleFactory>
 
 #include "Common.h"
+#include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
 #include "DataAccessLayer.h"
@@ -19,15 +20,15 @@
 #include "SBModelSonglist.h"
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
+#include "ScreenStack.h"
+#include "SonglistScreenHandler.h"
 
 Controller::Controller(int argc, char *argv[])
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
 
-    mw=NULL;
-    dal=NULL;
-    //songListFilter=NULL;
+    Context::instance()->setController(this);
 
     _initSuccessFull=openMainWindow(1);
 }
@@ -70,7 +71,7 @@ Controller::applySongListFilter(const QString &filter)
     else
     {
         //	do a search based on keywords
-        currentFilter=mw->ui.searchEdit->text();
+        currentFilter=Context::instance()->getMainWindow()->ui.searchEdit->text();
         doExactSearch=0;
     }
     updateCurrentSongList();
@@ -100,7 +101,7 @@ Controller::applyPlaylistSelection(const QItemSelection &selected, const QItemSe
         //	Since only one item can be selected, return after 1st item
         const int i= index.row();
         const int j= index.column();
-        const long playlistID= mw->ui.playlistList->model()->data(index.sibling(i,0)).toInt();
+        const long playlistID= Context::instance()->getMainWindow()->ui.playlistList->model()->data(index.sibling(i,0)).toInt();
         qDebug() << "playlistSected"
             << ":i=" << i
             << ":j=" << j
@@ -120,6 +121,7 @@ Controller::applyPlaylistSelection(const QItemSelection &selected, const QItemSe
 void
 Controller::applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
+    MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex index;
     QModelIndexList items = selected.indexes();
 
@@ -154,7 +156,7 @@ void
 Controller::changeSchema(const QString& newSchema)
 {
     qDebug() << "Controller:changeSchema:new schema=" << newSchema;
-    if(dal->setSchema(newSchema))
+    if(Context::instance()->getDataAccessLayer()->setSchema(newSchema))
     {
         //	refresh all views
         resetAllFiltersAndSelections();
@@ -162,10 +164,11 @@ Controller::changeSchema(const QString& newSchema)
 }
 
 void
-Controller::songCellSelectionChanged(const QItemSelection &s, const QItemSelection &o)
+Controller::songlistCellSelectionChanged(const QItemSelection &s, const QItemSelection &o)
 {
     Q_UNUSED(o);
-    sm->setSelectedColumn(s.indexes().at(0).column());
+    qDebug() << SB_DEBUG_INFO << "row=" << s.indexes().at(0).row() << "column=" << s.indexes().at(0).column();
+    Context::instance()->getSBModelSonglist()->setSelectedColumn(s.indexes().at(0).column());
 }
 
 //	Data Updates
@@ -180,8 +183,8 @@ Controller::updateGenre(QModelIndex i, QModelIndex j)
         //	Poor man's semaphore
         qDebug() << "Controller::updateGenre:start";
         updateInProgress=1;
-            QString newGenre=dal->updateGenre(i);
-            mw->ui.genreList->update();
+            QString newGenre=Context::instance()->getDataAccessLayer()->updateGenre(i);
+            Context::instance()->getMainWindow()->ui.genreList->update();
             clearGenreSelection();
             updateCurrentSongList();
 
@@ -196,18 +199,41 @@ Controller::tabChanged(int n)
     switch(n)
     {
     case SB_TAB_PLAYLIST:
-        sm->setDragableColumn(-1);
+        Context::instance()->getSBModelSonglist()->setDragableColumn(-1);
         plm->setDragableColumn(1);
         gm->setDragableColumn(0);
 
         break;
 
     case SB_TAB_GENRE:
-        sm->setDragableColumn(6);
+        Context::instance()->getSBModelSonglist()->setDragableColumn(6);
         gm->setDragableColumn(1);
         gm->setDragableColumn(0);
         break;
     }
+}
+
+void
+Controller::updateStatusBar(const QString &s) const
+{
+    Context::instance()->getMainWindow()->ui.statusBar->setText(s);
+}
+
+///	SLOTS
+void
+Controller::resetSonglist()
+{
+    resetAllFiltersAndSelections();
+    updateCurrentSongList();
+    updateStatusBar(SB_DEFAULT_STATUS);
+    Context::instance()->getSonglistScreenHandler()->showSonglist();
+}
+
+void
+Controller::songlistCellDoubleClicked(const QModelIndex& i)
+{
+    //	Find out what column has been double clicked -- call the appropriate ScreenHandler
+    Context::instance()->getSonglistScreenHandler()->songlistCellDoubleClicked(i);
 }
 
 //PROTECTED:
@@ -215,6 +241,7 @@ Controller::tabChanged(int n)
 void
 Controller::keyPressEvent(QKeyEvent *event)
 {
+    MainWindow* mw=Context::instance()->getMainWindow();
     if(event->key()==0x1000000)
     {
         if(currentFilter.length()>0)
@@ -227,8 +254,7 @@ Controller::keyPressEvent(QKeyEvent *event)
         {
             qDebug() << SB_DEBUG_INFO;
             //	Catch escape key, blank searchEdit, playlist, genres
-            resetAllFiltersAndSelections();
-            updateCurrentSongList();
+            resetSonglist();
         }
     }
     else if(event->key()==Qt::Key_Return || event->key()==Qt::Key_Enter)
@@ -277,6 +303,8 @@ Controller::keyPressEvent(QKeyEvent *event)
 void
 Controller::updateCurrentSongList()
 {
+    SBModelSonglist* sm=Context::instance()->getSBModelSonglist();
+
     qDebug() << SB_DEBUG_INFO
         << ":selectedPlaylistID=" << selectedPlaylistID
         << ":selectedGenres=" << selectedGenres
@@ -336,7 +364,7 @@ Controller::updateCurrentSongList()
 int
 Controller::getSelectedTab()
 {
-    const int i=mw->ui.playlistGenreTab->currentIndex();
+    const int i=Context::instance()->getMainWindow()->ui.playlistGenreTab->currentIndex();
     return (i==0 ? SB_TAB_PLAYLIST : SB_TAB_GENRE);
 }
 
@@ -352,14 +380,14 @@ Controller::resetAllFiltersAndSelections()
 void
 Controller::clearPlaylistSelection()
 {
-    mw->ui.playlistList->clearSelection();
+    Context::instance()->getMainWindow()->ui.playlistList->clearSelection();
     selectedPlaylistID=-1;
 }
 
 void
 Controller::clearGenreSelection()
 {
-    mw->ui.genreList->clearSelection();
+    Context::instance()->getMainWindow()->ui.genreList->clearSelection();
     selectedGenres.clear();
 }
 
@@ -367,7 +395,7 @@ void
 Controller::clearSearchFilter()
 {
     currentFilter="";
-    mw->ui.searchEdit->setText(tr(""));
+    Context::instance()->getMainWindow()->ui.searchEdit->setText(tr(""));
     if(slP)
     {
         slP->setFilterFixedString(tr(""));
@@ -403,7 +431,7 @@ Controller::openMainWindow(bool startup)
 
     if(ds->databaseChanged() || startup)
     {
-        MainWindow* oldMW=mw;
+        MainWindow* oldMW=Context::instance()->getMainWindow();
 
         QProgressDialog p("Reading data...",QString(),0,8,oldMW);
         p.setWindowModality(Qt::WindowModal);
@@ -411,6 +439,11 @@ Controller::openMainWindow(bool startup)
         p.setValue(0);
 
         initAttributes();
+
+        SonglistScreenHandler* ssh=new SonglistScreenHandler();
+        Context::instance()->setSonglistScreenHandler(ssh);
+
+        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         if(dal)
         {
             delete dal;
@@ -418,13 +451,15 @@ Controller::openMainWindow(bool startup)
         }
 
         p.setValue(1);
-        const QString connectionName=ds->getConnectionName();
         dal=ds->getDataAccessLayer();
+        Context::instance()->setDataAccessLayer(dal);
 
         p.setValue(2);
 
         p.setValue(3);
-        mw=new MainWindow(this);
+        MainWindow* mw=new MainWindow();
+        Context::instance()->setMainWindow(mw);
+
 
         p.setValue(4);
         resetAllFiltersAndSelections();
@@ -437,7 +472,7 @@ Controller::openMainWindow(bool startup)
 
         configureMenus();
 
-        mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+dal->getDriverName()+")");
+        mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
 
         qDebug() << SB_DEBUG_INFO;
 
@@ -445,8 +480,10 @@ Controller::openMainWindow(bool startup)
 
         qDebug() << SB_DEBUG_INFO;
 
+        updateStatusBar(SB_DEFAULT_STATUS);
+
         mw->show();
-        mw->resize(1200,600);
+        mw->resize(1200,800);
 
         qDebug() << SB_DEBUG_INFO;
 
@@ -464,28 +501,32 @@ Controller::openMainWindow(bool startup)
 void
 Controller::setupModels()
 {
+    MainWindow* mw=Context::instance()->getMainWindow();
+
     //	songlist
-    sm=dal->getAllSongs();
+    SBModelSonglist* sm=Context::instance()->getDataAccessLayer()->getAllSongs();
+    Context::instance()->setSBModelSonglist(sm);
+
     slP=new QSortFilterProxyModel();
     slP->setSourceModel(sm);
     mw->ui.songList->setModel(slP);
 
     //	completer
     QCompleter* completer=new QCompleter(mw);
-    completer->setModel(dal->getCompleterModel());
+    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModel());
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     completer->setFilterMode(Qt::MatchContains);
     mw->ui.searchEdit->setCompleter(completer);
 
     //	playlist
-    plm=dal->getAllPlaylists();
+    plm=Context::instance()->getDataAccessLayer()->getAllPlaylists();
     pllP=new QSortFilterProxyModel();
     pllP->setSourceModel(plm);
     mw->ui.playlistList->setModel(pllP);
 
     //	genre
-    gm=dal->getAllGenres();
+    gm=Context::instance()->getDataAccessLayer()->getAllGenres();
     glP=new QSortFilterProxyModel();
     glP->setSourceModel(gm);
     mw->ui.genreList->setModel(glP);
@@ -497,6 +538,8 @@ Controller::setupUI()
     //	Frequently used pointers
     QHeaderView* hv;
     QItemSelectionModel* sm;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    MainWindow* mw=Context::instance()->getMainWindow();
 
     qDebug() << "Controller:setupUI:start";
 
@@ -514,17 +557,22 @@ Controller::setupUI()
     hv=mw->ui.songList->horizontalHeader();
     hv->setSortIndicator(2,Qt::AscendingOrder);
     hv->setSortIndicatorShown(1);
+    hv->setSectionResizeMode(QHeaderView::Stretch);
 
     //	vertical header
     hv=mw->ui.songList->verticalHeader();
     hv->setDefaultSectionSize(18);
     hv->hide();
-    mw->hideColumns(mw->ui.songList);
+    Common::hideColumns(mw->ui.songList);
 
     //	set up signals
     sm=mw->ui.songList->selectionModel();
+    //		capture which cell is active, so we can set contect for drag/drop
     connect(sm, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-            this, SLOT(songCellSelectionChanged(QItemSelection,QItemSelection)));
+            this, SLOT(songlistCellSelectionChanged(QItemSelection,QItemSelection)));
+    //		capture double click to open detail page
+    connect(mw->ui.songList, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(songlistCellDoubleClicked(QModelIndex)));
 
     ///	COMPLETER
 
@@ -590,7 +638,7 @@ Controller::setupUI()
     hv=mw->ui.genreList->verticalHeader();
     hv->setDefaultSectionSize(18);
     hv->hide();
-    mw->hideColumns(mw->ui.genreList);
+    Common::hideColumns(mw->ui.genreList);
 
     //	set up signals
     //	1 - change songlist if genre is selected
@@ -642,19 +690,33 @@ Controller::setupUI()
     ///	Statusbar
     mw->ui.statusBar->setReadOnly(true);
 
+    ///	BUTTONS
+    mw->ui.buttonBackward->setEnabled(0);
+    mw->ui.buttonForward->setEnabled(0);
+
+    SonglistScreenHandler* ssh=Context::instance()->getSonglistScreenHandler();
+    connect(mw->ui.buttonHome, SIGNAL(clicked()),
+            this, SLOT(resetSonglist()));
+    connect(mw->ui.buttonBackward, SIGNAL(clicked()),
+            ssh, SLOT(tabBackward()));
+    connect(mw->ui.buttonForward, SIGNAL(clicked()),
+            ssh, SLOT(tabForward()));
+
     ///	COMMON
     connect(mw->ui.playlistGenreTab,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
 
     tabChanged(SB_TAB_PLAYLIST);
-    mw->ui.playlistGenreTab->setCurrentIndex(0);
+    mw->ui.songDetailLists->setCurrentIndex(0);
+    mw->ui.songDetailLyricsTabsTab->setCurrentIndex(0);
 
+    Context::instance()->getSonglistScreenHandler()->showSonglist();
     return;
 }
 
 void
 Controller::configureMenus()
 {
-    QList<QAction *> list=mw->ui.menuFile->actions();
+    QList<QAction *> list=Context::instance()->getMainWindow()->ui.menuFile->actions();
     QList<QAction *>::iterator it;
     QAction* i;
 
@@ -673,7 +735,6 @@ Controller::configureMenus()
     }
 }
 
-
 void
 Controller::initAttributes()
 {
@@ -684,7 +745,6 @@ Controller::initAttributes()
     pllP=NULL;
     glP=NULL;
 
-    sm=NULL;
     plm=NULL;
     gm=NULL;
 }

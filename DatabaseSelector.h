@@ -13,6 +13,7 @@
 #include "ui_DatabaseSelector.h"
 
 class QSqlDatabase;
+
 class DataAccessLayer;
 
 #define SB_DATABASE_TYPE              "databasetype"

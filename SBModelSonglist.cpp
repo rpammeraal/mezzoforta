@@ -1,22 +1,27 @@
+#include "Controller.h"
+#include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBModelSonglist.h"
 
 #include "Common.h"
 
 
-SBModelSonglist::SBModelSonglist(DataAccessLayer* d) : SBModel (d)
+SBModelSonglist::SBModelSonglist() : SBModel ()
 {
     qDebug() << SB_DEBUG_INFO;
-    applyFilter(-1,QStringList());//,QString(),0);
+    applyFilter(-1,QStringList());
 }
 
 SBModelSonglist::~SBModelSonglist()
 {
 }
 
+///	Virtual inherited methods
 void
 SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)
 {
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+
     qDebug() << "SBModelSonglist:applyFilter:start"
         << ":playlistID" << playlistID
         << ":genres=" << genres
@@ -31,7 +36,7 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)
             "SB_SONG_ID, "
             "songTitle AS \"song title\", "
             "SB_ARTIST_ID, "
-            "artistName AS \"artist name\", "
+            "artistName AS \"performer\", "
             "SB_RECORD_ID, "
             "recordTitle AS \"album title\", "
             "SB_RECORD_POSITION_ID "
@@ -115,28 +120,9 @@ SBModelSonglist::applyFilter(const int playlistID, const QStringList& genres)
     handleSQLError();
 }
 
-QByteArray
-SBModelSonglist::getID(const QModelIndex &i) const
-{
-    QModelIndex n;
-    QByteArray encodedData;
-    QDataStream ds(&encodedData, QIODevice::WriteOnly);
-
-    SBID id;
-
-    id.sb_type_id=this->getSBType(this->getSelectedColumn());
-    n=this->index(i.row(),1); id.sb_song_id        =data(n, Qt::DisplayRole).toInt();
-    n=this->index(i.row(),3); id.sb_artist_id      =data(n, Qt::DisplayRole).toInt();
-    n=this->index(i.row(),5); id.sb_record_id      =data(n, Qt::DisplayRole).toInt();
-    n=this->index(i.row(),7); id.sb_record_position=data(n, Qt::DisplayRole).toInt();
-
-    return id.encode();
-}
-
 SBID::sb_type
 SBModelSonglist::getSBType(int column) const
 {
-    qDebug() << SB_DEBUG_INFO << "column=" << column;
     switch(column)
     {
         case 6:
@@ -164,3 +150,67 @@ SBModelSonglist::whoami() const
 {
     return "SBModelSonglist";
 }
+
+///	Class specific methods
+void
+SBModelSonglist::getSongDetail(const SBID& id, SBID& result)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString(
+        "SELECT "
+            "s.title, "
+            "s.notes, "
+            "a.artist_id, "
+            "a.name, "
+            "p.year, "
+            "l.lyrics "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id and "
+                    "p.role_id=0 "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE "
+             "s.song_id=%1").arg(id.sb_song_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery query(q,db);
+    query.next();
+
+
+    result.sb_artist_id=query.value(2).toInt();
+    result.sb_song_id  =id.sb_song_id;
+    result.sb_type_id  =SBID::sb_type_song;
+    result.artistName  =query.value(3).toString();
+    result.songTitle   =query.value(0).toString();
+    result.year        =query.value(4).toInt();
+    result.lyrics      =query.value(5).toString();
+    result.notes       =query.value(1).toString();
+}
+
+///	PROTECTED
+SBID
+SBModelSonglist::getSBID(const QModelIndex &i) const
+{
+    QModelIndex n;
+
+    SBID id;
+
+    id.sb_type_id=this->getSBType(this->getSelectedColumn());
+    n=this->index(i.row(),1); id.sb_song_id        =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),2); id.songTitle         =data(n, Qt::DisplayRole).toString();
+    n=this->index(i.row(),3); id.sb_artist_id      =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),4); id.artistName        =data(n, Qt::DisplayRole).toString();
+    n=this->index(i.row(),5); id.sb_record_id      =data(n, Qt::DisplayRole).toInt();
+    n=this->index(i.row(),6); id.recordTitle       =data(n, Qt::DisplayRole).toString();
+    n=this->index(i.row(),7); id.sb_record_position=data(n, Qt::DisplayRole).toInt();
+
+    return id;
+}
+

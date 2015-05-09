@@ -4,12 +4,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <QByteArray>
-#include <QDataStream>
 #include <QDebug>
 
-#define SB_DATABASE_ENTRY "DatabasePath"
+#include "SBID.h"
+
 class QString;
+class QTableView;
+
+#define SB_DATABASE_ENTRY "DatabasePath"
 
 #define SB_STYLE_SHEET "background-color: #66ccff;"
 
@@ -18,106 +20,14 @@ class QString;
 
 #define SB_SONG_ID "sb_song_id"
 
-class SBID
-{
-public:
-    enum sb_type
-    {
-        sb_type_none=0,
-        sb_type_song=1,
-        sb_type_artist=2,
-        sb_type_album=3,
-        sb_type_chart=4,
-        sb_type_playlist=5
-    };
-
-    int sb_artist_id;
-    int sb_record_id;
-    int sb_record_position;
-    int sb_song_id;
-    sb_type sb_type_id;
-
-    SBID()
-    {
-        init();
-    }
-
-    SBID(QByteArray encodedData)
-    {
-        init();
-
-        QDataStream ds(&encodedData, QIODevice::ReadOnly);
-        int i;
-        ds >> sb_artist_id >> sb_record_id >> sb_record_position >> sb_song_id >> i;
-        sb_type_id=static_cast<sb_type>(i);
-    }
-
-    QByteArray encode() const
-    {
-        QByteArray encodedData;
-        QDataStream ds(&encodedData, QIODevice::WriteOnly);
-
-        ds << sb_artist_id << sb_record_id << sb_record_position << sb_song_id << (int)sb_type_id;
-
-        return encodedData;
-    }
-
-    void init() { sb_artist_id=0; sb_record_id=0; sb_record_position=0; sb_song_id=0; sb_type_id=sb_type_none; }
-
-    friend QDebug operator<<(QDebug dbg, const SBID& id)
-    {
-        dbg.nospace() << "SBID"
-            << ":sb_artist_id=" << id.sb_artist_id
-            << ":sb_record_id=" << id.sb_record_id
-            << ":sb_record_position=" << id.sb_record_position
-            << ":sb_song_id=" << id.sb_song_id
-        ;
-
-        const char* s;
-        switch(id.sb_type_id)
-        {
-        case sb_type_none:
-            s="none";
-            break;
-
-        case sb_type_song:
-            s="song";
-            break;
-
-        case sb_type_artist:
-            s="artist";
-            break;
-
-        case sb_type_album:
-            s="album";
-            break;
-
-        case sb_type_chart:
-            s="chart";
-            break;
-
-        case sb_type_playlist:
-            s="None";
-            break;
-
-        default:
-            s="Unknown";
-        }
-        dbg.nospace()  << ":sb_type_id=" << s;
-
-        return dbg.space();
-
-    }
-
-};
-
 class Common
 {
 public:
     Common();
     ~Common();
 
-    static void toTitleCase(QString &);
     static void escapeSingleQuotes(QString &);
+    static void hideColumns(QTableView* tv);
+    static void toTitleCase(QString &);
 };
 #endif // COMMON_H

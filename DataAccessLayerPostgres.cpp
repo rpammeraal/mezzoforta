@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "Controller.h"
 #include "DataAccessLayerPostgres.h"
 
 DataAccessLayerPostgres::DataAccessLayerPostgres()

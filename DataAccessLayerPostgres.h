@@ -1,6 +1,7 @@
 #ifndef DATAACCESSLAYERPOSTGRES_H
 #define DATAACCESSLAYERPOSTGRES_H
 
+#include "Controller.h"
 #include "DataAccessLayer.h"
 
 class DataAccessLayerPostgres : public DataAccessLayer

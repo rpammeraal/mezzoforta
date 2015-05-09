@@ -153,6 +153,53 @@
             </widget>
            </item>
            <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonHome">
+             <property name="text">
+              <string>Home</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonBackward">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonForward">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="searchEdit">
+             <property name="placeholderText">
+              <string>Search...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QLabel" name="labelSchemaComboBox">
              <property name="maximumSize">
               <size>
@@ -220,7 +267,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="tab1">
+          <widget class="QWidget" name="tabPlaylist">
            <property name="accessibleName">
             <string/>
            </property>
@@ -258,7 +305,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab2">
+          <widget class="QWidget" name="tabGenre">
            <attribute name="title">
             <string>Genres</string>
            </attribute>
@@ -297,7 +344,13 @@
         </item>
         <item>
          <widget class="QTabWidget" name="songlistTab">
-          <widget class="QWidget" name="tab3">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
             <string>All Songs</string>
            </attribute>
@@ -315,16 +368,6 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLineEdit" name="searchEdit">
-              <property name="placeholderText">
-               <string>Search...</string>
-              </property>
-              <property name="clearButtonEnabled">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QTableView" name="songList">
               <property name="font">
                <font>
@@ -338,6 +381,374 @@
                <number>276</number>
               </attribute>
              </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>Record</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tabSongDetail">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Song</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayoutLeft">
+                <item>
+                 <layout class="QFormLayout" name="formLayoutSongInfo">
+                  <property name="sizeConstraint">
+                   <enum>QLayout::SetMinimumSize</enum>
+                  </property>
+                  <property name="labelAlignment">
+                   <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="labelTitle">
+                    <property name="text">
+                     <string>Title:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="songDetailSongTitle">
+                    <property name="minimumSize">
+                     <size>
+                      <width>250</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="labelOriginalPerformer">
+                    <property name="text">
+                     <string>Original Performer:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="songDetailOrginalPerformer">
+                    <property name="minimumSize">
+                     <size>
+                      <width>250</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="labelYearOfRelease">
+                    <property name="text">
+                     <string>Year of Release:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="songDetailYearOfRelease">
+                    <property name="maximumSize">
+                     <size>
+                      <width>50</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="labelNotes">
+                    <property name="text">
+                     <string>Notes:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QTextEdit" name="songDetailNotes">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>100</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <widget class="QTabWidget" name="songDetailLists">
+                    <property name="currentIndex">
+                     <number>0</number>
+                    </property>
+                    <widget class="QWidget" name="tabSongDetailPerformedBy">
+                     <attribute name="title">
+                      <string>Also Performed By</string>
+                     </attribute>
+                     <layout class="QVBoxLayout" name="verticalLayout_4">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QTableView" name="songDetailPerformedByList">
+                        <property name="alternatingRowColors">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                    <widget class="QWidget" name="tabSongDetailAlbum">
+                     <attribute name="title">
+                      <string>Albums</string>
+                     </attribute>
+                     <layout class="QVBoxLayout" name="verticalLayout_5">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QTableView" name="songDetailAlbumList">
+                        <property name="alternatingRowColors">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                    <widget class="QWidget" name="tabSongDetailChart">
+                     <attribute name="title">
+                      <string>Charts</string>
+                     </attribute>
+                     <layout class="QVBoxLayout" name="verticalLayout_6">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QTableView" name="songDetailChartList">
+                        <property name="alternatingRowColors">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                    <widget class="QWidget" name="tabSongDetailPlaylist">
+                     <attribute name="title">
+                      <string>Playlists</string>
+                     </attribute>
+                     <layout class="QVBoxLayout" name="verticalLayout_7">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QTableView" name="songDetailPlaylistList"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayoutRight">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetFixedSize</enum>
+                </property>
+                <item>
+                 <widget class="QTabWidget" name="songDetailLyricsTabsTab">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>350</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>350</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="currentIndex">
+                   <number>0</number>
+                  </property>
+                  <widget class="QWidget" name="tabLyrics">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>350</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>350</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <attribute name="title">
+                    <string>Lyrics</string>
+                   </attribute>
+                   <layout class="QVBoxLayout" name="verticalLayout_3">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QTextEdit" name="songDetailLyrics">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>350</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>350</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="tabTabs">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>350</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>350</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <attribute name="title">
+                    <string>Tabs</string>
+                   </attribute>
+                   <layout class="QVBoxLayout" name="verticalLayout_2">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QPlainTextEdit" name="songDetailTabs">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>350</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>350</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -359,7 +770,7 @@
            <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
           </property>
           <property name="text">
-           <string>Happy listening!</string>
+           <string/>
           </property>
          </widget>
         </item>

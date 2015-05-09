@@ -12,14 +12,15 @@ class QStandardItemModel;
 class QSqlDatabase;
 
 class MainWindow;
-class DataAccessLayer;
-class SBModelSonglist;
 class SBModelPlaylist;
 class SBModelGenrelist;
+class SonglistScreenHandler;
 
 #define SB_TAB_UNDEF    -1
 #define SB_TAB_PLAYLIST  0
 #define SB_TAB_GENRE     1
+
+#define SB_DEFAULT_STATUS "Welcome to Songbase!"
 
 class Controller : public QObject
 {
@@ -44,20 +45,23 @@ public slots:
     void applyPlaylistSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void changeSchema(const QString& newSchema);
-    void songCellSelectionChanged(const QItemSelection &s, const QItemSelection& o);
+    void songlistCellSelectionChanged(const QItemSelection &s, const QItemSelection& o);
 
     //	Data Updates
     void updateGenre(QModelIndex i,QModelIndex j);
 
     //	General UI
     void tabChanged(int n);
+    void updateStatusBar(const QString &s) const;
+
+public slots:
+    void resetSonglist();
+    void songlistCellDoubleClicked(const QModelIndex& i);
 
 protected:
     virtual void keyPressEvent(QKeyEvent * event);
 
 private:
-    MainWindow* mw;
-    DataAccessLayer* dal;
     bool doExactSearch;
     bool _initSuccessFull;
 
@@ -91,7 +95,7 @@ private:
     QSortFilterProxyModel* glP;
 
     //	Keep track of models, so we can change the data underneath
-    SBModelSonglist* sm;
+    //SBModelSonglist* sm;
     SBModelPlaylist* plm;
     SBModelGenrelist* gm;
 };

@@ -6,6 +6,8 @@
 #include <QFileDialog>
 
 #include "Common.h"
+#include "Context.h"
+#include "Controller.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSonglist.h"
 #include "SBModelGenrelist.h"
@@ -20,11 +22,11 @@ DataAccessLayer::DataAccessLayer()
     qDebug() << SB_DEBUG_INFO << "******************************************* EMPTY ID=" << dalID;
 }
 
-DataAccessLayer::DataAccessLayer(const QString& c)
+DataAccessLayer::DataAccessLayer(const QString& connectionName)
 {
     //	Retrieve database from connection name
     init();
-    _connectionName=c;
+    _connectionName=connectionName;
 
     //	Modelling after sqlite
     setILike("LIKE");
@@ -142,7 +144,7 @@ DataAccessLayer::getIsNull() const
 SBModelSonglist*
 DataAccessLayer::getAllSongs()
 {
-    SBModelSonglist* n=new SBModelSonglist(this);
+    SBModelSonglist* n=new SBModelSonglist();
     connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
     return n;
 }
@@ -150,7 +152,7 @@ DataAccessLayer::getAllSongs()
 SBModelPlaylist*
 DataAccessLayer::getAllPlaylists()
 {
-    SBModelPlaylist* n=new SBModelPlaylist(this);
+    SBModelPlaylist* n=new SBModelPlaylist();
     connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
     return n;
 }
@@ -158,7 +160,7 @@ DataAccessLayer::getAllPlaylists()
 SBModelGenrelist*
 DataAccessLayer::getAllGenres()
 {
-    SBModelGenrelist* n=new SBModelGenrelist(this);
+    SBModelGenrelist* n=new SBModelGenrelist();
     connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
     return n;
 }
@@ -166,6 +168,7 @@ DataAccessLayer::getAllGenres()
 QString
 DataAccessLayer::updateGenre(QModelIndex i)
 {
+    Q_UNUSED(i);
     return "";
 //    const int row=i.row();
 //    QString newGenre=genreList.item(row,0)->data(Qt::DisplayRole).toString();
@@ -273,11 +276,11 @@ DataAccessLayer::init()
 }
 
 void
-DataAccessLayer::init(const DataAccessLayer& c)
+DataAccessLayer::init(const DataAccessLayer& copy)
 {
-    _schemaName=c._schemaName;
-    _connectionName=c._connectionName;
-    _ilike=c._ilike;
-    _isnull=c._isnull;
-    _getdate=c._getdate;
+    _schemaName=copy._schemaName;
+    _connectionName=copy._connectionName;
+    _ilike=copy._ilike;
+    _isnull=copy._isnull;
+    _getdate=copy._getdate;
 }

@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QSqlDatabase>
 
+#include "Controller.h"
 #include "DataAccessLayer.h"
 #include "DataAccessLayerPostgres.h"
 #include "DatabaseSelector.h"

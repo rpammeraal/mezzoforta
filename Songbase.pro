@@ -11,7 +11,11 @@ HEADERS     = \
     SBModel.h \
     SBModelSonglist.h \
     SBModelPlaylist.h \
-    SBModelGenrelist.h
+    SBModelGenrelist.h \
+    SBID.h \
+    SonglistScreenHandler.h \
+    Context.h \
+    ScreenStack.h
 
 SOURCES     = \
     main.cpp \
@@ -25,7 +29,11 @@ SOURCES     = \
     SBModel.cpp \
     SBModelSonglist.cpp \
     SBModelPlaylist.cpp \
-    SBModelGenreList.cpp
+    SBModelGenreList.cpp \
+    SBID.cpp \
+    SonglistScreenHandler.cpp \
+    Context.cpp \
+    ScreenStack.cpp
 
 # install
 target.path = .

@@ -21,7 +21,7 @@ class SBModel : public QSqlQueryModel
     Q_OBJECT
 
 public:
-    SBModel(DataAccessLayer* d);
+    SBModel();
     ~SBModel();
 
     //	Inherited methods
@@ -35,7 +35,6 @@ public:
 
     //	Native methods
     virtual bool assign(const QString& dstID, const SBID& id);
-    virtual QByteArray getID(const QModelIndex &i) const =0;
     virtual SBID::sb_type getSBType(int column) const =0;
     int getSelectedColumn() const;
     void handleSQLError() const;
@@ -47,7 +46,7 @@ public slots:
     void schemaChanged();
 
 protected:
-    DataAccessLayer* dal;
+    virtual SBID getSBID(const QModelIndex &i) const =0;
 
 private:
     int dragableColumn;
