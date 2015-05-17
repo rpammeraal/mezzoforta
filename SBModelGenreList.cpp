@@ -102,7 +102,12 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
     if(dstID.length()>0)
     {
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-        QString q=QString("UPDATE ___SB_SCHEMA_NAME___record SET genre=genre || '|%1' WHERE record_id=%2 AND genre NOT "+dal->_ilike+" '\%%1\%'").arg(dstID).arg(id.sb_record_id);
+        QString q=QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___record "
+            "SET genre=genre || '|%1' "
+            "WHERE record_id=%2 AND genre NOT "+dal->_ilike+" '\%%1\%'"
+        ).arg(dstID).arg(id.sb_album_id1);
         qDebug() << SB_DEBUG_INFO << q;
 
         QSqlQuery c1(QSqlDatabase::database(dal->getConnectionName()));

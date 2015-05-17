@@ -1,4 +1,4 @@
-QT += widgets sql
+QT += widgets sql xml network webkitwidgets
 
 HEADERS     = \
     MainWindow.h \
@@ -15,7 +15,11 @@ HEADERS     = \
     SBID.h \
     SonglistScreenHandler.h \
     Context.h \
-    ScreenStack.h
+    ScreenStack.h \
+    SBModelSong.h \
+    SBModelAlbum.h \
+    SBModelPerformer.h \
+    SBIDExtended.h
 
 SOURCES     = \
     main.cpp \
@@ -33,7 +37,11 @@ SOURCES     = \
     SBID.cpp \
     SonglistScreenHandler.cpp \
     Context.cpp \
-    ScreenStack.cpp
+    ScreenStack.cpp \
+    SBModelSong.cpp \
+    SBModelAlbum.cpp \
+    SBModelPerformer.cpp \
+    SBIDExtended.cpp
 
 # install
 target.path = .

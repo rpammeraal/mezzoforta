@@ -59,7 +59,7 @@ public:
     QString getDriverName() const;
 
     //	Services
-    SBModelSonglist* getAllSongs();
+    //SBModelSonglist* getAllSongs();
     SBModelPlaylist* getAllPlaylists();
         //	col0:	playlistID
         //	col1:	name
@@ -69,8 +69,8 @@ public:
     QString updateGenre(QModelIndex i);
     QSqlQueryModel* getCompleterModel();
 
-signals:
-    void schemaChanged();
+//signals:
+    //void schemaChanged();
 
 protected:
     int dalID;

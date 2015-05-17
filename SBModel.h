@@ -8,6 +8,7 @@
 
 class DataAccessLayer;
 class QAbstractItemModel;
+class SBModelSong;
 
 ///
 /// \brief The SBModel class

@@ -17,6 +17,7 @@
 #include "DisplayOnlyDelegate.h"
 #include "DatabaseSelector.h"
 #include "SBModel.h"
+#include "SBModelSong.h"
 #include "SBModelSonglist.h"
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
@@ -79,12 +80,12 @@ Controller::applySongListFilter(const QString &filter)
 }
 
 ////
-/// \brief Controller::applyPlaylistSelection
+/// \brief Controller::openPlaylist
 /// \param selected
 /// \param deselected
 ///
 void
-Controller::applyPlaylistSelection(const QItemSelection &selected, const QItemSelection &deselected)
+Controller::openPlaylist(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QModelIndex index;
     QModelIndexList items = selected.indexes();
@@ -93,22 +94,17 @@ Controller::applyPlaylistSelection(const QItemSelection &selected, const QItemSe
 
     qDebug() << "playlistSected:start";
 
-    clearSearchFilter();
-    clearGenreSelection();
-
     foreach (index, items)
     {
         //	Since only one item can be selected, return after 1st item
         const int i= index.row();
         const int j= index.column();
         const long playlistID= Context::instance()->getMainWindow()->ui.playlistList->model()->data(index.sibling(i,0)).toInt();
-        qDebug() << "playlistSected"
-            << ":i=" << i
-            << ":j=" << j
-            << ":playlistID=" << playlistID
-        ;
-        selectedPlaylistID=playlistID;
-        updateCurrentSongList();
+
+        SBID id;
+        id.sb_item_id=playlistID;
+        id.sb_item_type=SBID::sb_type_playlist;
+        Context::instance()->getSonglistScreenHandler()->showPlaylist(id);
         return;
     }
 }
@@ -230,10 +226,10 @@ Controller::resetSonglist()
 }
 
 void
-Controller::songlistCellDoubleClicked(const QModelIndex& i)
+Controller::openSonglistItem(const QModelIndex& i)
 {
     //	Find out what column has been double clicked -- call the appropriate ScreenHandler
-    Context::instance()->getSonglistScreenHandler()->songlistCellDoubleClicked(i);
+    Context::instance()->getSonglistScreenHandler()->openSonglistItem(i);
 }
 
 //PROTECTED:
@@ -255,30 +251,6 @@ Controller::keyPressEvent(QKeyEvent *event)
             qDebug() << SB_DEBUG_INFO;
             //	Catch escape key, blank searchEdit, playlist, genres
             resetSonglist();
-        }
-    }
-    else if(event->key()==Qt::Key_Return || event->key()==Qt::Key_Enter)
-    {
-        //	if genre has a selection, modify
-        const int st=getSelectedTab();
-        if(st==SB_TAB_PLAYLIST)
-        {
-            //	playlist tab
-            QItemSelectionModel* s=mw->ui.playlistList->selectionModel();
-
-            if(s->hasSelection()==1)
-            {
-                mw->ui.playlistList->edit(s->currentIndex());
-            }
-        }
-        else if(st==SB_TAB_GENRE)
-        {
-            //	genre tab
-            if(selectedGenres.count()==1)
-            {
-                QItemSelectionModel* s=mw->ui.genreList->selectionModel();
-                mw->ui.genreList->edit(s->currentIndex());
-            }
         }
     }
     else if(event->key()==76 && event->modifiers() & Qt::ControlModifier)
@@ -303,61 +275,63 @@ Controller::keyPressEvent(QKeyEvent *event)
 void
 Controller::updateCurrentSongList()
 {
-    SBModelSonglist* sm=Context::instance()->getSBModelSonglist();
+    return;
 
-    qDebug() << SB_DEBUG_INFO
-        << ":selectedPlaylistID=" << selectedPlaylistID
-        << ":selectedGenres=" << selectedGenres
-        << ":currentFilter=" << currentFilter
-    ;
-
-    //	If currentFilter is not empty, perform search.
-    //	This way, selected genre or playlist will be honored.
-    if(currentFilter.length()>0)
-    {
-        //	if search is to be performed, use SortFilterProxy model
-        if(doExactSearch==1)
-        {
-            slP->setFilterFixedString(currentFilter);
-        }
-        else
-        {
-            //	search for whole words.
-            QString s;
-            s=currentFilter.replace(" ","\\b)(?=[^\\r\\n]*\\b");
-            s="^(?=[^\\r\\n]*\\b"+s+"\\b)[^\\r\\n]*$";
-            qDebug() << "regexp=" << s;
-            QRegExp rx(s,Qt::CaseInsensitive);
-            slP->setFilterRegExp(rx);
-        }
-    }
-    else
-    {
-        //	What tab is selected (playlist, genres)
-        const int st=getSelectedTab();
-
-        //	If playlist or genre is selected, do requery of data.
-        if(st==SB_TAB_PLAYLIST && selectedPlaylistID!=-1)
-        {
-            //	playlist selected
-            clearGenreSelection();
-            clearSearchFilter();
-            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
-
-        }
-        else if(st==SB_TAB_GENRE && selectedGenres.count()>0)
-        {
-            //	one or more genres selected
-            clearPlaylistSelection();
-            clearSearchFilter();
-            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
-        }
-        else
-        {
-            //	refresh all
-            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
-        }
-    }
+//    SBModelSonglist* sm=Context::instance()->getSBModelSonglist();
+//
+//    qDebug() << SB_DEBUG_INFO
+//        << ":selectedPlaylistID=" << selectedPlaylistID
+//        << ":selectedGenres=" << selectedGenres
+//        << ":currentFilter=" << currentFilter
+//    ;
+//
+//    //	If currentFilter is not empty, perform search.
+//    //	This way, selected genre or playlist will be honored.
+//    if(currentFilter.length()>0)
+//    {
+//        //	if search is to be performed, use SortFilterProxy model
+//        if(doExactSearch==1)
+//        {
+//            slP->setFilterFixedString(currentFilter);
+//        }
+//        else
+//        {
+//            //	search for whole words.
+//            QString s;
+//            s=currentFilter.replace(" ","\\b)(?=[^\\r\\n]*\\b");
+//            s="^(?=[^\\r\\n]*\\b"+s+"\\b)[^\\r\\n]*$";
+//            qDebug() << "regexp=" << s;
+//            QRegExp rx(s,Qt::CaseInsensitive);
+//            slP->setFilterRegExp(rx);
+//        }
+//    }
+//    else
+//    {
+//        //	What tab is selected (playlist, genres)
+//        const int st=getSelectedTab();
+//
+//        //	If playlist or genre is selected, do requery of data.
+//        if(st==SB_TAB_PLAYLIST && selectedPlaylistID!=-1)
+//        {
+//            //	playlist selected
+//            clearGenreSelection();
+//            clearSearchFilter();
+//            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
+//
+//        }
+//        else if(st==SB_TAB_GENRE && selectedGenres.count()>0)
+//        {
+//            //	one or more genres selected
+//            clearPlaylistSelection();
+//            clearSearchFilter();
+//            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
+//        }
+//        else
+//        {
+//            //	refresh all
+//            sm->applyFilter(selectedPlaylistID,selectedGenres);//,currentFilter,doExactSearch);
+//        }
+//    }
     return;
 }
 
@@ -417,7 +391,7 @@ Controller::clearSearchFilter()
 bool
 Controller::openMainWindow(bool startup)
 {
-    qDebug() << "openMainWindow:start";
+    qDebug() << SB_DEBUG_INFO << "openMainWindow:start";
 
     //	Instantiate DatabaseSelector, check if database could be opened.
     DatabaseSelector* ds=new DatabaseSelector(startup);
@@ -427,21 +401,34 @@ Controller::openMainWindow(bool startup)
         //	no database opened upin startup.
         return 0;
     }
-    qDebug() << "openMainWindow:databaseChanged=" << ds->databaseChanged();
+    qDebug() << SB_DEBUG_INFO << "openMainWindow:databaseChanged=" << ds->databaseChanged();
 
     if(ds->databaseChanged() || startup)
     {
         MainWindow* oldMW=Context::instance()->getMainWindow();
 
+        qDebug() << SB_DEBUG_INFO;
+
         QProgressDialog p("Reading data...",QString(),0,8,oldMW);
         p.setWindowModality(Qt::WindowModal);
 
+        qDebug() << SB_DEBUG_INFO;
+
         p.setValue(0);
+
+        qDebug() << SB_DEBUG_INFO;
 
         initAttributes();
 
+        qDebug() << SB_DEBUG_INFO;
+
         SonglistScreenHandler* ssh=new SonglistScreenHandler();
+
+        qDebug() << SB_DEBUG_INFO;
+
         Context::instance()->setSonglistScreenHandler(ssh);
+
+        qDebug() << SB_DEBUG_INFO;
 
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         if(dal)
@@ -450,28 +437,38 @@ Controller::openMainWindow(bool startup)
             dal=NULL;
         }
 
+        qDebug() << SB_DEBUG_INFO;
         p.setValue(1);
+
+        qDebug() << SB_DEBUG_INFO;
         dal=ds->getDataAccessLayer();
         Context::instance()->setDataAccessLayer(dal);
 
+        qDebug() << SB_DEBUG_INFO;
         p.setValue(2);
 
         p.setValue(3);
+        qDebug() << SB_DEBUG_INFO;
         MainWindow* mw=new MainWindow();
         Context::instance()->setMainWindow(mw);
 
 
+        qDebug() << SB_DEBUG_INFO;
         p.setValue(4);
         resetAllFiltersAndSelections();
 
+        qDebug() << SB_DEBUG_INFO;
         p.setValue(5);
         setupModels();
 
+        qDebug() << SB_DEBUG_INFO;
         p.setValue(6);
         setupUI();
 
+        qDebug() << SB_DEBUG_INFO;
         configureMenus();
 
+        qDebug() << SB_DEBUG_INFO;
         mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
 
         qDebug() << SB_DEBUG_INFO;
@@ -502,14 +499,17 @@ void
 Controller::setupModels()
 {
     MainWindow* mw=Context::instance()->getMainWindow();
+    qDebug() << SB_DEBUG_INFO;
 
     //	songlist
-    SBModelSonglist* sm=Context::instance()->getDataAccessLayer()->getAllSongs();
+    SBModelSonglist* sm=SBModelSong::getAllSongs();
     Context::instance()->setSBModelSonglist(sm);
+    qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();
     slP->setSourceModel(sm);
     mw->ui.songList->setModel(slP);
+    qDebug() << SB_DEBUG_INFO;
 
     //	completer
     QCompleter* completer=new QCompleter(mw);
@@ -518,18 +518,21 @@ Controller::setupModels()
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     completer->setFilterMode(Qt::MatchContains);
     mw->ui.searchEdit->setCompleter(completer);
+    qDebug() << SB_DEBUG_INFO;
 
     //	playlist
     plm=Context::instance()->getDataAccessLayer()->getAllPlaylists();
     pllP=new QSortFilterProxyModel();
     pllP->setSourceModel(plm);
     mw->ui.playlistList->setModel(pllP);
+    qDebug() << SB_DEBUG_INFO;
 
     //	genre
     gm=Context::instance()->getDataAccessLayer()->getAllGenres();
     glP=new QSortFilterProxyModel();
     glP->setSourceModel(gm);
     mw->ui.genreList->setModel(glP);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -571,8 +574,8 @@ Controller::setupUI()
     connect(sm, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(songlistCellSelectionChanged(QItemSelection,QItemSelection)));
     //		capture double click to open detail page
-    connect(mw->ui.songList, SIGNAL(doubleClicked(QModelIndex)),
-            this, SLOT(songlistCellDoubleClicked(QModelIndex)));
+    connect(mw->ui.songList, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(openSonglistItem(QModelIndex)));
 
     ///	COMPLETER
 
@@ -617,7 +620,7 @@ Controller::setupUI()
     sm=mw->ui.playlistList->selectionModel();
     connect(
         sm, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
-        this, SLOT(applyPlaylistSelection(const QItemSelection &,const QItemSelection &)));
+        this, SLOT(openPlaylist(const QItemSelection &,const QItemSelection &)));
 
     ///	GENRE
 
@@ -706,8 +709,7 @@ Controller::setupUI()
     connect(mw->ui.playlistGenreTab,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
 
     tabChanged(SB_TAB_PLAYLIST);
-    mw->ui.songDetailLists->setCurrentIndex(0);
-    mw->ui.songDetailLyricsTabsTab->setCurrentIndex(0);
+    mw->ui.tabSongDetailLists->setCurrentIndex(0);
 
     Context::instance()->getSonglistScreenHandler()->showSonglist();
     return;

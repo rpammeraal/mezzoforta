@@ -6,7 +6,10 @@
 #include "ScreenStack.h"
 
 class QTableView;
+class QNetworkReply;
 class SBID;
+class SBModelSonglist;
+
 
 class SonglistScreenHandler : public QObject
 {
@@ -14,25 +17,43 @@ class SonglistScreenHandler : public QObject
 
 public:
     SonglistScreenHandler();
-    SonglistScreenHandler(SonglistScreenHandler const&);
-    void operator=(SonglistScreenHandler const&);
     ~SonglistScreenHandler();
 
     SBID activateTab(const SBID& id);
     void moveTab(int direction);
     void pushScreen(SBID& id);
+    SBID populateAlbumDetail(const SBID& id);
+    SBID populatePerformerDetail(const SBID& id);
+    SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
-    int populateTableView(QTableView* tv, QString& query, int initialSortColumn);
+    int populateTableView(QTableView* tv, SBModelSonglist* sl, int initialSortColumn);
+    void setAlbumCoverUnavailable();
 
+    //	methods called from outside
+    void showPlaylist(SBID id);
+    void showSonglist();
 
 public slots:
-    void showSonglist();
-    void songlistCellDoubleClicked(const QModelIndex& i);
+    void albumCoverImagedataRetrieved(QNetworkReply *r);
+    void albumCoverMetadataRetrieved(QNetworkReply *r);
+    void albumDetailSonglistSelected(const QModelIndex& i);
+    void performerDetailAlbumlistSelected(const QModelIndex& i);
+    void performerDetailSonglistSelected(const QModelIndex& i);
+    void openSonglistItem(const QModelIndex& i);
+    void playlistCellClicked(const QModelIndex& i);
+    void songDetailAlbumlistSelected(const QModelIndex& i);
+    void songDetailPlaylistSelected(const QModelIndex& i);
     void tabBackward();
     void tabForward();
+    void setFocus();
 
 private:
     ScreenStack st;
+
+    SBID albumCoverID;
+
+    void loadAlbumCover(const SBID &id);
+    void openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
 };
 
 #endif // SONGLISTSCREENHANDLER_H

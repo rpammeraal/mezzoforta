@@ -16,19 +16,27 @@ SBID::SBID(QByteArray encodedData)
     QDataStream ds(&encodedData, QIODevice::ReadOnly);
     int i;
     ds
-        >> sb_artist_id
-        >> sb_record_id
-        >> sb_record_position
-        >> sb_song_id
+        >> sb_performer_id1
+        >> sb_album_id1
+        >> sb_album_position
+        >> sb_chart_id1
+        >> sb_song_id1
+        >> sb_playlist_id1
         >> i
-        >> artistName
-        >> recordTitle
+        >> performerName
+        >> albumTitle
         >> songTitle
         >> year
         >> lyrics
         >> notes
+        >> genre
+        >> url
+        >> playlistName
+        >> count1
+        >> count2
+        >> duration
     ;
-    sb_type_id=static_cast<sb_type>(i);
+    sb_item_type=static_cast<sb_type>(i);
 }
 
 SBID::~SBID()
@@ -37,37 +45,60 @@ SBID::~SBID()
 }
 
 bool
-SBID::operator ==(const SBID& i)
+SBID::operator ==(const SBID& i) const
 {
-    if(i.sb_type_id!=this->sb_type_id)
+    if(i.sb_item_type==this->sb_item_type && i.sb_item_id==this->sb_item_id)
     {
-        return 0;
-    }
-
-    switch(i.sb_type_id)
-    {
-        case SBID::sb_type_none:
-            return 1;
-
-        case SBID::sb_type_song:
-            return
-                (this->sb_artist_id==i.sb_artist_id) &&
-                (this->sb_record_id==i.sb_record_id) &&
-                (this->sb_record_position==i.sb_record_position) &&
-                (this->sb_song_id==i.sb_song_id);
-        case SBID::sb_type_artist:
-            return (this->sb_artist_id==i.sb_artist_id);
-
-        case SBID::sb_type_album:
-            return (this->sb_record_id==i.sb_record_id);
-
-        case SBID::sb_type_chart:
-        case SBID::sb_type_playlist:
-        default:
-            qDebug() << SB_DEBUG_INFO << "********************* SB_TYPE NOT HANDLED";
-            return 0;
+        return 1;
     }
     return 0;
+}
+
+bool
+SBID::fuzzyMatch(const SBID &i)
+{
+    bool match=1;
+    if(this->albumTitle.count()!=i.albumTitle.count() || this->albumTitle.toLower()!=i.albumTitle.toLower())
+    {
+        match=0;
+    }
+    if(this->performerName.count()!=i.performerName.count() || this->performerName.toLower()!=i.performerName.toLower())
+    {
+        match=0;
+    }
+
+    return match;
+}
+
+void
+SBID::assign(const QString& it, int id)
+{
+    init();
+    sb_item_id=id;
+    if(it=="SB_SONG_TYPE")
+    {
+        sb_item_type=SBID::sb_type_song;
+    }
+    else if(it=="SB_PERFORMER_TYPE")
+    {
+        sb_item_type=SBID::sb_type_performer;
+    }
+    else if(it=="SB_ALBUM_TYPE")
+    {
+        sb_item_type=SBID::sb_type_album;
+    }
+    else if(it=="SB_CHART_TYPE")
+    {
+        sb_item_type=SBID::sb_type_chart;
+    }
+    else if(it=="SB_PLAYLIST_TYPE")
+    {
+        sb_item_type=SBID::sb_type_playlist;
+    }
+    else
+    {
+        sb_item_type=SBID::sb_type_none;
+    }
 }
 
 QByteArray
@@ -77,17 +108,25 @@ SBID::encode() const
     QDataStream ds(&encodedData, QIODevice::WriteOnly);
 
     ds
-        << sb_artist_id
-        << sb_record_id
-        << sb_record_position
-        << sb_song_id
-        << (int)sb_type_id
-        << artistName
-        << recordTitle
+        << sb_performer_id1
+        << sb_album_id1
+        << sb_album_position
+        << sb_chart_id1
+        << sb_song_id1
+        << sb_playlist_id1
+        << (int)sb_item_type
+        << performerName
+        << albumTitle
         << songTitle
         << year
         << lyrics
         << notes
+        << genre
+        << url
+        << playlistName
+        << count1
+        << count2
+        << duration
     ;
 
     return encodedData;
@@ -96,19 +135,22 @@ SBID::encode() const
 QString
 SBID::getScreenTitle() const
 {
-    switch(sb_type_id)
+    switch(sb_item_type)
     {
     case SBID::sb_type_none:
         return QString("Your Songs");
 
+    case SBID::sb_type_album:
+        return albumTitle;
+
+    case SBID::sb_type_performer:
+        return performerName;
+
+    case SBID::sb_type_playlist:
+        return playlistName;
+
     case SBID::sb_type_song:
         return songTitle;
-
-    case SBID::sb_type_artist:
-        return artistName;
-
-    case SBID::sb_type_album:
-        return recordTitle;
     }
     return QString("SBID::getScreenTitle UNDEFINED");
 }
@@ -116,63 +158,72 @@ SBID::getScreenTitle() const
 void
 SBID::init()
 {
-    sb_artist_id=0;
-    sb_record_id=0;
-    sb_record_position=0;
-    sb_song_id=0;
-    sb_type_id=sb_type_none;
-    artistName="";
-    recordTitle="";
+    sb_performer_id1=0;
+    sb_album_id1=0;
+    sb_album_position=0;
+    sb_chart_id1=0;
+    sb_playlist_id1=0;
+    sb_song_id1=0;
+    sb_item_type=sb_type_none;
+    performerName="";
+    albumTitle="";
     songTitle="";
     year=0;
     lyrics="";
     notes="";
+    genre="";
+    url="";
+    playlistName="";
+    count1=0;
+    count2=0;
+    duration="";
 }
 
 QDebug operator<<(QDebug dbg, const SBID& id)
 {
     dbg.nospace() << "SBID"
-        << ":sb_artist_id=" << id.sb_artist_id
-        << ":artistName=" << id.artistName
-        << ":sb_record_id=" << id.sb_record_id
-        << ":recordTitle=" << id.recordTitle
-        << ":sb_record_position=" << id.sb_record_position
-        << ":sb_song_id=" << id.sb_song_id
-        << ":songTitle=" << id.songTitle
-        << ":year=" << id.year
+        << ":sb_item_id=" << id.sb_item_id
     ;
 
     const char* s;
-    switch(id.sb_type_id)
+    QString t;
+
+    switch(id.sb_item_type)
     {
     case SBID::sb_type_none:
         s="none";
+        t="";
         break;
 
     case SBID::sb_type_song:
         s="song";
+        t=id.songTitle;
         break;
 
-    case SBID::sb_type_artist:
-        s="artist";
+    case SBID::sb_type_performer:
+        s="performer";
+        t=id.performerName;
         break;
 
     case SBID::sb_type_album:
         s="album";
+        t=id.albumTitle;
         break;
 
     case SBID::sb_type_chart:
         s="chart";
+        t="";
         break;
 
     case SBID::sb_type_playlist:
-        s="None";
+        t=id.playlistName;
+        s="playlist";
         break;
 
     default:
         s="Unknown";
     }
-    dbg.nospace()  << ":sb_type_id=" << s;
+    dbg.nospace()  << ":sb_item_type=" << s << t;
 
     return dbg.space();
 }

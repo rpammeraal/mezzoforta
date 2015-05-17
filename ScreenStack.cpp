@@ -17,74 +17,129 @@ void
 ScreenStack::clear()
 {
     init();
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID << "count=" << stack.count();
 }
 
 void
 ScreenStack::pushScreen(const SBID& id)
 {
-    bool p=0;
+    debugShow("start pushScreen");
+
+    bool doPush=0;
 
     if(stack.count()==0)
     {
-        p=1;
+        doPush=1;
     }
     else
     {
         SBID current=currentScreen();
+        qDebug() << SB_DEBUG_INFO << "current=" << current;
+        qDebug() << SB_DEBUG_INFO << "id=" << id;
         if(!(current==id))
         {
-            p=1;
+            doPush=1;
+            while(getCurrentScreenID()+1<=getScreenCount()-1)
+            {
+                qDebug() << SB_DEBUG_INFO << getCurrentScreenID() << getScreenCount();
+                debugShow("before popScreen");
+                popScreen();
+                debugShow("after popScreen");
+            }
         }
     }
 
-    if(p)
+    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+    if(doPush)
     {
         stack.append(id);
         currentScreenID++;
     }
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID << "count=" << stack.count();
+    debugShow("end pushScreen");
+    qDebug() << SB_DEBUG_INFO << "end" << getCurrentScreenID() << getScreenCount();
 }
 
-const SBID&
+SBID
+ScreenStack::popScreen()
+{
+    qDebug() << SB_DEBUG_INFO << getCurrentScreenID() << getScreenCount();
+
+        qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+    SBID id;
+
+        qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+    if(stack.isEmpty()==0)
+    {
+        qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+        id=currentScreen();
+        qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+        stack.removeLast();
+        qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID;
+
+        if(currentScreenID>getScreenCount()-1)
+        {
+            currentScreenID=getScreenCount()-1;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << getCurrentScreenID() << getScreenCount();
+    return id;
+}
+
+SBID
 ScreenStack::currentScreen()
 {
-    return stack.at(currentScreenID);
+    SBID id;
+
+    if(stack.isEmpty()==0)
+    {
+        id=stack.at(currentScreenID);
+    }
+    qDebug() << SB_DEBUG_INFO << id;
+    return id;
 }
 
-const SBID&
+SBID
 ScreenStack::nextScreen()
 {
-    if(currentScreenID+1<stack.length())
+    qDebug() << SB_DEBUG_INFO << getCurrentScreenID() << getScreenCount();
+
+    SBID id;
+
+    if(stack.isEmpty()==0)
     {
-        currentScreenID++;
+        if(currentScreenID+1<stack.length())
+        {
+            currentScreenID++;
+        }
+        id=stack.at(currentScreenID);
     }
-    return stack.at(currentScreenID);
+    return id;
 }
 
-const SBID&
+SBID
 ScreenStack::previousScreen()
 {
-    debugShow();
-    qDebug() << SB_DEBUG_INFO << "**************************************************************";
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID << "count=" << stack.count();
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << stack.at(currentScreenID);
-    currentScreenID--;
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << stack.at(currentScreenID);
-    return stack.at(currentScreenID);
+    qDebug() << SB_DEBUG_INFO << getCurrentScreenID() << getScreenCount();
+
+    SBID id;
+
+    if(currentScreenID>0)
+    {
+        currentScreenID--;
+        id=stack.at(currentScreenID);
+    }
+    debugShow("end previousScreen");
+    return id;
 }
 
 int
 ScreenStack::getCurrentScreenID() const
 {
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID << "count=" << stack.count();
     return currentScreenID;
 }
 
 int
 ScreenStack::getScreenCount() const
 {
-    qDebug() << SB_DEBUG_INFO << "currentScreenID=" << currentScreenID << "count=" << stack.count();
     return stack.length();
 }
 
@@ -97,10 +152,18 @@ ScreenStack::init()
 }
 
 void
-ScreenStack::debugShow()
+ScreenStack::debugShow(const QString& c)
 {
+    qDebug() << SB_DEBUG_INFO << "*************:start debugShow()" << c << "curr=" << getCurrentScreenID() << "cnt=" << getScreenCount();
     for(int i=0; i<stack.size(); i++)
     {
-        qDebug() << SB_DEBUG_INFO << stack.at(i);
+        if(currentScreenID==i)
+        {
+            qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i).performerName << stack.at(i).albumTitle << stack.at(i).songTitle;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i).performerName << stack.at(i).albumTitle << stack.at(i).songTitle;
+        }
     }
 }

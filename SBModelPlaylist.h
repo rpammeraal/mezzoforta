@@ -4,12 +4,19 @@
 #include "SBModel.h"
 
 class DataAccessLayer;
+class SBModelSonglist;
 
 class SBModelPlaylist : public SBModel
 {
     Q_OBJECT
 
 public:
+    //	new
+    static SBID getDetail(const SBID& id);
+    static SBModelSonglist* getAllItemsByPlaylist(const SBID& id);
+
+    //	old
+
     SBModelPlaylist();
     ~SBModelPlaylist();
 

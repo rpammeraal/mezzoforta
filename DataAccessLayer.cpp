@@ -9,6 +9,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "SBModelPlaylist.h"
+#include "SBModelSong.h"
 #include "SBModelSonglist.h"
 #include "SBModelGenrelist.h"
 
@@ -95,7 +96,7 @@ DataAccessLayer::setSchema(const QString &newSchema)
     if(getAvailableSchemas().contains(newSchema))
     {
         _schemaName=newSchema;
-        emit schemaChanged();
+        //emit schemaChanged();
         rc=1;
 
     }
@@ -141,13 +142,13 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
-SBModelSonglist*
-DataAccessLayer::getAllSongs()
-{
-    SBModelSonglist* n=new SBModelSonglist();
-    connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
-    return n;
-}
+//SBModelSonglist*
+//DataAccessLayer::getAllSongs()
+//{
+    //SBModelSonglist* n=SBModelSong::getSongList();
+    //connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
+    //return n;
+//}
 
 SBModelPlaylist*
 DataAccessLayer::getAllPlaylists()

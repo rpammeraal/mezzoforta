@@ -42,7 +42,7 @@ public slots:
 
     //	Apply filters and selections
     void applySongListFilter(const QString& filter="");
-    void applyPlaylistSelection(const QItemSelection &selected, const QItemSelection &deselected);
+    void openPlaylist(const QItemSelection &selected, const QItemSelection &deselected);
     void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void changeSchema(const QString& newSchema);
     void songlistCellSelectionChanged(const QItemSelection &s, const QItemSelection& o);
@@ -56,7 +56,7 @@ public slots:
 
 public slots:
     void resetSonglist();
-    void songlistCellDoubleClicked(const QModelIndex& i);
+    void openSonglistItem(const QModelIndex& i);
 
 protected:
     virtual void keyPressEvent(QKeyEvent * event);
@@ -95,7 +95,6 @@ private:
     QSortFilterProxyModel* glP;
 
     //	Keep track of models, so we can change the data underneath
-    //SBModelSonglist* sm;
     SBModelPlaylist* plm;
     SBModelGenrelist* gm;
 };

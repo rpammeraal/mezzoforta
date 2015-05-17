@@ -19,10 +19,11 @@ public:
 
     void clear();
     void pushScreen(const SBID& id);
+    SBID popScreen();
 
-    const SBID& currentScreen();
-    const SBID& nextScreen();
-    const SBID& previousScreen();
+    SBID currentScreen();
+    SBID nextScreen();
+    SBID previousScreen();
 
     int getCurrentScreenID() const;
     int getScreenCount() const;
@@ -32,7 +33,7 @@ private:
     QList<SBID> stack;
 
     void init();
-    void debugShow();
+    void debugShow(const QString& c);
 };
 
 #endif // SCREENSTACK_H

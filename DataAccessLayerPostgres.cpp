@@ -9,10 +9,14 @@ DataAccessLayerPostgres::DataAccessLayerPostgres()
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const QString& connectionName) : DataAccessLayer(connectionName)
 {
+    qDebug() << SB_DEBUG_INFO;
+
     initAvailableSchemas();
     setILike("ILIKE");
     setIsNull("COALESCE");
     setGetDate("NOW()");
+
+    qDebug() << SB_DEBUG_INFO;
 }
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const DataAccessLayerPostgres &c) : DataAccessLayer(c)

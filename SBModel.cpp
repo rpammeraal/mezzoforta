@@ -10,7 +10,6 @@
 
 SBModel::SBModel()
 {
-    qDebug() << SB_DEBUG_INFO;
 }
 
 SBModel::~SBModel()
@@ -33,7 +32,6 @@ SBModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, 
 bool
 SBModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(parent.row()==-1)
     {
         return false;
@@ -107,7 +105,6 @@ bool
 SBModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     Q_UNUSED(value);
-    qDebug() << SB_DEBUG_INFO;
     QVector<int> v;
     v.append(role);
     emit dataChanged(index,index, v);
@@ -127,7 +124,6 @@ void
 SBModel::handleSQLError() const
 {
     QSqlError e=this->lastError();
-    qDebug() << SB_DEBUG_INFO << e;
     if(e.isValid()==1 || e.type()!=QSqlError::NoError)
     {
         qDebug() << e.text();

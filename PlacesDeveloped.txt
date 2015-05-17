@@ -22,14 +22,23 @@ McGregor Test Site (20150418):
 -	Header w/ dropdown for postgresql schemas (find out way to refresh views)
 -	Refactoring of classes, subclassing of QSqlQueryModel to prepare for drag & drop
 -	based on selected cell in song, sbid should be populated accordingly -- if record is selected, only populate record_id
--	title tab not populated with song title
-<current>
+
+5/16:
+-	created all detail screens for all entities except charts
+-	refactor SBModel* classes almost complete
+-	status bar
+-	SBID class simplified -- in future subclass all non-essential stuff to SBIDExtended
+-	initial support for album artwork and loading performer home page
+
+<for next demo>
+-	redo playlist/genre tab to tree structure
+-	revamp search functionality
+-	fix context menu
+
 <future>
--
 -	Drag & drop
 -	Updates to playlist, genres
 -	context menu fails
--	status bar
 
 todo:
 -	QCompleter needs to be made context sensitive of playlist or genre selected.
