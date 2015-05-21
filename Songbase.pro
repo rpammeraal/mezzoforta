@@ -19,7 +19,8 @@ HEADERS     = \
     SBModelSong.h \
     SBModelAlbum.h \
     SBModelPerformer.h \
-    SBIDExtended.h
+    SBIDExtended.h \
+    LeftColumnChooser.h
 
 SOURCES     = \
     main.cpp \
@@ -41,7 +42,8 @@ SOURCES     = \
     SBModelSong.cpp \
     SBModelAlbum.cpp \
     SBModelPerformer.cpp \
-    SBIDExtended.cpp
+    SBIDExtended.cpp \
+    LeftColumnChooser.cpp
 
 # install
 target.path = .

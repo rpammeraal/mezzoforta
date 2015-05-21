@@ -59,11 +59,6 @@ public:
     QString getDriverName() const;
 
     //	Services
-    //SBModelSonglist* getAllSongs();
-    SBModelPlaylist* getAllPlaylists();
-        //	col0:	playlistID
-        //	col1:	name
-        //	col2:	duration
     SBModelGenrelist* getAllGenres();
 
     QString updateGenre(QModelIndex i);

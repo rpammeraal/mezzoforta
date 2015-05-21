@@ -5,6 +5,7 @@
         <file alias="nobandphoto.png">resources/NoBandPhoto.png</file>
         <file alias="PlaylistIcon.png">resources/PlaylistIcon.png</file>
         <file alias="SongIcon.png">resources/SongIcon.png</file>
+        <file alias="AllSongs.png">resources/AllSongs.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file alias="default">resources/default.qss</file>

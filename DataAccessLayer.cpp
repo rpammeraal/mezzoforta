@@ -142,22 +142,6 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
-//SBModelSonglist*
-//DataAccessLayer::getAllSongs()
-//{
-    //SBModelSonglist* n=SBModelSong::getSongList();
-    //connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
-    //return n;
-//}
-
-SBModelPlaylist*
-DataAccessLayer::getAllPlaylists()
-{
-    SBModelPlaylist* n=new SBModelPlaylist();
-    connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
-    return n;
-}
-
 SBModelGenrelist*
 DataAccessLayer::getAllGenres()
 {
@@ -215,9 +199,27 @@ QSqlQueryModel*
 DataAccessLayer::getCompleterModel()
 {
     QString query=
-        "SELECT DISTINCT title FROM ___SB_SCHEMA_NAME___song UNION "
-        "SELECT DISTINCT title FROM ___SB_SCHEMA_NAME___record UNION "
-        "SELECT DISTINCT name  FROM ___SB_SCHEMA_NAME___artist";
+        "SELECT DISTINCT "
+            "s.title || ' - song', "
+            "s.song_id AS SB_ITEM_ID, "
+            "'SB_SONG_TYPE' AS SB_TYPE_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+        "UNION "
+        "SELECT DISTINCT "
+            "r.title || ' - record', "
+            "r.record_id AS SB_ITEM_ID, "
+            "'SB_ALBUM_TYPE' AS SB_TYPE_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___record r "
+        "UNION "
+        "SELECT DISTINCT "
+            "a.name || ' - artist', "
+            "a.artist_id, "
+            "'SB_PERFORMER_TYPE' AS SB_TYPE_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist a "
+        "ORDER BY 1 ";
 
     this->customize(query);
     QSqlQueryModel* model = new QSqlQueryModel();

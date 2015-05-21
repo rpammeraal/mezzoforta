@@ -9,6 +9,15 @@ SBID::SBID()
     init();
 }
 
+SBID::SBID(SBID::sb_type type, int id)
+{
+    init();
+    qDebug() << SB_DEBUG_INFO << type << id;
+    sb_item_type=type;
+    sb_item_id=id;
+    qDebug() << SB_DEBUG_INFO << this->sb_item_type << this->sb_item_id;
+}
+
 SBID::SBID(QByteArray encodedData)
 {
     init();
@@ -35,6 +44,7 @@ SBID::SBID(QByteArray encodedData)
         >> count1
         >> count2
         >> duration
+        >> searchCriteria
     ;
     sb_item_type=static_cast<sb_type>(i);
 }
@@ -47,7 +57,10 @@ SBID::~SBID()
 bool
 SBID::operator ==(const SBID& i) const
 {
-    if(i.sb_item_type==this->sb_item_type && i.sb_item_id==this->sb_item_id)
+    if(
+        i.sb_item_type==this->sb_item_type &&
+        i.sb_item_id==this->sb_item_id &&
+        i.searchCriteria==this->searchCriteria)
     {
         return 1;
     }
@@ -97,7 +110,7 @@ SBID::assign(const QString& it, int id)
     }
     else
     {
-        sb_item_type=SBID::sb_type_none;
+        sb_item_type=SBID::sb_type_invalid;
     }
 }
 
@@ -127,32 +140,10 @@ SBID::encode() const
         << count1
         << count2
         << duration
+        << searchCriteria
     ;
 
     return encodedData;
-}
-
-QString
-SBID::getScreenTitle() const
-{
-    switch(sb_item_type)
-    {
-    case SBID::sb_type_none:
-        return QString("Your Songs");
-
-    case SBID::sb_type_album:
-        return albumTitle;
-
-    case SBID::sb_type_performer:
-        return performerName;
-
-    case SBID::sb_type_playlist:
-        return playlistName;
-
-    case SBID::sb_type_song:
-        return songTitle;
-    }
-    return QString("SBID::getScreenTitle UNDEFINED");
 }
 
 void
@@ -164,7 +155,8 @@ SBID::init()
     sb_chart_id1=0;
     sb_playlist_id1=0;
     sb_song_id1=0;
-    sb_item_type=sb_type_none;
+    sb_item_type=sb_type_invalid;
+    sb_item_id=-1;
     performerName="";
     albumTitle="";
     songTitle="";
@@ -177,6 +169,7 @@ SBID::init()
     count1=0;
     count2=0;
     duration="";
+    searchCriteria="";
 }
 
 QDebug operator<<(QDebug dbg, const SBID& id)
@@ -190,9 +183,9 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 
     switch(id.sb_item_type)
     {
-    case SBID::sb_type_none:
-        s="none";
-        t="";
+    case SBID::sb_type_invalid:
+        s="INVALID";
+        t="n/a";
         break;
 
     case SBID::sb_type_song:
@@ -220,10 +213,21 @@ QDebug operator<<(QDebug dbg, const SBID& id)
         s="playlist";
         break;
 
+    case SBID::sb_type_allsongs:
+        t="n/a";
+        s="allsongs";
+        break;
+
+    case SBID::sb_type_songsearch:
+        t=id.searchCriteria;
+        s="songsearch";
+        break;
+
     default:
+        t="n/a";
         s="Unknown";
     }
-    dbg.nospace()  << ":sb_item_type=" << s << t;
+    dbg.nospace()  << ":sb_item_type=" << s << ":value=" << t;
 
     return dbg.space();
 }

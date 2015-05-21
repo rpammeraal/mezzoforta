@@ -41,11 +41,20 @@ SBID
 SonglistScreenHandler::activateTab(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO << id;
+    if(id.sb_item_type==SBID::sb_type_invalid)
+    {
+        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
+        return id;
+    }
+
     const MainWindow* mw=Context::instance()->getMainWindow();
     QWidget* tab=NULL;
     SBID result;
 
-    mw->ui.songlistTab->removeTab(0);
+    while(mw->ui.songlistTab->currentIndex()!=-1)
+    {
+        mw->ui.songlistTab->removeTab(0);
+    }
 
     switch(id.sb_item_type)
     {
@@ -69,13 +78,21 @@ SonglistScreenHandler::activateTab(const SBID& id)
         result=populatePlaylistDetail(id);
         break;
 
-    case SBID::sb_type_none:
+
+    case SBID::sb_type_songsearch:
+    case SBID::sb_type_allsongs:
+        result=id;
         tab=mw->ui.tabAllSongs;
+        filterSongs(id);
         break;
+
+    default:
+        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type;
     }
 
     qDebug() << SB_DEBUG_INFO << result;
-    mw->ui.songlistTab->insertTab(0,tab,result.getScreenTitle());
+    mw->ui.searchEdit->setText(id.searchCriteria);
+    mw->ui.songlistTab->insertTab(0,tab,QString(""));
 
     return result;
 }
@@ -122,18 +139,23 @@ SonglistScreenHandler::moveTab(int direction)
 }
 
 ///
-/// \brief SonglistScreenHandler::pushScreen
+/// \brief SonglistScreenHandler::openScreenByID
 /// \param id
 ///
-/// pushScreen() populates the appropriate screen and pushes
+/// openScreenByID() populates the appropriate screen and pushes
 /// this screen on stack.
 ///
 void
-SonglistScreenHandler::pushScreen(SBID &id)
+SonglistScreenHandler::openScreenByID(SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO << id;
     SBID result;
 
-    qDebug() << SB_DEBUG_INFO << id;
+    if(id.sb_item_type==SBID::sb_type_invalid)
+    {
+        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
+        return;
+    }
 
     if(st.getScreenCount() && id==st.currentScreen())
     {
@@ -198,6 +220,39 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     //	Reset album cover image
     loadAlbumCover(result);
     return result;
+}
+
+void
+SonglistScreenHandler::filterSongs(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO << id;
+    QString labelAllSongDetailAllSongsText="Your Songs";
+    QString labelAllSongDetailNameText="All Songs";
+
+    //	Apply filter here
+    QRegExp re;
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
+    m->setFilterKeyColumn(0);
+
+    //	Prepare filter
+    //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
+    QString filter=id.searchCriteria;
+    re=QRegExp();
+    if(filter.length()>0)
+    {
+        filter.replace(QRegExp("^\\s+")," "); //	replace multiple ws with 1 space
+        filter.replace(" ",")(?=[^\r\n]*");	  //	use lookahead to match all criteria
+        filter="^(?=[^\r\n]*"+filter+")[^\r\n]*$";
+
+        //	Apply filter
+        re=QRegExp(filter,Qt::CaseInsensitive);
+        labelAllSongDetailAllSongsText="Search Results for:";
+        labelAllSongDetailNameText=id.searchCriteria;
+    }
+    mw->ui.labelAllSongDetailAllSongs->setText(labelAllSongDetailAllSongsText);
+    mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);
+    m->setFilterRegExp(re);
 }
 
 SBID
@@ -304,6 +359,8 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     sl=SBModelSong::getPerformedByListBySong(id);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabSongDetailLists->setTabEnabled(0,rowCount>0);
+    connect(tv, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(songDetailPerformerlistSelected(QModelIndex)));
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
@@ -334,7 +391,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     }
     mw->ui.tabSongDetailLists->setTabEnabled(4,result.lyrics.length()>0);
     //	Reset tab selections
-    mw->ui.playlistGenreTab->setCurrentIndex(0);
+    //mw->ui.playlistGenreTab->setCurrentIndex(0);
 
     //	Remove current, add new
     return result;
@@ -385,7 +442,7 @@ SonglistScreenHandler::setAlbumCoverUnavailable()
 void
 SonglistScreenHandler::showPlaylist(SBID id)
 {
-    pushScreen(id);
+    openScreenByID(id);
 }
 
 void
@@ -399,10 +456,10 @@ SonglistScreenHandler::showSonglist()
     }
 
     SBID id;
-    id.sb_item_type=SBID::sb_type_none;
+    id.sb_item_type=SBID::sb_type_allsongs;
 
     qDebug() << SB_DEBUG_INFO;
-    pushScreen(id);
+    openScreenByID(id);
 }
 
 
@@ -520,6 +577,18 @@ SonglistScreenHandler::albumDetailSonglistSelected(const QModelIndex &i)
 }
 
 void
+SonglistScreenHandler::applySonglistFilter()
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
+    SBID id;
+    id.sb_item_type=SBID::sb_type_songsearch;
+    id.searchCriteria=mw->ui.searchEdit->text();
+    qDebug() << SB_DEBUG_INFO << id;
+    openScreenByID(id);
+}
+
+void
 SonglistScreenHandler::performerDetailAlbumlistSelected(const QModelIndex &i)
 {
     openFromTableView(i,1,SBID::sb_type_album);
@@ -532,6 +601,13 @@ SonglistScreenHandler::performerDetailSonglistSelected(const QModelIndex &i)
 }
 
 //	Used from big song list
+void
+SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
+{
+    SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+    openScreenByID(id);
+}
+
 void
 SonglistScreenHandler::openSonglistItem(const QModelIndex& i)
 {
@@ -558,7 +634,7 @@ SonglistScreenHandler::openSonglistItem(const QModelIndex& i)
     }
 
     qDebug() << SB_DEBUG_INFO << id;
-    pushScreen(id);
+    openScreenByID(id);
 }
 
 void
@@ -575,7 +651,7 @@ SonglistScreenHandler::playlistCellClicked(const QModelIndex& i)
 
     if(i.column()==3)
     {
-        pushScreen(id);
+        openScreenByID(id);
     }
 }
 
@@ -587,10 +663,19 @@ SonglistScreenHandler::songDetailAlbumlistSelected(const QModelIndex &i)
     switch(i.column())
     {
     case 1:
-        return openFromTableView(i,1,SBID::sb_type_album);
+        return openFromTableView(i,i.column(),SBID::sb_type_album);
 
     case 4:
-        return openFromTableView(i,4,SBID::sb_type_performer);
+        return openFromTableView(i,i.column(),SBID::sb_type_performer);
+    }
+}
+
+void
+SonglistScreenHandler::songDetailPerformerlistSelected(const QModelIndex &i)
+{
+    if(i.column()==1)
+    {
+        return openFromTableView(i,i.column(),SBID::sb_type_performer);
     }
 }
 
@@ -653,7 +738,7 @@ SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_ty
         qDebug() << ' ';
         qDebug() << SB_DEBUG_INFO << "######################################################################";
         qDebug() << SB_DEBUG_INFO << i.column() << id;
-        pushScreen(id);
+        openScreenByID(id);
     }
 }
 

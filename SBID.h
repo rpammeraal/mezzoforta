@@ -11,13 +11,22 @@ class SBID
 public:
     enum sb_type
     {
-        sb_type_none=0,
+        sb_type_invalid=0,
         sb_type_song=1,
         sb_type_performer=2,
         sb_type_album=3,
         sb_type_chart=4,
-        sb_type_playlist=5
+        sb_type_playlist=5,
+
+        sb_type_allsongs=100,
+        sb_type_songsearch=101
     };
+
+    SBID();
+    SBID(SBID::sb_type type, int id);
+    SBID(QByteArray encodedData);
+    ~SBID();
+
 
     int     sb_performer_id1;
     int     sb_album_id1;
@@ -37,19 +46,17 @@ public:
     QString notes;
     QString performerName;
     QString playlistName;
+    QString searchCriteria;
     QString songTitle;
     QString url;
     int     year;
 
-    SBID();
-    SBID(QByteArray encodedData);
-    ~SBID();
+
     bool operator==(const SBID& i) const;
     bool fuzzyMatch(const SBID& i);
     void assign(const QString& it,int id);
 
     QByteArray encode() const;
-    QString getScreenTitle() const;
 
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 

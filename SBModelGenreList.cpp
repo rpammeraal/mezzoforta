@@ -123,7 +123,7 @@ SBID::sb_type
 SBModelGenrelist::getSBType(int column) const
 {
     Q_UNUSED(column);
-    return SBID::sb_type_none;
+    return SBID::sb_type_invalid;
 }
 
 void

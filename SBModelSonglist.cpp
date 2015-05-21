@@ -10,24 +10,17 @@ SBModelSonglist::SBModelSonglist(const QString& query) : SBModel ()
 {
     QString q=query;
 
-    qDebug() << SB_DEBUG_INFO;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    qDebug() << SB_DEBUG_INFO;
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO;
     QSqlQueryModel::clear();
-    qDebug() << SB_DEBUG_INFO;
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
 
-    qDebug() << SB_DEBUG_INFO << q;
     while(QSqlQueryModel::canFetchMore())
     {
-    qDebug() << SB_DEBUG_INFO;
         QSqlQueryModel::fetchMore();
     }
     handleSQLError();
-    qDebug() << SB_DEBUG_INFO;
 }
 
 SBModelSonglist::~SBModelSonglist()
@@ -48,7 +41,7 @@ SBModelSonglist::getSBType(int column) const
         case 2:
             return SBID::sb_type_song;
     }
-    return SBID::sb_type_none;
+    return SBID::sb_type_invalid;
 }
 
 const char*
