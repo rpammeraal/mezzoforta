@@ -32,6 +32,8 @@ SBID::SBID(QByteArray encodedData)
         >> sb_song_id1
         >> sb_playlist_id1
         >> i
+        >> sb_item_id
+        >> sb_mbid
         >> performerName
         >> albumTitle
         >> songTitle
@@ -51,36 +53,6 @@ SBID::SBID(QByteArray encodedData)
 
 SBID::~SBID()
 {
-
-}
-
-bool
-SBID::operator ==(const SBID& i) const
-{
-    if(
-        i.sb_item_type==this->sb_item_type &&
-        i.sb_item_id==this->sb_item_id &&
-        i.searchCriteria==this->searchCriteria)
-    {
-        return 1;
-    }
-    return 0;
-}
-
-bool
-SBID::fuzzyMatch(const SBID &i)
-{
-    bool match=1;
-    if(this->albumTitle.count()!=i.albumTitle.count() || this->albumTitle.toLower()!=i.albumTitle.toLower())
-    {
-        match=0;
-    }
-    if(this->performerName.count()!=i.performerName.count() || this->performerName.toLower()!=i.performerName.toLower())
-    {
-        match=0;
-    }
-
-    return match;
 }
 
 void
@@ -128,6 +100,8 @@ SBID::encode() const
         << sb_song_id1
         << sb_playlist_id1
         << (int)sb_item_type
+        << sb_item_id
+        << sb_mbid
         << performerName
         << albumTitle
         << songTitle
@@ -146,30 +120,77 @@ SBID::encode() const
     return encodedData;
 }
 
-void
-SBID::init()
+bool
+SBID::fuzzyMatch(const SBID &i)
 {
-    sb_performer_id1=0;
-    sb_album_id1=0;
-    sb_album_position=0;
-    sb_chart_id1=0;
-    sb_playlist_id1=0;
-    sb_song_id1=0;
-    sb_item_type=sb_type_invalid;
-    sb_item_id=-1;
-    performerName="";
-    albumTitle="";
-    songTitle="";
-    year=0;
-    lyrics="";
-    notes="";
-    genre="";
-    url="";
-    playlistName="";
-    count1=0;
-    count2=0;
-    duration="";
-    searchCriteria="";
+    bool match=1;
+    if(this->albumTitle.count()!=i.albumTitle.count() || this->albumTitle.toLower()!=i.albumTitle.toLower())
+    {
+        match=0;
+    }
+    if(this->performerName.count()!=i.performerName.count() || this->performerName.toLower()!=i.performerName.toLower())
+    {
+        match=0;
+    }
+
+    return match;
+}
+
+QString
+SBID::getType() const
+{
+    QString t;
+    switch(this->sb_item_type)
+    {
+    case SBID::sb_type_invalid:
+        t="INVALID";
+        break;
+
+    case SBID::sb_type_song:
+        t="song";
+        break;
+
+    case SBID::sb_type_performer:
+        t="performer";
+        break;
+
+    case SBID::sb_type_album:
+        t="album";
+        break;
+
+    case SBID::sb_type_chart:
+        t="chart";
+        break;
+
+    case SBID::sb_type_playlist:
+        t="playlist";
+        break;
+
+    case SBID::sb_type_allsongs:
+        t="allsongs";
+        break;
+
+    case SBID::sb_type_songsearch:
+        t="songsearch";
+        break;
+
+    default:
+        t="Unknown";
+    }
+    return t;
+}
+
+bool
+SBID::operator ==(const SBID& i) const
+{
+    if(
+        i.sb_item_type==this->sb_item_type &&
+        i.sb_item_id==this->sb_item_id &&
+        i.searchCriteria==this->searchCriteria)
+    {
+        return 1;
+    }
+    return 0;
 }
 
 QDebug operator<<(QDebug dbg, const SBID& id)
@@ -231,3 +252,32 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 
     return dbg.space();
 }
+
+///	PRIVATE
+void
+SBID::init()
+{
+    sb_performer_id1=0;
+    sb_album_id1=0;
+    sb_album_position=0;
+    sb_chart_id1=0;
+    sb_playlist_id1=0;
+    sb_song_id1=0;
+    sb_item_type=sb_type_invalid;
+    sb_item_id=-1;
+    sb_mbid="";
+    performerName="";
+    albumTitle="";
+    songTitle="";
+    year=0;
+    lyrics="";
+    notes="";
+    genre="";
+    url="";
+    playlistName="";
+    count1=0;
+    count2=0;
+    duration="";
+    searchCriteria="";
+}
+

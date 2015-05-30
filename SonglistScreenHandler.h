@@ -2,11 +2,14 @@
 #define SONGLISTSCREENHANDLER_H
 
 #include <QObject>
+#include <QPixmap>
 
 #include "ScreenStack.h"
 
-class QTableView;
+class QLabel;
 class QNetworkReply;
+class QTableView;
+
 class SBID;
 class SBModelSonglist;
 
@@ -28,15 +31,12 @@ public:
     SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
     int populateTableView(QTableView* tv, SBModelSonglist* sl, int initialSortColumn);
-    void setAlbumCoverUnavailable();
 
     //	methods called from outside
     void showPlaylist(SBID id);
     void showSonglist();
 
 public slots:
-    void albumCoverImagedataRetrieved(QNetworkReply *r);
-    void albumCoverMetadataRetrieved(QNetworkReply *r);
     void albumDetailSonglistSelected(const QModelIndex& i);
     void applySonglistFilter();
     void performerDetailAlbumlistSelected(const QModelIndex& i);
@@ -44,20 +44,23 @@ public slots:
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openSonglistItem(const QModelIndex& i);
     void playlistCellClicked(const QModelIndex& i);
+    void setAlbumImage(const QPixmap& p);
+    void setFocus();
+    void setPerformerHomePage(const QString& url);
+    void setPerformerImage(const QPixmap& p);
+    void setPerformerWikipediaPage(const QString& url);
     void songDetailAlbumlistSelected(const QModelIndex& i);
     void songDetailPerformerlistSelected(const QModelIndex& i);
     void songDetailPlaylistSelected(const QModelIndex& i);
     void tabBackward();
     void tabForward();
-    void setFocus();
 
 private:
     ScreenStack st;
 
-    SBID albumCoverID;
 
-    void loadAlbumCover(const SBID &id);
     void openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
+    void setImage(const QPixmap& p, QLabel* l) const;
 };
 
 #endif // SONGLISTSCREENHANDLER_H

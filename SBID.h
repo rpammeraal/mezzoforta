@@ -34,8 +34,10 @@ public:
     int     sb_chart_id1;
     int     sb_song_id1;
     int     sb_playlist_id1;
+
     sb_type sb_item_type;
     int     sb_item_id;
+    QString sb_mbid;
 
     QString albumTitle;
     int     count1;
@@ -52,12 +54,12 @@ public:
     int     year;
 
 
-    bool operator==(const SBID& i) const;
-    bool fuzzyMatch(const SBID& i);
     void assign(const QString& it,int id);
-
     QByteArray encode() const;
+    bool fuzzyMatch(const SBID& i);
+    QString getType() const;
 
+    bool operator==(const SBID& i) const;
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
 private:

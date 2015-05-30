@@ -1,10 +1,6 @@
 #include <QDebug>
-#include <QDomDocument>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
 #include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
-#include <QXmlStreamReader>
 
 #include "SonglistScreenHandler.h"
 
@@ -12,6 +8,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
+#include "ExternalData.h"
 #include "MainWindow.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
@@ -181,12 +178,22 @@ SonglistScreenHandler::openScreenByID(SBID &id)
 SBID
 SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 {
+    MainWindow* mw=Context::instance()->getMainWindow();
+
+    //	Clear image
+    setAlbumImage(QPixmap());
 
     qDebug() << SB_DEBUG_INFO << id;
 
+    //	Get detail
     const SBID result=SBModelAlbum::getDetail(id);
-    MainWindow* mw=Context::instance()->getMainWindow();
-    setAlbumCoverUnavailable();
+
+    ExternalData* ed=new ExternalData();
+    connect(ed, SIGNAL(imageDataReady(QPixmap)),
+            this, SLOT(setAlbumImage(QPixmap)));
+
+    //	Album cover image
+    ed->loadAlbumCover(result);
 
     //	Populate record detail tab
     mw->ui.labelAlbumDetailAlbumTitle->setText(result.albumTitle);
@@ -217,8 +224,6 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(albumDetailSonglistSelected(QModelIndex)));
 
-    //	Reset album cover image
-    loadAlbumCover(result);
     return result;
 }
 
@@ -258,11 +263,33 @@ SonglistScreenHandler::filterSongs(const SBID &id)
 SBID
 SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 {
-
-    qDebug() << SB_DEBUG_INFO << id;
-
-    const SBID result=SBModelPerformer::getDetail(id);
     MainWindow* mw=Context::instance()->getMainWindow();
+
+    //	Clear image
+    setPerformerImage(QPixmap());
+
+    //	Disable QWebview tabs and have them open up when data comes available
+    mw->ui.tabPerformerDetailLists->setTabEnabled(3,0);
+    mw->ui.tabPerformerDetailLists->setTabEnabled(4,0);
+
+    SBModelPerformer* mp=new SBModelPerformer();
+
+    //	Get detail
+    const SBID result=mp->getDetail(id);
+
+    ExternalData* ed=new ExternalData();
+    connect(ed, SIGNAL(performerHomePageAvailable(QString)),
+            this, SLOT(setPerformerHomePage(QString)));
+    connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
+            this, SLOT(setPerformerWikipediaPage(QString)));
+    connect(ed, SIGNAL(updatePerformerMBID(SBID)),
+            mp, SLOT(updateMBID(SBID)));
+    connect(ed, SIGNAL(updatePerformerHomePage(SBID)),
+            mp, SLOT(updateHomePage(SBID)));
+    connect(ed, SIGNAL(imageDataReady(QPixmap)),
+            this, SLOT(setPerformerImage(QPixmap)));
+
+    ed->loadPerformerData(result);
 
     //	Populate record detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(result.performerName);
@@ -280,14 +307,14 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    sl=SBModelPerformer::getAllSongs(id);
+    sl=mp->getAllSongs(id);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(performerDetailSonglistSelected(QModelIndex)));
 
     tv=mw->ui.performerDetailAlbums;
-    sl=SBModelPerformer::getAllAlbums(id);
+    sl=mp->getAllAlbums(id);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
@@ -300,13 +327,13 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //connect(tv, SIGNAL(clicked(QModelIndex)),
             //this, SLOT(performerDetailChartlistSelected(QModelIndex)));
 
-    QUrl url(result.url);
-    if(url.isValid()==1)
-    {
-        mw->ui.performerDetailHomepage->load(url);
-        mw->ui.performerDetailHomepage->show();
-    }
-    mw->ui.tabPerformerDetailLists->setTabEnabled(3,url.isValid());
+    //QUrl url(result.url);
+    //if(url.isValid()==1)
+    //{
+        //mw->ui.performerDetailHomepage->load(url);
+        //mw->ui.performerDetailHomepage->show();
+    //}
+    //mw->ui.tabPerformerDetailLists->setTabEnabled(3,url.isValid());
 
     return result;
 }
@@ -433,13 +460,6 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBModelSonglist* sl,int
 }
 
 void
-SonglistScreenHandler::setAlbumCoverUnavailable()
-{
-    QPixmap p;
-    Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon->setPixmap(p);
-}
-
-void
 SonglistScreenHandler::showPlaylist(SBID id)
 {
     openScreenByID(id);
@@ -464,112 +484,6 @@ SonglistScreenHandler::showSonglist()
 
 
 ///	SLOTS
-void
-SonglistScreenHandler::albumCoverImagedataRetrieved(QNetworkReply *r)
-{
-    bool loaded=0;
-
-    if(r->error()==QNetworkReply::NoError)
-    {
-        QByteArray a=r->readAll();
-        if(a.count()>0)
-        {
-            loaded=1;
-            QPixmap p;
-            p.loadFromData(a);
-            Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon->setPixmap(p);
-        }
-    }
-    if(loaded==0)
-    {
-        setAlbumCoverUnavailable();
-    }
-}
-
-void
-SonglistScreenHandler::albumCoverMetadataRetrieved(QNetworkReply *r)
-{
-    bool matchFound=0;
-
-    if(r->error()==QNetworkReply::NoError)
-    {
-        if(r->open(QIODevice::ReadOnly))
-        {
-            QXmlStreamReader xml;
-            QByteArray a=r->readAll();
-            QString s=QString(a.data());
-
-            QDomDocument doc;
-            QString errorMsg;
-            int errorLine;
-            int errorColumn;
-            doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
-
-            QDomNodeList nl=doc.elementsByTagName(QString("albummatches"));
-
-            if(nl.count()>0)
-            {
-                QDomNode     level1node    =nl.at(0);
-                QDomNodeList level1nodelist=level1node.childNodes();
-
-                for(int i=0; i<level1nodelist.count(); i++)
-                {
-                    SBID pm;
-                    QString key;
-                    QString value;
-                    QString URL;
-
-                    QDomNode     level2node    =level1nodelist.at(i);
-                    QDomNodeList level2nodelist=level2node.childNodes();
-
-                    for(int j=0; j<level2nodelist.count();j++)
-                    {
-                        QDomNode     level3node    =level2nodelist.at(j);
-                        QDomNodeList level3nodelist=level3node.childNodes();
-
-                        key=level3node.nodeName();
-
-                        for(int k=0; k<level3nodelist.count();k++)
-                        {
-                            QDomNode level4node=level3nodelist.at(k);
-                            value=level4node.nodeValue();
-                        }
-
-                        if(key=="name")
-                        {
-                            pm.albumTitle=value;
-                        }
-                        else if(key=="artist")
-                        {
-                            pm.performerName=value;
-                        }
-                        else if(key=="image")
-                        {
-                            URL=value;
-                        }
-                    }
-
-                    if(albumCoverID.fuzzyMatch(pm)==1)
-                    {
-                        QNetworkAccessManager* n=new QNetworkAccessManager(this);
-                        connect(n, SIGNAL(finished(QNetworkReply *)),
-                                this, SLOT(albumCoverImagedataRetrieved(QNetworkReply*)));
-
-                        QUrl url(URL);
-                        n->get(QNetworkRequest(url));
-                        matchFound=1;
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    if(matchFound==0)
-    {
-        setAlbumCoverUnavailable();
-    }
-}
-
 void
 SonglistScreenHandler::albumDetailSonglistSelected(const QModelIndex &i)
 {
@@ -656,6 +570,42 @@ SonglistScreenHandler::playlistCellClicked(const QModelIndex& i)
 }
 
 void
+SonglistScreenHandler::setAlbumImage(const QPixmap& p)
+{
+    qDebug() << SB_DEBUG_INFO << p;
+    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon);
+}
+
+void
+SonglistScreenHandler::setFocus()
+{
+
+}
+
+void
+SonglistScreenHandler::setPerformerHomePage(const QString &url)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.performerDetailHomepage->setUrl(url);
+    mw->ui.tabPerformerDetailLists->setTabEnabled(4,1);
+}
+
+void
+SonglistScreenHandler::setPerformerImage(const QPixmap& p)
+{
+    qDebug() << SB_DEBUG_INFO << p;
+    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon);
+}
+
+void
+SonglistScreenHandler::setPerformerWikipediaPage(const QString &url)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.performerDetailWikipediaPage->setUrl(url);
+    mw->ui.tabPerformerDetailLists->setTabEnabled(3,1);
+}
+
+void
 SonglistScreenHandler::songDetailAlbumlistSelected(const QModelIndex &i)
 {
     qDebug() << SB_DEBUG_INFO << i.column();
@@ -705,25 +655,7 @@ SonglistScreenHandler::tabForward()
     moveTab(1);
 }
 
-void
-SonglistScreenHandler::setFocus()
-{
-
-}
-
 ///	PRIVATE
-
-void
-SonglistScreenHandler::loadAlbumCover(const SBID &id)
-{
-    albumCoverID=id;
-    QNetworkAccessManager* m=new QNetworkAccessManager(this);
-    connect(m, SIGNAL(finished(QNetworkReply *)),
-            this, SLOT(albumCoverMetadataRetrieved(QNetworkReply*)));
-
-    QString URL=QString("http://ws.audioscrobbler.com/2.0/?method=album.search&limit=99999&api_key=5dacbfb3b24d365bcd43050c6149a40d&album=%1").arg(id.albumTitle);
-    m->get(QNetworkRequest(QUrl(URL)));
-}
 
 void
 SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_type type)
@@ -739,6 +671,24 @@ SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_ty
         qDebug() << SB_DEBUG_INFO << "######################################################################";
         qDebug() << SB_DEBUG_INFO << i.column() << id;
         openScreenByID(id);
+    }
+}
+
+void
+SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l) const
+{
+    qDebug() << SB_DEBUG_INFO << p;
+    if(p.isNull())
+    {
+        l->setStyleSheet("background-image: url(:/images/nobandphoto.png);");
+        l->setPixmap(p);
+    }
+    else
+    {
+        l->setStyleSheet("background-image: none;");
+        int w=l->width();
+        int h=l->height();
+        l->setPixmap(p.scaled(w,h,Qt::KeepAspectRatio));
     }
 }
 

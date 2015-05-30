@@ -28,6 +28,8 @@ public:
 
     static void escapeSingleQuotes(QString &);
     static void hideColumns(QTableView* tv);
+    static int random(int max);
+    static QString removeNonAlphanumeric(const QString& s);
     static void toTitleCase(QString &);
 };
 #endif // COMMON_H

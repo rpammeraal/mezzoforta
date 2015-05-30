@@ -1,7 +1,16 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBID.h"
 #include "SBModelPerformer.h"
 #include "SBModelSonglist.h"
+
+SBModelPerformer::SBModelPerformer()
+{
+}
+
+SBModelPerformer::~SBModelPerformer()
+{
+}
 
 SBID
 SBModelPerformer::getDetail(const SBID& id)
@@ -17,6 +26,7 @@ SBModelPerformer::getDetail(const SBID& id)
             "a.name, "
             "a.www, "
             "a.notes, "
+            "a.mbid, "
             "COALESCE(r.record_count,0) AS record_count, "
             "COALESCE(s.song_count,0) AS song_count "
         "FROM "
@@ -40,20 +50,20 @@ SBModelPerformer::getDetail(const SBID& id)
     ).arg(id.sb_item_id);
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
     query.next();
 
     result.sb_item_type    =SBID::sb_type_performer;
     result.sb_item_id      =id.sb_item_id;
+    result.sb_mbid         =query.value(3).toString();
     result.sb_performer_id1=id.sb_item_id;
     result.performerName   =query.value(0).toString();
     result.url             =query.value(1).toString();
     result.notes           =query.value(2).toString();
-    result.count1          =query.value(3).toInt();
-    result.count2          =query.value(4).toInt();
+    result.count1          =query.value(4).toInt();
+    result.count2          =query.value(5).toInt();
 
-    if(result.url.toLower().left(7)!="http://")
+    if(result.url.length()>0 && result.url.toLower().left(7)!="http://")
     {
         result.url="http://"+result.url;
     }
@@ -148,4 +158,50 @@ SBModelPerformer::getAllSongs(const SBID& id)
     ).arg(id.sb_item_id);
 
     return new SBModelSonglist(q);
+}
+
+void
+SBModelPerformer::updateHomePage(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO << id;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___artist "
+        "SET "
+            "www='%1' "
+        "WHERE "
+            "artist_id=%2"
+    ).arg(id.url).arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery query(q,db);
+    query.exec();
+}
+
+void
+SBModelPerformer::updateMBID(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO << id;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___artist "
+        "SET "
+            "mbid='%1' "
+        "WHERE "
+            "artist_id=%2"
+    ).arg(id.sb_mbid).arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery query(q,db);
+    query.exec();
 }

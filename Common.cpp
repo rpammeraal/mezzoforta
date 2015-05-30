@@ -43,6 +43,23 @@ Common::hideColumns(QTableView* tv)
     tv->verticalHeader()->hide();
 }
 
+int
+Common::random(int max)
+{
+    long rnd=qrand();
+    rnd=rnd * max;
+    rnd = rnd / RAND_MAX;
+    qDebug() << SB_DEBUG_INFO << "max=" << max << "rnd=" << rnd;
+    return (int)rnd;
+}
+
+QString
+Common::removeNonAlphanumeric(const QString &s)
+{
+    QString t=s;
+    return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\ʻ\'\"\\\[\\\]\\\\]")));
+}
+
 void
 Common::toTitleCase(QString &s)
 {

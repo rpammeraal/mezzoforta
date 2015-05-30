@@ -16,6 +16,7 @@
 #include "DataAccessLayer.h"
 #include "DisplayOnlyDelegate.h"
 #include "DatabaseSelector.h"
+#include "ExternalData.h"
 #include "LeftColumnChooser.h"
 #include "SBModel.h"
 #include "SBModelSong.h"

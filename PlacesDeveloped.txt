@@ -29,13 +29,19 @@ McGregor Test Site (20150418):
 -	status bar
 -	SBID class simplified -- in future subclass all non-essential stuff to SBIDExtended
 -	initial support for album artwork and loading performer home page
-
-<for next demo>
 -	redo playlist/genre tab to tree structure
 -	revamp search functionality
--	fix context menu
+
+5/20<next demo>
+-	musicbrain interface, updates mbid in artist table
+-	using musicbrainz to retrieve wikipedia page and official home page
+-	using echonest to get performer picture
+-	modified existing retrieval of album artwork to fit new structure
+
 
 <future>
+-	related performers
+-	charts
 -	Drag & drop
 -	Updates to playlist, genres
 -	context menu fails

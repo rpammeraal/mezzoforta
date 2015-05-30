@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -822,7 +822,7 @@
                     <string/>
                    </property>
                    <property name="scaledContents">
-                    <bool>true</bool>
+                    <bool>false</bool>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -941,7 +941,7 @@
             <item>
              <widget class="QTabWidget" name="tabPerformerDetailLists">
               <property name="currentIndex">
-               <number>2</number>
+               <number>3</number>
               </property>
               <widget class="QWidget" name="tabPerformerDetailPerformances">
                <attribute name="title">
@@ -1027,6 +1027,16 @@
                    <enum>Qt::NoPen</enum>
                   </property>
                  </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tabPerformerDetailWikipediaPage">
+               <attribute name="title">
+                <string>On Wikipedia</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_8">
+                <item>
+                 <widget class="QWebView" name="performerDetailWikipediaPage"/>
                 </item>
                </layout>
               </widget>

@@ -7,6 +7,7 @@
 
 class Controller;
 class DataAccessLayer;
+class ExternalData;
 class MainWindow;
 class SBModelSonglist;
 class SonglistScreenHandler;

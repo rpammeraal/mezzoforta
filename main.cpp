@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QFile>
+#include <QDateTime>
 
 #include "Common.h"
 #include "Controller.h"
@@ -17,6 +18,7 @@ int main(int argc, char *argv[])
 //    QString styleSheet = QLatin1String(file.readAll());
 //    app.setStyleSheet(styleSheet);
 
+    qsrand(QDateTime::currentMSecsSinceEpoch());
     Controller c(argc, argv);
     if(c.initSuccessFull())
     {
