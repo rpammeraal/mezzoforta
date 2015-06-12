@@ -290,7 +290,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_2">
+                 <spacer name="verticalSpacer01">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -507,7 +507,7 @@
                   </widget>
                  </item>
                  <item row="2" column="0">
-                  <spacer name="verticalSpacer">
+                  <spacer name="verticalSpacer02">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -723,7 +723,7 @@
                   </widget>
                  </item>
                  <item row="3" column="0">
-                  <spacer name="verticalSpacer">
+                  <spacer name="verticalSpacer03">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -788,7 +788,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_4">
+                <layout class="QGridLayout" name="gridLayout01">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -908,7 +908,7 @@
                   </widget>
                  </item>
                  <item row="4" column="0">
-                  <spacer name="verticalSpacer">
+                  <spacer name="verticalSpacer04">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -1030,7 +1030,109 @@
                 </item>
                </layout>
               </widget>
+              <widget class="QWidget" name="tabPerformerDetailNews">
+               <attribute name="title">
+                <string>In The News</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_9">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frPerformerDetailNewsNavigation">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>38</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>38</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="performerDetailNewsHome">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>32</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>32</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Home</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWebView" name="performerDetailNewsPage">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
               <widget class="QWidget" name="tabPerformerDetailWikipediaPage">
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background: white</string>
+               </property>
                <attribute name="title">
                 <string>On Wikipedia</string>
                </attribute>
@@ -1178,7 +1280,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_6" rowminimumheight="0,0,0,0,0,0">
+                <layout class="QGridLayout" name="gridLayout02" rowminimumheight="0,0,0,0,0,0">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1234,7 +1336,7 @@
                   </widget>
                  </item>
                  <item row="5" column="0">
-                  <spacer name="verticalSpacer">
+                  <spacer name="verticalSpacer05">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -1313,34 +1415,6 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <item>
-                  <widget class="QTableView" name="albumDetailAlbumContents">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>200</width>
-                     <height>230</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="alternatingRowColors">
-                    <bool>true</bool>
-                   </property>
-                   <property name="gridStyle">
-                    <enum>Qt::NoPen</enum>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -1349,8 +1423,154 @@
             <item>
              <widget class="QTabWidget" name="tabAlbumDetailLists">
               <property name="currentIndex">
-               <number>-1</number>
+               <number>2</number>
               </property>
+              <widget class="QWidget" name="tabAlbumDetailContents">
+               <attribute name="title">
+                <string>Contents</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QTableView" name="albumDetailAlbumContents"/>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tabAlbumDetailReviews">
+               <attribute name="title">
+                <string>Album Reviews</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_15">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frAlbumDetailReviewsNavigation">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>38</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>38</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="albumDetailReviewsHome">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>32</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>32</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Home</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWebView" name="albumDetailReviews">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tabAlbumDetailWikipediaPage">
+               <attribute name="title">
+                <string>On Wikipedia</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_14">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWebView" name="albumDetailsWikipediaPage">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -1464,7 +1684,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_6">
+                <layout class="QGridLayout" name="gridLayout03">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1520,7 +1740,7 @@
                   </widget>
                  </item>
                  <item row="5" column="0">
-                  <spacer name="verticalSpacer">
+                  <spacer name="verticalSpacer06">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
@@ -1568,7 +1788,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>0</number>
+               <number>4</number>
               </property>
               <widget class="QWidget" name="tabSongDetailPerformedBy">
                <attribute name="title">
@@ -1692,7 +1912,41 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QTextEdit" name="songDetailLyrics"/>
+                 <widget class="QWebView" name="songDetailLyrics">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tabSongDetailWikipedia">
+               <attribute name="title">
+                <string>On Wikipedia</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_16">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWebView" name="songDetailWikipediaPage">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -1963,7 +2217,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_4">
+             <spacer name="verticalSpacer07">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

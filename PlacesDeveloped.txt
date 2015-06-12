@@ -32,12 +32,14 @@ McGregor Test Site (20150418):
 -	redo playlist/genre tab to tree structure
 -	revamp search functionality
 
-5/20<next demo>
+5/20
 -	musicbrain interface, updates mbid in artist table
 -	using musicbrainz to retrieve wikipedia page and official home page
 -	using echonest to get performer picture
 -	modified existing retrieval of album artwork to fit new structure
 
+5/29<next demo>
+-	simple minds -> biko -> search using dropdown, crashes.
 
 <future>
 -	related performers

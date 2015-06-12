@@ -64,6 +64,8 @@ Controller::openDatabase()
 void
 Controller::applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
+    Q_UNUSED(selected);
+    Q_UNUSED(deselected);
 //    MainWindow* mw=Context::instance()->getMainWindow();
 //    QModelIndex index;
 //    QModelIndexList items = selected.indexes();
@@ -110,6 +112,8 @@ void
 Controller::openItemFromCompleter(const QModelIndex& i) const
 {
     qDebug() << SB_DEBUG_INFO;
+    Context::instance()->getSonglistScreenHandler()->showScreenStack();
+
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Retrieve SB_ITEM_TYPE and SB_ITEM_ID from index.
@@ -137,7 +141,9 @@ void
 Controller::updateGenre(QModelIndex i, QModelIndex j)
 {
     static int updateInProgress=0;
+    Q_UNUSED(i);
     Q_UNUSED(j);
+    Q_UNUSED(updateInProgress);
 
 //    if(updateInProgress==0)
 //    {

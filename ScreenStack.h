@@ -28,12 +28,13 @@ public:
     int getCurrentScreenID() const;
     int getScreenCount() const;
 
+    void debugShow(const QString& c);
+
 private:
     int currentScreenID;
     QList<SBID> stack;
 
     void init();
-    void debugShow(const QString& c);
 };
 
 #endif // SCREENSTACK_H

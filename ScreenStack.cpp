@@ -130,6 +130,7 @@ ScreenStack::init()
 void
 ScreenStack::debugShow(const QString& c)
 {
+    qDebug() << SB_DEBUG_INFO << c;
     for(int i=0; i<stack.size(); i++)
     {
         if(currentScreenID==i)
