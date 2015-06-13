@@ -393,12 +393,9 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=NULL;
-    int rowCount=0;
-    SBModelSonglist* sl=NULL;
 
     tv=mw->ui.playlistDetailSongList;
-    sl=SBModelPlaylist::getAllItemsByPlaylist(id);
-    rowCount=populateTableView(tv,sl,0);
+    SBModelPlaylist::getAllItemsByPlaylist(id);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
 

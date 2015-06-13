@@ -81,7 +81,6 @@ void
 ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
 {
     qDebug() << SB_DEBUG_INFO;
-    bool matchFound=0;
 
     if(r->error()==QNetworkReply::NoError)
     {
@@ -148,7 +147,6 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
 
                         QUrl url(URL);
                         n->get(QNetworkRequest(url));
-                        matchFound=1;
                         return;
                     }
                 }
@@ -253,7 +251,6 @@ void
 ExternalData::imagedataRetrieved(QNetworkReply *r)
 {
     qDebug() << SB_DEBUG_INFO;
-    bool loaded=0;
 
     if(r->error()==QNetworkReply::NoError)
     {
@@ -261,7 +258,6 @@ ExternalData::imagedataRetrieved(QNetworkReply *r)
         if(a.count()>0)
         {
             QPixmap image;
-            loaded=1;
 
             //	Store in cache
             image.loadFromData(a);

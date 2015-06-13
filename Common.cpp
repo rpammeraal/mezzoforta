@@ -28,16 +28,11 @@ void
 Common::hideColumns(QTableView* tv)
 {
     const QAbstractItemModel* m=tv->model();
-    int lastColumnIndexVisible=0;
     for(int i=0;i<m->columnCount();i++)
     {
         if(m->headerData(i,Qt::Horizontal).toString().toLower().startsWith("sb_")==1)
         {
             tv->hideColumn(i);
-        }
-        else
-        {
-            lastColumnIndexVisible=i;
         }
     }
     tv->verticalHeader()->hide();

@@ -36,7 +36,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
 }
 
-DataAccessLayer::DataAccessLayer(const DataAccessLayer &c)
+DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
 {
     init();
     init(c);
