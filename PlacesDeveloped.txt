@@ -49,6 +49,9 @@ McGregor Test Site (20150418):
 -	context menu fails
 
 todo:
--	QCompleter needs to be made context sensitive of playlist or genre selected.
+-	QCompleter:
+	-	needs to be made context sensitive of playlist or genre selected.
+	-	QCompleter items should be of <keyword>: <value>
+		See comments in ScreenStack::applySonglistFilter()
 -	cancel on open db when no db is found at runtime.
 -	if genre changed, try to select genre that was changed (much later).

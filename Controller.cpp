@@ -111,7 +111,8 @@ Controller::changeSchema(const QString& newSchema)
 void
 Controller::openItemFromCompleter(const QModelIndex& i) const
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << i;
+    qDebug() << SB_DEBUG_INFO << "parameter:index=" << i.row() << i.column();
     Context::instance()->getSonglistScreenHandler()->showScreenStack();
 
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -126,6 +127,8 @@ Controller::openItemFromCompleter(const QModelIndex& i) const
 
     Context::instance()->getSonglistScreenHandler()->openScreenByID(id);
     qDebug() << SB_DEBUG_INFO << id;
+
+
 }
 
 void
