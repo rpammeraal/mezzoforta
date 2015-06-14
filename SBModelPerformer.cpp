@@ -50,6 +50,8 @@ SBModelPerformer::getDetail(const SBID& id)
     ).arg(id.sb_item_id);
     dal->customize(q);
 
+    qDebug() << SB_DEBUG_INFO << q;
+
     QSqlQuery query(q,db);
     query.next();
 

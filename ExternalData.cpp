@@ -158,14 +158,18 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
 void
 ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
 {
+    qDebug() << SB_DEBUG_INFO;
     QString matchAlbumName=Common::removeNonAlphanumeric(currentID.albumTitle).toLower();
     QString foundAlbumName;
     allReviews.clear();
 
+    qDebug() << SB_DEBUG_INFO << r->error();
     if(r->error()==QNetworkReply::NoError)
     {
+    qDebug() << SB_DEBUG_INFO;
         if(r->open(QIODevice::ReadOnly))
         {
+    qDebug() << SB_DEBUG_INFO;
             QByteArray a=r->readAll();
             QString s=QString(a.data());
 
@@ -250,8 +254,6 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
 void
 ExternalData::imagedataRetrieved(QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO;
-
     if(r->error()==QNetworkReply::NoError)
     {
         QByteArray a=r->readAll();
@@ -262,9 +264,7 @@ ExternalData::imagedataRetrieved(QNetworkReply *r)
             //	Store in cache
             image.loadFromData(a);
             storeInCache(&a);
-            qDebug() << SB_DEBUG_INFO;
             emit imageDataReady(image);
-            qDebug() << SB_DEBUG_INFO;
         }
     }
 }
@@ -423,7 +423,6 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << "No image data available";
 }
 
 void
@@ -453,7 +452,6 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
             while(!n.isNull() && matchFound==0)
             {
                 QDomElement e = n.toElement();
-                //qDebug() << SB_DEBUG_INFO << "a" << "tag" << e.tagName() << e.text();
 
                 if(!e.isNull() && e.tagName()=="news")
                 {
@@ -461,7 +459,6 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
                     while(!n.isNull())
                     {
                         QDomElement e = n.toElement();
-                        //qDebug() << SB_DEBUG_INFO << "b" << "tag" << e.tagName() << e.text();
 
                         if(!e.isNull() && e.tagName()=="news")
                         {
@@ -471,7 +468,6 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
                             while(!n.isNull())
                             {
                                 QDomElement e = n.toElement();
-                                //qDebug() << SB_DEBUG_INFO << "c" << "tag" << e.tagName() << e.text();
                                 if(e.tagName()=="url")
                                 {
                                     item.url=e.text();
@@ -783,7 +779,6 @@ ExternalData::retrievePerformerMBID()
                 this, SLOT(performerMBIDRetrieved(QNetworkReply*)));
 
         QString URL=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1").arg(currentID.performerName);
-        qDebug() << SB_DEBUG_INFO << URL;
         m->get(QNetworkRequest(QUrl(URL)));
     }
     else
@@ -884,7 +879,6 @@ ExternalData::loadImageFromCache(QPixmap& p)
         char* mem=(char *)malloc(len);
         QDataStream s(&f);
         int n=s.readRawData(mem,len);
-        qDebug() << SB_DEBUG_INFO << "bytes read:" << n;
 
         f.close();
 
@@ -903,13 +897,11 @@ void
 ExternalData::storeInCache(QByteArray *a) const
 {
     QString fn=getCachePath();
-    qDebug() << SB_DEBUG_INFO << fn << "ln(a)=" << a->length();
     QFile f(fn);
     if(f.open(QIODevice::WriteOnly))
     {
         QDataStream s(&f);
-        int n=s.writeRawData(a->constData(),a->length());
-        qDebug() << SB_DEBUG_INFO << "bytes written:" << n;
+        s.writeRawData(a->constData(),a->length());
         f.close();
     }
 }
