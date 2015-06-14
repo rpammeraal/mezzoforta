@@ -200,10 +200,6 @@ SonglistScreenHandler::filterSongs(const SBID &id)
     QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
     m->setFilterKeyColumn(0);
 
-    QObject* o=mw->ui.allSongsList->model();
-    QString oo=o->metaObject()->className();
-    qDebug() << SB_DEBUG_INFO << "classname=" << oo;
-
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
     qDebug() << SB_DEBUG_INFO << id;
@@ -389,13 +385,14 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     MainWindow* mw=Context::instance()->getMainWindow();
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
-    QString detail=QString("%1 items • %2 playtime").arg(result.count1).arg(result.duration);
+    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration);
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=NULL;
 
     tv=mw->ui.playlistDetailSongList;
-    SBModelPlaylist::getAllItemsByPlaylist(id);
+    SBModelSonglist* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
+    populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
 
