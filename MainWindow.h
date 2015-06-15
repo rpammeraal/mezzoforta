@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QtSql>
 
-#include "ui_mainwindow.h"
+#include "ui_MainWindow.h"
 #include "DataAccessLayer.h"
 
 class QLabel;
