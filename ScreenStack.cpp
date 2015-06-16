@@ -119,6 +119,12 @@ ScreenStack::getScreenCount() const
     return stack.length();
 }
 
+void
+ScreenStack::updateCurrentScreen(const SBID &id)
+{
+    stack[currentScreenID]=id;
+}
+
 ///	PRIVATE
 void
 ScreenStack::init()
@@ -135,11 +141,11 @@ ScreenStack::debugShow(const QString& c)
     {
         if(currentScreenID==i)
         {
-            qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i);
+            qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i);
+            qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
         }
     }
 }

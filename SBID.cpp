@@ -42,6 +42,7 @@ SBID::SBID(QByteArray encodedData)
         >> notes
         >> genre
         >> url
+        >> wiki
         >> playlistName
         >> count1
         >> count2
@@ -110,6 +111,7 @@ SBID::encode() const
         << notes
         << genre
         << url
+        << wiki
         << playlistName
         << count1
         << count2
@@ -274,6 +276,7 @@ SBID::init()
     notes="";
     genre="";
     url="";
+    wiki="";
     playlistName="";
     count1=0;
     count2=0;

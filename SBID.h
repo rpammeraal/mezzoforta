@@ -51,6 +51,7 @@ public:
     QString searchCriteria;
     QString songTitle;
     QString url;
+    QString wiki;
     int     year;
 
 

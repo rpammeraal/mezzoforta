@@ -1788,7 +1788,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>4</number>
+               <number>5</number>
               </property>
               <widget class="QWidget" name="tabSongDetailPerformedBy">
                <attribute name="title">

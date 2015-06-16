@@ -7,6 +7,7 @@ SBID
 SBModelAlbum::getDetail(const SBID& id)
 {
     SBID result=id;
+    qDebug() << SB_DEBUG_INFO << "id.wiki=" << id.wiki;
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -40,6 +41,7 @@ SBModelAlbum::getDetail(const SBID& id)
     result.genre        =query.value(1).toString();
     result.notes        =query.value(3).toString();
 
+    qDebug() << SB_DEBUG_INFO << "result.wiki=" << result.wiki;
     return result;
 }
 

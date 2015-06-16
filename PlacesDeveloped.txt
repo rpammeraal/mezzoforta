@@ -39,7 +39,7 @@ McGregor Test Site (20150418):
 -	modified existing retrieval of album artwork to fit new structure
 
 5/29<next demo>
--	simple minds -> biko -> search using dropdown, crashes.
+
 
 <future>
 -	related performers

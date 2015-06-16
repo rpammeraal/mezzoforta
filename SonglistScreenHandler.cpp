@@ -109,7 +109,7 @@ SonglistScreenHandler::moveTab(int direction)
         id=st.previousScreen();
     }
 
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id << id.wiki;
     activateTab(id);
 
     bool activateBackButton;
@@ -238,7 +238,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     //	Clear image
     setAlbumImage(QPixmap());
 
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << "id" << id << id.wiki;
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabAlbumDetailLists->setTabEnabled(1,0);
@@ -247,6 +247,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     //	Get detail
     const SBID result=SBModelAlbum::getDetail(id);
+    qDebug() << SB_DEBUG_INFO << "result" << id << id.wiki;
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
@@ -295,6 +296,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 SBID
 SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO << "id=" << id << id.wiki;
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	set constant connections
@@ -314,6 +316,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     //	Get detail
     const SBID result=mp->getDetail(id);
+    qDebug() << SB_DEBUG_INFO << "result=" << result << result.wiki;
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(performerHomePageAvailable(QString)),
@@ -736,6 +739,13 @@ SonglistScreenHandler::setAlbumWikipediaPage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.albumDetailsWikipediaPage->setUrl(url);
     mw->ui.tabAlbumDetailLists->setTabEnabled(2,1);
+
+    qDebug() << SB_DEBUG_INFO << "url found" << url;
+    SBID id=st.currentScreen();
+    id.wiki=url;
+    st.updateCurrentScreen(id);
+    SBID t=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO << "wiki on stack" << t.wiki;
 }
 
 void
@@ -750,6 +760,10 @@ SonglistScreenHandler::setPerformerHomePage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.performerDetailHomepage->setUrl(url);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
+    SBID id=st.currentScreen();
+    id.url=url;
+    st.updateCurrentScreen(id);
+
 }
 
 void
@@ -772,6 +786,13 @@ SonglistScreenHandler::setPerformerWikipediaPage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.performerDetailWikipediaPage->setUrl(url);
     mw->ui.tabPerformerDetailLists->setTabEnabled(4,1);
+
+    qDebug() << SB_DEBUG_INFO << "url found" << url;
+    SBID id=st.currentScreen();
+    id.wiki=url;
+    st.updateCurrentScreen(id);
+    SBID t=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO << "wiki on stack" << t.wiki;
 }
 
 void
@@ -791,6 +812,13 @@ SonglistScreenHandler::setSongWikipediaPage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.songDetailWikipediaPage->setUrl(url);
     mw->ui.tabSongDetailLists->setTabEnabled(5,1);
+
+    qDebug() << SB_DEBUG_INFO << "url found" << url;
+    SBID id=st.currentScreen();
+    id.wiki=url;
+    st.updateCurrentScreen(id);
+    SBID t=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO << "wiki on stack" << t.wiki;
 }
 
 void
