@@ -115,20 +115,12 @@ Controller::openItemFromCompleter(const QModelIndex& i) const
     qDebug() << SB_DEBUG_INFO << "parameter:index=" << i.row() << i.column();
     Context::instance()->getSonglistScreenHandler()->showScreenStack();
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
-
     //	Retrieve SB_ITEM_TYPE and SB_ITEM_ID from index.
     SBID id;
     id.assign(i.sibling(i.row(), i.column()+2).data().toString(), i.sibling(i.row(), i.column()+1).data().toInt());
-    qDebug() << SB_DEBUG_INFO;
-    mw->ui.searchEdit->setText("");
-    mw->ui.searchEdit->clear();
-    qDebug() << SB_DEBUG_INFO;
 
     Context::instance()->getSonglistScreenHandler()->openScreenByID(id);
     qDebug() << SB_DEBUG_INFO << id;
-
-
 }
 
 void
@@ -368,7 +360,7 @@ Controller::setupModels()
     completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModel());
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    completer->setFilterMode(Qt::MatchContains);
+    completer->setFilterMode(Qt::MatchStartsWith);
     mw->ui.searchEdit->setCompleter(completer);
     qDebug() << SB_DEBUG_INFO;
 
@@ -430,6 +422,10 @@ Controller::setupUI()
     connect(
         mw->ui.searchEdit,SIGNAL(returnPressed()),
         Context::instance()->getSonglistScreenHandler(),SLOT(applySonglistFilter()));
+    connect(
+        c, SIGNAL(activated(QString)),
+        mw->ui.searchEdit, SLOT(clear()),
+        Qt::QueuedConnection);	//	this will clear the search box
 
     ///	GENRE
 

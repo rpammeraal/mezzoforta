@@ -168,7 +168,8 @@ SonglistScreenHandler::openScreenByID(SBID &id)
     }
 
     result=activateTab(id);
-    if(result.sb_item_type!=SBID::sb_type_songsearch)
+    //	For whatever reason, this exclusion was added. Not sure why this is, so commented out.
+    //	if(result.sb_item_type!=SBID::sb_type_songsearch)
     {
         //	CWIP: add in new method, add flags to SBID::sb_type to filter out
         //	items that should NOT be stored on the stack
@@ -600,6 +601,9 @@ SonglistScreenHandler::applySonglistFilter()
     id.searchCriteria=filter;
     qDebug() << SB_DEBUG_INFO << id;
     openScreenByID(id);
+
+    mw->ui.searchEdit->setFocus();
+    mw->ui.searchEdit->selectAll();
 }
 
 void

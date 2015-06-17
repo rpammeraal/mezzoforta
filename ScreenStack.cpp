@@ -122,7 +122,14 @@ ScreenStack::getScreenCount() const
 void
 ScreenStack::updateCurrentScreen(const SBID &id)
 {
-    stack[currentScreenID]=id;
+    if(currentScreenID>=0 && currentScreenID<stack.count())
+    {
+        stack[currentScreenID]=id;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
+    }
 }
 
 ///	PRIVATE
@@ -136,16 +143,23 @@ ScreenStack::init()
 void
 ScreenStack::debugShow(const QString& c)
 {
-    qDebug() << SB_DEBUG_INFO << c;
-    for(int i=0; i<stack.size(); i++)
+    qDebug() << SB_DEBUG_INFO << c << "num screens" << stack.size();
+    if(stack.size()>0)
     {
-        if(currentScreenID==i)
+        for(int i=0; i<stack.size(); i++)
         {
-            qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
+            if(currentScreenID==i)
+            {
+                qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
+            }
         }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
-        }
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
     }
 }

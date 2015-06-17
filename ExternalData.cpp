@@ -75,6 +75,7 @@ ExternalData::loadPerformerData(const SBID id)
         qDebug() << SB_DEBUG_INFO;
         performerHomepageRetrieved=1;
         emit performerHomePageAvailable(id.url);
+        qDebug() << SB_DEBUG_INFO;
     }
     if(id.wiki.length()>0)
     {
@@ -82,7 +83,9 @@ ExternalData::loadPerformerData(const SBID id)
         performerWikipediaPageRetrieved=1;
         emit performerWikipediaPageAvailable(id.wiki);
     }
+    qDebug() << SB_DEBUG_INFO;
     retrievePerformerMBID();
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
