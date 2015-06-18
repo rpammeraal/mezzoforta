@@ -342,6 +342,56 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     QString details=QString("%1 albums • %2 songs").arg(result.count1).arg(result.count2);
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
+    //	Related performers
+    //	Clear current
+    QFrame* frRelated=mw->ui.frPerformerDetailDetailRelated;
+    for(int i=0;i<related.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << related.count();
+        QWidget* n=related.at(i);
+        related[i]=NULL;
+        delete n;
+    }
+    related.clear();
+
+
+    //	Recreate
+    SBModelSonglist* rm=mp->getRelatedPerformers(id);
+    int x=0;
+    int y=0;
+    int spacing=7;
+    int maxX=mw->ui.frPerformerDetailDetailRelated->width();
+    int dx=0;
+    int dy=0;
+    qDebug() << SB_DEBUG_INFO << "maxX=" << maxX;
+
+    for(int i=0;i<rm->rowCount();i++)
+    {
+        //QPushButton* n=new QPushButton(rm->data(rm->index(i,1)).toString(), frRelated);
+        QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>").arg(rm->data(rm->index(i,0)).toString()).arg(rm->data(rm->index(i,1)).toString());
+        qDebug() << SB_DEBUG_INFO << t;
+        QLabel* n=new QLabel(t, frRelated);
+        n->setTextFormat(Qt::RichText);
+        connect(n, SIGNAL(linkActivated(QString)),
+                this, SLOT(openPerformer(QString)));
+
+        related.append(n);
+        n->adjustSize();
+        dx=n->width();
+        dy=n->height();
+        if(x+dx+spacing>maxX)
+        {
+            y=y+dy;
+            x=0;
+        }
+        n->move(x,y);
+        n->show();
+        qDebug() << SB_DEBUG_INFO << x << y << rm->data(rm->index(i,1)).toString();
+        x+=dx+spacing;
+    }
+    mw->ui.labelPerformerDetailPerformerRelated->setVisible((related.count()>0?1:0));
+
+
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
@@ -588,7 +638,7 @@ SonglistScreenHandler::applySonglistFilter()
         qDebug() << SB_DEBUG_INFO << "completer call: exit";
         return;
     }
-    re=QRegExp("- artist$");
+    re=QRegExp("- performer$");
     if(filter.contains(re))
     {
         qDebug() << SB_DEBUG_INFO << "completer call: exit";
@@ -623,6 +673,16 @@ void
 SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
 {
     SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+    openScreenByID(id);
+}
+
+void
+SonglistScreenHandler::openPerformer(const QString &itemID)
+{
+    qDebug() << SB_DEBUG_INFO << itemID;
+    SBID id;
+    id.sb_item_type=SBID::sb_type_performer;
+    id.sb_item_id=itemID.toInt();
     openScreenByID(id);
 }
 

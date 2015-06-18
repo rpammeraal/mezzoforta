@@ -28,31 +28,31 @@ public:
     ~SBID();
 
 
-    int     sb_performer_id1;
-    int     sb_album_id1;
-    int     sb_album_position;
-    int     sb_chart_id1;
-    int     sb_song_id1;
-    int     sb_playlist_id1;
+    int         sb_performer_id1;
+    int         sb_album_id1;
+    int         sb_album_position;
+    int         sb_chart_id1;
+    int         sb_song_id1;
+    int         sb_playlist_id1;
 
-    sb_type sb_item_type;
-    int     sb_item_id;
-    QString sb_mbid;
+    sb_type     sb_item_type;
+    int         sb_item_id;
+    QString     sb_mbid;
 
-    QString albumTitle;
-    int     count1;
-    int     count2;
-    QString duration;
-    QString genre;
-    QString lyrics;
-    QString notes;
-    QString performerName;
-    QString playlistName;
-    QString searchCriteria;
-    QString songTitle;
-    QString url;
-    QString wiki;
-    int     year;
+    QString     albumTitle;
+    int         count1;
+    int         count2;
+    QString     duration;
+    QString     genre;
+    QString     lyrics;
+    QString     notes;
+    QString     performerName;
+    QString     playlistName;
+    QString     searchCriteria;
+    QString     songTitle;
+    QString     url;
+    QString     wiki;
+    int         year;
 
 
     void assign(const QString& it,int id);

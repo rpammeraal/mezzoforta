@@ -13,6 +13,7 @@ SBModelSonglist::SBModelSonglist(const QString& query) : SBModel ()
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     dal->customize(q);
 
+    qDebug() << SB_DEBUG_INFO << q;
     QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
 

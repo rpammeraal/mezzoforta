@@ -22,6 +22,7 @@ ScreenStack::clear()
 void
 ScreenStack::pushScreen(const SBID& id)
 {
+    qDebug() << SB_DEBUG_INFO << id << currentScreenID;
     bool doPush=0;
 
     if(stack.count()==0)
@@ -46,11 +47,13 @@ ScreenStack::pushScreen(const SBID& id)
         stack.append(id);
         currentScreenID++;
     }
+    qDebug() << SB_DEBUG_INFO << id << currentScreenID;
 }
 
 SBID
 ScreenStack::popScreen()
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
     if(stack.isEmpty()==0)
@@ -63,24 +66,28 @@ ScreenStack::popScreen()
             currentScreenID=getScreenCount()-1;
         }
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
 SBID
 ScreenStack::currentScreen()
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
     if(stack.isEmpty()==0)
     {
         id=stack.at(currentScreenID);
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
 SBID
 ScreenStack::nextScreen()
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
     if(stack.isEmpty()==0)
@@ -91,12 +98,14 @@ ScreenStack::nextScreen()
         }
         id=stack.at(currentScreenID);
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
 SBID
 ScreenStack::previousScreen()
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
     if(currentScreenID>0)
@@ -104,24 +113,28 @@ ScreenStack::previousScreen()
         currentScreenID--;
         id=stack.at(currentScreenID);
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
 int
 ScreenStack::getCurrentScreenID() const
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return currentScreenID;
 }
 
 int
 ScreenStack::getScreenCount() const
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return stack.length();
 }
 
 void
 ScreenStack::updateCurrentScreen(const SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     if(currentScreenID>=0 && currentScreenID<stack.count())
     {
         stack[currentScreenID]=id;
@@ -130,12 +143,14 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     {
         qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
 }
 
 ///	PRIVATE
 void
 ScreenStack::init()
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     currentScreenID=-1;
     stack.clear();
 }
@@ -162,4 +177,5 @@ ScreenStack::debugShow(const QString& c)
     {
         qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
     }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
 }

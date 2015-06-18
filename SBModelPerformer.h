@@ -19,6 +19,7 @@ public:
     SBModelSonglist* getAllAlbums(const SBID& id);
     SBModelSonglist* getAllCharts(const SBID& id);
     SBModelSonglist* getAllSongs(const SBID& id);
+    SBModelSonglist* getRelatedPerformers(const SBID& id);
 
 public slots:
     void updateHomePage(const SBID& id);

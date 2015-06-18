@@ -214,7 +214,7 @@ DataAccessLayer::getCompleterModel()
             "___SB_SCHEMA_NAME___record r "
         "UNION "
         "SELECT DISTINCT "
-            "a.name || ' - artist', "
+            "a.name || ' - performer', "
             "a.artist_id, "
             "'SB_PERFORMER_TYPE' AS SB_TYPE_ID "
         "FROM "

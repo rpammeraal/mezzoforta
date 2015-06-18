@@ -38,11 +38,26 @@ McGregor Test Site (20150418):
 -	using echonest to get performer picture
 -	modified existing retrieval of album artwork to fit new structure
 
-5/29<next demo>
+Morro Rock (20150612)
+-	Real UI
+-	Active HTML pages for performers, albums and songs
 
+20120616:
+-	open search -> searchEdit is all selected, completer search -> searchEdit is cleared
 
-<future>
+20120617:
 -	related performers
+
+<soon>
+-	related performers
+-	SBMOdelSonglist: put in own class
+-	charts
+
+
+
+
+<near future>
+-	performer / albums: performer does not work
 -	charts
 -	Drag & drop
 -	Updates to playlist, genres

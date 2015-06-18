@@ -162,6 +162,35 @@ SBModelPerformer::getAllSongs(const SBID& id)
     return new SBModelSonglist(q);
 }
 
+SBModelSonglist*
+SBModelPerformer::getRelatedPerformers(const SBID& id)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "ar1.artist1_id AS SB_PERFORMER_ID, "
+            "r1.name AS \"performer\" "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist_rel ar1 "
+                "JOIN ___SB_SCHEMA_NAME___artist r1 ON "
+                    "ar1.artist1_id=r1.artist_id "
+        "WHERE "
+            "ar1.artist2_id=%1 "
+        "UNION "
+        "SELECT DISTINCT "
+            "ar2.artist2_id, "
+            "r2.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist_rel ar2 "
+                "JOIN ___SB_SCHEMA_NAME___artist r2 ON "
+                    "ar2.artist2_id=r2.artist_id "
+        "WHERE "
+            "ar2.artist1_id=%1 "
+    ).arg(id.sb_item_id);
+
+    return new SBModelSonglist(q);
+}
+
 void
 SBModelPerformer::updateHomePage(const SBID &id)
 {

@@ -45,6 +45,7 @@ public slots:
     void performerDetailAlbumlistSelected(const QModelIndex& i);
     void performerDetailSonglistSelected(const QModelIndex& i);
     void openLeftColumnChooserItem(const QModelIndex& i);
+    void openPerformer(const QString& id);
     void openSonglistItem(const QModelIndex& i);
     void playlistCellClicked(const QModelIndex& i);
     void refreshAlbumReviews();
@@ -69,6 +70,7 @@ private:
     ScreenStack st;
     QList<NewsItem> currentNews;
     QList<QString> currentReviews;
+    QList<QWidget *> related;
 
     bool openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
     void setImage(const QPixmap& p, QLabel* l) const;
