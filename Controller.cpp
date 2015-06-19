@@ -104,6 +104,8 @@ Controller::changeSchema(const QString& newSchema)
     {
         //	refresh all views
         resetAllFiltersAndSelections();
+        setupModels();
+        setupUI();
     }
 }
 
@@ -452,9 +454,12 @@ Controller::setupUI()
     QStringList schemas=dal->getAvailableSchemas();
     if(schemas.count()>1)
     {
-        mw->ui.schemaComboBox->addItems(schemas);
-        mw->ui.schemaComboBox->setCurrentIndex(mw->ui.schemaComboBox->findText(dal->getSchemaName()));
-        connect(mw->ui.schemaComboBox, SIGNAL(activated(QString)), this, SLOT(changeSchema(QString)));
+        if(mw->ui.schemaComboBox->count()==0)
+        {
+            mw->ui.schemaComboBox->addItems(schemas);
+            mw->ui.schemaComboBox->setCurrentIndex(mw->ui.schemaComboBox->findText(dal->getSchemaName()));
+            connect(mw->ui.schemaComboBox, SIGNAL(activated(QString)), this, SLOT(changeSchema(QString)));
+        }
     }
     else
     {
