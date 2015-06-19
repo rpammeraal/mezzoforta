@@ -22,12 +22,6 @@ Context::setMainWindow(MainWindow* nmw)
 }
 
 void
-Context::setSBModelSonglist(SBModelSonglist *nsl)
-{
-    sl=nsl;
-}
-
-void
 Context::setSonglistScreenHandler(SonglistScreenHandler* nssh)
 {
     ssh=nssh;
@@ -50,6 +44,5 @@ Context::init()
     c=NULL;
     dal=NULL;
     mw=NULL;
-    sl=NULL;
     ssh=NULL;
 }

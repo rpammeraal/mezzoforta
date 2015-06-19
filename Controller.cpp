@@ -18,9 +18,8 @@
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
 #include "LeftColumnChooser.h"
-#include "SBModel.h"
+#include "SBModelList.h"
 #include "SBModelSong.h"
-#include "SBModelSonglist.h"
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
 #include "SBID.h"
@@ -121,14 +120,6 @@ Controller::openItemFromCompleter(const QModelIndex& i) const
 
     Context::instance()->getSonglistScreenHandler()->openScreenByID(id);
     qDebug() << SB_DEBUG_INFO << id;
-}
-
-void
-Controller::songlistCellSelectionChanged(const QItemSelection &s, const QItemSelection &o)
-{
-    Q_UNUSED(o);
-    qDebug() << SB_DEBUG_INFO << "row=" << s.indexes().at(0).row() << "column=" << s.indexes().at(0).column();
-    Context::instance()->getSBModelSonglist()->setSelectedColumn(s.indexes().at(0).column());
 }
 
 //	Data Updates
@@ -346,8 +337,7 @@ Controller::setupModels()
     qDebug() << SB_DEBUG_INFO;
 
     //	songlist
-    SBModelSonglist* sm=SBModelSong::getAllSongs();
-    Context::instance()->setSBModelSonglist(sm);
+    SBModelList* sm=SBModelSong::getAllSongs();
     qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();
@@ -406,9 +396,6 @@ Controller::setupUI()
 
     //	set up signals
     sm=mw->ui.allSongsList->selectionModel();
-    //		capture which cell is active, so we can set contect for drag/drop
-    connect(sm, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-            this, SLOT(songlistCellSelectionChanged(QItemSelection,QItemSelection)));
     //		capture double click to open detail page
     connect(mw->ui.allSongsList, SIGNAL(clicked(QModelIndex)),
             Context::instance()->getSonglistScreenHandler(),SLOT(openSonglistItem(QModelIndex)));

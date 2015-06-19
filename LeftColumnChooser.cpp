@@ -3,8 +3,8 @@
 
 
 #include "LeftColumnChooser.h"
+#include "SBModelList.h"
 #include "SBModelPlaylist.h"
-#include "SBModelSonglist.h"
 
 QStandardItemModel*
 LeftColumnChooser::getModel()
@@ -24,7 +24,7 @@ LeftColumnChooser::getModel()
     item0 = new QStandardItem("Playlists");
     model->appendRow(item0);
 
-    SBModelSonglist* allPlaylists=SBModelPlaylist::getAllPlaylists();
+    SBModelList* allPlaylists=SBModelPlaylist::getAllPlaylists();
     for(int i=0;i<allPlaylists->rowCount();i++)
     {
         QSqlRecord r=allPlaylists->record(i);

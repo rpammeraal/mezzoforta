@@ -1,13 +1,12 @@
 #ifndef SBMODELGENRELIST_H
 #define SBMODELGENRELIST_H
 
-#include "SBModel.h"
+#include "SBModelList.h"
 
 class DataAccessLayer;
 
-class SBModelGenrelist : public SBModel
+class SBModelGenrelist
 {
-    Q_OBJECT
 
 public:
     SBModelGenrelist();

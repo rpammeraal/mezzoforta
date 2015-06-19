@@ -3,11 +3,13 @@
 
 #include "SBID.h"
 
+class SBModelList;
+
 class SBModelAlbum
 {
 public:
     static SBID getDetail(const SBID& id);
-    static SBModelSonglist* getAllSongs(const SBID& id);
+    static SBModelList* getAllSongs(const SBID& id);
 };
 
 #endif // SBMODELALBUM_H

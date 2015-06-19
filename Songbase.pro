@@ -8,8 +8,6 @@ HEADERS     = \
     DatabaseSelector.h \
     DataAccessLayer.h \
     DataAccessLayerPostgres.h \
-    SBModel.h \
-    SBModelSonglist.h \
     SBModelPlaylist.h \
     SBModelGenrelist.h \
     SBID.h \
@@ -21,7 +19,8 @@ HEADERS     = \
     SBModelPerformer.h \
     SBIDExtended.h \
     LeftColumnChooser.h \
-    ExternalData.h
+    ExternalData.h \
+    SBModelList.h
 
 SOURCES     = \
     main.cpp \
@@ -32,8 +31,6 @@ SOURCES     = \
     DatabaseSelector.cpp \
     DataAccessLayer.cpp \
     DataAccessLayerPostgres.cpp \
-    SBModel.cpp \
-    SBModelSonglist.cpp \
     SBModelPlaylist.cpp \
     SBModelGenreList.cpp \
     SBID.cpp \
@@ -45,7 +42,8 @@ SOURCES     = \
     SBModelPerformer.cpp \
     SBIDExtended.cpp \
     LeftColumnChooser.cpp \
-    ExternalData.cpp
+    ExternalData.cpp \
+    SBModelList.cpp
 
 # install
 target.path = .

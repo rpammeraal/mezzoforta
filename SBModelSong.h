@@ -5,17 +5,17 @@
 
 #include "SBID.h"
 
-class SBModelSonglist;
+class SBModelList;
 
 class SBModelSong
 {
 public:
     static SBID getDetail(const SBID& id);
-    static SBModelSonglist* getAllSongs();
-    static SBModelSonglist* getPerformedByListBySong(const SBID& id);
-    static SBModelSonglist* getOnAlbumListBySong(const SBID& id);
-    static SBModelSonglist* getOnChartListBySong(const SBID& id);
-    static SBModelSonglist* getOnPlaylistListBySong(const SBID& id);
+    static SBModelList* getAllSongs();
+    static SBModelList* getPerformedByListBySong(const SBID& id);
+    static SBModelList* getOnAlbumListBySong(const SBID& id);
+    static SBModelList* getOnChartListBySong(const SBID& id);
+    static SBModelList* getOnPlaylistListBySong(const SBID& id);
 
 private:
 };

@@ -7,7 +7,7 @@
 #include "SBModelGenrelist.h"
 
 
-SBModelGenrelist::SBModelGenrelist() : SBModel()
+SBModelGenrelist::SBModelGenrelist() //: SBModel()
 {
     applyFilter(QString(),0);
 }
@@ -88,12 +88,12 @@ SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
     //	4.	Retrieve from tmp table
     q=QString("SELECT DISTINCT genreName AS \"genre\", genreName AS \"SB_OLD_GENRE_NAME\" FROM genre ORDER BY genreName");
 
-    QSqlQueryModel::setQuery(q,db);
-    while(QSqlQueryModel::canFetchMore())
+    //QSqlQueryModel::setQuery(q,db);
+    //while(QSqlQueryModel::canFetchMore())
     {
-        QSqlQueryModel::fetchMore();
+        //QSqlQueryModel::fetchMore();
     }
-    handleSQLError();
+    //handleSQLError();
 }
 
 bool
@@ -112,7 +112,7 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
 
         QSqlQuery c1(QSqlDatabase::database(dal->getConnectionName()));
         c1.exec(dal->customize(q));
-        handleSQLError();
+        //handleSQLError();
 
         return 1;
     }

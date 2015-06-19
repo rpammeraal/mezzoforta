@@ -13,10 +13,10 @@
 #include "MainWindow.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
+#include "SBModelList.h"
 #include "SBModelPerformer.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
-#include "SBModelSonglist.h"
 #include "ScreenStack.h"
 
 
@@ -282,7 +282,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     //	Reused vars
     QTableView* tv=NULL;
-    SBModelSonglist* sl=NULL;
+    SBModelList* sl=NULL;
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
@@ -356,7 +356,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
 
     //	Recreate
-    SBModelSonglist* rm=mp->getRelatedPerformers(id);
+    SBModelList* rm=mp->getRelatedPerformers(id);
     int x=0;
     int y=0;
     int spacing=7;
@@ -395,7 +395,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBModelSonglist* sl=NULL;
+    SBModelList* sl=NULL;
 
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
 
@@ -445,7 +445,7 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     QTableView* tv=NULL;
 
     tv=mw->ui.playlistDetailSongList;
-    SBModelSonglist* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
+    SBModelList* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
@@ -483,7 +483,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBModelSonglist* sl=NULL;
+    SBModelList* sl=NULL;
 
     //	populate songDetailPerformedByList
     tv=mw->ui.songDetailPerformedBy;
@@ -532,7 +532,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
 }
 
 int
-SonglistScreenHandler::populateTableView(QTableView* tv, SBModelSonglist* sl,int initialSortColumn)
+SonglistScreenHandler::populateTableView(QTableView* tv, SBModelList* sl,int initialSortColumn)
 {
     QSortFilterProxyModel* pm=NULL;
     QHeaderView* hv=NULL;

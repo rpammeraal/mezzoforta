@@ -1,6 +1,6 @@
 #include "DataAccessLayer.h"
 
-#include <SBModel.h>
+#include <SBModelList.h>
 #include <QMessageBox>
 #include <QSettings>
 #include <QFileDialog>
@@ -10,7 +10,6 @@
 #include "Controller.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
-#include "SBModelSonglist.h"
 #include "SBModelGenrelist.h"
 
 //	Singleton
@@ -111,90 +110,6 @@ DataAccessLayer::customize(QString &s) const
       replace("___SB_DB_GETDATE___",getGetDate());
 }
 
-const QString&
-DataAccessLayer::getConnectionName() const
-{
-    return _connectionName;
-}
-
-QString
-DataAccessLayer::getDriverName() const
-{
-    QSqlDatabase db=QSqlDatabase::database(_connectionName);
-    return db.driverName();
-}
-
-const QString&
-DataAccessLayer::getGetDate() const
-{
-    return _getdate;
-}
-
-const QString&
-DataAccessLayer::getILike() const
-{
-    return _ilike;
-}
-
-const QString&
-DataAccessLayer::getIsNull() const
-{
-    return _isnull;
-}
-
-SBModelGenrelist*
-DataAccessLayer::getAllGenres()
-{
-    SBModelGenrelist* n=new SBModelGenrelist();
-    connect(this,SIGNAL(schemaChanged()),n,SLOT(schemaChanged()));
-    return n;
-}
-
-QString
-DataAccessLayer::updateGenre(QModelIndex i)
-{
-    Q_UNUSED(i);
-    return "";
-//    const int row=i.row();
-//    QString newGenre=genreList.item(row,0)->data(Qt::DisplayRole).toString();
-//    QString oldGenre=genreList.item(row,1)->data(Qt::DisplayRole).toString().toLower();
-//
-//    Common::escapeSingleQuotes(newGenre);
-//    Common::escapeSingleQuotes(oldGenre);
-//
-//    qDebug() << "dal:updateGenre"
-//        << ":oldGenre=" << oldGenre
-//        << ":newGenre=" << newGenre
-//    ;
-//
-//    //	Update database
-//    QString s=QString(
-//        "UPDATE "
-//            "___SB_SQL_QUERY_SCHEMA___record "
-//        "SET "
-//            "genre=REPLACE(LOWER(genre),LOWER('%1'),'%2') "
-//        "WHERE "
-//            "LOWER(LTRIM(RTRIM(genre)))=             '%1'   OR "  // complete match
-//            "LOWER(LTRIM(RTRIM(genre))) "+_ilike+" '%|%1'   OR "  // <genre>..|old genre
-//            "LOWER(LTRIM(RTRIM(genre))) "+_ilike+"   '%1|%' OR "  // old genre|<genre>..
-//            "LOWER(LTRIM(RTRIM(genre))) "+_ilike+" '%|%1|%'  "    // <genre>..|old genre|<genre>..
-//    );
-//
-//
-//    s=s.arg(oldGenre).arg(newGenre);
-//    s.replace("___SB_SQL_QUERY_SCHEMA___",_getSchemaName());
-//    qDebug() << s;
-//
-//    QSqlQuery q(db);
-//    q.exec(s);
-//
-//    //	Update model
-//    QStandardItem *n=new QStandardItem(newGenre);
-//    genreList.setItem(row,1,n);
-//
-//    return newGenre;
-}
-
 QSqlQueryModel*
 DataAccessLayer::getCompleterModel()
 {
@@ -231,6 +146,37 @@ DataAccessLayer::getCompleterModel()
     }
 
     return model;
+}
+
+const QString&
+DataAccessLayer::getConnectionName() const
+{
+    return _connectionName;
+}
+
+QString
+DataAccessLayer::getDriverName() const
+{
+    QSqlDatabase db=QSqlDatabase::database(_connectionName);
+    return db.driverName();
+}
+
+const QString&
+DataAccessLayer::getGetDate() const
+{
+    return _getdate;
+}
+
+const QString&
+DataAccessLayer::getILike() const
+{
+    return _ilike;
+}
+
+const QString&
+DataAccessLayer::getIsNull() const
+{
+    return _isnull;
 }
 
 ///	Protected

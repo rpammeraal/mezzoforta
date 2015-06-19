@@ -2,8 +2,8 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
+#include "SBModelList.h"
 #include "SBModelPlaylist.h"
-#include "SBModelSonglist.h"
 
 //	NEW
 SBID
@@ -48,7 +48,7 @@ SBModelPlaylist::getDetail(const SBID& id)
     return result;
 }
 
-SBModelSonglist*
+SBModelList*
 SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
 {
     //	Main query
@@ -116,10 +116,10 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
             "pp.playlist_id=%1 "
     ).arg(id.sb_item_id);
 
-    return new SBModelSonglist(q);
+    return new SBModelList(q);
 }
 
-SBModelSonglist*
+SBModelList*
 SBModelPlaylist::getAllPlaylists()
 {
     //	Main query
@@ -134,5 +134,5 @@ SBModelPlaylist::getAllPlaylists()
             "p.name "
     );
 
-    return new SBModelSonglist(q);
+    return new SBModelList(q);
 }

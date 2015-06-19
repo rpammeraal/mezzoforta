@@ -44,7 +44,6 @@ public slots:
     void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void changeSchema(const QString& newSchema);
     void openItemFromCompleter(const QModelIndex& i) const;
-    void songlistCellSelectionChanged(const QItemSelection &s, const QItemSelection& o);
 
     //	Data Updates
     void updateGenre(QModelIndex i,QModelIndex j);

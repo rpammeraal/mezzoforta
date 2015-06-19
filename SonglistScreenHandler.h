@@ -12,7 +12,7 @@ class QNetworkReply;
 class QTableView;
 
 class SBID;
-class SBModelSonglist;
+class SBModelList;
 struct NewsItem;
 
 class SonglistScreenHandler : public QObject
@@ -31,7 +31,7 @@ public:
     SBID populatePerformerDetail(const SBID& id);
     SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
-    int populateTableView(QTableView* tv, SBModelSonglist* sl, int initialSortColumn);
+    int populateTableView(QTableView* tv, SBModelList* sl, int initialSortColumn);
 
     //	methods called from outside
     void showPlaylist(SBID id);

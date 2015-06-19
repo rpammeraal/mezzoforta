@@ -20,10 +20,6 @@
 class QStringList;
 class QSqlQueryModel;
 class QSqlTableModel;
-class SBModel;
-class SBModelSonglist;
-class SBModelPlaylist;
-class SBModelGenrelist;
 class QDebug;
 
 class DataAccessLayer;
@@ -34,7 +30,6 @@ class DataAccessLayer : public QObject
 
 public:
     friend class SBModel;
-    friend class SBModelSonglist;
     friend class SBModelPlaylist;
     friend class SBModelGenrelist;
 
@@ -51,18 +46,12 @@ public:
     virtual QStringList getAvailableSchemas() const;
     bool setSchema(const QString& newSchema);
     QString customize(QString& sqlString) const;
+    QSqlQueryModel* getCompleterModel();
+    const QString& getConnectionName() const;
     const QString& getGetDate() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
-
-    const QString& getConnectionName() const;
     QString getDriverName() const;
-
-    //	Services
-    SBModelGenrelist* getAllGenres();
-
-    QString updateGenre(QModelIndex i);
-    QSqlQueryModel* getCompleterModel();
 
 //signals:
     //void schemaChanged();

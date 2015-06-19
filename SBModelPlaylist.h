@@ -3,14 +3,14 @@
 
 #include <QObject>
 
-class SBModelSonglist;
+class SBModelList;
 
-class SBModelPlaylist //: public SBModel
+class SBModelPlaylist
 {
 public:
     static SBID getDetail(const SBID& id);
-    static SBModelSonglist* getAllItemsByPlaylist(const SBID& id);
-    static SBModelSonglist* getAllPlaylists();
+    static SBModelList* getAllItemsByPlaylist(const SBID& id);
+    static SBModelList* getAllPlaylists();
 };
 
 #endif // SBMODELPLAYLIST_H

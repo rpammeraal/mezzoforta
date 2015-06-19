@@ -3,22 +3,42 @@
 #include <QMessageBox>
 
 #include "Common.h"
+#include "Context.h"
 #include "DataAccessLayer.h"
 
-#include "SBModel.h"
+#include "SBModelList.h"
 #include "Controller.h"
 
-SBModel::SBModel()
+SBModelList::SBModelList()
 {
 }
 
-SBModel::~SBModel()
+SBModelList::SBModelList(const QString& query)
+{
+    QString q=query;
+
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQueryModel::clear();
+    QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
+
+    while(QSqlQueryModel::canFetchMore())
+    {
+        QSqlQueryModel::fetchMore();
+    }
+    handleSQLError();
+}
+
+
+SBModelList::~SBModelList()
 {
 
 }
 
 bool
-SBModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+SBModelList::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
     Q_UNUSED(data);
     Q_UNUSED(action);
@@ -30,7 +50,7 @@ SBModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, 
 }
 
 bool
-SBModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+SBModelList::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
     if(parent.row()==-1)
     {
@@ -59,7 +79,7 @@ SBModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, in
 }
 
 Qt::ItemFlags
-SBModel::flags(const QModelIndex &index) const
+SBModelList::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
     if(dragableColumn==-1 || dragableColumn==index.column())
@@ -70,7 +90,7 @@ SBModel::flags(const QModelIndex &index) const
 }
 
 QMimeData*
-SBModel::mimeData(const QModelIndexList & indexes) const
+SBModelList::mimeData(const QModelIndexList & indexes) const
 {
     QMimeData* mimeData = new QMimeData();
 
@@ -78,7 +98,7 @@ SBModel::mimeData(const QModelIndexList & indexes) const
     {
         if (i.isValid())
         {
-            SBID id=getSBID(i);
+            SBID id;//=getSBID1(i);
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
             return mimeData;
@@ -88,7 +108,7 @@ SBModel::mimeData(const QModelIndexList & indexes) const
 }
 
 QStringList
-SBModel::mimeTypes() const
+SBModelList::mimeTypes() const
 {
     QStringList types;
     types << "application/vnd.text.list";
@@ -96,13 +116,13 @@ SBModel::mimeTypes() const
 }
 
 void
-SBModel::resetFilter()
+SBModelList::resetFilter()
 {
     qDebug() << SB_DEBUG_INFO;
 }
 
 bool
-SBModel::setData(const QModelIndex& index, const QVariant& value, int role)
+SBModelList::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     Q_UNUSED(value);
     QVector<int> v;
@@ -113,7 +133,7 @@ SBModel::setData(const QModelIndex& index, const QVariant& value, int role)
 
 ///	NATIVE METHODS
 bool
-SBModel::assign(const QString& dstID, const SBID& id)
+SBModelList::assign(const QString& dstID, const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO << "********************************** uninherited assign call()";
     qDebug() << SB_DEBUG_INFO << dstID << id;
@@ -121,7 +141,7 @@ SBModel::assign(const QString& dstID, const SBID& id)
 }
 
 void
-SBModel::handleSQLError() const
+SBModelList::handleSQLError() const
 {
     QSqlError e=this->lastError();
     if(e.isValid()==1 || e.type()!=QSqlError::NoError)
@@ -134,27 +154,34 @@ SBModel::handleSQLError() const
 }
 
 int
-SBModel::getSelectedColumn() const
+SBModelList::getSelectedColumn() const
 {
     return selectedColumn;
 }
 
 void
-SBModel::setSelectedColumn(int c)
+SBModelList::setSelectedColumn(int c)
 {
     selectedColumn=c;
 }
 
 void
-SBModel::setDragableColumn(int c)
+SBModelList::setDragableColumn(int c)
 {
     dragableColumn=c;
     qDebug() << "dragableCOlumn=" << dragableColumn;
 }
 
+const char*
+SBModelList::whoami() const
+{
+    return "SBModelList";
+}
+
+
 ///	SLOTS
 void
-SBModel::schemaChanged()
+SBModelList::schemaChanged()
 {
     qDebug() << SB_DEBUG_INFO;
     resetFilter();
@@ -163,7 +190,7 @@ SBModel::schemaChanged()
 
 ///	PRIVATE
 void
-SBModel::init()
+SBModelList::init()
 {
     dragableColumn=-1;
     selectedColumn=0;
