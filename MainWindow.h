@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 
     friend class Controller;
     friend class SonglistScreenHandler;
+    friend class LeftColumnChooser;
 
 public:
     MainWindow();

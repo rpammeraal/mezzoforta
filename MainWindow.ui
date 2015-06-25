@@ -2313,7 +2313,16 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="menuOpenDatabase"/>
    </widget>
+   <widget class="QMenu" name="menuPlaylist">
+    <property name="title">
+     <string>Playlist</string>
+    </property>
+    <addaction name="menuNewPlaylist"/>
+    <addaction name="menuDeletePlaylist"/>
+    <addaction name="menuRenamePlaylist"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuPlaylist"/>
   </widget>
   <action name="menuOpenDatabase">
    <property name="text">
@@ -2321,6 +2330,27 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="menuNewPlaylist">
+   <property name="text">
+    <string>New Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="menuDeletePlaylist">
+   <property name="text">
+    <string>Delete Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="menuRenamePlaylist">
+   <property name="text">
+    <string>Rename Playlist</string>
    </property>
   </action>
  </widget>

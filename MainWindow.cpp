@@ -19,13 +19,11 @@ MainWindow::MainWindow()
 
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
-    qDebug() << "contextMenuEvent"
-        ":event=" << event
-    ;
+    qDebug() << "contextMenuEvent" ":event=" << event ;
     QMenu menu(this);
     menu.addAction(cutAct);
-    menu.addAction(copyAct);
-    menu.addAction(pasteAct);
+    //menu.addAction(copyAct);
+    //menu.addAction(pasteAct);
     menu.exec(event->globalPos());
 }
 
@@ -35,6 +33,7 @@ MainWindow::keyPressEvent(QKeyEvent * event)
     Context::instance()->getController()->keyPressEvent(event);
     QMainWindow::keyPressEvent(event);
 }
+
 
 void MainWindow::createMenus()
 {
@@ -114,12 +113,12 @@ void MainWindow::createActions()
 //    redoAct->setStatusTip(tr("Redo the last operation"));
 //    connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 //
-//    cutAct = new QAction(tr("Cu&t"), this);
-//    cutAct->setShortcuts(QKeySequence::Cut);
-//    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
-//                            "clipboard"));
-//    connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
-//
+    cutAct = new QAction(tr("Ku&t"), this);
+    cutAct->setShortcuts(QKeySequence::Cut);
+    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
+                            "clipboard"));
+    connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
+
 //    copyAct = new QAction(tr("&Copy"), this);
 //    copyAct->setShortcuts(QKeySequence::Copy);
 //    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
@@ -235,6 +234,7 @@ void MainWindow::redo()
 
 void MainWindow::cut()
 {
+    qDebug() << SB_DEBUG_INFO;
     //ininfoLabel->setText(tr("Invoked <b>Edit|Cut</b>"));
 }
 

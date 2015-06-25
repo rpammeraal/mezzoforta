@@ -19,6 +19,26 @@ ScreenStack::clear()
     init();
 }
 
+SBID
+ScreenStack::popScreen()
+{
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    SBID id;
+
+    if(stack.isEmpty()==0)
+    {
+        id=currentScreen();
+        stack.removeLast();
+
+        if(currentScreenID>getScreenCount()-1)
+        {
+            currentScreenID=getScreenCount()-1;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    return id;
+}
+
 void
 ScreenStack::pushScreen(const SBID& id)
 {
@@ -48,26 +68,6 @@ ScreenStack::pushScreen(const SBID& id)
         currentScreenID++;
     }
     qDebug() << SB_DEBUG_INFO << id << currentScreenID;
-}
-
-SBID
-ScreenStack::popScreen()
-{
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
-    SBID id;
-
-    if(stack.isEmpty()==0)
-    {
-        id=currentScreen();
-        stack.removeLast();
-
-        if(currentScreenID>getScreenCount()-1)
-        {
-            currentScreenID=getScreenCount()-1;
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
-    return id;
 }
 
 SBID
@@ -129,6 +129,37 @@ ScreenStack::getScreenCount() const
 {
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     return stack.length();
+}
+
+void
+ScreenStack::removeForward()
+{
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    while(stack.count()-1>currentScreenID)
+    {
+        stack.removeLast();
+    }
+}
+
+void
+ScreenStack::removeScreen(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO << id << currentScreenID << stack.count();
+    for(int i=stack.count()-1;i>=0;i--)
+    {
+        qDebug() << SB_DEBUG_INFO << "i=" << i;
+        const SBID& currentID=stack.at(i);
+        if(currentID==id)
+        {
+            qDebug() << SB_DEBUG_INFO << "remove";
+            stack.removeAt(i);
+            if(i<=currentScreenID)
+            {
+                currentScreenID--;
+                qDebug() << SB_DEBUG_INFO << "adjust i=" << i;
+            }
+        }
+    }
 }
 
 void

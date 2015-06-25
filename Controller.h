@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QModelIndex>
 
+class QAction;
 class QItemSelection;
 class QSortFilterProxyModel;
 class QKeyEvent;
@@ -71,6 +72,7 @@ private:
         void setupModels();
         void setupUI();
         void configureMenus();
+        void configureMenuItems(const QList<QAction *>& list);
 
     void initAttributes();
 

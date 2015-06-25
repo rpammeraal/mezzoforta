@@ -32,6 +32,9 @@ public:
     SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
     int populateTableView(QTableView* tv, SBModelList* sl, int initialSortColumn);
+    void refreshTabIfCurrent(const SBID& id);
+    void removeFromScreenStack(const SBID& id);
+
 
     //	methods called from outside
     void showPlaylist(SBID id);

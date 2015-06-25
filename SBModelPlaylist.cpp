@@ -7,6 +7,83 @@
 
 //	NEW
 SBID
+SBModelPlaylist::createNewPlaylist()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    SBID result;
+    QString q;
+
+    //	Get next ID available
+    q=QString("SELECT %1(MAX(playlist_id),0)+1 FROM ___SB_SCHEMA_NAME___playlist ").arg(dal->getIsNull());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qID(q,db);
+    qID.next();
+
+    result.sb_item_type   =SBID::sb_type_playlist;
+    result.sb_item_id     =qID.value(0).toInt();
+
+    //	Figure out name of next playlist
+    QString playlistName;
+    int maxNum=1;
+    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qName(q,db);
+    while(qName.next())
+    {
+        QString existing=qName.value(0).toString();
+        qDebug() << SB_DEBUG_INFO << existing;
+        existing.replace("New Playlist","");
+        int i=existing.toInt();
+        qDebug() << SB_DEBUG_INFO << i << maxNum;
+        if(i>=maxNum)
+        {
+            maxNum=i+1;
+        }
+    }
+    result.playlistName=QString("New Playlist%1").arg(maxNum);
+
+    //	Insert
+    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,\"%2\",%3,1)")
+            .arg(result.sb_item_id)
+            .arg(result.playlistName)
+            .arg(dal->getGetDate());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+    //	insert.exec();	-- no need to run on insert statements
+
+    qDebug() << SB_DEBUG_INFO << result;
+    return result;
+}
+
+void
+SBModelPlaylist::deletePlaylist(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
+
+    QStringList l;
+    l.append("playlist_performance");
+    l.append("playlist_composite");
+    l.append("playlist");
+
+    for(int i=0;i<l.count();i++)
+    {
+        QString q=qTemplate.arg(l.at(i)).arg(id.sb_item_id);
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery toExec(q,db);
+        Q_UNUSED(toExec);
+    }
+}
+
+SBID
 SBModelPlaylist::getDetail(const SBID& id)
 {
     SBID result=id;
@@ -135,4 +212,27 @@ SBModelPlaylist::getAllPlaylists()
     );
 
     return new SBModelList(q);
+}
+
+void
+SBModelPlaylist::renamePlaylist(const SBID &id)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist "
+        "SET "
+            "name='%1' "
+        "WHERE "
+            "playlist_id=%2 "
+    ).arg(id.playlistName).arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+    query.exec();
 }

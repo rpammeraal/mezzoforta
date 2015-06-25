@@ -4,6 +4,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QDataStream>
+#include <QStandardItem>
 
 
 class SBID
@@ -23,7 +24,7 @@ public:
     };
 
     SBID();
-    SBID(SBID::sb_type type, int id);
+    SBID(SBID::sb_type type, int itemID);
     SBID(QByteArray encodedData);
     ~SBID();
 
@@ -59,6 +60,7 @@ public:
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
     QString getType() const;
+    void setText(const QString &text);
 
     bool operator==(const SBID& i) const;
     friend QDebug operator<<(QDebug dbg, const SBID& id);

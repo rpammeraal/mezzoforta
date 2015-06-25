@@ -8,6 +8,7 @@
 class Controller;
 class DataAccessLayer;
 class ExternalData;
+class LeftColumnChooser;
 class MainWindow;
 class SonglistScreenHandler;
 
@@ -25,17 +26,20 @@ public:
 
     inline Controller* getController() const { return c; }
     inline DataAccessLayer* getDataAccessLayer() const { return dal; }
+    inline LeftColumnChooser* getLeftColumnChooser() const { return lcc; }
     inline MainWindow* getMainWindow() const { return mw; }
     inline SonglistScreenHandler* getSonglistScreenHandler() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
 
     void setController(Controller* nc);
     void setDataAccessLayer(DataAccessLayer* ndal);
+    void setLeftColumnChooser(LeftColumnChooser* nlcc);
     void setMainWindow(MainWindow* nmw);
     void setSonglistScreenHandler(SonglistScreenHandler* nssh);
 
 private:
     Controller* c;
     DataAccessLayer* dal;
+    LeftColumnChooser* lcc;
     MainWindow* mw;
     SonglistScreenHandler* ssh;
 

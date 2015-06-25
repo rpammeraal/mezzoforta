@@ -9,12 +9,12 @@ SBID::SBID()
     init();
 }
 
-SBID::SBID(SBID::sb_type type, int id)
+SBID::SBID(SBID::sb_type type, int itemID)
 {
     init();
-    qDebug() << SB_DEBUG_INFO << type << id;
+    qDebug() << SB_DEBUG_INFO << type << itemID;
     sb_item_type=type;
-    sb_item_id=id;
+    sb_item_id=itemID;
     qDebug() << SB_DEBUG_INFO << this->sb_item_type << this->sb_item_id;
 }
 
@@ -180,6 +180,38 @@ SBID::getType() const
         t="Unknown";
     }
     return t;
+}
+
+void
+SBID::setText(const QString &text)
+{
+    switch(this->sb_item_type)
+    {
+    case SBID::sb_type_song:
+        songTitle=text;
+        break;
+
+    case SBID::sb_type_performer:
+        performerName=text;
+        break;
+
+    case SBID::sb_type_album:
+        albumTitle=text;
+        break;
+
+    case SBID::sb_type_chart:
+        //	CWIP
+        break;
+
+    case SBID::sb_type_playlist:
+        playlistName=text;
+        break;
+
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        break;
+    }
 }
 
 bool

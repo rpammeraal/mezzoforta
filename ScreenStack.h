@@ -27,6 +27,8 @@ public:
 
     int getCurrentScreenID() const;
     int getScreenCount() const;
+    void removeForward();
+    void removeScreen(const SBID& id);
     void updateCurrentScreen(const SBID& id);
 
     void debugShow(const QString& c);

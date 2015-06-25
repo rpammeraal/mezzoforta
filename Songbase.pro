@@ -20,7 +20,8 @@ HEADERS     = \
     SBIDExtended.h \
     LeftColumnChooser.h \
     ExternalData.h \
-    SBModelList.h
+    SBModelList.h \
+    RenamePlaylist.h
 
 SOURCES     = \
     main.cpp \
@@ -43,7 +44,8 @@ SOURCES     = \
     SBIDExtended.cpp \
     LeftColumnChooser.cpp \
     ExternalData.cpp \
-    SBModelList.cpp
+    SBModelList.cpp \
+    RenamePlaylist.cpp
 
 # install
 target.path = .
@@ -51,7 +53,8 @@ INSTALLS += target
 
 FORMS += \
     MainWindow.ui \
-    DatabaseSelector.ui
+    DatabaseSelector.ui \
+    RenamePlaylist.ui
 
 RESOURCES += \
     resource.qrc

@@ -356,8 +356,11 @@ Controller::setupModels()
     mw->ui.searchEdit->setCompleter(completer);
     qDebug() << SB_DEBUG_INFO;
 
-    //	leftColumnChooser
-    mw->ui.leftColumnChooser->setModel(LeftColumnChooser::getModel());
+    ///	LeftColumnChooser
+    LeftColumnChooser* lcc=new LeftColumnChooser();
+    Context::instance()->setLeftColumnChooser(lcc);
+
+    mw->ui.leftColumnChooser->setModel(Context::instance()->getLeftColumnChooser()->getModel());
 
 }
 
@@ -500,11 +503,19 @@ Controller::setupUI()
     connect(mw->ui.buttonForward, SIGNAL(clicked()),
             ssh, SLOT(tabForward()));
 
-    ///	LeftColumnChooser
-    mw->ui.leftColumnChooser->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    mw->ui.leftColumnChooser->expandAll();
-    connect(mw->ui.leftColumnChooser, SIGNAL(clicked(QModelIndex)),
+
+    QTreeView* tv=mw->ui.leftColumnChooser;
+    tv->setColumnHidden(1,1);
+    tv->setColumnHidden(2,1);
+    tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tv->expandAll();
+    connect(tv, SIGNAL(clicked(QModelIndex)),
             Context::instance()->getSonglistScreenHandler(), SLOT(openLeftColumnChooserItem(QModelIndex)));
+    tv->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+            Context::instance()->getLeftColumnChooser(), SLOT(showContextMenu(QPoint)));
+
 
     ///	COMMON
     QTabBar* tb=mw->ui.songlistTab->tabBar();
@@ -520,8 +531,16 @@ Controller::setupUI()
 void
 Controller::configureMenus()
 {
-    QList<QAction *> list=Context::instance()->getMainWindow()->ui.menuFile->actions();
-    QList<QAction *>::iterator it;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
+    configureMenuItems(mw->ui.menuFile->actions());
+    configureMenuItems(mw->ui.menuPlaylist->actions());
+}
+
+void
+Controller::configureMenuItems(const QList<QAction *>& list)
+{
+    QList<QAction *>::const_iterator it;
     QAction* i;
 
     for(it=list.begin(); it!=list.end(); ++it)
@@ -532,9 +551,24 @@ Controller::configureMenus()
         {
             connect(i,SIGNAL(triggered()),this,SLOT(openDatabase()));
         }
+        else if(itemName=="menuNewPlaylist")
+        {
+            connect(i,SIGNAL(triggered()),
+                    Context::instance()->getLeftColumnChooser(), SLOT(newPlaylist()));
+        }
+        else if(itemName=="menuDeletePlaylist")
+        {
+            connect(i,SIGNAL(triggered()),
+                    Context::instance()->getLeftColumnChooser(), SLOT(deletePlaylist()));
+        }
+        else if(itemName=="menuRenamePlaylist")
+        {
+            connect(i,SIGNAL(triggered()),
+                    Context::instance()->getLeftColumnChooser(), SLOT(renamePlaylist()));
+        }
         else
         {
-            qDebug() << "default:objectName=" << (*it)->objectName();
+            qDebug() << SB_DEBUG_INFO << "default:objectName=" << (*it)->objectName();
         }
     }
 }

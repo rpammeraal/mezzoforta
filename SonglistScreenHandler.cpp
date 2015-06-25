@@ -10,6 +10,7 @@
 #include "Controller.h"
 #include "DataAccessLayer.h"
 #include "ExternalData.h"
+#include "LeftColumnChooser.h"
 #include "MainWindow.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
@@ -567,6 +568,48 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBModelList* sl,int ini
 }
 
 void
+SonglistScreenHandler::refreshTabIfCurrent(const SBID &id)
+{
+    SBID currentScreenID=st.currentScreen();
+    if(currentScreenID==id)
+    {
+        activateTab(id);
+    }
+}
+
+void
+SonglistScreenHandler::removeFromScreenStack(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO;
+
+    st.debugShow("575");
+    st.removeForward();
+    st.debugShow("577");
+    SBID currentScreenID=st.currentScreen();
+    while(currentScreenID==id)
+    {
+        tabBackward();	//	move display one back
+        currentScreenID=st.currentScreen();	//	find out what new current screen is.
+        st.popScreen();	//	remove top screen
+    }
+    st.debugShow("585");
+
+    //	if current screen is song list, we'll need to pop this off the stack as well.
+    while(currentScreenID.sb_item_type==SBID::sb_type_allsongs)
+    {
+        currentScreenID=st.currentScreen();	//	find out what new current screen is.
+        st.popScreen();	//	remove top screen
+    }
+
+    st.debugShow("594");
+    st.removeScreen(id);
+
+    //	and show the song list.
+    showSonglist();
+    st.debugShow("after removeFromScreenStack");
+}
+
+void
 SonglistScreenHandler::showPlaylist(SBID id)
 {
     openScreenByID(id);
@@ -672,6 +715,28 @@ SonglistScreenHandler::performerDetailSonglistSelected(const QModelIndex &i)
 void
 SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
 {
+    qDebug() << SB_DEBUG_INFO << i;
+    qDebug() << SB_DEBUG_INFO << i.internalPointer();
+    QStandardItem* si=(QStandardItem *)i.internalPointer();
+    qDebug() << SB_DEBUG_INFO << si->text();
+    QStandardItem* t=Context::instance()->getLeftColumnChooser()->getModel()->itemFromIndex(i);
+    if(t)
+    {
+        qDebug() << SB_DEBUG_INFO << t->text() << t->columnCount();
+    }
+    QStandardItem* u=si->child(i.row(),i.column());
+    if(t)
+    {
+        qDebug() << SB_DEBUG_INFO << u->text();
+    }
+    QStandardItem* v=si->child(i.row(),i.column()+1);
+    if(v)
+    {
+        qDebug() << SB_DEBUG_INFO << v->text();
+    }
+    qDebug() << SB_DEBUG_INFO;
+
+
     SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
     openScreenByID(id);
 }

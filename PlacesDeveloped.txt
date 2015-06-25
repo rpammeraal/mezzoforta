@@ -48,9 +48,11 @@ Morro Rock (20150612)
 20120617:
 -	related performers
 
+20120625:
+-	creating, renaming, deleting playlists
+-	restructuring of SBModelSongList
+
 <soon>
--	related performers
--	SBMOdelSonglist: put in own class
 -	charts
 
 

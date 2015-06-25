@@ -16,6 +16,12 @@ Context::setDataAccessLayer(DataAccessLayer* ndal)
 }
 
 void
+Context::setLeftColumnChooser(LeftColumnChooser *nlcc)
+{
+    lcc=nlcc;
+}
+
+void
 Context::setMainWindow(MainWindow* nmw)
 {
     mw=nmw;
@@ -43,6 +49,7 @@ Context::init()
 {
     c=NULL;
     dal=NULL;
+    lcc=NULL;
     mw=NULL;
     ssh=NULL;
 }
