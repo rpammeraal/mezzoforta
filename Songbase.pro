@@ -20,8 +20,9 @@ HEADERS     = \
     SBIDExtended.h \
     LeftColumnChooser.h \
     ExternalData.h \
-    SBModelList.h \
-    RenamePlaylist.h
+    RenamePlaylist.h \
+    SBStandardItemModel.h \
+    SBSqlQueryModel.h
 
 SOURCES     = \
     main.cpp \
@@ -44,8 +45,9 @@ SOURCES     = \
     SBIDExtended.cpp \
     LeftColumnChooser.cpp \
     ExternalData.cpp \
-    SBModelList.cpp \
-    RenamePlaylist.cpp
+    RenamePlaylist.cpp \
+    SBStandardItemModel.cpp \
+    SBSqlQueryModel.cpp
 
 # install
 target.path = .

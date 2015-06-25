@@ -1,7 +1,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBID.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelPerformer.h"
 
 SBModelPerformer::SBModelPerformer()
@@ -72,7 +72,7 @@ SBModelPerformer::getDetail(const SBID& id)
     return result;
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPerformer::getAllAlbums(const SBID& id)
 {
     QString q=QString
@@ -110,10 +110,10 @@ SBModelPerformer::getAllAlbums(const SBID& id)
             "1 "
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPerformer::getAllCharts(const SBID& id)
 {
     QString q=QString
@@ -135,10 +135,10 @@ SBModelPerformer::getAllCharts(const SBID& id)
         "ORDER BY 1"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPerformer::getAllSongs(const SBID& id)
 {
     QString q=QString
@@ -159,10 +159,10 @@ SBModelPerformer::getAllSongs(const SBID& id)
             "s.title "
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPerformer::getRelatedPerformers(const SBID& id)
 {
     QString q=QString
@@ -188,7 +188,7 @@ SBModelPerformer::getRelatedPerformers(const SBID& id)
             "ar2.artist1_id=%1 "
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
 void

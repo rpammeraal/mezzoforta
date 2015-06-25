@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-class SBModelList;
+class SBSqlQueryModel;
 
 class SBModelPlaylist
 {
@@ -11,8 +11,8 @@ public:
     static SBID createNewPlaylist();
     static void deletePlaylist(const SBID& id);
     static SBID getDetail(const SBID& id);
-    static SBModelList* getAllItemsByPlaylist(const SBID& id);
-    static SBModelList* getAllPlaylists();
+    static SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id);
+    static SBSqlQueryModel* getAllPlaylists();
     static void renamePlaylist(const SBID& id);
 };
 

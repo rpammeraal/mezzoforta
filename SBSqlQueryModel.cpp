@@ -6,14 +6,14 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "Controller.h"
 
-SBModelList::SBModelList()
+SBSqlQueryModel::SBSqlQueryModel()
 {
 }
 
-SBModelList::SBModelList(const QString& query)
+SBSqlQueryModel::SBSqlQueryModel(const QString& query)
 {
     QString q=query;
 
@@ -32,14 +32,15 @@ SBModelList::SBModelList(const QString& query)
 }
 
 
-SBModelList::~SBModelList()
+SBSqlQueryModel::~SBSqlQueryModel()
 {
 
 }
 
 bool
-SBModelList::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+SBSqlQueryModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
+    qDebug() << SB_DEBUG_INFO;
     Q_UNUSED(data);
     Q_UNUSED(action);
     Q_UNUSED(row);
@@ -50,8 +51,9 @@ SBModelList::canDropMimeData(const QMimeData* data, Qt::DropAction action, int r
 }
 
 bool
-SBModelList::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(parent.row()==-1)
     {
         return false;
@@ -79,10 +81,12 @@ SBModelList::dropMimeData(const QMimeData * data, Qt::DropAction action, int row
 }
 
 Qt::ItemFlags
-SBModelList::flags(const QModelIndex &index) const
+SBSqlQueryModel::flags(const QModelIndex &index) const
 {
+    qDebug() << SB_DEBUG_INFO << index.column();
+    debugShow();
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
-    if(dragableColumn==-1 || dragableColumn==index.column())
+    if(dragableColumnList.count()==0 || dragableColumnList.at(index.column()==1))
     {
         defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled; // | Qt::ItemIsEditable;// | defaultFlags;
     }
@@ -90,8 +94,9 @@ SBModelList::flags(const QModelIndex &index) const
 }
 
 QMimeData*
-SBModelList::mimeData(const QModelIndexList & indexes) const
+SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
 {
+    qDebug() << SB_DEBUG_INFO;
     QMimeData* mimeData = new QMimeData();
 
     foreach (const QModelIndex &i, indexes)
@@ -108,22 +113,24 @@ SBModelList::mimeData(const QModelIndexList & indexes) const
 }
 
 QStringList
-SBModelList::mimeTypes() const
+SBSqlQueryModel::mimeTypes() const
 {
+    qDebug() << SB_DEBUG_INFO;
     QStringList types;
     types << "application/vnd.text.list";
     return types;
 }
 
 void
-SBModelList::resetFilter()
+SBSqlQueryModel::resetFilter()
 {
     qDebug() << SB_DEBUG_INFO;
 }
 
 bool
-SBModelList::setData(const QModelIndex& index, const QVariant& value, int role)
+SBSqlQueryModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+    qDebug() << SB_DEBUG_INFO;
     Q_UNUSED(value);
     QVector<int> v;
     v.append(role);
@@ -133,7 +140,7 @@ SBModelList::setData(const QModelIndex& index, const QVariant& value, int role)
 
 ///	NATIVE METHODS
 bool
-SBModelList::assign(const QString& dstID, const SBID& id)
+SBSqlQueryModel::assign(const QString& dstID, const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO << "********************************** uninherited assign call()";
     qDebug() << SB_DEBUG_INFO << dstID << id;
@@ -141,7 +148,18 @@ SBModelList::assign(const QString& dstID, const SBID& id)
 }
 
 void
-SBModelList::handleSQLError() const
+SBSqlQueryModel::debugShow() const
+{
+    qDebug() << SB_DEBUG_INFO << "start";
+    for(int i=0;i<dragableColumnList.count();i++)
+    {
+        qDebug() << i << dragableColumnList.at(i);
+    }
+    qDebug() << SB_DEBUG_INFO << "end";
+}
+
+void
+SBSqlQueryModel::handleSQLError() const
 {
     QSqlError e=this->lastError();
     if(e.isValid()==1 || e.type()!=QSqlError::NoError)
@@ -154,34 +172,28 @@ SBModelList::handleSQLError() const
 }
 
 int
-SBModelList::getSelectedColumn() const
+SBSqlQueryModel::getSelectedColumn() const
 {
     return selectedColumn;
 }
 
 void
-SBModelList::setSelectedColumn(int c)
+SBSqlQueryModel::setSelectedColumn(int c)
 {
     selectedColumn=c;
 }
 
 void
-SBModelList::setDragableColumn(int c)
+SBSqlQueryModel::setDragableColumns(const QList<bool>& list)
 {
-    dragableColumn=c;
-    qDebug() << "dragableCOlumn=" << dragableColumn;
+    qDebug() << SB_DEBUG_INFO;
+    dragableColumnList=list;
+    debugShow();
 }
-
-const char*
-SBModelList::whoami() const
-{
-    return "SBModelList";
-}
-
 
 ///	SLOTS
 void
-SBModelList::schemaChanged()
+SBSqlQueryModel::schemaChanged()
 {
     qDebug() << SB_DEBUG_INFO;
     resetFilter();
@@ -190,8 +202,8 @@ SBModelList::schemaChanged()
 
 ///	PRIVATE
 void
-SBModelList::init()
+SBSqlQueryModel::init()
 {
-    dragableColumn=-1;
+    dragableColumnList.clear();
     selectedColumn=0;
 }

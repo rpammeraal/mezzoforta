@@ -2,7 +2,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 
 //	NEW
@@ -125,7 +125,7 @@ SBModelPlaylist::getDetail(const SBID& id)
     return result;
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
 {
     //	Main query
@@ -193,10 +193,10 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
             "pp.playlist_id=%1 "
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelPlaylist::getAllPlaylists()
 {
     //	Main query
@@ -211,7 +211,7 @@ SBModelPlaylist::getAllPlaylists()
             "p.name "
     );
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
 void

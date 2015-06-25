@@ -9,7 +9,7 @@
 #include "LeftColumnChooser.h"
 #include "MainWindow.h"
 #include "RenamePlaylist.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 #include "SonglistScreenHandler.h"
 
@@ -67,7 +67,6 @@ void
 LeftColumnChooser::newPlaylist()
 {
     qDebug() << SB_DEBUG_INFO;
-    const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Create placeholder in database
     SBID id=SBModelPlaylist::createNewPlaylist();
@@ -334,7 +333,7 @@ LeftColumnChooser::populateModel()
     model->appendRow(item1);
     playlistRoot=item1;
 
-    SBModelList* allPlaylists=SBModelPlaylist::getAllPlaylists();
+    SBSqlQueryModel* allPlaylists=SBModelPlaylist::getAllPlaylists();
     for(int i=0;i<allPlaylists->rowCount();i++)
     {
         QSqlRecord r=allPlaylists->record(i);

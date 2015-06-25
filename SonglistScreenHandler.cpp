@@ -14,7 +14,7 @@
 #include "MainWindow.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelPerformer.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
@@ -283,7 +283,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     //	Reused vars
     QTableView* tv=NULL;
-    SBModelList* sl=NULL;
+    SBSqlQueryModel* sl=NULL;
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
@@ -357,7 +357,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
 
     //	Recreate
-    SBModelList* rm=mp->getRelatedPerformers(id);
+    SBSqlQueryModel* rm=mp->getRelatedPerformers(id);
     int x=0;
     int y=0;
     int spacing=7;
@@ -396,7 +396,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBModelList* sl=NULL;
+    SBSqlQueryModel* sl=NULL;
 
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
 
@@ -446,7 +446,7 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     QTableView* tv=NULL;
 
     tv=mw->ui.playlistDetailSongList;
-    SBModelList* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
+    SBSqlQueryModel* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
@@ -484,7 +484,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBModelList* sl=NULL;
+    SBSqlQueryModel* sl=NULL;
 
     //	populate songDetailPerformedByList
     tv=mw->ui.songDetailPerformedBy;
@@ -533,7 +533,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
 }
 
 int
-SonglistScreenHandler::populateTableView(QTableView* tv, SBModelList* sl,int initialSortColumn)
+SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int initialSortColumn)
 {
     QSortFilterProxyModel* pm=NULL;
     QHeaderView* hv=NULL;

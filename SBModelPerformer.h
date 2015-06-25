@@ -5,7 +5,7 @@
 
 #include "SBID.h"
 
-class SBModelList;
+class SBSqlQueryModel;
 
 class SBModelPerformer : public QObject
 {
@@ -16,10 +16,10 @@ public:
     ~SBModelPerformer();
 
     SBID getDetail(const SBID& id);
-    SBModelList* getAllAlbums(const SBID& id);
-    SBModelList* getAllCharts(const SBID& id);
-    SBModelList* getAllSongs(const SBID& id);
-    SBModelList* getRelatedPerformers(const SBID& id);
+    SBSqlQueryModel* getAllAlbums(const SBID& id);
+    SBSqlQueryModel* getAllCharts(const SBID& id);
+    SBSqlQueryModel* getAllSongs(const SBID& id);
+    SBSqlQueryModel* getRelatedPerformers(const SBID& id);
 
 public slots:
     void updateHomePage(const SBID& id);

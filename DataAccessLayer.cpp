@@ -1,6 +1,6 @@
 #include "DataAccessLayer.h"
 
-#include <SBModelList.h>
+#include <SBSqlQueryModel.h>
 #include <QMessageBox>
 #include <QSettings>
 #include <QFileDialog>

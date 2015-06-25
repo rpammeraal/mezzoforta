@@ -1,7 +1,7 @@
 #ifndef SBMODELGENRELIST_H
 #define SBMODELGENRELIST_H
 
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 
 class DataAccessLayer;
 

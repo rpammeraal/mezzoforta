@@ -10,20 +10,18 @@ class DataAccessLayer;
 class QAbstractItemModel;
 
 ///
-/// \brief The SBModelList class
+/// \brief The SBSqlQueryModel class
 ///
-/// Created to re-implement the methods to support drag & drop,
-/// and is implemented as a proxy class.
-/// This (and its sub) classes are only constructed by DataAccessLayer (or its subclasses).
+/// Created to re-implement the methods to support drag & drop.
 ///
-class SBModelList : public QSqlQueryModel
+class SBSqlQueryModel : public QSqlQueryModel
 {
     Q_OBJECT
 
 public:
-    SBModelList();
-    SBModelList(const QString& query);
-    ~SBModelList();
+    SBSqlQueryModel();
+    SBSqlQueryModel(const QString& query);
+    ~SBSqlQueryModel();
 
     //	Inherited methods
     virtual bool canDropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
@@ -36,11 +34,11 @@ public:
 
     //	Native methods
     virtual bool assign(const QString& dstID, const SBID& id);
+    void debugShow() const;
     int getSelectedColumn() const;
     void handleSQLError() const;
-    void setDragableColumn(int c);
+    void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
-    virtual const char* whoami() const;
 
 public slots:
     void schemaChanged();
@@ -48,7 +46,7 @@ public slots:
 protected:
 
 private:
-    int dragableColumn;
+    QList<bool> dragableColumnList;
     int selectedColumn;
 
     void init();

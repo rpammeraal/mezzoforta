@@ -5,17 +5,17 @@
 
 #include "SBID.h"
 
-class SBModelList;
+class SBSqlQueryModel;
 
 class SBModelSong
 {
 public:
     static SBID getDetail(const SBID& id);
-    static SBModelList* getAllSongs();
-    static SBModelList* getPerformedByListBySong(const SBID& id);
-    static SBModelList* getOnAlbumListBySong(const SBID& id);
-    static SBModelList* getOnChartListBySong(const SBID& id);
-    static SBModelList* getOnPlaylistListBySong(const SBID& id);
+    static SBSqlQueryModel* getAllSongs();
+    static SBSqlQueryModel* getPerformedByListBySong(const SBID& id);
+    static SBSqlQueryModel* getOnAlbumListBySong(const SBID& id);
+    static SBSqlQueryModel* getOnChartListBySong(const SBID& id);
+    static SBSqlQueryModel* getOnPlaylistListBySong(const SBID& id);
 
 private:
 };

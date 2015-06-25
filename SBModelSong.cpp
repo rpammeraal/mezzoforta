@@ -2,7 +2,7 @@
 #include "Controller.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelSong.h"
 
 
@@ -53,7 +53,7 @@ SBModelSong::getDetail(const SBID& id)
     return result;
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelSong::getAllSongs()
 {
     //	Main query
@@ -89,10 +89,10 @@ SBModelSong::getAllSongs()
             ") a "
         "ORDER BY 1 ";
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelSong::getPerformedByListBySong(const SBID& id)
 {
     QString q=QString
@@ -112,10 +112,10 @@ SBModelSong::getPerformedByListBySong(const SBID& id)
             "a.name"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelSong::getOnAlbumListBySong(const SBID& id)
 {
     QString q=QString
@@ -137,10 +137,10 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
             "rp.song_id=%1"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelSong::getOnChartListBySong(const SBID& id)
 {
     QString q=QString
@@ -161,10 +161,10 @@ SBModelSong::getOnChartListBySong(const SBID& id)
                 "cp.song_id=%1"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelSong::getOnPlaylistListBySong(const SBID& id)
 {
     QString q=QString
@@ -190,5 +190,5 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
             "pp.song_id=%1"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }

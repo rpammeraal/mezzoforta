@@ -1,7 +1,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBModelAlbum.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 
 SBID
 SBModelAlbum::getDetail(const SBID& id)
@@ -45,7 +45,7 @@ SBModelAlbum::getDetail(const SBID& id)
     return result;
 }
 
-SBModelList*
+SBSqlQueryModel*
 SBModelAlbum::getAllSongs(const SBID& id)
 {
     QString q=QString
@@ -68,5 +68,5 @@ SBModelAlbum::getAllSongs(const SBID& id)
         "ORDER BY 1"
     ).arg(id.sb_item_id);
 
-    return new SBModelList(q);
+    return new SBSqlQueryModel(q);
 }

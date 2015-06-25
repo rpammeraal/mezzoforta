@@ -18,7 +18,7 @@
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
 #include "LeftColumnChooser.h"
-#include "SBModelList.h"
+#include "SBSqlQueryModel.h"
 #include "SBModelSong.h"
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
@@ -339,7 +339,7 @@ Controller::setupModels()
     qDebug() << SB_DEBUG_INFO;
 
     //	songlist
-    SBModelList* sm=SBModelSong::getAllSongs();
+    SBSqlQueryModel* sm=SBModelSong::getAllSongs();
     qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();
