@@ -76,6 +76,7 @@ private:
     QList<QWidget *> related;
 
     bool openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
+    void init();
     void setImage(const QPixmap& p, QLabel* l) const;
 };
 

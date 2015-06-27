@@ -46,7 +46,7 @@ SBModelPlaylist::createNewPlaylist()
     result.playlistName=QString("New Playlist%1").arg(maxNum);
 
     //	Insert
-    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,\"%2\",%3,1)")
+    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
             .arg(result.sb_item_id)
             .arg(result.playlistName)
             .arg(dal->getGetDate());
@@ -58,6 +58,148 @@ SBModelPlaylist::createNewPlaylist()
 
     qDebug() << SB_DEBUG_INFO << result;
     return result;
+}
+
+void
+SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    switch(assignID.sb_item_type)
+    {
+    case SBID::sb_type_song:
+        q=QString
+          (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
+                "(playlist_id, playlist_position, song_id, artist_id, record_id, record_position, timestamp) "
+            "SELECT "
+                "%1, %7(a.playlist_position,0)+1, %2, %3, %4, %5, %6 "
+            "FROM "
+                "( "
+                    "SELECT MAX(playlist_position) AS playlist_position "
+                    "FROM "
+                    "( "
+                        "SELECT MAX(playlist_position) AS playlist_position "
+                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
+                        "WHERE playlist_id=%1 "
+                        "UNION "
+                        "SELECT MAX(playlist_position) AS playlist_composite "
+                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
+                        "WHERE playlist_id=%1 "
+                    ") b "
+                ") a "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_performance pp "
+                    "WHERE "
+                        "pp.playlist_id=%1 AND "
+                        "pp.song_id=%2 AND "
+                        "pp.artist_id=%3 AND "
+                        "pp.record_id=%4 AND "
+                        "pp.record_position=%5 "
+                ") "
+          ).arg(toID.sb_item_id)
+           .arg(assignID.sb_song_id)
+           .arg(assignID.sb_performer_id)
+           .arg(assignID.sb_album_id)
+           .arg(assignID.sb_album_position)
+           .arg(dal->getGetDate())
+           .arg(dal->getIsNull());
+        break;
+
+    case SBID::sb_type_performer:
+        q=QString
+          (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
+                "(playlist_id, timestamp, playlist_position, playlist_artist_id) "
+            "SELECT "
+                "%1, %2, %3(playlist_position,0)+1, %4 "
+            "FROM "
+                "( "
+                    "SELECT MAX(playlist_position) AS playlist_position "
+                    "FROM "
+                    "( "
+                        "SELECT MAX(playlist_position) AS playlist_position "
+                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
+                        "WHERE playlist_id=%1 "
+                        "UNION "
+                        "SELECT MAX(playlist_position) "
+                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
+                        "WHERE playlist_id=%1 "
+                    ") b "
+                ") a "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
+                    "WHERE "
+                        "pp.playlist_id=%1 AND "
+                        "pp.playlist_artist_id=%4 "
+                ") "
+          ).arg(toID.sb_item_id)
+           .arg(dal->getGetDate())
+           .arg(dal->getIsNull())
+           .arg(assignID.sb_performer_id);
+        break;
+
+    case SBID::sb_type_album:
+        q=QString
+          (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
+                "(playlist_id, timestamp, playlist_position, playlist_record_id) "
+            "SELECT "
+                "%1, %2, %3(playlist_position,0)+1, %4 "
+            "FROM "
+                "( "
+                    "SELECT MAX(playlist_position) AS playlist_position "
+                    "FROM "
+                    "( "
+                        "SELECT MAX(playlist_position) AS playlist_position "
+                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
+                        "WHERE playlist_id=%1 "
+                        "UNION "
+                        "SELECT MAX(playlist_position) "
+                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
+                        "WHERE playlist_id=%1 "
+                    ") b "
+                ") a "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
+                    "WHERE "
+                        "pp.playlist_id=%1 AND "
+                        "pp.playlist_record_id=%4 "
+                ") "
+          ).arg(toID.sb_item_id)
+           .arg(dal->getGetDate())
+           .arg(dal->getIsNull())
+           .arg(assignID.sb_album_id);
+        break;
+
+    case SBID::sb_type_chart:
+        break;
+
+    case SBID::sb_type_playlist:
+        break;
+
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+    case SBID::sb_type_invalid:
+    default:
+        break;
+    }
+
+    dal->customize(q);
+    if(q.length()>0)
+    {
+        QSqlQuery insert(q,db);
+        Q_UNUSED(insert);
+    }
+    qDebug() << SB_DEBUG_INFO << q;
 }
 
 void
@@ -117,7 +259,7 @@ SBModelPlaylist::getDetail(const SBID& id)
 
     result.sb_item_type   =SBID::sb_type_playlist;
     result.sb_item_id     =id.sb_item_id;
-    result.sb_playlist_id1=id.sb_item_id;
+    result.sb_playlist_id=id.sb_item_id;
     result.playlistName   =query.value(0).toString();
     result.duration       =query.value(1).toString();
     result.count1         =query.value(2).toInt();

@@ -8,7 +8,7 @@
 
 class QAction;
 class QStandardItem;
-class QStandardItemModel;
+class SBStandardItemModel;
 
 class LeftColumnChooser : public QObject
 {
@@ -17,13 +17,14 @@ public:
     LeftColumnChooser();
     ~LeftColumnChooser();
 
-    QStandardItemModel* getModel();
+    SBStandardItemModel* getModel();
 
 public:
 
 signals:
 
 public slots:
+    void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();
     void newPlaylist();
     void renamePlaylist();
@@ -38,7 +39,7 @@ private:
     QAction* newAction;
     QAction* deleteAction;
     QAction* renameAction;
-    QStandardItemModel* model;
+    SBStandardItemModel* model;
     QModelIndex lastClickedIndex;
     QStandardItem* playlistRoot;
 

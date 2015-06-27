@@ -40,9 +40,9 @@ SBModelSong::getDetail(const SBID& id)
     QSqlQuery query(q,db);
     query.next();
 
-    result.sb_performer_id1=query.value(2).toInt();
+    result.sb_performer_id =query.value(2).toInt();
     result.sb_item_id      =id.sb_item_id;
-    result.sb_song_id1     =id.sb_item_id;
+    result.sb_song_id      =id.sb_item_id;
     result.sb_item_type    =SBID::sb_type_song;
     result.performerName   =query.value(3).toString();
     result.songTitle       =query.value(0).toString();
@@ -57,15 +57,20 @@ SBSqlQueryModel*
 SBModelSong::getAllSongs()
 {
     //	Main query
-    QString q=
+    QString q=QString
+    (
         "SELECT  "
             "SB_KEYWORDS, "
+            "%1 AS SB_ITEM_TYPE1, "
             "SB_SONG_ID, "
             "songTitle AS \"song title\", "
+            "%2 AS SB_ITEM_TYPE2, "
             "SB_PERFORMER_ID, "
             "artistName AS \"performer\", "
+            "%3 AS SB_ITEM_TYPE3, "
             "SB_ALBUM_ID, "
             "recordTitle AS \"album title\", "
+            "%4 AS SB_ITEM_TYPE4, "
             "SB_ALBUM_POSITION_ID "
         "FROM "
             "( "
@@ -87,7 +92,8 @@ SBModelSong::getAllSongs()
                         "JOIN ___SB_SCHEMA_NAME___song s ON  "
                             "rp.song_id=s.song_id "
             ") a "
-        "ORDER BY 1 ";
+        "ORDER BY 4 "
+    ).arg(SBID::sb_type_song).arg(SBID::sb_type_performer).arg(SBID::sb_type_album).arg(SBID::sb_type_position);
 
     return new SBSqlQueryModel(q);
 }

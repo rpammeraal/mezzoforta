@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Songbase [next demo]</string>
+   <string>Songbase [Morro Rock 64]</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -980,7 +980,7 @@
             <item>
              <widget class="QTabWidget" name="tabPerformerDetailLists">
               <property name="currentIndex">
-               <number>3</number>
+               <number>5</number>
               </property>
               <widget class="QWidget" name="tabPerformerDetailPerformances">
                <attribute name="title">
@@ -2202,7 +2202,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Next Demo</string>
+               <string>Morro Rock 64</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

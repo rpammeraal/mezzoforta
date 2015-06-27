@@ -25,12 +25,12 @@ SBID::SBID(QByteArray encodedData)
     QDataStream ds(&encodedData, QIODevice::ReadOnly);
     int i;
     ds
-        >> sb_performer_id1
-        >> sb_album_id1
+        >> sb_performer_id
+        >> sb_album_id
         >> sb_album_position
-        >> sb_chart_id1
-        >> sb_song_id1
-        >> sb_playlist_id1
+        >> sb_chart_id
+        >> sb_song_id
+        >> sb_playlist_id
         >> i
         >> sb_item_id
         >> sb_mbid
@@ -57,7 +57,7 @@ SBID::~SBID()
 }
 
 void
-SBID::assign(const QString& it, int id)
+SBID::assign(const QString& it, int id, QString text)
 {
     init();
     sb_item_id=id;
@@ -85,6 +85,7 @@ SBID::assign(const QString& it, int id)
     {
         sb_item_type=SBID::sb_type_invalid;
     }
+    setText(text);
 }
 
 QByteArray
@@ -94,12 +95,12 @@ SBID::encode() const
     QDataStream ds(&encodedData, QIODevice::WriteOnly);
 
     ds
-        << sb_performer_id1
-        << sb_album_id1
+        << sb_performer_id
+        << sb_album_id
         << sb_album_position
-        << sb_chart_id1
-        << sb_song_id1
-        << sb_playlist_id1
+        << sb_chart_id
+        << sb_song_id
+        << sb_playlist_id
         << (int)sb_item_type
         << sb_item_id
         << sb_mbid
@@ -207,6 +208,7 @@ SBID::setText(const QString &text)
         playlistName=text;
         break;
 
+    case SBID::sb_type_position:
     case SBID::sb_type_invalid:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
@@ -291,12 +293,12 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 void
 SBID::init()
 {
-    sb_performer_id1=0;
-    sb_album_id1=0;
+    sb_performer_id=0;
+    sb_album_id=0;
     sb_album_position=0;
-    sb_chart_id1=0;
-    sb_playlist_id1=0;
-    sb_song_id1=0;
+    sb_chart_id=0;
+    sb_playlist_id=0;
+    sb_song_id=0;
     sb_item_type=sb_type_invalid;
     sb_item_id=-1;
     sb_mbid="";

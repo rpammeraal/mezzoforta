@@ -34,7 +34,7 @@ SBModelAlbum::getDetail(const SBID& id)
 
     result.sb_item_type =SBID::sb_type_album;
     result.sb_item_id   =id.sb_item_id;
-    result.sb_album_id1 =id.sb_item_id;
+    result.sb_album_id  =id.sb_item_id;
     result.performerName=query.value(4).toString();
     result.albumTitle   =query.value(0).toString();
     result.year         =query.value(2).toInt();

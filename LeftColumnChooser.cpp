@@ -2,7 +2,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QSqlRecord>
-#include <QStandardItemModel>
 
 
 #include "Context.h"
@@ -11,6 +10,7 @@
 #include "RenamePlaylist.h"
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
+#include "SBStandardItemModel.h"
 #include "SonglistScreenHandler.h"
 
 ///	PUBLIC
@@ -23,7 +23,7 @@ LeftColumnChooser::~LeftColumnChooser()
 {
 }
 
-QStandardItemModel*
+SBStandardItemModel*
 LeftColumnChooser::getModel()
 {
     return model;
@@ -31,6 +31,14 @@ LeftColumnChooser::getModel()
 
 
 ///	SLOTS
+void
+LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
+{
+    SBID toID=getPlaylistSelected(idx);
+    qDebug() << SB_DEBUG_INFO << "assign" << assignID << "to" << toID;
+    SBModelPlaylist::assignItem(assignID, toID);
+}
+
 void
 LeftColumnChooser::deletePlaylist()
 {
@@ -279,7 +287,7 @@ LeftColumnChooser::init()
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Set up context menu actions
-    model=new QStandardItemModel();
+    model=new SBStandardItemModel();
     populateModel();
 
     //	New playlist
@@ -305,6 +313,13 @@ LeftColumnChooser::init()
     //	Connections
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
+    connect(model, SIGNAL(assign(QModelIndex,SBID)),
+            this, SLOT(assignItemToPlaylist(QModelIndex,SBID)));
+
+    //	Drag & drop
+    mw->ui.leftColumnChooser->setAcceptDrops(1);
+    mw->ui.leftColumnChooser->setDropIndicatorShown(1);
+    mw->ui.leftColumnChooser->viewport()->setAcceptDrops(1);
 }
 
 void

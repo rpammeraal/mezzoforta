@@ -37,6 +37,7 @@ SBSqlQueryModel::~SBSqlQueryModel()
 
 }
 
+///	Inherited functions
 bool
 SBSqlQueryModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
@@ -71,6 +72,7 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBID id=SBID(encodedData);
+    qDebug() << SB_DEBUG_INFO << "Dropping " << id;
 
     const QModelIndex n=this->index(parent.row(),0);
     QString dstID=this->data(n, Qt::DisplayRole).toString();
@@ -83,8 +85,6 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
 Qt::ItemFlags
 SBSqlQueryModel::flags(const QModelIndex &index) const
 {
-    qDebug() << SB_DEBUG_INFO << index.column();
-    debugShow();
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
     if(dragableColumnList.count()==0 || dragableColumnList.at(index.column()==1))
     {
@@ -103,9 +103,10 @@ SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
     {
         if (i.isValid())
         {
-            SBID id;//=getSBID1(i);
+            SBID id=determineSBID(i);
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
+            qDebug() << SB_DEBUG_INFO << "Dragging " << id;
             return mimeData;
         }
     }
@@ -119,12 +120,6 @@ SBSqlQueryModel::mimeTypes() const
     QStringList types;
     types << "application/vnd.text.list";
     return types;
-}
-
-void
-SBSqlQueryModel::resetFilter()
-{
-    qDebug() << SB_DEBUG_INFO;
 }
 
 bool
@@ -150,12 +145,10 @@ SBSqlQueryModel::assign(const QString& dstID, const SBID& id)
 void
 SBSqlQueryModel::debugShow() const
 {
-    qDebug() << SB_DEBUG_INFO << "start";
     for(int i=0;i<dragableColumnList.count();i++)
     {
         qDebug() << i << dragableColumnList.at(i);
     }
-    qDebug() << SB_DEBUG_INFO << "end";
 }
 
 void
@@ -196,7 +189,6 @@ void
 SBSqlQueryModel::schemaChanged()
 {
     qDebug() << SB_DEBUG_INFO;
-    resetFilter();
 }
 
 
@@ -206,4 +198,54 @@ SBSqlQueryModel::init()
 {
     dragableColumnList.clear();
     selectedColumn=0;
+}
+
+SBID
+SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
+{
+    QModelIndex n;
+    SBID id;
+
+    qDebug() << SB_DEBUG_INFO << idx;
+
+    //	sb_item_id
+    n=this->index(idx.row(),idx.column()-1);
+    id.sb_item_id=data(n, Qt::DisplayRole).toInt();
+
+    //	sb_item_type
+    n=this->index(idx.row(),idx.column()-2);
+    id.sb_item_type=static_cast<SBID::sb_type>(data(n, Qt::DisplayRole).toInt());
+
+    //	text
+    n=this->index(idx.row(),idx.column());
+    id.setText(data(n, Qt::DisplayRole).toString());
+
+    //	populate secundairy fields
+    for(int i=0;i<this->columnCount();i++)
+    {
+        QString header=this->headerData(i,Qt::Horizontal).toString().toLower();
+        n=this->index(idx.row(),i);
+        int value=data(n, Qt::DisplayRole).toInt();
+        qDebug() << SB_DEBUG_INFO << i << header << value;
+
+        if(header=="sb_song_id")
+        {
+            id.sb_song_id=value;
+        }
+        else if(header=="sb_performer_id")
+        {
+            id.sb_performer_id=value;
+        }
+        else if(header=="sb_album_id")
+        {
+            id.sb_album_id=value;
+        }
+        else if(header=="sb_album_position_id")
+        {
+            id.sb_album_position=value;
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO << id;
+    return id;
 }

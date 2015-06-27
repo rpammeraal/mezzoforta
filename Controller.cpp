@@ -18,11 +18,12 @@
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
 #include "LeftColumnChooser.h"
-#include "SBSqlQueryModel.h"
 #include "SBModelSong.h"
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
 #include "SBID.h"
+#include "SBSqlQueryModel.h"
+#include "SBStandardItemModel.h"
 #include "ScreenStack.h"
 #include "SonglistScreenHandler.h"
 
@@ -360,7 +361,8 @@ Controller::setupModels()
     LeftColumnChooser* lcc=new LeftColumnChooser();
     Context::instance()->setLeftColumnChooser(lcc);
 
-    mw->ui.leftColumnChooser->setModel(Context::instance()->getLeftColumnChooser()->getModel());
+    const SBStandardItemModel *m=Context::instance()->getLeftColumnChooser()->getModel();
+    mw->ui.leftColumnChooser->setModel((QStandardItemModel *)m);	//	weird that it won't accept a subclass
 
 }
 
@@ -381,7 +383,7 @@ Controller::setupUI()
 
     //	general
     mw->ui.allSongsList->setSortingEnabled(1);
-    mw->ui.allSongsList->sortByColumn(0,Qt::AscendingOrder);
+    mw->ui.allSongsList->sortByColumn(3,Qt::AscendingOrder);
     mw->ui.allSongsList->setSelectionMode(QAbstractItemView::SingleSelection);
     mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
     mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
@@ -389,7 +391,7 @@ Controller::setupUI()
 
     //	horizontal header
     hv=mw->ui.allSongsList->horizontalHeader();
-    hv->setSortIndicator(2,Qt::AscendingOrder);
+    hv->setSortIndicator(3,Qt::AscendingOrder);
     hv->setSortIndicatorShown(1);
     hv->setSectionResizeMode(QHeaderView::Stretch);
 

@@ -52,7 +52,15 @@ Morro Rock (20150612)
 -	creating, renaming, deleting playlists
 -	restructuring of SBModelSongList
 
+Morro Rock 64 (20150626)
+-	stability changes in screenstack
+- 	test creating, renaming, editing playlists on postgres
+-	drag & drop to playlist works for songs
+
+
 <soon>
+-	drag & drop to playlist
+	-	implement for other items in all songlist
 -	charts
 
 

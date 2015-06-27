@@ -58,7 +58,7 @@ SBModelPerformer::getDetail(const SBID& id)
     result.sb_item_type    =SBID::sb_type_performer;
     result.sb_item_id      =id.sb_item_id;
     result.sb_mbid         =query.value(3).toString();
-    result.sb_performer_id1=id.sb_item_id;
+    result.sb_performer_id =id.sb_item_id;
     result.performerName   =query.value(0).toString();
     result.url             =query.value(1).toString();
     result.notes           =query.value(2).toString();

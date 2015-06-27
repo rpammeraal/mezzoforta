@@ -18,6 +18,7 @@ public:
         sb_type_album=3,
         sb_type_chart=4,
         sb_type_playlist=5,
+        sb_type_position=6,
 
         sb_type_allsongs=100,
         sb_type_songsearch=101
@@ -28,17 +29,19 @@ public:
     SBID(QByteArray encodedData);
     ~SBID();
 
-
-    int         sb_performer_id1;
-    int         sb_album_id1;
-    int         sb_album_position;
-    int         sb_chart_id1;
-    int         sb_song_id1;
-    int         sb_playlist_id1;
-
+    //	Primary identifiers
     sb_type     sb_item_type;
     int         sb_item_id;
     QString     sb_mbid;
+
+    //	Secundary identifiers (e.g. if primary is of type 'song',
+    //	the following identifiers identify performer and album).
+    int         sb_performer_id;
+    int         sb_album_id;
+    int         sb_album_position;
+    int         sb_chart_id;
+    int         sb_song_id;
+    int         sb_playlist_id;
 
     QString     albumTitle;
     int         count1;
@@ -56,7 +59,7 @@ public:
     int         year;
 
 
-    void assign(const QString& it,int id);
+    void assign(const QString& it,int id,QString text="");
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
     QString getType() const;

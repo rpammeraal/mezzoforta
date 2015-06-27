@@ -15,6 +15,7 @@
 #include "SBID.h"
 #include "SBModelAlbum.h"
 #include "SBSqlQueryModel.h"
+#include "SBStandardItemModel.h"
 #include "SBModelPerformer.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
@@ -23,6 +24,7 @@
 
 SonglistScreenHandler::SonglistScreenHandler()
 {
+    init();
 }
 
 SonglistScreenHandler::~SonglistScreenHandler()
@@ -759,22 +761,12 @@ SonglistScreenHandler::openSonglistItem(const QModelIndex& i)
     qDebug() << ' ';
     qDebug() << SB_DEBUG_INFO << "######################################################################";
     qDebug() << SB_DEBUG_INFO << "col=" << i.column();
+    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-1).data().toString();
+    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-2).data().toString();
+    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-3).data().toString();
 
     id.sb_item_id=i.sibling(i.row(), i.column()-1).data().toInt();
-    switch(i.column())
-    {
-        case 2:
-        id.sb_item_type=SBID::sb_type_song;
-        break;
-
-        case 4:
-        id.sb_item_type=SBID::sb_type_performer;
-        break;
-
-        case 6:
-        id.sb_item_type=SBID::sb_type_album;
-        break;
-    }
+    id.sb_item_type=static_cast<SBID::sb_type>(i.sibling(i.row(), i.column()-2).data().toInt());
 
     qDebug() << SB_DEBUG_INFO << id;
     openScreenByID(id);
@@ -1009,6 +1001,11 @@ SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_ty
         return 1;
     }
     return 0;
+}
+
+void
+SonglistScreenHandler::init()
+{
 }
 
 void
