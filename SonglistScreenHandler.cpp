@@ -811,7 +811,7 @@ SonglistScreenHandler::refreshAlbumReviews()
     if(currentReviews.count()>0)
     {
         mw->ui.tabAlbumDetailLists->setTabEnabled(1,1);
-        mw->ui.albumDetailsWikipediaPage->setHtml(html);
+        mw->ui.albumDetailReviews->setHtml(html);
     }
 }
 
