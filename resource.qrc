@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/images">
         <file alias="logo">resources/moose7.2.bmp</file>
-        <file alias="noalbumcover.png">resources/NoAlbumCover.png</file>
-        <file alias="nobandphoto.png">resources/NoBandPhoto.png</file>
+        <file alias="NoAlbumCover.png">resources/NoAlbumCover.png</file>
+        <file alias="NoBandPhoto.png">resources/NoBandPhoto.png</file>
         <file alias="PlaylistIcon.png">resources/PlaylistIcon.png</file>
         <file alias="SongIcon.png">resources/SongIcon.png</file>
         <file alias="AllSongs.png">resources/AllSongs.png</file>

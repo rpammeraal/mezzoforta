@@ -140,6 +140,89 @@ SBID::fuzzyMatch(const SBID &i)
 }
 
 QString
+SBID::getIconResourceLocation() const
+{
+    return getIconResourceLocation(this->sb_item_type);
+}
+
+QString
+SBID::getIconResourceLocation(const SBID::sb_type i)
+{
+    QString t;
+
+    switch(i)
+    {
+    case SBID::sb_type_invalid:
+        break;
+
+    case SBID::sb_type_song:
+        t=":/images/SongIcon.png";
+        break;
+
+    case SBID::sb_type_performer:
+        t=":/images/NoBandPhoto.png";
+        break;
+
+    case SBID::sb_type_album:
+        t=":/images/NoAlbumCover.png";
+        break;
+
+    case SBID::sb_type_chart:
+        break;
+
+    case SBID::sb_type_playlist:
+        t=":/images/PlaylistIcon.png";
+        break;
+
+    case SBID::sb_type_allsongs:
+        t=":/images/AllSongs.png";
+        break;
+
+    case SBID::sb_type_songsearch:
+        break;
+
+    default:
+        break;
+    }
+    return t;
+}
+
+QString
+SBID::getText() const
+{
+    switch(this->sb_item_type)
+    {
+    case SBID::sb_type_song:
+        return songTitle;
+        break;
+
+    case SBID::sb_type_performer:
+        return performerName;
+        break;
+
+    case SBID::sb_type_album:
+        return albumTitle;
+        break;
+
+    case SBID::sb_type_chart:
+        return QString("n/a [208]");
+        break;
+
+    case SBID::sb_type_playlist:
+        return playlistName;
+        break;
+
+    case SBID::sb_type_position:
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        return QString("n/a [219]");
+        break;
+    }
+    return QString("n/a [222]");
+}
+
+QString
 SBID::getType() const
 {
     QString t;

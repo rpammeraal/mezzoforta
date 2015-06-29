@@ -251,7 +251,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     //	Get detail
     const SBID result=SBModelAlbum::getDetail(id);
-    qDebug() << SB_DEBUG_INFO << "result" << id << id.wiki;
+    mw->ui.labelAlbumDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
@@ -320,7 +320,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     //	Get detail
     const SBID result=mp->getDetail(id);
-    qDebug() << SB_DEBUG_INFO << "result=" << result << result.wiki;
+    mw->ui.labelPerformerDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(performerHomePageAvailable(QString)),
@@ -366,13 +366,11 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     int maxX=mw->ui.frPerformerDetailDetailRelated->width();
     int dx=0;
     int dy=0;
-    qDebug() << SB_DEBUG_INFO << "maxX=" << maxX;
 
     for(int i=0;i<rm->rowCount();i++)
     {
         //QPushButton* n=new QPushButton(rm->data(rm->index(i,1)).toString(), frRelated);
         QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>").arg(rm->data(rm->index(i,0)).toString()).arg(rm->data(rm->index(i,1)).toString());
-        qDebug() << SB_DEBUG_INFO << t;
         QLabel* n=new QLabel(t, frRelated);
         n->setTextFormat(Qt::RichText);
         connect(n, SIGNAL(linkActivated(QString)),
@@ -438,8 +436,11 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 SBID
 SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
 {
-    const SBID result=SBModelPlaylist::getDetail(id);
+    qDebug() << SB_DEBUG_INFO;
     MainWindow* mw=Context::instance()->getMainWindow();
+
+    const SBID result=SBModelPlaylist::getDetail(id);
+    mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
     QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration);
@@ -465,9 +466,10 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
     mw->ui.tabSongDetailLists->setTabEnabled(5,0);
 
-
     //	Get detail
     const SBID result=SBModelSong::getDetail(id);
+    mw->ui.labelSongDetailIcon->setSBID(result);
+
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),
             this, SLOT(setSongWikipediaPage(QString)));
@@ -844,7 +846,7 @@ void
 SonglistScreenHandler::setAlbumImage(const QPixmap& p)
 {
     qDebug() << SB_DEBUG_INFO << p;
-    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon);
+    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, SBID::sb_type_album);
 }
 
 void
@@ -891,7 +893,7 @@ void
 SonglistScreenHandler::setPerformerImage(const QPixmap& p)
 {
     qDebug() << SB_DEBUG_INFO << p;
-    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon);
+    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, SBID::sb_type_performer);
 }
 
 void
@@ -1009,16 +1011,19 @@ SonglistScreenHandler::init()
 }
 
 void
-SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l) const
+SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
 {
     qDebug() << SB_DEBUG_INFO << p;
+    qDebug() << SB_DEBUG_INFO << typeid(l).name();
     if(p.isNull())
     {
-        l->setStyleSheet("background-image: url(:/images/nobandphoto.png);");
-        l->setPixmap(p);
+        qDebug() << SB_DEBUG_INFO;
+        QPixmap q=QPixmap(SBID::getIconResourceLocation(type));
+        l->setPixmap(q);
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO;
         l->setStyleSheet("background-image: none;");
         int w=l->width();
         int h=l->height();

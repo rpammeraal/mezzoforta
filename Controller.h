@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QModelIndex>
+#include <QTimer>
 
 class QAction;
 class QItemSelection;
@@ -50,7 +51,7 @@ public slots:
     void updateGenre(QModelIndex i,QModelIndex j);
 
     //	General UI
-    void updateStatusBar(const QString &s) const;
+    void updateStatusBar(const QString &s);
 
 protected:
     virtual void keyPressEvent(QKeyEvent * event);
@@ -58,6 +59,7 @@ protected:
 private:
     bool doExactSearch;
     bool _initSuccessFull;
+    QTimer timer;
 
     //	Keep track of what is selected
     QString currentFilter;      //	"" indicates no filter
@@ -74,11 +76,14 @@ private:
         void configureMenus();
         void configureMenuItems(const QList<QAction *>& list);
 
-    void initAttributes();
+    void init();
 
     //	For whatever silly reason, we need to keep track of these pointers
     //	so these instances won't go out of scope
     QSortFilterProxyModel* slP;
+
+private slots:
+    void resetStatusBar();
 };
 
 

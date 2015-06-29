@@ -77,7 +77,7 @@ private:
 
     bool openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
     void init();
-    void setImage(const QPixmap& p, QLabel* l) const;
+    void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
 };
 
 #endif // SONGLISTSCREENHANDLER_H

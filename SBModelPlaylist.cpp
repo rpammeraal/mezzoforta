@@ -184,6 +184,38 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
         break;
 
     case SBID::sb_type_playlist:
+        q=QString
+          (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
+                "(playlist_id, timestamp, playlist_position, playlist_playlist_id) "
+            "SELECT "
+                "%1, %2, %3(playlist_position,0)+1, %4 "
+            "FROM "
+                "( "
+                    "SELECT MAX(playlist_position) AS playlist_position "
+                    "FROM "
+                    "( "
+                        "SELECT MAX(playlist_position) AS playlist_position "
+                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
+                        "WHERE playlist_id=%1 "
+                        "UNION "
+                        "SELECT MAX(playlist_position) "
+                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
+                        "WHERE playlist_id=%1 "
+                    ") b "
+                ") a "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
+                    "WHERE "
+                        "pp.playlist_id=%1 AND "
+                        "pp.playlist_playlist_id=%4 "
+                ") "
+          ).arg(toID.sb_item_id)
+           .arg(dal->getGetDate())
+           .arg(dal->getIsNull())
+           .arg(assignID.sb_playlist_id);
         break;
 
     case SBID::sb_type_allsongs:

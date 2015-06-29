@@ -5,6 +5,7 @@
 
 
 #include "Context.h"
+#include "Controller.h"
 #include "LeftColumnChooser.h"
 #include "MainWindow.h"
 #include "RenamePlaylist.h"
@@ -37,6 +38,14 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
     SBID toID=getPlaylistSelected(idx);
     qDebug() << SB_DEBUG_INFO << "assign" << assignID << "to" << toID;
     SBModelPlaylist::assignItem(assignID, toID);
+    QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3")
+        .arg(QChar(96))            //	1
+        .arg(assignID.getText())   //	2
+        .arg(QChar(180))           //	3
+        .arg(toID.getText())       //	4
+        .arg(assignID.getType())   //	5
+        .arg(toID.getType());      //	6
+    Context::instance()->getController()->updateStatusBar(updateText);
 }
 
 void

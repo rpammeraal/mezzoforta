@@ -62,6 +62,9 @@ public:
     void assign(const QString& it,int id,QString text="");
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
+    QString getIconResourceLocation() const;
+    QString getText() const;
+    static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
     void setText(const QString &text);
 

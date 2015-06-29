@@ -22,7 +22,8 @@ HEADERS     = \
     ExternalData.h \
     RenamePlaylist.h \
     SBStandardItemModel.h \
-    SBSqlQueryModel.h
+    SBSqlQueryModel.h \
+    SBLabel.h
 
 SOURCES     = \
     main.cpp \
@@ -47,7 +48,8 @@ SOURCES     = \
     ExternalData.cpp \
     RenamePlaylist.cpp \
     SBStandardItemModel.cpp \
-    SBSqlQueryModel.cpp
+    SBSqlQueryModel.cpp \
+    SBLabel.cpp
 
 # install
 target.path = .

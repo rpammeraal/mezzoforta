@@ -6,8 +6,8 @@
 #include <QMessageBox>
 #include <QSqlDatabase>
 #include <QProgressDialog>
-
 #include <QStyleFactory>
+#include <QTimer>
 
 #include "Common.h"
 #include "Context.h"
@@ -149,9 +149,10 @@ Controller::updateGenre(QModelIndex i, QModelIndex j)
 }
 
 void
-Controller::updateStatusBar(const QString &s) const
+Controller::updateStatusBar(const QString &s)
 {
     Context::instance()->getMainWindow()->ui.statusBar->setText(s);
+    timer.start(10000);
 }
 
 //PROTECTED:
@@ -256,7 +257,7 @@ Controller::openMainWindow(bool startup)
 
         qDebug() << SB_DEBUG_INFO;
 
-        initAttributes();
+        init();
 
         qDebug() << SB_DEBUG_INFO;
 
@@ -315,7 +316,7 @@ Controller::openMainWindow(bool startup)
 
         qDebug() << SB_DEBUG_INFO;
 
-        updateStatusBar(SB_DEFAULT_STATUS);
+        resetStatusBar();
 
         mw->show();
 
@@ -576,8 +577,18 @@ Controller::configureMenuItems(const QList<QAction *>& list)
 }
 
 void
-Controller::initAttributes()
+Controller::init()
 {
     currentFilter="";
     slP=NULL;
+    connect(&timer, SIGNAL(timeout()),
+            this, SLOT(resetStatusBar()));
+}
+
+///	PRIVATE SLOTS
+void
+Controller::resetStatusBar()
+{
+    qDebug() << SB_DEBUG_INFO;
+    Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
 }

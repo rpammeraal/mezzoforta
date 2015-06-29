@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -605,7 +605,7 @@
                   <number>0</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="labelPlaylistDetailIcon">
+                  <widget class="SBLabel" name="labelPlaylistDetailIcon">
                    <property name="minimumSize">
                     <size>
                      <width>200</width>
@@ -802,7 +802,7 @@
                   <number>0</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="labelPerformerDetailIcon">
+                  <widget class="SBLabel" name="labelPerformerDetailIcon">
                    <property name="minimumSize">
                     <size>
                      <width>200</width>
@@ -1269,7 +1269,7 @@
                   <number>0</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="labelAlbumDetailIcon">
+                  <widget class="SBLabel" name="labelAlbumDetailIcon">
                    <property name="minimumSize">
                     <size>
                      <width>200</width>
@@ -1673,7 +1673,7 @@
                   <number>0</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="labelSongDetailIcon">
+                  <widget class="SBLabel" name="labelSongDetailIcon">
                    <property name="minimumSize">
                     <size>
                      <width>200</width>
@@ -2359,6 +2359,11 @@ p, li { white-space: pre-wrap; }
    <class>QWebView</class>
    <extends>QWidget</extends>
    <header>QtWebKitWidgets/QWebView</header>
+  </customwidget>
+  <customwidget>
+   <class>SBLabel</class>
+   <extends>QLabel</extends>
+   <header>SBLabel.h</header>
   </customwidget>
  </customwidgets>
  <resources>

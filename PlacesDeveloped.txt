@@ -57,6 +57,8 @@ Morro Rock 64 (20150626)
 - 	test creating, renaming, editing playlists on postgres
 -	drag & drop to playlist works for songs
 
+20150528 - Godspeed CRS-7
+-	Drag & drop using icons from playlist, album, performer & song supported
 
 <soon>
 -	drag & drop to playlist
