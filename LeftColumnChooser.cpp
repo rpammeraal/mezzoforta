@@ -38,7 +38,7 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
     SBID toID=getPlaylistSelected(idx);
     qDebug() << SB_DEBUG_INFO << "assign" << assignID << "to" << toID;
     SBModelPlaylist::assignItem(assignID, toID);
-    QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3")
+    QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
         .arg(QChar(96))            //	1
         .arg(assignID.getText())   //	2
         .arg(QChar(180))           //	3
@@ -57,8 +57,8 @@ LeftColumnChooser::deletePlaylist()
     qDebug() << SB_DEBUG_INFO;
     if(id.sb_item_type==SBID::sb_type_playlist)
     {
-    qDebug() << SB_DEBUG_INFO;
         //	Show dialog box
+        QString updateText;
         QMessageBox msgBox;
         msgBox.setText(QString("Delete Playlist %1%2%3 ?").arg(QChar(96)).arg(id.playlistName).arg(QChar(180)));
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -70,7 +70,12 @@ LeftColumnChooser::deletePlaylist()
                 SBModelPlaylist::deletePlaylist(id);
                 Context::instance()->getSonglistScreenHandler()->removeFromScreenStack(id);
                 populateModel();
-                qDebug() << SB_DEBUG_INFO;
+
+                updateText=QString("Removed playlist %1%2%3.")
+                    .arg(QChar(96))      //	1
+                    .arg(id.getText())   //	2
+                    .arg(QChar(180));    //	3
+                Context::instance()->getController()->updateStatusBar(updateText);
                 break;
 
             case QMessageBox::Cancel:
@@ -97,6 +102,12 @@ LeftColumnChooser::newPlaylist()
     {
         qDebug() << SB_DEBUG_INFO << newPlaylistIndex;
         setCurrentIndex(newPlaylistIndex);
+
+        QString updateText=QString("Created playlist %1%2%3.")
+            .arg(QChar(96))      //	1
+            .arg(id.getText())   //	2
+            .arg(QChar(180));    //	3
+        Context::instance()->getController()->updateStatusBar(updateText);
     }
     qDebug() << SB_DEBUG_INFO;
 }
@@ -119,7 +130,6 @@ LeftColumnChooser::renamePlaylist()
 void
 LeftColumnChooser::showContextMenu(const QPoint &p)
 {
-    qDebug() << SB_DEBUG_INFO << p;
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex in=mw->ui.leftColumnChooser->indexAt(p);
     SBID id=getPlaylistSelected(in);
@@ -150,6 +160,11 @@ LeftColumnChooser::_renamePlaylist(const SBID &id)
     {
         setCurrentIndex(in);
     }
+    QString updateText=QString("Renamed playlist %1%2%3.")
+        .arg(QChar(96))      //	1
+        .arg(id.getText())   //	2
+        .arg(QChar(180));    //	3
+    Context::instance()->getController()->updateStatusBar(updateText);
     Context::instance()->getSonglistScreenHandler()->refreshTabIfCurrent(id);
 }
 
@@ -262,7 +277,6 @@ LeftColumnChooser::getPlaylistSelected(const QModelIndex& i)
     qDebug() << SB_DEBUG_INFO << i;
     SBID id;
     id.sb_item_type=SBID::sb_type_invalid;
-    qDebug() << SB_DEBUG_INFO;
 
     //	Get pointer to parent node (hackery going on).
     //	find si with playlists place holder
@@ -295,7 +309,6 @@ LeftColumnChooser::init()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    //	Set up context menu actions
     model=new SBStandardItemModel();
     populateModel();
 

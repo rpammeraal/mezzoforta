@@ -35,7 +35,7 @@ private slots:
     void _clicked(const QModelIndex& mi);
 
 private:
-    //	context menu actions
+    //	Context menu actions
     QAction* newAction;
     QAction* deleteAction;
     QAction* renameAction;

@@ -1,3 +1,4 @@
+#include <QAction>
 #include <QCompleter>
 #include <QDebug>
 #include <QSqlQueryModel>
@@ -230,6 +231,62 @@ SonglistScreenHandler::filterSongs(const SBID &id)
     qDebug() << SB_DEBUG_INFO << id;
 }
 
+//	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
+//	This one is geared more for the lists that appears for each item (song, artist, etc).
+//	NOTE:
+//	A resultSet is assumed to contain the following columns (in random order):
+//	-	'#'	position (optional)
+//	-	SB_ITEM_TYPE
+//	-	SB_ITEM_ID
+//	The next field after this is assumed to contain the main item (e.g.: song title, album name, etc).
+SBID
+SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
+{
+    qDebug() << SB_DEBUG_INFO << idx;
+    SBID id;
+    id.sb_item_type=SBID::sb_type_invalid;
+
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
+
+    QString itemType;
+    int itemID;
+    int position;
+    QString text;
+    for(int i=0; i<aim->columnCount();i++)
+    {
+        QString header=aim->headerData(i, Qt::Horizontal).toString();
+        qDebug() << SB_DEBUG_INFO << i << header;
+        if(header=="SB_ITEM_TYPE")
+        {
+            QModelIndex idy=idx.sibling(idx.row(),i);
+            itemType=aim->data(idy).toString();
+        }
+        else if(header=="SB_ITEM_ID")
+        {
+            QModelIndex idy=idx.sibling(idx.row(),i);
+            itemID=aim->data(idy).toInt();
+        }
+        else if(header=="#")
+        {
+            QModelIndex idy=idx.sibling(idx.row(),i);
+            position=aim->data(idy).toInt();
+        }
+        else if(text.length()==0)
+        {
+            QModelIndex idy=idx.sibling(idx.row(),i);
+            text=aim->data(idy).toString();
+        }
+
+    }
+    id.assign(itemType,itemID,text);
+    id.sb_position=position;
+
+    qDebug() << SB_DEBUG_INFO << id << id.sb_position;
+
+    return id;
+}
+
 SBID
 SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 {
@@ -437,7 +494,7 @@ SBID
 SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO;
-    MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->getMainWindow();
 
     const SBID result=SBModelPlaylist::getDetail(id);
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
@@ -446,13 +503,16 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration);
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
-    QTableView* tv=NULL;
-
-    tv=mw->ui.playlistDetailSongList;
+    QTableView* tv=mw->ui.playlistDetailSongList;
     SBSqlQueryModel* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
+
+    //	Context menu
+    tv->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+            this, SLOT(showContextMenuPlaylist(QPoint)));
 
     return result;
 }
@@ -704,6 +764,27 @@ SonglistScreenHandler::applySonglistFilter()
 }
 
 void
+SonglistScreenHandler::deletePlaylistItem()
+{
+    qDebug() << SB_DEBUG_INFO;
+    SBID fromID=st.currentScreen();
+    SBID assignID=getSBIDSelected(lastClickedIndex);
+    if(assignID.sb_item_type!=SBID::sb_type_invalid)
+    {
+        SBModelPlaylist::deleteItem(assignID,fromID);
+        refreshTabIfCurrent(fromID);
+        QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
+            .arg(QChar(96))            //	1
+            .arg(assignID.getText())   //	2
+            .arg(QChar(180))           //	3
+            .arg(fromID.getText())     //	4
+            .arg(assignID.getType())   //	5
+            .arg(fromID.getType());    //	6
+        Context::instance()->getController()->updateStatusBar(updateText);
+    }
+}
+
+void
 SonglistScreenHandler::performerDetailAlbumlistSelected(const QModelIndex &i)
 {
     openFromTableView(i,1,SBID::sb_type_album);
@@ -945,6 +1026,26 @@ SonglistScreenHandler::setSongWikipediaPage(const QString &url)
 }
 
 void
+SonglistScreenHandler::showContextMenuPlaylist(const QPoint &p)
+{
+    qDebug() << SB_DEBUG_INFO;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
+
+    SBID id=getSBIDSelected(idx);
+    if(id.sb_item_type!=SBID::sb_type_invalid)
+    {
+        lastClickedIndex=idx;
+
+        QPoint gp = mw->ui.playlistDetailSongList->mapToGlobal(p);
+
+        QMenu menu(NULL);
+        menu.addAction(deletePlaylistItemAction);
+        menu.exec(gp);
+    }
+}
+
+void
 SonglistScreenHandler::songDetailAlbumlistSelected(const QModelIndex &i)
 {
     qDebug() << SB_DEBUG_INFO << i.column();
@@ -1008,6 +1109,13 @@ SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_ty
 void
 SonglistScreenHandler::init()
 {
+    //	Set up actions
+
+    //	Delete playlist
+    deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
+    deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
+    connect(deletePlaylistItemAction, SIGNAL(triggered()),
+            this, SLOT(deletePlaylistItem()));
 }
 
 void

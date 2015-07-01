@@ -105,7 +105,7 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
            .arg(assignID.sb_song_id)
            .arg(assignID.sb_performer_id)
            .arg(assignID.sb_album_id)
-           .arg(assignID.sb_album_position)
+           .arg(assignID.sb_position)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull());
         break;
@@ -235,6 +235,57 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
 }
 
 void
+SBModelPlaylist::deleteItem(const SBID &assignID, const SBID &fromID)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    switch(assignID.sb_item_type)
+    {
+    case SBID::sb_type_song:
+        q=QString
+          (
+            "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "playlist_position=%2 "
+          ).arg(fromID.sb_item_id)
+           .arg(assignID.sb_position);
+        break;
+
+    case SBID::sb_type_performer:
+    case SBID::sb_type_album:
+    case SBID::sb_type_chart:
+    case SBID::sb_type_playlist:
+        q=QString
+          (
+            "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "playlist_position=%2 "
+          ).arg(fromID.sb_item_id)
+           .arg(assignID.sb_position);
+        break;
+
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+    case SBID::sb_type_invalid:
+    default:
+        break;
+    }
+
+    dal->customize(q);
+    if(q.length()>0)
+    {
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery remove(q,db);
+        Q_UNUSED(remove);
+        reorderPlaylistPositions(fromID);
+    }
+}
+
+void
 SBModelPlaylist::deletePlaylist(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO;
@@ -312,7 +363,7 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
                 "WHEN pc.playlist_chart_id    IS NOT NULL THEN 'SB_CHART_TYPE' "
                 "WHEN pc.playlist_record_id   IS NOT NULL THEN 'SB_ALBUM_TYPE' "
                 "WHEN pc.playlist_artist_id   IS NOT NULL THEN 'SB_PERFORMER_TYPE' "
-            "END AS SB_TYPE_ID, "
+            "END AS SB_ITEM_TYPE, "
             "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
             "CASE "
                 "WHEN pc.playlist_playlist_id IS NOT NULL THEN 'playlist' "
@@ -326,8 +377,6 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
                 "WHEN pc.playlist_artist_id   IS NOT NULL THEN ' - ' || a.name "
                 "ELSE '' "
             "END  as item "
-            //"COALESCE(ra.artist_id,a.artist_id) AS SB_ARTIST_ID, "
-            //"COALESCE(ra.name,a.name) as \"performer\" "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_composite pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist p ON "
@@ -345,11 +394,9 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
         "UNION "
         "SELECT "
             "pp.playlist_position, "
-            "'SB_SONG_TYPE' AS SB_TYPE_ID, "
-            "s.song_id AS SB_ITEM_ID, "
+            "'SB_SONG_TYPE', "
+            "s.song_id, "
             "'song - ' || s.title || ' by ' || a.name "
-            //"a.artist_id, "
-            //"a.name "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_performance pp  "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
@@ -409,4 +456,98 @@ SBModelPlaylist::renamePlaylist(const SBID &id)
 
     QSqlQuery query(q,db);
     query.exec();
+}
+
+///	PRIVATE METHODS
+void
+SBModelPlaylist::reorderPlaylistPositions(const SBID &id)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    qDebug() << SB_DEBUG_INFO << id;
+
+    QString q=QString
+    (
+        "SELECT "
+            "playlist_position "
+        "FROM "
+        "( "
+            "SELECT "
+                "playlist_id, "
+                "playlist_position "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_performance "
+            "WHERE "
+                "playlist_id=%1 "
+            "UNION "
+            "SELECT "
+                "playlist_id, "
+                "playlist_position "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_composite "
+            "WHERE "
+                "playlist_id=%1 "
+        ") a "
+        "ORDER BY 1 "
+    ).arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+    int newPosition=1;
+    int actualPosition;
+
+    while(query.next())
+    {
+        actualPosition=query.value(0).toInt();
+        qDebug() << SB_DEBUG_INFO << "actual=" << actualPosition << ":new=" << newPosition;
+        if(actualPosition!=newPosition)
+        {
+            //	Update playlist_performance
+            q=QString
+            (
+                "UPDATE "
+                    "___SB_SCHEMA_NAME___playlist_performance "
+                "SET "
+                    "playlist_position=%3 "
+                "WHERE "
+                    "playlist_id=%1 AND playlist_position=%2"
+            )
+            .arg(id.sb_item_id)
+            .arg(actualPosition)
+            .arg(newPosition);
+
+            dal->customize(q);
+
+            qDebug() << SB_DEBUG_INFO << q;
+
+            QSqlQuery update1(q,db);
+            Q_UNUSED(update1);
+
+            //	Update playlist_composite
+            q=QString
+            (
+                "UPDATE "
+                    "___SB_SCHEMA_NAME___playlist_composite "
+                "SET "
+                    "playlist_position=%3 "
+                "WHERE "
+                    "playlist_id=%1 AND playlist_position=%2"
+            )
+            .arg(id.sb_item_id)
+            .arg(actualPosition)
+            .arg(newPosition);
+
+            dal->customize(q);
+
+            qDebug() << SB_DEBUG_INFO << q;
+
+            QSqlQuery update2(q,db);
+            Q_UNUSED(update2);
+
+        }
+        newPosition++;
+    }
 }

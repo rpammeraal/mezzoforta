@@ -200,6 +200,7 @@ SBSqlQueryModel::init()
     selectedColumn=0;
 }
 
+//	See also SonglistScreenHandler::getSBIDSelected
 SBID
 SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
 {
@@ -240,12 +241,12 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
         {
             id.sb_album_id=value;
         }
-        else if(header=="sb_album_position_id")
+        else if(header=="sb_position_id" || header=="#")
         {
-            id.sb_album_position=value;
+            id.sb_position=value;
         }
     }
 
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id << id.sb_position;
     return id;
 }

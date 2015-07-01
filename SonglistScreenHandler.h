@@ -7,6 +7,7 @@
 #include "ScreenStack.h"
 #include "ExternalData.h"
 
+class QAction;
 class QLabel;
 class QNetworkReply;
 class QTableView;
@@ -27,6 +28,7 @@ public:
     void moveTab(int direction);
     void openScreenByID(SBID& id);
     void filterSongs(const SBID& id);
+    SBID getSBIDSelected(const QModelIndex& idx);
     SBID populateAlbumDetail(const SBID& id);
     SBID populatePerformerDetail(const SBID& id);
     SBID populatePlaylistDetail(const SBID& id);
@@ -45,6 +47,7 @@ public:
 public slots:
     void albumDetailSonglistSelected(const QModelIndex& i);
     void applySonglistFilter();
+    void deletePlaylistItem();
     void performerDetailAlbumlistSelected(const QModelIndex& i);
     void performerDetailSonglistSelected(const QModelIndex& i);
     void openLeftColumnChooserItem(const QModelIndex& i);
@@ -63,6 +66,7 @@ public slots:
     void setPerformerWikipediaPage(const QString& url);
     void setSongLyricsPage(const QString& url);
     void setSongWikipediaPage(const QString& url);
+    void showContextMenuPlaylist(const QPoint& p);
     void songDetailAlbumlistSelected(const QModelIndex& i);
     void songDetailPerformerlistSelected(const QModelIndex& i);
     void songDetailPlaylistSelected(const QModelIndex& i);
@@ -70,10 +74,15 @@ public slots:
     void tabForward();
 
 private:
+    //	Context menu actions
+    QAction* deletePlaylistItemAction;
+
+    //	Private variables
     ScreenStack st;
     QList<NewsItem> currentNews;
     QList<QString> currentReviews;
     QList<QWidget *> related;
+    QModelIndex lastClickedIndex;
 
     bool openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
     void init();

@@ -153,6 +153,7 @@ Controller::updateStatusBar(const QString &s)
 {
     Context::instance()->getMainWindow()->ui.statusBar->setText(s);
     timer.start(10000);
+    timer.setSingleShot(1);
 }
 
 //PROTECTED:

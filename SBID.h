@@ -38,7 +38,7 @@ public:
     //	the following identifiers identify performer and album).
     int         sb_performer_id;
     int         sb_album_id;
-    int         sb_album_position;
+    int         sb_position;
     int         sb_chart_id;
     int         sb_song_id;
     int         sb_playlist_id;
@@ -59,7 +59,7 @@ public:
     int         year;
 
 
-    void assign(const QString& it,int id,QString text="");
+    void assign(const QString& itemType,int itemID,QString text="");
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
     QString getIconResourceLocation() const;

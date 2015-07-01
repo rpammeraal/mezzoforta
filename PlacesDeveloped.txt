@@ -59,16 +59,20 @@ Morro Rock 64 (20150626)
 
 20150528 - Godspeed CRS-7
 -	Drag & drop using icons from playlist, album, performer & song supported
+-	Remove item from playlist
 
 <soon>
+-	recalculate position after deleteItem
 -	drag & drop to playlist
 	-	implement for other items in all songlist
--	charts
-
-
+-	calculate playlist playtime in background
+-	leftColumnChooser: make subclass of QTreeView and modify ui
+-	SonglistScreenHandler: make subclass of QWidget (modify ui):
+	-	create subclass for each tab (modify ui)
 
 
 <near future>
+-	charts
 -	performer / albums: performer does not work
 -	charts
 -	Drag & drop

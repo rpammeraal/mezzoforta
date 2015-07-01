@@ -27,7 +27,7 @@ SBID::SBID(QByteArray encodedData)
     ds
         >> sb_performer_id
         >> sb_album_id
-        >> sb_album_position
+        >> sb_position
         >> sb_chart_id
         >> sb_song_id
         >> sb_playlist_id
@@ -57,27 +57,27 @@ SBID::~SBID()
 }
 
 void
-SBID::assign(const QString& it, int id, QString text)
+SBID::assign(const QString& itemType, int itemID, QString text)
 {
     init();
-    sb_item_id=id;
-    if(it=="SB_SONG_TYPE")
+    sb_item_id=itemID;
+    if(itemType=="SB_SONG_TYPE")
     {
         sb_item_type=SBID::sb_type_song;
     }
-    else if(it=="SB_PERFORMER_TYPE")
+    else if(itemType=="SB_PERFORMER_TYPE")
     {
         sb_item_type=SBID::sb_type_performer;
     }
-    else if(it=="SB_ALBUM_TYPE")
+    else if(itemType=="SB_ALBUM_TYPE")
     {
         sb_item_type=SBID::sb_type_album;
     }
-    else if(it=="SB_CHART_TYPE")
+    else if(itemType=="SB_CHART_TYPE")
     {
         sb_item_type=SBID::sb_type_chart;
     }
-    else if(it=="SB_PLAYLIST_TYPE")
+    else if(itemType=="SB_PLAYLIST_TYPE")
     {
         sb_item_type=SBID::sb_type_playlist;
     }
@@ -97,7 +97,7 @@ SBID::encode() const
     ds
         << sb_performer_id
         << sb_album_id
-        << sb_album_position
+        << sb_position
         << sb_chart_id
         << sb_song_id
         << sb_playlist_id
@@ -319,55 +319,45 @@ QDebug operator<<(QDebug dbg, const SBID& id)
     ;
 
     const char* s;
-    QString t;
 
     switch(id.sb_item_type)
     {
     case SBID::sb_type_invalid:
         s="INVALID";
-        t="n/a";
         break;
 
     case SBID::sb_type_song:
         s="song";
-        t=id.songTitle;
         break;
 
     case SBID::sb_type_performer:
         s="performer";
-        t=id.performerName;
         break;
 
     case SBID::sb_type_album:
         s="album";
-        t=id.albumTitle;
         break;
 
     case SBID::sb_type_chart:
         s="chart";
-        t="";
         break;
 
     case SBID::sb_type_playlist:
-        t=id.playlistName;
         s="playlist";
         break;
 
     case SBID::sb_type_allsongs:
-        t="n/a";
         s="allsongs";
         break;
 
     case SBID::sb_type_songsearch:
-        t=id.searchCriteria;
         s="songsearch";
         break;
 
     default:
-        t="n/a";
         s="Unknown";
     }
-    dbg.nospace()  << ":sb_item_type=" << s << ":value=" << t;
+    dbg.nospace()  << ":sb_item_type=" << s << ":value=" << id.getText();
 
     return dbg.space();
 }
@@ -378,7 +368,7 @@ SBID::init()
 {
     sb_performer_id=0;
     sb_album_id=0;
-    sb_album_position=0;
+    sb_position=0;
     sb_chart_id=0;
     sb_playlist_id=0;
     sb_song_id=0;
