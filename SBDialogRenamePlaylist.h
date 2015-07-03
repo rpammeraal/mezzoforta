@@ -7,23 +7,23 @@
 
 namespace Ui
 {
-    class RenamePlaylist;
+    class SBDialogRenamePlaylist;
 }
 
-class RenamePlaylist : public QDialog
+class SBDialogRenamePlaylist : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit RenamePlaylist(const SBID& nid, QWidget *parent = 0);
-    ~RenamePlaylist();
+    explicit SBDialogRenamePlaylist(const SBID& nid, QWidget *parent = 0);
+    ~SBDialogRenamePlaylist();
 
 signals:
     void playlistNameChanged(const SBID& id);
 
 private:
     SBID id;
-    Ui::RenamePlaylist *ui;
+    Ui::SBDialogRenamePlaylist *ui;
 
 private slots:
     void accepted();

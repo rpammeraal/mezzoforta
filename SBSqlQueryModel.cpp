@@ -106,7 +106,7 @@ SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
             SBID id=determineSBID(i);
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
-            qDebug() << SB_DEBUG_INFO << "Dragging " << id;
+            qDebug() << SB_DEBUG_INFO << "Dragging " << id << id.sb_album_id << id.sb_position;
             return mimeData;
         }
     }
@@ -247,6 +247,6 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
         }
     }
 
-    qDebug() << SB_DEBUG_INFO << id << id.sb_position;
+    qDebug() << SB_DEBUG_INFO << id << id.sb_album_id << id.sb_position;
     return id;
 }

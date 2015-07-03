@@ -126,13 +126,15 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
 {
     QString q=QString
     (
+                //	CWIP: if changed, look for instances where this method is used!
         "SELECT "
             "r.record_id AS SB_ALBUM_ID, "
             "r.title AS \"album title\", "
             "r.year AS \"year released\", "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\" , "
-            "rp.duration \"duration\" "
+            "rp.duration \"duration\", "
+            "rp.record_position AS SB_POSITION_ID "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
                 "JOIN ___SB_SCHEMA_NAME___record r ON "

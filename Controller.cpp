@@ -322,7 +322,7 @@ Controller::openMainWindow(bool startup)
         mw->show();
 
         qDebug() << SB_DEBUG_INFO;
-        mw->ui.songlistTab->setCurrentIndex(5);
+        ssh->openOpener(QString());
 
         if(ds->databaseChanged() && startup==0)
         {
@@ -423,40 +423,6 @@ Controller::setupUI()
         mw->ui.searchEdit, SLOT(clear()),
         Qt::QueuedConnection);	//	this will clear the search box
 
-    ///	GENRE
-
-//    //	general
-//    mw->ui.genreList->setSelectionMode(QAbstractItemView::SingleSelection);
-//    mw->ui.genreList->setSortingEnabled(1);
-//    mw->ui.genreList->sortByColumn(0,Qt::AscendingOrder);
-//    mw->ui.genreList->setSelectionBehavior(QAbstractItemView::SelectRows);
-//
-//    //	horizontal header
-//    hv=mw->ui.genreList->horizontalHeader();
-//    hv->setSortIndicator(0,Qt::AscendingOrder);
-//    hv->setSortIndicatorShown(1);
-//    hv->resizeSection(0,239);
-//    hv->show();
-//
-//    //	vertical header
-//    hv=mw->ui.genreList->verticalHeader();
-//    hv->setDefaultSectionSize(18);
-//    hv->hide();
-//    Common::hideColumns(mw->ui.genreList);
-//
-//    //	set up signals
-//    //	1 - change songlist if genre is selected
-//    QItemSelectionModel* n=mw->ui.genreList->selectionModel();
-//    connect(
-//        n, SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
-//        this, SLOT(applyGenreSelection(const QItemSelection &,const QItemSelection &)));
-//    //	2 - genre update
-//
-//    //connect(
-//        //g, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-//        //this, SLOT(updateGenre(QModelIndex,QModelIndex)));
-
-
     //	Populate schema dropdown
     QStringList schemas=dal->getAvailableSchemas();
     if(schemas.count()>1)
@@ -477,22 +443,9 @@ Controller::setupUI()
 
     //	drag & drop revisited.
     QTableView* allSongsList=mw->ui.allSongsList;
-    //QTableView* playList=mw->ui.playlistList;
-    //QTableView* genreList=mw->ui.genreList;
 
     allSongsList->setDragEnabled(true);
-    //allSongsList->setAcceptDrops(true);
     allSongsList->setDropIndicatorShown(true);
-
-    //playList->setDragEnabled(true);
-    //playList->setAcceptDrops(true);
-    //playList->viewport()->setAcceptDrops(true);
-    //playList->setDropIndicatorShown(true);
-
-//    //genreList->setDragEnabled(true);
-//    genreList->setAcceptDrops(true);
-//    genreList->viewport()->setAcceptDrops(true);
-//    genreList->setDropIndicatorShown(true);
 
     ///	Statusbar
     mw->ui.statusBar->setReadOnly(true);
@@ -521,13 +474,10 @@ Controller::setupUI()
             Context::instance()->getLeftColumnChooser(), SLOT(showContextMenu(QPoint)));
 
 
-    ///	COMMON
+    ///	MISC
     QTabBar* tb=mw->ui.songlistTab->tabBar();
     tb->hide();
 
-    //mw->ui.tabSongDetailLists->setCurrentIndex(5);
-
-    //Context::instance()->getSonglistScreenHandler()->showSonglist();
     qDebug() << SB_DEBUG_INFO;
     return;
 }

@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -2108,7 +2108,7 @@
                   </size>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background-image: url(:/images/nobandphoto.png);</string>
+                  <string notr="true">background-image: url(:/images/NoBandPhoto.png);</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -2130,7 +2130,7 @@
                   </size>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background-image: url(:/images/noalbumcover.png);</string>
+                  <string notr="true">background-image: url(:/images/NoAlbumCover.png);</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -2255,7 +2255,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Trebuchet MS'; font-size:14pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Times'; font-size:24pt;&quot;&gt;Songbase provides an comprehensive archive of songs that appear in your music collection and charts. In one click you can see how a song did in the charts. Or who else performed this song. What their chart rankings are. Lookup the lyrics. Find out about your favorite artists. Maybe discover their upcoming tour!  Create playlists, based on songs, albums, performers and even other playlists and top 40 charts! &lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Times'; font-size:24pt;&quot;&gt;Songbase provides an comprehensive archive of songs that appear in your music collection and charts.  In one click you can see how a song did in the charts.  Or who else performed this song. What their chart rankings are.  Look up the lyrics. Find out about your favorite artists.  Maybe discover their upcoming tour!  Create playlists, based on songs, albums, performers and even other playlists and top 40 charts!  Enjoy! &lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Times'; font-size:24pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Times'; font-size:24pt;&quot;&gt;Click on 'All Songs' to continue.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>

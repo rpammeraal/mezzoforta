@@ -21,6 +21,18 @@ ExternalData::~ExternalData()
 {
 }
 
+QString
+ExternalData::getCachePath(const SBID& id)
+{
+    QString p=QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    p.replace("!","");
+    QDir d;
+    d.mkpath(p);
+    QString f=QString("%1/%2.%3").arg(p).arg(id.getType()).arg(id.sb_item_id);
+    qDebug() << SB_DEBUG_INFO << f;
+    return f;
+}
+
 void
 ExternalData::loadAlbumData(const SBID &id)
 {
@@ -32,7 +44,7 @@ ExternalData::loadAlbumData(const SBID &id)
     QPixmap p;
 
     //	2.	Try load from cache, other retrieve using audioscrobbler
-    if(loadImageFromCache(p))
+    if(loadImageFromCache(p,currentID))
     {
         emit imageDataReady(p);
     }
@@ -65,6 +77,40 @@ ExternalData::loadAlbumData(const SBID &id)
     retrievePerformerMBID();
 }
 
+///
+/// \brief ExternalData::setImageFromCache
+/// \param id
+/// \param l
+/// \return 1 if image is successfully loaded from cache
+///
+bool
+ExternalData::loadImageFromCache(QPixmap& p,const SBID& id)
+{
+    QString fn=getCachePath(id);
+    QFile f(fn);
+
+    if(f.open(QIODevice::ReadOnly))
+    {
+        int len=f.size();
+        char* mem=(char *)malloc(len);
+        QDataStream s(&f);
+        int n=s.readRawData(mem,len);
+            qDebug() << SB_DEBUG_INFO;
+
+        f.close();
+
+        if(n>0)
+        {
+            QByteArray a=QByteArray(mem,len);
+            p.loadFromData(a);
+            qDebug() << SB_DEBUG_INFO;
+            return 1;
+        }
+        free(mem);
+    }
+    return 0;
+}
+
 void
 ExternalData::loadPerformerData(const SBID id)
 {
@@ -89,7 +135,7 @@ ExternalData::loadPerformerData(const SBID id)
 }
 
 void
-ExternalData::loadSongData(const SBID id)
+ExternalData::loadSongData(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO << id << id.wiki;
     currentID=id;
@@ -760,17 +806,6 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
 
 ///	PRIVATE
 ///
-QString
-ExternalData::getCachePath() const
-{
-    QString p=QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    p.replace("!","");
-    QDir d;
-    d.mkpath(p);
-    QString f=QString("%1/%2.%3").arg(p).arg(currentID.getType()).arg(currentID.sb_item_id);
-    return f;
-}
-
 void
 ExternalData::loadAlbumCoverAS()
 {
@@ -817,7 +852,7 @@ ExternalData::retrievePerformerMBID()
 
             //	Get performer image. If not in cache, find suitable image from echonest
             QPixmap p;
-            if(loadImageFromCache(p))
+            if(loadImageFromCache(p,currentID))
             {
                 emit imageDataReady(p);
             }
@@ -894,42 +929,10 @@ ExternalData::init()
     songLyricsURLRetrieved=0;
 }
 
-///
-/// \brief ExternalData::setImageFromCache
-/// \param id
-/// \param l
-/// \return 1 if image is successfully loaded from cache
-///
-bool
-ExternalData::loadImageFromCache(QPixmap& p)
-{
-    QString fn=getCachePath();
-    QFile f(fn);
-
-    if(f.open(QIODevice::ReadOnly))
-    {
-        int len=f.size();
-        char* mem=(char *)malloc(len);
-        QDataStream s(&f);
-        int n=s.readRawData(mem,len);
-
-        f.close();
-
-        if(n>0)
-        {
-            QByteArray a=QByteArray(mem,len);
-            p.loadFromData(a);
-            return 1;
-        }
-        free(mem);
-    }
-    return 0;
-}
-
 void
 ExternalData::storeInCache(QByteArray *a) const
 {
-    QString fn=getCachePath();
+    QString fn=getCachePath(currentID);
     QFile f(fn);
     if(f.open(QIODevice::WriteOnly))
     {

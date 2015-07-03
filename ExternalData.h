@@ -24,9 +24,11 @@ public:
     explicit ExternalData(QObject *parent = 0);
     ~ExternalData();
 
+    QString static getCachePath(const SBID& id);
     void loadAlbumData(const SBID& id);
+    static bool loadImageFromCache(QPixmap& p,const SBID& id);
     void loadPerformerData(const SBID id);
-    void loadSongData(const SBID id);
+    void loadSongData(const SBID& id);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);
@@ -63,10 +65,8 @@ private:
     QList<QString> allReviews;
 
     void init();
-    QString getCachePath() const;
     void loadAlbumCoverAS();
     void retrievePerformerMBID();
-    bool loadImageFromCache(QPixmap& p);
     void storeInCache(QByteArray* a) const;
 };
 

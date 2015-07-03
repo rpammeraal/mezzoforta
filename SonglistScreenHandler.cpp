@@ -837,6 +837,13 @@ SonglistScreenHandler::openPerformer(const QString &itemID)
 }
 
 void
+SonglistScreenHandler::openOpener(QString i)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.songlistTab->setCurrentIndex(5);
+}
+
+void
 SonglistScreenHandler::openSonglistItem(const QModelIndex& i)
 {
     SBID id;
@@ -1109,8 +1116,6 @@ SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_ty
 void
 SonglistScreenHandler::init()
 {
-    //	Set up actions
-
     //	Delete playlist
     deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
     deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));

@@ -44,7 +44,7 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBID id=SBID(encodedData);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << id;
+    qDebug() << SB_DEBUG_INFO << "Dropping " << id << id.sb_album_id << id.sb_position;
 
     //const QModelIndex n=this->index(parent.row(),parent.column());
     //QString dstID=this->data(n, Qt::DisplayRole).toString();

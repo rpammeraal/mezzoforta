@@ -70,6 +70,27 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
     switch(assignID.sb_item_type)
     {
     case SBID::sb_type_song:
+        if(assignID.sb_album_id==0 || assignID.sb_position==0)
+        {
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "assignment of song without album";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+            qDebug() << "****************************************************************************************";
+
+        }
         q=QString
           (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
@@ -320,13 +341,33 @@ SBModelPlaylist::getDetail(const SBID& id)
         "SELECT "
             "p.name, "
             "p.duration, "
-            "count(*) "
+            "COALESCE(a.num,0)+COALESCE(b.num,0)  "
         "FROM "
             "___SB_SCHEMA_NAME___playlist p "
-                "LEFT JOIN ___SB_SCHEMA_NAME___playlist_performance pp on "
-                    "p.playlist_id=pp.playlist_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___playlist_composite pc on "
-                    "p.playlist_id=pc.playlist_id "
+                "LEFT JOIN "
+                    "( "
+                        "SELECT "
+                            "pp.playlist_id, "
+                            "COUNT(*) AS num "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_performance pp  "
+                        "WHERE "
+                            "pp.playlist_id=%1 "
+                        "GROUP BY "
+                            "pp.playlist_id "
+                    ") a ON a.playlist_id=p.playlist_id "
+                "LEFT JOIN "
+                    "( "
+                        "SELECT "
+                            "pp.playlist_id, "
+                            "COUNT(*) AS num "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_composite pp  "
+                        "WHERE "
+                            "pp.playlist_id=%1 "
+                        "GROUP BY "
+                            "pp.playlist_id "
+                    ") b ON b.playlist_id=p.playlist_id "
         "WHERE "
             "p.playlist_id=%1 "
         "GROUP BY "

@@ -42,13 +42,13 @@ Morro Rock (20150612)
 -	Real UI
 -	Active HTML pages for performers, albums and songs
 
-20120616:
+20150616:
 -	open search -> searchEdit is all selected, completer search -> searchEdit is cleared
 
-20120617:
+20150617:
 -	related performers
 
-20120625:
+20150625:
 -	creating, renaming, deleting playlists
 -	restructuring of SBModelSongList
 
@@ -57,12 +57,19 @@ Morro Rock 64 (20150626)
 - 	test creating, renaming, editing playlists on postgres
 -	drag & drop to playlist works for songs
 
-20150528 - Godspeed CRS-7
+20150628 - Godspeed CRS-7
 -	Drag & drop using icons from playlist, album, performer & song supported
+
+20150630 - Happy Birthday RMLBKB
 -	Remove item from playlist
+-	recalculate position after deleteItem
 
 <soon>
--	recalculate position after deleteItem
+-	if record_id, record_position is not known for song to be added to playlist, ask user
+-	songs dragged from all should have record_id,~position
+-	avoid & errorbox when assigning playlist to itself
+
+
 -	drag & drop to playlist
 	-	implement for other items in all songlist
 -	calculate playlist playtime in background

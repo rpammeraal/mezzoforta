@@ -52,6 +52,7 @@ public slots:
     void performerDetailSonglistSelected(const QModelIndex& i);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
+    void openOpener(QString i);
     void openSonglistItem(const QModelIndex& i);
     void playlistCellClicked(const QModelIndex& i);
     void refreshAlbumReviews();

@@ -8,9 +8,11 @@
 #include "Controller.h"
 #include "LeftColumnChooser.h"
 #include "MainWindow.h"
-#include "RenamePlaylist.h"
+#include "SBDialogRenamePlaylist.h"
+#include "SBDialogSelectSongAlbum.h"
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
+#include "SBModelSong.h"
 #include "SBStandardItemModel.h"
 #include "SonglistScreenHandler.h"
 
@@ -36,16 +38,65 @@ void
 LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
 {
     SBID toID=getPlaylistSelected(idx);
-    qDebug() << SB_DEBUG_INFO << "assign" << assignID << "to" << toID;
-    SBModelPlaylist::assignItem(assignID, toID);
-    QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
-        .arg(QChar(96))            //	1
-        .arg(assignID.getText())   //	2
-        .arg(QChar(180))           //	3
-        .arg(toID.getText())       //	4
-        .arg(assignID.getType())   //	5
-        .arg(toID.getType());      //	6
-    Context::instance()->getController()->updateStatusBar(updateText);
+    SBID fromID;
+    qDebug() << SB_DEBUG_INFO << "assign" << assignID  << assignID.sb_album_id << assignID.sb_position;
+    qDebug() << SB_DEBUG_INFO << "to" << toID;
+
+    if(assignID==toID)
+    {
+        //	Do not allow the same item to be assigned to itself
+            QMessageBox mb;
+            mb.setText("Ouroboros Error               ");
+            mb.setInformativeText("Cannot assign items to itself.");
+            mb.exec();
+
+    }
+    else if(assignID.sb_item_type==SBID::sb_type_song && assignID.sb_album_id==0)
+    {
+        //	Find out in case of song assignment if record, position are known.
+        SBSqlQueryModel* m=SBModelSong::getOnAlbumListBySong(assignID);
+        if(m->rowCount()==0)
+        {
+            //	Can't assign -- does not exist on an album
+            QMessageBox mb;
+            mb.setText("This song does not appear on any album.");
+            mb.setInformativeText("Songs that do not appear on an album cannot be assigned to a playlist.");
+            mb.exec();
+        }
+        else if(m->rowCount()==1)
+        {
+            //	Populate assignID and assign
+            fromID=assignID;
+            fromID.sb_album_id=m->data(m->index(0,0)).toInt();
+            fromID.sb_position=m->data(m->index(0,6)).toInt();
+        }
+        else
+        {
+            //	Ask from which album song should be assigned from
+            SBDialogSelectSongAlbum* ssa=new SBDialogSelectSongAlbum(assignID,m);
+
+            ssa->exec();
+            fromID=ssa->getSBID();
+            qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_album_id << fromID.sb_position;
+        }
+    }
+    else
+    {
+        fromID=assignID;
+    }
+
+    if(fromID.sb_item_type!=SBID::sb_type_invalid)
+    {
+        SBModelPlaylist::assignItem(fromID, toID);
+        QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
+            .arg(QChar(96))            //	1
+            .arg(assignID.getText())   //	2
+            .arg(QChar(180))           //	3
+            .arg(toID.getText())       //	4
+            .arg(assignID.getType())   //	5
+            .arg(toID.getType());      //	6
+        Context::instance()->getController()->updateStatusBar(updateText);
+    }
 }
 
 void
@@ -120,7 +171,7 @@ LeftColumnChooser::renamePlaylist()
     qDebug() << SB_DEBUG_INFO << id;
     if(id.sb_item_type==SBID::sb_type_playlist)
     {
-        RenamePlaylist* pl=new RenamePlaylist(id);
+        SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(id);
         connect(pl, SIGNAL(playlistNameChanged(SBID)),
                 this, SLOT(_renamePlaylist(SBID)));
         pl->exec();
