@@ -9,6 +9,7 @@
 #include <QStyleFactory>
 #include <QTimer>
 
+#include "BackgroundThread.h"
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
@@ -39,7 +40,8 @@ Controller::Controller(int argc, char *argv[])
 
 Controller::~Controller()
 {
-
+    backgroundThread.quit();
+    backgroundThread.wait();
 }
 
 bool
@@ -152,8 +154,8 @@ void
 Controller::updateStatusBar(const QString &s)
 {
     Context::instance()->getMainWindow()->ui.statusBar->setText(s);
-    timer.start(10000);
-    timer.setSingleShot(1);
+    statusBarResetTimer.start(10000);
+    statusBarResetTimer.setSingleShot(1);
 }
 
 //PROTECTED:
@@ -317,7 +319,7 @@ Controller::openMainWindow(bool startup)
 
         qDebug() << SB_DEBUG_INFO;
 
-        resetStatusBar();
+        _resetStatusBar();
 
         mw->show();
 
@@ -532,14 +534,39 @@ Controller::init()
 {
     currentFilter="";
     slP=NULL;
-    connect(&timer, SIGNAL(timeout()),
-            this, SLOT(resetStatusBar()));
+    connect(&statusBarResetTimer, SIGNAL(timeout()),
+            this, SLOT(_resetStatusBar()));
+
+    //	Instantiate background thread
+    qDebug() << SB_DEBUG_INFO;
+    bgt=new BackgroundThread;
+    bgt->moveToThread(&backgroundThread);
+    backgroundThread.start();
+    Context::instance()->setBackgroundThread(bgt);
+
+    //	Recalculate playlist duration
+    updateAllPlaylistDurationTimer.start(20*1000);	//	start recalc in 20s
+    statusBarResetTimer.setSingleShot(0);
+    connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
+            this, SLOT(_updateAllplaylistDurations()));
+    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
+            bgt, SLOT(recalculateAllPlaylistDurations()));
+
+    qDebug() << SB_DEBUG_INFO << updateAllPlaylistDurationTimer.interval();
 }
 
 ///	PRIVATE SLOTS
 void
-Controller::resetStatusBar()
+Controller::_resetStatusBar()
 {
     qDebug() << SB_DEBUG_INFO;
     Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
+}
+
+void
+Controller::_updateAllplaylistDurations()
+{
+    updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
+    qDebug() << SB_DEBUG_INFO << updateAllPlaylistDurationTimer.interval();
+    emit recalculateAllPlaylistDurations();
 }

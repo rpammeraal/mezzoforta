@@ -4,7 +4,6 @@
 #include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
 
-#include "SonglistScreenHandler.h"
 
 #include "Common.h"
 #include "Context.h"
@@ -21,6 +20,7 @@
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
 #include "ScreenStack.h"
+#include "SonglistScreenHandler.h"
 
 
 SonglistScreenHandler::SonglistScreenHandler()
@@ -495,16 +495,17 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO;
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBModelPlaylist pl;
 
-    const SBID result=SBModelPlaylist::getDetail(id);
+    const SBID result=pl.getDetail(id);
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
-    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration);
+    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration.toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBSqlQueryModel* sl=SBModelPlaylist::getAllItemsByPlaylist(id);
+    SBSqlQueryModel* sl=pl.getAllItemsByPlaylist(id);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(playlistCellClicked(QModelIndex)));
@@ -634,8 +635,7 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int
 void
 SonglistScreenHandler::refreshTabIfCurrent(const SBID &id)
 {
-    SBID currentScreenID=st.currentScreen();
-    if(currentScreenID==id)
+    if(st.currentScreen()==id)
     {
         activateTab(id);
     }
@@ -771,7 +771,12 @@ SonglistScreenHandler::deletePlaylistItem()
     SBID assignID=getSBIDSelected(lastClickedIndex);
     if(assignID.sb_item_type!=SBID::sb_type_invalid)
     {
-        SBModelPlaylist::deleteItem(assignID,fromID);
+        qDebug() << SB_DEBUG_INFO;
+        SBModelPlaylist* pl=new SBModelPlaylist;
+        connect(pl, SIGNAL(si_playlistDetailUpdated(SBID)),
+                 this, SLOT(sl_updatePlaylistDetail(SBID)));
+
+        pl->deleteItem(assignID,fromID);
         refreshTabIfCurrent(fromID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
@@ -781,6 +786,7 @@ SonglistScreenHandler::deletePlaylistItem()
             .arg(assignID.getType())   //	5
             .arg(fromID.getType());    //	6
         Context::instance()->getController()->updateStatusBar(updateText);
+        qDebug() << SB_DEBUG_INFO;
     }
 }
 
@@ -839,6 +845,7 @@ SonglistScreenHandler::openPerformer(const QString &itemID)
 void
 SonglistScreenHandler::openOpener(QString i)
 {
+    Q_UNUSED(i);
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.songlistTab->setCurrentIndex(5);
 }
@@ -1093,7 +1100,6 @@ SonglistScreenHandler::tabForward()
 }
 
 ///	PRIVATE
-
 bool
 SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_type type)
 {
@@ -1143,4 +1149,3 @@ SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type
         l->setPixmap(p.scaled(w,h,Qt::KeepAspectRatio));
     }
 }
-

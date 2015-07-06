@@ -24,7 +24,9 @@ HEADERS     = \
     SBSqlQueryModel.h \
     SBLabel.h \
     SBDialogRenamePlaylist.h \
-    SBDialogSelectSongAlbum.h
+    SBDialogSelectSongAlbum.h \
+    BackgroundThread.h \
+    SBTime.h
 
 SOURCES     = \
     main.cpp \
@@ -51,7 +53,9 @@ SOURCES     = \
     SBSqlQueryModel.cpp \
     SBLabel.cpp \
     SBDialogRenamePlaylist.cpp \
-    SBDialogSelectSongAlbum.cpp
+    SBDialogSelectSongAlbum.cpp \
+    BackgroundThread.cpp \
+    SBTime.cpp
 
 # install
 target.path = .

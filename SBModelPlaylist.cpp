@@ -1,63 +1,22 @@
+#include "BackgroundThread.h"
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
+#include "SBID.h"
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 
-//	NEW
-SBID
-SBModelPlaylist::createNewPlaylist()
+///	PUBLIC METHODS
+SBModelPlaylist::SBModelPlaylist()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    SBID result;
-    QString q;
+    qDebug() << SB_DEBUG_INFO << "ctor";
+    _init();
+}
 
-    //	Get next ID available
-    q=QString("SELECT %1(MAX(playlist_id),0)+1 FROM ___SB_SCHEMA_NAME___playlist ").arg(dal->getIsNull());
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery qID(q,db);
-    qID.next();
-
-    result.sb_item_type   =SBID::sb_type_playlist;
-    result.sb_item_id     =qID.value(0).toInt();
-
-    //	Figure out name of next playlist
-    QString playlistName;
-    int maxNum=1;
-    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery qName(q,db);
-    while(qName.next())
-    {
-        QString existing=qName.value(0).toString();
-        qDebug() << SB_DEBUG_INFO << existing;
-        existing.replace("New Playlist","");
-        int i=existing.toInt();
-        qDebug() << SB_DEBUG_INFO << i << maxNum;
-        if(i>=maxNum)
-        {
-            maxNum=i+1;
-        }
-    }
-    result.playlistName=QString("New Playlist%1").arg(maxNum);
-
-    //	Insert
-    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
-            .arg(result.sb_item_id)
-            .arg(result.playlistName)
-            .arg(dal->getGetDate());
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
-    Q_UNUSED(insert);
-    //	insert.exec();	-- no need to run on insert statements
-
-    qDebug() << SB_DEBUG_INFO << result;
-    return result;
+SBModelPlaylist::~SBModelPlaylist()
+{
+    qDebug() << SB_DEBUG_INFO << "dtor";
 }
 
 void
@@ -251,8 +210,63 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
     {
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
+        _calculatePlaylistDuration(toID);
     }
     qDebug() << SB_DEBUG_INFO << q;
+}
+
+SBID
+SBModelPlaylist::createNewPlaylist()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    SBID result;
+    QString q;
+
+    //	Get next ID available
+    q=QString("SELECT %1(MAX(playlist_id),0)+1 FROM ___SB_SCHEMA_NAME___playlist ").arg(dal->getIsNull());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qID(q,db);
+    qID.next();
+
+    result.sb_item_type   =SBID::sb_type_playlist;
+    result.sb_item_id     =qID.value(0).toInt();
+
+    //	Figure out name of next playlist
+    QString playlistName;
+    int maxNum=1;
+    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qName(q,db);
+    while(qName.next())
+    {
+        QString existing=qName.value(0).toString();
+        qDebug() << SB_DEBUG_INFO << existing;
+        existing.replace("New Playlist","");
+        int i=existing.toInt();
+        qDebug() << SB_DEBUG_INFO << i << maxNum;
+        if(i>=maxNum)
+        {
+            maxNum=i+1;
+        }
+    }
+    result.playlistName=QString("New Playlist%1").arg(maxNum);
+
+    //	Insert
+    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
+            .arg(result.sb_item_id)
+            .arg(result.playlistName)
+            .arg(dal->getGetDate());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+    //	insert.exec();	-- no need to run on insert statements
+
+    qDebug() << SB_DEBUG_INFO << result;
+    return result;
 }
 
 void
@@ -302,7 +316,8 @@ SBModelPlaylist::deleteItem(const SBID &assignID, const SBID &fromID)
         qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery remove(q,db);
         Q_UNUSED(remove);
-        reorderPlaylistPositions(fromID);
+        _reorderPlaylistPositions(fromID);
+        _calculatePlaylistDuration(fromID);
     }
 }
 
@@ -385,7 +400,7 @@ SBModelPlaylist::getDetail(const SBID& id)
     result.sb_item_id     =id.sb_item_id;
     result.sb_playlist_id=id.sb_item_id;
     result.playlistName   =query.value(0).toString();
-    result.duration       =query.value(1).toString();
+    result.duration       =query.value(1).toTime();
     result.count1         =query.value(2).toInt();
 
     return result;
@@ -458,6 +473,189 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
     return new SBSqlQueryModel(q);
 }
 
+void
+SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed,QList<SBID>& allSongs,const SBID &id)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    qDebug() << SB_DEBUG_INFO << "calculate for" << id;
+
+    if(compositesTraversed.contains(id.sb_item_id)==0)
+    {
+        compositesTraversed.insert(id.sb_item_id,1);
+        switch(id.sb_item_type)
+        {
+            case SBID::sb_type_playlist:
+                //	Calculate duration of all items in playlist_composite
+                q=QString
+                    (
+                        "SELECT "
+                            "%1(playlist_playlist_id,0), "
+                            "%1(playlist_chart_id,0), "
+                            "%1(playlist_record_id,0), "
+                            "%1(playlist_artist_id,0) "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_composite pc "
+                        "WHERE "
+                            "pc.playlist_id=%2 "
+                    )
+                        .arg(dal->getIsNull())
+                        .arg(id.sb_item_id);
+                dal->customize(q);
+                qDebug() << SB_DEBUG_INFO << q;
+                //	Declaring variables in compound statement to avoid compiler errors
+                {
+                    QSqlQuery queryComposite(q,db);
+
+                    while(queryComposite.next())
+                    {
+                        int playlistID=queryComposite.value(0).toInt();
+                        int chartID=queryComposite.value(1).toInt();
+                        int albumID=queryComposite.value(2).toInt();
+                        int performerID=queryComposite.value(3).toInt();
+
+                        SBID t;
+                        if(playlistID!=0)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                            t.sb_item_type=SBID::sb_type_playlist;
+                            t.sb_item_id=playlistID;
+                        }
+                        else if(chartID!=0)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                            t.sb_item_type=SBID::sb_type_chart;
+                            t.sb_item_id=chartID;
+                        }
+                        else if(albumID!=0)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                            t.sb_item_type=SBID::sb_type_album;
+                            t.sb_item_id=albumID;
+                        }
+                        else if(performerID!=0)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                            t.sb_item_type=SBID::sb_type_performer;
+                            t.sb_item_id=performerID;
+                        }
+                        qDebug() << SB_DEBUG_INFO << t;
+
+                        getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,t);
+                    }
+                }
+
+                //	Calculate duration of all songs in playlist_performance
+                q=QString
+                    (
+                        "SELECT "
+                            "pp.artist_id, "
+                            "pp.song_id, "
+                            "pp.record_id, "
+                            "pp.record_position, "
+                            "rp.duration "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_performance pp "
+                                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                                    "pp.artist_id=rp.artist_id AND "
+                                    "pp.song_id=rp.song_id AND "
+                                    "pp.record_id=rp.record_id AND "
+                                    "pp.record_position=rp.record_position "
+                        "WHERE "
+                            "pp.playlist_id=%2"
+                    )
+                        .arg(id.sb_item_id);
+                break;
+
+            case SBID::sb_type_chart:
+                q=QString
+                    (
+                        "SELECT "
+                            "pp.artist_id, "
+                            "pp.song_id, "
+                            "pp.record_id, "
+                            "pp.record_position, "
+                            "rp.duration "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___chart_performance pp "
+                                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                                    "pp.artist_id=rp.artist_id AND "
+                                    "pp.song_id=rp.song_id AND "
+                                    "pp.record_id=rp.record_id AND "
+                                    "pp.record_position=rp.record_position "
+                        "WHERE "
+                            "pp.chart_id=%2"
+                    )
+                        .arg(id.sb_item_id);
+                break;
+
+            case SBID::sb_type_album:
+                q=QString
+                    (
+                        "SELECT "
+                            "rp.artist_id, "
+                            "rp.song_id, "
+                            "rp.record_id, "
+                            "rp.record_position, "
+                            "rp.duration "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___record_performance rp "
+                        "WHERE "
+                            "rp.record_id=%2"
+                    )
+                        .arg(id.sb_item_id);
+                break;
+
+            case SBID::sb_type_performer:
+                q=QString
+                    (
+                        "SELECT "
+                            "rp.artist_id, "
+                            "rp.song_id, "
+                            "rp.record_id, "
+                            "rp.record_position, "
+                            "rp.duration "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___record_performance rp "
+                        "WHERE "
+                            "rp.artist_id=%2"
+                    )
+                        .arg(id.sb_item_id);
+                break;
+
+            case SBID::sb_type_invalid:
+            case SBID::sb_type_song:
+            case SBID::sb_type_position:
+            case SBID::sb_type_allsongs:
+            case SBID::sb_type_songsearch:
+                break;
+        }
+    }
+    if(q.length())
+    {
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery querySong(q,db);
+        while(querySong.next())
+        {
+            SBID songID;
+            songID.sb_item_type=SBID::sb_type_song;
+            songID.sb_item_id=querySong.value(1).toInt();
+            songID.sb_performer_id=querySong.value(0).toInt();
+            songID.sb_album_id=querySong.value(2).toInt();
+            songID.sb_position=querySong.value(3).toInt();
+            songID.duration=querySong.value(4).toTime();
+
+            if(allSongs.contains(songID)==0)
+            {
+                allSongs.append(songID);
+            }
+        }
+    }
+}
+
 SBSqlQueryModel*
 SBModelPlaylist::getAllPlaylists()
 {
@@ -474,6 +672,51 @@ SBModelPlaylist::getAllPlaylists()
     );
 
     return new SBSqlQueryModel(q);
+}
+
+void
+SBModelPlaylist::recalculateAllPlaylistDurations()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+        (
+            "SELECT DISTINCT "
+                "0,playlist_id "
+            "FROM "
+                "playlist_performance pp "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT "
+                        "NULL "
+                    "FROM "
+                        "playlist_composite pc "
+                    "WHERE "
+                        "pp.playlist_id=pc.playlist_id "
+                ") "
+            "UNION "
+            "SELECT DISTINCT "
+                "1,playlist_id "
+            "FROM "
+                "playlist_composite "
+            "ORDER BY "
+                "1,2 "
+        );
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+
+    while(query.next())
+    {
+        SBID t;
+        t.sb_item_type=SBID::sb_type_playlist;
+        t.sb_item_id=query.value(1).toInt();
+
+        _calculatePlaylistDuration(t);
+    }
 }
 
 void
@@ -501,7 +744,7 @@ SBModelPlaylist::renamePlaylist(const SBID &id)
 
 ///	PRIVATE METHODS
 void
-SBModelPlaylist::reorderPlaylistPositions(const SBID &id)
+SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -591,4 +834,54 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id)
         }
         newPosition++;
     }
+}
+
+void
+SBModelPlaylist::_init()
+{
+    qDebug() << SB_DEBUG_INFO;
+}
+
+void
+SBModelPlaylist::_calculatePlaylistDuration(const SBID &id)
+{
+    QHash<int,int> compositesTraversed;
+    QList<SBID> allSongs;
+
+    //	Get all songs
+    qDebug() << SB_DEBUG_INFO;
+    compositesTraversed.clear();
+    allSongs.clear();
+    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
+    qDebug() << SB_DEBUG_INFO;
+
+    //	Calculate duration
+    SBTime duration;
+    qDebug() << SB_DEBUG_INFO << allSongs.count();
+    for(int i=0;i<allSongs.count();i++)
+    {
+        duration+=allSongs.at(i).duration;
+    }
+
+    //	Store calculation
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist "
+        "SET "
+            "duration='%1' "
+        "WHERE "
+            "playlist_id=%2 "
+    )
+            .arg(duration.toString("hh:mm:ss"))
+            .arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+    query.exec();
 }

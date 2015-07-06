@@ -9,6 +9,35 @@ SBID::SBID()
     init();
 }
 
+SBID::SBID(const SBID &c)
+{
+    this->sb_item_type=c.sb_item_type;
+    this->sb_item_id=c.sb_item_id;
+    this->sb_mbid=c.sb_mbid;
+
+    this->sb_performer_id=c.sb_performer_id;
+    this->sb_album_id=c.sb_album_id;
+    this->sb_position=c.sb_position;
+    this->sb_chart_id=c.sb_chart_id;
+    this->sb_song_id=c.sb_song_id;
+    this->sb_playlist_id=c.sb_playlist_id;
+
+    this->albumTitle=c.albumTitle;
+    this->count1=c.count1;
+    this->count2=c.count2;
+    this->duration=c.duration;
+    this->genre=c.genre;
+    this->lyrics=c.lyrics;
+    this->notes=c.notes;
+    this->performerName=c.performerName;
+    this->playlistName=c.playlistName;
+    this->searchCriteria=c.searchCriteria;
+    this->songTitle=c.songTitle;
+    this->url=c.url;
+    this->wiki=c.wiki;
+    this->year=c.year;
+}
+
 SBID::SBID(SBID::sb_type type, int itemID)
 {
     init();
@@ -366,28 +395,30 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 void
 SBID::init()
 {
+    sb_item_type=sb_type_invalid;
+    sb_item_id=-1;
+    sb_mbid=QString();
+
     sb_performer_id=0;
     sb_album_id=0;
     sb_position=0;
     sb_chart_id=0;
-    sb_playlist_id=0;
     sb_song_id=0;
-    sb_item_type=sb_type_invalid;
-    sb_item_id=-1;
-    sb_mbid="";
-    performerName="";
-    albumTitle="";
-    songTitle="";
-    year=0;
-    lyrics="";
-    notes="";
-    genre="";
-    url="";
-    wiki="";
-    playlistName="";
+    sb_playlist_id=0;
+
+    albumTitle=QString();
     count1=0;
     count2=0;
-    duration="";
-    searchCriteria="";
+    duration=SBTime();
+    genre=QString();
+    lyrics=QString();
+    notes=QString();
+    performerName=QString();
+    playlistName=QString();
+    searchCriteria=QString();
+    songTitle=QString();
+    url=QString();
+    wiki=QString();
+    year=0;
 }
 

@@ -4,6 +4,12 @@
 
 ///	PUBLIC
 void
+Context::setBackgroundThread(BackgroundThread* nbgt)
+{
+    bgt=nbgt;
+}
+
+void
 Context::setController(Controller* nc)
 {
     c=nc;

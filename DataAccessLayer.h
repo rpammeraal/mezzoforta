@@ -48,6 +48,7 @@ public:
     QString customize(QString& sqlString) const;
     QSqlQueryModel* getCompleterModel();
     const QString& getConnectionName() const;
+    const QString& getConvertToSecondsFromTime() const;
     const QString& getGetDate() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
@@ -62,12 +63,14 @@ protected:
     void setGetDate(const QString& n);
     void setILike(const QString& n);
     void setIsNull(const QString& n);
+    void setConvertToSecondsFromTime(const QString& n);
 
     void _setSchema(const QString& n);
 
 private:
     QString _schemaName; //	in use for postgres
     QString _connectionName;
+    QString _convertToSecondsFromTime;
     QString _ilike;      //	returns the case insensitive version of SQL like
     QString _isnull;     // returns the equivalent of ISNULL
     QString _getdate;    //	return current timestamp

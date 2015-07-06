@@ -19,10 +19,6 @@ public:
 
     SBStandardItemModel* getModel();
 
-public:
-
-signals:
-
 public slots:
     void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();

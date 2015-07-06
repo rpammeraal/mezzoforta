@@ -168,6 +168,13 @@ DataAccessLayer::getGetDate() const
 }
 
 const QString&
+DataAccessLayer::getConvertToSecondsFromTime() const
+{
+    return _getdate;
+}
+
+
+const QString&
 DataAccessLayer::getILike() const
 {
     return _ilike;
@@ -219,6 +226,7 @@ DataAccessLayer::init()
     dalID=++dalCOUNT;
     _schemaName="";
     _connectionName="";
+    _convertToSecondsFromTime="";
     _ilike="";
     _isnull="";
     _getdate="";
@@ -229,6 +237,7 @@ DataAccessLayer::init(const DataAccessLayer& copy)
 {
     _schemaName=copy._schemaName;
     _connectionName=copy._connectionName;
+    _convertToSecondsFromTime=copy._convertToSecondsFromTime;
     _ilike=copy._ilike;
     _isnull=copy._isnull;
     _getdate=copy._getdate;

@@ -4,6 +4,7 @@
 #include <QSqlRecord>
 
 
+#include "BackgroundThread.h"
 #include "Context.h"
 #include "Controller.h"
 #include "LeftColumnChooser.h"
@@ -49,7 +50,6 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
             mb.setText("Ouroboros Error               ");
             mb.setInformativeText("Cannot assign items to itself.");
             mb.exec();
-
     }
     else if(assignID.sb_item_type==SBID::sb_type_song && assignID.sb_album_id==0)
     {
@@ -76,7 +76,12 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
             SBDialogSelectSongAlbum* ssa=new SBDialogSelectSongAlbum(assignID,m);
 
             ssa->exec();
-            fromID=ssa->getSBID();
+            SBID selectedAlbum=ssa->getSBID();
+            if(selectedAlbum.sb_album_id!=0 && selectedAlbum.sb_position!=0)
+            {
+                //	If user cancels out, don't continue
+                fromID=selectedAlbum;
+            }
             qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_album_id << fromID.sb_position;
         }
     }
@@ -87,7 +92,9 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
 
     if(fromID.sb_item_type!=SBID::sb_type_invalid)
     {
-        SBModelPlaylist::assignItem(fromID, toID);
+        SBModelPlaylist pl;
+
+        pl.assignItem(fromID, toID);
         QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
             .arg(QChar(96))            //	1
             .arg(assignID.getText())   //	2
@@ -96,6 +103,7 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
             .arg(assignID.getType())   //	5
             .arg(toID.getType());      //	6
         Context::instance()->getController()->updateStatusBar(updateText);
+        qDebug() << SB_DEBUG_INFO;
     }
 }
 
@@ -115,10 +123,11 @@ LeftColumnChooser::deletePlaylist()
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
         int result=msgBox.exec();
+        SBModelPlaylist pl;
         switch(result)
         {
             case QMessageBox::Ok:
-                SBModelPlaylist::deletePlaylist(id);
+                pl.deletePlaylist(id);
                 Context::instance()->getSonglistScreenHandler()->removeFromScreenStack(id);
                 populateModel();
 
@@ -142,7 +151,8 @@ LeftColumnChooser::newPlaylist()
     qDebug() << SB_DEBUG_INFO;
 
     //	Create placeholder in database
-    SBID id=SBModelPlaylist::createNewPlaylist();
+    SBModelPlaylist pl;
+    SBID id=pl.createNewPlaylist();
 
     //	Refresh this
     populateModel();
@@ -204,7 +214,8 @@ void
 LeftColumnChooser::_renamePlaylist(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << id;
-    SBModelPlaylist::renamePlaylist(id);
+    SBModelPlaylist pl;
+    pl.renamePlaylist(id);
     populateModel();
     QModelIndex in=findItem(id);
     if(in.isValid())
@@ -421,7 +432,8 @@ LeftColumnChooser::populateModel()
     model->appendRow(item1);
     playlistRoot=item1;
 
-    SBSqlQueryModel* allPlaylists=SBModelPlaylist::getAllPlaylists();
+    SBModelPlaylist pl;
+    SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
     for(int i=0;i<allPlaylists->rowCount();i++)
     {
         QSqlRecord r=allPlaylists->record(i);

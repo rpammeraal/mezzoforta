@@ -64,19 +64,21 @@ Morro Rock 64 (20150626)
 -	Remove item from playlist
 -	recalculate position after deleteItem
 
-<soon>
+20150602
 -	if record_id, record_position is not known for song to be added to playlist, ask user
 -	songs dragged from all should have record_id,~position
 -	avoid & errorbox when assigning playlist to itself
 
+20150605
+-	calculate playlist playtime in background
+-	playlist durations recalculated at startup and every half hour
 
+<next>
 -	drag & drop to playlist
 	-	implement for other items in all songlist
--	calculate playlist playtime in background
 -	leftColumnChooser: make subclass of QTreeView and modify ui
 -	SonglistScreenHandler: make subclass of QWidget (modify ui):
 	-	create subclass for each tab (modify ui)
-
 
 <near future>
 -	charts

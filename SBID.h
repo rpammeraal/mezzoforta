@@ -6,6 +6,7 @@
 #include <QDataStream>
 #include <QStandardItem>
 
+#include "SBTime.h"
 
 class SBID
 {
@@ -25,6 +26,7 @@ public:
     };
 
     SBID();
+    SBID(const SBID& c);
     SBID(SBID::sb_type type, int itemID);
     SBID(QByteArray encodedData);
     ~SBID();
@@ -46,7 +48,7 @@ public:
     QString     albumTitle;
     int         count1;
     int         count2;
-    QString     duration;
+    SBTime       duration;
     QString     genre;
     QString     lyrics;
     QString     notes;
@@ -74,5 +76,14 @@ public:
 private:
     void init();
 };
+
+Q_DECLARE_METATYPE(SBID);
+
+inline uint qHash(const SBID& k, uint seed)
+{
+    QString hash=QString("%1%2%3%4").arg(k.sb_item_id).arg(k.sb_song_id).arg(k.sb_performer_id).arg(k.sb_album_id).arg(k.sb_position);
+    return qHash(hash,seed);
+}
+
 
 #endif // SBID_H

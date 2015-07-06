@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QModelIndex>
+#include <QThread>
 #include <QTimer>
 
 class QAction;
@@ -13,6 +14,7 @@ class QKeyEvent;
 class QStandardItemModel;
 class QSqlDatabase;
 
+class BackgroundThread;
 class MainWindow;
 class SBModelPlaylist;
 class SBModelGenrelist;
@@ -36,6 +38,7 @@ public:
     bool initSuccessFull() const;
 
 signals:
+    void recalculateAllPlaylistDurations();
 
 public slots:
 
@@ -57,9 +60,12 @@ protected:
     virtual void keyPressEvent(QKeyEvent * event);
 
 private:
+    BackgroundThread* bgt;
     bool doExactSearch;
     bool _initSuccessFull;
-    QTimer timer;
+    QThread backgroundThread;
+    QTimer statusBarResetTimer;
+    QTimer updateAllPlaylistDurationTimer;
 
     //	Keep track of what is selected
     QString currentFilter;      //	"" indicates no filter
@@ -83,7 +89,8 @@ private:
     QSortFilterProxyModel* slP;
 
 private slots:
-    void resetStatusBar();
+    void _resetStatusBar();
+    void _updateAllplaylistDurations();
 };
 
 

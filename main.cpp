@@ -5,20 +5,24 @@
 
 #include "Common.h"
 #include "Controller.h"
+#include "SBID.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    //	Set up names
     app.setOrganizationName("Moose!");
     app.setOrganizationDomain("bargie.net");
     app.setApplicationName("Songbase");
 
-//    QFile file(":/qss/default");
-//    file.open(QFile::ReadOnly);
-//    QString styleSheet = QLatin1String(file.readAll());
-//    app.setStyleSheet(styleSheet);
+    //	Set up types
+    qRegisterMetaType<SBID>();
 
+    //	Set up randomizer
     qsrand(QDateTime::currentMSecsSinceEpoch());
+
+    //	Set up system
     Controller c(argc, argv);
     if(c.initSuccessFull())
     {
