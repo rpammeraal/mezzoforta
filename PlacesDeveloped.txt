@@ -73,6 +73,10 @@ Morro Rock 64 (20150626)
 -	calculate playlist playtime in background
 -	playlist durations recalculated at startup and every half hour
 
+20150607:
+-	drag & drop to playlist
+		drag/drop items from playlist implemented
+
 <next>
 -	drag & drop to playlist
 	-	implement for other items in all songlist

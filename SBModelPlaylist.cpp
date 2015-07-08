@@ -22,6 +22,8 @@ SBModelPlaylist::~SBModelPlaylist()
 void
 SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
 {
+    qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id << assignID.sb_position;
+    qDebug() << SB_DEBUG_INFO << "to" << toID;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
@@ -29,6 +31,7 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
     switch(assignID.sb_item_type)
     {
     case SBID::sb_type_song:
+        qDebug() << SB_DEBUG_INFO;
         if(assignID.sb_album_id==0 || assignID.sb_position==0)
         {
             qDebug() << "****************************************************************************************";
@@ -82,7 +85,7 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
                         "pp.record_position=%5 "
                 ") "
           ).arg(toID.sb_item_id)
-           .arg(assignID.sb_song_id)
+           .arg(assignID.sb_item_id)
            .arg(assignID.sb_performer_id)
            .arg(assignID.sb_album_id)
            .arg(assignID.sb_position)
@@ -91,6 +94,7 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
         break;
 
     case SBID::sb_type_performer:
+        qDebug() << SB_DEBUG_INFO;
         q=QString
           (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
@@ -122,10 +126,11 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
           ).arg(toID.sb_item_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_performer_id);
+           .arg(assignID.sb_item_id);
         break;
 
     case SBID::sb_type_album:
+        qDebug() << SB_DEBUG_INFO;
         q=QString
           (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
@@ -157,13 +162,15 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
           ).arg(toID.sb_item_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_album_id);
+           .arg(assignID.sb_item_id);
         break;
 
     case SBID::sb_type_chart:
+        qDebug() << SB_DEBUG_INFO;
         break;
 
     case SBID::sb_type_playlist:
+        qDebug() << SB_DEBUG_INFO;
         q=QString
           (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
@@ -195,13 +202,14 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
           ).arg(toID.sb_item_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_playlist_id);
+           .arg(assignID.sb_item_id);
         break;
 
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
     case SBID::sb_type_invalid:
     default:
+        qDebug() << SB_DEBUG_INFO;
         break;
     }
 
@@ -210,9 +218,11 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
     {
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
+        qDebug() << SB_DEBUG_INFO << q;
         _calculatePlaylistDuration(toID);
+        qDebug() << SB_DEBUG_INFO;
     }
-    qDebug() << SB_DEBUG_INFO << q;
+    qDebug() << SB_DEBUG_INFO;
 }
 
 SBID
@@ -415,10 +425,10 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
         "SELECT "
             "pc.playlist_position as \"#\", "
             "CASE "
-                "WHEN pc.playlist_playlist_id IS NOT NULL THEN 'SB_PLAYLIST_TYPE' "
-                "WHEN pc.playlist_chart_id    IS NOT NULL THEN 'SB_CHART_TYPE' "
-                "WHEN pc.playlist_record_id   IS NOT NULL THEN 'SB_ALBUM_TYPE' "
-                "WHEN pc.playlist_artist_id   IS NOT NULL THEN 'SB_PERFORMER_TYPE' "
+                "WHEN pc.playlist_playlist_id IS NOT NULL THEN %2 "
+                "WHEN pc.playlist_chart_id    IS NOT NULL THEN %3 "
+                "WHEN pc.playlist_record_id   IS NOT NULL THEN %4 "
+                "WHEN pc.playlist_artist_id   IS NOT NULL THEN %5 "
             "END AS SB_ITEM_TYPE, "
             "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
             "CASE "
@@ -432,7 +442,13 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
                 "WHEN pc.playlist_record_id   IS NOT NULL THEN ' - ' || ra.name "
                 "WHEN pc.playlist_artist_id   IS NOT NULL THEN ' - ' || a.name "
                 "ELSE '' "
-            "END  as item "
+            "END  as item, "
+            "0 AS SB_ITEM_TYPE1, "
+            "0 AS SB_ALBUM_ID, "
+            "0 AS SB_ITEM_TYPE2, "
+            "0 AS SB_POSITION_ID, "
+            "0 AS SB_ITEM_TYPE3, "
+            "0 AS SB_PERFORMER_ID "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_composite pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist p ON "
@@ -450,9 +466,15 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
         "UNION "
         "SELECT "
             "pp.playlist_position, "
-            "'SB_SONG_TYPE', "
+            "%6, "
             "s.song_id, "
-            "'song - ' || s.title || ' by ' || a.name "
+            "'song - ' || s.title || ' / ' || a.name || ' - ' || r.title, "
+            "%3 AS SB_ITEM_TYPE1, "
+            "r.record_id AS SB_ALBUM_ID, "
+            "%7 AS SB_ITEM_TYPE2, "
+            "rp.record_position AS SB_POSITION_ID, "
+            "%5 AS SB_ITEM_TYPE3, "
+            "pp.artist_id AS SB_PERFORMER_ID "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_performance pp  "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
@@ -468,7 +490,14 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
                     "rp.record_id=r.record_id "
         "WHERE "
             "pp.playlist_id=%1 "
-    ).arg(id.sb_item_id);
+    )
+            .arg(id.sb_item_id)            //	1
+            .arg(SBID::sb_type_playlist)
+            .arg(SBID::sb_type_chart)
+            .arg(SBID::sb_type_album)
+            .arg(SBID::sb_type_performer)  //	5
+            .arg(SBID::sb_type_song)
+            .arg(SBID::sb_type_position);
 
     return new SBSqlQueryModel(q);
 }

@@ -11,10 +11,14 @@
 
 SBSqlQueryModel::SBSqlQueryModel()
 {
+    init();
 }
 
-SBSqlQueryModel::SBSqlQueryModel(const QString& query)
+SBSqlQueryModel::SBSqlQueryModel(const QString& query, int dragDropPositionalFlag)
 {
+    init();
+    this->dragDropPositionalFlag=dragDropPositionalFlag;
+
     QString q=query;
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -198,52 +202,99 @@ SBSqlQueryModel::init()
 {
     dragableColumnList.clear();
     selectedColumn=0;
+    dragDropPositionalFlag=0;
 }
 
 //	See also SonglistScreenHandler::getSBIDSelected
 SBID
 SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
 {
-    QModelIndex n;
+    qDebug() << SB_DEBUG_INFO  << dragDropPositionalFlag;
+
+    //	Two types of how data can be dragged and dropped.
+    //	-	non-positional: each row contains one item (this is the default). Only this item can be dragged
+    //	-	positional: a row contains multiple items that can be dragged -- allSongs is one example. In
+    //		this type, each column is preceded with an sb_item_id and sb_item_type.
+    QVariant v;
+    QString header;
     SBID id;
 
-    qDebug() << SB_DEBUG_INFO << idx;
+    if(dragDropPositionalFlag==0)
+    {
+        qDebug() << SB_DEBUG_INFO;
 
-    //	sb_item_id
-    n=this->index(idx.row(),idx.column()-1);
-    id.sb_item_id=data(n, Qt::DisplayRole).toInt();
+        QString text;
 
-    //	sb_item_type
-    n=this->index(idx.row(),idx.column()-2);
-    id.sb_item_type=static_cast<SBID::sb_type>(data(n, Qt::DisplayRole).toInt());
+        //	Determine sbid by going through all columns.
+        for(int i=0;i<this->columnCount();i++)
+        {
+            header=this->headerData(i,Qt::Horizontal).toString().toLower();
+            QModelIndex n=this->index(idx.row(),i);
+            v=data(n, Qt::DisplayRole);
 
-    //	text
-    n=this->index(idx.row(),idx.column());
-    id.setText(data(n, Qt::DisplayRole).toString());
+            qDebug() << SB_DEBUG_INFO << i << header << v;
 
-    //	populate secundairy fields
+            if(header=="sb_item_type")
+            {
+                id.sb_item_type=static_cast<SBID::sb_type>(v.toInt());
+            }
+            else if(header=="sb_item_id")
+            {
+                id.sb_item_id=v.toInt();
+            }
+            else if(header=="#")
+            {
+                id.sb_position=v.toInt();
+            }
+            else if(text.length()==0)
+            {
+                text=v.toString();
+            }
+        }
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        //	Determine sbid from relatively from actual column that is clicked
+        QModelIndex n;
+
+        //	sb_item_id
+        n=this->index(idx.row(),idx.column()-1);
+        id.sb_item_id=data(n, Qt::DisplayRole).toInt();
+
+        //	sb_item_type
+        n=this->index(idx.row(),idx.column()-2);
+        id.sb_item_type=static_cast<SBID::sb_type>(data(n, Qt::DisplayRole).toInt());
+
+        //	text
+        n=this->index(idx.row(),idx.column());
+        id.setText(data(n, Qt::DisplayRole).toString());
+    }
+    qDebug() << SB_DEBUG_INFO << id;
+
+    //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<this->columnCount();i++)
     {
-        QString header=this->headerData(i,Qt::Horizontal).toString().toLower();
-        n=this->index(idx.row(),i);
-        int value=data(n, Qt::DisplayRole).toInt();
-        qDebug() << SB_DEBUG_INFO << i << header << value;
+        header=this->headerData(i,Qt::Horizontal).toString().toLower();
+        QModelIndex n=this->index(idx.row(),i);
+        v=data(n, Qt::DisplayRole);
+        qDebug() << SB_DEBUG_INFO << i << header << v;
 
         if(header=="sb_song_id")
         {
-            id.sb_song_id=value;
+            id.sb_song_id=v.toInt();
         }
         else if(header=="sb_performer_id")
         {
-            id.sb_performer_id=value;
+            id.sb_performer_id=v.toInt();
         }
         else if(header=="sb_album_id")
         {
-            id.sb_album_id=value;
+            id.sb_album_id=v.toInt();
         }
         else if(header=="sb_position_id" || header=="#")
         {
-            id.sb_position=value;
+            id.sb_position=v.toInt();
         }
     }
 

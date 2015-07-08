@@ -545,7 +545,7 @@ Controller::init()
     Context::instance()->setBackgroundThread(bgt);
 
     //	Recalculate playlist duration
-    updateAllPlaylistDurationTimer.start(20*1000);	//	start recalc in 20s
+    updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
     statusBarResetTimer.setSingleShot(0);
     connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
             this, SLOT(_updateAllplaylistDurations()));

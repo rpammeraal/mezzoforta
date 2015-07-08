@@ -20,7 +20,7 @@ class SBSqlQueryModel : public QSqlQueryModel
 
 public:
     SBSqlQueryModel();
-    SBSqlQueryModel(const QString& query);
+    SBSqlQueryModel(const QString& query, int dragDropPositionalFlag=0);
     ~SBSqlQueryModel();
 
     //	Inherited methods
@@ -47,6 +47,7 @@ protected:
 private:
     QList<bool> dragableColumnList;
     int selectedColumn;
+    bool dragDropPositionalFlag;
 
     void init();
     SBID determineSBID(const QModelIndex& idx) const;

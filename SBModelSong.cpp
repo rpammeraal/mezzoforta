@@ -95,7 +95,7 @@ SBModelSong::getAllSongs()
         "ORDER BY 4 "
     ).arg(SBID::sb_type_song).arg(SBID::sb_type_performer).arg(SBID::sb_type_album).arg(SBID::sb_type_position);
 
-    return new SBSqlQueryModel(q);
+    return new SBSqlQueryModel(q,1);
 }
 
 SBSqlQueryModel*

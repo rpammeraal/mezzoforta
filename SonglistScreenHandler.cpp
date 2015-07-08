@@ -249,9 +249,6 @@ SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
     MainWindow* mw=Context::instance()->getMainWindow();
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
 
-    QString itemType;
-    int itemID;
-    int position;
     QString text;
     for(int i=0; i<aim->columnCount();i++)
     {
@@ -260,17 +257,17 @@ SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
         if(header=="SB_ITEM_TYPE")
         {
             QModelIndex idy=idx.sibling(idx.row(),i);
-            itemType=aim->data(idy).toString();
+            id.sb_item_type=static_cast<SBID::sb_type>(aim->data(idy).toInt());
         }
         else if(header=="SB_ITEM_ID")
         {
             QModelIndex idy=idx.sibling(idx.row(),i);
-            itemID=aim->data(idy).toInt();
+            id.sb_item_id=aim->data(idy).toInt();
         }
         else if(header=="#")
         {
             QModelIndex idy=idx.sibling(idx.row(),i);
-            position=aim->data(idy).toInt();
+            id.sb_position=aim->data(idy).toInt();
         }
         else if(text.length()==0)
         {
@@ -279,8 +276,7 @@ SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
         }
 
     }
-    id.assign(itemType,itemID,text);
-    id.sb_position=position;
+    //id.assign(id.sb_item_type,id.sb_item_id,text);
 
     qDebug() << SB_DEBUG_INFO << id << id.sb_position;
 
@@ -622,12 +618,15 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int
     hv->setSortIndicator(initialSortColumn,Qt::AscendingOrder);
     hv->setSortIndicatorShown(1);
     hv->setSectionResizeMode(QHeaderView::ResizeToContents);
-    //hv->setSectionResizeMode(QHeaderView::Stretch);
 
     hv=tv->verticalHeader();
     hv->setDefaultSectionSize(18);
     hv->hide();
     Common::hideColumns(tv);
+
+    //	Enable drag&drop
+    tv->setDragEnabled(true);
+    tv->setDropIndicatorShown(true);
 
     return sl->rowCount();
 }
