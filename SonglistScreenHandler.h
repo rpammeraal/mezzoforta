@@ -45,16 +45,12 @@ public:
     void showScreenStack();
 
 public slots:
-    void albumDetailSonglistSelected(const QModelIndex& i);
     void applySonglistFilter();
     void deletePlaylistItem();
-    void performerDetailAlbumlistSelected(const QModelIndex& i);
-    void performerDetailSonglistSelected(const QModelIndex& i);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
     void openOpener(QString i);
     void openSonglistItem(const QModelIndex& i);
-    void playlistCellClicked(const QModelIndex& i);
     void refreshAlbumReviews();
     void refreshPerformerNews();
     void setAlbumImage(const QPixmap& p);
@@ -68,11 +64,9 @@ public slots:
     void setSongLyricsPage(const QString& url);
     void setSongWikipediaPage(const QString& url);
     void showContextMenuPlaylist(const QPoint& p);
-    void songDetailAlbumlistSelected(const QModelIndex& i);
-    void songDetailPerformerlistSelected(const QModelIndex& i);
-    void songDetailPlaylistSelected(const QModelIndex& i);
     void tabBackward();
     void tabForward();
+    void tableViewCellClicked(const QModelIndex& i);
 
 private:
     //	Context menu actions
@@ -85,7 +79,6 @@ private:
     QList<QWidget *> related;
     QModelIndex lastClickedIndex;
 
-    bool openFromTableView(const QModelIndex &i, int c,SBID::sb_type type);
     void init();
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
 };

@@ -51,11 +51,14 @@ SBModelAlbum::getAllSongs(const SBID& id)
     QString q=QString
     (
         "SELECT "
+            "%1 AS SB_ALBUM_ID, "
             "rp.record_position AS \"#\", "
-            "s.song_id AS SB_SONG_ID, "
+            "%2 AS SB_ITEM_TYPE1, "
+            "s.song_id AS SB_SONG_ID , "
             "s.title AS \"song\", "
             "rp.duration AS \"duration\", "
-            "a.artist_id AS SB_ARTIST_ID, "
+            "%3 AS SB_ITEM_TYPE2, "
+            "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\" "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
@@ -66,7 +69,10 @@ SBModelAlbum::getAllSongs(const SBID& id)
         "WHERE "
             "record_id=%1 "
         "ORDER BY 1"
-    ).arg(id.sb_item_id);
+    )
+        .arg(id.sb_item_id)
+        .arg(SBID::sb_type_song)
+        .arg(SBID::sb_type_performer);
 
     return new SBSqlQueryModel(q);
 }

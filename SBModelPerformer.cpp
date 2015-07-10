@@ -78,9 +78,11 @@ SBModelPerformer::getAllAlbums(const SBID& id)
     QString q=QString
     (
         "SELECT "
-            "r.record_id AS SB_RECORD_ID, "
+            "%1 AS SB_ITEM_TYPE1, "
+            "r.record_id AS SB_ALBUM_ID, "
             "r.title AS \"title\", "
             "r.year AS \"year released\", "
+            "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name \"performer\" "
         "FROM "
@@ -88,12 +90,14 @@ SBModelPerformer::getAllAlbums(const SBID& id)
                 "JOIN ___SB_SCHEMA_NAME___record r ON "
                     "a.artist_id=r.artist_id "
         "WHERE "
-            "a.artist_id=%1 "
+            "a.artist_id=%3 "
         "UNION "
         "SELECT "
-            "r.record_id AS SB_RECORD_ID, "
+            "%1 AS SB_ITEM_TYPE, "
+            "r.record_id AS SB_ALBUM_ID, "
             "r.title AS \"title\", "
             "r.year AS \"year released\", "
+            "%2 AS SB_ITEM_TYPE2, "
             "a1.artist_id AS SB_PERFORMER_ID, "
             "a1.name AS \"performer\" "
         "FROM "
@@ -105,10 +109,13 @@ SBModelPerformer::getAllAlbums(const SBID& id)
                 "JOIN ___SB_SCHEMA_NAME___artist a1 ON "
                     "r.artist_id=a1.artist_id "
         "WHERE "
-            "a.artist_id=%1 "
+            "a.artist_id=%3 "
         "ORDER BY  "
             "1 "
-    ).arg(id.sb_item_id);
+    )
+        .arg(SBID::sb_type_album)
+        .arg(SBID::sb_type_performer)
+        .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -144,7 +151,9 @@ SBModelPerformer::getAllSongs(const SBID& id)
     QString q=QString
     (
         "SELECT "
-            "s.song_id AS SB_SONG_ID, "
+            "%1 AS SB_PERFORMER_ID, "
+            "%2 AS SB_ITEM_TYPE, "
+            "s.song_id AS SB_ITEM_ID, "
             "s.title AS \"title\", "
             "p.year AS \"year released\" "
         "FROM "
@@ -157,7 +166,9 @@ SBModelPerformer::getAllSongs(const SBID& id)
             "a.artist_id=%1 "
         "ORDER BY "
             "s.title "
-    ).arg(id.sb_item_id);
+    )
+        .arg(id.sb_item_id)
+        .arg(SBID::sb_type_song);
 
     return new SBSqlQueryModel(q);
 }

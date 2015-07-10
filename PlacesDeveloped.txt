@@ -77,20 +77,19 @@ Morro Rock 64 (20150626)
 -	drag & drop to playlist
 		drag/drop items from playlist implemented
 
-<next>
+20150609:
 -	drag & drop to playlist
-	-	implement for other items in all songlist
+	-	implement for other items in all songlist: completed
+-	performer / albums: performer does not work: fixed
+
+<next>
 -	leftColumnChooser: make subclass of QTreeView and modify ui
 -	SonglistScreenHandler: make subclass of QWidget (modify ui):
 	-	create subclass for each tab (modify ui)
 
 <near future>
 -	charts
--	performer / albums: performer does not work
--	charts
--	Drag & drop
 -	Updates to playlist, genres
--	context menu fails
 
 todo:
 -	QCompleter:

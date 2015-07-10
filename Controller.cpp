@@ -345,6 +345,10 @@ Controller::setupModels()
 
     //	songlist
     SBSqlQueryModel* sm=SBModelSong::getAllSongs();
+    QList<bool> dragableColumns;
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0;
+    sm->setDragableColumns(dragableColumns);
     qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();

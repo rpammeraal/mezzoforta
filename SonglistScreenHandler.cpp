@@ -94,7 +94,9 @@ SonglistScreenHandler::activateTab(const SBID& id)
 
     qDebug() << SB_DEBUG_INFO << result;
     mw->ui.searchEdit->setText(id.searchCriteria);
+    qDebug() << SB_DEBUG_INFO;
     mw->ui.songlistTab->insertTab(0,tab,QString(""));
+    qDebug() << SB_DEBUG_INFO;
 
     return result;
 }
@@ -115,6 +117,7 @@ SonglistScreenHandler::moveTab(int direction)
 
     qDebug() << SB_DEBUG_INFO << id << id.wiki;
     activateTab(id);
+    qDebug() << SB_DEBUG_INFO;
 
     bool activateBackButton;
     bool activateForwardButton;
@@ -172,22 +175,28 @@ SonglistScreenHandler::openScreenByID(SBID &id)
     }
 
     result=activateTab(id);
+    qDebug() << SB_DEBUG_INFO;
     //	For whatever reason, this exclusion was added. Not sure why this is, so commented out.
     //	if(result.sb_item_type!=SBID::sb_type_songsearch)
     {
         //	CWIP: add in new method, add flags to SBID::sb_type to filter out
         //	items that should NOT be stored on the stack
         //	eg - certain search requests: if free-text add, if from dropdown, don't include
+        qDebug() << SB_DEBUG_INFO;
         st.pushScreen(result);
     }
+    qDebug() << SB_DEBUG_INFO;
 
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     if(st.getScreenCount()>1)
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.buttonBackward->setEnabled(1);
     }
+    qDebug() << SB_DEBUG_INFO;
     st.debugShow("SonglistScreenHandler:178");
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -286,7 +295,8 @@ SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
 SBID
 SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QList<bool> dragableColumns;
 
     //	set constant connections
     connect(mw->ui.albumDetailReviewsHome, SIGNAL(clicked()),
@@ -343,9 +353,12 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
     sl=SBModelAlbum::getAllSongs(id);
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    sl->setDragableColumns(dragableColumns);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(albumDetailSonglistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
     return result;
 }
@@ -355,6 +368,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << "id=" << id << id.wiki;
     const MainWindow* mw=Context::instance()->getMainWindow();
+    QList<bool> dragableColumns;
 
     //	set constant connections
     connect(mw->ui.performerDetailNewsHome, SIGNAL(clicked()),
@@ -391,9 +405,8 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     ed->loadPerformerData(result);
 
-    //	Populate record detail tab
+    //	Populate performer detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(result.performerName);
-    //mw->ui.performerDetailURL->setText(result.url);
     mw->ui.labelPerformerDetailPerformerNotes->setText(result.notes);
     QString details=QString("%1 albums • %2 songs").arg(result.count1).arg(result.count2);
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
@@ -459,15 +472,20 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(performerDetailSonglistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
+    //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
     sl=mp->getAllAlbums(id);
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    sl->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(performerDetailAlbumlistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
+    //	Populate charts
     //tv=mw->ui.performerDetailCharts;
     //sl=SBModelPerformer::getAllCharts(id);
     //rowCount=populateTableView(tv,sl,0);
@@ -504,7 +522,7 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     SBSqlQueryModel* sl=pl.getAllItemsByPlaylist(id);
     populateTableView(tv,sl,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(playlistCellClicked(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //	Context menu
     tv->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -518,6 +536,7 @@ SBID
 SonglistScreenHandler::populateSongDetail(const SBID& id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
+    QList<bool> dragableColumns;
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
@@ -553,23 +572,29 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabSongDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(songDetailPerformerlistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
     sl=SBModelSong::getOnAlbumListBySong(id);
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
+    sl->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabSongDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(songDetailAlbumlistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
     sl=SBModelSong::getOnPlaylistListBySong(id);
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0;
+    sl->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,sl,1);
     mw->ui.tabSongDetailLists->setTabEnabled(2,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(songDetailPlaylistSelected(QModelIndex)));
+            this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //  populate tabSongDetailChartList
     //tv=mw->ui.songDetailChartList;
@@ -637,6 +662,7 @@ SonglistScreenHandler::refreshTabIfCurrent(const SBID &id)
     if(st.currentScreen()==id)
     {
         activateTab(id);
+        qDebug() << SB_DEBUG_INFO;
     }
 }
 
@@ -676,6 +702,7 @@ void
 SonglistScreenHandler::showPlaylist(SBID id)
 {
     openScreenByID(id);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -693,6 +720,7 @@ SonglistScreenHandler::showSonglist()
 
     qDebug() << SB_DEBUG_INFO;
     openScreenByID(id);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -702,16 +730,6 @@ SonglistScreenHandler::showScreenStack()
 }
 
 ///	SLOTS
-void
-SonglistScreenHandler::albumDetailSonglistSelected(const QModelIndex &i)
-{
-    qDebug() << SB_DEBUG_INFO << i.column();
-    if(openFromTableView(i,2,SBID::sb_type_song)==0)
-    {
-        openFromTableView(i,5,SBID::sb_type_performer);
-    }
-}
-
 void
 SonglistScreenHandler::applySonglistFilter()
 {
@@ -757,6 +775,7 @@ SonglistScreenHandler::applySonglistFilter()
     id.searchCriteria=filter;
     qDebug() << SB_DEBUG_INFO << id;
     openScreenByID(id);
+    qDebug() << SB_DEBUG_INFO;
 
     mw->ui.searchEdit->setFocus();
     mw->ui.searchEdit->selectAll();
@@ -789,18 +808,6 @@ SonglistScreenHandler::deletePlaylistItem()
     }
 }
 
-void
-SonglistScreenHandler::performerDetailAlbumlistSelected(const QModelIndex &i)
-{
-    openFromTableView(i,1,SBID::sb_type_album);
-}
-
-void
-SonglistScreenHandler::performerDetailSonglistSelected(const QModelIndex &i)
-{
-    openFromTableView(i,1,SBID::sb_type_song);
-}
-
 //	Used from big song list
 void
 SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
@@ -829,6 +836,7 @@ SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
 
     SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
     openScreenByID(id);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -839,6 +847,7 @@ SonglistScreenHandler::openPerformer(const QString &itemID)
     id.sb_item_type=SBID::sb_type_performer;
     id.sb_item_id=itemID.toInt();
     openScreenByID(id);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -866,24 +875,7 @@ SonglistScreenHandler::openSonglistItem(const QModelIndex& i)
 
     qDebug() << SB_DEBUG_INFO << id;
     openScreenByID(id);
-}
-
-void
-SonglistScreenHandler::playlistCellClicked(const QModelIndex& i)
-{
-    SBID id;
-
-    qDebug() << ' ';
-    qDebug() << SB_DEBUG_INFO << "######################################################################";
-    qDebug() << SB_DEBUG_INFO << "col=" << i.column();
-
-    id.assign(i.sibling(i.row(), i.column()-2).data().toString(),
-              i.sibling(i.row(), i.column()-1).data().toInt());
-
-    if(i.column()==3)
-    {
-        openScreenByID(id);
-    }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -1059,34 +1051,6 @@ SonglistScreenHandler::showContextMenuPlaylist(const QPoint &p)
 }
 
 void
-SonglistScreenHandler::songDetailAlbumlistSelected(const QModelIndex &i)
-{
-    qDebug() << SB_DEBUG_INFO << i.column();
-
-    if(openFromTableView(i,1,SBID::sb_type_album)==0)
-    {
-        openFromTableView(i,4,SBID::sb_type_performer);
-    }
-}
-
-void
-SonglistScreenHandler::songDetailPerformerlistSelected(const QModelIndex &i)
-{
-    openFromTableView(i,1,SBID::sb_type_performer);
-}
-
-void
-SonglistScreenHandler::songDetailPlaylistSelected(const QModelIndex &i)
-{
-    qDebug() << SB_DEBUG_INFO << i.column();
-    if(openFromTableView(i,1,SBID::sb_type_playlist)==0)
-    {
-        openFromTableView(i,3,SBID::sb_type_performer);
-    }
-}
-
-
-void
 SonglistScreenHandler::tabBackward()
 {
     moveTab(-1);
@@ -1098,26 +1062,29 @@ SonglistScreenHandler::tabForward()
     moveTab(1);
 }
 
-///	PRIVATE
-bool
-SonglistScreenHandler::openFromTableView(const QModelIndex &i, int c,SBID::sb_type type)
+void
+SonglistScreenHandler::tableViewCellClicked(const QModelIndex& idx)
 {
     SBID id;
+    const QSortFilterProxyModel* sfpm=dynamic_cast<const QSortFilterProxyModel *>(idx.model());
 
-    if(i.column()==c)
+    if(sfpm)
     {
-        id.sb_item_id=i.sibling(i.row(), i.column()-1).data().toInt();
-        id.sb_item_type=type;
-
-        qDebug() << ' ';
-        qDebug() << SB_DEBUG_INFO << "######################################################################";
-        qDebug() << SB_DEBUG_INFO << i.column() << id;
-        openScreenByID(id);
-        return 1;
+        qDebug() << SB_DEBUG_INFO << sfpm->metaObject()->className();
+        const SBSqlQueryModel* m=dynamic_cast<const SBSqlQueryModel *>(sfpm->sourceModel());
+        if(m)
+        {
+            qDebug() << ' ';
+            qDebug() << SB_DEBUG_INFO << "######################################################################";
+            qDebug() << SB_DEBUG_INFO << idx.column() << id;
+            id=m->determineSBID(idx);
+            openScreenByID(id);
+            qDebug() << SB_DEBUG_INFO;
+        }
     }
-    return 0;
 }
 
+///	PRIVATE
 void
 SonglistScreenHandler::init()
 {

@@ -95,7 +95,7 @@ SBModelSong::getAllSongs()
         "ORDER BY 4 "
     ).arg(SBID::sb_type_song).arg(SBID::sb_type_performer).arg(SBID::sb_type_album).arg(SBID::sb_type_position);
 
-    return new SBSqlQueryModel(q,1);
+    return new SBSqlQueryModel(q);
 }
 
 SBSqlQueryModel*
@@ -104,7 +104,8 @@ SBModelSong::getPerformedByListBySong(const SBID& id)
     QString q=QString
     (
         "SELECT "
-            "a.artist_id AS SB_PERFORMER_ID, "
+            "%1 AS SB_ITEM_TYPE, "
+            "a.artist_id AS SB_ITEM_ID, "
             "a.name AS \"performer\", "
             "p.year AS \"year released \" "
         "FROM "
@@ -113,10 +114,12 @@ SBModelSong::getPerformedByListBySong(const SBID& id)
                     "a.artist_id=p.artist_id "
         "WHERE "
             "p.role_id=1 AND "
-            "p.song_id=%1 "
+            "p.song_id=%2 "
         "ORDER BY "
             "a.name"
-    ).arg(id.sb_item_id);
+    )
+        .arg(SBID::sb_type_performer)
+        .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -128,9 +131,11 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
     (
                 //	CWIP: if changed, look for instances where this method is used!
         "SELECT "
-            "r.record_id AS SB_ALBUM_ID, "
+            "%1 AS SB_ITEM_TYPE1, "
+            "r.record_id AS SB_RECORD_ID, "
             "r.title AS \"album title\", "
             "r.year AS \"year released\", "
+            "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\" , "
             "rp.duration \"duration\", "
@@ -142,8 +147,11 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "rp.artist_id=a.artist_id "
         "WHERE "
-            "rp.song_id=%1"
-    ).arg(id.sb_item_id);
+            "rp.song_id=%3"
+    )
+        .arg(SBID::sb_type_album)
+        .arg(SBID::sb_type_performer)
+        .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -154,8 +162,9 @@ SBModelSong::getOnChartListBySong(const SBID& id)
     QString q=QString
     (
         "SELECT "
+            "%1 AS SB_ITEM_TYPE, "
             "cp.chart_position AS \"position\", "
-            "c.chart_id AS SB_CHART_ID, "
+            "c.chart_id AS SB_ITEM_ID, "
             "c.name AS \"chart\", "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\" "
@@ -166,8 +175,10 @@ SBModelSong::getOnChartListBySong(const SBID& id)
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                         "cp.artist_id=a.artist_id "
             "WHERE "
-                "cp.song_id=%1"
-    ).arg(id.sb_item_id);
+                "cp.song_id=%2"
+    )
+        .arg(SBID::sb_type_chart)
+        .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -178,8 +189,10 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
     QString q=QString
     (
         "SELECT DISTINCT "
+            "%1 AS SB_ITEM_TYPE1, "
             "p.playlist_id AS SB_PLAYLIST_ID, "
             "p.name AS \"playlist\", "
+            "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\", "
             "rp.duration AS \"duration\" "
@@ -195,8 +208,11 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
                     "pp.record_id=rp.record_id AND "
                     "pp.record_position=rp.record_position "
         "WHERE "
-            "pp.song_id=%1"
-    ).arg(id.sb_item_id);
+            "pp.song_id=%3"
+    )
+        .arg(SBID::sb_type_playlist)
+        .arg(SBID::sb_type_performer)
+        .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
 }

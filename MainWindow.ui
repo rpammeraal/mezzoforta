@@ -360,7 +360,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tabAllSongs">
            <attribute name="title">
@@ -986,7 +986,7 @@
             <item>
              <widget class="QTabWidget" name="tabPerformerDetailLists">
               <property name="currentIndex">
-               <number>5</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tabPerformerDetailPerformances">
                <attribute name="title">
@@ -1009,6 +1009,12 @@
                  <widget class="QTableView" name="performerDetailPerformances">
                   <property name="alternatingRowColors">
                    <bool>true</bool>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
                   </property>
                   <property name="gridStyle">
                    <enum>Qt::NoPen</enum>
@@ -1038,6 +1044,12 @@
                  <widget class="QTableView" name="performerDetailAlbums">
                   <property name="alternatingRowColors">
                    <bool>true</bool>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectItems</enum>
                   </property>
                   <property name="gridStyle">
                    <enum>Qt::NoPen</enum>
@@ -1468,7 +1480,7 @@
             <item>
              <widget class="QTabWidget" name="tabAlbumDetailLists">
               <property name="currentIndex">
-               <number>2</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="tabAlbumDetailContents">
                <attribute name="title">
@@ -1488,7 +1500,14 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QTableView" name="albumDetailAlbumContents"/>
+                 <widget class="QTableView" name="albumDetailAlbumContents">
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectItems</enum>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -1833,7 +1852,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>5</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tabSongDetailPerformedBy">
                <attribute name="title">
@@ -1856,6 +1875,12 @@
                  <widget class="QTableView" name="songDetailPerformedBy">
                   <property name="alternatingRowColors">
                    <bool>true</bool>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
                   </property>
                  </widget>
                 </item>
@@ -1883,6 +1908,12 @@
                   <property name="alternatingRowColors">
                    <bool>true</bool>
                   </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectItems</enum>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -1909,6 +1940,12 @@
                   <property name="alternatingRowColors">
                    <bool>true</bool>
                   </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectItems</enum>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -1934,6 +1971,12 @@
                  <widget class="QTableView" name="songDetailCharts">
                   <property name="alternatingRowColors">
                    <bool>true</bool>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::SingleSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
                   </property>
                  </widget>
                 </item>

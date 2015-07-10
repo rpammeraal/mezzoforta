@@ -440,7 +440,7 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
             "COALESCE(p.name,c.name,r.title,a.name) || "
             "CASE "
                 "WHEN pc.playlist_record_id   IS NOT NULL THEN ' - ' || ra.name "
-                "WHEN pc.playlist_artist_id   IS NOT NULL THEN ' - ' || a.name "
+                "WHEN pc.playlist_artist_id   IS NOT NULL AND pc.playlist_record_id IS NOT NULL THEN ' - ' || a.name "
                 "ELSE '' "
             "END  as item, "
             "0 AS SB_ITEM_TYPE1, "
