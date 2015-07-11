@@ -82,7 +82,18 @@ Morro Rock 64 (20150626)
 	-	implement for other items in all songlist: completed
 -	performer / albums: performer does not work: fixed
 
+20160510:
+-	postgres:
+	-	u2 / songs: list not sorted: fixed
+	-	u2 / albums: wrong album displayed, list not sorted
+	-	sunday bloody sunday / also performed by: wrong performer displayed, list not sorted
+	-	sunday bloody sunday / albums: wrong album displayed, list not sorted
+	-	moments of surrender / playlist: no header data displayed, list not sorted
+
 <next>
+-	screenstack: retain tab of current page, switch back to tab
+-	song / playlist: display album in separate column
+-	reorder playlists using drag/drop
 -	leftColumnChooser: make subclass of QTreeView and modify ui
 -	SonglistScreenHandler: make subclass of QWidget (modify ui):
 	-	create subclass for each tab (modify ui)

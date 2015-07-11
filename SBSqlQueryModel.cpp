@@ -89,7 +89,6 @@ Qt::ItemFlags
 SBSqlQueryModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
-    debugShow();
     if(index.column()>=0)	//	sometimes index can be negative -- ignore
     {
         if(dragableColumnList.count()==0 || dragableColumnList.at(index.column())==1)
@@ -171,8 +170,7 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
     SBID id;
     QString text;
 
-    qDebug() << SB_DEBUG_INFO << idx.column();
-    debugShow();
+    qDebug() << SB_DEBUG_INFO << idx << idx.column();
 
     if(dragableColumnList.count()==0)
     {
@@ -286,7 +284,6 @@ SBSqlQueryModel::setDragableColumns(const QList<bool>& list)
 {
     qDebug() << SB_DEBUG_INFO;
     dragableColumnList=list;
-    debugShow();
 }
 
 ///	SLOTS

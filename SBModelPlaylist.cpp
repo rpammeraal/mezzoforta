@@ -363,7 +363,7 @@ SBModelPlaylist::getDetail(const SBID& id)
 
     QString q=QString
     (
-        "SELECT "
+        "SELECT DISTINCT "
             "p.name, "
             "p.duration, "
             "COALESCE(a.num,0)+COALESCE(b.num,0)  "
@@ -395,9 +395,6 @@ SBModelPlaylist::getDetail(const SBID& id)
                     ") b ON b.playlist_id=p.playlist_id "
         "WHERE "
             "p.playlist_id=%1 "
-        "GROUP BY "
-            "p.name, "
-            "p.duration"
     ).arg(id.sb_item_id);
     dal->customize(q);
 

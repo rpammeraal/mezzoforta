@@ -68,7 +68,7 @@ SBModelAlbum::getAllSongs(const SBID& id)
                     "rp.artist_id=a.artist_id "
         "WHERE "
             "record_id=%1 "
-        "ORDER BY 1"
+        "ORDER BY 2"
     )
         .arg(id.sb_item_id)
         .arg(SBID::sb_type_song)

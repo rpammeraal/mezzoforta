@@ -67,8 +67,8 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
         {
             //	Populate assignID and assign
             fromID=assignID;
-            fromID.sb_album_id=m->data(m->index(0,0)).toInt();
-            fromID.sb_position=m->data(m->index(0,6)).toInt();
+            fromID.sb_album_id=m->data(m->index(0,1)).toInt();
+            fromID.sb_position=m->data(m->index(0,8)).toInt();
         }
         else
         {

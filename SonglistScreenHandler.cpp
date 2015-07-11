@@ -356,7 +356,7 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     sl->setDragableColumns(dragableColumns);
-    populateTableView(tv,sl,0);
+    populateTableView(tv,sl,2);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
@@ -435,8 +435,9 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     for(int i=0;i<rm->rowCount();i++)
     {
-        //QPushButton* n=new QPushButton(rm->data(rm->index(i,1)).toString(), frRelated);
-        QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>").arg(rm->data(rm->index(i,0)).toString()).arg(rm->data(rm->index(i,1)).toString());
+        QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
+            .arg(rm->data(rm->index(i,0)).toString())
+            .arg(rm->data(rm->index(i,1)).toString());
         QLabel* n=new QLabel(t, frRelated);
         n->setTextFormat(Qt::RichText);
         connect(n, SIGNAL(linkActivated(QString)),
@@ -469,7 +470,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
     sl=mp->getAllSongs(id);
-    rowCount=populateTableView(tv,sl,1);
+    rowCount=populateTableView(tv,sl,3);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
@@ -480,7 +481,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,1);
+    rowCount=populateTableView(tv,sl,2);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
@@ -569,7 +570,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	populate songDetailPerformedByList
     tv=mw->ui.songDetailPerformedBy;
     sl=SBModelSong::getPerformedByListBySong(id);
-    rowCount=populateTableView(tv,sl,1);
+    rowCount=populateTableView(tv,sl,2);
     mw->ui.tabSongDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
@@ -580,7 +581,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
     sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,1);
+    rowCount=populateTableView(tv,sl,2);
     mw->ui.tabSongDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
@@ -591,7 +592,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0;
     sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,1);
+    rowCount=populateTableView(tv,sl,2);
     mw->ui.tabSongDetailLists->setTabEnabled(2,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
@@ -1071,13 +1072,14 @@ SonglistScreenHandler::tableViewCellClicked(const QModelIndex& idx)
     if(sfpm)
     {
         qDebug() << SB_DEBUG_INFO << sfpm->metaObject()->className();
+        QModelIndex idy=sfpm->mapToSource(idx);
         const SBSqlQueryModel* m=dynamic_cast<const SBSqlQueryModel *>(sfpm->sourceModel());
         if(m)
         {
             qDebug() << ' ';
             qDebug() << SB_DEBUG_INFO << "######################################################################";
-            qDebug() << SB_DEBUG_INFO << idx.column() << id;
-            id=m->determineSBID(idx);
+            qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
+            id=m->determineSBID(idy);
             openScreenByID(id);
             qDebug() << SB_DEBUG_INFO;
         }

@@ -129,7 +129,6 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
 {
     QString q=QString
     (
-                //	CWIP: if changed, look for instances where this method is used!
         "SELECT "
             "%1 AS SB_ITEM_TYPE1, "
             "r.record_id AS SB_RECORD_ID, "
@@ -147,7 +146,9 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "rp.artist_id=a.artist_id "
         "WHERE "
-            "rp.song_id=%3"
+            "rp.song_id=%3 "
+        "ORDER BY "
+            "r.title "
     )
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
@@ -208,7 +209,9 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
                     "pp.record_id=rp.record_id AND "
                     "pp.record_position=rp.record_position "
         "WHERE "
-            "pp.song_id=%3"
+            "pp.song_id=%3 "
+        "ORDER BY "
+            "p.name "
     )
         .arg(SBID::sb_type_playlist)
         .arg(SBID::sb_type_performer)

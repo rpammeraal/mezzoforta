@@ -111,7 +111,7 @@ SBModelPerformer::getAllAlbums(const SBID& id)
         "WHERE "
             "a.artist_id=%3 "
         "ORDER BY  "
-            "1 "
+            "3 "
     )
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
