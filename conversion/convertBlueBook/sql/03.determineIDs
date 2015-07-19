@@ -1,0 +1,118 @@
+--	Remove empty data
+DELETE FROM staging WHERE song_title IS NULL AND artist_name IS NULL
+;
+
+--	Reset fields
+UPDATE staging
+SET artist_id=NULL,song_id=NULL,record_id=NULL,record_position=NULL
+;
+
+--	Update artist_name if not populated
+UPDATE staging
+SET artist_name='Unknown Performer'
+WHERE artist_name IS NULL;
+
+--	Determine artist_id
+;WITH uniqueArtistID AS
+(
+	SELECT DISTINCT 
+		artist_name,
+		DENSE_RANK() OVER(ORDER BY LOWER(RTRIM(LTRIM(REPLACE(artist_name,' ',''))))) AS artist_id
+	FROM 
+		staging 
+	WHERE 
+		artist_name IS NOT NULL
+)
+UPDATE
+	staging s
+SET
+	artist_id=uad.artist_id,
+	artist_name=INITCAP(RTRIM(LTRIM(REPLACE(uad.artist_name,'  ',' '))))
+FROM
+	uniqueArtistID uad 
+WHERE
+	LOWER(RTRIM(LTRIM(REPLACE(s.artist_name,' ',''))))=LOWER(RTRIM(LTRIM(REPLACE(uad.artist_name,' ',''))))
+;
+
+--	Cleanup media/type
+UPDATE
+	staging
+SET
+	type=RTRIM(LTRIM(UPPER(REPLACE(type,'.',''))))
+;
+
+--	Cleanup genre
+UPDATE
+	staging
+SET
+	genre=RTRIM(LTRIM(INITCAP(REPLACE(genre,'.',''))))
+;
+	
+--	Determine record_id
+;WITH uniqueRecordID AS
+(
+	SELECT DISTINCT 
+		type,
+		record_title,
+		DENSE_RANK() OVER(ORDER BY type,LOWER(RTRIM(LTRIM(REPLACE(record_title,' ',''))))) AS record_id
+	FROM 
+		staging 
+	WHERE 
+		record_title IS NOT NULL
+	ORDER BY
+		2
+)
+UPDATE
+	staging s
+SET
+	record_id=uad.record_id,
+	record_title=INITCAP(RTRIM(LTRIM(REPLACE(uad.record_title,'  ',' '))))
+FROM
+	uniqueRecordID uad 
+WHERE
+	s.type=uad.type AND
+	LOWER(RTRIM(LTRIM(REPLACE(s.record_title,' ',''))))=LOWER(RTRIM(LTRIM(REPLACE(uad.record_title,' ',''))))
+;
+
+--	Determine song_id
+;WITH uniqueSongID AS
+(
+	SELECT DISTINCT 
+		artist_id,
+		song_title,
+		DENSE_RANK() OVER(ORDER BY artist_id,LOWER(RTRIM(LTRIM(REPLACE(song_title,' ',''))))) AS song_id
+	FROM 
+		staging 
+	WHERE 
+		song_title IS NOT NULL
+)
+UPDATE
+	staging s
+SET
+	song_id=uad.song_id,
+	song_title=INITCAP(RTRIM(LTRIM(REPLACE(uad.song_title,'  ',' '))))
+FROM
+	uniqueSongID uad 
+WHERE
+	s.artist_id=uad.artist_id AND
+	LOWER(RTRIM(LTRIM(REPLACE(s.song_title,' ',''))))=LOWER(RTRIM(LTRIM(REPLACE(uad.song_title,' ',''))))
+;
+
+--	Determine record_position for all position
+UPDATE
+	staging s
+SET
+	record_position=CAST(replace(replace(side,'.',''),' ','') AS INT)
+WHERE
+	replace(replace(side,'.',''),' ','') ~ '^([0-9]+[.]?[0-9]*|[.][0-9]+)$' = 't'
+;
+
+
+--	Clean up year
+UPDATE
+	staging
+SET
+	year=NULL
+WHERE
+	CAST(year AS INT)<1900
+;

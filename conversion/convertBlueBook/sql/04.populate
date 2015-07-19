@@ -1,0 +1,110 @@
+--	Delete existing
+DELETE FROM performance;
+DELETE FROM record_performance;
+DELETE FROM record;
+DELETE FROM song;
+DELETE FROM artist;
+
+--	Insert artist
+INSERT INTO artist
+(
+	artist_id,
+	name,
+	sort_name
+)
+SELECT DISTINCT
+	artist_id,
+	INITCAP(artist_name),
+	REGEXP_REPLACE(artist_name,'^The ','')
+FROM
+	staging
+;
+
+--	Insert record
+;WITH recordArtist AS
+(
+	SELECT
+		record_id,
+		MIN(artist_id) as artist_id,
+		MAX(COALESCE(year,'0')) as year,
+		MAX(COALESCE(genre,'')) AS genre
+	FROM
+		staging
+	GROUP  BY
+		record_id
+)
+INSERT INTO record
+(
+	record_id,
+	artist_id,
+	title,
+	media,
+	year,
+	genre
+)
+SELECT DISTINCT
+	s.record_id,
+	ra.artist_id,
+	INITCAP(record_title),
+	COALESCE(type,'CD') AS media,
+	CAST(ra.year AS INT) AS year,
+	ra.genre
+FROM
+	staging s
+		JOIN recordArtist ra ON
+			s.record_id=ra.record_id
+;
+
+--	Insert song
+INSERT INTO song
+(
+	song_id,
+	title
+)
+SELECT DISTINCT
+	song_id,
+	song_title
+FROM
+	staging
+;
+
+--	Insert performance
+INSERT INTO performance
+(
+	song_id,
+	artist_id,
+	role_id,
+	year
+)
+SELECT DISTINCT
+	song_id,
+	artist_id,
+	0 AS role_id,
+	MIN(CAST(year AS INT))
+FROM
+	staging
+GROUP BY
+	song_id,
+	artist_id
+;
+
+--	Insert record_performance
+INSERT INTO record_performance
+(
+	song_id,
+	artist_id,
+	record_id,
+	record_position,
+	duration
+)
+SELECT DISTINCT
+	song_id,
+	artist_id,
+	record_id,
+	record_position,
+	CAST('00:00:00' AS TIME)
+FROM
+	staging
+WHERE
+	record_id IS NOT NULL
+;

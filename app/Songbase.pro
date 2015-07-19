@@ -76,5 +76,4 @@ RC_ICONS = resources/moose.ico
 
 DISTFILES += \
     PlacesDeveloped.txt \
-    install.txt \
     resources/moose7.2.bmp
