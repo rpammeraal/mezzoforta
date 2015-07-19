@@ -105,10 +105,15 @@ Morro Rock 64 (20150626)
 -	also rename moveItem to reorderItem
 -	merged notes and related performers in performer tab
 
-<finish up items>
--	make related performers area grey/light grey in performer tab depending on how many items are populated.
--	redo icons so that they look good on retina
+20150719
 -	font on tabs should be trebuchet
+-	lyrics displayed in trebuchet
+-	make related performers area grey in performer tab depending on how many items are populated.
+-	performer notes are properly displayed
+-	redid splash logo
+
+<finish up items>
+-	redo icons so that they look good on retina
 
 <near future>
 -	check when reordering playlist item on drag on itself.

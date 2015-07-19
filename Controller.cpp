@@ -254,7 +254,6 @@ Controller::openMainWindow(bool startup)
 
     if(ds->databaseChanged() || startup)
     {
-        //QPixmap pm(":/images/AllSongs.png");
         QPixmap pm(":/images/moose7.2.png");
         qDebug() << SB_DEBUG_INFO << pm.isNull();
         QSplashScreen splash(pm);

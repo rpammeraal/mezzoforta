@@ -53,6 +53,18 @@ SBSqlQueryModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, i
     return true;
 }
 
+QVariant
+SBSqlQueryModel::data(const QModelIndex &item, int role) const
+{
+    if(role==Qt::FontRole)
+    {
+        QFont f;
+        f.setFamily("Trebuchet MS");
+        return QVariant(f);
+    }
+    return QSqlQueryModel::data(item,role);
+}
+
 bool
 SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {

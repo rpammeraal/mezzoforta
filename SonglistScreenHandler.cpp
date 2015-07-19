@@ -441,7 +441,10 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //	Populate performer detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(result.performerName);
 
-    QString details=QString("%1 albums • %2 songs").arg(result.count1).arg(result.count2);
+    QString details=QString("%1 albums %2 %3 songs")
+        .arg(result.count1)
+        .arg(QChar(8226))
+        .arg(result.count2);
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers
@@ -462,31 +465,44 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     QString cs;
 
-    if(rm->rowCount()>0)
+                qDebug() << SB_DEBUG_INFO << result.notes << result.notes.length();
+
+    for(int i=-2;i<rm->rowCount();i++)
     {
-        for(int i=-1;i<rm->rowCount();i++)
+        qDebug() << SB_DEBUG_INFO << i;
+        QString t;
+        switch(i)
         {
-            QString t;
-            switch(i)
+        case -2:
+            qDebug() << SB_DEBUG_INFO << result.notes << result.notes.length();
+            if(result.notes.length()>0)
             {
-            case -2:
-                cs=cs+QString("Notes: %1 ").arg(result.notes);
-                break;
-
-            case -1:
-                cs=cs+QString(" See Also:");
-                break;
-
-            default:
-                cs=cs+QString("<A style=\"color: black\" HREF=\"%1\">%2</A>   ")
-                .arg(rm->data(rm->index(i,0)).toString())
-                .arg(rm->data(rm->index(i,1)).toString());
+                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(result.notes);
             }
+            break;
+
+        case -1:
+            if(rm->rowCount()>0)
+            {
+                if(cs.length()>0)
+                {
+                    cs=cs+"&nbsp;&#8226;&nbsp;";
+                }
+                cs=cs+QString("<B>See Also:</B>&nbsp;");
+            }
+            break;
+
+        default:
+            cs=cs+QString("<A style=\"color: black\" HREF=\"%1\">%2</A>&nbsp;")
+            .arg(rm->data(rm->index(i,0)).toString())
+            .arg(rm->data(rm->index(i,1)).toString());
         }
     }
+    qDebug() << SB_DEBUG_INFO << cs;
     if(cs.length()>0)
     {
         qDebug() << SB_DEBUG_INFO << cs.length();
+        cs="<BODY BGCOLOR=\"#E3E3E3\">"+cs+"</BODY>";
         frRelated->setText(cs);
         connect(frRelated, SIGNAL(anchorClicked(QUrl)),
             this, SLOT(openPerformer(QUrl)));
@@ -494,8 +510,11 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     }
     else
     {
+
+        cs="<BODY BGCOLOR=\"#E3E3E3\"></BODY>";
         frRelated->setText(cs);
         //	Set background gray
+        //frRelated->setStyleSheet("background-color: #CCCCCC");
     }
 
     //	Reused vars
@@ -669,7 +688,7 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     if(result.lyrics.length()>0)
     {
         //mw->ui.songDetailLyrics->setText(result.lyrics);
-        QString html=result.lyrics;
+        QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+result.lyrics;
         html.replace("\n","<BR>");
         mw->ui.songDetailLyrics->setHtml(html);
     }
@@ -686,13 +705,8 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
 int
 SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* qm,int initialSortColumn)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
     QSortFilterProxyModel* pm=NULL;
     QHeaderView* hv=NULL;
-    QFont f=mw->ui.labelSongbase->font();
-    QFont tvf=tv->font();
-    tvf.setFamily(f.family());
-
 
     //	Unload
     QAbstractItemModel* m=tv->model();
