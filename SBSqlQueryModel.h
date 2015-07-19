@@ -32,13 +32,15 @@ public:
     virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
 
     //	Native methods
-    virtual bool assign(const QString& dstID, const SBID& id);
     void debugShow() const;
     SBID determineSBID(const QModelIndex& idx) const;
     int getSelectedColumn() const;
     void handleSQLError() const;
     void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
+
+signals:
+    void assign(const SBID& fromID, const SBID& toID);
 
 public slots:
     void schemaChanged();

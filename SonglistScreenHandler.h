@@ -11,6 +11,7 @@ class QAction;
 class QLabel;
 class QNetworkReply;
 class QTableView;
+class QTabWidget;
 
 class SBID;
 class SBSqlQueryModel;
@@ -47,8 +48,10 @@ public:
 public slots:
     void applySonglistFilter();
     void deletePlaylistItem();
+    void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
+    void openPerformer(const QUrl& id);
     void openOpener(QString i);
     void openSonglistItem(const QModelIndex& i);
     void refreshAlbumReviews();
@@ -65,6 +68,7 @@ public slots:
     void setSongWikipediaPage(const QString& url);
     void showContextMenuPlaylist(const QPoint& p);
     void tabBackward();
+    void tabBarClicked(int index);
     void tabForward();
     void tableViewCellClicked(const QModelIndex& i);
 
@@ -76,7 +80,7 @@ private:
     ScreenStack st;
     QList<NewsItem> currentNews;
     QList<QString> currentReviews;
-    QList<QWidget *> related;
+    QList<QWidget *> relatedItems;
     QModelIndex lastClickedIndex;
 
     void init();

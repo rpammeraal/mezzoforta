@@ -174,7 +174,6 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     {
         qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
     }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
 }
 
 ///	PRIVATE
@@ -196,11 +195,11 @@ ScreenStack::debugShow(const QString& c)
         {
             if(currentScreenID==i)
             {
-                qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
+                qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "tabID=" << stack.at(i).tabID;
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "wiki=" << stack.at(i).wiki;
+                qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "tabID=" << stack.at(i).tabID;
             }
         }
     }

@@ -17,6 +17,7 @@ class QTableView;
 
 #define SB_STYLE_SHEET "background-color: #66ccff;"
 
+#define SB_DEBUG_ERROR  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__ << "***ERROR***"
 #define SB_DEBUG_INFO  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__
 #define SB_DEBUG_NPTR SB_DEBUG_INFO << "NULL PTR"
 

@@ -768,6 +768,212 @@ SBModelPlaylist::renamePlaylist(const SBID &id)
     query.exec();
 }
 
+void
+SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID &tID)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+    SBID fromID=fID;
+    SBID toID=tID;
+    fromID.fillOut();
+    toID.fillOut();
+
+    qDebug() << SB_DEBUG_INFO << "from"
+        << "itm" << fromID.sb_item_id
+        << "typ" << fromID.sb_item_type
+        << "pfr" << fromID.sb_performer_id
+        << "sng" << fromID.sb_song_id
+        << "alb" << fromID.sb_album_id
+        << "pos" << fromID.sb_position
+        << "pll" << fromID.sb_playlist_id;
+    qDebug() << SB_DEBUG_INFO << "to"
+        << "itm" << toID.sb_item_id
+        << "typ" << toID.sb_item_type
+        << "pfr" << toID.sb_performer_id
+        << "sng" << toID.sb_song_id
+        << "alb" << toID.sb_album_id
+        << "pos" << toID.sb_position
+        << "pll" << toID.sb_playlist_id;
+
+    //	1.	Make sure ordering is sane
+    _reorderPlaylistPositions(playlistID);
+
+    //	2.	Assign position -1 to fromID
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=-1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "artist_id=%2 AND "
+            "song_id=%3 AND "
+            "record_id=%4 AND "
+            "record_position=%5 "
+    )
+        .arg(playlistID.sb_item_id)
+        .arg(fromID.sb_performer_id)
+        .arg(fromID.sb_song_id)
+        .arg(fromID.sb_album_id)
+        .arg(fromID.sb_position);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery assignMin1Position(q,db);
+    assignMin1Position.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=-1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "( "
+                "playlist_playlist_id=%2 OR "
+                "playlist_chart_id=%2 OR "
+                "playlist_record_id=%2 OR "
+                "playlist_artist_id=%2 "
+            ") "
+    )
+        .arg(playlistID.sb_item_id)
+        .arg(fromID.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery assignMin1Composite(q,db);
+    assignMin1Composite.next();
+
+    //	3.	Reorder with fromID 'gone'
+    _reorderPlaylistPositions(playlistID);
+
+    //	4.	Get position of toID
+    q=QString
+    (
+        "SELECT DISTINCT "
+            "MAX(playlist_position) "
+        "FROM "
+        "( "
+            "SELECT "
+                "playlist_position "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_performance p "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "artist_id=%2 AND "
+                "song_id=%3 AND "
+                "record_id=%4 AND "
+                "record_position=%5 "
+            "UNION "
+            "SELECT "
+                "playlist_position "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_composite p "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "( "
+                    "playlist_playlist_id=%6 OR "
+                    "playlist_chart_id=%6 OR "
+                    "playlist_record_id=%6 OR "
+                    "playlist_artist_id=%6  "
+                ") "
+        ") "
+    )
+        .arg(playlistID.sb_item_id)
+        .arg(toID.sb_performer_id)
+        .arg(toID.sb_song_id)
+        .arg(toID.sb_album_id)
+        .arg(toID.sb_position)
+        .arg(toID.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery getPosition(q,db);
+    getPosition.next();
+    int newPosition=getPosition.value(0).toInt();
+    qDebug() << SB_DEBUG_INFO << "newPosition=" << newPosition;
+
+    //	5.	Add 1 to all position from toID onwards
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=playlist_position+1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position>=%2 "
+    )
+        .arg(playlistID.sb_item_id)
+        .arg(newPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToPositionPerformance(q,db);
+    updateToPositionPerformance.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=playlist_position+1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position>=%2 "
+    )
+        .arg(playlistID.sb_item_id)
+        .arg(newPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToPositionComposite(q,db);
+    updateToPositionComposite.next();
+
+    //	6.	Reassign position to fromID
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "playlist_position=-1 "
+    )
+        .arg(newPosition)
+        .arg(playlistID.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToNewPositionPerformance(q,db);
+    updateToNewPositionPerformance.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "playlist_position=-1 "
+    )
+        .arg(newPosition)
+        .arg(playlistID.sb_item_id)
+        .arg(fromID.sb_playlist_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToNewPositionComposite(q,db);
+    updateToNewPositionComposite.next();
+}
+
+
 ///	PRIVATE METHODS
 void
 SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
@@ -799,11 +1005,12 @@ SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
             "WHERE "
                 "playlist_id=%1 "
         ") a "
-        "ORDER BY 1 "
+        "WHERE "
+            "playlist_position>=0 "
+        "ORDER BY "
+            "1 "
     ).arg(id.sb_item_id);
     dal->customize(q);
-
-    qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
     int newPosition=1;
@@ -812,7 +1019,6 @@ SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
     while(query.next())
     {
         actualPosition=query.value(0).toInt();
-        qDebug() << SB_DEBUG_INFO << "actual=" << actualPosition << ":new=" << newPosition;
         if(actualPosition!=newPosition)
         {
             //	Update playlist_performance
@@ -830,8 +1036,6 @@ SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
             .arg(newPosition);
 
             dal->customize(q);
-
-            qDebug() << SB_DEBUG_INFO << q;
 
             QSqlQuery update1(q,db);
             Q_UNUSED(update1);
@@ -851,8 +1055,6 @@ SBModelPlaylist::_reorderPlaylistPositions(const SBID &id)
             .arg(newPosition);
 
             dal->customize(q);
-
-            qDebug() << SB_DEBUG_INFO << q;
 
             QSqlQuery update2(q,db);
             Q_UNUSED(update2);

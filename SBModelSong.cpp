@@ -172,9 +172,9 @@ SBModelSong::getOnChartListBySong(const SBID& id)
         "FROM "
             "___SB_SCHEMA_NAME___chart_performance cp "
                 "JOIN ___SB_SCHEMA_NAME___chart c ON "
-                        "c.chart_id=cp.chart_id "
+                    "c.chart_id=cp.chart_id "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                        "cp.artist_id=a.artist_id "
+                    "cp.artist_id=a.artist_id "
             "WHERE "
                 "cp.song_id=%2"
     )
@@ -196,7 +196,10 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
             "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\", "
-            "rp.duration AS \"duration\" "
+            "rp.duration AS \"duration\", "
+            "%3 AS SB_ITEM_TYPE3, "
+            "r.record_id AS SB_ALBUM_ID, "
+            "r.title AS \"album title\" "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_performance pp "
                 "JOIN ___SB_SCHEMA_NAME___playlist p ON "
@@ -208,13 +211,16 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
                     "pp.song_id=rp.song_id AND "
                     "pp.record_id=rp.record_id AND "
                     "pp.record_position=rp.record_position "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "pp.record_id=r.record_id "
         "WHERE "
-            "pp.song_id=%3 "
+            "pp.song_id=%4 "
         "ORDER BY "
             "p.name "
     )
         .arg(SBID::sb_type_playlist)
         .arg(SBID::sb_type_performer)
+        .arg(SBID::sb_type_album)
         .arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);

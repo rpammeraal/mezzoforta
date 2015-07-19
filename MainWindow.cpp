@@ -9,6 +9,7 @@
 
 MainWindow::MainWindow()
 {
+    Context::instance()->setMainWindow(this);
     ui.setupUi(this);
 
     //createMenus();

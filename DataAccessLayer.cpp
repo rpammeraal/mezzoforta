@@ -115,11 +115,16 @@ DataAccessLayer::getCompleterModel()
 {
     QString query=
         "SELECT DISTINCT "
-            "s.title || ' - song', "
+            "s.title || ' - song by ' || a.name, "
             "s.song_id AS SB_ITEM_ID, "
             "'SB_SONG_TYPE' AS SB_TYPE_ID "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id AND "
+                    "p.role_id=0 "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
         "UNION "
         "SELECT DISTINCT "
             "r.title || ' - record', "
@@ -137,6 +142,7 @@ DataAccessLayer::getCompleterModel()
         "ORDER BY 1 ";
 
     this->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
     QSqlQueryModel* model = new QSqlQueryModel();
     model->setQuery(query,QSqlDatabase::database(getConnectionName()));
 

@@ -8,6 +8,7 @@
 #include <QTimer>
 
 class QAction;
+class QApplication;
 class QItemSelection;
 class QSortFilterProxyModel;
 class QKeyEvent;
@@ -33,7 +34,7 @@ class Controller : public QObject
     friend class MainWindow;
 
 public:
-    explicit Controller(int argc, char* argv[]);
+    explicit Controller(int argc, char* argv[], QApplication* napp);
     ~Controller();
     bool initSuccessFull() const;
 
@@ -66,6 +67,7 @@ private:
     QThread backgroundThread;
     QTimer statusBarResetTimer;
     QTimer updateAllPlaylistDurationTimer;
+    QApplication* app;
 
     //	Keep track of what is selected
     QString currentFilter;      //	"" indicates no filter
@@ -81,6 +83,7 @@ private:
         void setupUI();
         void configureMenus();
         void configureMenuItems(const QList<QAction *>& list);
+        void setFontSizes() const;
 
     void init();
 

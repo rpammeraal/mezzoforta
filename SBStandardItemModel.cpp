@@ -61,7 +61,11 @@ SBStandardItemModel::flags(const QModelIndex &index) const
     Qt::ItemFlags defaultFlags = QStandardItemModel::flags(index);
     if(dragableColumnList.count()==0 || dragableColumnList.at(index.column()==1))
     {
-        defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled; // | Qt::ItemIsEditable;// | defaultFlags;
+        defaultFlags = Qt::ItemIsUserCheckable
+                | Qt::ItemIsSelectable
+                | Qt::ItemIsEnabled
+                | Qt::ItemIsDragEnabled
+                | Qt::ItemIsDropEnabled;
     }
     return defaultFlags;
 }
@@ -114,5 +118,3 @@ SBStandardItemModel::debugShow() const
         qDebug() << i << dragableColumnList.at(i);
     }
 }
-
-

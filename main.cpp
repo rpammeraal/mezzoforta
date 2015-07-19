@@ -21,9 +21,10 @@ int main(int argc, char *argv[])
 
     //	Set up randomizer
     qsrand(QDateTime::currentMSecsSinceEpoch());
+    qDebug() << SB_DEBUG_INFO << app.platformName();
 
     //	Set up system
-    Controller c(argc, argv);
+    Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
         app.exec();

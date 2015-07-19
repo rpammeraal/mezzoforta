@@ -44,7 +44,6 @@ SBSqlQueryModel::~SBSqlQueryModel()
 bool
 SBSqlQueryModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
-    qDebug() << SB_DEBUG_INFO;
     Q_UNUSED(data);
     Q_UNUSED(action);
     Q_UNUSED(row);
@@ -74,14 +73,13 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBID id=SBID(encodedData);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << id;
+    SBID fromID=SBID(encodedData);
+    qDebug() << SB_DEBUG_INFO << "Dropping " << fromID;
 
     const QModelIndex n=this->index(parent.row(),0);
-    QString dstID=this->data(n, Qt::DisplayRole).toString();
+    SBID toID=determineSBID(n);
 
-    assign(dstID,id);
-
+    emit assign(fromID,toID);
     return 1;
 }
 
@@ -91,9 +89,17 @@ SBSqlQueryModel::flags(const QModelIndex &index) const
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
     if(index.column()>=0)	//	sometimes index can be negative -- ignore
     {
-        if(dragableColumnList.count()==0 || dragableColumnList.at(index.column())==1)
+        if(
+            index.column()+1 >= dragableColumnList.count() ||
+            dragableColumnList.count()==0 ||
+            dragableColumnList.at(index.column())==1
+        )
         {
-            defaultFlags = Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+            defaultFlags = Qt::ItemIsUserCheckable
+                    | Qt::ItemIsSelectable
+                    | Qt::ItemIsEnabled
+                    | Qt::ItemIsDragEnabled
+                    | Qt::ItemIsDropEnabled;
         }
     }
     return defaultFlags;
@@ -140,14 +146,6 @@ SBSqlQueryModel::setData(const QModelIndex& index, const QVariant& value, int ro
 }
 
 ///	NATIVE METHODS
-bool
-SBSqlQueryModel::assign(const QString& dstID, const SBID& id)
-{
-    qDebug() << SB_DEBUG_INFO << "********************************** uninherited assign call()";
-    qDebug() << SB_DEBUG_INFO << dstID << id;
-    return 0;
-}
-
 void
 SBSqlQueryModel::debugShow() const
 {
@@ -170,20 +168,14 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
     SBID id;
     QString text;
 
-    qDebug() << SB_DEBUG_INFO << idx << idx.column();
-
     if(dragableColumnList.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
-
         //	Determine sbid by going through all columns.
         for(int i=0;i<this->columnCount();i++)
         {
             header=this->headerData(i,Qt::Horizontal).toString().toLower();
             QModelIndex n=this->index(idx.row(),i);
             v=data(n, Qt::DisplayRole);
-
-            qDebug() << SB_DEBUG_INFO << i << header << v;
 
             if(header=="sb_item_type")
             {
@@ -199,9 +191,11 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
             }
         }
     }
-    else if(dragableColumnList.at(idx.column())==1)
+    else if(
+                idx.column() < dragableColumnList.count() &&
+                dragableColumnList.at(idx.column())==1
+            )
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Determine sbid from relatively from actual column that is clicked
         QModelIndex n;
 
@@ -217,7 +211,10 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
         n=this->index(idx.row(),idx.column());
         text=data(n, Qt::DisplayRole).toString();
     }
-    qDebug() << SB_DEBUG_INFO << id;
+    else if( idx.column()+1 >= dragableColumnList.count())
+    {
+        qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
+    }
 
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<this->columnCount();i++)
@@ -225,7 +222,6 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
         header=this->headerData(i,Qt::Horizontal).toString().toLower();
         QModelIndex n=this->index(idx.row(),i);
         v=data(n, Qt::DisplayRole);
-        qDebug() << SB_DEBUG_INFO << i << header << v;
 
         if(header=="sb_song_id")
         {
@@ -246,7 +242,6 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
         else if(header.left(3)!="sb_" && text.length()==0)
         {
             text=v.toString();
-            qDebug() << SB_DEBUG_INFO << text;
         }
     }
     id.setText(text);

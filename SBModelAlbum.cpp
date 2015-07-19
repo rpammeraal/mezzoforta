@@ -19,7 +19,8 @@ SBModelAlbum::getDetail(const SBID& id)
             "r.genre, "
             "r.year, "
             "r.notes, "
-            "a.name "
+            "a.name, "
+            "a.artist_id "
         "FROM "
             "___SB_SCHEMA_NAME___record r "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -32,14 +33,15 @@ SBModelAlbum::getDetail(const SBID& id)
     QSqlQuery query(q,db);
     query.next();
 
-    result.sb_item_type =SBID::sb_type_album;
-    result.sb_item_id   =id.sb_item_id;
-    result.sb_album_id  =id.sb_item_id;
-    result.performerName=query.value(4).toString();
-    result.albumTitle   =query.value(0).toString();
-    result.year         =query.value(2).toInt();
-    result.genre        =query.value(1).toString();
-    result.notes        =query.value(3).toString();
+    result.sb_item_type   =SBID::sb_type_album;
+    result.sb_item_id     =id.sb_item_id;
+    result.sb_album_id    =id.sb_item_id;
+    result.performerName  =query.value(4).toString();
+    result.albumTitle     =query.value(0).toString();
+    result.year           =query.value(2).toInt();
+    result.genre          =query.value(1).toString();
+    result.notes          =query.value(3).toString();
+    result.sb_performer_id=query.value(5).toInt();
 
     qDebug() << SB_DEBUG_INFO << "result.wiki=" << result.wiki;
     return result;

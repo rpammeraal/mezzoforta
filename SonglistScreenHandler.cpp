@@ -1,6 +1,8 @@
+#include <QAbstractScrollArea>
 #include <QAction>
 #include <QCompleter>
 #include <QDebug>
+#include <QFont>
 #include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
 
@@ -12,6 +14,8 @@
 #include "ExternalData.h"
 #include "LeftColumnChooser.h"
 #include "MainWindow.h"
+
+
 #include "SBID.h"
 #include "SBModelAlbum.h"
 #include "SBSqlQueryModel.h"
@@ -22,6 +26,13 @@
 #include "ScreenStack.h"
 #include "SonglistScreenHandler.h"
 
+//	Enroute AUS-LAX 20150718-1927CST, AA-MD80-MAN
+//	zeg me dat t niet zo is - frank boeijen groep
+//	until the end of the world - u2
+//	electron blue - rem
+//	all i need - radiohead
+//	original sin - inxs
+//	myrrh - the church
 
 SonglistScreenHandler::SonglistScreenHandler()
 {
@@ -42,19 +53,26 @@ SonglistScreenHandler::~SonglistScreenHandler()
 SBID
 SonglistScreenHandler::activateTab(const SBID& id)
 {
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id << id.tabID;
+    st.debugShow("SonglistScreenHandler:activateTab");
+
+    //	set focus on searchEdit
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.searchEdit->setFocus();
+
+    //	Check parameters
     if(id.sb_item_type==SBID::sb_type_invalid)
     {
         qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
         return id;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
     QWidget* tab=NULL;
     SBID result;
 
     while(mw->ui.songlistTab->currentIndex()!=-1)
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.songlistTab->removeTab(0);
     }
 
@@ -63,16 +81,19 @@ SonglistScreenHandler::activateTab(const SBID& id)
     case SBID::sb_type_song:
         tab=mw->ui.tabSongDetail;
         result=populateSongDetail(id);
+        mw->ui.tabSongDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
         break;
 
     case SBID::sb_type_performer:
         tab=mw->ui.tabPerformerDetail;
         result=populatePerformerDetail(id);
+        mw->ui.tabPerformerDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
         break;
 
     case SBID::sb_type_album:
         tab=mw->ui.tabAlbumDetail;
         result=populateAlbumDetail(id);
+        mw->ui.tabAlbumDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
         break;
 
     case SBID::sb_type_playlist:
@@ -91,6 +112,7 @@ SonglistScreenHandler::activateTab(const SBID& id)
     default:
         qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type;
     }
+
 
     qDebug() << SB_DEBUG_INFO << result;
     mw->ui.searchEdit->setText(id.searchCriteria);
@@ -311,9 +333,11 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
     mw->ui.tabAlbumDetailLists->setTabEnabled(1,0);
     mw->ui.tabAlbumDetailLists->setTabEnabled(2,0);
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
+    connect(mw->ui.tabAlbumDetailLists,SIGNAL(tabBarClicked(int)),
+            this, SLOT(tabBarClicked(int)));
 
     //	Get detail
-    const SBID result=SBModelAlbum::getDetail(id);
+    SBID result=SBModelAlbum::getDetail(id);
     mw->ui.labelAlbumDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -344,21 +368,30 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
     mw->ui.labelAlbumDetailAlbumNotes->setText(result.notes);
-    mw->ui.labelAlbumDetailAlbumPerformerName->setText(result.performerName);
+
+    QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
+        .arg(result.sb_performer_id)
+        .arg(result.performerName);
+    mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
+    mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
+    connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
+            this, SLOT(openPerformer(QString)));
 
     //	Reused vars
     QTableView* tv=NULL;
-    SBSqlQueryModel* sl=NULL;
+    SBSqlQueryModel* qm=NULL;
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    sl=SBModelAlbum::getAllSongs(id);
+    qm=SBModelAlbum::getAllSongs(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    sl->setDragableColumns(dragableColumns);
-    populateTableView(tv,sl,2);
+    qm->setDragableColumns(dragableColumns);
+    populateTableView(tv,qm,2);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
+
+    result.tabID=mw->ui.tabAlbumDetailLists->currentIndex();
 
     return result;
 }
@@ -386,7 +419,7 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     SBModelPerformer* mp=new SBModelPerformer();
 
     //	Get detail
-    const SBID result=mp->getDetail(id);
+    SBID result=mp->getDetail(id);
     mw->ui.labelPerformerDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -407,89 +440,96 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     //	Populate performer detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(result.performerName);
-    mw->ui.labelPerformerDetailPerformerNotes->setText(result.notes);
+
     QString details=QString("%1 albums • %2 songs").arg(result.count1).arg(result.count2);
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers
     //	Clear current
-    QFrame* frRelated=mw->ui.frPerformerDetailDetailRelated;
-    for(int i=0;i<related.count();i++)
+    QTextBrowser* frRelated=mw->ui.frPerformerDetailDetailAll;
+
+    for(int i=0;i<relatedItems.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO << related.count();
-        QWidget* n=related.at(i);
-        related[i]=NULL;
+        QWidget* n=relatedItems.at(i);
+        relatedItems[i]=NULL;
         delete n;
     }
-    related.clear();
+    relatedItems.clear();
 
 
     //	Recreate
     SBSqlQueryModel* rm=mp->getRelatedPerformers(id);
-    int x=0;
-    int y=0;
-    int spacing=7;
-    int maxX=mw->ui.frPerformerDetailDetailRelated->width();
-    int dx=0;
-    int dy=0;
 
-    for(int i=0;i<rm->rowCount();i++)
+    QString cs;
+
+    if(rm->rowCount()>0)
     {
-        QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-            .arg(rm->data(rm->index(i,0)).toString())
-            .arg(rm->data(rm->index(i,1)).toString());
-        QLabel* n=new QLabel(t, frRelated);
-        n->setTextFormat(Qt::RichText);
-        connect(n, SIGNAL(linkActivated(QString)),
-                this, SLOT(openPerformer(QString)));
-
-        related.append(n);
-        n->adjustSize();
-        dx=n->width();
-        dy=n->height();
-        if(x+dx+spacing>maxX)
+        for(int i=-1;i<rm->rowCount();i++)
         {
-            y=y+dy;
-            x=0;
-        }
-        n->move(x,y);
-        n->show();
-        qDebug() << SB_DEBUG_INFO << x << y << rm->data(rm->index(i,1)).toString();
-        x+=dx+spacing;
-    }
-    mw->ui.labelPerformerDetailPerformerRelated->setVisible((related.count()>0?1:0));
+            QString t;
+            switch(i)
+            {
+            case -2:
+                cs=cs+QString("Notes: %1 ").arg(result.notes);
+                break;
 
+            case -1:
+                cs=cs+QString(" See Also:");
+                break;
+
+            default:
+                cs=cs+QString("<A style=\"color: black\" HREF=\"%1\">%2</A>   ")
+                .arg(rm->data(rm->index(i,0)).toString())
+                .arg(rm->data(rm->index(i,1)).toString());
+            }
+        }
+    }
+    if(cs.length()>0)
+    {
+        qDebug() << SB_DEBUG_INFO << cs.length();
+        frRelated->setText(cs);
+        connect(frRelated, SIGNAL(anchorClicked(QUrl)),
+            this, SLOT(openPerformer(QUrl)));
+        //	Set background light gray
+    }
+    else
+    {
+        frRelated->setText(cs);
+        //	Set background gray
+    }
 
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBSqlQueryModel* sl=NULL;
+    SBSqlQueryModel* qm=NULL;
 
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
+    connect(mw->ui.tabPerformerDetailLists,SIGNAL(tabBarClicked(int)),
+            this, SLOT(tabBarClicked(int)));
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    sl=mp->getAllSongs(id);
-    rowCount=populateTableView(tv,sl,3);
+    qm=mp->getAllSongs(id);
+    rowCount=populateTableView(tv,qm,3);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    sl=mp->getAllAlbums(id);
+    qm=mp->getAllAlbums(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,2);
+    qm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,qm,2);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //	Populate charts
     //tv=mw->ui.performerDetailCharts;
-    //sl=SBModelPerformer::getAllCharts(id);
-    //rowCount=populateTableView(tv,sl,0);
+    //qm=SBModelPerformer::getAllCharts(id);
+    //rowCount=populateTableView(tv,qm,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,0);	//rowCount>0);
     //connect(tv, SIGNAL(clicked(QModelIndex)),
             //this, SLOT(performerDetailChartlistSelected(QModelIndex)));
@@ -502,6 +542,9 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     //}
     //mw->ui.tabPerformerDetailLists->setTabEnabled(3,url.isValid());
 
+    //	Update current eligible tabID
+    result.tabID=mw->ui.tabPerformerDetailLists->currentIndex();
+
     return result;
 }
 
@@ -512,7 +555,7 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBModelPlaylist pl;
 
-    const SBID result=pl.getDetail(id);
+    SBID result=pl.getDetail(id);
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
@@ -520,15 +563,23 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBSqlQueryModel* sl=pl.getAllItemsByPlaylist(id);
-    populateTableView(tv,sl,0);
+    SBSqlQueryModel* qm=pl.getAllItemsByPlaylist(id);
+    populateTableView(tv,qm,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
+    connect(qm, SIGNAL(assign(const SBID&,const SBID&)),
+            this, SLOT(movePlaylistItem(const SBID&, const SBID&)));
 
     //	Context menu
     tv->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
             this, SLOT(showContextMenuPlaylist(QPoint)));
+
+    //	Drag & drop
+    mw->ui.playlistDetailSongList->setAcceptDrops(1);
+    mw->ui.playlistDetailSongList->setDropIndicatorShown(1);
+    mw->ui.playlistDetailSongList->viewport()->setAcceptDrops(1);
+    mw->ui.playlistDetailSongList->setDefaultDropAction(Qt::MoveAction);
 
     return result;
 }
@@ -542,9 +593,11 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
     mw->ui.tabSongDetailLists->setTabEnabled(5,0);
+    connect(mw->ui.tabSongDetailLists,SIGNAL(tabBarClicked(int)),
+            this, SLOT(tabBarClicked(int)));
 
     //	Get detail
-    const SBID result=SBModelSong::getDetail(id);
+    SBID result=SBModelSong::getDetail(id);
     mw->ui.labelSongDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -557,7 +610,15 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
 
     //	Populate song detail tab
     mw->ui.labelSongDetailSongTitle->setText(result.songTitle);
-    mw->ui.labelSongDetailSongPerformerName->setText(result.performerName);
+
+    QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
+        .arg(result.sb_performer_id)
+        .arg(result.performerName);
+    mw->ui.labelSongDetailSongPerformerName->setText(t);
+    mw->ui.labelSongDetailSongPerformerName->setTextFormat(Qt::RichText);
+    connect(mw->ui.labelSongDetailSongPerformerName,SIGNAL(linkActivated(QString)),
+            this, SLOT(openPerformer(QString)));
+
     QString details=QString("Released %1").arg(result.year);
     mw->ui.labelSongDetailSongDetail->setText(details);
     mw->ui.labelSongDetailSongNotes->setText(result.notes);
@@ -565,42 +626,43 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
-    SBSqlQueryModel* sl=NULL;
+    SBSqlQueryModel* qm=NULL;
 
     //	populate songDetailPerformedByList
     tv=mw->ui.songDetailPerformedBy;
-    sl=SBModelSong::getPerformedByListBySong(id);
-    rowCount=populateTableView(tv,sl,2);
+    qm=SBModelSong::getPerformedByListBySong(id);
+    rowCount=populateTableView(tv,qm,2);
+    qDebug() << SB_DEBUG_INFO << rowCount;
     mw->ui.tabSongDetailLists->setTabEnabled(0,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    sl=SBModelSong::getOnAlbumListBySong(id);
+    qm=SBModelSong::getOnAlbumListBySong(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
-    sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,2);
+    qm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,qm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(1,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    sl=SBModelSong::getOnPlaylistListBySong(id);
+    qm=SBModelSong::getOnPlaylistListBySong(id);
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0;
-    sl->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,sl,2);
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    qm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,qm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(2,rowCount>0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
 
     //  populate tabSongDetailChartList
     //tv=mw->ui.songDetailChartList;
-    //sl=SBModelSong::getOnChartListBySong(id);
-    //rowCount=populateTableView(tv,sl,0);
+    //qm=SBModelSong::getOnChartListBySong(id);
+    //rowCount=populateTableView(tv,qm,0);
     mw->ui.tabSongDetailLists->setTabEnabled(3,0);	//	rowCount>0);
 
     //	lyrics
@@ -615,15 +677,22 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Reset tab selections
     //mw->ui.playlistGenreTab->setCurrentIndex(0);
 
-    //	Remove current, add new
+    //	Update current eligible tabID
+    result.tabID=mw->ui.tabSongDetailLists->currentIndex();
+
     return result;
 }
 
 int
-SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int initialSortColumn)
+SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* qm,int initialSortColumn)
 {
+    const MainWindow* mw=Context::instance()->getMainWindow();
     QSortFilterProxyModel* pm=NULL;
     QHeaderView* hv=NULL;
+    QFont f=mw->ui.labelSongbase->font();
+    QFont tvf=tv->font();
+    tvf.setFamily(f.family());
+
 
     //	Unload
     QAbstractItemModel* m=tv->model();
@@ -635,7 +704,7 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int
 
     //	Load
     pm=new QSortFilterProxyModel();
-    pm->setSourceModel(sl);
+    pm->setSourceModel(qm);
     tv->setModel(pm);
     tv->setSortingEnabled(1);
     tv->sortByColumn(initialSortColumn,Qt::AscendingOrder);
@@ -654,7 +723,7 @@ SonglistScreenHandler::populateTableView(QTableView* tv, SBSqlQueryModel* sl,int
     tv->setDragEnabled(true);
     tv->setDropIndicatorShown(true);
 
-    return sl->rowCount();
+    return qm->rowCount();
 }
 
 void
@@ -711,9 +780,13 @@ SonglistScreenHandler::showSonglist()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    while(mw->ui.songlistTab->count())
+    if(st.currentScreen().sb_item_type!=SBID::sb_type_allsongs)
     {
-        mw->ui.songlistTab->removeTab(0);
+        //	Don't remove tab if current is allsongs
+        while(mw->ui.songlistTab->count())
+        {
+            mw->ui.songlistTab->removeTab(0);
+        }
     }
 
     SBID id;
@@ -809,7 +882,20 @@ SonglistScreenHandler::deletePlaylistItem()
     }
 }
 
-//	Used from big song list
+void
+SonglistScreenHandler::movePlaylistItem(const SBID& fromID, const SBID &toID)
+{
+    //	Determine current playlist
+    SBID currentID=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO << "On playlist" << currentID;
+    qDebug() << SB_DEBUG_INFO << "fromID" << fromID;
+    qDebug() << SB_DEBUG_INFO << "toID" << toID;
+
+    SBModelPlaylist *mpl=new SBModelPlaylist();
+    mpl->reorderItem(currentID,fromID,toID);
+    refreshTabIfCurrent(currentID);
+}
+
 void
 SonglistScreenHandler::openLeftColumnChooserItem(const QModelIndex &i)
 {
@@ -849,6 +935,13 @@ SonglistScreenHandler::openPerformer(const QString &itemID)
     id.sb_item_id=itemID.toInt();
     openScreenByID(id);
     qDebug() << SB_DEBUG_INFO;
+}
+
+void
+SonglistScreenHandler::openPerformer(const QUrl &id)
+{
+    qDebug() << SB_DEBUG_INFO << id;
+    openPerformer(id.toString());
 }
 
 void
@@ -1058,6 +1151,15 @@ SonglistScreenHandler::tabBackward()
 }
 
 void
+SonglistScreenHandler::tabBarClicked(int index)
+{
+    qDebug() << SB_DEBUG_INFO << index;
+    SBID id=st.currentScreen();
+    id.tabID=index;
+    st.updateCurrentScreen(id);
+}
+
+void
 SonglistScreenHandler::tabForward()
 {
     moveTab(1);
@@ -1101,7 +1203,6 @@ void
 SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
 {
     qDebug() << SB_DEBUG_INFO << p;
-    qDebug() << SB_DEBUG_INFO << typeid(l).name();
     if(p.isNull())
     {
         qDebug() << SB_DEBUG_INFO;

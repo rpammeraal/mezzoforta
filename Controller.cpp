@@ -4,8 +4,8 @@
 #include <QCompleter>
 #include <QDialog>
 #include <QMessageBox>
+#include <QSplashScreen>
 #include <QSqlDatabase>
-#include <QProgressDialog>
 #include <QStyleFactory>
 #include <QTimer>
 
@@ -28,7 +28,13 @@
 #include "ScreenStack.h"
 #include "SonglistScreenHandler.h"
 
-Controller::Controller(int argc, char *argv[])
+class I : public QThread
+{
+public:
+    static void sleep(unsigned long secs) { QThread::sleep(secs); }
+};
+
+Controller::Controller(int argc, char *argv[], QApplication* napp) : app(napp)
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
@@ -176,6 +182,7 @@ Controller::keyPressEvent(QKeyEvent *event)
             qDebug() << SB_DEBUG_INFO;
             //	Catch escape key, blank searchEdit, playlist, genres
             Context::instance()->getSonglistScreenHandler()->showSonglist();
+            qDebug() << SB_DEBUG_INFO;
         }
     }
     else if(event->key()==76 && event->modifiers() & Qt::ControlModifier)
@@ -189,6 +196,7 @@ Controller::keyPressEvent(QKeyEvent *event)
         //	Clear searchedit if ctrl-U and if it has focus
         mw->ui.searchEdit->clear();
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 //PRIVATE:
@@ -243,34 +251,36 @@ Controller::openMainWindow(bool startup)
         //	no database opened upin startup.
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO << "openMainWindow:databaseChanged=" << ds->databaseChanged();
 
     if(ds->databaseChanged() || startup)
     {
+        //QPixmap pm(":/images/AllSongs.png");
+        QPixmap pm(":/images/moose7.2.png");
+        qDebug() << SB_DEBUG_INFO << pm.isNull();
+        QSplashScreen splash(pm);
+
+        if(startup)
+        {
+            splash.show();
+            app->processEvents();
+        }
+
         MainWindow* oldMW=Context::instance()->getMainWindow();
+        if(oldMW)
+        {
+            Context::instance()->setMainWindow(NULL);
+            oldMW->close();
+            oldMW=NULL;
+        }
 
-        qDebug() << SB_DEBUG_INFO;
-
-        QProgressDialog p("Reading data...",QString(),0,8,oldMW);
-        p.setWindowModality(Qt::WindowModal);
-
-        qDebug() << SB_DEBUG_INFO;
-
-        p.setValue(0);
-
-        qDebug() << SB_DEBUG_INFO;
+        MainWindow* mw=new MainWindow();
+        Context::instance()->setMainWindow(mw);
 
         init();
 
-        qDebug() << SB_DEBUG_INFO;
-
         SonglistScreenHandler* ssh=new SonglistScreenHandler();
 
-        qDebug() << SB_DEBUG_INFO;
-
         Context::instance()->setSonglistScreenHandler(ssh);
-
-        qDebug() << SB_DEBUG_INFO;
 
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         if(dal)
@@ -278,60 +288,32 @@ Controller::openMainWindow(bool startup)
             delete dal;
             dal=NULL;
         }
+        Context::instance()->setDataAccessLayer(NULL);
 
-        qDebug() << SB_DEBUG_INFO;
-        p.setValue(1);
-
-        qDebug() << SB_DEBUG_INFO;
         dal=ds->getDataAccessLayer();
         Context::instance()->setDataAccessLayer(dal);
 
-        qDebug() << SB_DEBUG_INFO;
-        p.setValue(2);
-
-        p.setValue(3);
-        qDebug() << SB_DEBUG_INFO;
-        MainWindow* mw=new MainWindow();
-        Context::instance()->setMainWindow(mw);
-
-
-        qDebug() << SB_DEBUG_INFO;
-        p.setValue(4);
         resetAllFiltersAndSelections();
 
-        qDebug() << SB_DEBUG_INFO;
-        p.setValue(5);
         setupModels();
 
-        qDebug() << SB_DEBUG_INFO;
-        p.setValue(6);
         setupUI();
 
-        qDebug() << SB_DEBUG_INFO;
         configureMenus();
 
-        qDebug() << SB_DEBUG_INFO;
         mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
-
-        qDebug() << SB_DEBUG_INFO;
-
-        p.setValue(7);
-
-        qDebug() << SB_DEBUG_INFO;
 
         _resetStatusBar();
 
+        if(startup)
+        {
+            I::sleep(1);
+            splash.finish(mw);
+        }
         mw->show();
 
-        qDebug() << SB_DEBUG_INFO;
         ssh->openOpener(QString());
 
-        if(ds->databaseChanged() && startup==0)
-        {
-            //	close main window
-            oldMW->close();
-        }
-        p.setValue(8);
     }
     qDebug() << "openMainWindow:end";
     return 1;
@@ -381,8 +363,6 @@ Controller::setupUI()
 
     //	Frequently used pointers
     QHeaderView* hv;
-    QItemSelectionModel* sm;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     MainWindow* mw=Context::instance()->getMainWindow();
 
     qDebug() << "Controller:setupUI:start";
@@ -395,7 +375,7 @@ Controller::setupUI()
     mw->ui.allSongsList->setSelectionMode(QAbstractItemView::SingleSelection);
     mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
     mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
-    sm=mw->ui.allSongsList->selectionModel();
+    mw->ui.allSongsList->selectionModel();
 
     //	horizontal header
     hv=mw->ui.allSongsList->horizontalHeader();
@@ -410,7 +390,7 @@ Controller::setupUI()
     Common::hideColumns(mw->ui.allSongsList);
 
     //	set up signals
-    sm=mw->ui.allSongsList->selectionModel();
+    mw->ui.allSongsList->selectionModel();
     //		capture double click to open detail page
     connect(mw->ui.allSongsList, SIGNAL(clicked(QModelIndex)),
             Context::instance()->getSonglistScreenHandler(),SLOT(openSonglistItem(QModelIndex)));
@@ -428,24 +408,6 @@ Controller::setupUI()
         c, SIGNAL(activated(QString)),
         mw->ui.searchEdit, SLOT(clear()),
         Qt::QueuedConnection);	//	this will clear the search box
-
-    //	Populate schema dropdown
-    QStringList schemas=dal->getAvailableSchemas();
-    if(schemas.count()>1)
-    {
-        if(mw->ui.schemaComboBox->count()==0)
-        {
-            mw->ui.schemaComboBox->addItems(schemas);
-            mw->ui.schemaComboBox->setCurrentIndex(mw->ui.schemaComboBox->findText(dal->getSchemaName()));
-            connect(mw->ui.schemaComboBox, SIGNAL(activated(QString)), this, SLOT(changeSchema(QString)));
-        }
-    }
-    else
-    {
-        mw->ui.schemaComboBox->hide();
-        mw->ui.labelSchemaComboBox->hide();
-    }
-
 
     //	drag & drop revisited.
     QTableView* allSongsList=mw->ui.allSongsList;
@@ -483,6 +445,8 @@ Controller::setupUI()
     ///	MISC
     QTabBar* tb=mw->ui.songlistTab->tabBar();
     tb->hide();
+
+    this->setFontSizes();
 
     qDebug() << SB_DEBUG_INFO;
     return;
@@ -533,6 +497,35 @@ Controller::configureMenuItems(const QList<QAction *>& list)
     }
 }
 
+void
+Controller::setFontSizes() const
+{
+    qDebug() << SB_DEBUG_INFO << app->platformName();
+        if(app->platformName()=="windows")
+        {
+            qDebug() << SB_DEBUG_INFO << "I hear a lama pooping";
+            QWidgetList l=app->allWidgets();
+            for(int i=0;i<l.count();i++)
+            {
+                QWidget* w=l.at(i);
+                const QString cn=w->metaObject()->className();
+                const QString on=w->objectName();
+                if(cn=="QLabel")
+                {
+                    qDebug() << SB_DEBUG_INFO << cn << on;
+                    QLabel* l=dynamic_cast<QLabel* >(w);
+                    if(l)
+                    {
+                        QFont f=l->font();
+                        qDebug() << SB_DEBUG_INFO << f.pointSize();
+                        f.setPointSize( (f.pointSize()-12 > 9 ? f.pointSize()-12 : 9));
+                        l->setFont(f);
+                    }
+                }
+            }
+
+        }
+}
 void
 Controller::init()
 {

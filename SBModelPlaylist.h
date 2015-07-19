@@ -27,6 +27,7 @@ public:
     SBSqlQueryModel* getAllPlaylists();
     void recalculateAllPlaylistDurations();
     void renamePlaylist(const SBID& id);
+    void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID);
 
 signals:
 

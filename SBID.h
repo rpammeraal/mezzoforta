@@ -60,9 +60,12 @@ public:
     QString     wiki;
     int         year;
 
+    //	Tertiary identifiers (navigation et al)
+    int         tabID;
 
     void assign(const QString& itemType,int itemID,QString text="");
     QByteArray encode() const;
+    void fillOut();
     bool fuzzyMatch(const SBID& i);
     QString getIconResourceLocation() const;
     QString getText() const;

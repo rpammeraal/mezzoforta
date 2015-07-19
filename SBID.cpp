@@ -36,6 +36,7 @@ SBID::SBID(const SBID &c)
     this->url=c.url;
     this->wiki=c.wiki;
     this->year=c.year;
+    this->tabID=c.tabID;
 }
 
 SBID::SBID(SBID::sb_type type, int itemID)
@@ -150,6 +151,39 @@ SBID::encode() const
     ;
 
     return encodedData;
+}
+
+void
+SBID::fillOut()
+{
+    switch(this->sb_item_type)
+    {
+    case SBID::sb_type_song:
+        sb_song_id=sb_item_id;
+        break;
+
+    case SBID::sb_type_performer:
+        sb_performer_id=sb_item_id;
+        break;
+
+    case SBID::sb_type_album:
+        sb_album_id=sb_item_id;
+        break;
+
+    case SBID::sb_type_chart:
+        sb_chart_id=sb_item_id;
+        break;
+
+    case SBID::sb_type_playlist:
+        sb_playlist_id=sb_item_id;
+        break;
+
+    case SBID::sb_type_position:
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        break;
+    }
 }
 
 bool
@@ -420,5 +454,7 @@ SBID::init()
     url=QString();
     wiki=QString();
     year=0;
+
+    tabID=-1;
 }
 
