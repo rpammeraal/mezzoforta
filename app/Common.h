@@ -23,6 +23,14 @@ class QTableView;
 
 #define SB_SONG_ID "sb_song_id"
 
+#ifdef Q_OS_WIN
+#define SB_BG_COLOR "#FFFFFF"
+#endif
+
+#ifndef SB_BG_COLOR
+#define SB_BG_COLOR "#E3E3E3"
+#endif
+
 class Common
 {
 public:

@@ -8,9 +8,9 @@ SBTime::SBTime()
     setHMS(0,0,0);
 }
 
-SBTime::SBTime(const SBTime &t)
+SBTime::SBTime(const SBTime &t):QTime(t)
 {
-    setHMS(t.hour(),t.minute(),t.second());
+    //setHMS(t.hour(),t.minute(),t.second());
 }
 
 SBTime&

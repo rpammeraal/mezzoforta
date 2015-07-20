@@ -465,8 +465,6 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     QString cs;
 
-                qDebug() << SB_DEBUG_INFO << result.notes << result.notes.length();
-
     for(int i=-2;i<rm->rowCount();i++)
     {
         qDebug() << SB_DEBUG_INFO << i;
@@ -502,19 +500,15 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
     if(cs.length()>0)
     {
         qDebug() << SB_DEBUG_INFO << cs.length();
-        cs="<BODY BGCOLOR=\"#E3E3E3\">"+cs+"</BODY>";
+        cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
         frRelated->setText(cs);
         connect(frRelated, SIGNAL(anchorClicked(QUrl)),
             this, SLOT(openPerformer(QUrl)));
-        //	Set background light gray
     }
     else
     {
-
-        cs="<BODY BGCOLOR=\"#E3E3E3\"></BODY>";
+        cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\"></BODY>";
         frRelated->setText(cs);
-        //	Set background gray
-        //frRelated->setStyleSheet("background-color: #CCCCCC");
     }
 
     //	Reused vars
