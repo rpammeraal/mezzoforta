@@ -197,14 +197,12 @@ SonglistScreenHandler::openScreenByID(SBID &id)
     }
 
     result=activateTab(id);
-    qDebug() << SB_DEBUG_INFO;
-    //	For whatever reason, this exclusion was added. Not sure why this is, so commented out.
-    //	if(result.sb_item_type!=SBID::sb_type_songsearch)
+    if(result.sb_item_type!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
     {
         //	CWIP: add in new method, add flags to SBID::sb_type to filter out
         //	items that should NOT be stored on the stack
         //	eg - certain search requests: if free-text add, if from dropdown, don't include
-        qDebug() << SB_DEBUG_INFO;
+        qDebug() << SB_DEBUG_INFO << result.searchCriteria;
         st.pushScreen(result);
     }
     qDebug() << SB_DEBUG_INFO;
@@ -832,7 +830,7 @@ SonglistScreenHandler::applySonglistFilter()
     //	This way, search will work both ways
 
     QRegExp re;
-    re=QRegExp("- song$");
+    re=QRegExp("- song by ");
     if(filter.contains(re))
     {
         qDebug() << SB_DEBUG_INFO << "completer call: exit";

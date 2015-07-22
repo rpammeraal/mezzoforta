@@ -34,7 +34,7 @@ signals:
 private:
     void _init();
     void _calculatePlaylistDuration(const SBID& id);
-    void _reorderPlaylistPositions(const SBID& id);
+    void _reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX);
 };
 
 #endif // SBMODELPLAYLIST_H
