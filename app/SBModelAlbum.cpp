@@ -33,6 +33,8 @@ SBModelAlbum::getDetail(const SBID& id)
     ).arg(id.sb_item_id);
     dal->customize(q);
 
+    qDebug() << SB_DEBUG_INFO << q;
+
     QSqlQuery query(q,db);
 
     result.sb_item_type   =SBID::sb_type_album;
@@ -47,7 +49,7 @@ SBModelAlbum::getDetail(const SBID& id)
         result.genre          =query.value(1).toString();
         result.notes          =query.value(3).toString();
         result.sb_performer_id=query.value(5).toInt();
-        result.sb_mbid        =query.value(6).toInt();
+        result.sb_mbid        =query.value(6).toString();
     }
     else
     {

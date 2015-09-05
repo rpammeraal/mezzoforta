@@ -24,11 +24,14 @@ public:
     explicit ExternalData(QObject *parent = 0);
     ~ExternalData();
 
-    QString static getCachePath(const SBID& id);
+    //	Main interface
     void loadAlbumData(const SBID& id);
-    static bool loadImageFromCache(QPixmap& p,const SBID& id);
     void loadPerformerData(const SBID id);
     void loadSongData(const SBID& id);
+
+    //	Static methods
+    QString static getCachePath(const SBID& id);
+    static bool loadImageFromCache(QPixmap& p,const SBID& id);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);
@@ -43,30 +46,32 @@ signals:
     void updatePerformerHomePage(const SBID& id);
 
 public slots:
-    void albumCoverMetadataRetrievedAS(QNetworkReply *r);
-    void albumURLDataRetrievedMB(QNetworkReply* r);
-    void imagedataRetrieved(QNetworkReply* r);
-    void performerMBIDRetrieved(QNetworkReply* r);
-    void performerImageRetrievedEN(QNetworkReply* r);
-    void performerNewsRetrievedEN(QNetworkReply* r);
-    void performerURLDataRetrievedMB(QNetworkReply* r);
-    void songMetaDataRetrievedMB(QNetworkReply* r);
-    void songURLDataRetrievedMB(QNetworkReply* r);
+    void handleAlbumImageURLFromAS(QNetworkReply *r);
+    void handleAlbumURLDataFromMB(QNetworkReply* r);
+    void handleImageDataNetwork(QNetworkReply* r);
+    void handleMBIDNetwork(QNetworkReply* r);
+    void handlePerformerImageURLFromEN(QNetworkReply* r);
+    void handlePerformerNewsURLFromEN(QNetworkReply* r);
+    void handlePerformerURLFromMB(QNetworkReply* r);
+    void handleSongMetaDataFromMB(QNetworkReply* r);
+    void handleSongURLFromMB(QNetworkReply* r);
 
 private:
+    bool artworkRetrieved;          	//	album performer
+    bool performerHomepageRetrieved;	//	      performer
+    bool songLyricsURLRetrieved;        //	                song (always retrieved, not stored)
+    bool wikipediaURLRetrieved;         // 	album performer song
+
     int currentOffset;
     SBID currentID;
-    bool albumWikipediaPageRetrieved;
-    bool performerWikipediaPageRetrieved;
-    bool performerHomepageRetrieved;
-    bool songWikipediaPageRetrieved;
-    bool songLyricsURLRetrieved;
+    bool performerMBIDRetrieved;	//	set if call to retrieve MBID already has been made.
+
     QList<NewsItem> allNewsItems;
     QList<QString> allReviews;
 
     void init();
     void loadAlbumCoverAS();
-    void retrievePerformerMBID();
+    void getMBIDAndMore();
     void storeInCache(QByteArray* a) const;
 };
 

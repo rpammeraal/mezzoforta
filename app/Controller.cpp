@@ -392,7 +392,7 @@ Controller::openMainWindow(bool startup)
         ssh->openOpener(QString());
 
     }
-    qDebug() << "openMainWindow:end";
+    qDebug() << SB_DEBUG_INFO << "openMainWindow:end";
     return 1;
 }
 

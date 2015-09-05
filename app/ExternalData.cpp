@@ -23,6 +23,74 @@ ExternalData::~ExternalData()
 {
 }
 
+//	Main interface
+void
+ExternalData::loadAlbumData(const SBID &id)
+{
+    currentID=id;
+
+    //	1.	Artwork
+    QPixmap p;
+    if(loadImageFromCache(p,currentID))
+    {
+        artworkRetrieved=1;
+        emit imageDataReady(p);
+    }
+
+    //	2.	Wikipedia page
+    if(id.wiki.length()>0)
+    {
+        wikipediaURLRetrieved=1;
+        emit albumWikipediaPageAvailable(id.wiki);
+    }
+    getMBIDAndMore();
+}
+
+void
+ExternalData::loadPerformerData(const SBID id)
+{
+    currentID=id;
+
+    //	1.	Performer home page
+    if(id.url.length()>0)
+    {
+        performerHomepageRetrieved=1;
+        emit performerHomePageAvailable(id.url);
+    }
+
+    //	2.	Wikipedia page
+    if(id.wiki.length()>0)
+    {
+        wikipediaURLRetrieved=1;
+        emit performerWikipediaPageAvailable(id.wiki);
+    }
+
+    //	3.	Artwork
+    QPixmap p;
+    if(loadImageFromCache(p,id))
+    {
+        artworkRetrieved=1;
+        emit imageDataReady(p);
+    }
+
+    getMBIDAndMore();
+}
+
+void
+ExternalData::loadSongData(const SBID& id)
+{
+    currentID=id;
+
+    //	1.	Wikipedia page
+    if(id.wiki.length()>0)
+    {
+        wikipediaURLRetrieved=1;
+        emit songWikipediaPageAvailable(id.wiki);
+    }
+    getMBIDAndMore();
+}
+
+//	Static methods
 QString
 ExternalData::getCachePath(const SBID& id)
 {
@@ -30,59 +98,16 @@ ExternalData::getCachePath(const SBID& id)
     p.replace("!","");
     QDir d;
     d.mkpath(p);
-    QString f=QString("%1/%2.%3").arg(p).arg(id.getType()).arg(id.sb_item_id);
-    qDebug() << SB_DEBUG_INFO << f;
+    QString f=QString("%1/%2.%3")
+        .arg(p)
+        .arg(id.getType())
+        .arg(id.sb_item_id)
+    ;
     return f;
-}
-
-void
-ExternalData::loadAlbumData(const SBID &id)
-{
-    currentID=id;
-    qDebug() << SB_DEBUG_INFO << currentID;
-
-    //	Load album image
-    //	1.	Clear image
-    QPixmap p;
-
-    //	2.	Try load from cache, other retrieve using audioscrobbler
-    if(loadImageFromCache(p,currentID))
-    {
-        emit imageDataReady(p);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO;
-
-        QNetworkAccessManager* m=new QNetworkAccessManager(this);
-        connect(m, SIGNAL(finished(QNetworkReply *)),
-                this, SLOT(albumCoverMetadataRetrievedAS(QNetworkReply*)));
-
-        QString URL=QString("http://ws.audioscrobbler.com/2.0/?method=album.search&limit=99999&api_key=5dacbfb3b24d365bcd43050c6149a40d&album=%1").
-                arg(currentID.albumTitle);
-        m->get(QNetworkRequest(QUrl(URL)));
-    }
-
-    //	3.	Load wikipedia page from musicbrainz
-    //		Thanks to async nature of network retrievals, there is some hacking involved.
-    //		Call retrievePerformerMBID to get the mbid of performer (either from database or network).
-    //		When this is retrieved, this same function will continue other data that depends on this mbid.
-
-    qDebug() << SB_DEBUG_INFO << "album wiki:" << id.wiki;
-    if(id.wiki.length()>0)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        albumWikipediaPageRetrieved=1;
-        emit albumWikipediaPageAvailable(id.wiki);
-    }
-    qDebug() << SB_DEBUG_INFO;
-    retrievePerformerMBID();
 }
 
 ///
 /// \brief ExternalData::setImageFromCache
-/// \param id
-/// \param l
 /// \return 1 if image is successfully loaded from cache
 ///
 bool
@@ -97,15 +122,12 @@ ExternalData::loadImageFromCache(QPixmap& p,const SBID& id)
         char* mem=(char *)malloc(len);
         QDataStream s(&f);
         int n=s.readRawData(mem,len);
-            qDebug() << SB_DEBUG_INFO;
-
         f.close();
 
         if(n>0)
         {
             QByteArray a=QByteArray(mem,len);
             p.loadFromData(a);
-            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
         free(mem);
@@ -113,52 +135,15 @@ ExternalData::loadImageFromCache(QPixmap& p,const SBID& id)
     return 0;
 }
 
+//	Slots
 void
-ExternalData::loadPerformerData(const SBID id)
+ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO << id << id.url << id.wiki;
-    currentID=id;
-    if(id.url.length()>0)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        performerHomepageRetrieved=1;
-        emit performerHomePageAvailable(id.url);
-        qDebug() << SB_DEBUG_INFO;
-    }
-    if(id.wiki.length()>0)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        performerWikipediaPageRetrieved=1;
-        emit performerWikipediaPageAvailable(id.wiki);
-    }
-    qDebug() << SB_DEBUG_INFO;
-    retrievePerformerMBID();
-    qDebug() << SB_DEBUG_INFO;
-}
-
-void
-ExternalData::loadSongData(const SBID& id)
-{
-    currentID=id;
-    if(id.wiki.length()>0)
-    {
-        songWikipediaPageRetrieved=1;
-        emit songWikipediaPageAvailable(id.wiki);
-    }
-    retrievePerformerMBID();
-}
-
-void
-ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
-{
-    qDebug() << SB_DEBUG_INFO;
 
     if(r->error()==QNetworkReply::NoError)
     {
-    qDebug() << SB_DEBUG_INFO;
         if(r->open(QIODevice::ReadOnly))
         {
-    qDebug() << SB_DEBUG_INFO;
             QByteArray a=r->readAll();
             QString s=QString(a.data());
 
@@ -180,7 +165,7 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
                     SBID pm;
                     QString key;
                     QString value;
-                    QString URL;
+                    QString urlString;
 
                     QDomNode     level2node    =level1nodelist.at(i);
                     QDomNodeList level2nodelist=level2node.childNodes();
@@ -208,19 +193,18 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
                         }
                         else if(key=="image")
                         {
-                            URL=value;
+                            urlString=value;
                         }
                     }
 
-                    qDebug() << SB_DEBUG_INFO << URL;
                     if(currentID.fuzzyMatch(pm)==1)
                     {
                         QNetworkAccessManager* n=new QNetworkAccessManager(this);
                         connect(n, SIGNAL(finished(QNetworkReply *)),
-                                this, SLOT(imagedataRetrieved(QNetworkReply*)));
+                                this, SLOT(handleImageDataNetwork(QNetworkReply*)));
 
-                        QUrl url(URL);
-                        n->get(QNetworkRequest(url));
+                        qDebug() << SB_DEBUG_INFO << urlString;
+                        n->get(QNetworkRequest(QUrl(urlString)));
                         return;
                     }
                 }
@@ -230,14 +214,14 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
     else
     {
         QMessageBox messagebox;
-        messagebox.setText(r->errorString());
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
         messagebox.exec();
     }
 }
 
-//	TESTED
 void
-ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
+ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
 {
     QString matchAlbumName=Common::removeNonAlphanumeric(currentID.albumTitle).toLower();
     QString foundAlbumName;
@@ -284,16 +268,15 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
                                     {
                                         QDomElement e = n.toElement();
 
-                                        if(e.attribute("type")=="wikipedia" && matchAlbumName==foundAlbumName && albumWikipediaPageRetrieved==0)
+                                        if(e.attribute("type")=="wikipedia" && matchAlbumName==foundAlbumName && wikipediaURLRetrieved==0)
                                         {
-                                            QString URL=e.text() + "&printable=yes";
-                                            URL.replace("/wiki/","/w/index.php?title=");
-                                            albumWikipediaPageRetrieved=1;
-                                            emit albumWikipediaPageAvailable(URL);
+                                            QString urlString=e.text() + "&printable=yes";
+                                            urlString.replace("/wiki/","/w/index.php?title=");
+                                            wikipediaURLRetrieved=1;
+                                            emit albumWikipediaPageAvailable(urlString);
                                         }
                                         else if(e.attribute("type")=="review" && matchAlbumName==foundAlbumName)
                                         {
-                                            QString URL=e.text() + "&printable=yes";
                                             allReviews.append(e.text());
                                         }
                                     }
@@ -305,6 +288,13 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
     if(allReviews.count()>0)
     {
         emit albumReviewsAvailable(allReviews);
@@ -312,41 +302,39 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
 }
 
 void
-ExternalData::imagedataRetrieved(QNetworkReply *r)
+ExternalData::handleImageDataNetwork(QNetworkReply *r)
 {
-        qDebug() << SB_DEBUG_INFO << r->url().toString();
     if(r->error()==QNetworkReply::NoError)
     {
-        qDebug() << SB_DEBUG_INFO;
         if(r->open(QIODevice::ReadOnly))
         {
-            qDebug() << SB_DEBUG_INFO << r->bytesAvailable();
-            qDebug() << SB_DEBUG_INFO << r->canReadLine();
-            qDebug() << SB_DEBUG_INFO << r->isReadable();
-            qDebug() << SB_DEBUG_INFO << r->size();
             QByteArray a=r->readAll();
-            qDebug() << SB_DEBUG_INFO << a.count();
             if(a.count()>0)
             {
-            qDebug() << SB_DEBUG_INFO;
                 QPixmap image;
 
                 //	Store in cache
                 image.loadFromData(a);
                 storeInCache(&a);
-            qDebug() << SB_DEBUG_INFO;
                 emit imageDataReady(image);
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
 }
 
-//	TESTED
 void
-ExternalData::performerMBIDRetrieved(QNetworkReply *r)
+ExternalData::handleMBIDNetwork(QNetworkReply *r)
 {
     bool matchFound=0;
     QString title=Common::removeNonAlphanumeric(currentID.performerName.toLower());
+    performerMBIDRetrieved=1;
 
     if(r->error()==QNetworkReply::NoError)
     {
@@ -398,21 +386,27 @@ ExternalData::performerMBIDRetrieved(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
     if(matchFound==1)
     {
         //	Recall now that sb_mbid is loaded
         emit updatePerformerMBID(currentID);
-        retrievePerformerMBID();
+        getMBIDAndMore();
     }
 }
 
-//	TESTED
 void
-ExternalData::performerImageRetrievedEN(QNetworkReply *r)
+ExternalData::handlePerformerImageURLFromEN(QNetworkReply *r)
 {
     bool matchFound=0;
 
-    QString url;
+    QString urlString;
 
     if(r->error()==QNetworkReply::NoError)
     {
@@ -446,7 +440,7 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
 
                                 if(e.tagName()=="url")
                                 {
-                                    url=e.text();
+                                    urlString=e.text();
                                 }
                                 else if(!e.isNull())
                                 {
@@ -456,12 +450,12 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
 
                                         if(e.tagName()=="attribution" && e.text()!="myspace")
                                         {
-                                            qDebug() << SB_DEBUG_INFO << url;
                                             QNetworkAccessManager* m=new QNetworkAccessManager(this);
                                             connect(m, SIGNAL(finished(QNetworkReply *)),
-                                                    this, SLOT(imagedataRetrieved(QNetworkReply*)));
+                                                    this, SLOT(handleImageDataNetwork(QNetworkReply*)));
 
-                                            m->get(QNetworkRequest(QUrl(url)));
+                                            qDebug() << SB_DEBUG_INFO << urlString;
+                                            m->get(QNetworkRequest(QUrl(urlString)));
                                             return;
                                         }
                                     }
@@ -473,16 +467,22 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
 }
 
-//	TESTED
 void
-ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
+ExternalData::handlePerformerNewsURLFromEN(QNetworkReply *r)
 {
     bool matchFound=0;
     allNewsItems.clear();
 
-    QString url;
+    QString urlString;
 
     if(r->error()==QNetworkReply::NoError)
     {
@@ -536,6 +536,13 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
     if(allNewsItems.count()>0)
     {
         emit performerNewsAvailable(allNewsItems);
@@ -543,7 +550,7 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
 }
 
 void
-ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
+ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
 {
     if(r->error()==QNetworkReply::NoError)
     {
@@ -560,13 +567,13 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
 
             QDomElement e=doc.documentElement();
 
-            for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
+            for(QDomNode n=e.firstChild();!n.isNull() && (wikipediaURLRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull())
                 {
-                    for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
+                    for(QDomNode n=e.firstChild();!n.isNull() && (wikipediaURLRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
                     {
                         QString MBID;
 
@@ -574,17 +581,17 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
 
                         if(!e.isNull())
                         {
-                            for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
+                            for(QDomNode n=e.firstChild();!n.isNull() && (wikipediaURLRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
-                                if(e.attribute("type")=="wikipedia" && performerWikipediaPageRetrieved==0)
+                                if(e.attribute("type")=="wikipedia" && wikipediaURLRetrieved==0)
                                 {
-                                    QString URL=e.text() + "&printable=yes";
-                                    URL.replace("/wiki/","/w/index.php?title=");
-                                    performerWikipediaPageRetrieved=1;
+                                    QString urlString=e.text() + "&printable=yes";
+                                    urlString.replace("/wiki/","/w/index.php?title=");
+                                    wikipediaURLRetrieved=1;
 
-                                    emit performerWikipediaPageAvailable(URL);
+                                    emit performerWikipediaPageAvailable(urlString);
                                 }
                                 else if(e.attribute("type")=="official homepage" && performerHomepageRetrieved==0)
                                 {
@@ -600,11 +607,17 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
 }
 
-//	TESTED
 void
-ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
+ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
 {
     QString matchSongName=Common::removeNonAlphanumeric(currentID.songTitle).toLower();
     QString foundSongName;
@@ -657,10 +670,13 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
                                         //	Now fire off a request to get all URLs for this work.
                                         QNetworkAccessManager* mb=new QNetworkAccessManager(this);
                                         connect(mb, SIGNAL(finished(QNetworkReply *)),
-                                                this, SLOT(songURLDataRetrievedMB(QNetworkReply*)));
+                                                this, SLOT(handleSongURLFromMB(QNetworkReply*)));
 
-                                        QString URL=QString("http://musicbrainz.org/ws/2/work/%1?inc=url-rels").arg(mbid);
-                                        mb->get(QNetworkRequest(QUrl(URL)));
+                                        QString urlString=QString("http://musicbrainz.org/ws/2/work/%1?inc=url-rels")
+                                            .arg(mbid)
+                                        ;
+                                        qDebug() << SB_DEBUG_INFO << urlString;
+                                        mb->get(QNetworkRequest(QUrl(urlString)));
                                         return;
                                     }
                                 }
@@ -673,15 +689,21 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
             {
                 //	If this point is reached, we need to do another iteration
                 currentOffset+=MUSICBRAINZ_MAXNUM;
-                retrievePerformerMBID();
+                getMBIDAndMore();
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
 }
 
-//	TESTED
 void
-ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
+ExternalData::handleSongURLFromMB(QNetworkReply *r)
 {
     QString type;
 
@@ -699,26 +721,26 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
 
             QDomElement e=doc.documentElement();
 
-            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
+            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || wikipediaURLRetrieved==0);n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull())
                 {
-                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
+                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || wikipediaURLRetrieved==0);n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
                         if(!e.isNull())
                         {
-                            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
+                            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || wikipediaURLRetrieved==0);n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
                                 type=e.attribute("type");
                                 if(!e.isNull())
                                 {
-                                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
+                                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || wikipediaURLRetrieved==0);n = n.nextSibling())
                                     {
                                         QDomElement e = n.toElement();
 
@@ -727,12 +749,12 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
                                             songLyricsURLRetrieved=1;
                                             emit songLyricsURLAvailable(e.text());
                                         }
-                                        else if(type=="wikipedia" && songWikipediaPageRetrieved==0)
+                                        else if(type=="wikipedia" && wikipediaURLRetrieved==0)
                                         {
-                                            QString URL=e.text() + "&printable=yes";
-                                            URL.replace("/wiki/","/w/index.php?title=");
-                                            songWikipediaPageRetrieved=1;
-                                            emit songWikipediaPageAvailable(URL);
+                                            QString urlString=e.text() + "&printable=yes";
+                                            urlString.replace("/wiki/","/w/index.php?title=");
+                                            wikipediaURLRetrieved=1;
+                                            emit songWikipediaPageAvailable(urlString);
                                         }
                                         else
                                         {
@@ -747,6 +769,13 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText("Error processing network request:");
+        messagebox.setInformativeText(r->errorString());
+        messagebox.exec();
+    }
 }
 
 ///	PRIVATE
@@ -756,84 +785,121 @@ ExternalData::loadAlbumCoverAS()
 {
 }
 
+///
+/// \brief ExternalData::getMBIDAndMore
+///
+/// Due to the asynchronous processing of network requets, the purpose of this function is to:
+/// -	retrieve the MBID for the performer, if this is not already retrieved from the database.
+/// 	This is another asynchronous call, the receiving end should call getMBIDAndMore() in order
+/// 	to continue loading whatever is needed for this.currentID.
+/// -	load whatever data that is relevant for this.currentID. This function is called in each
+/// 	of the main interface functions to load whatever is remaining (as some items are cached or
+/// 	or stored in the database).
 void
-ExternalData::retrievePerformerMBID()
+ExternalData::getMBIDAndMore()
 {
     QNetworkAccessManager* en;
-    QString URL;
+    QString urlString;
     QNetworkAccessManager* mb;
 
     if(currentID.sb_mbid.length()==0)
     {
+        if(performerMBIDRetrieved==1)
+        {
+            //	Unable to retrieve performerMBID, bail out
+            qDebug() << SB_DEBUG_INFO << "No performerMBID available";
+            return;
+        }
+
         //	Unknown MBID -- look it up and store.
         QNetworkAccessManager* m=new QNetworkAccessManager(this);
         connect(m, SIGNAL(finished(QNetworkReply *)),
-                this, SLOT(performerMBIDRetrieved(QNetworkReply*)));
+                this, SLOT(handleMBIDNetwork(QNetworkReply*)));
 
-        QString URL=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1").arg(currentID.performerName);
-        m->get(QNetworkRequest(QUrl(URL)));
+        QString urlString=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1")
+            .arg(currentID.performerName)
+        ;
+        qDebug() << SB_DEBUG_INFO << urlString;
+        m->get(QNetworkRequest(QUrl(urlString)));
     }
     else
     {
         if(currentID.sb_item_type==SBID::sb_type_performer)
         {
-            //	Continue on with retrieving performer specific data
-
-            //	Get wikipedia and homepage urls from musicbrainz
-            if(performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0)
+            //	1.	Wikipedia, performer home page
+            if(wikipediaURLRetrieved==0 || performerHomepageRetrieved==0)
             {
                 mb=new QNetworkAccessManager(this);
                 connect(mb, SIGNAL(finished(QNetworkReply *)),
-                        this, SLOT(performerURLDataRetrievedMB(QNetworkReply*)));
+                        this, SLOT(handlePerformerURLFromMB(QNetworkReply*)));
 
-                URL=QString("http://musicbrainz.org/ws/2/artist/%1?inc=url-rels").arg(currentID.sb_mbid);
-                qDebug() << SB_DEBUG_INFO << URL;
-                mb->get(QNetworkRequest(QUrl(URL)));
+                urlString=QString("http://musicbrainz.org/ws/2/artist/%1?inc=url-rels")
+                    .arg(currentID.sb_mbid)
+                ;
+                qDebug() << SB_DEBUG_INFO << urlString;
+                mb->get(QNetworkRequest(QUrl(urlString)));
             }
             else
             {
                 qDebug() << SB_DEBUG_INFO << "Looks like we already have wiki and home page for performer";
             }
 
-            //	Get performer image. If not in cache, find suitable image from echonest
-            QPixmap p;
-            if(loadImageFromCache(p,currentID))
-            {
-                emit imageDataReady(p);
-            }
-            else
+            //	2.	Artwork
+            if(artworkRetrieved==0)
             {
                 //	Get performer image from echonest
                 en=new QNetworkAccessManager(this);
                 connect(en, SIGNAL(finished(QNetworkReply *)),
-                        this, SLOT(performerImageRetrievedEN(QNetworkReply *)));
+                        this, SLOT(handlePerformerImageURLFromEN(QNetworkReply *)));
 
-                URL=QString("http://developer.echonest.com/api/v4/artist/images?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml").arg(currentID.sb_mbid);
-                qDebug() << SB_DEBUG_INFO << URL;
-                en->get(QNetworkRequest(QUrl(URL)));
+                urlString=QString("http://developer.echonest.com/api/v4/artist/images?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml")
+                    .arg(currentID.sb_mbid)
+                ;
+                qDebug() << SB_DEBUG_INFO << urlString;
+                en->get(QNetworkRequest(QUrl(urlString)));
             }
 
-            //	Get news items from echonest
+            //	3.	Get news items from echonest
             en=new QNetworkAccessManager(this);
             connect(en, SIGNAL(finished(QNetworkReply *)),
-                    this, SLOT(performerNewsRetrievedEN(QNetworkReply*)));
+                    this, SLOT(handlePerformerNewsURLFromEN(QNetworkReply*)));
 
-            URL=QString("http://developer.echonest.com/api/v4/artist/news?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml").arg(currentID.sb_mbid);
-            qDebug() << SB_DEBUG_INFO << URL;
-            en->get(QNetworkRequest(QUrl(URL)));
+            urlString=QString("http://developer.echonest.com/api/v4/artist/news?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml")
+                .arg(currentID.sb_mbid)
+            ;
+            qDebug() << SB_DEBUG_INFO << urlString;
+            en->get(QNetworkRequest(QUrl(urlString)));
         }
         else if(currentID.sb_item_type==SBID::sb_type_album)
         {
-            if(albumWikipediaPageRetrieved==0)
+            //	1.	Artwork
+            if(artworkRetrieved==0)
+            {
+                QNetworkAccessManager* m=new QNetworkAccessManager(this);
+                connect(m, SIGNAL(finished(QNetworkReply *)),
+                        this, SLOT(handleAlbumImageURLFromAS(QNetworkReply*)));
+
+                QString urlString=QString("http://ws.audioscrobbler.com/2.0/?method=album.search&limit=9999&api_key=5dacbfb3b24d365bcd43050c6149a40d&album=%1").
+                        arg(currentID.albumTitle);
+                qDebug() << SB_DEBUG_INFO << urlString;
+                m->get(QNetworkRequest(QUrl(urlString)));
+
+            }
+
+            //	2.	Wikipedia page
+            if(wikipediaURLRetrieved==0)
             {
                 //	Get urls for given album
                 QNetworkAccessManager* mb=new QNetworkAccessManager(this);
                 connect(mb, SIGNAL(finished(QNetworkReply *)),
-                        this, SLOT(albumURLDataRetrievedMB(QNetworkReply*)));
+                        this, SLOT(handleAlbumURLDataFromMB(QNetworkReply*)));
 
-                URL=QString("https://musicbrainz.org/ws/2/release-group?artist=%1&inc=url-rels&offset=0&limit=%2").arg(currentID.sb_mbid).arg(MUSICBRAINZ_MAXNUM);
-                qDebug() << SB_DEBUG_INFO << URL;
-                mb->get(QNetworkRequest(QUrl(URL)));
+                urlString=QString("https://musicbrainz.org/ws/2/release-group?artist=%1&inc=url-rels&offset=0&limit=%2")
+                    .arg(currentID.sb_mbid)
+                    .arg(MUSICBRAINZ_MAXNUM)
+                ;
+                qDebug() << SB_DEBUG_INFO << urlString;
+                mb->get(QNetworkRequest(QUrl(urlString)));
             }
             else
             {
@@ -842,15 +908,26 @@ ExternalData::retrievePerformerMBID()
         }
         else if(currentID.sb_item_type==SBID::sb_type_song)
         {
-            if(songWikipediaPageRetrieved==0)
+            //	CWIP:
+            //	Songlyrics are only downloaded if wikipedia page is not known.
+            //	Wikipedia page for song is neither stored nor cached.
+            //	Ergo: both will always be retrieved. Logical hack alert.
+
+            //	1.	Wikipedia page
+            if(wikipediaURLRetrieved==0)
             {
                 //	Find meta data for song
                 QNetworkAccessManager* mb=new QNetworkAccessManager(this);
                 connect(mb, SIGNAL(finished(QNetworkReply *)),
-                        this, SLOT(songMetaDataRetrievedMB(QNetworkReply*)));
+                        this, SLOT(handleSongMetaDataFromMB(QNetworkReply*)));
 
-                URL=QString("http://musicbrainz.org/ws/2/work?artist=%1&offset=%2&limit=%3").arg(currentID.sb_mbid).arg(currentOffset).arg(MUSICBRAINZ_MAXNUM);
-                mb->get(QNetworkRequest(QUrl(URL)));
+                urlString=QString("http://musicbrainz.org/ws/2/work?artist=%1&offset=%2&limit=%3")
+                    .arg(currentID.sb_mbid)
+                    .arg(currentOffset)
+                    .arg(MUSICBRAINZ_MAXNUM)
+                ;
+                qDebug() << SB_DEBUG_INFO << urlString;
+                mb->get(QNetworkRequest(QUrl(urlString)));
             }
             else
             {
@@ -865,11 +942,11 @@ ExternalData::init()
 {
     currentOffset=0;
     currentID=SBID();
-    albumWikipediaPageRetrieved=0;
-    performerWikipediaPageRetrieved=0;
+    artworkRetrieved=0;
+    performerMBIDRetrieved=0;
     performerHomepageRetrieved=0;
-    songWikipediaPageRetrieved=0;
     songLyricsURLRetrieved=0;
+    wikipediaURLRetrieved=0;
 }
 
 void
