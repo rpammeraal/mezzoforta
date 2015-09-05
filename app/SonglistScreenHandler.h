@@ -10,6 +10,7 @@
 class QAction;
 class QLabel;
 class QNetworkReply;
+class QPushButton;
 class QTableView;
 class QTabWidget;
 
@@ -30,10 +31,13 @@ public:
     void openScreenByID(SBID& id);
     void filterSongs(const SBID& id);
     SBID getSBIDSelected(const QModelIndex& idx);
+    void handleEnterKey();
+    void handleEscapeKey();
     SBID populateAlbumDetail(const SBID& id);
     SBID populatePerformerDetail(const SBID& id);
     SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
+    SBID populateSongDetailEdit(const SBID& id);
     int populateTableView(QTableView* tv, SBSqlQueryModel* sl, int initialSortColumn);
     void refreshTabIfCurrent(const SBID& id);
     void removeFromScreenStack(const SBID& id);
@@ -47,7 +51,9 @@ public:
 
 public slots:
     void applySonglistFilter();
+    void closeCurrentTab();
     void deletePlaylistItem();
+    void editSong();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
@@ -56,6 +62,7 @@ public slots:
     void openSonglistItem(const QModelIndex& i);
     void refreshAlbumReviews();
     void refreshPerformerNews();
+    void saveSongDetail();
     void setAlbumImage(const QPixmap& p);
     void setAlbumReviews(const QList<QString>& reviews);
     void setAlbumWikipediaPage(const QString& url);
@@ -82,6 +89,7 @@ private:
     QList<QString> currentReviews;
     QList<QWidget *> relatedItems;
     QModelIndex lastClickedIndex;
+    QPushButton* currentSaveButton;
 
     void init();
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;

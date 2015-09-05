@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBID.h"
@@ -22,7 +24,7 @@ SBModelPerformer::getDetail(const SBID& id)
 
     QString q=QString
     (
-        "SELECT "
+        "SELECT DISTINCT "
             "a.name, "
             "a.www, "
             "a.notes, "
@@ -53,22 +55,30 @@ SBModelPerformer::getDetail(const SBID& id)
     qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
-    query.next();
 
     result.sb_item_type    =SBID::sb_type_performer;
-    result.sb_item_id      =id.sb_item_id;
-    result.sb_mbid         =query.value(3).toString();
-    result.sb_performer_id =id.sb_item_id;
-    result.performerName   =query.value(0).toString();
-    result.url             =query.value(1).toString();
-    result.notes           =query.value(2).toString();
-    result.count1          =query.value(4).toInt();
-    result.count2          =query.value(5).toInt();
 
-    if(result.url.length()>0 && result.url.toLower().left(7)!="http://")
+    if(query.next())
     {
-        result.url="http://"+result.url;
+        result.sb_item_id      =id.sb_item_id;
+        result.sb_mbid         =query.value(3).toString();
+        result.sb_performer_id =id.sb_item_id;
+        result.performerName   =query.value(0).toString();
+        result.url             =query.value(1).toString();
+        result.notes           =query.value(2).toString();
+        result.count1          =query.value(4).toInt();
+        result.count2          =query.value(5).toInt();
+
+        if(result.url.length()>0 && result.url.toLower().left(7)!="http://")
+        {
+            result.url="http://"+result.url;
+        }
     }
+    else
+    {
+        result.sb_item_id=-1;
+    }
+
     return result;
 }
 
@@ -202,6 +212,174 @@ SBModelPerformer::getRelatedPerformers(const SBID& id)
     return new SBSqlQueryModel(q);
 }
 
+SBSqlQueryModel*
+SBModelPerformer::matchPerformer(const SBID &currentSongID, const QString& newPerformerName)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString newSoundex=Common::soundex(newPerformerName);
+
+    qDebug() << SB_DEBUG_INFO;
+
+    //	MatchRank:
+    //	0	-	edited value (always one in data set).
+    //	1	-	exact match (0 or 1 in data set).
+    //	2	-	soundex match (0 or more in data set).
+    const QString q=QString
+    (
+        "SELECT "
+            "0 AS matchRank, "
+            "-1 AS artist_id, "
+            "'%1' AS name "
+        "UNION "
+        "SELECT "
+            "1 AS matchRank, "
+            "s.artist_id, "
+            "s.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist s "
+        "WHERE "
+            "REPLACE(LOWER(s.name),' ','') = REPLACE(LOWER('%1'),' ','') "
+        "UNION "
+        "SELECT DISTINCT "
+            "2 AS matchRank, "
+            "s.artist_id, "
+            "s.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist s "
+        "WHERE "
+            "s.artist_id!=%2 AND "
+            "( "
+                "substr(s.soundex,1,length('%3'))='%3' OR "
+                "substr('%3',1,length(s.soundex))=s.soundex "
+            ") "
+        "ORDER BY "
+            "1, 3"
+    )
+        .arg(newPerformerName)
+        .arg(currentSongID.sb_song_id)
+        .arg(newSoundex)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+int
+SBModelPerformer::savePerformer(SBID &id)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString newSoundex=Common::soundex(id.performerName);
+    QString q;
+
+    qDebug() << SB_DEBUG_INFO;
+    if(id.sb_item_id==-1)
+    {
+        //	Insert new
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___artist "
+            "( "
+                "artist_id, "
+                "name, "
+                "sort_name, "
+                "soundex "
+            ") "
+            "SELECT "
+                "MAX(artist_id)+1, "
+                "'%1', "
+                "'%2', "
+                "'%3' "
+            "FROM "
+                "___SB_SCHEMA_NAME___artist "
+        )
+            .arg(id.performerName)
+            .arg(Common::removeArticles(id.performerName))
+            .arg(newSoundex)
+        ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery insert(q,db);
+
+        //	Get id of newly added performer
+        q=QString
+        (
+            "SELECT "
+                "artist_id "
+            "FROM "
+                "___SB_SCHEMA_NAME___artist "
+            "WHERE "
+                "name='%1' "
+        )
+            .arg(id.performerName)
+        ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery select(q,db);
+        select.next();
+
+        id.sb_item_id=select.value(0).toInt();
+    }
+    else
+    {
+        //	Update existing
+    }
+    return 0;
+}
+
+void
+SBModelPerformer::updateSoundexFields()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "s.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist s "
+        "WHERE "
+            "s.soundex IS NULL "
+        "ORDER BY "
+            "s.name "
+    );
+
+    QSqlQuery q1(db);
+    q1.exec(dal->customize(q));
+
+    qDebug() << SB_DEBUG_INFO << q <<  q1.numRowsAffected();
+
+    QString title;
+    QString soundex;
+    while(q1.next())
+    {
+        title=q1.value(0).toString();
+        soundex=Common::soundex(title);
+
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___artist "
+            "SET "
+                "soundex='%1' "
+            "WHERE "
+                "name='%2'"
+        )
+            .arg(soundex)
+            .arg(Common::escapeSingleQuotes(title))
+        ;
+        dal->customize(q);
+
+        qDebug() << SB_DEBUG_INFO << q;
+
+        QSqlQuery q2(q,db);
+        q2.exec();
+    }
+}
+
 void
 SBModelPerformer::updateHomePage(const SBID &id)
 {
@@ -217,7 +395,10 @@ SBModelPerformer::updateHomePage(const SBID &id)
             "www='%1' "
         "WHERE "
             "artist_id=%2"
-    ).arg(id.url).arg(id.sb_item_id);
+    )
+        .arg(id.url)
+        .arg(id.sb_item_id)
+    ;
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -247,3 +428,4 @@ SBModelPerformer::updateMBID(const SBID &id)
     QSqlQuery query(q,db);
     query.exec();
 }
+

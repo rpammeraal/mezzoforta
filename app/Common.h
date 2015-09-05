@@ -23,6 +23,8 @@ class QTableView;
 
 #define SB_SONG_ID "sb_song_id"
 
+#define SB_SOUNDEX_CODE_LENGTH 8
+
 #ifdef Q_OS_WIN
 #define SB_BG_COLOR "#FFFFFF"
 #endif
@@ -37,10 +39,14 @@ public:
     Common();
     ~Common();
 
-    static void escapeSingleQuotes(QString &);
+    static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static int random(int max);
+    static QString removeAccents(const QString& s);
+    static QString removeArticles(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);
+    static QString soundex(const QString& s);
     static void toTitleCase(QString &);
+    static char ParseChar(QChar c);
 };
 #endif // COMMON_H

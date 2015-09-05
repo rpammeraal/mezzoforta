@@ -16,6 +16,9 @@ public:
     static SBSqlQueryModel* getOnAlbumListBySong(const SBID& id);
     static SBSqlQueryModel* getOnChartListBySong(const SBID& id);
     static SBSqlQueryModel* getOnPlaylistListBySong(const SBID& id);
+    static SBSqlQueryModel* matchSongByPerformer(const SBID& newSongID, const QString& newSongTitle);
+    static bool saveSong(const SBID& orgSongID, SBID& newSongID);
+    static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
 private:
 };

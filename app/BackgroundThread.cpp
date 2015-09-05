@@ -4,6 +4,7 @@
 #include "BackgroundThread.h"
 #include "Common.h"
 #include "SBModelPlaylist.h"
+#include "SBModelSong.h"
 
 BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
 {

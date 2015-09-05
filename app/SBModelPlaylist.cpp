@@ -7,6 +7,8 @@
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 
+#include <QMessageBox>
+
 ///	PUBLIC METHODS
 SBModelPlaylist::SBModelPlaylist()
 {
@@ -401,14 +403,21 @@ SBModelPlaylist::getDetail(const SBID& id)
     qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
-    query.next();
 
     result.sb_item_type   =SBID::sb_type_playlist;
-    result.sb_item_id     =id.sb_item_id;
-    result.sb_playlist_id=id.sb_item_id;
-    result.playlistName   =query.value(0).toString();
-    result.duration       =query.value(1).toTime();
-    result.count1         =query.value(2).toInt();
+
+    if(query.next())
+    {
+        result.sb_item_id     =id.sb_item_id;
+        result.sb_playlist_id=id.sb_item_id;
+        result.playlistName   =query.value(0).toString();
+        result.duration       =query.value(1).toTime();
+        result.count1         =query.value(2).toInt();
+    }
+    else
+    {
+        result.sb_item_id=-1;
+    }
 
     return result;
 }
@@ -759,7 +768,10 @@ SBModelPlaylist::renamePlaylist(const SBID &id)
             "name='%1' "
         "WHERE "
             "playlist_id=%2 "
-    ).arg(id.playlistName).arg(id.sb_item_id);
+    )
+        .arg(id.playlistName)
+        .arg(id.sb_item_id)
+    ;
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;

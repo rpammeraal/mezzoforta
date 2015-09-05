@@ -73,7 +73,8 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
         else
         {
             //	Ask from which album song should be assigned from
-            SBDialogSelectSongAlbum* ssa=new SBDialogSelectSongAlbum(assignID,m);
+            //SBDialogSelectSongAlbum* ssa=new SBDialogSelectSongAlbum(assignID,m);
+            SBDialogSelectSongAlbum* ssa=SBDialogSelectSongAlbum::selectSongAlbum(assignID,m);
 
             ssa->exec();
             SBID selectedAlbum=ssa->getSBID();

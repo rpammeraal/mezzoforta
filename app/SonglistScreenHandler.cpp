@@ -3,6 +3,7 @@
 #include <QCompleter>
 #include <QDebug>
 #include <QFont>
+#include <QMessageBox>
 #include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
 
@@ -18,6 +19,7 @@
 
 #include "SBID.h"
 #include "SBModelAlbum.h"
+#include "SBDialogSelectSongAlbum.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "SBModelPerformer.h"
@@ -55,10 +57,10 @@ SonglistScreenHandler::activateTab(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO << id << id.tabID;
     st.debugShow("SonglistScreenHandler:activateTab");
+    currentSaveButton=NULL;
 
     //	set focus on searchEdit
     const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.searchEdit->setFocus();
 
     //	Check parameters
     if(id.sb_item_type==SBID::sb_type_invalid)
@@ -67,21 +69,39 @@ SonglistScreenHandler::activateTab(const SBID& id)
         return id;
     }
 
+    //	Disable all edit/edit menus
+    QAction* editSong=mw->ui.menuEditEditSong;
+    editSong->setEnabled(0);
+
+    //
     QWidget* tab=NULL;
     SBID result;
 
     while(mw->ui.songlistTab->currentIndex()!=-1)
     {
-        qDebug() << SB_DEBUG_INFO;
         mw->ui.songlistTab->removeTab(0);
     }
 
+    qDebug() << SB_DEBUG_INFO << id.isEdit;
+    bool isEdit=id.isEdit;
     switch(id.sb_item_type)
     {
     case SBID::sb_type_song:
-        tab=mw->ui.tabSongDetail;
-        result=populateSongDetail(id);
-        mw->ui.tabSongDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
+        if(isEdit)
+        {
+            tab=mw->ui.tabSongEdit;
+            result=populateSongDetailEdit(id);
+            editSong->setEnabled(0);	//	 :)
+            qDebug() << SB_DEBUG_INFO << result;
+        }
+        else
+        {
+            tab=mw->ui.tabSongDetail;
+            result=populateSongDetail(id);
+            mw->ui.tabSongDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
+            editSong->setEnabled(1);
+            qDebug() << SB_DEBUG_INFO << result;
+        }
         break;
 
     case SBID::sb_type_performer:
@@ -113,12 +133,63 @@ SonglistScreenHandler::activateTab(const SBID& id)
         qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type;
     }
 
+    if(result.sb_item_id==-1 && result.sb_item_type!=SBID::sb_type_allsongs && result.sb_item_type!=SBID::sb_type_songsearch)
+    {
+        qDebug() << SB_DEBUG_INFO << result;
+        QMessageBox msgBox;
+        msgBox.setText("SonglistScreenHandler::activateTab:undefined result");
+        msgBox.exec();
+
+        //	Go to previous screen first
+        qDebug() << SB_DEBUG_INFO << result;
+        this->tabBackward();
+
+        //	Remove all from screenStack with requested ID.
+        qDebug() << SB_DEBUG_INFO << id;
+        this->removeFromScreenStack(id);
+
+        return result;
+    }
+    if(isEdit==0)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        //	Only set focus on search when not in edit mode.
+        mw->ui.searchEdit->setEnabled(1);
+        mw->ui.searchEdit->setFocus();
+        mw->ui.searchEdit->setText(id.searchCriteria);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        mw->ui.searchEdit->setEnabled(0);
+    }
 
     qDebug() << SB_DEBUG_INFO << result;
-    mw->ui.searchEdit->setText(id.searchCriteria);
-    qDebug() << SB_DEBUG_INFO;
     mw->ui.songlistTab->insertTab(0,tab,QString(""));
-    qDebug() << SB_DEBUG_INFO;
+
+    //	Enable/disable forward/back buttons
+    bool activateBackButton;
+    bool activateForwardButton;
+
+    if(st.getCurrentScreenID()==0)
+    {
+        activateBackButton=0;
+    }
+    else
+    {
+        activateBackButton=1;
+    }
+    if(st.getCurrentScreenID()<st.getScreenCount()-1)
+    {
+        activateForwardButton=1;
+    }
+    else
+    {
+        activateForwardButton=0;
+    }
+
+    mw->ui.buttonBackward->setEnabled(activateBackButton);
+    mw->ui.buttonForward->setEnabled(activateForwardButton);
 
     return result;
 }
@@ -141,29 +212,6 @@ SonglistScreenHandler::moveTab(int direction)
     activateTab(id);
     qDebug() << SB_DEBUG_INFO;
 
-    bool activateBackButton;
-    bool activateForwardButton;
-
-    if(st.getCurrentScreenID()==0)
-    {
-        activateBackButton=0;
-    }
-    else
-    {
-        activateBackButton=1;
-    }
-    if(st.getCurrentScreenID()<st.getScreenCount()-1)
-    {
-        activateForwardButton=1;
-    }
-    else
-    {
-        activateForwardButton=0;
-    }
-
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.buttonBackward->setEnabled(activateBackButton);
-    mw->ui.buttonForward->setEnabled(activateForwardButton);
 }
 
 ///
@@ -177,7 +225,7 @@ void
 SonglistScreenHandler::openScreenByID(SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << id;
-    st.debugShow("SonglistScreenHandler:150");
+    st.debugShow("openScreenByID");
     SBID result;
 
     if(id.sb_item_type==SBID::sb_type_invalid)
@@ -197,6 +245,7 @@ SonglistScreenHandler::openScreenByID(SBID &id)
     }
 
     result=activateTab(id);
+    qDebug() << SB_DEBUG_INFO << result.sb_item_type << result.searchCriteria << result.isEdit;
     if(result.sb_item_type!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
     {
         //	CWIP: add in new method, add flags to SBID::sb_type to filter out
@@ -206,29 +255,15 @@ SonglistScreenHandler::openScreenByID(SBID &id)
         st.pushScreen(result);
     }
     qDebug() << SB_DEBUG_INFO;
-
-    const MainWindow* mw=Context::instance()->getMainWindow();
-
-    if(st.getScreenCount()>1)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        mw->ui.buttonBackward->setEnabled(1);
-    }
-    qDebug() << SB_DEBUG_INFO;
-    st.debugShow("SonglistScreenHandler:178");
-    qDebug() << SB_DEBUG_INFO;
 }
 
 void
 SonglistScreenHandler::filterSongs(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << id;
-
     QString labelAllSongDetailAllSongsText="Your Songs";
     QString labelAllSongDetailNameText="All Songs";
 
     //	Apply filter here
-    qDebug() << SB_DEBUG_INFO << id;
     QRegExp re;
     MainWindow* mw=Context::instance()->getMainWindow();
     QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
@@ -236,12 +271,10 @@ SonglistScreenHandler::filterSongs(const SBID &id)
 
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
-    qDebug() << SB_DEBUG_INFO << id;
     QString filter=id.searchCriteria;
     re=QRegExp();
     if(filter.length()>0)
     {
-        qDebug() << SB_DEBUG_INFO << id;
         filter.replace(QRegExp("^\\s+")," "); //	replace multiple ws with 1 space
         filter.replace(" ",")(?=[^\r\n]*");	  //	use lookahead to match all criteria
         filter="^(?=[^\r\n]*"+filter+")[^\r\n]*$";
@@ -251,13 +284,9 @@ SonglistScreenHandler::filterSongs(const SBID &id)
         labelAllSongDetailAllSongsText="Search Results for:";
         labelAllSongDetailNameText=id.searchCriteria;
     }
-    qDebug() << SB_DEBUG_INFO << id;
     mw->ui.labelAllSongDetailAllSongs->setText(labelAllSongDetailAllSongsText);
-    qDebug() << SB_DEBUG_INFO << id;
     mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);
-    qDebug() << SB_DEBUG_INFO << m->rowCount();
     m->setFilterRegExp(re);
-    qDebug() << SB_DEBUG_INFO << id;
 }
 
 //	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
@@ -312,6 +341,34 @@ SonglistScreenHandler::getSBIDSelected(const QModelIndex &idx)
     return id;
 }
 
+void
+SonglistScreenHandler::handleEnterKey()
+{
+    qDebug() << SB_DEBUG_INFO;
+    if(currentSaveButton)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        currentSaveButton->click();
+    }
+}
+
+void
+SonglistScreenHandler::handleEscapeKey()
+{
+    SBID currentID=st.currentScreen();
+    if(currentID.isEdit)
+    {
+        //	If current screen is in edit mode, go back to previous screen
+        st.popScreen();
+        currentID=st.currentScreen();
+        activateTab(currentID);
+    }
+    else
+    {
+        showSonglist();
+    }
+}
+
 SBID
 SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 {
@@ -336,6 +393,11 @@ SonglistScreenHandler::populateAlbumDetail(const SBID &id)
 
     //	Get detail
     SBID result=SBModelAlbum::getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
     mw->ui.labelAlbumDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -418,6 +480,11 @@ SonglistScreenHandler::populatePerformerDetail(const SBID &id)
 
     //	Get detail
     SBID result=mp->getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
     mw->ui.labelPerformerDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -567,6 +634,11 @@ SonglistScreenHandler::populatePlaylistDetail(const SBID& id)
     SBModelPlaylist pl;
 
     SBID result=pl.getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
@@ -608,7 +680,14 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
             this, SLOT(tabBarClicked(int)));
 
     //	Get detail
+    qDebug() << SB_DEBUG_INFO << id.sb_item_id;
     SBID result=SBModelSong::getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
+    qDebug() << SB_DEBUG_INFO << result.sb_item_id;
     mw->ui.labelSongDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -691,6 +770,49 @@ SonglistScreenHandler::populateSongDetail(const SBID& id)
     //	Update current eligible tabID
     result.tabID=mw->ui.tabSongDetailLists->currentIndex();
 
+    qDebug() << SB_DEBUG_INFO << result.sb_item_id;
+    return result;
+}
+
+SBID
+SonglistScreenHandler::populateSongDetailEdit(const SBID& id)
+{
+    qDebug() << SB_DEBUG_INFO;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    qDebug() << SB_DEBUG_INFO;
+
+    //	Get detail
+    SBID result=SBModelSong::getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
+    result.isEdit=1;
+
+    mw->ui.songEditTitle->setText(id.songTitle);
+    mw->ui.songEditPerformer->setText(id.performerName);
+    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(id.year));
+    mw->ui.songEditNotes->setText(id.notes);
+    mw->ui.songEditLyrics->setText(id.lyrics);
+
+    qDebug() << SB_DEBUG_INFO << id.performerName;
+    qDebug() << SB_DEBUG_INFO << mw->ui.songEditPerformer->text();
+
+    //	Disable tmpButtons
+    mw->ui.pbNA2->hide();
+
+    //	Set correct focus
+    mw->ui.songEditTitle->selectAll();
+    mw->ui.songEditTitle->setFocus();
+
+    currentSaveButton=mw->ui.pbSongEditSave;
+    connect(currentSaveButton, SIGNAL(clicked(bool)),
+            this, SLOT(saveSongDetail()));
+    connect(mw->ui.pbCancel, SIGNAL(clicked(bool)),
+            this, SLOT(closeCurrentTab()));
+
+    qDebug() << SB_DEBUG_INFO << result.isEdit;
     return result;
 }
 
@@ -745,33 +867,28 @@ SonglistScreenHandler::refreshTabIfCurrent(const SBID &id)
 void
 SonglistScreenHandler::removeFromScreenStack(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << id;
 
-    st.debugShow("575");
+    st.debugShow("892");
     st.removeForward();
-    st.debugShow("577");
+    st.debugShow("894");
     SBID currentScreenID=st.currentScreen();
+
+    //	Move currentScreen one back, until it is on that is not current
     while(currentScreenID==id)
     {
         tabBackward();	//	move display one back
         currentScreenID=st.currentScreen();	//	find out what new current screen is.
         st.popScreen();	//	remove top screen
     }
-    st.debugShow("585");
+    st.debugShow("904");
 
-    //	if current screen is song list, we'll need to pop this off the stack as well.
-    while(currentScreenID.sb_item_type==SBID::sb_type_allsongs)
-    {
-        currentScreenID=st.currentScreen();	//	find out what new current screen is.
-        st.popScreen();	//	remove top screen
-    }
-
-    st.debugShow("594");
+    //	Now remove all instances of requested to be removed
     st.removeScreen(id);
+    st.debugShow("908");
 
-    //	and show the song list.
-    showSonglist();
-    st.debugShow("after removeFromScreenStack");
+    //	Activate the current screen
+    activateTab(currentScreenID);
 }
 
 void
@@ -862,6 +979,15 @@ SonglistScreenHandler::applySonglistFilter()
 }
 
 void
+SonglistScreenHandler::closeCurrentTab()
+{
+    st.debugShow("closeCurrentTab()");
+    st.removeCurrentScreen();
+    SBID id=st.currentScreen();
+    activateTab(id);
+}
+
+void
 SonglistScreenHandler::deletePlaylistItem()
 {
     qDebug() << SB_DEBUG_INFO;
@@ -900,6 +1026,16 @@ SonglistScreenHandler::movePlaylistItem(const SBID& fromID, const SBID &toID)
     SBModelPlaylist *mpl=new SBModelPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
+}
+
+void
+SonglistScreenHandler::editSong()
+{
+    qDebug() << SB_DEBUG_INFO;
+
+    SBID currentSongID=st.currentScreen();
+    currentSongID.isEdit=1;
+    openScreenByID(currentSongID);
 }
 
 void
@@ -1026,6 +1162,223 @@ SonglistScreenHandler::refreshPerformerNews()
         mw->ui.tabPerformerDetailLists->setTabEnabled(3,1);
         mw->ui.performerDetailNewsPage->setHtml(html);
     }
+}
+
+void
+SonglistScreenHandler::saveSongDetail()
+{
+    //	Test cases:
+    //	[simple rename] Bad - U2: change to Badaa. Should be simple renames.
+    //	[simple rename w/ case] Badaa - U2 to BadaA. Should take into account case change.
+    //	[merge song (within performer)] Badaa - U2 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
+    //	[switch original performer to non-original performer] Dancing Barefoot: change from Patti Smith to U2 and back
+    //	[merge to different performer] "C" Moon Cry Like A Baby/Simple Minds -> "40"/U2
+    //	[switch original performer to completely different performer] "C" Moon Cry Like A Baby: Simple Minds -> U2
+    //
+    //	To test:
+    //	On postgres
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    SBID orgSongID=SBModelSong::getDetail(st.currentScreen());
+    SBID newSongID=orgSongID;
+
+    if(orgSongID.sb_item_id==-1 || newSongID.sb_item_id==-1)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("SonglistScreenHandler::saveSongDetail:old or new song undefined");
+        msgBox.exec();
+        return;
+    }
+
+    if(orgSongID.isEdit==0)
+    {
+        qDebug() << SB_DEBUG_INFO << "isEdit flag not set";
+        return;
+    }
+
+    QString editTitle=mw->ui.songEditTitle->text();
+    QString editPerformer=mw->ui.songEditPerformer->text();
+    int editYearOfRelease=mw->ui.songEditYearOfRelease->text().toInt();
+    QString editNotes=mw->ui.songEditNotes->text();
+    QString editLyrics=mw->ui.songEditLyrics->toPlainText();
+    bool hasCaseChange=0;
+
+    st.debugShow("saveSongDetail:start");
+    qDebug() << SB_DEBUG_INFO << editTitle << editPerformer;
+    qDebug() << SB_DEBUG_INFO << orgSongID.songTitle << newSongID.performerName;
+    qDebug() << SB_DEBUG_INFO << newSongID;
+
+    if(editPerformer==newSongID.performerName)
+    {
+        qDebug() << SB_DEBUG_INFO;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << editPerformer << newSongID.performerName;
+    }
+
+    //	If only case is different in songTitle, save the new title as is.
+    if((editTitle.toLower()==newSongID.songTitle.toLower()) &&
+        (editTitle!=newSongID.songTitle) &&
+        (editPerformer==newSongID.performerName))
+    {
+        qDebug() << SB_DEBUG_INFO;
+        newSongID.sb_item_id=-1;
+        newSongID.songTitle=editTitle;
+        hasCaseChange=1;	//	Identify to saveSong that title has changed.
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        Common::toTitleCase(editTitle);
+        Common::toTitleCase(editPerformer);
+        hasCaseChange=0;
+    }
+    qDebug() << SB_DEBUG_INFO << hasCaseChange;
+
+    //	Handle performer edits
+    if(editPerformer!=newSongID.performerName &&
+        hasCaseChange==0)
+    {
+        SBID selectedPerformer;
+        selectedPerformer.sb_item_type=SBID::sb_type_performer;
+        selectedPerformer.performerName=editPerformer;
+
+        qDebug() << SB_DEBUG_INFO << editPerformer << "!=" << newSongID.performerName << newSongID.sb_performer_id;
+        SBModelPerformer* p=new SBModelPerformer();
+        SBSqlQueryModel* performerMatches=p->matchPerformer(newSongID, editPerformer);
+        qDebug() << SB_DEBUG_INFO << performerMatches->rowCount();
+        qDebug() << SB_DEBUG_INFO << performerMatches->record(1).value(0).toInt();
+
+        if(performerMatches->rowCount()>1)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            if(performerMatches->rowCount()>=2 &&
+                performerMatches->record(1).value(0).toInt()==1)
+            {
+                //	Dataset indicates an exact match if the 2nd record identifies an exact match.
+                selectedPerformer.sb_item_id=performerMatches->record(1).value(1).toInt();
+                selectedPerformer.performerName=performerMatches->record(1).value(2).toString();
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO;
+                //	Dataset has at least two records, of which the 2nd one is an soundex match,
+                //	display pop-up
+                SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(editPerformer,newSongID,performerMatches);
+                pu->exec();
+                selectedPerformer=pu->getSBID();
+
+                qDebug() << SB_DEBUG_INFO << pu->hasSelectedItem();
+
+                //	Go back to screen if no item has been selected
+                if(pu->hasSelectedItem()==0)
+                {
+                    return;
+                }
+            }
+
+            //	Update field
+            mw->ui.songEditPerformer->setText(selectedPerformer.performerName);
+            qDebug() << SB_DEBUG_INFO << "selected performer:" << selectedPerformer.sb_item_id << selectedPerformer.performerName;
+        }
+
+        if(selectedPerformer.sb_item_id==-1)
+        {
+            //	Save new performer if new
+            qDebug() << SB_DEBUG_INFO << "save new performer:" << selectedPerformer.sb_item_id << selectedPerformer.performerName;
+            p->savePerformer(selectedPerformer);
+        }
+        newSongID.sb_performer_id=selectedPerformer.sb_item_id;
+        newSongID.performerName=selectedPerformer.performerName;
+    }
+
+    //	Handle songtitle edits
+    if(editTitle!=newSongID.songTitle &&
+        hasCaseChange==0)
+    {
+        SBID selectedSongID;
+        selectedSongID.sb_item_type=SBID::sb_type_song;
+        selectedSongID.songTitle=editTitle;
+
+        qDebug() << SB_DEBUG_INFO << editTitle << "!=" << newSongID.songTitle << newSongID.sb_song_id;
+        SBSqlQueryModel* songMatches=SBModelSong::matchSongByPerformer(newSongID, editTitle);
+
+        qDebug() << SB_DEBUG_INFO << songMatches->rowCount();
+
+        if(songMatches->rowCount()>1)
+        {
+
+            if(songMatches->rowCount()>=2 &&
+                songMatches->record(1).value(0).toInt()==1
+            )
+            {
+                qDebug() << SB_DEBUG_INFO;
+                selectedSongID.sb_item_id=songMatches->record(1).value(1).toInt();
+                selectedSongID.songTitle=songMatches->record(1).value(2).toString();
+            }
+            else
+            {
+                SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectSongByPerformer(editTitle,newSongID,songMatches);
+                pu->exec();
+
+                selectedSongID=pu->getSBID();
+                qDebug() << SB_DEBUG_INFO;
+
+                //	Go back to screen if no item has been selected
+                if(pu->hasSelectedItem()==0)
+                {
+                    return;
+                }
+            }
+
+            //	Update field
+            mw->ui.songEditTitle->setText(selectedSongID.songTitle);
+        }
+
+        //	Update newSongID
+        newSongID.sb_item_id=selectedSongID.sb_item_id;
+        newSongID.songTitle=selectedSongID.songTitle;
+        qDebug() << SB_DEBUG_INFO << "selected song" << newSongID.sb_item_id << newSongID.songTitle;
+    }
+    newSongID.year=editYearOfRelease;
+    newSongID.notes=editNotes;
+    newSongID.lyrics=editLyrics;
+
+    if(orgSongID!=newSongID ||
+        orgSongID.year!=newSongID.year ||
+        orgSongID.notes!=newSongID.notes ||
+        orgSongID.lyrics!=newSongID.lyrics ||
+        hasCaseChange==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+
+        bool successFlag=SBModelSong::saveSong(orgSongID,newSongID);
+
+        if(successFlag==1)
+        {
+            QString updateText=QString("Saved song %1%2%3.")
+                .arg(QChar(96))      //	1
+                .arg(newSongID.songTitle)   //	2
+                .arg(QChar(180));    //	3
+            Context::instance()->getController()->updateStatusBar(updateText);
+
+            if(orgSongID!=newSongID)
+            {
+                //	Update models!
+                Context::instance()->getController()->refreshModels();
+            }
+        }
+
+        //	Update screenstack
+        newSongID.isEdit=0;
+        st.updateSBIDInStack(newSongID);
+    }
+
+    //	Close screen
+    this->closeCurrentTab();
+
+
+    st.debugShow("saveSongDetail:end");
 }
 
 void
@@ -1198,11 +1551,22 @@ SonglistScreenHandler::tableViewCellClicked(const QModelIndex& idx)
 void
 SonglistScreenHandler::init()
 {
+    st.clear();
+    currentNews.clear();
+    relatedItems.clear();
+    currentSaveButton=NULL;
+
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
     //	Delete playlist
     deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
     deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
     connect(deletePlaylistItemAction, SIGNAL(triggered()),
             this, SLOT(deletePlaylistItem()));
+
+    //	Set up menus
+    connect(mw->ui.menuEditEditSong, SIGNAL(triggered(bool)),
+             this, SLOT(editSong()));
 }
 
 void

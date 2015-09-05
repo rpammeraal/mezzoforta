@@ -37,6 +37,7 @@ public:
     explicit Controller(int argc, char* argv[], QApplication* napp);
     ~Controller();
     bool initSuccessFull() const;
+    void refreshModels();
 
 signals:
     void recalculateAllPlaylistDurations();

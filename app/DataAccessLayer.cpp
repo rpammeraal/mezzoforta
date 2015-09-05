@@ -1,9 +1,11 @@
 #include "DataAccessLayer.h"
 
-#include <SBSqlQueryModel.h>
-#include <QMessageBox>
-#include <QSettings>
+#include <QApplication>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <QSettings>
+
 
 #include "Common.h"
 #include "Context.h"
@@ -11,6 +13,7 @@
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
 #include "SBModelGenrelist.h"
+#include <SBSqlQueryModel.h>
 
 //	Singleton
 int dalCOUNT;
@@ -42,6 +45,76 @@ DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
     qDebug() << SB_DEBUG_INFO << "******************************************* CCTOR ID" << c.dalID << " TO " << this->dalID;
 }
 
+DataAccessLayer::~DataAccessLayer()
+{
+
+    qDebug() << SB_DEBUG_INFO << "******************************************* DTOR ID=" << dalID;
+}
+
+bool
+DataAccessLayer::executeBatch(const QStringList &allQueries)
+{
+    //	Perform all queries in one transaction
+    QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
+    QSqlError r;
+    QString errorMsg;
+    bool successFlag=1;
+    QString q;
+    int currentValue=0;
+    int maxValue=allQueries.count()+1;
+    QProgressDialog pd("Saving",QString(),0,maxValue);
+    pd.setWindowModality(Qt::WindowModal);
+    pd.show();
+    pd.raise();
+    pd.activateWindow();
+
+    successFlag=db.transaction();
+    if(successFlag==1)
+    {
+        for(int i=0;i<allQueries.size() && successFlag==1;i++)
+        {
+            q=allQueries.at(i);
+            this->customize(q);
+
+            qDebug() << SB_DEBUG_INFO << q;
+
+            QSqlQuery runQuery(q,db);
+            //successFlag=runQuery.exec();
+            //if(successFlag==0)
+            //{
+                //r=runQuery.lastError();
+                //errorMsg=q;
+                //qDebug() << SB_DEBUG_INFO << r;
+            //}
+            pd.setValue(++currentValue);
+            QCoreApplication::processEvents();
+
+        }
+
+        if(successFlag==1)
+        {
+            successFlag=db.commit();
+            qDebug() << SB_DEBUG_INFO << "Attempté to committé";
+        }
+        if(successFlag==0)
+        {
+            r=db.lastError();
+            qDebug() << SB_DEBUG_INFO << "Rollback time";
+            db.rollback();
+        }
+    }
+    pd.setValue(maxValue);
+    if(successFlag==0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Error executing: "+errorMsg);
+        msgBox.setInformativeText(r.text());
+        msgBox.exec();
+    }
+    qDebug() << SB_DEBUG_INFO << "SuccessFlag:" << successFlag;
+    return successFlag;
+}
+
 DataAccessLayer&
 DataAccessLayer::operator=(const DataAccessLayer& c)
 {
@@ -49,12 +122,6 @@ DataAccessLayer::operator=(const DataAccessLayer& c)
     init(c);
 
     return *this;
-}
-
-DataAccessLayer::~DataAccessLayer()
-{
-
-    qDebug() << SB_DEBUG_INFO << "******************************************* DTOR ID=" << dalID;
 }
 
 QDebug
@@ -111,7 +178,7 @@ DataAccessLayer::customize(QString &s) const
 }
 
 QSqlQueryModel*
-DataAccessLayer::getCompleterModel()
+DataAccessLayer::getCompleterModelAll()
 {
     QString query=
         "SELECT DISTINCT "
@@ -139,6 +206,52 @@ DataAccessLayer::getCompleterModel()
             "'SB_PERFORMER_TYPE' AS SB_TYPE_ID "
         "FROM "
             "___SB_SCHEMA_NAME___artist a "
+        "ORDER BY 1 ";
+
+    this->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
+    QSqlQueryModel* model = new QSqlQueryModel();
+    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
+
+    while (model->canFetchMore())
+    {
+        model->fetchMore();
+    }
+
+    return model;
+}
+
+QSqlQueryModel*
+DataAccessLayer::getCompleterModelPerformer()
+{
+    QString query=
+        "SELECT DISTINCT "
+            "a.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist a "
+        "ORDER BY 1 ";
+
+    this->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
+    QSqlQueryModel* model = new QSqlQueryModel();
+    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
+
+    while (model->canFetchMore())
+    {
+        model->fetchMore();
+    }
+
+    return model;
+}
+
+QSqlQueryModel*
+DataAccessLayer::getCompleterModelSong()
+{
+    QString query=
+        "SELECT DISTINCT "
+            "s.title "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
         "ORDER BY 1 ";
 
     this->customize(query);

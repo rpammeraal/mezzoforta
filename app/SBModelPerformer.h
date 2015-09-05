@@ -20,6 +20,10 @@ public:
     SBSqlQueryModel* getAllCharts(const SBID& id);
     SBSqlQueryModel* getAllSongs(const SBID& id);
     SBSqlQueryModel* getRelatedPerformers(const SBID& id);
+    SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);
+    int savePerformer(SBID& id);
+
+    static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
 public slots:
     void updateHomePage(const SBID& id);

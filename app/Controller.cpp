@@ -23,6 +23,7 @@
 #include "SBModelPlaylist.h"
 #include "SBModelGenrelist.h"
 #include "SBID.h"
+#include "SBModelPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "ScreenStack.h"
@@ -54,6 +55,68 @@ bool
 Controller::initSuccessFull() const
 {
     return _initSuccessFull;
+}
+
+void
+Controller::refreshModels()
+{
+    //	Allows some data models to be refreshed
+    MainWindow* mw=Context::instance()->getMainWindow();
+
+    //	Songlist
+    SBSqlQueryModel* sm=SBModelSong::getAllSongs();
+    QList<bool> dragableColumns;
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0;
+    sm->setDragableColumns(dragableColumns);
+    qDebug() << SB_DEBUG_INFO;
+
+    slP=new QSortFilterProxyModel();
+    slP->setSourceModel(sm);
+    mw->ui.allSongsList->setModel(slP);
+    qDebug() << SB_DEBUG_INFO;
+
+    //	Completers
+    QCompleter* completer;
+
+    //		A.	All items
+    completer=new QCompleter(mw);
+    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelAll());
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    completer->setFilterMode(Qt::MatchStartsWith);
+    mw->ui.searchEdit->setCompleter(completer);
+    qDebug() << SB_DEBUG_INFO;
+
+    //		B.	Songs only
+    completer=new QCompleter(mw);
+    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelSong());
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    completer->setFilterMode(Qt::MatchStartsWith);
+    mw->ui.songEditTitle->setCompleter(completer);
+
+    //		C.	Performers only
+    completer=new QCompleter(mw);
+    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelPerformer());
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    completer->setFilterMode(Qt::MatchStartsWith);
+    mw->ui.songEditPerformer->setCompleter(completer);
+
+    //	SEARCH
+    QCompleter* c=mw->ui.searchEdit->completer();
+    connect(
+        c, SIGNAL(activated(const QModelIndex&)),
+        this, SLOT(openItemFromCompleter(const QModelIndex&)));
+    connect(
+        mw->ui.searchEdit,SIGNAL(returnPressed()),
+        Context::instance()->getSonglistScreenHandler(),SLOT(applySonglistFilter()));
+    connect(
+        c, SIGNAL(activated(QString)),
+        mw->ui.searchEdit, SLOT(clear()),
+        Qt::QueuedConnection);	//	this will clear the search box
+
 }
 
 //SLOTS:
@@ -169,19 +232,31 @@ Controller::updateStatusBar(const QString &s)
 void
 Controller::keyPressEvent(QKeyEvent *event)
 {
+    qDebug() << SB_DEBUG_INFO;
+    if(event==NULL)
+    {
+        qDebug() << SB_DEBUG_NPTR << "*event";
+        return;
+    }
     MainWindow* mw=Context::instance()->getMainWindow();
+    qDebug() << SB_DEBUG_INFO;
+    if(event->key()==0x01000004 || event->key()==0x01000005)
+    {
+    qDebug() << SB_DEBUG_INFO;
+        //	Escape return key
+        Context::instance()->getSonglistScreenHandler()->handleEnterKey();
+
+    }
     if(event->key()==0x1000000)
     {
+        //	Catch escape key
         if(currentFilter.length()>0)
         {
-            qDebug() << SB_DEBUG_INFO;
             clearSearchFilter();
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO;
-            //	Catch escape key, blank searchEdit, playlist, genres
-            Context::instance()->getSonglistScreenHandler()->showSonglist();
+            Context::instance()->getSonglistScreenHandler()->handleEscapeKey();
             qDebug() << SB_DEBUG_INFO;
         }
     }
@@ -302,6 +377,9 @@ Controller::openMainWindow(bool startup)
 
         mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
 
+        SBModelSong::updateSoundexFields();
+        SBModelPerformer::updateSoundexFields();
+
         _resetStatusBar();
 
         if(startup)
@@ -321,30 +399,10 @@ Controller::openMainWindow(bool startup)
 void
 Controller::setupModels()
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO;
 
-    //	songlist
-    SBSqlQueryModel* sm=SBModelSong::getAllSongs();
-    QList<bool> dragableColumns;
-    dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0;
-    sm->setDragableColumns(dragableColumns);
-    qDebug() << SB_DEBUG_INFO;
-
-    slP=new QSortFilterProxyModel();
-    slP->setSourceModel(sm);
-    mw->ui.allSongsList->setModel(slP);
-    qDebug() << SB_DEBUG_INFO;
-
-    //	completer
-    QCompleter* completer=new QCompleter(mw);
-    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModel());
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    completer->setFilterMode(Qt::MatchStartsWith);
-    mw->ui.searchEdit->setCompleter(completer);
-    qDebug() << SB_DEBUG_INFO;
+    refreshModels();
 
     ///	LeftColumnChooser
     LeftColumnChooser* lcc=new LeftColumnChooser();
@@ -393,20 +451,6 @@ Controller::setupUI()
     //		capture double click to open detail page
     connect(mw->ui.allSongsList, SIGNAL(clicked(QModelIndex)),
             Context::instance()->getSonglistScreenHandler(),SLOT(openSonglistItem(QModelIndex)));
-
-    ///	SEARCH
-
-    QCompleter* c=mw->ui.searchEdit->completer();
-    connect(
-        c, SIGNAL(activated(const QModelIndex&)),
-        this, SLOT(openItemFromCompleter(const QModelIndex&)));
-    connect(
-        mw->ui.searchEdit,SIGNAL(returnPressed()),
-        Context::instance()->getSonglistScreenHandler(),SLOT(applySonglistFilter()));
-    connect(
-        c, SIGNAL(activated(QString)),
-        mw->ui.searchEdit, SLOT(clear()),
-        Qt::QueuedConnection);	//	this will clear the search box
 
     //	drag & drop revisited.
     QTableView* allSongsList=mw->ui.allSongsList;

@@ -52,6 +52,8 @@ ScreenStack::pushScreen(const SBID& id)
     else
     {
         SBID current=currentScreen();
+        qDebug() << SB_DEBUG_INFO << current << current.isEdit;
+        qDebug() << SB_DEBUG_INFO << id << id.isEdit;
         if(!(current==id))
         {
             doPush=1;
@@ -131,6 +133,19 @@ ScreenStack::getScreenCount() const
     return stack.length();
 }
 
+//	Remove the current screen from stack.
+void
+ScreenStack::removeCurrentScreen()
+{
+    debugShow("removeCurrentScreen:before");
+    if(stack.count()>1)
+    {
+        stack.removeLast();
+        currentScreenID--;
+    }
+    debugShow("removeCurrentScreen:end");
+}
+
 void
 ScreenStack::removeForward()
 {
@@ -176,6 +191,26 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     }
 }
 
+///
+/// \brief ScreenStack::updateSBIDInStack
+/// \param id
+///
+/// Update all instances of id in entire stack.
+/// Mostly used after saving an item.
+///
+void
+ScreenStack::updateSBIDInStack(const SBID &id)
+{
+    for(int i=0;i<stack.size();i++)
+    {
+        if(stack.at(i).sb_item_id==id.sb_item_id &&
+            stack.at(i).sb_item_type==id.sb_item_type)
+        {
+            stack.replace(i,id);
+        }
+    }
+}
+
 ///	PRIVATE
 void
 ScreenStack::init()
@@ -193,14 +228,16 @@ ScreenStack::debugShow(const QString& c)
     {
         for(int i=0; i<stack.size(); i++)
         {
+            QString isCurrent="";
             if(currentScreenID==i)
             {
-                qDebug() << SB_DEBUG_INFO << "***CURRENT***" << i << stack.at(i) << "tabID=" << stack.at(i).tabID;
+                isCurrent="***CURRENT***";
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO << "             " << i << stack.at(i) << "tabID=" << stack.at(i).tabID;
+                isCurrent="             ";
             }
+            qDebug() << SB_DEBUG_INFO << isCurrent << i << stack.at(i) << "tabID=" << stack.at(i).tabID << "isEdit:" << stack.at(i).isEdit;
         }
     }
     else

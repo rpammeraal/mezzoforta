@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBModelAlbum.h"
@@ -14,13 +16,14 @@ SBModelAlbum::getDetail(const SBID& id)
 
     QString q=QString
     (
-        "SELECT "
+        "SELECT DISTINCT "
             "r.title , "
             "r.genre, "
             "r.year, "
             "r.notes, "
             "a.name, "
-            "a.artist_id "
+            "a.artist_id, "
+            "a.mbid "
         "FROM "
             "___SB_SCHEMA_NAME___record r "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -31,17 +34,25 @@ SBModelAlbum::getDetail(const SBID& id)
     dal->customize(q);
 
     QSqlQuery query(q,db);
-    query.next();
 
     result.sb_item_type   =SBID::sb_type_album;
-    result.sb_item_id     =id.sb_item_id;
-    result.sb_album_id    =id.sb_item_id;
-    result.performerName  =query.value(4).toString();
-    result.albumTitle     =query.value(0).toString();
-    result.year           =query.value(2).toInt();
-    result.genre          =query.value(1).toString();
-    result.notes          =query.value(3).toString();
-    result.sb_performer_id=query.value(5).toInt();
+
+    if(query.next())
+    {
+        result.sb_item_id     =id.sb_item_id;
+        result.sb_album_id    =id.sb_item_id;
+        result.performerName  =query.value(4).toString();
+        result.albumTitle     =query.value(0).toString();
+        result.year           =query.value(2).toInt();
+        result.genre          =query.value(1).toString();
+        result.notes          =query.value(3).toString();
+        result.sb_performer_id=query.value(5).toInt();
+        result.sb_mbid        =query.value(6).toInt();
+    }
+    else
+    {
+        result.sb_item_id=-1;
+    }
 
     qDebug() << SB_DEBUG_INFO << "result.wiki=" << result.wiki;
     return result;

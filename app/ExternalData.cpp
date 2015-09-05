@@ -12,6 +12,8 @@
 #include "Common.h"
 #include "ExternalData.h"
 
+#include <QMessageBox>
+
 ExternalData::ExternalData(QObject *parent) : QObject(parent)
 {
     init();
@@ -137,11 +139,9 @@ ExternalData::loadPerformerData(const SBID id)
 void
 ExternalData::loadSongData(const SBID& id)
 {
-    qDebug() << SB_DEBUG_INFO << id << id.wiki;
     currentID=id;
     if(id.wiki.length()>0)
     {
-        qDebug() << SB_DEBUG_INFO;
         songWikipediaPageRetrieved=1;
         emit songWikipediaPageAvailable(id.wiki);
     }
@@ -155,8 +155,10 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
 
     if(r->error()==QNetworkReply::NoError)
     {
+    qDebug() << SB_DEBUG_INFO;
         if(r->open(QIODevice::ReadOnly))
         {
+    qDebug() << SB_DEBUG_INFO;
             QByteArray a=r->readAll();
             QString s=QString(a.data());
 
@@ -210,6 +212,7 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
                         }
                     }
 
+                    qDebug() << SB_DEBUG_INFO << URL;
                     if(currentID.fuzzyMatch(pm)==1)
                     {
                         QNetworkAccessManager* n=new QNetworkAccessManager(this);
@@ -224,23 +227,26 @@ ExternalData::albumCoverMetadataRetrievedAS(QNetworkReply *r)
             }
         }
     }
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setText(r->errorString());
+        messagebox.exec();
+    }
 }
 
+//	TESTED
 void
 ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO;
     QString matchAlbumName=Common::removeNonAlphanumeric(currentID.albumTitle).toLower();
     QString foundAlbumName;
     allReviews.clear();
 
-    qDebug() << SB_DEBUG_INFO << r->error();
     if(r->error()==QNetworkReply::NoError)
     {
-    qDebug() << SB_DEBUG_INFO;
         if(r->open(QIODevice::ReadOnly))
         {
-    qDebug() << SB_DEBUG_INFO;
             QByteArray a=r->readAll();
             QString s=QString(a.data());
 
@@ -250,26 +256,21 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull())
+            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull())
                 {
-                    QDomNode n=e.firstChild();
-
-                    while(!n.isNull())
+                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
                         if(!e.isNull())
                         {
-
-                            QDomNode n=e.firstChild();
-                            while(!n.isNull())
+                            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
@@ -279,9 +280,7 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
                                 }
                                 if(!e.isNull())
                                 {
-                                    QDomNode n=e.firstChild();
-
-                                    while(!n.isNull())
+                                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                                     {
                                         QDomElement e = n.toElement();
 
@@ -297,44 +296,52 @@ ExternalData::albumURLDataRetrievedMB(QNetworkReply *r)
                                             QString URL=e.text() + "&printable=yes";
                                             allReviews.append(e.text());
                                         }
-                                        n = n.nextSibling();
                                     }
                                 }
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     if(allReviews.count()>0)
     {
-        qDebug() << SB_DEBUG_INFO;
         emit albumReviewsAvailable(allReviews);
     }
 }
+
 void
 ExternalData::imagedataRetrieved(QNetworkReply *r)
 {
+        qDebug() << SB_DEBUG_INFO << r->url().toString();
     if(r->error()==QNetworkReply::NoError)
     {
-        QByteArray a=r->readAll();
-        if(a.count()>0)
+        qDebug() << SB_DEBUG_INFO;
+        if(r->open(QIODevice::ReadOnly))
         {
-            QPixmap image;
+            qDebug() << SB_DEBUG_INFO << r->bytesAvailable();
+            qDebug() << SB_DEBUG_INFO << r->canReadLine();
+            qDebug() << SB_DEBUG_INFO << r->isReadable();
+            qDebug() << SB_DEBUG_INFO << r->size();
+            QByteArray a=r->readAll();
+            qDebug() << SB_DEBUG_INFO << a.count();
+            if(a.count()>0)
+            {
+            qDebug() << SB_DEBUG_INFO;
+                QPixmap image;
 
-            //	Store in cache
-            image.loadFromData(a);
-            storeInCache(&a);
-            emit imageDataReady(image);
+                //	Store in cache
+                image.loadFromData(a);
+                storeInCache(&a);
+            qDebug() << SB_DEBUG_INFO;
+                emit imageDataReady(image);
+            }
         }
     }
 }
 
+//	TESTED
 void
 ExternalData::performerMBIDRetrieved(QNetworkReply *r)
 {
@@ -354,16 +361,14 @@ ExternalData::performerMBIDRetrieved(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull() && matchFound==0)
+            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
                 if(!e.isNull())
                 {
-                    QDomNode n=e.firstChild();
-                    while(!n.isNull() && matchFound==0)
+                    for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                     {
                         QString MBID;
 
@@ -372,8 +377,7 @@ ExternalData::performerMBIDRetrieved(QNetworkReply *r)
                         {
                             MBID=e.attribute("id");
 
-                            QDomNode n=e.firstChild();
-                            while(!n.isNull() && matchFound==0)
+                            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
                                 if(!e.isNull())
@@ -385,35 +389,24 @@ ExternalData::performerMBIDRetrieved(QNetworkReply *r)
                                             currentID.sb_mbid=MBID;
                                             matchFound=1;
                                         }
-                                        else
-                                        {
-//                                            qDebug() << SB_DEBUG_INFO
-//                                                     << "not a match:" << title
-//                                                     << "vs"
-//                                                     << Common::removeNonAlphanumeric(e.text().toLower());
-                                        }
                                     }
                                 }
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
     if(matchFound==1)
     {
         //	Recall now that sb_mbid is loaded
-        qDebug() << SB_DEBUG_INFO << currentID << currentID.sb_mbid;
         emit updatePerformerMBID(currentID);
         retrievePerformerMBID();
     }
-    qDebug() << SB_DEBUG_INFO << "matchFound=" << matchFound;
 }
 
+//	TESTED
 void
 ExternalData::performerImageRetrievedEN(QNetworkReply *r)
 {
@@ -426,7 +419,6 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
         if(r->open(QIODevice::ReadOnly))
         {
             QByteArray a=r->readAll();
-            QString s=QString(a.data());
 
             QDomDocument doc;
             QString errorMsg;
@@ -434,25 +426,21 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull() && matchFound==0)
+            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull() && e.tagName()=="images")
                 {
-                    QDomNode n=e.firstChild();
-
-                    while(!n.isNull() && matchFound==0)
+                    for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
                         if(!e.isNull())
                         {
-                            QDomNode n=e.firstChild();
-                            while(!n.isNull() && matchFound==0)
+                            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
@@ -462,13 +450,13 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
                                 }
                                 else if(!e.isNull())
                                 {
-                                    QDomNode n=e.firstChild();
-                                    while(!n.isNull() && matchFound==0)
+                                    for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                                     {
                                         QDomElement e = n.toElement();
 
                                         if(e.tagName()=="attribution" && e.text()!="myspace")
                                         {
+                                            qDebug() << SB_DEBUG_INFO << url;
                                             QNetworkAccessManager* m=new QNetworkAccessManager(this);
                                             connect(m, SIGNAL(finished(QNetworkReply *)),
                                                     this, SLOT(imagedataRetrieved(QNetworkReply*)));
@@ -476,21 +464,18 @@ ExternalData::performerImageRetrievedEN(QNetworkReply *r)
                                             m->get(QNetworkRequest(QUrl(url)));
                                             return;
                                         }
-                                        n = n.nextSibling();
                                     }
                                 }
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
 }
 
+//	TESTED
 void
 ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
 {
@@ -512,26 +497,23 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull() && matchFound==0)
+            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull() && e.tagName()=="news")
                 {
-                    QDomNode n=e.firstChild();
-                    while(!n.isNull())
+                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
                         if(!e.isNull() && e.tagName()=="news")
                         {
-                            QDomNode n=e.firstChild();
                             NewsItem item;
 
-                            while(!n.isNull())
+                            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
                                 if(e.tagName()=="url")
@@ -546,15 +528,11 @@ ExternalData::performerNewsRetrievedEN(QNetworkReply *r)
                                 {
                                     item.summary=e.text();
                                 }
-
-                                n = n.nextSibling();
                             }
                             allNewsItems.append(item);
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
@@ -580,32 +558,23 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            qDebug() << SB_DEBUG_INFO << performerHomepageRetrieved << performerWikipediaPageRetrieved;
-
-            QDomNode n=de.firstChild();
-            while(!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0))
+            for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
-                qDebug() << SB_DEBUG_INFO << performerHomepageRetrieved << performerWikipediaPageRetrieved;
 
                 if(!e.isNull())
                 {
-                    QDomNode n=e.firstChild();
-
-                    while(!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0))
+                    for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
                     {
                         QString MBID;
 
                         QDomElement e = n.toElement();
-                        qDebug() << SB_DEBUG_INFO << performerHomepageRetrieved << performerWikipediaPageRetrieved;
 
                         if(!e.isNull())
                         {
-
-                            QDomNode n=e.firstChild();
-                            while(!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0))
+                            for(QDomNode n=e.firstChild();!n.isNull() && (performerWikipediaPageRetrieved==0 || performerHomepageRetrieved==0);n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
@@ -614,6 +583,7 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
                                     QString URL=e.text() + "&printable=yes";
                                     URL.replace("/wiki/","/w/index.php?title=");
                                     performerWikipediaPageRetrieved=1;
+
                                     emit performerWikipediaPageAvailable(URL);
                                 }
                                 else if(e.attribute("type")=="official homepage" && performerHomepageRetrieved==0)
@@ -623,20 +593,16 @@ ExternalData::performerURLDataRetrievedMB(QNetworkReply *r)
                                     emit performerHomePageAvailable(currentID.url);
                                     emit updatePerformerHomePage(currentID);
                                 }
-
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
+//	TESTED
 void
 ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
 {
@@ -657,18 +623,15 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull())
+            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
-                if(!e.isNull())
+                if(!e.isNull() && e.hasChildNodes()==1)
                 {
-                    QDomNode n=e.firstChild();
-
-                    while(!n.isNull())
+                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
@@ -681,9 +644,7 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
 
                         if(!e.isNull())
                         {
-                            QDomNode n=e.firstChild();
-
-                            while(!n.isNull())
+                            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
@@ -703,14 +664,10 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
                                         return;
                                     }
                                 }
-
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
             if(index>0)
             {
@@ -722,6 +679,7 @@ ExternalData::songMetaDataRetrievedMB(QNetworkReply *r)
     }
 }
 
+//	TESTED
 void
 ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
 {
@@ -739,47 +697,38 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
             int errorColumn;
             doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
 
-            QDomElement de=doc.documentElement();
+            QDomElement e=doc.documentElement();
 
-            QDomNode n=de.firstChild();
-            while(!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0))
+            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
             {
                 QDomElement e = n.toElement();
 
                 if(!e.isNull())
                 {
-                    QDomNode n=e.firstChild();
-
-                    while(!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0))
+                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
                         if(!e.isNull())
                         {
-                            QDomNode n=e.firstChild();
-
-                            while(!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0))
+                            for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
                                 type=e.attribute("type");
                                 if(!e.isNull())
                                 {
-                                    QDomNode n=e.firstChild();
-
-                                    while(!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0))
+                                    for(QDomNode n=e.firstChild();!n.isNull() && (songLyricsURLRetrieved==0 || songWikipediaPageRetrieved==0);n = n.nextSibling())
                                     {
                                         QDomElement e = n.toElement();
 
                                         if(type=="lyrics" && songLyricsURLRetrieved==0)
                                         {
-                                            qDebug() << SB_DEBUG_INFO << "Lyrics URL=" << e.text();
                                             songLyricsURLRetrieved=1;
                                             emit songLyricsURLAvailable(e.text());
                                         }
                                         else if(type=="wikipedia" && songWikipediaPageRetrieved==0)
                                         {
-                                            qDebug() << SB_DEBUG_INFO << "Wikipedia URL=" << e.text();
                                             QString URL=e.text() + "&printable=yes";
                                             URL.replace("/wiki/","/w/index.php?title=");
                                             songWikipediaPageRetrieved=1;
@@ -789,16 +738,12 @@ ExternalData::songURLDataRetrievedMB(QNetworkReply *r)
                                         {
                                             qDebug() << SB_DEBUG_INFO << "Other URL:type=" << type << e.text();
                                         }
-                                        n = n.nextSibling();
                                     }
                                 }
-                                n = n.nextSibling();
                             }
                         }
-                        n = n.nextSibling();
                     }
                 }
-                n = n.nextSibling();
             }
         }
     }
@@ -904,9 +849,7 @@ ExternalData::retrievePerformerMBID()
                 connect(mb, SIGNAL(finished(QNetworkReply *)),
                         this, SLOT(songMetaDataRetrievedMB(QNetworkReply*)));
 
-                qDebug() << SB_DEBUG_INFO << currentOffset;
                 URL=QString("http://musicbrainz.org/ws/2/work?artist=%1&offset=%2&limit=%3").arg(currentID.sb_mbid).arg(currentOffset).arg(MUSICBRAINZ_MAXNUM);
-                qDebug() << SB_DEBUG_INFO << URL;
                 mb->get(QNetworkRequest(QUrl(URL)));
             }
             else

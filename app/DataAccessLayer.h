@@ -17,10 +17,10 @@
 #define ___SB_SQL_QUERY_PLAYLIST_JOIN___ ___SB_SQL_QUERY_PLAYLIST_JOIN___
 #define ___SB_SQL_QUERY_GENRE_JOIN___ ___SB_SQL_QUERY_GENRE_JOIN___
 
+class QDebug;
 class QStringList;
 class QSqlQueryModel;
 class QSqlTableModel;
-class QDebug;
 
 class DataAccessLayer;
 
@@ -36,9 +36,11 @@ public:
     DataAccessLayer();
     DataAccessLayer(const QString& connectionName);
     DataAccessLayer(const DataAccessLayer& c);
-    DataAccessLayer& operator= (const DataAccessLayer& c);
     ~DataAccessLayer();
 
+    bool executeBatch(const QStringList& allQueries);
+
+    DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
 
     //	Database specific
@@ -46,7 +48,9 @@ public:
     virtual QStringList getAvailableSchemas() const;
     bool setSchema(const QString& newSchema);
     QString customize(QString& sqlString) const;
-    QSqlQueryModel* getCompleterModel();
+    QSqlQueryModel* getCompleterModelAll();
+    QSqlQueryModel* getCompleterModelPerformer();
+    QSqlQueryModel* getCompleterModelSong();
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
     const QString& getGetDate() const;

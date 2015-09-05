@@ -22,6 +22,7 @@ SBID::SBID(const SBID &c)
     this->sb_song_id=c.sb_song_id;
     this->sb_playlist_id=c.sb_playlist_id;
 
+    this->isOriginalPerformer=c.isOriginalPerformer;
     this->albumTitle=c.albumTitle;
     this->count1=c.count1;
     this->count2=c.count2;
@@ -37,6 +38,8 @@ SBID::SBID(const SBID &c)
     this->wiki=c.wiki;
     this->year=c.year;
     this->tabID=c.tabID;
+
+    isEdit=c.isEdit;
 }
 
 SBID::SBID(SBID::sb_type type, int itemID)
@@ -64,6 +67,7 @@ SBID::SBID(QByteArray encodedData)
         >> i
         >> sb_item_id
         >> sb_mbid
+        >> isOriginalPerformer
         >> performerName
         >> albumTitle
         >> songTitle
@@ -134,6 +138,7 @@ SBID::encode() const
         << (int)sb_item_type
         << sb_item_id
         << sb_mbid
+        << isOriginalPerformer
         << performerName
         << albumTitle
         << songTitle
@@ -362,12 +367,46 @@ SBID::setText(const QString &text)
     }
 }
 
+void
+SBID::showDebug(const QString& title) const
+{
+    qDebug() << SB_DEBUG_INFO << title;
+    qDebug() << SB_DEBUG_INFO << "sb_item_id" << sb_item_id;
+    qDebug() << SB_DEBUG_INFO << "sb_item_type" << getType();
+    qDebug() << SB_DEBUG_INFO << "sb_mbid" << sb_mbid;
+    qDebug() << SB_DEBUG_INFO << "isEdit" << isEdit;
+    qDebug() << SB_DEBUG_INFO << "sb_performer_id" << sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "sb_album_id" << sb_album_id;
+    qDebug() << SB_DEBUG_INFO << "sb_position" << sb_position;
+    qDebug() << SB_DEBUG_INFO << "sb_chart_id" << sb_chart_id;
+    qDebug() << SB_DEBUG_INFO << "sb_song_id" << sb_song_id;
+    qDebug() << SB_DEBUG_INFO << "sb_playlist_id" << sb_playlist_id;
+    qDebug() << SB_DEBUG_INFO << "isOriginalPerformer" << isOriginalPerformer;
+    qDebug() << SB_DEBUG_INFO << "albumTitle" << albumTitle;
+    qDebug() << SB_DEBUG_INFO << "count1" << count1;
+    qDebug() << SB_DEBUG_INFO << "count2" << count2;
+    qDebug() << SB_DEBUG_INFO << "duration" << duration;
+    qDebug() << SB_DEBUG_INFO << "genre" << genre;
+    //qDebug() << SB_DEBUG_INFO << "lyrics" << lyrics;
+    qDebug() << SB_DEBUG_INFO << "notes" << notes;
+    qDebug() << SB_DEBUG_INFO << "performerName" << performerName;
+    qDebug() << SB_DEBUG_INFO << "playlistName" << playlistName;
+    qDebug() << SB_DEBUG_INFO << "searchCriteria" << searchCriteria;
+    qDebug() << SB_DEBUG_INFO << "songTitle" << songTitle;
+    qDebug() << SB_DEBUG_INFO << "url" << url;
+    qDebug() << SB_DEBUG_INFO << "wiki" << wiki;
+    qDebug() << SB_DEBUG_INFO << "year" << year;
+    qDebug() << SB_DEBUG_INFO << "tabID" << tabID;
+}
+
 bool
 SBID::operator ==(const SBID& i) const
 {
     if(
         i.sb_item_type==this->sb_item_type &&
         i.sb_item_id==this->sb_item_id &&
+        i.sb_performer_id==this->sb_performer_id &&	//	added to make saveSong work
+        i.isEdit==this->isEdit &&
         i.searchCriteria==this->searchCriteria)
     {
         return 1;
@@ -375,52 +414,20 @@ SBID::operator ==(const SBID& i) const
     return 0;
 }
 
+bool
+SBID::operator !=(const SBID& i) const
+{
+    qDebug() << SB_DEBUG_INFO;
+
+    return !(this->operator==(i));
+}
+
 QDebug operator<<(QDebug dbg, const SBID& id)
 {
     dbg.nospace() << "SBID"
         << ":sb_item_id=" << id.sb_item_id
-    ;
-
-    const char* s;
-
-    switch(id.sb_item_type)
-    {
-    case SBID::sb_type_invalid:
-        s="INVALID";
-        break;
-
-    case SBID::sb_type_song:
-        s="song";
-        break;
-
-    case SBID::sb_type_performer:
-        s="performer";
-        break;
-
-    case SBID::sb_type_album:
-        s="album";
-        break;
-
-    case SBID::sb_type_chart:
-        s="chart";
-        break;
-
-    case SBID::sb_type_playlist:
-        s="playlist";
-        break;
-
-    case SBID::sb_type_allsongs:
-        s="allsongs";
-        break;
-
-    case SBID::sb_type_songsearch:
-        s="songsearch";
-        break;
-
-    default:
-        s="Unknown";
-    }
-    dbg.nospace()  << ":sb_item_type=" << s << ":value=" << id.getText();
+        << ":sb_item_type=" << id.getType()
+        << ":value=" << id.getText();
 
     return dbg.space();
 }
@@ -440,6 +447,7 @@ SBID::init()
     sb_song_id=0;
     sb_playlist_id=0;
 
+    isOriginalPerformer=0;
     albumTitle=QString();
     count1=0;
     count2=0;
@@ -456,5 +464,5 @@ SBID::init()
     year=0;
 
     tabID=-1;
+    isEdit=0;
 }
-

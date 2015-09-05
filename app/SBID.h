@@ -36,6 +36,9 @@ public:
     int         sb_item_id;
     QString     sb_mbid;
 
+    //	Modifiers
+    bool        isEdit;
+
     //	Secundary identifiers (e.g. if primary is of type 'song',
     //	the following identifiers identify performer and album).
     int         sb_performer_id;
@@ -45,10 +48,11 @@ public:
     int         sb_song_id;
     int         sb_playlist_id;
 
+    bool        isOriginalPerformer;
     QString     albumTitle;
     int         count1;
     int         count2;
-    SBTime       duration;
+    SBTime      duration;
     QString     genre;
     QString     lyrics;
     QString     notes;
@@ -72,8 +76,10 @@ public:
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
     void setText(const QString &text);
+    void showDebug(const QString& title) const;
 
     bool operator==(const SBID& i) const;
+    bool operator!=(const SBID& i) const;
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
 private:
