@@ -9,6 +9,7 @@
 
 class QAction;
 class QLabel;
+class QLineEdit;
 class QNetworkReply;
 class QPushButton;
 class QTableView;
@@ -35,6 +36,7 @@ public:
     void handleEscapeKey();
     SBID populateAlbumDetail(const SBID& id);
     SBID populatePerformerDetail(const SBID& id);
+    SBID populatePerformerDetailEdit(const SBID& id);
     SBID populatePlaylistDetail(const SBID& id);
     SBID populateSongDetail(const SBID& id);
     SBID populateSongDetailEdit(const SBID& id);
@@ -53,7 +55,7 @@ public slots:
     void applySonglistFilter();
     void closeCurrentTab();
     void deletePlaylistItem();
-    void editSong();
+    void editItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
@@ -62,6 +64,7 @@ public slots:
     void openSonglistItem(const QModelIndex& i);
     void refreshAlbumReviews();
     void refreshPerformerNews();
+    void savePerformerDetail();
     void saveSongDetail();
     void setAlbumImage(const QPixmap& p);
     void setAlbumReviews(const QList<QString>& reviews);
@@ -92,6 +95,7 @@ private:
     QPushButton* currentSaveButton;
 
     void init();
+    SBID processPerformerEdit(const QString& editPerformerName, const SBID& newSongID, QLineEdit* field);
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
 };
 

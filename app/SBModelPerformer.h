@@ -21,7 +21,8 @@ public:
     SBSqlQueryModel* getAllSongs(const SBID& id);
     SBSqlQueryModel* getRelatedPerformers(const SBID& id);
     SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);
-    int savePerformer(SBID& id);
+    bool saveNewPerformer(SBID& newPerformerID);
+    bool updateExistingPerformer(const SBID& orgPerformerID, SBID& newPerformerID);
 
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 

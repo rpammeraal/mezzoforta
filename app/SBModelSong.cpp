@@ -315,17 +315,80 @@ SBModelSong::matchSongByPerformer(const SBID& newSongID, const QString& newSongT
 }
 
 bool
-SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
+SBModelSong::saveNewSong(SBID &id)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString newSoundex=Common::soundex(id.songTitle);
+    QString q;
+    bool resultCode=1;
+
+    qDebug() << SB_DEBUG_INFO;
+    if(id.sb_item_id==-1)
+    {
+        //	Insert new
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___song "
+            "( "
+                "song_id, "
+                "title, "
+                "soundex "
+            ") "
+            "SELECT "
+                "MAX(artist_id)+1, "
+                "'%1', "
+                "'%2' "
+            "FROM "
+                "___SB_SCHEMA_NAME___artist "
+        )
+            .arg(Common::escapeSingleQuotes(id.songTitle))
+            .arg(newSoundex)
+        ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery insert(q,db);
+
+        //	Get id of newly added song
+        q=QString
+        (
+            "SELECT "
+                "song_id "
+            "FROM "
+                "___SB_SCHEMA_NAME___song "
+            "WHERE "
+                "title='%1' "
+        )
+            .arg(Common::escapeSingleQuotes(id.songTitle))
+        ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery select(q,db);
+        select.next();
+
+        id.sb_item_id=select.value(0).toInt();
+        id.sb_song_id=select.value(0).toInt();
+        qDebug() << SB_DEBUG_INFO << "id.sb_item_id=" << id.sb_item_id;
+    }
+    return resultCode;
+}
+
+bool
+SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList allQueries;
     QString q;
+    bool resultFlag=1;
 
     //	The following flags should be mutually exclusive.
-    bool updateSongTitleFlag=0;
-    bool updateOriginalPerformerFlag=0;
+    bool titleRenameFlag=0;
     bool mergeToNewSongFlag=0;
-    bool updateToExistingPerformerFlag=0;
+    bool mergeToExistingSongFlag=0;
+    bool updatePerformerFlag=0;
+
 
     //	The following flags can be set independently from eachother.
     //	However, they can be turned of by detecting any of the flags above.
@@ -344,6 +407,7 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         << ":isOriginalPerformer=" << newSongID.isOriginalPerformer
     ;
 
+    //	1.	Set attribute flags
     if(oldSongID.year!=newSongID.year)
     {
         yearOfReleaseChangedFlag=1;
@@ -357,54 +421,48 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         lyricsChangedFlag=1;
     }
 
-    if(oldSongID.sb_performer_id==newSongID.sb_performer_id)
+    //	2.	Determine what need to be done.
+    if(newSongID.sb_item_id==-1)
     {
-        //	Update song title
-        if(newSongID.sb_item_id==-1)
+        //	New song does NOT exists
+        if(oldSongID.sb_performer_id!=newSongID.sb_performer_id)
         {
-            updateSongTitleFlag=1;
-        }
-        else if(oldSongID.sb_item_id!=newSongID.sb_item_id)
-        {
-            //	Merge
+            //	Different performer
             mergeToNewSongFlag=1;
-        }
-        //	else: attribute changed.
-    }
-    else	//	org performer != new performer
-    {
-        if(oldSongID.sb_item_id==newSongID.sb_item_id &&
-            oldSongID.sb_performer_id!=newSongID.sb_performer_id &&
-            oldSongID.sb_item_id!=-1)
-        {
-            //	Performance records exist for both old performer and new performer.
-            //	(each with different role_id's). This means that the original
-            //	performer is switched.
-            updateOriginalPerformerFlag=1;
         }
         else
         {
-            if(newSongID.sb_item_id==-1)
-            {
-                //	performer has changed, title stays the same.
-                //	newSongID.sb_item_id==-1 signals that song for new artist does not exist.
-                updateToExistingPerformerFlag=1;
-                newSongID.sb_item_id=oldSongID.sb_item_id;
-            }
-            else
-            {
-                //	Performer has changed. Merge to another existing song.
-                mergeToNewSongFlag=1;
-            }
+            //	Same performer
+            titleRenameFlag=1;
+        }
+    }
+    else
+    {
+        //	New song exists
+        if(oldSongID.sb_item_id!=newSongID.sb_item_id)
+        {
+            //	Songs are not the same -> merge
+            mergeToExistingSongFlag=1;
+        }
+        else if(oldSongID.sb_performer_id!=newSongID.sb_performer_id)
+        {
+            //	Songs are the same, update performer
+            updatePerformerFlag=1;
         }
     }
 
-    //	Sanity check on flags
+    qDebug() << SB_DEBUG_INFO << "titleRenameFlag" << titleRenameFlag;
+    qDebug() << SB_DEBUG_INFO << "mergeToNewSongFlag" << mergeToNewSongFlag;
+    qDebug() << SB_DEBUG_INFO << "mergeToExistingSongFlag" << mergeToExistingSongFlag;
+    qDebug() << SB_DEBUG_INFO << "updatePerformerFlag" << updatePerformerFlag;
+
+    //	3.	Sanity check on flags
     if(
-        updateSongTitleFlag==0 &&
-        updateOriginalPerformerFlag==0 &&
+        titleRenameFlag==0 &&
         mergeToNewSongFlag==0 &&
-        updateToExistingPerformerFlag==0 &&
+        mergeToExistingSongFlag==0 &&
+        updatePerformerFlag==0 &&
+
         yearOfReleaseChangedFlag==0 &&
         notesChangedFlag==0 &&
         lyricsChangedFlag==0
@@ -416,29 +474,24 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         return 0;
     }
 
-    qDebug() << SB_DEBUG_INFO << "updateSongTitleFlag" << updateSongTitleFlag;
-    qDebug() << SB_DEBUG_INFO << "updateOriginalPerformerFlag" << updateOriginalPerformerFlag;
-    qDebug() << SB_DEBUG_INFO << "mergeToNewSongFlag" << mergeToNewSongFlag;
-    qDebug() << SB_DEBUG_INFO << "updateToExistingPerformerFlag" << updateToExistingPerformerFlag;
-
-    if((int)updateSongTitleFlag+(int)updateOriginalPerformerFlag+(int)mergeToNewSongFlag+(int)updateToExistingPerformerFlag>1)
+    if((int)titleRenameFlag+(int)mergeToNewSongFlag+(int)mergeToExistingSongFlag+(int)updatePerformerFlag>1)
     {
         QMessageBox msgBox;
-        msgBox.setText("Multiple flags set!");
+        msgBox.setText("SaveSong: multiple flags set!");
         msgBox.exec();
         return 0;
     }
 
-    if(mergeToNewSongFlag==1)
+    //	Discard attribute changes when merging
+    if(mergeToExistingSongFlag || mergeToNewSongFlag)
     {
-        //	Honor year of release of song being merged to.
         yearOfReleaseChangedFlag=0;
         notesChangedFlag=0;
         lyricsChangedFlag=0;
     }
 
-
-    //	Collect work to be done.
+    //	4.	Collect work to be done.
+    //		A.	Attribute changes
     if(lyricsChangedFlag==1)
     {
         qDebug() << SB_DEBUG_INFO << "Update lyrics";
@@ -518,7 +571,7 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         allQueries.append(q);
     }
 
-    if(updateSongTitleFlag==1)
+    if(titleRenameFlag==1 || mergeToNewSongFlag==1)
     {
         qDebug() << SB_DEBUG_INFO << "Update song title";
         q=QString
@@ -535,38 +588,75 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
             .arg(oldSongID.sb_item_id)
         ;
         allQueries.append(q);
-
-        //	Reassign org sb_item_id to newSongID as only title change has happened
         newSongID.sb_item_id=oldSongID.sb_item_id;
     }
 
-    if(updateOriginalPerformerFlag==1)
+    //		B.	Non-attributal changes
+    //			A.	Create
+    if(updatePerformerFlag==1 || mergeToNewSongFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO << "Update original performer";
+        //	Create performance if it does not exists.
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___performance "
+            "( "
+                "song_id, "
+                "artist_id, "
+                "role_id, "
+                "year "
+            ") "
+            "SELECT DISTINCT "
+                "%1, "
+                "%2, "
+                "0, "
+                "year "
+            "FROM "
+                "___SB_SCHEMA_NAME___performance "
+            "WHERE "
+                "song_id=%1 AND "
+                "role_id=0 AND "
+                "NOT EXISTS "
+                "( "
+                    "SELECT "
+                        "NULL "
+                    "FROM "
+                        "___SB_SCHEMA_NAME___performance "
+                    "WHERE "
+                        "song_id=%1 AND "
+                        "artist_id=%2 "
+                ") "
+        )
+            .arg(newSongID.sb_item_id)
+            .arg(newSongID.sb_performer_id)
+        ;
+        allQueries.append(q);
+    }
 
+
+    if(updatePerformerFlag==1 || mergeToNewSongFlag==1)
+    {
+        //	Switch flag
         q=QString
         (
             "UPDATE "
                 "___SB_SCHEMA_NAME___performance "
             "SET "
-                "role_id=CASE WHEN artist_id=%2 THEN 0 ELSE 1 END "
+                "role_id=CASE WHEN artist_id=%1 THEN 0 ELSE 1 END "
             "WHERE "
-                "artist_id IN (%1,%2) AND "
-                "song_id=%3 "
+                "song_id=%2 "
         )
-            .arg(oldSongID.sb_performer_id)
             .arg(newSongID.sb_performer_id)
             .arg(newSongID.sb_item_id)
         ;
         allQueries.append(q);
     }
 
-    if(mergeToNewSongFlag==1 || updateToExistingPerformerFlag==1)
+    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
     {
         qDebug() << SB_DEBUG_INFO << "Merge to new song";
         //	Merge old with new.
 
-        //	A.	Update performance tables
+        //	1.	Update performance tables
         QStringList performanceTable;
         performanceTable.append("chart_performance");
         performanceTable.append("collection_performance");
@@ -594,27 +684,8 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
             ;
             allQueries.append(q);
         }
-    }
 
-    if(updateToExistingPerformerFlag==1)
-    {
-        //	Create a new performance
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-            "( song_id, artist_id, role_id, year, notes ) "
-            "VALUES ( %1,%2,0,%3,'') "
-        )
-            .arg(newSongID.sb_item_id)
-            .arg(newSongID.sb_performer_id)
-            .arg(newSongID.year)
-        ;
-        allQueries.append(q);
-    }
-
-    if(mergeToNewSongFlag==1 || updateToExistingPerformerFlag==1)
-    {
-        //	A.	Update record_performance for non-op_ fields
+        //	2.	Update record_performance for non-op_ fields
         q=QString
         (
             "UPDATE "
@@ -633,7 +704,7 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         ;
         allQueries.append(q);
 
-        //	B.	Update record_performance for op_ fields
+        //	3.	Update record_performance for op_ fields
         q=QString
         (
             "UPDATE "
@@ -654,6 +725,25 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
     }
 
     if(mergeToNewSongFlag==1)
+    {
+        //	1.	Update lyrics to point to new song
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___lyrics "
+            "SET     "
+                "song_id=%1 "
+            "WHERE "
+                "song_id=%2 "
+         )
+            .arg(newSongID.sb_item_id)
+            .arg(oldSongID.sb_item_id)
+        ;
+        allQueries.append(q);
+    }
+
+    //			C.	Remove
+    if(mergeToExistingSongFlag==1)
     {
         //	1.	Remove lyrics
         q=QString
@@ -683,9 +773,9 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         allQueries.append(q);
     }
 
-    if(mergeToNewSongFlag==1 || updateToExistingPerformerFlag==1)
+    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
     {
-        //	1.	Remove original performance
+        //	Remove original performance
         q=QString
         (
             "DELETE FROM "
@@ -700,9 +790,9 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         allQueries.append(q);
     }
 
-    if(mergeToNewSongFlag==1)
+    if(mergeToExistingSongFlag==1)
     {
-        //	1.	Remove original song
+        //	Remove original song
         q=QString
         (
             "DELETE FROM ___SB_SCHEMA_NAME___song "
@@ -712,9 +802,15 @@ SBModelSong::saveSong(const SBID &oldSongID, SBID &newSongID)
         ;
         allQueries.append(q);
     }
-    qDebug() << SB_DEBUG_INFO << "End";
 
-    return dal->executeBatch(allQueries);
+    resultFlag=dal->executeBatch(allQueries);
+    qDebug() << SB_DEBUG_INFO << resultFlag;
+
+        QMessageBox msgBox;
+        msgBox.setText("Done!");
+        msgBox.exec();
+
+    return resultFlag;
 }
 
 void

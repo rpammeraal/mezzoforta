@@ -264,13 +264,14 @@ SBModelPerformer::matchPerformer(const SBID &currentSongID, const QString& newPe
     return new SBSqlQueryModel(q);
 }
 
-int
-SBModelPerformer::savePerformer(SBID &id)
+bool
+SBModelPerformer::saveNewPerformer(SBID &id)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString newSoundex=Common::soundex(id.performerName);
     QString q;
+    bool resultCode=1;
 
     qDebug() << SB_DEBUG_INFO;
     if(id.sb_item_id==-1)
@@ -293,8 +294,8 @@ SBModelPerformer::savePerformer(SBID &id)
             "FROM "
                 "___SB_SCHEMA_NAME___artist "
         )
-            .arg(id.performerName)
-            .arg(Common::removeArticles(id.performerName))
+            .arg(Common::escapeSingleQuotes(id.performerName))
+            .arg(Common::escapeSingleQuotes(Common::removeArticles(id.performerName)))
             .arg(newSoundex)
         ;
 
@@ -312,7 +313,7 @@ SBModelPerformer::savePerformer(SBID &id)
             "WHERE "
                 "name='%1' "
         )
-            .arg(id.performerName)
+            .arg(Common::escapeSingleQuotes(id.performerName))
         ;
 
         dal->customize(q);
@@ -321,12 +322,79 @@ SBModelPerformer::savePerformer(SBID &id)
         select.next();
 
         id.sb_item_id=select.value(0).toInt();
+        id.sb_performer_id=select.value(0).toInt();
+        qDebug() << SB_DEBUG_INFO << "id.sb_item_id=" << id.sb_item_id;
     }
-    else
+    return resultCode;
+}
+
+bool
+SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QStringList allQueries;
+    QString q;
+    QString newSoundex=Common::soundex(newPerformerID.performerName);
+
+    //	The following flags should be mutually exclusive
+    bool saveNewPerformer=0;
+
+    //	Determine what need to be done
+    if(orgPerformerID.sb_item_id==newPerformerID.sb_item_id &&
+        newPerformerID.sb_item_id==-1)
     {
-        //	Update existing
+        saveNewPerformer=1;
     }
-    return 0;
+
+    //	Sanity check on flags
+    if(saveNewPerformer==0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("No flags are set in savePerformer");
+        msgBox.exec();
+        return 0;
+    }
+
+    if((int)saveNewPerformer>1)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("SavePerformer: multiple flags set!");
+        msgBox.exec();
+        return 0;
+    }
+
+    qDebug() << SB_DEBUG_INFO << "saveNewPerformer" << saveNewPerformer;
+
+    //	Collect work to be done.
+    if(saveNewPerformer==1)
+    {
+        //	Insert new
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___artist "
+            "( "
+                "artist_id, "
+                "name, "
+                "sort_name, "
+                "soundex "
+            ") "
+            "SELECT "
+                "MAX(artist_id)+1, "
+                "'%1', "
+                "'%2', "
+                "'%3' "
+            "FROM "
+                "___SB_SCHEMA_NAME___artist "
+        )
+            .arg(newPerformerID.performerName)
+            .arg(Common::removeArticles(newPerformerID.performerName))
+            .arg(newSoundex)
+        ;
+        allQueries.append(q);
+    }
+
+    return dal->executeBatch(allQueries);
 }
 
 void

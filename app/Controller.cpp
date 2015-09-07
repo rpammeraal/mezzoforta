@@ -1,12 +1,12 @@
-#include <QDebug>
-#include <QKeyEvent>
-#include <QScrollBar>
-#include <QCompleter>
-#include <QDialog>
-#include <QMessageBox>
-#include <QSplashScreen>
-#include <QSqlDatabase>
-#include <QStyleFactory>
+    #include <QDebug>
+    #include <QKeyEvent>
+    #include <QScrollBar>
+    #include <QCompleter>
+    #include <QDialog>
+    #include <QMessageBox>
+    #include <QSplashScreen>
+    #include <QSqlDatabase>
+    #include <QStyleFactory>
 #include <QTimer>
 
 #include "BackgroundThread.h"
@@ -102,7 +102,9 @@ Controller::refreshModels()
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     completer->setFilterMode(Qt::MatchStartsWith);
-    mw->ui.songEditPerformer->setCompleter(completer);
+
+    mw->ui.songEditPerformerName->setCompleter(completer);
+    mw->ui.performerEditName->setCompleter(completer);
 
     //	SEARCH
     QCompleter* c=mw->ui.searchEdit->completer();
@@ -243,22 +245,17 @@ Controller::keyPressEvent(QKeyEvent *event)
     if(event->key()==0x01000004 || event->key()==0x01000005)
     {
     qDebug() << SB_DEBUG_INFO;
-        //	Escape return key
+        //	Return key
         Context::instance()->getSonglistScreenHandler()->handleEnterKey();
 
     }
     if(event->key()==0x1000000)
     {
         //	Catch escape key
-        if(currentFilter.length()>0)
-        {
-            clearSearchFilter();
-        }
-        else
-        {
-            Context::instance()->getSonglistScreenHandler()->handleEscapeKey();
-            qDebug() << SB_DEBUG_INFO;
-        }
+        //	20150907: always call to clear search filter
+        clearSearchFilter();
+        Context::instance()->getSonglistScreenHandler()->handleEscapeKey();
+        qDebug() << SB_DEBUG_INFO;
     }
     else if(event->key()==76 && event->modifiers() & Qt::ControlModifier)
     {
