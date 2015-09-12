@@ -18,6 +18,7 @@ public:
     ~ScreenStack();
 
     void clear();
+    int count() const;
     void pushScreen(const SBID& id);
     SBID popScreen();
 

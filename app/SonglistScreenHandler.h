@@ -8,6 +8,7 @@
 #include "ExternalData.h"
 
 class QAction;
+class QCompleter;
 class QLabel;
 class QLineEdit;
 class QNetworkReply;
@@ -52,10 +53,14 @@ public:
     void showScreenStack();
 
 public slots:
+    void addNewRelatedPerformer();
     void applySonglistFilter();
     void closeCurrentTab();
+    void closeRelatedPerformerComboBox();
     void deletePlaylistItem();
+    void deleteRelatedPerformer();
     void editItem();
+    void enableRelatedPerformerDeleteButton();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void openLeftColumnChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
@@ -87,16 +92,25 @@ private:
     QAction* deletePlaylistItemAction;
 
     //	Private variables
+    QCompleter* addNewRelatedPerformerCompleter;
     ScreenStack st;
     QList<NewsItem> currentNews;
     QList<QString> currentReviews;
     QList<QWidget *> relatedItems;
     QModelIndex lastClickedIndex;
     QPushButton* currentSaveButton;
+    bool pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag;
+    bool relatedPerformerBeingAddedFlag;
+    bool relatedPerformerBeingDeletedFlag;
+    QList<int> allRelatedPerformers;
 
     void init();
-    SBID processPerformerEdit(const QString& editPerformerName, const SBID& newSongID, QLineEdit* field);
+    bool processPerformerEdit(const QString& editPerformerName, SBID& newID, QLineEdit* field, bool saveNewPerformer=1);
+    void setRelatedPerformerBeingAddedFlag(bool flag);
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
+
+private slots:
+    void relatedPerformerSelected(const QModelIndex& i);
 };
 
 #endif // SONGLISTSCREENHANDLER_H

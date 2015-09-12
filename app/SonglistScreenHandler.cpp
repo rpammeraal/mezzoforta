@@ -3,6 +3,7 @@
 #include <QCompleter>
 #include <QDebug>
 #include <QFont>
+#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QSqlQueryModel>
 #include <QSortFilterProxyModel>
@@ -56,7 +57,11 @@ SonglistScreenHandler::~SonglistScreenHandler()
 SBID
 SonglistScreenHandler::activateTab(const SBID& id)
 {
-    qDebug() << SB_DEBUG_INFO << id << id.tabID;
+    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id.tabID;
+    qDebug() << SB_DEBUG_INFO << id.sb_item_id;
+    qDebug() << SB_DEBUG_INFO << id.sb_item_type;
+
     st.debugShow("SonglistScreenHandler:activateTab");
     currentSaveButton=NULL;
 
@@ -66,6 +71,12 @@ SonglistScreenHandler::activateTab(const SBID& id)
     //	Check parameters
     if(id.sb_item_type==SBID::sb_type_invalid)
     {
+        if(st.count()==0)
+        {
+            showSonglist();
+            st.debugShow("SonglistScreenHandler:76");
+            return SBID();
+        }
         qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
         return id;
     }
@@ -90,12 +101,14 @@ SonglistScreenHandler::activateTab(const SBID& id)
     case SBID::sb_type_song:
         if(isEdit)
         {
+            qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabSongEdit;
             result=populateSongDetailEdit(id);
             editAction->setEnabled(0);	//	 :)
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabSongDetail;
             result=populateSongDetail(id);
             mw->ui.tabSongDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
@@ -106,12 +119,14 @@ SonglistScreenHandler::activateTab(const SBID& id)
     case SBID::sb_type_performer:
         if(isEdit)
         {
+            qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabPerformerEdit;
             result=populatePerformerDetailEdit(id);
             editAction->setEnabled(0);	//	 :)
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabPerformerDetail;
             result=populatePerformerDetail(id);
             mw->ui.tabPerformerDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
@@ -120,12 +135,14 @@ SonglistScreenHandler::activateTab(const SBID& id)
         break;
 
     case SBID::sb_type_album:
+        qDebug() << SB_DEBUG_INFO;
         tab=mw->ui.tabAlbumDetail;
         result=populateAlbumDetail(id);
         mw->ui.tabAlbumDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
         break;
 
     case SBID::sb_type_playlist:
+        qDebug() << SB_DEBUG_INFO;
         tab=mw->ui.tabPlaylistDetail;
         result=populatePlaylistDetail(id);
         break;
@@ -133,6 +150,7 @@ SonglistScreenHandler::activateTab(const SBID& id)
 
     case SBID::sb_type_songsearch:
     case SBID::sb_type_allsongs:
+        qDebug() << SB_DEBUG_INFO;
         result=id;
         tab=mw->ui.tabAllSongs;
         filterSongs(id);
@@ -349,9 +367,17 @@ SonglistScreenHandler::handleEscapeKey()
     if(currentID.isEdit)
     {
         //	If current screen is in edit mode, go back to previous screen
-        st.popScreen();
-        currentID=st.currentScreen();
-        activateTab(currentID);
+        if(relatedPerformerBeingAddedFlag==1)
+        {
+            //	Get out of combobox
+            closeRelatedPerformerComboBox();
+        }
+        else
+        {
+            st.popScreen();
+            currentID=st.currentScreen();
+            activateTab(currentID);
+        }
     }
     else
     {
@@ -615,6 +641,9 @@ SonglistScreenHandler::populatePerformerDetailEdit(const SBID& id)
     qDebug() << SB_DEBUG_INFO;
     const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO;
+    setRelatedPerformerBeingAddedFlag(0);
+    pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+    mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
 
     //	Get detail
     SBModelPerformer* p=new SBModelPerformer();
@@ -626,9 +655,40 @@ SonglistScreenHandler::populatePerformerDetailEdit(const SBID& id)
     }
     result.isEdit=1;
 
+    //	Attributes
     mw->ui.performerEditName->setText(id.performerName);
     mw->ui.performerEditNotes->setText(id.notes);
     mw->ui.performerEditWebSite->setText(id.url);
+
+    //	Related performers
+    SBSqlQueryModel* rp=p->getRelatedPerformers(id);
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+    rpt->clear();
+    rpt->setRowCount(rp->rowCount());
+    rpt->setColumnCount(2);
+    rpt->setColumnHidden(1,1);
+    rpt->horizontalHeader()->hide();
+    rpt->verticalHeader()->hide();
+    //rpt->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    allRelatedPerformers.clear();
+    for(int i=0;i<rp->rowCount();i++)
+    {
+        QTableWidgetItem *newItem;
+
+        newItem=new QTableWidgetItem;
+
+        newItem->setText(rp->data(rp->index(i,1)).toString());
+        newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
+        rpt->setItem(i,0,newItem);
+
+        newItem=new QTableWidgetItem;
+        QString performerIDString=rp->data(rp->index(i,0)).toString();
+        newItem->setText(performerIDString);
+        rpt->setItem(i,1,newItem);
+        allRelatedPerformers.append(performerIDString.toInt());
+    }
 
     //	Disable tmpButtons
     mw->ui.pbNA2->hide();
@@ -643,6 +703,12 @@ SonglistScreenHandler::populatePerformerDetailEdit(const SBID& id)
             this, SLOT(savePerformerDetail()));
     connect(mw->ui.pbPerformerEditCancel, SIGNAL(clicked(bool)),
             this, SLOT(closeCurrentTab()));
+    connect(mw->ui.pbPerformerEditAddRelatedPerformer, SIGNAL(clicked(bool)),
+            this, SLOT(addNewRelatedPerformer()));
+    connect(mw->ui.pbPerformerEditRemoveRelatedPerformer, SIGNAL(clicked(bool)),
+            this, SLOT(deleteRelatedPerformer()));
+    connect(rpt, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(enableRelatedPerformerDeleteButton()));
 
     qDebug() << SB_DEBUG_INFO << result.isEdit;
     return result;
@@ -936,6 +1002,50 @@ SonglistScreenHandler::showScreenStack()
 
 ///	SLOTS
 void
+SonglistScreenHandler::addNewRelatedPerformer()
+{
+    if(relatedPerformerBeingAddedFlag==1)
+    {
+        return;
+    }
+    setRelatedPerformerBeingAddedFlag(1);
+    qDebug() << SB_DEBUG_INFO;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+    SBModelPerformer* p=new SBModelPerformer();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    addNewRelatedPerformerCompleter=new QCompleter();
+    addNewRelatedPerformerCompleter->setModel(dal->getCompleterModelPerformer());
+    addNewRelatedPerformerCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    addNewRelatedPerformerCompleter->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    addNewRelatedPerformerCompleter->setFilterMode(Qt::MatchStartsWith);
+    connect(addNewRelatedPerformerCompleter, SIGNAL(activated(QModelIndex)),
+            this, SLOT(relatedPerformerSelected(QModelIndex)));
+
+    int currentRowCount=rpt->rowCount();
+    qDebug() << SB_DEBUG_INFO << currentRowCount;
+
+    rpt->setRowCount(currentRowCount);
+    rpt->insertRow(currentRowCount);
+
+    qDebug() << SB_DEBUG_INFO << rpt->rowCount();
+
+    QLineEdit* newItem=new QLineEdit();
+    newItem->setCompleter(addNewRelatedPerformerCompleter);
+    newItem->setFocus();
+    newItem->setFocus();
+    newItem->selectAll();
+    newItem->clear();
+    newItem->setPlaceholderText("Enter Performer");
+
+    rpt->setCellWidget(currentRowCount,0,newItem);
+
+    rpt->scrollToBottom();
+    rpt->setFocus();
+    rpt->setCurrentCell(currentRowCount,0);
+}
+
+void
 SonglistScreenHandler::applySonglistFilter()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -985,7 +1095,24 @@ SonglistScreenHandler::closeCurrentTab()
 {
     st.removeCurrentScreen();
     SBID id=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO;
     activateTab(id);
+}
+
+void
+SonglistScreenHandler::closeRelatedPerformerComboBox()
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+    mw->ui.performerEditName->setFocus();
+    mw->ui.performerEditName->selectAll();
+
+    //	Remove latest row
+    int currentRowCount=rpt->rowCount();
+    qDebug() << SB_DEBUG_INFO << currentRowCount;
+    rpt->removeRow(currentRowCount-1);
+    setRelatedPerformerBeingAddedFlag(0);
 }
 
 void
@@ -1013,14 +1140,55 @@ SonglistScreenHandler::deletePlaylistItem()
 }
 
 void
-SonglistScreenHandler::movePlaylistItem(const SBID& fromID, const SBID &toID)
+SonglistScreenHandler::deleteRelatedPerformer()
 {
-    //	Determine current playlist
-    SBID currentID=st.currentScreen();
+    qDebug() << SB_DEBUG_INFO;
+    if(relatedPerformerBeingDeletedFlag==1)
+    {
+        return;
+    }
+    relatedPerformerBeingDeletedFlag=1;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+    SBModelPerformer* p=new SBModelPerformer();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 
-    SBModelPlaylist *mpl=new SBModelPlaylist();
-    mpl->reorderItem(currentID,fromID,toID);
-    refreshTabIfCurrent(currentID);
+    //	Collect ID's of performers to be removed.
+    QList<QTableWidgetSelectionRange> srl=rpt->selectedRanges();
+    QList<int> IDsToBeRemoved;
+    for(int i=0;i<srl.count();i++)
+    {
+        QTableWidgetSelectionRange sr=srl.at(i);
+        qDebug() << SB_DEBUG_INFO << sr.topRow() << sr.bottomRow();
+        for(int j=sr.topRow();j<=sr.bottomRow();j++)
+        {
+            QTableWidgetItem* it;
+            it=rpt->item(j,0);
+            qDebug() << SB_DEBUG_INFO << j << it->data(Qt::DisplayRole).toString();
+            it=rpt->item(j,1);
+            qDebug() << SB_DEBUG_INFO << j << it->data(Qt::DisplayRole).toString();
+            IDsToBeRemoved.append(it->data(Qt::DisplayRole).toInt());
+        }
+    }
+
+    //	Now go through the table and remove entries
+    for(int i=0;i<rpt->rowCount();i++)
+    {
+        QTableWidgetItem* it=rpt->item(i,1);
+        int ID=it->data(Qt::DisplayRole).toInt();
+        qDebug() << SB_DEBUG_INFO << "ID=" << ID;
+        if(IDsToBeRemoved.contains(ID)==1)
+        {
+            rpt->removeRow(i);
+            i=-1;	//	restart from beginning
+        }
+    }
+
+    if(rpt->rowCount()==0)
+    {
+        mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
+    }
+    relatedPerformerBeingDeletedFlag=0;
 }
 
 void
@@ -1031,6 +1199,30 @@ SonglistScreenHandler::editItem()
     SBID id=st.currentScreen();
     id.isEdit=1;
     openScreenByID(id);
+}
+
+void
+SonglistScreenHandler::enableRelatedPerformerDeleteButton()
+{
+    if(relatedPerformerBeingAddedFlag==0)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
+        pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+    }
+    qDebug() << SB_DEBUG_INFO;
+}
+
+void
+SonglistScreenHandler::movePlaylistItem(const SBID& fromID, const SBID &toID)
+{
+    //	Determine current playlist
+    SBID currentID=st.currentScreen();
+
+    SBModelPlaylist *mpl=new SBModelPlaylist();
+    mpl->reorderItem(currentID,fromID,toID);
+    refreshTabIfCurrent(currentID);
 }
 
 void
@@ -1152,8 +1344,12 @@ void
 SonglistScreenHandler::savePerformerDetail()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBID orgPerformerID=SBModelSong::getDetail(st.currentScreen());
+    SBModelPerformer* p=new SBModelPerformer();
+    SBID orgPerformerID=p->getDetail(st.currentScreen());
     SBID newPerformerID=orgPerformerID;
+    QStringList SQL;
+
+    qDebug() << SB_DEBUG_INFO << orgPerformerID;
 
     if(orgPerformerID.sb_item_id==-1 || newPerformerID.sb_item_id==-1)
     {
@@ -1191,28 +1387,60 @@ SonglistScreenHandler::savePerformerDetail()
     }
     qDebug() << SB_DEBUG_INFO << hasCaseChange;
 
+    //	Different performer name
     if(hasCaseChange==0 && editPerformerName!=orgPerformerID.performerName)
     {
-        SBID selectedPerformer=processPerformerEdit(editPerformerName,newPerformerID,mw->ui.performerEditName);
-        if(selectedPerformer==SBID())
+        if(processPerformerEdit(editPerformerName,newPerformerID,mw->ui.performerEditName,0)==0)
         {
+            qDebug() << SB_DEBUG_INFO << newPerformerID;
             return;
         }
-        newPerformerID.sb_performer_id=selectedPerformer.sb_item_id;
-        newPerformerID.performerName=selectedPerformer.performerName;
+        qDebug() << SB_DEBUG_INFO << newPerformerID;
     }
+    qDebug() << SB_DEBUG_INFO << newPerformerID;
 
     newPerformerID.url=editURL;
     newPerformerID.notes=editNotes;
 
+    //	Figure out what needs to be done for related performers
+    //	1.	Find additions
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+    QList<int> remainingRelatedPerformerIDList;
+    for(int i=0;i<rpt->rowCount();i++)
+    {
+        QTableWidgetItem* it=rpt->item(i,1);
+        int ID=it->data(Qt::DisplayRole).toInt();
+        if(allRelatedPerformers.contains(ID)==0)
+        {
+            QTableWidgetItem* it=rpt->item(i,0);
+            qDebug() << SB_DEBUG_INFO << "Add" << it->data(Qt::DisplayRole).toString();
+            SQL.append(p->addRelatedPerformer(newPerformerID.sb_performer_id,ID));
+        }
+        else
+        {
+            remainingRelatedPerformerIDList.append(ID);
+        }
+    }
+    //	2.	Find removals
+    for(int i=0;i<allRelatedPerformers.count();i++)
+    {
+        int ID=allRelatedPerformers.at(i);
+        if(remainingRelatedPerformerIDList.contains(ID)==0)
+        {
+            qDebug() << SB_DEBUG_INFO << "Remove" << ID;
+            SQL.append(p->deleteRelatedPerformer(newPerformerID.sb_performer_id,ID));
+        }
+    }
+
     if(orgPerformerID!=newPerformerID ||
         orgPerformerID.url!=newPerformerID.url ||
-        orgPerformerID.notes!=newPerformerID.notes)
+        orgPerformerID.notes!=newPerformerID.notes ||
+        SQL.count()>0)
     {
         qDebug() << SB_DEBUG_INFO;
 
         SBModelPerformer* p=new SBModelPerformer();
-        const bool successFlag=p->updateExistingPerformer(orgPerformerID,newPerformerID);
+        const bool successFlag=p->updateExistingPerformer(orgPerformerID,newPerformerID,SQL);
 
         if(successFlag==1)
         {
@@ -1222,7 +1450,8 @@ SonglistScreenHandler::savePerformerDetail()
                 .arg(QChar(180));    //	3
             Context::instance()->getController()->updateStatusBar(updateText);
 
-            if(orgPerformerID!=orgPerformerID)
+            qDebug() << SB_DEBUG_INFO;
+            if(orgPerformerID!=newPerformerID)
             {
                 //	Update models!
                 Context::instance()->getController()->refreshModels();
@@ -1308,13 +1537,10 @@ SonglistScreenHandler::saveSongDetail()
     //	Handle performer name edits
     if(hasCaseChange==0 && editPerformerName!=newSongID.performerName)
     {
-        SBID selectedPerformer=processPerformerEdit(editPerformerName,newSongID,mw->ui.songEditPerformerName);
-        if(selectedPerformer==SBID())
+        if(processPerformerEdit(editPerformerName,newSongID,mw->ui.songEditPerformerName)==0)
         {
             return;
         }
-        newSongID.sb_performer_id=selectedPerformer.sb_item_id;
-        newSongID.performerName=selectedPerformer.performerName;
     }
 
     qDebug() << SB_DEBUG_INFO << "orgSongID:sb_performer_id" << orgSongID.sb_performer_id;
@@ -1565,10 +1791,13 @@ SonglistScreenHandler::tableViewCellClicked(const QModelIndex& idx)
 void
 SonglistScreenHandler::init()
 {
+    addNewRelatedPerformerCompleter=NULL;
     st.clear();
     currentNews.clear();
     relatedItems.clear();
     currentSaveButton=NULL;
+    pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+    setRelatedPerformerBeingAddedFlag(0);
 
     const MainWindow* mw=Context::instance()->getMainWindow();
 
@@ -1583,21 +1812,18 @@ SonglistScreenHandler::init()
              this, SLOT(editItem()));
 }
 
-SBID
-SonglistScreenHandler::processPerformerEdit(const QString &editPerformerName, const SBID &newSongID, QLineEdit* field)
+//	return true if selected
+bool
+SonglistScreenHandler::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLineEdit* field, bool saveNewPerformer)
 {
-    //	Handle performer edits
-    SBID selectedPerformer;
+    bool resultCode=1;
+    SBID selectedPerformerID=newID;
 
     qDebug() << SB_DEBUG_INFO << "editPerformerName:" << editPerformerName;
-    qDebug() << SB_DEBUG_INFO << "newSongID.performerName:" << newSongID.performerName;
+    qDebug() << SB_DEBUG_INFO << "newID.performerName:" << newID.performerName;
 
-    selectedPerformer.sb_item_type=SBID::sb_type_performer;
-    selectedPerformer.performerName=editPerformerName;
-
-    qDebug() << SB_DEBUG_INFO << editPerformerName << "!=" << newSongID.performerName << newSongID.sb_performer_id;
     SBModelPerformer* p=new SBModelPerformer();
-    SBSqlQueryModel* performerMatches=p->matchPerformer(newSongID, editPerformerName);
+    SBSqlQueryModel* performerMatches=p->matchPerformer(newID, editPerformerName);
     qDebug() << SB_DEBUG_INFO << performerMatches->rowCount();
     qDebug() << SB_DEBUG_INFO << performerMatches->record(1).value(0).toInt();
 
@@ -1608,47 +1834,87 @@ SonglistScreenHandler::processPerformerEdit(const QString &editPerformerName, co
             performerMatches->record(1).value(0).toInt()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            selectedPerformer.sb_item_id=performerMatches->record(1).value(1).toInt();
-            selectedPerformer.performerName=performerMatches->record(1).value(2).toString();
+            qDebug() << SB_DEBUG_INFO;
+            selectedPerformerID.sb_performer_id=performerMatches->record(1).value(1).toInt();
+            selectedPerformerID.performerName=performerMatches->record(1).value(2).toString();
+            qDebug() << SB_DEBUG_INFO << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
+            resultCode=1;
         }
         else
         {
             qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(editPerformerName,newSongID,performerMatches);
+            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(editPerformerName,newID,performerMatches);
             pu->exec();
-            selectedPerformer=pu->getSBID();
 
             qDebug() << SB_DEBUG_INFO << pu->hasSelectedItem();
 
             //	Go back to screen if no item has been selected
             if(pu->hasSelectedItem()==0)
             {
-                return SBID();
+                qDebug() << SB_DEBUG_INFO;
+                return false;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO;
+                selectedPerformerID=pu->getSBID();
             }
         }
 
         //	Update field
         if(field)
         {
-            field->setText(selectedPerformer.performerName);
+            qDebug() << SB_DEBUG_INFO;
+            field->setText(selectedPerformerID.performerName);
         }
-
-        qDebug() << SB_DEBUG_INFO << "selected performer:" << selectedPerformer.sb_item_id << selectedPerformer.performerName;
+        qDebug() << SB_DEBUG_INFO << "selected performer:" << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
     }
 
-    if(selectedPerformer.sb_item_id==-1)
+    if(selectedPerformerID.sb_performer_id==-1 && saveNewPerformer==1)
     {
         //	Save new performer if new
-        qDebug() << SB_DEBUG_INFO << "save new performer:" << selectedPerformer.sb_item_id << selectedPerformer.performerName;
-        const bool resultCode=p->saveNewPerformer(selectedPerformer);
-        if(resultCode==0)
+        qDebug() << SB_DEBUG_INFO << "save new performer:" << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
+        resultCode=p->saveNewPerformer(selectedPerformerID);
+
+    }
+    if(resultCode==1)
+    {
+        newID.sb_performer_id=selectedPerformerID.sb_performer_id;
+        if(newID.sb_item_type==SBID::sb_type_performer)
         {
-            selectedPerformer=SBID();
+            newID.sb_item_id=newID.sb_performer_id;
+        }
+        newID.performerName=selectedPerformerID.performerName;
+    }
+    qDebug() << SB_DEBUG_INFO << resultCode;
+    qDebug() << SB_DEBUG_INFO << "newID:" << newID.sb_performer_id << newID.performerName;
+    return resultCode;
+}
+
+void
+SonglistScreenHandler::setRelatedPerformerBeingAddedFlag(bool flag)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
+    if(flag)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        mw->ui.pbPerformerEditAddRelatedPerformer->setEnabled(0);
+        mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        mw->ui.pbPerformerEditAddRelatedPerformer->setEnabled(1);
+
+        if(pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag==1)
+        {
+            mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
         }
     }
-    return selectedPerformer;
+    relatedPerformerBeingAddedFlag=flag;
 }
 
 void
@@ -1666,4 +1932,69 @@ SonglistScreenHandler::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type
         int h=l->height();
         l->setPixmap(p.scaled(w,h,Qt::KeepAspectRatio));
     }
+}
+
+///	PRIVATE SLOTS
+void
+SonglistScreenHandler::relatedPerformerSelected(const QModelIndex &idx)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+    qDebug() << SB_DEBUG_INFO << idx;
+    closeRelatedPerformerComboBox();
+
+    int currentRowCount=rpt->rowCount();
+    qDebug() << SB_DEBUG_INFO << currentRowCount;
+
+    rpt->setRowCount(currentRowCount);
+    rpt->insertRow(currentRowCount);
+
+    QString newRelatedPerformerName;
+    int newRelatedPerformerID;
+    if(addNewRelatedPerformerCompleter!=NULL)
+    {
+        QSqlQueryModel* m=dynamic_cast<QSqlQueryModel *>(addNewRelatedPerformerCompleter->model());
+        if(m!=NULL)
+        {
+            qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()-1).data().toString();
+            qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()).data().toString();
+            qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()+1).data().toString();
+            newRelatedPerformerName=idx.sibling(idx.row(),idx.column()).data().toString();
+            newRelatedPerformerID=idx.sibling(idx.row(),idx.column()+1).data().toInt();
+        }
+            else
+        {
+            qDebug() << SB_DEBUG_NPTR << "m";
+        }
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_NPTR << "addNewRelatedPerformerCompleter";
+    }
+    if(newRelatedPerformerName.length()==0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Unknown Performer!");
+        msgBox.exec();
+        return;
+    }
+
+    //	Populate table
+    QTableWidgetItem *newItem=NULL;
+
+    newItem=new QTableWidgetItem;	//	Performer name
+    newItem->setText(newRelatedPerformerName);
+    newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
+    rpt->setItem(currentRowCount,0,newItem);
+
+    newItem=new QTableWidgetItem;	//	Performer ID
+    newItem->setText(QString("%1").arg(newRelatedPerformerID));
+    rpt->setItem(currentRowCount,1,newItem);
+
+    //	Make item visible
+    rpt->scrollToBottom();
+    rpt->setFocus();
+    rpt->setCurrentCell(currentRowCount,0);
+    mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
 }

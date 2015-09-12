@@ -1,12 +1,12 @@
-    #include <QDebug>
-    #include <QKeyEvent>
-    #include <QScrollBar>
-    #include <QCompleter>
-    #include <QDialog>
-    #include <QMessageBox>
-    #include <QSplashScreen>
-    #include <QSqlDatabase>
-    #include <QStyleFactory>
+#include <QDebug>
+#include <QKeyEvent>
+#include <QScrollBar>
+#include <QCompleter>
+#include <QDialog>
+#include <QMessageBox>
+#include <QSplashScreen>
+#include <QSqlDatabase>
+#include <QStyleFactory>
 #include <QTimer>
 
 #include "BackgroundThread.h"
@@ -234,41 +234,43 @@ Controller::updateStatusBar(const QString &s)
 void
 Controller::keyPressEvent(QKeyEvent *event)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(event==NULL)
     {
         qDebug() << SB_DEBUG_NPTR << "*event";
         return;
     }
     MainWindow* mw=Context::instance()->getMainWindow();
-    qDebug() << SB_DEBUG_INFO;
-    if(event->key()==0x01000004 || event->key()==0x01000005)
+    const int eventKey=event->key();
+    if(eventKey==0x01000004 || eventKey==0x01000005)
     {
-    qDebug() << SB_DEBUG_INFO;
         //	Return key
+        qDebug() << SB_DEBUG_INFO;
         Context::instance()->getSonglistScreenHandler()->handleEnterKey();
 
     }
-    if(event->key()==0x1000000)
+    if(eventKey==0x1000000)
     {
         //	Catch escape key
         //	20150907: always call to clear search filter
         clearSearchFilter();
         Context::instance()->getSonglistScreenHandler()->handleEscapeKey();
-        qDebug() << SB_DEBUG_INFO;
     }
-    else if(event->key()==76 && event->modifiers() & Qt::ControlModifier)
+    else if(eventKey==76 && event->modifiers() & Qt::ControlModifier)
     {
         //	Set focus to search edit and focus all available text if ctrl-L
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->selectAll();
     }
-    else if(event->key()==85 && event->modifiers() & Qt::ControlModifier && mw->ui.searchEdit->hasFocus())
+    else if(eventKey==85 && event->modifiers() & Qt::ControlModifier && mw->ui.searchEdit->hasFocus())
     {
         //	Clear searchedit if ctrl-U and if it has focus
         mw->ui.searchEdit->clear();
     }
-    qDebug() << SB_DEBUG_INFO;
+    else if(eventKey==Qt::Key_Delete || event->key()==Qt::Key_Backspace)
+    {
+        qDebug() << SB_DEBUG_INFO;	//	future delete key handling
+    }
+    qDebug() << SB_DEBUG_INFO << eventKey;
 }
 
 //PRIVATE:

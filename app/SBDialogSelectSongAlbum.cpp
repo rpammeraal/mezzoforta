@@ -228,6 +228,7 @@ SBDialogSelectSongAlbum::OK(const QString& i)
             SBID newID;
             newID.sb_item_type=SBID::sb_type_performer;
             newID.sb_item_id=i.toInt();
+            newID.sb_performer_id=i.toInt();
             newID.performerName=itemsDisplayed[i.toInt()].performerName;
             qDebug() << SB_DEBUG_INFO << newID.performerName;
             songID=newID;

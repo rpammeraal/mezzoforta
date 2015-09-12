@@ -226,7 +226,8 @@ DataAccessLayer::getCompleterModelPerformer()
 {
     QString query=
         "SELECT DISTINCT "
-            "a.name "
+            "a.name, "
+            "a.artist_id "
         "FROM "
             "___SB_SCHEMA_NAME___artist a "
         "ORDER BY 1 ";

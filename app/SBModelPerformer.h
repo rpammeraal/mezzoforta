@@ -15,14 +15,17 @@ public:
     SBModelPerformer();
     ~SBModelPerformer();
 
+    QString addRelatedPerformer(int performerID1, int performerID2) const;
+    QString deleteRelatedPerformer(int performerID1, int performerID2) const;
     SBID getDetail(const SBID& id);
     SBSqlQueryModel* getAllAlbums(const SBID& id);
     SBSqlQueryModel* getAllCharts(const SBID& id);
+    SBSqlQueryModel* getAllPerformers();
     SBSqlQueryModel* getAllSongs(const SBID& id);
     SBSqlQueryModel* getRelatedPerformers(const SBID& id);
     SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);
     bool saveNewPerformer(SBID& newPerformerID);
-    bool updateExistingPerformer(const SBID& orgPerformerID, SBID& newPerformerID);
+    bool updateExistingPerformer(const SBID& orgPerformerID, SBID& newPerformerID, const QStringList& extraSQL=QStringList());
 
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 

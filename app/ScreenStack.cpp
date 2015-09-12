@@ -19,6 +19,11 @@ ScreenStack::clear()
     init();
 }
 
+int
+ScreenStack::count() const
+{
+    return stack.count();
+}
 SBID
 ScreenStack::popScreen()
 {

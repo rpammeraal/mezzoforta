@@ -14,6 +14,67 @@ SBModelPerformer::~SBModelPerformer()
 {
 }
 
+QString
+SBModelPerformer::addRelatedPerformer(int performerID1, int performerID2) const
+{
+    if(performerID1==performerID2)
+    {
+        return QString();
+    }
+    return QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___artist_rel "
+        "( "
+            "artist1_id, "
+            "artist2_id "
+        ") "
+        "SELECT DISTINCT "
+            "%1,%2 "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist_rel "
+        "where "
+            "NOT EXISTS "
+            "( "
+                "SELECT "
+                    "NULL "
+                "FROM "
+                    "___SB_SCHEMA_NAME___artist_rel "
+                "WHERE "
+                    "artist1_id=%1 and "
+                    "artist2_id=%2 "
+            ") AND "
+            "NOT EXISTS "
+            "( "
+                "SELECT "
+                    "NULL "
+                "FROM "
+                    "___SB_SCHEMA_NAME___artist_rel "
+                "WHERE "
+                    "artist1_id=%2 and "
+                    "artist2_id=%1 "
+            ") "
+    )
+        .arg(performerID1)
+        .arg(performerID2)
+    ;
+}
+
+QString
+SBModelPerformer::deleteRelatedPerformer(int performerID1, int performerID2) const
+{
+    return QString
+    (
+        "DELETE FROM "
+            "___SB_SCHEMA_NAME___artist_rel "
+        "WHERE "
+            "(artist1_id=%1 AND artist2_id=%2) OR "
+            "(artist1_id=%2 AND artist2_id=%1)  "
+    )
+        .arg(performerID1)
+        .arg(performerID2)
+    ;
+}
+
 SBID
 SBModelPerformer::getDetail(const SBID& id)
 {
@@ -156,6 +217,23 @@ SBModelPerformer::getAllCharts(const SBID& id)
 }
 
 SBSqlQueryModel*
+SBModelPerformer::getAllPerformers()
+{
+    QString q=QString
+    (
+        "SELECT "
+            "a.name AS \"name\", "
+            "a.artist_id AS SB_PERFORMER_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist a "
+        "ORDER BY "
+            "a.name "
+    );
+
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
 SBModelPerformer::getAllSongs(const SBID& id)
 {
     QString q=QString
@@ -207,6 +285,7 @@ SBModelPerformer::getRelatedPerformers(const SBID& id)
                     "ar2.artist2_id=r2.artist_id "
         "WHERE "
             "ar2.artist1_id=%1 "
+        "ORDER BY 2 "
     ).arg(id.sb_item_id);
 
     return new SBSqlQueryModel(q);
@@ -274,7 +353,7 @@ SBModelPerformer::saveNewPerformer(SBID &id)
     bool resultCode=1;
 
     qDebug() << SB_DEBUG_INFO;
-    if(id.sb_item_id==-1)
+    if(id.sb_performer_id==-1)
     {
         //	Insert new
         q=QString
@@ -321,7 +400,11 @@ SBModelPerformer::saveNewPerformer(SBID &id)
         QSqlQuery select(q,db);
         select.next();
 
-        id.sb_item_id=select.value(0).toInt();
+        if(id.sb_item_type==SBID::sb_type_performer)
+        {
+            //	Only set if type equals performer
+            id.sb_item_id=select.value(0).toInt();
+        }
         id.sb_performer_id=select.value(0).toInt();
         qDebug() << SB_DEBUG_INFO << "id.sb_item_id=" << id.sb_item_id;
     }
@@ -329,7 +412,7 @@ SBModelPerformer::saveNewPerformer(SBID &id)
 }
 
 bool
-SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID)
+SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -338,17 +421,66 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
     QString newSoundex=Common::soundex(newPerformerID.performerName);
 
     //	The following flags should be mutually exclusive
-    bool saveNewPerformer=0;
+    bool nameRenameFlag=0;
+    bool mergeToExistingPerformer=0;
 
-    //	Determine what need to be done
-    if(orgPerformerID.sb_item_id==newPerformerID.sb_item_id &&
-        newPerformerID.sb_item_id==-1)
+    //	The following flags can be set independently from eachother.
+    //	However, they can be turned of by detecting any of the flags above.
+    bool urlChangedFlag=0;
+    bool notesChangedFlag=0;
+    bool extraSQLFlag=0;
+
+    qDebug() << SB_DEBUG_INFO << "old"
+        << ":sb_item_id=" << orgPerformerID.sb_item_id
+    ;
+    qDebug() << SB_DEBUG_INFO << "new"
+        << ":sb_item_id=" << newPerformerID.sb_item_id
+    ;
+
+    //	1.	Set attribute flags
+    if(orgPerformerID.url!=newPerformerID.url)
     {
-        saveNewPerformer=1;
+        urlChangedFlag=1;
+    }
+    if(orgPerformerID.notes!=newPerformerID.notes)
+    {
+        notesChangedFlag=1;
     }
 
-    //	Sanity check on flags
-    if(saveNewPerformer==0)
+    //	2.	Determine what need to be done
+    if(newPerformerID.sb_item_id==-1)
+    {
+        nameRenameFlag=1;
+        newPerformerID.sb_performer_id=orgPerformerID.sb_performer_id;
+        if(newPerformerID.sb_item_type==SBID::sb_type_performer)
+        {
+            newPerformerID.sb_item_id=newPerformerID.sb_performer_id;
+        }
+    }
+
+    if(orgPerformerID.sb_item_id!=newPerformerID.sb_item_id &&
+        newPerformerID.sb_item_id!=-1)
+    {
+        mergeToExistingPerformer=1;
+    }
+
+    if(extraSQL.count()>0)
+    {
+        extraSQLFlag=1;
+    }
+
+    qDebug() << SB_DEBUG_INFO << "nameRenameFlag" << nameRenameFlag;
+    qDebug() << SB_DEBUG_INFO << "mergeToExistingPerformer" << mergeToExistingPerformer;
+    qDebug() << SB_DEBUG_INFO << "urlChangedFlag" << urlChangedFlag;
+    qDebug() << SB_DEBUG_INFO << "notesChangedFlag" << notesChangedFlag;
+    qDebug() << SB_DEBUG_INFO << "extraSQLFlag" << extraSQLFlag;
+
+    //	3.	Sanity check on flags
+    if(nameRenameFlag==0 &&
+        mergeToExistingPerformer==0 &&
+        urlChangedFlag==0 &&
+        notesChangedFlag==0 &&
+        extraSQLFlag==0)
     {
         QMessageBox msgBox;
         msgBox.setText("No flags are set in savePerformer");
@@ -356,7 +488,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
         return 0;
     }
 
-    if((int)saveNewPerformer>1)
+    if((int)nameRenameFlag+(int)mergeToExistingPerformer>1)
     {
         QMessageBox msgBox;
         msgBox.setText("SavePerformer: multiple flags set!");
@@ -364,36 +496,228 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
         return 0;
     }
 
-    qDebug() << SB_DEBUG_INFO << "saveNewPerformer" << saveNewPerformer;
-
-    //	Collect work to be done.
-    if(saveNewPerformer==1)
+    //	Discard attribute changes when merging
+    if(mergeToExistingPerformer==1)
     {
-        //	Insert new
+        urlChangedFlag=0;
+        notesChangedFlag=0;
+        extraSQLFlag=0;
+    }
+
+    if(extraSQLFlag==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        allQueries.append(extraSQL);
+    }
+
+    //	4.	Collect work to be done.
+
+    //		A.	Attribute changes
+    if(nameRenameFlag==1)
+    {
+        //	Update name
         q=QString
         (
-            "INSERT INTO ___SB_SCHEMA_NAME___artist "
-            "( "
-                "artist_id, "
-                "name, "
-                "sort_name, "
-                "soundex "
-            ") "
-            "SELECT "
-                "MAX(artist_id)+1, "
-                "'%1', "
-                "'%2', "
-                "'%3' "
-            "FROM "
+            "UPDATE "
                 "___SB_SCHEMA_NAME___artist "
-        )
-            .arg(newPerformerID.performerName)
-            .arg(Common::removeArticles(newPerformerID.performerName))
-            .arg(newSoundex)
+            "SET     "
+                "name='%1' "
+            "WHERE "
+                "artist_id=%2 "
+         )
+            .arg(Common::escapeSingleQuotes(newPerformerID.performerName))
+            .arg(newPerformerID.sb_item_id)
         ;
         allQueries.append(q);
     }
 
+    //		B. 	Non-attribute changes
+    //			A.	Create
+
+    //			B.	Update
+    if(mergeToExistingPerformer==1)
+    {
+        //	1.	artist_rel
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___artist_rel "
+            "SET     "
+                "artist1_id=%1 "
+            "WHERE "
+                "artist1_id=%2 "
+        )
+            .arg(newPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___artist_rel "
+            "SET     "
+                "artist2_id=%1 "
+            "WHERE "
+                "artist2_id=%2 "
+        )
+            .arg(newPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+    }
+
+    if(mergeToExistingPerformer==1)
+    {
+        //	1.	Performance
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___performance "
+            "( "
+                "song_id, "
+                "artist_id, "
+                "role_id, "
+                "year, "
+                "notes "
+            ") "
+            "SELECT "
+                "p.song_id, "
+                "%1, "
+                "p.role_id, "
+                "p.year, "
+                "p.notes "
+            "FROM "
+                "___SB_SCHEMA_NAME___performance p "
+            "WHERE "
+                "p.artist_id=%2 AND "
+                "NOT EXISTS "
+                "( "
+                    "SELECT "
+                        "NULL "
+                    "FROM "
+                        "___SB_SCHEMA_NAME___performance q "
+                    "WHERE "
+                        "q.song_id=p.song_id AND "
+                        "q.artist_id=%1 "
+                ") "
+        )
+            .arg(newPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+
+        //	2.	Record
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record "
+            "SET     "
+                "artist_id=%1 "
+            "WHERE "
+                "artist_id=%2 "
+        )
+            .arg(newPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+
+        //	3.	Update performance tables
+        QStringList performanceTable;
+        performanceTable.append("chart_performance");
+        performanceTable.append("collection_performance");
+        performanceTable.append("online_performance");
+        performanceTable.append("playlist_performance");
+        performanceTable.append("record_performance");
+
+        for(int i=0;i<performanceTable.size();i++)
+        {
+            q=QString
+            (
+                "UPDATE "
+                    "___SB_SCHEMA_NAME___%1 "
+                "SET "
+                    "artist_id=%2 "
+                "WHERE "
+                    "artist_id=%3 "
+             )
+                .arg(performanceTable.at(i))
+                .arg(newPerformerID.sb_performer_id)
+                .arg(orgPerformerID.sb_performer_id)
+            ;
+            allQueries.append(q);
+        }
+
+        //	4.	Update record_performance for op_ fields
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record_performance "
+            "SET     "
+                "op_artist_id=%1 "
+            "WHERE "
+                "op_artist_id=%2 "
+         )
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
+        ;
+        allQueries.append(q);
+
+        //	5.	Update toplay
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___toplay "
+            "SET     "
+                "artist_id=%1 "
+            "WHERE "
+                "artist_id=%2 "
+         )
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
+        ;
+        allQueries.append(q);
+    }
+
+    //			C.	Remove
+    if(mergeToExistingPerformer==1)
+    {
+        //	Remove performance
+        q=QString
+        (
+            "DELETE FROM  "
+                "___SB_SCHEMA_NAME___performance "
+            "WHERE "
+                "artist_id=%1 "
+        )
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+
+        //	Remove entries pointing to eachother in artist_rel
+        q=QString
+        (
+            "DELETE FROM  "
+                "___SB_SCHEMA_NAME___artist_rel "
+            "WHERE "
+                "artist1_id=artist2_id "
+        )
+        ;
+        allQueries.append(q);
+
+        //	Remove artist
+        q=QString
+        (
+            "DELETE FROM  "
+                "___SB_SCHEMA_NAME___artist "
+            "WHERE "
+                "artist_id=%1 "
+        )
+            .arg(orgPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+    }
+
+    qDebug() << SB_DEBUG_INFO << allQueries.count();
     return dal->executeBatch(allQueries);
 }
 
