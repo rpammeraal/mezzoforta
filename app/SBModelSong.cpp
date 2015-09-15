@@ -46,6 +46,7 @@ SBModelSong::getDetail(const SBID& id)
     ;
     dal->customize(q);
 
+    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
 
     result.sb_item_type       =SBID::sb_type_song;
@@ -781,10 +782,20 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
                 "___SB_SCHEMA_NAME___online_performance "
             "WHERE "
                 "song_id=%1 "
-                //"artist_id=%2 "
         )
             .arg(oldSongID.sb_item_id)
-            //.arg(oldSongID.sb_performer_id)
+        ;
+        allQueries.append(q);
+
+        //	3.	Remove toplay
+        q=QString
+        (
+            "DELETE FROM "
+                "___SB_SCHEMA_NAME___toplay "
+            "WHERE "
+                "song_id=%1 "
+        )
+            .arg(oldSongID.sb_item_id)
         ;
         allQueries.append(q);
     }

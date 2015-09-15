@@ -531,6 +531,42 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
         allQueries.append(q);
     }
 
+    if(notesChangedFlag==1)
+    {
+        //	Update notes
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___artist "
+            "SET     "
+                "notes='%1' "
+            "WHERE "
+                "artist_id=%2 "
+         )
+            .arg(Common::escapeSingleQuotes(newPerformerID.notes))
+            .arg(newPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+    }
+
+    if(urlChangedFlag==1)
+    {
+        //	Update notes
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___artist "
+            "SET     "
+                "www='%1' "
+            "WHERE "
+                "artist_id=%2 "
+         )
+            .arg(Common::escapeSingleQuotes(newPerformerID.url))
+            .arg(newPerformerID.sb_item_id)
+        ;
+        allQueries.append(q);
+    }
+
     //		B. 	Non-attribute changes
     //			A.	Create
 
@@ -671,6 +707,21 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
                 "artist_id=%1 "
             "WHERE "
                 "artist_id=%2 "
+         )
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
+        ;
+        allQueries.append(q);
+
+        //	6.	Update playlist_composite
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist_composite "
+            "SET     "
+                "playlist_artist_id=%1 "
+            "WHERE "
+                "playlist_artist_id=%2 "
          )
             .arg(newPerformerID.sb_performer_id)
             .arg(orgPerformerID.sb_performer_id)

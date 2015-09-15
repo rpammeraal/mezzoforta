@@ -3,9 +3,10 @@
 
 #include "Common.h"
 #include "Context.h"
+#include "Controller.h"
 #include "DataAccessLayer.h"
 #include "MainWindow.h"
-#include "Controller.h"
+#include "Navigator.h"
 
 MainWindow::MainWindow()
 {
@@ -31,7 +32,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 void
 MainWindow::keyPressEvent(QKeyEvent * event)
 {
-    Context::instance()->getController()->keyPressEvent(event);
+    Context::instance()->getNavigator()->keyPressEvent(event);
     QMainWindow::keyPressEvent(event);
 }
 

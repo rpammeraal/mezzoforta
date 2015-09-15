@@ -11,7 +11,6 @@ HEADERS     = \
     SBModelPlaylist.h \
     SBModelGenrelist.h \
     SBID.h \
-    SonglistScreenHandler.h \
     Context.h \
     ScreenStack.h \
     SBModelSong.h \
@@ -26,7 +25,16 @@ HEADERS     = \
     SBDialogRenamePlaylist.h \
     SBDialogSelectSongAlbum.h \
     BackgroundThread.h \
-    SBTime.h
+    SBTime.h \
+    SBTab.h \
+    SBTabPerformerEdit.h \
+    SBTabSongEdit.h \
+    SBTabSongsAll.h \
+    SBTabPlaylistDetail.h \
+    SBTabPerformerDetail.h \
+    SBTabAlbumDetail.h \
+    SBTabSongDetail.h \
+    Navigator.h
 
 SOURCES     = \
     main.cpp \
@@ -40,7 +48,6 @@ SOURCES     = \
     SBModelPlaylist.cpp \
     SBModelGenreList.cpp \
     SBID.cpp \
-    SonglistScreenHandler.cpp \
     Context.cpp \
     ScreenStack.cpp \
     SBModelSong.cpp \
@@ -55,7 +62,16 @@ SOURCES     = \
     SBDialogRenamePlaylist.cpp \
     SBDialogSelectSongAlbum.cpp \
     BackgroundThread.cpp \
-    SBTime.cpp
+    SBTime.cpp \
+    SBTab.cpp \
+    SBTabPerformerEdit.cpp \
+    SBTabSongEdit.cpp \
+    SBTabSongsAll.cpp \
+    SBTabPlaylistDetail.cpp \
+    SBTabPerformerDetail.cpp \
+    SBTabAlbumDetail.cpp \
+    SBTabSongDetail.cpp \
+    Navigator.cpp
 
 # install
 target.path = .

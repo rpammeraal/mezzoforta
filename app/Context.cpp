@@ -34,10 +34,23 @@ Context::setMainWindow(MainWindow* nmw)
 }
 
 void
-Context::setSonglistScreenHandler(SonglistScreenHandler* nssh)
+Context::setNavigator(Navigator* nssh)
 {
     ssh=nssh;
 }
+
+void
+Context::setScreenStack(ScreenStack* nst)
+{
+    st=nst;
+}
+
+void
+Context::setTab(SBTab *ntab)
+{
+    tab=ntab;
+}
+
 
 ///	PRIVATE
 Context::Context()
@@ -58,4 +71,6 @@ Context::init()
     lcc=NULL;
     mw=NULL;
     ssh=NULL;
+    st=NULL;
+    tab=NULL;
 }

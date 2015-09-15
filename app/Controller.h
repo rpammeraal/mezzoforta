@@ -11,19 +11,16 @@ class QAction;
 class QApplication;
 class QItemSelection;
 class QSortFilterProxyModel;
-class QKeyEvent;
 class QStandardItemModel;
 class QSqlDatabase;
 
 class BackgroundThread;
 class MainWindow;
 class SBModelPlaylist;
-class SBModelGenrelist;
-class SonglistScreenHandler;
+class Navigator;
 
 #define SB_TAB_UNDEF    -1
 #define SB_TAB_PLAYLIST  0
-#define SB_TAB_GENRE     1
 
 #define SB_DEFAULT_STATUS "Welcome to Songbase!"
 
@@ -48,18 +45,12 @@ public slots:
     void openDatabase();
 
     //	Apply filters and selections
-    void applyGenreSelection(const QItemSelection &selected, const QItemSelection &deselected);
     void changeSchema(const QString& newSchema);
-    void openItemFromCompleter(const QModelIndex& i) const;
-
-    //	Data Updates
-    void updateGenre(QModelIndex i,QModelIndex j);
 
     //	General UI
     void updateStatusBar(const QString &s);
 
 protected:
-    virtual void keyPressEvent(QKeyEvent * event);
 
 private:
     BackgroundThread* bgt;
@@ -70,13 +61,7 @@ private:
     QTimer updateAllPlaylistDurationTimer;
     QApplication* app;
 
-    //	Keep track of what is selected
-    QString currentFilter;      //	"" indicates no filter
-
     //	Handle reset of filters and selections
-    void resetAllFiltersAndSelections();
-    void clearGenreSelection();
-    void clearSearchFilter();
 
     //	UI config
     bool openMainWindow(bool startup);

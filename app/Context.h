@@ -11,7 +11,9 @@ class DataAccessLayer;
 class ExternalData;
 class LeftColumnChooser;
 class MainWindow;
-class SonglistScreenHandler;
+class ScreenStack;
+class Navigator;
+class SBTab;
 
 
 class Context
@@ -30,14 +32,18 @@ public:
     inline DataAccessLayer* getDataAccessLayer() const { return dal; }
     inline LeftColumnChooser* getLeftColumnChooser() const { return lcc; }
     inline MainWindow* getMainWindow() const { return mw; }
-    inline SonglistScreenHandler* getSonglistScreenHandler() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
+    inline Navigator* getNavigator() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
+    inline ScreenStack* getScreenStack() const { if(!st) { qDebug() << SB_DEBUG_NPTR; } return st; }
+    inline SBTab* getTab() const { if(!tab) { qDebug() << SB_DEBUG_NPTR; } return tab; }
 
     void setBackgroundThread(BackgroundThread* nbgt);
     void setController(Controller* nc);
     void setDataAccessLayer(DataAccessLayer* ndal);
     void setLeftColumnChooser(LeftColumnChooser* nlcc);
     void setMainWindow(MainWindow* nmw);
-    void setSonglistScreenHandler(SonglistScreenHandler* nssh);
+    void setNavigator(Navigator* nssh);
+    void setScreenStack(ScreenStack* st);
+    void setTab(SBTab* tab);
 
 private:
     BackgroundThread* bgt;
@@ -45,7 +51,9 @@ private:
     DataAccessLayer* dal;
     LeftColumnChooser* lcc;
     MainWindow* mw;
-    SonglistScreenHandler* ssh;
+    Navigator* ssh;
+    ScreenStack* st;
+    SBTab* tab;
 
     Context();
     ~Context();

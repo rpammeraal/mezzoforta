@@ -9,15 +9,23 @@
 
 class QLabel;
 class Controller;
-class SonglistScreenHandler;
+class Navigator;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
     friend class Controller;
-    friend class SonglistScreenHandler;
+    friend class Navigator;
     friend class LeftColumnChooser;
+    friend class SBTab;
+    friend class SBTabAlbumDetail;
+    friend class SBTabPerformerDetail;
+    friend class SBTabPerformerEdit;
+    friend class SBTabPlaylistDetail;
+    friend class SBTabSongDetail;
+    friend class SBTabSongEdit;
+    friend class SBTabSongsAll;
 
 public:
     MainWindow();

@@ -385,7 +385,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTabWidget" name="songlistTab">
+         <widget class="QTabWidget" name="mainTab">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -409,7 +409,7 @@
           <property name="currentIndex">
            <number>7</number>
           </property>
-          <widget class="QWidget" name="tabAllSongs">
+          <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
             <string>All Songs</string>
            </attribute>
@@ -602,7 +602,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabPlaylistDetail">
+          <widget class="SBTabPlaylistDetail" name="tabPlaylistDetail">
            <attribute name="title">
             <string>Playlist</string>
            </attribute>
@@ -795,7 +795,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabPerformerDetail">
+          <widget class="SBTabPerformerDetail" name="tabPerformerDetail">
            <attribute name="title">
             <string>Performer</string>
            </attribute>
@@ -1267,7 +1267,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabAlbumDetail">
+          <widget class="SBTabAlbumDetail" name="tabAlbumDetail">
            <attribute name="title">
             <string>Album</string>
            </attribute>
@@ -1623,7 +1623,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabSongDetail">
+          <widget class="SBTabSongDetail" name="tabSongDetail">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -1823,7 +1823,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>4</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tabSongDetailPerformedBy">
                <attribute name="title">
@@ -2339,7 +2339,7 @@ Click on 'All Songs' to continue.</string>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabSongEdit">
+          <widget class="SBTabSongEdit" name="tabSongEdit">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -2643,7 +2643,7 @@ Click on 'All Songs' to continue.</string>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tabPerformerEdit">
+          <widget class="SBTabPerformerEdit" name="tabPerformerEdit">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -2917,6 +2917,9 @@ Click on 'All Songs' to continue.</string>
                     <property name="text">
                      <string>-</string>
                     </property>
+                    <property name="shortcut">
+                     <string>Del</string>
+                    </property>
                    </widget>
                   </item>
                   <item row="0" column="0">
@@ -2929,6 +2932,9 @@ Click on 'All Songs' to continue.</string>
                     </property>
                     <property name="text">
                      <string>+</string>
+                    </property>
+                    <property name="shortcut">
+                     <string>Ctrl+=</string>
                     </property>
                    </widget>
                   </item>
@@ -3075,6 +3081,48 @@ Click on 'All Songs' to continue.</string>
    <extends>QLabel</extends>
    <header>SBLabel.h</header>
   </customwidget>
+  <customwidget>
+   <class>SBTabPerformerEdit</class>
+   <extends>QWidget</extends>
+   <header>SBTabPerformerEdit.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabSongEdit</class>
+   <extends>QWidget</extends>
+   <header>SBTabSongEdit.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabSongsAll</class>
+   <extends>QWidget</extends>
+   <header>SBTabSongsAll.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabPlaylistDetail</class>
+   <extends>QWidget</extends>
+   <header>SBTabPlaylistDetail.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabPerformerDetail</class>
+   <extends>QWidget</extends>
+   <header>SBTabPerformerDetail.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabAlbumDetail</class>
+   <extends>QWidget</extends>
+   <header>SBTabAlbumDetail.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SBTabSongDetail</class>
+   <extends>QWidget</extends>
+   <header>SBTabSongDetail.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>performerEditName</tabstop>
@@ -3083,16 +3131,16 @@ Click on 'All Songs' to continue.</string>
   <tabstop>performerEditRelatedPerformersList</tabstop>
   <tabstop>pbPerformerEditAddRelatedPerformer</tabstop>
   <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
-  <tabstop>buttonBackward</tabstop>
-  <tabstop>buttonForward</tabstop>
-  <tabstop>searchEdit</tabstop>
-  <tabstop>frPerformerDetailDetailAll</tabstop>
-  <tabstop>playlistDetailSongList</tabstop>
   <tabstop>pbPerformerEditSave</tabstop>
-  <tabstop>performerDetailNewsPage</tabstop>
   <tabstop>pbPerformerEditCancel</tabstop>
+  <tabstop>pbNA2</tabstop>
+  <tabstop>songEditTitle</tabstop>
+  <tabstop>songEditPerformerName</tabstop>
+  <tabstop>songEditYearOfRelease</tabstop>
+  <tabstop>performerDetailNewsPage</tabstop>
+  <tabstop>performerDetailHomepage</tabstop>
   <tabstop>leftColumnChooser</tabstop>
-  <tabstop>songlistTab</tabstop>
+  <tabstop>mainTab</tabstop>
   <tabstop>allSongsList</tabstop>
   <tabstop>albumDetailAlbumContents</tabstop>
   <tabstop>albumDetailReviewsHome</tabstop>
@@ -3109,22 +3157,22 @@ Click on 'All Songs' to continue.</string>
   <tabstop>performerDetailNewsHome</tabstop>
   <tabstop>tabPerformerDetailLists</tabstop>
   <tabstop>performerDetailPerformances</tabstop>
-  <tabstop>tabPerformerEditLists</tabstop>
+  <tabstop>tabAlbumDetailLists</tabstop>
   <tabstop>performerDetailCharts</tabstop>
   <tabstop>statusBar</tabstop>
-  <tabstop>pbSongEditCancel</tabstop>
+  <tabstop>playlistDetailSongList</tabstop>
+  <tabstop>performerDetailWikipediaPage</tabstop>
+  <tabstop>frPerformerDetailDetailAll</tabstop>
+  <tabstop>songEditPlaylists</tabstop>
+  <tabstop>buttonBackward</tabstop>
+  <tabstop>buttonForward</tabstop>
+  <tabstop>searchEdit</tabstop>
+  <tabstop>tabPerformerEditLists</tabstop>
   <tabstop>songEditNotes</tabstop>
   <tabstop>pbSongEditSave</tabstop>
-  <tabstop>songEditTitle</tabstop>
-  <tabstop>songEditPerformerName</tabstop>
-  <tabstop>pbNA2</tabstop>
-  <tabstop>songEditYearOfRelease</tabstop>
+  <tabstop>pbSongEditCancel</tabstop>
   <tabstop>tabSongEditLists</tabstop>
-  <tabstop>songEditPlaylists</tabstop>
   <tabstop>songEditLyrics</tabstop>
-  <tabstop>performerDetailWikipediaPage</tabstop>
-  <tabstop>tabAlbumDetailLists</tabstop>
-  <tabstop>performerDetailHomepage</tabstop>
  </tabstops>
  <resources>
   <include location="resource.qrc"/>

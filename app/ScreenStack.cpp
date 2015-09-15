@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "ScreenStack.h"
 
+#include <QMessageBox>
+
 ScreenStack::ScreenStack()
 {
     init();
@@ -27,7 +29,7 @@ ScreenStack::count() const
 SBID
 ScreenStack::popScreen()
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    debugShow("popScreen:before");
     SBID id;
 
     if(stack.isEmpty()==0)
@@ -40,7 +42,7 @@ ScreenStack::popScreen()
             currentScreenID=getScreenCount()-1;
         }
     }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    debugShow("popScreen:after");
     return id;
 }
 
@@ -182,13 +184,24 @@ ScreenStack::removeScreen(const SBID &id)
     }
 }
 
+//	Only update if ID's are equal.
 void
 ScreenStack::updateCurrentScreen(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     if(currentScreenID>=0 && currentScreenID<stack.count())
     {
-        stack[currentScreenID]=id;
+        if(currentScreen()==id)
+        {
+            stack[currentScreenID]=id;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "Parameter ID <> current screenstack ID!";
+            QMessageBox msgBox;
+            msgBox.setText("ScreenStack::updateCurrentScreen: Parameter ID <> current screenstack ID!");
+            msgBox.exec();
+        }
     }
     else
     {
@@ -206,6 +219,7 @@ ScreenStack::updateCurrentScreen(const SBID &id)
 void
 ScreenStack::updateSBIDInStack(const SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO << currentScreenID;
     for(int i=0;i<stack.size();i++)
     {
         if(stack.at(i).sb_item_id==id.sb_item_id &&

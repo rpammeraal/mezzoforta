@@ -15,7 +15,7 @@
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
 #include "SBStandardItemModel.h"
-#include "SonglistScreenHandler.h"
+#include "Navigator.h"
 
 ///	PUBLIC
 LeftColumnChooser::LeftColumnChooser() : QObject()
@@ -129,7 +129,7 @@ LeftColumnChooser::deletePlaylist()
         {
             case QMessageBox::Ok:
                 pl.deletePlaylist(id);
-                Context::instance()->getSonglistScreenHandler()->removeFromScreenStack(id);
+                Context::instance()->getNavigator()->removeFromScreenStack(id);
                 populateModel();
 
                 updateText=QString("Removed playlist %1%2%3.")
@@ -214,6 +214,7 @@ LeftColumnChooser::showContextMenu(const QPoint &p)
 void
 LeftColumnChooser::_renamePlaylist(const SBID &id)
 {
+    const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO << id;
     SBModelPlaylist pl;
     pl.renamePlaylist(id);
@@ -228,7 +229,8 @@ LeftColumnChooser::_renamePlaylist(const SBID &id)
         .arg(id.getText())   //	2
         .arg(QChar(180));    //	3
     Context::instance()->getController()->updateStatusBar(updateText);
-    Context::instance()->getSonglistScreenHandler()->refreshTabIfCurrent(id);
+
+    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(id);
 }
 
 void
