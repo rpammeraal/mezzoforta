@@ -9,7 +9,7 @@ class BackgroundThread;
 class Controller;
 class DataAccessLayer;
 class ExternalData;
-class LeftColumnChooser;
+class Chooser;
 class MainWindow;
 class ScreenStack;
 class Navigator;
@@ -30,7 +30,7 @@ public:
     inline BackgroundThread* getBackgroundThread() const { return bgt; }
     inline Controller* getController() const { return c; }
     inline DataAccessLayer* getDataAccessLayer() const { return dal; }
-    inline LeftColumnChooser* getLeftColumnChooser() const { return lcc; }
+    inline Chooser* getChooser() const { return lcc; }
     inline MainWindow* getMainWindow() const { return mw; }
     inline Navigator* getNavigator() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
     inline ScreenStack* getScreenStack() const { if(!st) { qDebug() << SB_DEBUG_NPTR; } return st; }
@@ -39,7 +39,7 @@ public:
     void setBackgroundThread(BackgroundThread* nbgt);
     void setController(Controller* nc);
     void setDataAccessLayer(DataAccessLayer* ndal);
-    void setLeftColumnChooser(LeftColumnChooser* nlcc);
+    void setChooser(Chooser* nlcc);
     void setMainWindow(MainWindow* nmw);
     void setNavigator(Navigator* nssh);
     void setScreenStack(ScreenStack* st);
@@ -49,7 +49,7 @@ private:
     BackgroundThread* bgt;
     Controller* c;
     DataAccessLayer* dal;
-    LeftColumnChooser* lcc;
+    Chooser* lcc;
     MainWindow* mw;
     Navigator* ssh;
     ScreenStack* st;

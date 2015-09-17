@@ -13,7 +13,7 @@
 SBModelPlaylist::SBModelPlaylist()
 {
     qDebug() << SB_DEBUG_INFO << "ctor";
-    _init();
+    init();
 }
 
 SBModelPlaylist::~SBModelPlaylist()
@@ -22,10 +22,8 @@ SBModelPlaylist::~SBModelPlaylist()
 }
 
 void
-SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
+SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) const
 {
-    qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id << assignID.sb_position;
-    qDebug() << SB_DEBUG_INFO << "to" << toID;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
@@ -221,14 +219,14 @@ SBModelPlaylist::assignItem(const SBID &assignID, const SBID &toID)
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
         qDebug() << SB_DEBUG_INFO << q;
-        _calculatePlaylistDuration(toID);
+        recalculatePlaylistDuration(toID);
         qDebug() << SB_DEBUG_INFO;
     }
     qDebug() << SB_DEBUG_INFO;
 }
 
 SBID
-SBModelPlaylist::createNewPlaylist()
+SBModelPlaylist::createNewPlaylist() const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -282,7 +280,7 @@ SBModelPlaylist::createNewPlaylist()
 }
 
 void
-SBModelPlaylist::deleteItem(const SBID &assignID, const SBID &fromID)
+SBModelPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -328,13 +326,13 @@ SBModelPlaylist::deleteItem(const SBID &assignID, const SBID &fromID)
         qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery remove(q,db);
         Q_UNUSED(remove);
-        _reorderPlaylistPositions(fromID);
-        _calculatePlaylistDuration(fromID);
+        reorderPlaylistPositions(fromID);
+        recalculatePlaylistDuration(fromID);
     }
 }
 
 void
-SBModelPlaylist::deletePlaylist(const SBID &id)
+SBModelPlaylist::deletePlaylist(const SBID &id) const
 {
     qDebug() << SB_DEBUG_INFO;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -357,7 +355,7 @@ SBModelPlaylist::deletePlaylist(const SBID &id)
 }
 
 SBID
-SBModelPlaylist::getDetail(const SBID& id)
+SBModelPlaylist::getDetail(const SBID& id) const
 {
     SBID result=id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -423,7 +421,7 @@ SBModelPlaylist::getDetail(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
+SBModelPlaylist::getAllItemsByPlaylist(const SBID& id) const
 {
     //	Main query
     QString q=QString
@@ -509,7 +507,7 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id)
 }
 
 void
-SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed,QList<SBID>& allSongs,const SBID &id)
+SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed,QList<SBID>& allSongs,const SBID &id) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -692,7 +690,7 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
 }
 
 SBSqlQueryModel*
-SBModelPlaylist::getAllPlaylists()
+SBModelPlaylist::getAllPlaylists() const
 {
     //	Main query
     QString q=QString
@@ -710,7 +708,7 @@ SBModelPlaylist::getAllPlaylists()
 }
 
 void
-SBModelPlaylist::recalculateAllPlaylistDurations()
+SBModelPlaylist::recalculateAllPlaylistDurations() const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -750,12 +748,55 @@ SBModelPlaylist::recalculateAllPlaylistDurations()
         t.sb_item_type=SBID::sb_type_playlist;
         t.sb_item_id=query.value(1).toInt();
 
-        _calculatePlaylistDuration(t);
+        recalculatePlaylistDuration(t);
     }
 }
 
 void
-SBModelPlaylist::renamePlaylist(const SBID &id)
+SBModelPlaylist::recalculatePlaylistDuration(const SBID &id) const
+{
+    QHash<int,int> compositesTraversed;
+    QList<SBID> allSongs;
+
+    //	Get all songs
+    qDebug() << SB_DEBUG_INFO;
+    compositesTraversed.clear();
+    allSongs.clear();
+    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
+    qDebug() << SB_DEBUG_INFO;
+
+    //	Calculate duration
+    SBTime duration;
+    qDebug() << SB_DEBUG_INFO << allSongs.count();
+    for(int i=0;i<allSongs.count();i++)
+    {
+        duration+=allSongs.at(i).duration;
+    }
+
+    //	Store calculation
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist "
+        "SET "
+            "duration='%1' "
+        "WHERE "
+            "playlist_id=%2 "
+    )
+            .arg(duration.toString("hh:mm:ss"))
+            .arg(id.sb_item_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+    query.exec();
+}
+void
+SBModelPlaylist::renamePlaylist(const SBID &id) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -781,7 +822,7 @@ SBModelPlaylist::renamePlaylist(const SBID &id)
 }
 
 void
-SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID &tID)
+SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID &tID) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -814,7 +855,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     discardPlan.next();
 
     //	0.	Make sure ordering is sane
-    _reorderPlaylistPositions(playlistID);
+    reorderPlaylistPositions(playlistID);
 
     //	1.	Find max position in current playlist
     q=QString
@@ -904,7 +945,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     assignMin1Composite.next();
 
     //	3.	Reorder with fromID 'gone'
-    _reorderPlaylistPositions(playlistID,tmpPosition);
+    reorderPlaylistPositions(playlistID,tmpPosition);
 
     //	4.	Get position of toID
     q=QString
@@ -1037,7 +1078,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
 
 ///	PRIVATE METHODS
 void
-SBModelPlaylist::_reorderPlaylistPositions(const SBID &id,int maxPosition)
+SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -1129,51 +1170,8 @@ SBModelPlaylist::_reorderPlaylistPositions(const SBID &id,int maxPosition)
 }
 
 void
-SBModelPlaylist::_init()
+SBModelPlaylist::init()
 {
     qDebug() << SB_DEBUG_INFO;
 }
 
-void
-SBModelPlaylist::_calculatePlaylistDuration(const SBID &id)
-{
-    QHash<int,int> compositesTraversed;
-    QList<SBID> allSongs;
-
-    //	Get all songs
-    qDebug() << SB_DEBUG_INFO;
-    compositesTraversed.clear();
-    allSongs.clear();
-    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
-    qDebug() << SB_DEBUG_INFO;
-
-    //	Calculate duration
-    SBTime duration;
-    qDebug() << SB_DEBUG_INFO << allSongs.count();
-    for(int i=0;i<allSongs.count();i++)
-    {
-        duration+=allSongs.at(i).duration;
-    }
-
-    //	Store calculation
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-    QString q=QString
-    (
-        "UPDATE "
-            "___SB_SCHEMA_NAME___playlist "
-        "SET "
-            "duration='%1' "
-        "WHERE "
-            "playlist_id=%2 "
-    )
-            .arg(duration.toString("hh:mm:ss"))
-            .arg(id.sb_item_id);
-    dal->customize(q);
-
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-    query.exec();
-}

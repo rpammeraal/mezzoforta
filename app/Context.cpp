@@ -22,7 +22,7 @@ Context::setDataAccessLayer(DataAccessLayer* ndal)
 }
 
 void
-Context::setLeftColumnChooser(LeftColumnChooser *nlcc)
+Context::setChooser(Chooser *nlcc)
 {
     lcc=nlcc;
 }

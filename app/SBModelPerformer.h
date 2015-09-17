@@ -15,8 +15,8 @@ public:
     SBModelPerformer();
     ~SBModelPerformer();
 
-    QString addRelatedPerformer(int performerID1, int performerID2) const;
-    QString deleteRelatedPerformer(int performerID1, int performerID2) const;
+    QString addRelatedPerformerSQL(int performerID1, int performerID2) const;
+    QString deleteRelatedPerformerSQL(int performerID1, int performerID2) const;
     SBID getDetail(const SBID& id);
     SBSqlQueryModel* getAllAlbums(const SBID& id);
     SBSqlQueryModel* getAllCharts(const SBID& id);

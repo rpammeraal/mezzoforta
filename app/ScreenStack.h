@@ -30,7 +30,7 @@ public:
     int getScreenCount() const;
     void removeCurrentScreen();
     void removeForward();
-    void removeScreen(const SBID& id);
+    void removeScreen(const SBID& id,bool editOnlyFlag=0);
     void updateCurrentScreen(const SBID& id);
     void updateSBIDInStack(const SBID& id);
 

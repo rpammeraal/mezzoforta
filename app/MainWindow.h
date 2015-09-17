@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 
     friend class Controller;
     friend class Navigator;
-    friend class LeftColumnChooser;
+    friend class Chooser;
     friend class SBTab;
     friend class SBTabAlbumDetail;
     friend class SBTabPerformerDetail;

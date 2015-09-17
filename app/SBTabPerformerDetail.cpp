@@ -17,6 +17,7 @@ SBTabPerformerDetail::populate(const SBID &id)
     init();
     SBTab::populate(id);
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTab::setDetailTabWidget(mw->ui.tabPerformerDetailLists);
     QList<bool> dragableColumns;
 
     //	set constant connections
@@ -28,6 +29,7 @@ SBTabPerformerDetail::populate(const SBID &id)
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
+    mw->ui.tabPerformerDetailLists->setTabEnabled(2,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(3,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(4,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);

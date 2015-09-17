@@ -377,7 +377,7 @@ SBModelSong::saveNewSong(SBID &id)
 }
 
 bool
-SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
+SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QStringList& extraSQL)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList allQueries;
@@ -396,6 +396,7 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
     bool yearOfReleaseChangedFlag=0;
     bool notesChangedFlag=0;
     bool lyricsChangedFlag=0;
+    bool extraSQLFlag=0;
 
     qDebug() << SB_DEBUG_INFO << "old"
         << ":sb_item_id=" << oldSongID.sb_item_id
@@ -458,6 +459,11 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
         }
     }
 
+    if(extraSQL.count()>0)
+    {
+        extraSQLFlag=1;
+    }
+
     qDebug() << SB_DEBUG_INFO << "titleRenameFlag" << titleRenameFlag;
     qDebug() << SB_DEBUG_INFO << "mergeToNewSongFlag" << mergeToNewSongFlag;
     qDebug() << SB_DEBUG_INFO << "mergeToExistingSongFlag" << mergeToExistingSongFlag;
@@ -472,7 +478,9 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
 
         yearOfReleaseChangedFlag==0 &&
         notesChangedFlag==0 &&
-        lyricsChangedFlag==0
+        lyricsChangedFlag==0 &&
+
+        extraSQLFlag==0
     )
     {
         QMessageBox msgBox;
@@ -495,9 +503,16 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID)
         yearOfReleaseChangedFlag=0;
         notesChangedFlag=0;
         lyricsChangedFlag=0;
+        extraSQLFlag=0;
     }
 
     //	4.	Collect work to be done.
+    if(extraSQLFlag==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        allQueries.append(extraSQL);
+    }
+
     //		A.	Attribute changes
     if(lyricsChangedFlag==1)
     {

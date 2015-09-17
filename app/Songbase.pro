@@ -4,7 +4,6 @@ HEADERS     = \
     MainWindow.h \
     Controller.h \
     Common.h \
-    DisplayOnlyDelegate.h \
     DatabaseSelector.h \
     DataAccessLayer.h \
     DataAccessLayerPostgres.h \
@@ -17,7 +16,6 @@ HEADERS     = \
     SBModelAlbum.h \
     SBModelPerformer.h \
     SBIDExtended.h \
-    LeftColumnChooser.h \
     ExternalData.h \
     SBStandardItemModel.h \
     SBSqlQueryModel.h \
@@ -34,14 +32,14 @@ HEADERS     = \
     SBTabPerformerDetail.h \
     SBTabAlbumDetail.h \
     SBTabSongDetail.h \
-    Navigator.h
+    Navigator.h \
+    Chooser.h
 
 SOURCES     = \
     main.cpp \
     MainWindow.cpp \
     Controller.cpp \
     Common.cpp \
-    DisplayOnlyDelegate.cpp \
     DatabaseSelector.cpp \
     DataAccessLayer.cpp \
     DataAccessLayerPostgres.cpp \
@@ -54,7 +52,6 @@ SOURCES     = \
     SBModelAlbum.cpp \
     SBModelPerformer.cpp \
     SBIDExtended.cpp \
-    LeftColumnChooser.cpp \
     ExternalData.cpp \
     SBStandardItemModel.cpp \
     SBSqlQueryModel.cpp \
@@ -71,7 +68,8 @@ SOURCES     = \
     SBTabPerformerDetail.cpp \
     SBTabAlbumDetail.cpp \
     SBTabSongDetail.cpp \
-    Navigator.cpp
+    Navigator.cpp \
+    Chooser.cpp
 
 # install
 target.path = .

@@ -14,10 +14,9 @@
 #include "Controller.h"
 #include "MainWindow.h"
 #include "DataAccessLayer.h"
-#include "DisplayOnlyDelegate.h"
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
-#include "LeftColumnChooser.h"
+#include "Chooser.h"
 #include "SBModelSong.h"
 #include "SBModelPlaylist.h"
 #include "SBID.h"
@@ -265,11 +264,11 @@ Controller::setupModels()
 
     refreshModels();
 
-    ///	LeftColumnChooser
-    LeftColumnChooser* lcc=new LeftColumnChooser();
-    Context::instance()->setLeftColumnChooser(lcc);
+    ///	Chooser
+    Chooser* lcc=new Chooser();
+    Context::instance()->setChooser(lcc);
 
-    const SBStandardItemModel *m=Context::instance()->getLeftColumnChooser()->getModel();
+    const SBStandardItemModel *m=Context::instance()->getChooser()->getModel();
     mw->ui.leftColumnChooser->setModel((QStandardItemModel *)m);	//	weird that it won't accept a subclass
 
 }
@@ -339,11 +338,11 @@ Controller::setupUI()
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->expandAll();
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            Context::instance()->getNavigator(), SLOT(openLeftColumnChooserItem(QModelIndex)));
+            Context::instance()->getNavigator(), SLOT(openChooserItem(QModelIndex)));
     tv->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
-            Context::instance()->getLeftColumnChooser(), SLOT(showContextMenu(QPoint)));
+            Context::instance()->getChooser(), SLOT(showContextMenu(QPoint)));
 
 
     ///	MISC
@@ -381,17 +380,17 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         else if(itemName=="menuNewPlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getLeftColumnChooser(), SLOT(newPlaylist()));
+                    Context::instance()->getChooser(), SLOT(newPlaylist()));
         }
         else if(itemName=="menuDeletePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getLeftColumnChooser(), SLOT(deletePlaylist()));
+                    Context::instance()->getChooser(), SLOT(deletePlaylist()));
         }
         else if(itemName=="menuRenamePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getLeftColumnChooser(), SLOT(renamePlaylist()));
+                    Context::instance()->getChooser(), SLOT(renamePlaylist()));
         }
         else
         {

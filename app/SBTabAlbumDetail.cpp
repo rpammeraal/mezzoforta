@@ -10,7 +10,6 @@
 ///	Public methods
 SBTabAlbumDetail::SBTabAlbumDetail(): SBTab()
 {
-
 }
 
 SBID
@@ -19,6 +18,7 @@ SBTabAlbumDetail::populate(const SBID &id)
     init();
     SBTab::populate(id);
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTab::setDetailTabWidget(mw->ui.tabAlbumDetailLists);
     QList<bool> dragableColumns;
 
     //	set constant connections

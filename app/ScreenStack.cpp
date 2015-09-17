@@ -164,21 +164,32 @@ ScreenStack::removeForward()
 }
 
 void
-ScreenStack::removeScreen(const SBID &id)
+ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
 {
     qDebug() << SB_DEBUG_INFO << id << currentScreenID << stack.count();
     for(int i=stack.count()-1;i>=0;i--)
     {
-        qDebug() << SB_DEBUG_INFO << "i=" << i;
         const SBID& currentID=stack.at(i);
+        qDebug() << SB_DEBUG_INFO << "i=" << i << currentID;
         if(currentID==id)
         {
-            qDebug() << SB_DEBUG_INFO << "remove";
-            stack.removeAt(i);
-            if(i<=currentScreenID)
+            qDebug() << SB_DEBUG_INFO << editOnlyFlag << currentID.isEdit << id.isEdit;
+            if(
+                (editOnlyFlag==0) ||
+                (
+                    editOnlyFlag==1 &&
+                    currentID.isEdit==id.isEdit &&
+                    currentID.isEdit==1
+                )
+            )
             {
-                currentScreenID--;
-                qDebug() << SB_DEBUG_INFO << "adjust i=" << i;
+                qDebug() << SB_DEBUG_INFO << "remove";
+                stack.removeAt(i);
+                if(i<=currentScreenID)
+                {
+                    currentScreenID--;
+                    qDebug() << SB_DEBUG_INFO << "adjust i=" << i;
+                }
             }
         }
     }

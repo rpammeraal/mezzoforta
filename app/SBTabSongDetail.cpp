@@ -17,6 +17,7 @@ SBTabSongDetail::populate(const SBID& id)
 {
     SBTab::populate(id);
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTab::setDetailTabWidget(mw->ui.tabSongDetailLists);
     QList<bool> dragableColumns;
 
     //	Disable QWebview tabs and have them open up when data comes available

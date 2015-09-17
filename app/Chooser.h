@@ -10,12 +10,12 @@ class QAction;
 class QStandardItem;
 class SBStandardItemModel;
 
-class LeftColumnChooser : public QObject
+class Chooser : public QObject
 {
     Q_OBJECT
 public:
-    LeftColumnChooser();
-    ~LeftColumnChooser();
+    Chooser();
+    ~Chooser();
 
     SBStandardItemModel* getModel();
 

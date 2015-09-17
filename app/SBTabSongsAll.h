@@ -11,7 +11,7 @@ public:
     SBTabSongsAll();
 
     //	Virtual
-    virtual bool handleEscapeKey() const;	//	return 1 when currentTab can be closed
+    virtual bool handleEscapeKey();
     virtual SBID populate(const SBID& id);
 };
 

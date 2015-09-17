@@ -38,17 +38,18 @@ public:
     void clearSearchFilter();
     void openScreenByID(SBID& id);
     void keyPressEvent(QKeyEvent * event);
+    void navigateDetailTab(int direction=1);
     void removeFromScreenStack(const SBID& id);
     void resetAllFiltersAndSelections();
     void showPlaylist(SBID id);
-    void showSonglist();	//	CWIP::SBTAB: not sure where this would go.
+    void showSonglist();
 
 public slots:
     void applySonglistFilter();
     void closeCurrentTab();
     void editItem();
     void openItemFromCompleter(const QModelIndex& i);
-    void openLeftColumnChooserItem(const QModelIndex& i);
+    void openChooserItem(const QModelIndex& i);
     void openPerformer(const QString& id);
     void openPerformer(const QUrl& id);
     void openOpener(QString i);
@@ -62,6 +63,7 @@ private:
 
     //	Private methods
     SBID activateTab(const SBID& id);
+    bool checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
     void init();
     void filterSongs(const SBID& id);
     void moveTab(int direction);

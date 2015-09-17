@@ -46,11 +46,11 @@ SBTab::handleEnterKey() const
 }
 
 bool
-SBTab::handleEscapeKey() const
+SBTab::handleEscapeKey()
 {
     qDebug() << SB_DEBUG_INFO;
     bool closeTab=1;
-    if(isEditTab==1 && hasEdits()==1)
+    if(isEditTab()==1 && hasEdits()==1)
     {
         QMessageBox msg;
         msg.setIcon(QMessageBox::Question);
@@ -61,6 +61,7 @@ SBTab::handleEscapeKey() const
 
         closeTab=(msg.exec()==QMessageBox::No)?0:1;
     }
+    qDebug() << SB_DEBUG_INFO << closeTab;
     return closeTab;	//	Assuming a non-edit tab, default to close tab
 }
 
@@ -223,6 +224,12 @@ SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
 
 ///	Protected slots
 void
+SBTab::setDetailTabWidget(QTabWidget *detailTabWidget)
+{
+    _detailTabWidget=detailTabWidget;
+}
+
+void
 SBTab::tabBarClicked(int index)
 {
     //	Update screenstack entry with subtab clicked.
@@ -258,5 +265,6 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
 void
 SBTab::init()
 {
-    isEditTab=0;
+    _isEditTab=0;
+    _detailTabWidget=NULL;
 }

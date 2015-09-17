@@ -8,9 +8,9 @@ SBTabSongsAll::SBTabSongsAll() : SBTab()
 }
 
 bool
-SBTabSongsAll::handleEscapeKey() const
+SBTabSongsAll::handleEscapeKey()
 {
-    return 0;
+    return 1;
 }
 
 SBID

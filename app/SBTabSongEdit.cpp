@@ -1,5 +1,7 @@
 #include <QDebug>
+#include <QCompleter>
 #include <QMessageBox>
+#include <QTableWidget>
 
 #include "SBTabSongEdit.h"
 
@@ -14,7 +16,8 @@
 
 SBTabSongEdit::SBTabSongEdit() : SBTab()
 {
-    isEditTab=1;
+    init();
+    setIsEditTab(1);
 }
 
 void
@@ -41,10 +44,12 @@ SBTabSongEdit::hasEdits() const
 
     return 0;
 }
+
 SBID
 SBTabSongEdit::populate(const SBID& id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
+    reinit();
 
     //	Get detail
     SBID result=SBModelSong::getDetail(id);
@@ -73,15 +78,12 @@ SBTabSongEdit::populate(const SBID& id)
     mw->ui.songEditTitle->selectAll();
     mw->ui.songEditTitle->setFocus();
 
-    connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
-            this, SLOT(save()));
-    connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),
-            Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+    mw->ui.tabSongEditLists->setCurrentIndex(0);
 
-    qDebug() << SB_DEBUG_INFO << result.isEdit;
     return result;
 }
 
+///	Public slots
 void
 SBTabSongEdit::save() const
 {
@@ -243,6 +245,28 @@ SBTabSongEdit::save() const
         }
     }
 
+
     //	Close screen
     Context::instance()->getNavigator()->closeCurrentTab();
+}
+
+void
+SBTabSongEdit::init()
+{
+    connectHasPerformed=0;
+}
+
+void
+SBTabSongEdit::reinit()
+{
+    if(connectHasPerformed==0)
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+
+        //	Save/Cancel button
+        connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
+                this, SLOT(save()));
+        connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),
+                Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+    }
 }

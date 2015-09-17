@@ -7,7 +7,7 @@
 #include "BackgroundThread.h"
 #include "Context.h"
 #include "Controller.h"
-#include "LeftColumnChooser.h"
+#include "Chooser.h"
 #include "MainWindow.h"
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectSongAlbum.h"
@@ -18,17 +18,17 @@
 #include "Navigator.h"
 
 ///	PUBLIC
-LeftColumnChooser::LeftColumnChooser() : QObject()
+Chooser::Chooser() : QObject()
 {
     init();
 }
 
-LeftColumnChooser::~LeftColumnChooser()
+Chooser::~Chooser()
 {
 }
 
 SBStandardItemModel*
-LeftColumnChooser::getModel()
+Chooser::getModel()
 {
     return model;
 }
@@ -36,7 +36,7 @@ LeftColumnChooser::getModel()
 
 ///	SLOTS
 void
-LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
+Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
 {
     SBID toID=getPlaylistSelected(idx);
     SBID fromID;
@@ -95,7 +95,7 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
     {
         SBModelPlaylist pl;
 
-        pl.assignItem(fromID, toID);
+        pl.assignPlaylistItem(fromID, toID);
         QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
             .arg(QChar(96))            //	1
             .arg(assignID.getText())   //	2
@@ -109,7 +109,7 @@ LeftColumnChooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assi
 }
 
 void
-LeftColumnChooser::deletePlaylist()
+Chooser::deletePlaylist()
 {
     setCurrentIndex(lastClickedIndex);
     qDebug() << SB_DEBUG_INFO << lastClickedIndex;
@@ -147,7 +147,7 @@ LeftColumnChooser::deletePlaylist()
 }
 
 void
-LeftColumnChooser::newPlaylist()
+Chooser::newPlaylist()
 {
     qDebug() << SB_DEBUG_INFO;
 
@@ -175,7 +175,7 @@ LeftColumnChooser::newPlaylist()
 }
 
 void
-LeftColumnChooser::renamePlaylist()
+Chooser::renamePlaylist()
 {
     qDebug() << SB_DEBUG_INFO << lastClickedIndex;
     SBID id=getPlaylistSelected(lastClickedIndex);
@@ -190,7 +190,7 @@ LeftColumnChooser::renamePlaylist()
 }
 
 void
-LeftColumnChooser::showContextMenu(const QPoint &p)
+Chooser::showContextMenu(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex in=mw->ui.leftColumnChooser->indexAt(p);
@@ -212,7 +212,7 @@ LeftColumnChooser::showContextMenu(const QPoint &p)
 
 ///	PRIVATE SLOTS
 void
-LeftColumnChooser::_renamePlaylist(const SBID &id)
+Chooser::_renamePlaylist(const SBID &id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO << id;
@@ -234,7 +234,7 @@ LeftColumnChooser::_renamePlaylist(const SBID &id)
 }
 
 void
-LeftColumnChooser::_clicked(const QModelIndex &idx)
+Chooser::_clicked(const QModelIndex &idx)
 {
     qDebug() << SB_DEBUG_INFO;
     lastClickedIndex=idx;
@@ -242,7 +242,7 @@ LeftColumnChooser::_clicked(const QModelIndex &idx)
 
 ///	PRIVATE
 QList<QStandardItem *>
-LeftColumnChooser::createNode(const QString& itemValue, const int itemID,SBID::sb_type type)
+Chooser::createNode(const QString& itemValue, const int itemID,SBID::sb_type type)
 {
     QList<QStandardItem *> record;
     record.append(new QStandardItem(itemValue));
@@ -253,7 +253,7 @@ LeftColumnChooser::createNode(const QString& itemValue, const int itemID,SBID::s
 }
 
 QModelIndex
-LeftColumnChooser::findItem(const QString& toFind)
+Chooser::findItem(const QString& toFind)
 {
     QModelIndex index;
     bool found=0;
@@ -299,7 +299,7 @@ LeftColumnChooser::findItem(const QString& toFind)
 }
 
 QModelIndex
-LeftColumnChooser::findItem(const SBID& id)
+Chooser::findItem(const SBID& id)
 {
     QModelIndex index;
     bool found=0;
@@ -337,7 +337,7 @@ LeftColumnChooser::findItem(const SBID& id)
 }
 
 SBID
-LeftColumnChooser::getPlaylistSelected(const QModelIndex& i)
+Chooser::getPlaylistSelected(const QModelIndex& i)
 {
     qDebug() << SB_DEBUG_INFO << i;
     SBID id;
@@ -370,7 +370,7 @@ LeftColumnChooser::getPlaylistSelected(const QModelIndex& i)
 }
 
 void
-LeftColumnChooser::init()
+Chooser::init()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
 
@@ -410,7 +410,7 @@ LeftColumnChooser::init()
 }
 
 void
-LeftColumnChooser::populateModel()
+Chooser::populateModel()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     model->clear();
@@ -453,7 +453,7 @@ LeftColumnChooser::populateModel()
 }
 
 void
-LeftColumnChooser::setCurrentIndex(const QModelIndex &i)
+Chooser::setCurrentIndex(const QModelIndex &i)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     if(mw->ui.leftColumnChooser!=NULL)

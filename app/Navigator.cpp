@@ -16,7 +16,7 @@
 #include "Controller.h"
 #include "DataAccessLayer.h"
 #include "ExternalData.h"
-#include "LeftColumnChooser.h"
+#include "Chooser.h"
 #include "MainWindow.h"
 #include "SBModelPerformer.h"
 #include "SBID.h"
@@ -75,6 +75,11 @@ Navigator::openScreenByID(SBID &id)
     if(st->getScreenCount() && id==st->currentScreen())
     {
         qDebug() << SB_DEBUG_INFO << "dup call to current screen" << id;
+        return;
+    }
+
+    if(checkOutstandingEdits()==1)
+    {
         return;
     }
 
@@ -163,10 +168,59 @@ Navigator::keyPressEvent(QKeyEvent *event)
             tab->save();
         }
     }
+    else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && Qt::ControlModifier)
+    {
+        navigateDetailTab((eventKey==Qt::Key_PageDown)?1:-1);
+    }
     if(closeTab==1)
     {
         closeCurrentTab();
     }
+}
+
+void
+Navigator::navigateDetailTab(int direction)
+{
+    if(direction==0)
+    {
+        return;
+    }
+
+    const SBTab* currentTab=Context::instance()->getTab();
+    if(currentTab==NULL)
+    {
+        return;
+    }
+
+    QTabWidget* detailTabWidget=currentTab->detailTabWidget();
+    if(detailTabWidget==NULL)
+    {
+        return;
+    }
+
+    int currentIndex=detailTabWidget->currentIndex();
+    int newIndex=currentIndex+direction;
+    bool indexValidFlag=0;
+    int maxIndex=detailTabWidget->count();
+
+    //	Try to find the next eligible tab, but if we find the current tab again, exit.
+    while(newIndex!=currentIndex && indexValidFlag==0)
+    {
+        if(newIndex<0)
+        {
+            newIndex=maxIndex-1;
+        }
+        else if(newIndex>=maxIndex)
+        {
+            newIndex=0;
+        }
+        indexValidFlag=detailTabWidget->isTabEnabled(newIndex);
+        if(indexValidFlag==0)
+        {
+            newIndex+=direction;
+        }
+    }
+    detailTabWidget->setCurrentIndex(newIndex);
 }
 
 void
@@ -207,18 +261,6 @@ Navigator::showPlaylist(SBID id)
 void
 Navigator::showSonglist()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    ScreenStack* st=Context::instance()->getScreenStack();
-
-    if(st->currentScreen().sb_item_type!=SBID::sb_type_allsongs)
-    {
-        //	Don't remove tab if current is allsongs
-        while(mw->ui.mainTab->count())
-        {
-            mw->ui.mainTab->removeTab(0);
-        }
-    }
-
     SBID id;
     id.sb_item_type=SBID::sb_type_allsongs;
 
@@ -306,7 +348,7 @@ Navigator::openItemFromCompleter(const QModelIndex& i)
 }
 
 void
-Navigator::openLeftColumnChooserItem(const QModelIndex &i)
+Navigator::openChooserItem(const QModelIndex &i)
 {
     SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
     openScreenByID(id);
@@ -518,11 +560,13 @@ Navigator::activateTab(const SBID& id)
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->setText(id.searchCriteria);
+        mw->ui.leftColumnChooser->setEnabled(1);
     }
     else
     {
         qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(0);
+        mw->ui.leftColumnChooser->setEnabled(0);
     }
 
     qDebug() << SB_DEBUG_INFO << result;
@@ -554,6 +598,29 @@ Navigator::activateTab(const SBID& id)
     st->debugShow("Navigator:activateTab:end");
 
     return result;
+}
+
+bool
+Navigator::checkOutstandingEdits() const
+{
+    bool hasOutstandingEdits=0;
+
+    SBTab* currentTab=Context::instance()->getTab();
+    if(currentTab!=NULL)
+    {
+        if(currentTab->handleEscapeKey()==0)
+        {
+            hasOutstandingEdits=1;
+        }
+        else
+        {
+            Context::instance()->getScreenStack()->debugShow("627");
+            Context::instance()->getScreenStack()->removeScreen(currentTab->currentSBID(),1);
+            Context::instance()->getScreenStack()->debugShow("629");
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << hasOutstandingEdits;
+    return hasOutstandingEdits;
 }
 
 void
@@ -603,6 +670,10 @@ Navigator::moveTab(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID id;
+    if(checkOutstandingEdits()==1)
+    {
+        return;
+    }
     if(direction>0)
     {
         id=st->nextScreen();

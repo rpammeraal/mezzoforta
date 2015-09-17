@@ -50,6 +50,7 @@ public:
     QString customize(QString& sqlString) const;
     QSqlQueryModel* getCompleterModelAll();
     QSqlQueryModel* getCompleterModelPerformer();
+    QSqlQueryModel* getCompleterModelPlaylist();
     QSqlQueryModel* getCompleterModelSong();
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;

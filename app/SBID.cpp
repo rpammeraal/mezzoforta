@@ -405,7 +405,14 @@ SBID::operator ==(const SBID& i) const
     if(
         i.sb_item_type==this->sb_item_type &&
         i.sb_item_id==this->sb_item_id &&
-        i.sb_performer_id==this->sb_performer_id &&	//	added to make saveSong work
+        (
+            (i.sb_item_type!=SBID::sb_type_song) ||
+            (
+                //	If song, include performer in comparison
+                i.sb_item_type==SBID::sb_type_song &&
+                i.sb_performer_id==this->sb_performer_id 	//	added to make saveSong work
+            )
+        ) &&
         i.isEdit==this->isEdit &&
         i.searchCriteria==this->searchCriteria)
     {

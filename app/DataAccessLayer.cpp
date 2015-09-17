@@ -246,6 +246,30 @@ DataAccessLayer::getCompleterModelPerformer()
 }
 
 QSqlQueryModel*
+DataAccessLayer::getCompleterModelPlaylist()
+{
+    QString query=
+        "SELECT DISTINCT "
+            "a.name, "
+            "a.playlist_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist a "
+        "ORDER BY 1 ";
+
+    this->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
+    QSqlQueryModel* model = new QSqlQueryModel();
+    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
+
+    while (model->canFetchMore())
+    {
+        model->fetchMore();
+    }
+
+    return model;
+}
+
+QSqlQueryModel*
 DataAccessLayer::getCompleterModelSong()
 {
     QString query=

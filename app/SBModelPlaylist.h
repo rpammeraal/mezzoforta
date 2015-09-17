@@ -17,24 +17,22 @@ public:
     SBModelPlaylist();
     ~SBModelPlaylist();
 
-    void assignItem(const SBID& assignID, const SBID& toID);
-    SBID createNewPlaylist();
-    void deleteItem(const SBID& assignID, const SBID& fromID);
-    void deletePlaylist(const SBID& id);
-    SBID getDetail(const SBID& id);
-    SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id);
-    void getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed, QList<SBID>& allSongs, const SBID& id);
-    SBSqlQueryModel* getAllPlaylists();
-    void recalculateAllPlaylistDurations();
-    void renamePlaylist(const SBID& id);
-    void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID);
-
-signals:
+    void assignPlaylistItem(const SBID& assignID, const SBID& toID) const;
+    SBID createNewPlaylist() const;
+    void deletePlaylistItem(const SBID& assignID, const SBID& fromID) const;
+    void deletePlaylist(const SBID& id) const;
+    SBID getDetail(const SBID& id) const;
+    SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id) const;
+    void getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed, QList<SBID>& allSongs, const SBID& id) const;
+    SBSqlQueryModel* getAllPlaylists() const;
+    void recalculateAllPlaylistDurations() const;
+    void recalculatePlaylistDuration(const SBID& id) const;
+    void renamePlaylist(const SBID& id) const;
+    void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
 
 private:
-    void _init();
-    void _calculatePlaylistDuration(const SBID& id);
-    void _reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX);
+    void init();
+    void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX) const;
 };
 
 #endif // SBMODELPLAYLIST_H

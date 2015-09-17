@@ -15,7 +15,7 @@ SBModelPerformer::~SBModelPerformer()
 }
 
 QString
-SBModelPerformer::addRelatedPerformer(int performerID1, int performerID2) const
+SBModelPerformer::addRelatedPerformerSQL(int performerID1, int performerID2) const
 {
     if(performerID1==performerID2)
     {
@@ -60,7 +60,7 @@ SBModelPerformer::addRelatedPerformer(int performerID1, int performerID2) const
 }
 
 QString
-SBModelPerformer::deleteRelatedPerformer(int performerID1, int performerID2) const
+SBModelPerformer::deleteRelatedPerformerSQL(int performerID1, int performerID2) const
 {
     return QString
     (
@@ -504,13 +504,13 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
         extraSQLFlag=0;
     }
 
+
+    //	4.	Collect work to be done.
     if(extraSQLFlag==1)
     {
         qDebug() << SB_DEBUG_INFO;
         allQueries.append(extraSQL);
     }
-
-    //	4.	Collect work to be done.
 
     //		A.	Attribute changes
     if(nameRenameFlag==1)

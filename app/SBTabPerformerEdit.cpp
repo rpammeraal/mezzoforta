@@ -14,7 +14,8 @@
 ///	Public methods
 SBTabPerformerEdit::SBTabPerformerEdit() : SBTab()
 {
-    isEditTab=1;
+    init();
+    setIsEditTab(1);
 }
 
 void
@@ -27,6 +28,17 @@ void
 SBTabPerformerEdit::handleEnterKey() const
 {
     save();
+}
+
+bool
+SBTabPerformerEdit::handleEscapeKey()
+{
+    if(relatedPerformerBeingAddedFlag==1)
+    {
+        closeRelatedPerformerComboBox();
+        return 0;
+    }
+    return SBTab::handleEscapeKey();
 }
 
 bool
@@ -46,17 +58,15 @@ SBTabPerformerEdit::hasEdits() const
         relatedPerformerHasChanged==1
     )
     {
-        qDebug() << SB_DEBUG_INFO << relatedPerformerHasChanged;
         return 1;
     }
-        qDebug() << SB_DEBUG_INFO;
     return 0;
 }
 
 SBID
 SBTabPerformerEdit::populate(const SBID& id)
 {
-    init();
+    reinit();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
@@ -72,7 +82,7 @@ SBTabPerformerEdit::populate(const SBID& id)
     qDebug() << SB_DEBUG_INFO << result;
     setRelatedPerformerBeingAddedFlag(0);
     setRelatedPerformerBeingDeletedFlag(0);
-    pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+    removeRelatedPerformerButtonMaybeEnabledFlag=0;
     mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
 
     //	Get detail
@@ -112,23 +122,9 @@ SBTabPerformerEdit::populate(const SBID& id)
         allRelatedPerformers.append(performerIDString.toInt());
     }
 
-    //	Disable tmpButtons
-    mw->ui.pbNA2->hide();
-
     //	Set correct focus
     mw->ui.performerEditName->selectAll();
     mw->ui.performerEditName->setFocus();
-
-    connect(mw->ui.pbPerformerEditSave, SIGNAL(clicked(bool)),
-            this, SLOT(save()));
-    connect(mw->ui.pbPerformerEditCancel, SIGNAL(clicked(bool)),
-            this, SLOT(closeCurrentTab()));
-    connect(mw->ui.pbPerformerEditAddRelatedPerformer, SIGNAL(clicked(bool)),
-            this, SLOT(addNewRelatedPerformer()));
-    connect(mw->ui.pbPerformerEditRemoveRelatedPerformer, SIGNAL(clicked(bool)),
-            this, SLOT(deleteRelatedPerformer()));
-    connect(rpt, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(enableRelatedPerformerDeleteButton()));
 
     qDebug() << SB_DEBUG_INFO << result.isEdit;
     return result;
@@ -143,7 +139,7 @@ SBTabPerformerEdit::addNewRelatedPerformer()
         return;
     }
     setRelatedPerformerBeingAddedFlag(1);
-    qDebug() << SB_DEBUG_INFO;
+
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -166,7 +162,6 @@ SBTabPerformerEdit::addNewRelatedPerformer()
     QLineEdit* newItem=new QLineEdit();
     newItem->setCompleter(addNewRelatedPerformerCompleter);
     newItem->setFocus();
-    newItem->setFocus();
     newItem->selectAll();
     newItem->clear();
     newItem->setPlaceholderText("Enter Performer");
@@ -176,22 +171,6 @@ SBTabPerformerEdit::addNewRelatedPerformer()
     rpt->scrollToBottom();
     rpt->setFocus();
     rpt->setCurrentCell(currentRowCount,0);
-}
-
-void
-SBTabPerformerEdit::closeRelatedPerformerComboBox()
-{
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-
-    mw->ui.performerEditName->setFocus();
-    mw->ui.performerEditName->selectAll();
-
-    //	Remove latest row
-    int currentRowCount=rpt->rowCount();
-    qDebug() << SB_DEBUG_INFO << currentRowCount;
-    rpt->removeRow(currentRowCount-1);
-    setRelatedPerformerBeingAddedFlag(0);
 }
 
 void
@@ -247,12 +226,13 @@ SBTabPerformerEdit::deleteRelatedPerformer()
 void
 SBTabPerformerEdit::enableRelatedPerformerDeleteButton()
 {
+        qDebug() << SB_DEBUG_INFO;
     if(relatedPerformerBeingAddedFlag==0)
     {
         qDebug() << SB_DEBUG_INFO;
         const MainWindow* mw=Context::instance()->getMainWindow();
         mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
-        pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+        removeRelatedPerformerButtonMaybeEnabledFlag=0;
     }
     qDebug() << SB_DEBUG_INFO;
 }
@@ -329,9 +309,8 @@ SBTabPerformerEdit::save() const
         int ID=it->data(Qt::DisplayRole).toInt();
         if(allRelatedPerformers.contains(ID)==0)
         {
-            QTableWidgetItem* it=rpt->item(i,0);
-            qDebug() << SB_DEBUG_INFO << "Add" << it->data(Qt::DisplayRole).toString();
-            SQL.append(p->addRelatedPerformer(newPerformerID.sb_performer_id,ID));
+            qDebug() << SB_DEBUG_INFO << "Add" << ID;
+            SQL.append(p->addRelatedPerformerSQL(newPerformerID.sb_performer_id,ID));
         }
         else
         {
@@ -345,7 +324,7 @@ SBTabPerformerEdit::save() const
         if(remainingRelatedPerformerIDList.contains(ID)==0)
         {
             qDebug() << SB_DEBUG_INFO << "Remove" << ID;
-            SQL.append(p->deleteRelatedPerformer(newPerformerID.sb_performer_id,ID));
+            SQL.append(p->deleteRelatedPerformerSQL(newPerformerID.sb_performer_id,ID));
         }
     }
 
@@ -451,13 +430,64 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
 
 ///	Private methods
 void
+SBTabPerformerEdit::closeRelatedPerformerComboBox()
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+    mw->ui.performerEditName->setFocus();
+    mw->ui.performerEditName->selectAll();
+
+    //	Remove latest row
+    int currentRowCount=rpt->rowCount();
+    qDebug() << SB_DEBUG_INFO << currentRowCount;
+    rpt->removeRow(currentRowCount-1);
+    setRelatedPerformerBeingAddedFlag(0);
+}
+
+void
 SBTabPerformerEdit::init()
 {
-    pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag=0;
+    addNewRelatedPerformerCompleter=NULL;
+    connectHasPerformed=0;
+    removeRelatedPerformerButtonMaybeEnabledFlag=0;
     relatedPerformerBeingAddedFlag=0;
     relatedPerformerBeingDeletedFlag=0;
     allRelatedPerformers.clear();
     relatedPerformerHasChanged=0;
+}
+
+void
+SBTabPerformerEdit::reinit()
+{
+    if(connectHasPerformed==0)
+    {
+        qDebug() << SB_DEBUG_INFO;
+
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+        //	Save/Cancel button
+        connect(mw->ui.pbPerformerEditSave, SIGNAL(clicked(bool)),
+                this, SLOT(save()));
+        connect(mw->ui.pbPerformerEditCancel, SIGNAL(clicked(bool)),
+                Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+
+        //	Related performers
+        connect(mw->ui.pbPerformerEditAddRelatedPerformer, SIGNAL(clicked(bool)),
+                this, SLOT(addNewRelatedPerformer()));
+        connect(mw->ui.pbPerformerEditRemoveRelatedPerformer, SIGNAL(clicked(bool)),
+                this, SLOT(deleteRelatedPerformer()));
+        connect(rpt, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(enableRelatedPerformerDeleteButton()));
+
+        connectHasPerformed=1;
+    }
+    if(addNewRelatedPerformerCompleter!=NULL)
+    {
+        delete addNewRelatedPerformerCompleter;
+        addNewRelatedPerformerCompleter=NULL;
+    }
 }
 
 void
@@ -477,7 +507,7 @@ SBTabPerformerEdit::setRelatedPerformerBeingAddedFlag(bool flag)
         qDebug() << SB_DEBUG_INFO;
         mw->ui.pbPerformerEditAddRelatedPerformer->setEnabled(1);
 
-        if(pbPerformerEditRemoveRelatedPerformerMaybeEnabledFlag==1)
+        if(removeRelatedPerformerButtonMaybeEnabledFlag==1)
         {
             mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
         }

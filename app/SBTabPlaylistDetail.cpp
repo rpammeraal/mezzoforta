@@ -66,7 +66,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
         connect(pl, SIGNAL(si_playlistDetailUpdated(SBID)),
                  this, SLOT(sl_updatePlaylistDetail(SBID)));
 
-        pl->deleteItem(assignID,fromID);
+        pl->deletePlaylistItem(assignID,fromID);
         refreshTabIfCurrent(fromID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1

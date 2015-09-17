@@ -407,7 +407,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>3</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -1022,7 +1022,7 @@
                </font>
               </property>
               <property name="currentIndex">
-               <number>1</number>
+               <number>4</number>
               </property>
               <widget class="QWidget" name="tabPerformerDetailPerformances">
                <attribute name="title">
@@ -1823,7 +1823,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>2</number>
+               <number>4</number>
               </property>
               <widget class="QWidget" name="tabSongDetailPerformedBy">
                <attribute name="title">
@@ -2579,40 +2579,8 @@ Click on 'All Songs' to continue.</string>
             <item>
              <widget class="QTabWidget" name="tabSongEditLists">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
-              <widget class="QWidget" name="tabSongEditPlaylists">
-               <attribute name="title">
-                <string>Playlists</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_4">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QTableView" name="songEditPlaylists">
-                  <property name="alternatingRowColors">
-                   <bool>true</bool>
-                  </property>
-                  <property name="selectionMode">
-                   <enum>QAbstractItemView::SingleSelection</enum>
-                  </property>
-                  <property name="selectionBehavior">
-                   <enum>QAbstractItemView::SelectItems</enum>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
               <widget class="QWidget" name="tabSongEditLyrics">
                <attribute name="title">
                 <string>Lyrics</string>
@@ -3133,10 +3101,10 @@ Click on 'All Songs' to continue.</string>
   <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
   <tabstop>pbPerformerEditSave</tabstop>
   <tabstop>pbPerformerEditCancel</tabstop>
-  <tabstop>pbNA2</tabstop>
+  <tabstop>buttonBackward</tabstop>
+  <tabstop>buttonForward</tabstop>
+  <tabstop>searchEdit</tabstop>
   <tabstop>songEditTitle</tabstop>
-  <tabstop>songEditPerformerName</tabstop>
-  <tabstop>songEditYearOfRelease</tabstop>
   <tabstop>performerDetailNewsPage</tabstop>
   <tabstop>performerDetailHomepage</tabstop>
   <tabstop>leftColumnChooser</tabstop>
@@ -3163,15 +3131,14 @@ Click on 'All Songs' to continue.</string>
   <tabstop>playlistDetailSongList</tabstop>
   <tabstop>performerDetailWikipediaPage</tabstop>
   <tabstop>frPerformerDetailDetailAll</tabstop>
-  <tabstop>songEditPlaylists</tabstop>
-  <tabstop>buttonBackward</tabstop>
-  <tabstop>buttonForward</tabstop>
-  <tabstop>searchEdit</tabstop>
-  <tabstop>tabPerformerEditLists</tabstop>
   <tabstop>songEditNotes</tabstop>
-  <tabstop>pbSongEditSave</tabstop>
-  <tabstop>pbSongEditCancel</tabstop>
   <tabstop>tabSongEditLists</tabstop>
+  <tabstop>songEditYearOfRelease</tabstop>
+  <tabstop>pbNA2</tabstop>
+  <tabstop>tabPerformerEditLists</tabstop>
+  <tabstop>pbSongEditSave</tabstop>
+  <tabstop>songEditPerformerName</tabstop>
+  <tabstop>pbSongEditCancel</tabstop>
   <tabstop>songEditLyrics</tabstop>
  </tabstops>
  <resources>
