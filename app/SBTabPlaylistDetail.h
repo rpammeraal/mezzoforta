@@ -13,7 +13,7 @@ public:
 
 public slots:
     void deletePlaylistItem();
-    void movePlaylistItem(const SBID& fromID, const SBID& toID);
+    void movePlaylistItem(const SBID& fromID, int row) ;	//	const SBID& toID);
     void showContextMenuPlaylist(const QPoint &p);
 
 private:

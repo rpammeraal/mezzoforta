@@ -8,6 +8,7 @@
 #include "SBModelPlaylist.h"
 
 #include <QMessageBox>
+#include <QProgressDialog>
 
 ///	PUBLIC METHODS
 SBModelPlaylist::SBModelPlaylist()
@@ -822,15 +823,13 @@ SBModelPlaylist::renamePlaylist(const SBID &id) const
 }
 
 void
-SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID &tID) const
+SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, int newPosition) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
     SBID fromID=fID;
-    SBID toID=tID;
     fromID.fillOut();
-    toID.fillOut();
 
     qDebug() << SB_DEBUG_INFO << "from"
         << "itm" << fromID.sb_item_id
@@ -839,15 +838,11 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
         << "sng" << fromID.sb_song_id
         << "alb" << fromID.sb_album_id
         << "pos" << fromID.sb_position
-        << "pll" << fromID.sb_playlist_id;
+        << "pll" << fromID.sb_playlist_id
+    ;
     qDebug() << SB_DEBUG_INFO << "to"
-        << "itm" << toID.sb_item_id
-        << "typ" << toID.sb_item_type
-        << "pfr" << toID.sb_performer_id
-        << "sng" << toID.sb_song_id
-        << "alb" << toID.sb_album_id
-        << "pos" << toID.sb_position
-        << "pll" << toID.sb_playlist_id;
+        << "newPosition=" << newPosition
+    ;
 
     //	-1.	Discard plan
     q="DISCARD PLAN";
@@ -855,7 +850,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     discardPlan.next();
 
     //	0.	Make sure ordering is sane
-    reorderPlaylistPositions(playlistID);
+    reorderPlaylistPositions(playlistID,INT_MAX,0);
 
     //	1.	Find max position in current playlist
     q=QString
@@ -868,16 +863,17 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
                 "MAX(pp.playlist_position) AS playlist_position "
             "FROM "
                 "___SB_SCHEMA_NAME___playlist_performance pp "
-            //"WHERE "
-                //"pp.playlist_id=%1 "
+            "WHERE "
+                "pp.playlist_id=%1 "
             "UNION "
             "SELECT "
                 "MAX(pc.playlist_position) "
             "FROM "
                 "___SB_SCHEMA_NAME___playlist_composite pc "
-            //"WHERE "
-                //"pc.playlist_id=%1 "
+            "WHERE "
+                "pc.playlist_id=%1 "
         ") a "
+        "WHERE a.playlist_position IS NOT NULL "
         "ORDER BY 1 DESC "
         "LIMIT 1"
     )
@@ -903,16 +899,10 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "playlist_position=%1 "
         "WHERE "
             "playlist_id=%2 AND "
-            "artist_id=%3 AND "
-            "song_id=%4 AND "
-            "record_id=%5 AND "
-            "record_position=%6 "
+            "playlist_position=%3 "
     )
         .arg(tmpPosition)
         .arg(playlistID.sb_item_id)
-        .arg(fromID.sb_performer_id)
-        .arg(fromID.sb_song_id)
-        .arg(fromID.sb_album_id)
         .arg(fromID.sb_position);
     dal->customize(q);
 
@@ -947,54 +937,8 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     //	3.	Reorder with fromID 'gone'
     reorderPlaylistPositions(playlistID,tmpPosition);
 
-    //	4.	Get position of toID
-    q=QString
-    (
-        "SELECT "
-            "MAX(playlist_position) "
-        "FROM "
-        "( "
-            "SELECT "
-                "MAX(playlist_position) AS playlist_position "
-            "FROM "
-                "___SB_SCHEMA_NAME___playlist_performance p "
-            "WHERE "
-                "playlist_id=%1 AND "
-                "artist_id=%2 AND "
-                "song_id=%3 AND "
-                "record_id=%4 AND "
-                "record_position=%5 "
-            "UNION "
-            "SELECT "
-                "MAX(playlist_position) AS playlist_position "
-            "FROM "
-                "___SB_SCHEMA_NAME___playlist_composite p "
-            "WHERE "
-                "playlist_id=%1 AND "
-                "( "
-                    "playlist_playlist_id=%6 OR "
-                    "playlist_chart_id=%6 OR "
-                    "playlist_record_id=%6 OR "
-                    "playlist_artist_id=%6  "
-                ") "
-        ") b "
-    )
-        .arg(playlistID.sb_item_id)
-        .arg(toID.sb_performer_id)
-        .arg(toID.sb_song_id)
-        .arg(toID.sb_album_id)
-        .arg(toID.sb_position)
-        .arg(toID.sb_item_id);
-    dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery getPosition(q,db);
-    getPosition.next();
-    int newPosition=getPosition.value(0).toInt();
-    qDebug() << SB_DEBUG_INFO << "newPosition=" << newPosition;
-
-    //	5.	Add 1 to all position from toID onwards
+    //	4.	Add 1 to all position from toID onwards
     q=QString
     (
         "UPDATE "
@@ -1035,7 +979,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     QSqlQuery updateToPositionComposite(q,db);
     updateToPositionComposite.next();
 
-    //	6.	Reassign position to fromID
+    //	5.	Reassign position to fromID
     q=QString
     (
         "UPDATE "
@@ -1078,7 +1022,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
 
 ///	PRIVATE METHODS
 void
-SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
+SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition,bool showPopupFlag) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -1117,9 +1061,22 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
         .arg(maxPosition);
     dal->customize(q);
 
+
     QSqlQuery query(q,db);
     int newPosition=1;
     int actualPosition;
+
+    int currentValue=0;
+    int maxValue=query.size();
+    qDebug() << SB_DEBUG_INFO << maxValue;
+    QProgressDialog pd("Reorganizing Playlist",QString(),0,maxValue);
+    if(maxValue>100 && showPopupFlag==1)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+    }
 
     while(query.next())
     {
@@ -1166,7 +1123,11 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
 
         }
         newPosition++;
+
+        pd.setValue(++currentValue);
+        QCoreApplication::processEvents();
     }
+    pd.setValue(maxValue);
 }
 
 void

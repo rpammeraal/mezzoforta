@@ -66,32 +66,48 @@ SBSqlQueryModel::data(const QModelIndex &item, int role) const
 }
 
 bool
-SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
     qDebug() << SB_DEBUG_INFO;
-    if(parent.row()==-1)
+    if(parent.row()==-1 && row==-1)
     {
+    qDebug() << SB_DEBUG_INFO;
         return false;
     }
 
     if (!canDropMimeData(data, action, row, column, parent))
     {
+    qDebug() << SB_DEBUG_INFO;
         return false;
     }
 
     if (action == Qt::IgnoreAction)
     {
+    qDebug() << SB_DEBUG_INFO;
         return true;
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBID fromID=SBID(encodedData);
     qDebug() << SB_DEBUG_INFO << "Dropping " << fromID;
+    qDebug() << SB_DEBUG_INFO << row << parent.row() << parent;
+
+    qDebug() << SB_DEBUG_INFO << fromID.sb_position;
+    qDebug() << SB_DEBUG_INFO << row;
+
+    if(fromID.sb_position>row)
+    {
+        //	For some strange reason, we need to increment when items are dragged
+        //	up towards the list. Weird.
+        row++;
+    }
 
     const QModelIndex n=this->index(parent.row(),0);
     SBID toID=determineSBID(n);
 
     emit assign(fromID,toID);
+    emit assign(fromID,row);
+    qDebug() << SB_DEBUG_INFO;
     return 1;
 }
 
@@ -99,20 +115,26 @@ Qt::ItemFlags
 SBSqlQueryModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QSqlQueryModel::flags(index);
-    if(index.column()>=0)	//	sometimes index can be negative -- ignore
+    if(index.isValid()==0)
     {
-        if(
-            index.column()+1 >= dragableColumnList.count() ||
-            dragableColumnList.count()==0 ||
-            dragableColumnList.at(index.column())==1
-        )
-        {
             defaultFlags = Qt::ItemIsUserCheckable
                     | Qt::ItemIsSelectable
                     | Qt::ItemIsEnabled
-                    | Qt::ItemIsDragEnabled
                     | Qt::ItemIsDropEnabled;
-        }
+    }
+    else //if(index.column()>=0)	//	sometimes index can be negative -- ignore
+    {
+        //if(
+            //index.column()+1 >= dragableColumnList.count() ||
+            //dragableColumnList.count()==0 ||
+            //dragableColumnList.at(index.column())==1
+        //)
+        //{
+            defaultFlags = Qt::ItemIsUserCheckable
+                    | Qt::ItemIsSelectable
+                    | Qt::ItemIsEnabled
+                    | Qt::ItemIsDragEnabled;
+        //}
     }
     return defaultFlags;
 }
@@ -127,7 +149,13 @@ SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
     {
         if (i.isValid())
         {
+            qDebug() << SB_DEBUG_INFO << i << i.row();
             SBID id=determineSBID(i);
+
+            //	Put current row number in sb_position. This will make sure that drag & drop
+            //	inside a playlist works, as the receiving end also has a row number.
+            id.sb_position=i.row()+1;	//	sb_position is (1) based, rows in QWidgets are (0) based.
+
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
             qDebug() << SB_DEBUG_INFO << "Dragging " << id << id.sb_album_id << id.sb_position;

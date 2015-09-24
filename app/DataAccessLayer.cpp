@@ -60,6 +60,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries)
     QString errorMsg;
     bool successFlag=1;
     QString q;
+
     int currentValue=0;
     int maxValue=allQueries.count()+1;
     QProgressDialog pd("Saving",QString(),0,maxValue);

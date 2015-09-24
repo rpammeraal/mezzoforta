@@ -42,6 +42,7 @@ public:
 
 signals:
     void assign(const SBID& fromID, const SBID& toID);
+    void assign(const SBID& fromID, int row);
 
 public slots:
     void schemaChanged();

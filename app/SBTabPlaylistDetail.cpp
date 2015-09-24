@@ -37,8 +37,8 @@ SBTabPlaylistDetail::populate(const SBID& id)
     populateTableView(tv,qm,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
-    connect(qm, SIGNAL(assign(const SBID&,const SBID&)),
-            this, SLOT(movePlaylistItem(const SBID&, const SBID&)));
+    connect(qm, SIGNAL(assign(const SBID&,int)),
+            this, SLOT(movePlaylistItem(const SBID&, int)));
 
     //	Context menu
     tv->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -80,13 +80,14 @@ SBTabPlaylistDetail::deletePlaylistItem()
 }
 
 void
-SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, const SBID &toID)
+SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 {
     //	Determine current playlist
     SBID currentID=currentSBID();
 
+    qDebug() << SB_DEBUG_INFO << fromID << " -> " << row;
     SBModelPlaylist *mpl=new SBModelPlaylist();
-    mpl->reorderItem(currentID,fromID,toID);
+    mpl->reorderItem(currentID,fromID,row);
     refreshTabIfCurrent(currentID);
 }
 
@@ -163,4 +164,3 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
     }
     return id;
 }
-
