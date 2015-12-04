@@ -13,14 +13,15 @@
 ///
 class ScreenStack
 {
+
 public:
     ScreenStack();
     ~ScreenStack();
 
     void clear();
     int count() const;
-    void pushScreen(const SBID& id);
     SBID popScreen();
+    void pushScreen(const SBID& id);
 
     SBID currentScreen();
     SBID nextScreen();

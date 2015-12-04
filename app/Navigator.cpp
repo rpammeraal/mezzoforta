@@ -78,8 +78,10 @@ Navigator::openScreenByID(SBID &id)
         return;
     }
 
+    qDebug() << SB_DEBUG_INFO;
     if(checkOutstandingEdits()==1)
     {
+        qDebug() << SB_DEBUG_INFO;
         return;
     }
 
@@ -156,6 +158,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
         {
             if(tab)
             {
+                qDebug() << SB_DEBUG_INFO;
                 closeTab=tab->handleEscapeKey();
             }
         }
@@ -171,6 +174,14 @@ Navigator::keyPressEvent(QKeyEvent *event)
     else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && Qt::ControlModifier)
     {
         navigateDetailTab((eventKey==Qt::Key_PageDown)?1:-1);
+        closeTab=0;
+    }
+    else if(eventKey==Qt::Key_Asterisk)
+    {
+        if(tab)
+        {
+            tab->handleMergeKey();
+        }
     }
     if(closeTab==1)
     {
@@ -192,7 +203,7 @@ Navigator::navigateDetailTab(int direction)
         return;
     }
 
-    QTabWidget* detailTabWidget=currentTab->detailTabWidget();
+    QTabWidget* detailTabWidget=currentTab->tabWidget();
     if(detailTabWidget==NULL)
     {
         return;
@@ -372,6 +383,7 @@ Navigator::openPerformer(const QUrl &id)
 void
 Navigator::openOpener(QString i)
 {
+    //	CWIP: this is stupid.
     Q_UNUSED(i);
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.mainTab->setCurrentIndex(5);
@@ -421,12 +433,13 @@ Navigator::tabForward()
 /// returns a fully populated SBID.
 /// It expects the screenstack to be in sync with the parameter
 SBID
-Navigator::activateTab(const SBID& id)
+Navigator::activateTab(const SBID& to)
 {
+    SBID id=to;
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenStack* st=Context::instance()->getScreenStack();
     qDebug() << SB_DEBUG_INFO << id;
-    qDebug() << SB_DEBUG_INFO << id.tabID;
+    qDebug() << SB_DEBUG_INFO << id.subtabID;
     qDebug() << SB_DEBUG_INFO << id.sb_item_id;
     qDebug() << SB_DEBUG_INFO << id.sb_item_type;
 
@@ -467,6 +480,11 @@ Navigator::activateTab(const SBID& id)
     SBTab* tab=NULL;
     SBID result;
     bool isEdit=id.isEdit;
+
+    //	copy screenstack attributes to id
+    id.sortColumn=st->currentScreen().sortColumn;
+    id.subtabID=st->currentScreen().subtabID;
+
     switch(id.sb_item_type)
     {
     case SBID::sb_type_song:
@@ -474,14 +492,11 @@ Navigator::activateTab(const SBID& id)
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabSongEdit;
-            editAction->setEnabled(0);	//	 :)
         }
         else
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabSongDetail;
-            mw->ui.tabSongDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
-            editAction->setEnabled(1);
         }
         break;
 
@@ -490,21 +505,25 @@ Navigator::activateTab(const SBID& id)
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabPerformerEdit;
-            editAction->setEnabled(0);	//	 :)
         }
         else
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabPerformerDetail;
-            mw->ui.tabPerformerDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
-            editAction->setEnabled(1);
         }
         break;
 
     case SBID::sb_type_album:
-        qDebug() << SB_DEBUG_INFO;
-        tab=mw->ui.tabAlbumDetail;
-        mw->ui.tabAlbumDetailLists->setCurrentIndex(id.tabID>-1?id.tabID:result.tabID);
+        if(isEdit)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            tab=mw->ui.tabAlbumEdit;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO;
+            tab=mw->ui.tabAlbumDetail;
+        }
         break;
 
     case SBID::sb_type_playlist:
@@ -525,16 +544,16 @@ Navigator::activateTab(const SBID& id)
         qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type;
     }
 
-    qDebug() << SB_DEBUG_INFO << id;
-    qDebug() << SB_DEBUG_INFO << result;
-
     if(tab)
     {
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
+        qDebug() << SB_DEBUG_INFO << tab->objectName();
         result=tab->populate(id);
     }
 
+    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << result;
 
     if(result.sb_item_id==-1 && result.sb_item_type!=SBID::sb_type_allsongs && result.sb_item_type!=SBID::sb_type_songsearch)
     {
@@ -561,12 +580,14 @@ Navigator::activateTab(const SBID& id)
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->setText(id.searchCriteria);
         mw->ui.leftColumnChooser->setEnabled(1);
+        editAction->setEnabled(1);
     }
     else
     {
         qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(0);
         mw->ui.leftColumnChooser->setEnabled(0);
+        editAction->setEnabled(0);
     }
 
     qDebug() << SB_DEBUG_INFO << result;
@@ -600,6 +621,13 @@ Navigator::activateTab(const SBID& id)
     return result;
 }
 
+///
+/// \brief Navigator::checkOutstandingEdits
+/// \return
+///
+/// If screen is edited and cannot be closed, return 1.
+/// Otherwise, return 0.
+///
 bool
 Navigator::checkOutstandingEdits() const
 {
@@ -608,6 +636,7 @@ Navigator::checkOutstandingEdits() const
     SBTab* currentTab=Context::instance()->getTab();
     if(currentTab!=NULL)
     {
+        qDebug() << SB_DEBUG_INFO;
         if(currentTab->handleEscapeKey()==0)
         {
             hasOutstandingEdits=1;
@@ -670,8 +699,10 @@ Navigator::moveTab(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID id;
+    qDebug() << SB_DEBUG_INFO;
     if(checkOutstandingEdits()==1)
     {
+        qDebug() << SB_DEBUG_INFO;
         return;
     }
     if(direction>0)

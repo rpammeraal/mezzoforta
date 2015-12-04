@@ -33,7 +33,11 @@ HEADERS     = \
     SBTabAlbumDetail.h \
     SBTabSongDetail.h \
     Navigator.h \
-    Chooser.h
+    Chooser.h \
+    SBTabAlbumEdit.h \
+    SBModel.h \
+    CompleterFactory.h \
+    SBMessageBox.h
 
 SOURCES     = \
     main.cpp \
@@ -69,7 +73,11 @@ SOURCES     = \
     SBTabAlbumDetail.cpp \
     SBTabSongDetail.cpp \
     Navigator.cpp \
-    Chooser.cpp
+    Chooser.cpp \
+    SBTabAlbumEdit.cpp \
+    SBModel.cpp \
+    CompleterFactory.cpp \
+    SBMessageBox.cpp
 
 # install
 target.path = .

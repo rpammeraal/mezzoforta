@@ -130,7 +130,7 @@ Chooser::deletePlaylist()
             case QMessageBox::Ok:
                 pl.deletePlaylist(id);
                 Context::instance()->getNavigator()->removeFromScreenStack(id);
-                populateModel();
+                this->populate();
 
                 updateText=QString("Removed playlist %1%2%3.")
                     .arg(QChar(96))      //	1
@@ -156,7 +156,7 @@ Chooser::newPlaylist()
     SBID id=pl.createNewPlaylist();
 
     //	Refresh this
-    populateModel();
+    this->populate();
 
     QModelIndex newPlaylistIndex=findItem(id.playlistName);
     qDebug() << SB_DEBUG_INFO << newPlaylistIndex << newPlaylistIndex.isValid();
@@ -218,7 +218,7 @@ Chooser::_renamePlaylist(const SBID &id)
     qDebug() << SB_DEBUG_INFO << id;
     SBModelPlaylist pl;
     pl.renamePlaylist(id);
-    populateModel();
+    this->populate();
     QModelIndex in=findItem(id);
     if(in.isValid())
     {
@@ -375,7 +375,7 @@ Chooser::init()
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     model=new SBStandardItemModel();
-    populateModel();
+    this->populate();
 
     //	New playlist
     newAction = new QAction(tr("&New Playlist"), this);
@@ -410,7 +410,7 @@ Chooser::init()
 }
 
 void
-Chooser::populateModel()
+Chooser::populate()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     model->clear();

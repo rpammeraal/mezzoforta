@@ -37,7 +37,8 @@ SBID::SBID(const SBID &c)
     this->url=c.url;
     this->wiki=c.wiki;
     this->year=c.year;
-    this->tabID=c.tabID;
+    this->subtabID=c.subtabID;
+    this->sortColumn=c.sortColumn;
 
     isEdit=c.isEdit;
 }
@@ -396,7 +397,8 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "url" << url;
     qDebug() << SB_DEBUG_INFO << "wiki" << wiki;
     qDebug() << SB_DEBUG_INFO << "year" << year;
-    qDebug() << SB_DEBUG_INFO << "tabID" << tabID;
+    qDebug() << SB_DEBUG_INFO << "subtabID" << subtabID;
+    qDebug() << SB_DEBUG_INFO << "sortColumn" << sortColumn;
 }
 
 bool
@@ -424,17 +426,46 @@ SBID::operator ==(const SBID& i) const
 bool
 SBID::operator !=(const SBID& i) const
 {
-    qDebug() << SB_DEBUG_INFO;
-
     return !(this->operator==(i));
 }
 
 QDebug operator<<(QDebug dbg, const SBID& id)
 {
-    dbg.nospace() << "SBID"
-        << ":sb_item_id=" << id.sb_item_id
-        << ":sb_item_type=" << id.getType()
-        << ":value=" << id.getText();
+
+    switch(id.sb_item_type)
+    {
+    case SBID::sb_type_song:
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
+                                << id.sb_song_id << "|" << id.songTitle << "|"
+                                << id.sb_performer_id << "|" << id.performerName;
+        break;
+
+    case SBID::sb_type_performer:
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
+                                << id.sb_performer_id << "|" << id.performerName;
+        break;
+
+    case SBID::sb_type_album:
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
+                                << id.sb_album_id << "|" << id.albumTitle << "|"
+                                << id.sb_performer_id << "|" << id.performerName;
+        break;
+
+    case SBID::sb_type_chart:
+        //	CWIP
+        break;
+
+    case SBID::sb_type_playlist:
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
+                                << id.sb_playlist_id << "|" << id.playlistName;
+        break;
+
+    case SBID::sb_type_position:
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        break;
+    }
 
     return dbg.space();
 }
@@ -470,6 +501,7 @@ SBID::init()
     wiki=QString();
     year=0;
 
-    tabID=-1;
+    subtabID=INT_MAX;
     isEdit=0;
+    sortColumn=INT_MAX;
 }

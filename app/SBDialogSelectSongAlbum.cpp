@@ -14,8 +14,8 @@
 SBDialogSelectSongAlbum::SBDialogSelectSongAlbum(const SBID& id, QWidget *parent, SBDialogSelectSongAlbum::SB_DialogType newDialogType) :
     QDialog(parent),
     ui(new Ui::SBDialogSelectSongAlbum),
-    songID(id),
-    dialogType(newDialogType)
+    _songID(id),
+    _dialogType(newDialogType)
 {
 }
 
@@ -24,7 +24,78 @@ SBDialogSelectSongAlbum::setTitle(const QString &title)
 {
 
     setWindowTitle(title);
-    ui->lHeader->setText(title+':');
+}
+
+SBDialogSelectSongAlbum*
+SBDialogSelectSongAlbum::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
+{
+    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_album);
+    qDebug() << SB_DEBUG_INFO;
+    d->ui->setupUi(d);
+
+    //	Populate choices
+    QList<SBID> albumIDPopulated;
+    int currentRank=0;
+    QString title=QString("Select album to keep as is");
+    d->setTitle(title);
+    d->ui->lHeader->setText(title+':');
+    d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
+    for(int i=0;i<m->rowCount(); i++)
+    {
+        SBID currentAlbum;
+
+        currentRank=m->data(m->index(i,0)).toInt();
+        currentAlbum.sb_item_type=SBID::sb_type_album;
+        currentAlbum.sb_item_id=m->data(m->index(i,1)).toInt();
+        currentAlbum.sb_album_id=currentAlbum.sb_item_id;
+        currentAlbum.albumTitle=m->data(m->index(i,2)).toString();
+        currentAlbum.sb_performer_id=m->data(m->index(i,3)).toInt();
+        currentAlbum.performerName=m->data(m->index(i,4)).toString();
+
+
+        qDebug() << SB_DEBUG_INFO << "start list";
+        for(int i=0;i<albumIDPopulated.count();i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i << albumIDPopulated.at(i);
+
+        }
+        qDebug() << SB_DEBUG_INFO << "end list";
+
+        if(albumIDPopulated.contains(currentAlbum)==0)
+        {
+            QLabel* l;
+            if(i==1)
+            {
+                l=new QLabel;
+                l->setText("Or pick album from this list to merge with:");
+                d->ui->vlAlbumList->addWidget(l);
+            }
+
+            l=new QLabel;
+            l->setWindowFlags(Qt::FramelessWindowHint);
+            l->setTextFormat(Qt::RichText);
+            l->setFont(QFont("Trebuchet MS",13));
+
+            l->setText(QString("<html><head><style type=text/css> "
+                               "a:link {color:black; text-decoration:none;} "
+                               "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
+                       .arg(i)
+                       .arg(currentAlbum.albumTitle)
+                       .arg(currentAlbum.performerName)
+            );
+
+            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+            connect(l, SIGNAL(linkActivated(QString)),
+                    d, SLOT(OK(QString)));
+
+            d->ui->vlAlbumList->addWidget(l);
+
+            d->_itemsDisplayed[i]=currentAlbum;
+            albumIDPopulated.append(currentAlbum);
+        }
+    }
+    d->updateGeometry();
+    return d;
 }
 
 SBDialogSelectSongAlbum*
@@ -35,7 +106,7 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
     d->ui->setupUi(d);
 
     //	Populate choices
-    QString title=QString("Choose album for song %1%2%3:").arg(QChar(96)).arg(d->songID.songTitle).arg(QChar(180));
+    QString title=QString("Choose album for song %1%2%3:").arg(QChar(96)).arg(d->_songID.songTitle).arg(QChar(180));
     d->setTitle(title);
     for(int i=0;i<m->rowCount(); i++)
     {
@@ -79,6 +150,7 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
 SBDialogSelectSongAlbum*
 SBDialogSelectSongAlbum::selectPerformer(const QString& editPerformerName, const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
+    Q_UNUSED(editPerformerName);
     SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_performer);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
@@ -98,7 +170,7 @@ SBDialogSelectSongAlbum::selectPerformer(const QString& editPerformerName, const
         qDebug() << SB_DEBUG_INFO << performerID.sb_item_id << performerID.performerName;
         qDebug() << SB_DEBUG_INFO << m->data(m->index(i,2)).toString();
 
-        d->itemsDisplayed[performerID.sb_item_id]=performerID;
+        d->_itemsDisplayed[performerID.sb_item_id]=performerID;
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
@@ -134,48 +206,93 @@ SBDialogSelectSongAlbum::selectPerformer(const QString& editPerformerName, const
 }
 
 SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectSongByPerformer(const QString& editSongTitleName, const SBID& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
     SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_songperformer);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
     //	Populate choices
-    QString title=QString("Choose song");
+    QList<SBID> songIDPopulated;
+    int lastSeenRank=0;
+    int currentRank=0;
+    QString title=QString("Choose Original Performer");
     d->setTitle(title);
+    title="<FONT SIZE+=1><B>"+title+"</B></FONT> for <B><I><FONT SIZE=+1>"+id.songTitle+"</FONT></I></B>";
+    d->ui->lHeader->setText(title+':');
+    d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
     for(int i=0;i<m->rowCount(); i++)
     {
-        QLabel* l=new QLabel;
-
         SBID songID;
-        songID.sb_item_type=SBID::sb_type_performer;
+
+        currentRank=m->data(m->index(i,0)).toInt();
+        songID.sb_item_type=SBID::sb_type_song;
         songID.sb_item_id=m->data(m->index(i,1)).toInt();
+        songID.sb_song_id=songID.sb_item_id;
         songID.songTitle=m->data(m->index(i,2)).toString();
+        songID.sb_performer_id=m->data(m->index(i,3)).toInt();
+        songID.performerName=m->data(m->index(i,4)).toString();
 
-        d->itemsDisplayed[songID.sb_item_id]=songID;
 
-        l->setWindowFlags(Qt::FramelessWindowHint);
-        l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(songID);
-        QFile imageFile(imagePath);
-
-        if(imageFile.exists()==0)
+        qDebug() << SB_DEBUG_INFO << "start list";
+        for(int i=0;i<songIDPopulated.count();i++)
         {
-            imagePath=SBID::getIconResourceLocation(songID.sb_item_type);
-        }
-        l->setText(QString("<html><head><style type=text/css> "
-                           "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><font face=\"Trebuchet\"><a href='%1'>&#8226;     %2 by %3</a></font></body></html>")
-                   //	set args correctly
-                   .arg(m->data(m->index(i,1)).toString())
-                   .arg(m->data(m->index(i,2)).toString())
-                   .arg(m->data(m->index(i,4)).toString())
-        );
-        l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-        connect(l, SIGNAL(linkActivated(QString)),
-                d, SLOT(OK(QString)));
+            qDebug() << SB_DEBUG_INFO << i << songIDPopulated.at(i);
 
-        d->ui->vlAlbumList->addWidget(l);
+        }
+        qDebug() << SB_DEBUG_INFO << "end list";
+
+        if(songIDPopulated.contains(songID)==0)
+        {
+            bool isAlternativeSongFlag=0;
+
+            if(currentRank!=lastSeenRank && currentRank==3)
+            {
+                QLabel* lh=new QLabel;
+                lh->setWindowFlags(Qt::FramelessWindowHint);
+                lh->setTextFormat(Qt::RichText);
+                lh->setText("<FONT SIZE+=1><B>Other Choices:</B></FONT>");
+                lh->setFont(QFont("Trebuchet MS",13));
+                d->ui->vlAlbumList->addWidget(lh);
+            }
+
+            QLabel* l=new QLabel;
+            l->setWindowFlags(Qt::FramelessWindowHint);
+            l->setTextFormat(Qt::RichText);
+            l->setFont(QFont("Trebuchet MS",13));
+
+            if(currentRank==3)
+            {
+                isAlternativeSongFlag=1;
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
+                           .arg(i)
+                           .arg(songID.songTitle)
+                           .arg(songID.performerName)
+                );
+            }
+            else
+            {
+
+                isAlternativeSongFlag=0;
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
+                           .arg(i)
+                           .arg(songID.performerName)
+                );
+            }
+            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+            connect(l, SIGNAL(linkActivated(QString)),
+                    d, SLOT(OK(QString)));
+
+            d->ui->vlAlbumList->addWidget(l);
+
+            d->_itemsDisplayed[i]=songID;
+            songIDPopulated.append(songID);
+        }
+        lastSeenRank=currentRank;
     }
     d->updateGeometry();
     return d;
@@ -189,37 +306,33 @@ SBDialogSelectSongAlbum::~SBDialogSelectSongAlbum()
 SBID
 SBDialogSelectSongAlbum::getSBID() const
 {
-    return songID;
+    return _songID;
 }
 
-bool
-SBDialogSelectSongAlbum::hasSelectedItem() const
-{
-    return hasSelectedItemFlag;
-}
 
 ///	PRIVATE SLOTS
 void
 SBDialogSelectSongAlbum::OK(const QString& i)
 {
-    hasSelectedItemFlag=1;
-    QMapIterator<int,SBID> it(itemsDisplayed);
+    _hasSelectedItemFlag=1;
+    qDebug() << SB_DEBUG_INFO << i;
+    QMapIterator<int,SBID> it(_itemsDisplayed);
     while(it.hasNext())
     {
         it.next();
         qDebug() << SB_DEBUG_INFO << it.value().sb_item_id << it.value().performerName;
     }
 
-    switch(dialogType)
+    switch(_dialogType)
     {
     case sb_songalbum:
         {
             QStringList l=i.split(":");
             //	i is albumID selected
             //	Flash the selected entry a couple of times.
-            songID.sb_album_id=l.at(0).toInt();
-            songID.sb_position=l.at(1).toInt();
-            qDebug() << SB_DEBUG_INFO << songID << songID.sb_album_id << songID.sb_position;
+            _songID.sb_album_id=l.at(0).toInt();
+            _songID.sb_position=l.at(1).toInt();
+            qDebug() << SB_DEBUG_INFO << _songID << _songID.sb_album_id << _songID.sb_position;
         }
         break;
 
@@ -229,9 +342,9 @@ SBDialogSelectSongAlbum::OK(const QString& i)
             newID.sb_item_type=SBID::sb_type_performer;
             newID.sb_item_id=i.toInt();
             newID.sb_performer_id=i.toInt();
-            newID.performerName=itemsDisplayed[i.toInt()].performerName;
+            newID.performerName=_itemsDisplayed[i.toInt()].performerName;
             qDebug() << SB_DEBUG_INFO << newID.performerName;
-            songID=newID;
+            _songID=newID;
         }
         break;
 
@@ -239,10 +352,19 @@ SBDialogSelectSongAlbum::OK(const QString& i)
         {
             SBID newID;
             newID.sb_item_type=SBID::sb_type_song;
-            newID.sb_item_id=i.toInt();
-            newID.songTitle=itemsDisplayed[i.toInt()].songTitle;
-            qDebug() << SB_DEBUG_INFO << newID.performerName;
-            songID=newID;
+            newID=_itemsDisplayed[i.toInt()];
+            _songID=newID;
+            qDebug() << SB_DEBUG_INFO << newID;
+        }
+        break;
+
+    case sb_album:
+        {
+            SBID newID;
+            newID.sb_item_type=SBID::sb_type_album;
+            newID=_itemsDisplayed[i.toInt()];
+            _songID=newID;
+            qDebug() << SB_DEBUG_INFO << newID;
         }
         break;
     }
@@ -253,5 +375,5 @@ void
 SBDialogSelectSongAlbum::init()
 {
     ui=NULL;
-    hasSelectedItemFlag=0;
+    _hasSelectedItemFlag=0;
 }

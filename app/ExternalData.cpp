@@ -211,7 +211,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -288,7 +288,7 @@ ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -320,7 +320,7 @@ ExternalData::handleImageDataNetwork(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -386,7 +386,7 @@ ExternalData::handleMBIDNetwork(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -467,7 +467,7 @@ ExternalData::handlePerformerImageURLFromEN(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -536,7 +536,7 @@ ExternalData::handlePerformerNewsURLFromEN(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -607,7 +607,7 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -693,7 +693,7 @@ ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");
@@ -769,7 +769,7 @@ ExternalData::handleSongURLFromMB(QNetworkReply *r)
             }
         }
     }
-    else
+    else if(0)
     {
         QMessageBox messagebox;
         messagebox.setText("Error processing network request:");

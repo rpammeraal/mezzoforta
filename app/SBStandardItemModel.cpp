@@ -1,10 +1,42 @@
+#include "SBStandardItemModel.h"
+
 #include <QDebug>
 
 #include "Common.h"
-#include "SBStandardItemModel.h"
+#include "SBSqlQueryModel.h"
 
-SBStandardItemModel::SBStandardItemModel() : QStandardItemModel()
+SBStandardItemModel::SBStandardItemModel(QSqlQueryModel *sqm) : QStandardItemModel()
 {
+    if(sqm!=NULL)
+    {
+        QModelIndex thisIDX;
+        QModelIndex sqmIDX;
+
+        this->setRowCount(sqm->rowCount());
+        this->setColumnCount(sqm->columnCount());
+
+        for(int i=0;i<sqm->rowCount();i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i;
+            //	Copy vertical header data
+            this->setHeaderData(i, Qt::Vertical, sqm->headerData(i, Qt::Vertical));
+
+            //	Go thru columns
+            for(int j=0;j<sqm->columnCount();j++)
+            {
+                if(i==0)
+                {
+                    //	Copy horizontal header data
+                    this->setHeaderData(j, Qt::Horizontal, sqm->headerData(j, Qt::Horizontal));
+                }
+                thisIDX=createIndex(i,j);
+                sqmIDX=sqm->index(i,j);
+                QStandardItem* si=new QStandardItem();
+                si->setText(sqm->data(sqmIDX).toString());
+                this->setItem(i,j,si);
+            }
+        }
+    }
 }
 
 SBStandardItemModel::~SBStandardItemModel()
@@ -14,23 +46,18 @@ SBStandardItemModel::~SBStandardItemModel()
 bool
 SBStandardItemModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
-    Q_UNUSED(data);
-    Q_UNUSED(action);
-    Q_UNUSED(row);
-    Q_UNUSED(column);
-    Q_UNUSED(parent);
-
-    return true;
+    return SBModel::_canDropMimeData(data,action,row,column,parent);
 }
 
 bool
 SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-    qDebug() << SB_DEBUG_INFO << parent << row << column;
-    if(parent.row()==-1)
-    {
-        return false;
-    }
+    qDebug() << SB_DEBUG_INFO << parent << row << column << parent.row();
+    //	parent.row() always -1 with album edit, drag & drop with songs
+    //if(parent.row()==-1)
+    //{
+        //return false;
+    //}
 
     if (!canDropMimeData(data, action, row, column, parent))
     {
@@ -44,12 +71,20 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBID id=SBID(encodedData);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << id << id.sb_album_id << id.sb_position;
+    qDebug() << SB_DEBUG_INFO << "Dropping " << id;
 
     //const QModelIndex n=this->index(parent.row(),parent.column());
-    //QString dstID=this->data(n, Qt::DisplayRole).toString();
+    qDebug() << SB_DEBUG_INFO << "Dropping on " << row;
 
-    emit assign(parent,id);
+    //QList<QStandardItem *> rowToBeMoved=takeRow(id.sb_position);
+    //this->insertRow(receivingID.sb_position, rowToBeMoved);
+    this->beginRemoveRows(parent,id.sb_position,id.sb_position);
+    this->removeRow(id.sb_position);
+    this->endRemoveRows();
+
+
+    //emit assign(parent,id);
+    //emit assign(id,receivingID);
 
     return 1;
 }
@@ -57,51 +92,41 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 Qt::ItemFlags
 SBStandardItemModel::flags(const QModelIndex &index) const
 {
-    debugShow();
-    Qt::ItemFlags defaultFlags = QStandardItemModel::flags(index);
-    if(dragableColumnList.count()==0 || dragableColumnList.at(index.column()==1))
-    {
-        defaultFlags = Qt::ItemIsUserCheckable
-                | Qt::ItemIsSelectable
-                | Qt::ItemIsEnabled
-                | Qt::ItemIsDragEnabled
-                | Qt::ItemIsDropEnabled;
-    }
-    return defaultFlags;
+    return SBModel::_flags(index, QStandardItemModel::flags(index));
 }
+
+bool
+SBStandardItemModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    qDebug() << SB_DEBUG_INFO << row << count;
+    return QStandardItemModel::insertRows(row,count,parent);
+}
+
 
 QMimeData*
 SBStandardItemModel::mimeData(const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
-    QMimeData* mimeData = new QMimeData();
-
-    foreach (const QModelIndex &i, indexes)
-    {
-        if (i.isValid())
-        {
-            SBID id;//=getSBID1(i);
-            QByteArray ba=id.encode();
-            mimeData->setData("application/vnd.text.list", ba);
-            qDebug() << SB_DEBUG_INFO << "Dragging " << id;
-            return mimeData;
-        }
-    }
-    return NULL;
+    return SBModel::_mimeData(this,indexes);
 }
 
 QStringList
 SBStandardItemModel::mimeTypes() const
 {
-    QStringList types;
-    types << "application/vnd.text.list";
-    return types;
+    return SBModel::_mimeTypes();
+}
+
+bool
+SBStandardItemModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    qDebug() << SB_DEBUG_INFO << row << count;
+    return QStandardItemModel::removeRows(row,count,parent);
 }
 
 bool
 SBStandardItemModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    qDebug() << SB_DEBUG_INFO;
+    //qDebug() << SB_DEBUG_INFO << index << value << role;
+    QStandardItemModel::setData(index,value,role);
     Q_UNUSED(value);
     QVector<int> v;
     v.append(role);
@@ -109,12 +134,15 @@ SBStandardItemModel::setData(const QModelIndex& index, const QVariant& value, in
     return 1;
 }
 
-///	NATIVE METHODS
-void
-SBStandardItemModel::debugShow() const
+Qt::DropActions
+SBStandardItemModel::supportedDropActions() const
 {
-    for(int i=0;i<dragableColumnList.count();i++)
-    {
-        qDebug() << i << dragableColumnList.at(i);
-    }
+    return SBModel::_supportedDropActions();
+}
+
+///	NATIVE METHODS
+SBID
+SBStandardItemModel::determineSBID(const QModelIndex &idx) const
+{
+    return SBModel::_determineSBID(this,idx);
 }

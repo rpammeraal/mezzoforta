@@ -20,6 +20,7 @@ class MainWindow : public QMainWindow
     friend class Chooser;
     friend class SBTab;
     friend class SBTabAlbumDetail;
+    friend class SBTabAlbumEdit;
     friend class SBTabPerformerDetail;
     friend class SBTabPerformerEdit;
     friend class SBTabPlaylistDetail;

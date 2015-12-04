@@ -65,7 +65,8 @@ public:
     int         year;
 
     //	Tertiary identifiers (navigation et al)
-    int         tabID;
+    int         subtabID;
+    int         sortColumn;
 
     void assign(const QString& itemType,int itemID,QString text="");
     QByteArray encode() const;

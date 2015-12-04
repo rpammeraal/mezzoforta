@@ -33,6 +33,11 @@ void
 Common::hideColumns(QTableView* tv)
 {
     const QAbstractItemModel* m=tv->model();
+    if(m==NULL)
+    {
+        qDebug() << SB_DEBUG_NPTR << "m";
+        return;
+    }
     for(int i=0;i<m->columnCount();i++)
     {
         if(m->headerData(i,Qt::Horizontal).toString().toLower().startsWith("sb_")==1)

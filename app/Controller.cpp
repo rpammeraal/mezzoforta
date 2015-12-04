@@ -10,6 +10,7 @@
 
 #include "BackgroundThread.h"
 #include "Common.h"
+#include "CompleterFactory.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -73,35 +74,14 @@ Controller::refreshModels()
     mw->ui.allSongsList->setModel(slP);
     qDebug() << SB_DEBUG_INFO;
 
-    //	Completers
-    QCompleter* completer;
-
-    //		A.	All items
-    completer=new QCompleter(mw);
-    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelAll());
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    completer->setFilterMode(Qt::MatchStartsWith);
-    mw->ui.searchEdit->setCompleter(completer);
     qDebug() << SB_DEBUG_INFO;
 
-    //		B.	Songs only
-    completer=new QCompleter(mw);
-    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelSong());
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    completer->setFilterMode(Qt::MatchStartsWith);
-    mw->ui.songEditTitle->setCompleter(completer);
+    //	Completers
 
-    //		C.	Performers only
-    completer=new QCompleter(mw);
-    completer->setModel(Context::instance()->getDataAccessLayer()->getCompleterModelPerformer());
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    completer->setFilterMode(Qt::MatchStartsWith);
-
-    mw->ui.songEditPerformerName->setCompleter(completer);
-    mw->ui.performerEditName->setCompleter(completer);
+    mw->ui.searchEdit->setCompleter(CompleterFactory::getCompleterAll());
+    mw->ui.songEditTitle->setCompleter(CompleterFactory::getCompleterSong());
+    mw->ui.songEditPerformerName->setCompleter(CompleterFactory::getCompleterPerformer());
+    mw->ui.performerEditName->setCompleter(CompleterFactory::getCompleterPerformer());
 
     //	SEARCH
     QCompleter* c=mw->ui.searchEdit->completer();

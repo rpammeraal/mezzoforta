@@ -28,11 +28,11 @@ public:
     void recalculateAllPlaylistDurations() const;
     void recalculatePlaylistDuration(const SBID& id) const;
     void renamePlaylist(const SBID& id) const;
-    void reorderItem(const SBID& playlistID, const SBID& fromID, int newPosition) const;
+    void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
 
 private:
     void init();
-    void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX, bool showPopupFlag=1) const;
+    void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX) const;
 };
 
 #endif // SBMODELPLAYLIST_H

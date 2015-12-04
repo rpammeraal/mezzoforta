@@ -5,6 +5,7 @@
 
 #include "Context.h"
 #include "Controller.h"
+#include "CompleterFactory.h"
 #include "MainWindow.h"
 #include "SBID.h"
 #include "SBModelPerformer.h"
@@ -12,10 +13,9 @@
 #include "Navigator.h"
 
 ///	Public methods
-SBTabPerformerEdit::SBTabPerformerEdit() : SBTab()
+SBTabPerformerEdit::SBTabPerformerEdit(QWidget* parent) : SBTab(parent,1)
 {
     init();
-    setIsEditTab(1);
 }
 
 void
@@ -63,73 +63,6 @@ SBTabPerformerEdit::hasEdits() const
     return 0;
 }
 
-SBID
-SBTabPerformerEdit::populate(const SBID& id)
-{
-    reinit();
-    const MainWindow* mw=Context::instance()->getMainWindow();
-
-    //	Get detail
-    SBModelPerformer* p=new SBModelPerformer();
-    SBID result=p->getDetail(id);
-    if(result.sb_item_id==-1)
-    {
-        //	Not found
-        return result;
-    }
-    SBTab::populate(result);
-
-    qDebug() << SB_DEBUG_INFO << result;
-    setRelatedPerformerBeingAddedFlag(0);
-    setRelatedPerformerBeingDeletedFlag(0);
-    removeRelatedPerformerButtonMaybeEnabledFlag=0;
-    mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
-
-    //	Get detail
-    result.isEdit=1;
-
-    //	Attributes
-    mw->ui.performerEditName->setText(result.performerName);
-    mw->ui.performerEditNotes->setText(result.notes);
-    mw->ui.performerEditWebSite->setText(result.url);
-
-    //	Related performers
-    SBSqlQueryModel* rp=p->getRelatedPerformers(id);
-    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-
-    rpt->clear();
-    rpt->setRowCount(rp->rowCount());
-    rpt->setColumnCount(2);
-    rpt->setColumnHidden(1,1);
-    rpt->horizontalHeader()->hide();
-    rpt->verticalHeader()->hide();
-
-    allRelatedPerformers.clear();
-    for(int i=0;i<rp->rowCount();i++)
-    {
-        QTableWidgetItem *newItem;
-
-        newItem=new QTableWidgetItem;
-
-        newItem->setText(rp->data(rp->index(i,1)).toString());
-        newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
-        rpt->setItem(i,0,newItem);
-
-        newItem=new QTableWidgetItem;
-        QString performerIDString=rp->data(rp->index(i,0)).toString();
-        newItem->setText(performerIDString);
-        rpt->setItem(i,1,newItem);
-        allRelatedPerformers.append(performerIDString.toInt());
-    }
-
-    //	Set correct focus
-    mw->ui.performerEditName->selectAll();
-    mw->ui.performerEditName->setFocus();
-
-    qDebug() << SB_DEBUG_INFO << result.isEdit;
-    return result;
-}
-
 ///	Public slots
 void
 SBTabPerformerEdit::addNewRelatedPerformer()
@@ -142,12 +75,7 @@ SBTabPerformerEdit::addNewRelatedPerformer()
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    addNewRelatedPerformerCompleter=new QCompleter();
-    addNewRelatedPerformerCompleter->setModel(dal->getCompleterModelPerformer());
-    addNewRelatedPerformerCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    addNewRelatedPerformerCompleter->setModelSorting(QCompleter::CaseSensitivelySortedModel);
-    addNewRelatedPerformerCompleter->setFilterMode(Qt::MatchStartsWith);
+    addNewRelatedPerformerCompleter=CompleterFactory::getCompleterPerformer();
     connect(addNewRelatedPerformerCompleter, SIGNAL(activated(QModelIndex)),
             this, SLOT(relatedPerformerSelected(QModelIndex)));
 
@@ -455,6 +383,71 @@ SBTabPerformerEdit::init()
     relatedPerformerBeingDeletedFlag=0;
     allRelatedPerformers.clear();
     relatedPerformerHasChanged=0;
+}
+
+SBID
+SBTabPerformerEdit::_populate(const SBID& id)
+{
+    qDebug() << SB_DEBUG_INFO;
+    reinit();
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
+    //	Get detail
+    SBModelPerformer* p=new SBModelPerformer();
+    SBID result=p->getDetail(id);
+    result.isEdit=1;
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
+
+    qDebug() << SB_DEBUG_INFO << result;
+    setRelatedPerformerBeingAddedFlag(0);
+    setRelatedPerformerBeingDeletedFlag(0);
+    removeRelatedPerformerButtonMaybeEnabledFlag=0;
+    mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
+
+    //	Attributes
+    mw->ui.performerEditName->setText(result.performerName);
+    mw->ui.performerEditNotes->setText(result.notes);
+    mw->ui.performerEditWebSite->setText(result.url);
+
+    //	Related performers
+    SBSqlQueryModel* rp=p->getRelatedPerformers(id);
+    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+
+    rpt->clear();
+    rpt->setRowCount(rp->rowCount());
+    rpt->setColumnCount(2);
+    rpt->setColumnHidden(1,1);
+    rpt->horizontalHeader()->hide();
+    rpt->verticalHeader()->hide();
+
+    allRelatedPerformers.clear();
+    for(int i=0;i<rp->rowCount();i++)
+    {
+        QTableWidgetItem *newItem;
+
+        newItem=new QTableWidgetItem;
+
+        newItem->setText(rp->data(rp->index(i,1)).toString());
+        newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
+        rpt->setItem(i,0,newItem);
+
+        newItem=new QTableWidgetItem;
+        QString performerIDString=rp->data(rp->index(i,0)).toString();
+        newItem->setText(performerIDString);
+        rpt->setItem(i,1,newItem);
+        allRelatedPerformers.append(performerIDString.toInt());
+    }
+
+    //	Set correct focus
+    mw->ui.performerEditName->selectAll();
+    mw->ui.performerEditName->setFocus();
+
+    qDebug() << SB_DEBUG_INFO << result.isEdit;
+    return result;
 }
 
 void

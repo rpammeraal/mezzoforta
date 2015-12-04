@@ -5,16 +5,18 @@
 #include <QStringList>
 
 #include "Common.h"
+#include "SBModel.h"
 
 class DataAccessLayer;
 class QAbstractItemModel;
+class SBStandardItemModel;
 
 ///
 /// \brief The SBSqlQueryModel class
 ///
 /// Created to re-implement the methods to support drag & drop.
 ///
-class SBSqlQueryModel : public QSqlQueryModel
+class SBSqlQueryModel : public QSqlQueryModel, public SBModel
 {
     Q_OBJECT
 
@@ -31,18 +33,17 @@ public:
     virtual QMimeData * mimeData(const QModelIndexList & indexes) const;
     virtual QStringList mimeTypes() const;
     virtual bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+    virtual Qt::DropActions supportedDropActions() const;
 
     //	Native methods
-    void debugShow() const;
-    SBID determineSBID(const QModelIndex& idx) const;
+    SBID determineSBID(const QModelIndex &idx) const;
     int getSelectedColumn() const;
     void handleSQLError() const;
     void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
 
 signals:
-    void assign(const SBID& fromID, const SBID& toID);
-    void assign(const SBID& fromID, int row);
+    void assign(const SBID& fromID, const SBID& toID) const;
 
 public slots:
     void schemaChanged();
@@ -50,10 +51,9 @@ public slots:
 protected:
 
 private:
-    QList<bool> dragableColumnList;
     int selectedColumn;
 
-    void init();
+    void _init();
 };
 
 #endif // SBMODELLIST_H

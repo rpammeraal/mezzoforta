@@ -36,6 +36,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setIsNull("IFNULL");
     setGetDate("DATE('now')");
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
+    addMissingDatabaseItems();
 }
 
 DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
@@ -52,7 +53,7 @@ DataAccessLayer::~DataAccessLayer()
 }
 
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries)
+DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,bool showProgressDialogFlag)
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -60,14 +61,16 @@ DataAccessLayer::executeBatch(const QStringList &allQueries)
     QString errorMsg;
     bool successFlag=1;
     QString q;
-
     int currentValue=0;
     int maxValue=allQueries.count()+1;
     QProgressDialog pd("Saving",QString(),0,maxValue);
-    pd.setWindowModality(Qt::WindowModal);
-    pd.show();
-    pd.raise();
-    pd.activateWindow();
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+    }
 
     successFlag=db.transaction();
     if(successFlag==1)
@@ -92,12 +95,12 @@ DataAccessLayer::executeBatch(const QStringList &allQueries)
 
         }
 
-        if(successFlag==1)
+        if(successFlag==1 && commitFlag==1)
         {
             successFlag=db.commit();
             qDebug() << SB_DEBUG_INFO << "Attempté to committé";
         }
-        if(successFlag==0)
+        if(successFlag==0 || commitFlag==0)
         {
             r=db.lastError();
             qDebug() << SB_DEBUG_INFO << "Rollback time";
@@ -105,7 +108,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries)
         }
     }
     pd.setValue(maxValue);
-    if(successFlag==0)
+    if(successFlag==0 && ignoreErrorsFlag==0)
     {
         QMessageBox msgBox;
         msgBox.setText("Error executing: "+errorMsg);
@@ -178,121 +181,6 @@ DataAccessLayer::customize(QString &s) const
       replace("___SB_DB_GETDATE___",getGetDate());
 }
 
-QSqlQueryModel*
-DataAccessLayer::getCompleterModelAll()
-{
-    QString query=
-        "SELECT DISTINCT "
-            "s.title || ' - song by ' || a.name, "
-            "s.song_id AS SB_ITEM_ID, "
-            "'SB_SONG_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id AND "
-                    "p.role_id=0 "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
-        "UNION "
-        "SELECT DISTINCT "
-            "r.title || ' - record', "
-            "r.record_id AS SB_ITEM_ID, "
-            "'SB_ALBUM_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___record r "
-        "UNION "
-        "SELECT DISTINCT "
-            "a.name || ' - performer', "
-            "a.artist_id, "
-            "'SB_PERFORMER_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___artist a "
-        "ORDER BY 1 ";
-
-    this->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-    QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
-
-    while (model->canFetchMore())
-    {
-        model->fetchMore();
-    }
-
-    return model;
-}
-
-QSqlQueryModel*
-DataAccessLayer::getCompleterModelPerformer()
-{
-    QString query=
-        "SELECT DISTINCT "
-            "a.name, "
-            "a.artist_id "
-        "FROM "
-            "___SB_SCHEMA_NAME___artist a "
-        "ORDER BY 1 ";
-
-    this->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-    QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
-
-    while (model->canFetchMore())
-    {
-        model->fetchMore();
-    }
-
-    return model;
-}
-
-QSqlQueryModel*
-DataAccessLayer::getCompleterModelPlaylist()
-{
-    QString query=
-        "SELECT DISTINCT "
-            "a.name, "
-            "a.playlist_id "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist a "
-        "ORDER BY 1 ";
-
-    this->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-    QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
-
-    while (model->canFetchMore())
-    {
-        model->fetchMore();
-    }
-
-    return model;
-}
-
-QSqlQueryModel*
-DataAccessLayer::getCompleterModelSong()
-{
-    QString query=
-        "SELECT DISTINCT "
-            "s.title "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-        "ORDER BY 1 ";
-
-    this->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-    QSqlQueryModel* model = new QSqlQueryModel();
-    model->setQuery(query,QSqlDatabase::database(getConnectionName()));
-
-    while (model->canFetchMore())
-    {
-        model->fetchMore();
-    }
-
-    return model;
-}
-
 const QString&
 DataAccessLayer::getConnectionName() const
 {
@@ -332,6 +220,22 @@ DataAccessLayer::getIsNull() const
 }
 
 ///	Protected
+
+///
+/// \brief DataAccessLayer::addMissingDatabaseItems
+///
+/// Run when opening database.
+///
+void
+DataAccessLayer::addMissingDatabaseItems()
+{
+    QStringList SQL;
+    SQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN soundex VARCHAR NULL");
+    SQL.append("ALTER TABLE ___SB_SCHEMA_NAME___song ADD COLUMN soundex VARCHAR NULL");
+    SQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___online_performance_alt( LIKE ___SB_SCHEMA_NAME___online_performance)");
+
+    executeBatch(SQL,1,1,0);
+}
 
 void
 DataAccessLayer::setGetDate(const QString& n)

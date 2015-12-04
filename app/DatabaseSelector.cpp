@@ -169,6 +169,7 @@ DatabaseSelector::openDB(DatabaseCredentials& dc)
         if(databaseChanged())
         {
             updateDatabaseCredentials(dc);
+
         }
         _databaseOpen=1;
     }
@@ -355,6 +356,8 @@ DatabaseSelector::determineAvailableDBTypes()
     {
         postgresDriverAvailable=1;
     }
+    qDebug() << SB_DEBUG_INFO << "QSQLITE" << sqliteDriverAvailable;
+    qDebug() << SB_DEBUG_INFO << "QPSQL" << postgresDriverAvailable;
 }
 
 void

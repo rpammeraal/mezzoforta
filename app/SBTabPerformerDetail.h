@@ -10,8 +10,9 @@ class SBTabPerformerDetail : public SBTab
     Q_OBJECT
 
 public:
-    SBTabPerformerDetail();
-    virtual SBID populate(const SBID& id);
+    SBTabPerformerDetail(QWidget* parent=0);
+    virtual QTableView* subtabID2TableView(int subtabID) const;
+    virtual QTabWidget* tabWidget() const;
 
 private slots:
     void refreshPerformerNews();
@@ -25,6 +26,7 @@ private:
     QList<QWidget *> relatedItems;
 
     void init();
+    virtual SBID _populate(const SBID& id);
 };
 
 #endif // SBTABPERFORMERDETAIL_H

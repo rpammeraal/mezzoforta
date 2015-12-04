@@ -8,12 +8,14 @@ class SBTabPlaylistDetail : public SBTab
     Q_OBJECT
 
 public:
-    SBTabPlaylistDetail();
-    virtual SBID populate(const SBID& id);
+    SBTabPlaylistDetail(QWidget* parent=0);
+
+    //	Virtual
+    virtual QTableView* subtabID2TableView(int subtabID) const;
 
 public slots:
     void deletePlaylistItem();
-    void movePlaylistItem(const SBID& fromID, int row) ;	//	const SBID& toID);
+    void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void showContextMenuPlaylist(const QPoint &p);
 
 private:
@@ -22,6 +24,7 @@ private:
 
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);
+    virtual SBID _populate(const SBID& id);
 };
 
 #endif // SBTABPLAYLISTDETAIL_H

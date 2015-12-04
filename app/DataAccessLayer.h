@@ -32,13 +32,14 @@ public:
     friend class SBModel;
     friend class SBModelPlaylist;
     friend class SBModelGenrelist;
+    friend class DatabaseSelector;
 
     DataAccessLayer();
     DataAccessLayer(const QString& connectionName);
     DataAccessLayer(const DataAccessLayer& c);
     ~DataAccessLayer();
 
-    bool executeBatch(const QStringList& allQueries);
+    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,bool showProgressDialogFlag=1);
 
     DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
@@ -48,10 +49,6 @@ public:
     virtual QStringList getAvailableSchemas() const;
     bool setSchema(const QString& newSchema);
     QString customize(QString& sqlString) const;
-    QSqlQueryModel* getCompleterModelAll();
-    QSqlQueryModel* getCompleterModelPerformer();
-    QSqlQueryModel* getCompleterModelPlaylist();
-    QSqlQueryModel* getCompleterModelSong();
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
     const QString& getGetDate() const;
@@ -64,6 +61,8 @@ public:
 
 protected:
     int dalID;
+
+    void addMissingDatabaseItems();
 
     void setGetDate(const QString& n);
     void setILike(const QString& n);

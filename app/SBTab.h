@@ -10,28 +10,34 @@ class QLineEdit;
 class QTableView;
 class QTabWidget;
 
-class SBSqlQueryModel;
+class QAbstractItemModel;
+class QListView;
 
 class SBTab : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SBTab(QWidget *parent = 0);
+    explicit SBTab(QWidget *parent = 0, bool isEditTabFlag=0);
+
+    int getFirstEligibleSubtabID() const;
     void refreshTabIfCurrent(const SBID &id);
+    void setSubtab(const SBID& id) const;
 
     //	Inline
     inline SBID currentSBID() const { return _currentID; }
-    inline QTabWidget* detailTabWidget() const { return _detailTabWidget; }
-    inline bool isEditTab() const { return _isEditTab; }
+    inline bool isEditTab() const { return _isEditTabFlag; }
     inline void setCurrentSBID(const SBID& id) { _currentID=id; }
 
     //	Virtual
     virtual void handleDeleteKey();
     virtual void handleEnterKey() const;
     virtual bool handleEscapeKey();	//	return 1 when currentTab can be closed
+    virtual void handleMergeKey();	//	defined as a '*'
     virtual bool hasEdits() const;
     virtual SBID populate(const SBID& id);
+    virtual QTableView* subtabID2TableView(int subtabID) const;
+    virtual QTabWidget* tabWidget() const;
 
 public slots:
     virtual void save() const;
@@ -41,23 +47,28 @@ public slots:
 public slots:
 
 protected:
-    int populateTableView(QTableView* tv, SBSqlQueryModel* qm,int initialSortColumn);
+    bool _initDoneFlag;
+
+    void init();
+    int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
     bool processPerformerEdit(const QString& editPerformerName, SBID& newID, QLineEdit* field, bool saveNewPerformer=1) const;
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
-    inline void setIsEditTab(bool isEditTab) { _isEditTab=isEditTab; }
 
+    virtual void _populatePre(const SBID& id);
+    virtual SBID _populate(const SBID& id);
+    virtual void _populatePost(const SBID& id);
 
 protected slots:
-    void setDetailTabWidget(QTabWidget* dtw);
-    void tabBarClicked(int index);
+    virtual void sortOrderChanged(int column);
+    virtual void tabBarClicked(int index);
     void tableViewCellClicked(const QModelIndex& i);
 
 private:
     SBID _currentID;
-    QTabWidget* _detailTabWidget;
-    bool _isEditTab;
+    bool _isEditTabFlag;
+    int _currentSubtabID;
+    QMap<int,int> tabSortMap;	//	last sort column by tab
 
-    void init();
 };
 
 #endif // SBTAB_H

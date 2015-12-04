@@ -14,13 +14,12 @@ class SBTabPerformerEdit : public SBTab
     Q_OBJECT
 
 public:
-    SBTabPerformerEdit();
+    SBTabPerformerEdit(QWidget* parent=0);
 
     virtual void handleDeleteKey();
     virtual void handleEnterKey() const;
     virtual bool handleEscapeKey();
     virtual bool hasEdits() const;
-    virtual SBID populate(const SBID& id);
 
 public slots:
     void addNewRelatedPerformer();
@@ -42,6 +41,7 @@ private:
 
     void closeRelatedPerformerComboBox();
     void init();
+    virtual SBID _populate(const SBID& id);
     void reinit();
     void setRelatedPerformerBeingAddedFlag(bool flag);
     void setRelatedPerformerBeingDeletedFlag(bool flag);

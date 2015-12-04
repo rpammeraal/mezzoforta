@@ -12,92 +12,18 @@ SBTabAlbumDetail::SBTabAlbumDetail(): SBTab()
 {
 }
 
-SBID
-SBTabAlbumDetail::populate(const SBID &id)
+QTableView*
+SBTabAlbumDetail::subtabID2TableView(int subtabID) const
 {
-    init();
-    SBTab::populate(id);
+    Q_UNUSED(subtabID);
+    MainWindow* mw=Context::instance()->getMainWindow();
+    return mw->ui.albumDetailAlbumContents;
+}
+QTabWidget*
+SBTabAlbumDetail::tabWidget() const
+{
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBTab::setDetailTabWidget(mw->ui.tabAlbumDetailLists);
-    QList<bool> dragableColumns;
-
-    //	set constant connections
-    connect(mw->ui.albumDetailReviewsHome, SIGNAL(clicked()),
-            this, SLOT(refreshAlbumReviews()));
-
-    //	Clear image
-    setAlbumImage(QPixmap());
-
-    //	Disable QWebview tabs and have them open up when data comes available
-    mw->ui.tabAlbumDetailLists->setTabEnabled(1,0);
-    mw->ui.tabAlbumDetailLists->setTabEnabled(2,0);
-    mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
-    connect(mw->ui.tabAlbumDetailLists,SIGNAL(tabBarClicked(int)),
-            this, SLOT(tabBarClicked(int)));
-
-    //	Get detail
-    SBID result=SBModelAlbum::getDetail(id);
-    if(result.sb_item_id==-1)
-    {
-        //	Not found
-        return result;
-    }
-    mw->ui.labelAlbumDetailIcon->setSBID(result);
-
-    ExternalData* ed=new ExternalData();
-    connect(ed, SIGNAL(imageDataReady(QPixmap)),
-            this, SLOT(setAlbumImage(QPixmap)));
-    connect(ed, SIGNAL(albumWikipediaPageAvailable(QString)),
-            this, SLOT(setAlbumWikipediaPage(QString)));
-    connect(ed, SIGNAL(albumReviewsAvailable(QList<QString>)),
-            this, SLOT(setAlbumReviews(QList<QString>)));
-
-    //	Album cover image
-    ed->loadAlbumData(result);
-
-    //	Populate record detail tab
-    mw->ui.labelAlbumDetailAlbumTitle->setText(result.albumTitle);
-    QString genre=result.genre;
-    genre.replace("|",",");
-    QString details;
-    if(result.year>0)
-    {
-        details=QString("Released %1").arg(result.year);
-    }
-    if(details.length()>0 && genre.length()>0)
-    {
-        //	8226 is el buleto
-        details=details+" "+QChar(8226)+" "+genre.replace('|',", ");
-    }
-
-    mw->ui.labelAlbumDetailAlbumDetail->setText(details);
-    mw->ui.labelAlbumDetailAlbumNotes->setText(result.notes);
-
-    QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-        .arg(result.sb_performer_id)
-        .arg(result.performerName);
-    mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
-    mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
-    connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
-            Context::instance()->getNavigator(), SLOT(openPerformer(QString)));
-
-    //	Reused vars
-    QTableView* tv=NULL;
-    SBSqlQueryModel* qm=NULL;
-
-    //	Populate list of songs
-    tv=mw->ui.albumDetailAlbumContents;
-    qm=SBModelAlbum::getAllSongs(id);
-    dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    qm->setDragableColumns(dragableColumns);
-    populateTableView(tv,qm,2);
-    connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(tableViewCellClicked(QModelIndex)));
-
-    result.tabID=mw->ui.tabAlbumDetailLists->currentIndex();
-
-    return result;
+    return mw->ui.tabAlbumDetailLists;
 }
 
 ///	Public slots
@@ -151,5 +77,109 @@ SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
 void
 SBTabAlbumDetail::init()
 {
+    SBTab::init();
+
     currentReviews.clear();
+
+    if(_initDoneFlag==0)
+    {
+        MainWindow* mw=Context::instance()->getMainWindow();
+        _initDoneFlag=1;
+
+        connect(mw->ui.albumDetailReviewsHome, SIGNAL(clicked()),
+                this, SLOT(refreshAlbumReviews()));
+
+        connect(mw->ui.tabAlbumDetailLists,SIGNAL(tabBarClicked(int)),
+                this, SLOT(tabBarClicked(int)));
+
+        //	Tableviews
+        QTableView* tv=NULL;
+
+        //		1.	List of songs
+        tv=mw->ui.albumDetailAlbumContents;
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(tableViewCellClicked(QModelIndex)));
+        connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
+                this, SLOT(sortOrderChanged(int)));
+    }
+}
+
+SBID
+SBTabAlbumDetail::_populate(const SBID &id)
+{
+    init();
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QList<bool> dragableColumns;
+
+    //	set constant connections
+
+    //	Clear image
+    setAlbumImage(QPixmap());
+
+    //	Disable QWebview tabs and have them open up when data comes available
+    mw->ui.tabAlbumDetailLists->setTabEnabled(1,0);
+    mw->ui.tabAlbumDetailLists->setTabEnabled(2,0);
+    mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
+
+    //	Get detail
+    SBID result=SBModelAlbum::getDetail(id);
+    if(result.sb_item_id==-1)
+    {
+        //	Not found
+        return result;
+    }
+    mw->ui.labelAlbumDetailIcon->setSBID(result);
+
+    ExternalData* ed=new ExternalData();
+    connect(ed, SIGNAL(imageDataReady(QPixmap)),
+            this, SLOT(setAlbumImage(QPixmap)));
+    connect(ed, SIGNAL(albumWikipediaPageAvailable(QString)),
+            this, SLOT(setAlbumWikipediaPage(QString)));
+    connect(ed, SIGNAL(albumReviewsAvailable(QList<QString>)),
+            this, SLOT(setAlbumReviews(QList<QString>)));
+
+    //	Album cover image
+    ed->loadAlbumData(result);
+
+    //	Populate record detail tab
+    mw->ui.labelAlbumDetailAlbumTitle->setText(result.albumTitle);
+    QString genre=result.genre;
+    genre.replace("|",",");
+    QString details;
+    if(result.year>0)
+    {
+        details=QString("Released %1").arg(result.year);
+    }
+    if(details.length()>0 && genre.length()>0)
+    {
+        //	8226 is el buleto
+        details=details+" "+QChar(8226)+" "+genre.replace('|',", ");
+    }
+
+    mw->ui.labelAlbumDetailAlbumDetail->setText(details);
+    mw->ui.labelAlbumDetailAlbumNotes->setText(result.notes);
+
+    QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
+        .arg(result.sb_performer_id)
+        .arg(result.performerName);
+    mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
+    mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
+    connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
+            Context::instance()->getNavigator(), SLOT(openPerformer(QString)));
+
+    //	Reused vars
+    QTableView* tv=NULL;
+    SBSqlQueryModel* qm=NULL;
+
+    //	Populate list of songs
+    tv=mw->ui.albumDetailAlbumContents;
+    qm=SBModelAlbum::getAllSongsOLD(id);
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    qm->setDragableColumns(dragableColumns);
+    populateTableView(tv,qm,1);
+
+    result.subtabID=mw->ui.tabAlbumDetailLists->currentIndex();
+
+    return result;
 }

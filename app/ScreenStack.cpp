@@ -59,8 +59,6 @@ ScreenStack::pushScreen(const SBID& id)
     else
     {
         SBID current=currentScreen();
-        qDebug() << SB_DEBUG_INFO << current << current.isEdit;
-        qDebug() << SB_DEBUG_INFO << id << id.isEdit;
         if(!(current==id))
         {
             doPush=1;
@@ -76,7 +74,6 @@ ScreenStack::pushScreen(const SBID& id)
         stack.append(id);
         currentScreenID++;
     }
-    qDebug() << SB_DEBUG_INFO << id << currentScreenID;
 }
 
 SBID
@@ -89,7 +86,6 @@ ScreenStack::currentScreen()
     {
         id=stack.at(currentScreenID);
     }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
@@ -107,7 +103,6 @@ ScreenStack::nextScreen()
         }
         id=stack.at(currentScreenID);
     }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
@@ -122,7 +117,6 @@ ScreenStack::previousScreen()
         currentScreenID--;
         id=stack.at(currentScreenID);
     }
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return id;
 }
 
@@ -170,10 +164,8 @@ ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
     for(int i=stack.count()-1;i>=0;i--)
     {
         const SBID& currentID=stack.at(i);
-        qDebug() << SB_DEBUG_INFO << "i=" << i << currentID;
         if(currentID==id)
         {
-            qDebug() << SB_DEBUG_INFO << editOnlyFlag << currentID.isEdit << id.isEdit;
             if(
                 (editOnlyFlag==0) ||
                 (
@@ -183,12 +175,10 @@ ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
                 )
             )
             {
-                qDebug() << SB_DEBUG_INFO << "remove";
                 stack.removeAt(i);
                 if(i<=currentScreenID)
                 {
                     currentScreenID--;
-                    qDebug() << SB_DEBUG_INFO << "adjust i=" << i;
                 }
             }
         }
@@ -267,7 +257,12 @@ ScreenStack::debugShow(const QString& c)
             {
                 isCurrent="             ";
             }
-            qDebug() << SB_DEBUG_INFO << isCurrent << i << stack.at(i) << "tabID=" << stack.at(i).tabID << "isEdit:" << stack.at(i).isEdit;
+            qDebug() << SB_DEBUG_INFO
+                     << isCurrent << i << stack.at(i)
+                     << "subtabID=" << stack.at(i).subtabID
+                     << "isEdit:" << stack.at(i).isEdit
+                     << "sortColumn:" << stack.at(i).sortColumn
+            ;
         }
     }
     else
@@ -276,3 +271,6 @@ ScreenStack::debugShow(const QString& c)
     }
     qDebug() << SB_DEBUG_INFO << currentScreenID;
 }
+
+
+///	PUBLIC SLOTS

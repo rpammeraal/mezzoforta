@@ -72,12 +72,48 @@ SBModelSong::getDetail(const SBID& id)
 }
 
 SBSqlQueryModel*
+SBModelSong::findSong(const SBID& id)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "s.song_id, "
+            "s.title, "
+            "s.notes, "
+            "a.artist_id, "
+            "a.name, "
+            "p.year, "
+            "l.lyrics, "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id and "
+                    "p.role_id=0 "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE "
+             "s.song_id!=%1 AND "
+             "s.title='%2' AND "
+             "a.name='%3' "
+    )
+        .arg(id.sb_item_id)
+        .arg(id.songTitle)
+        .arg(Common::escapeSingleQuotes(id.performerName))
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
 SBModelSong::getAllSongs()
 {
     //	Main query
     QString q=QString
     (
-        "SELECT  "
+        "SELECT DISTINCT "
             "SB_KEYWORDS, "
             "%1 AS SB_ITEM_TYPE1, "
             "SB_SONG_ID, "
@@ -87,9 +123,9 @@ SBModelSong::getAllSongs()
             "artistName AS \"performer\", "
             "%3 AS SB_ITEM_TYPE3, "
             "SB_ALBUM_ID, "
-            "recordTitle AS \"album title\", "
-            "%4 AS SB_ITEM_TYPE4, "
-            "SB_POSITION_ID "
+            "recordTitle AS \"album title\" "
+            //"%4 AS SB_ITEM_TYPE4, "
+            //"SB_POSITION_ID "
         "FROM "
             "( "
                 "SELECT "
@@ -110,10 +146,36 @@ SBModelSong::getAllSongs()
                         "JOIN ___SB_SCHEMA_NAME___song s ON  "
                             "rp.song_id=s.song_id "
             ") a "
-        "ORDER BY 4 "
+        "ORDER BY 4,7,10 "
     ).arg(SBID::sb_type_song).arg(SBID::sb_type_performer).arg(SBID::sb_type_album).arg(SBID::sb_type_position);
 
     return new SBSqlQueryModel(q);
+}
+
+int
+SBModelSong::getMaxSongID()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Find out new songID
+    q=QString
+    (
+        "SELECT "
+            "%1(MAX(song_id)+1,0) AS MaxSongID "
+        "FROM "
+            "___SB_SCHEMA_NAME___song "
+    )
+        .arg(dal->getIsNull())
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery select(q,db);
+    select.next();
+
+    return select.value(0).toInt();
 }
 
 SBSqlQueryModel*
@@ -147,16 +209,16 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
 {
     QString q=QString
     (
-        "SELECT "
+        "SELECT DISTINCT "
             "%1 AS SB_ITEM_TYPE1, "
             "r.record_id AS SB_RECORD_ID, "
             "r.title AS \"album title\", "
             "r.year AS \"year released\", "
             "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
-            "a.name AS \"performer\" , "
-            "rp.duration \"duration\", "
-            "rp.record_position AS SB_POSITION_ID "
+            "a.name AS \"performer\"  "
+            //"rp.duration \"duration\", "
+            //"rp.record_position AS SB_POSITION_ID "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
                 "JOIN ___SB_SCHEMA_NAME___record r ON "
@@ -244,9 +306,102 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
     return new SBSqlQueryModel(q);
 }
 
-
+///
+/// \brief SBModelSong::matchSong
+/// \param newSongID
+/// \param newSongTitle
+/// \return
+///
+/// Match song title to any other existing song title regardless of
+/// performer.
+///
+/// Eg.:
+/// -	Syndayz Bloody Syndayz/Whoever -> Sunday Bloody Sunday/U2, or
+/// 	                                  Syndayz Bloody Syndayz/Whoever
+///
 SBSqlQueryModel*
-SBModelSong::matchSongByPerformer(const SBID& newSongID, const QString& newSongTitle)
+SBModelSong::matchSong(const SBID &newSongID)
+{
+    qDebug() << SB_DEBUG_INFO;
+
+    QString newSoundex=Common::soundex(newSongID.songTitle);
+
+    //	MatchRank:
+    //	0	-	edited value (always one in data set).
+    //	1	-	exact match with specified artist (0 or 1 in data set).
+    //	2	-	exact match with any other artist (0 or more in data set).
+    //	3	-	soundex match with any other artist (0 or more in data set).
+    QString q=QString
+    (
+        "SELECT "
+            "0 AS matchRank, "
+            "-1 AS song_id, "
+            "'%1' AS title, "
+            "%3 AS artist_id, "
+            "'%2' AS artistName "
+        "UNION "
+        "SELECT "
+            "CASE WHEN a.artist_id=%3 THEN 1 ELSE 2 END AS matchRank, "
+            "s.song_id, "
+            "s.title, "
+            "a.artist_id, "
+            "a.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance p "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "p.song_id=s.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+        "WHERE "
+            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
+        "UNION "
+        "SELECT "
+            "3 AS matchRank, "
+            "s.song_id, "
+            "s.title, "
+            "a.artist_id, "
+            "a.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance p "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "p.song_id=s.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+        "WHERE "
+            "p. role_id=0 AND "
+            "( "
+                "SUBSTR(s.soundex,1,LENGTH('%4'))='%4' OR "
+                "SUBSTR('%4',1,LENGTH(s.soundex))=s.soundex "
+            ") "
+        "ORDER BY "
+            "1,3 "
+
+    )
+        .arg(Common::escapeSingleQuotes(newSongID.songTitle))
+        .arg(Common::escapeSingleQuotes(newSongID.performerName))
+        .arg(newSongID.sb_performer_id)
+        .arg(newSoundex)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+///
+/// \brief SBModelSong::matchSongWithinPerformer
+/// \param newSongID
+/// \param newSongTitle
+/// \return
+///
+/// Match song title to a possible existing song title within given artist.
+/// The use case is when a song is changed -- always match the song title
+/// up within the scope of the given artist.
+///
+/// Eg.: input:
+/// -	Syndayz Bloody Syndayz/U2 -> Sunday Bloody Sunday/U2
+/// -	Syndayz Bloody Syndayz/Whoever -> Syndayz Bloody Syndayz/Whoever (Unchanged).
+///
+SBSqlQueryModel*
+SBModelSong::matchSongWithinPerformer(const SBID& newSongID, const QString& newSongTitle)
 {
     //	Matches a song by artist
     qDebug() << SB_DEBUG_INFO;
@@ -315,19 +470,47 @@ SBModelSong::matchSongByPerformer(const SBID& newSongID, const QString& newSongT
     return new SBSqlQueryModel(q);
 }
 
+///
+/// \brief SBModelSong::saveNewSong
+/// \param id
+/// \return
+///
+/// Creates new entry in song and performance. Assigns new ID
+/// back to parameter. Assumption is that performer already
+/// exists.
 bool
 SBModelSong::saveNewSong(SBID &id)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString newSoundex=Common::soundex(id.songTitle);
-    QString q;
     bool resultCode=1;
 
     qDebug() << SB_DEBUG_INFO;
     if(id.sb_item_id==-1)
     {
-        //	Insert new
+        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+        QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+        QString newSoundex=Common::soundex(id.songTitle);
+        QString q;
+
+        //	Find out new songID
+        q=QString
+        (
+            "SELECT "
+                "%1(MAX(song_id)+1,0) AS MaxSongID "
+            "FROM "
+                "___SB_SCHEMA_NAME___song "
+        )
+            .arg(dal->getIsNull())
+        ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery select(q,db);
+        select.next();
+
+        id.sb_item_id=select.value(0).toInt();
+        id.sb_song_id=id.sb_item_id;
+
+        //	Insert new song
         q=QString
         (
             "INSERT INTO ___SB_SCHEMA_NAME___song "
@@ -337,41 +520,49 @@ SBModelSong::saveNewSong(SBID &id)
                 "soundex "
             ") "
             "SELECT "
-                "MAX(artist_id)+1, "
-                "'%1', "
-                "'%2' "
-            "FROM "
-                "___SB_SCHEMA_NAME___artist "
+                "%1, "
+                "'%2', "
+                "'%3' "
         )
+            .arg(id.sb_item_id)
             .arg(Common::escapeSingleQuotes(id.songTitle))
             .arg(newSoundex)
         ;
 
         dal->customize(q);
         qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery insert(q,db);
+        QSqlQuery insertSong(q,db);
+        Q_UNUSED(insertSong);
 
-        //	Get id of newly added song
+        //	Insert new performance
         q=QString
         (
+            "INSERT INTO ___SB_SCHEMA_NAME___performance "
+            "( "
+                "song_id, "
+                "artist_id, "
+                "role_id, "
+                "year, "
+                "notes "
+            ") "
             "SELECT "
-                "song_id "
-            "FROM "
-                "___SB_SCHEMA_NAME___song "
-            "WHERE "
-                "title='%1' "
+                "%1, "
+                "%2, "
+                "0, "	//	0: original performer, 1: non-original performer
+                "%3, "
+                "'%4' "
         )
-            .arg(Common::escapeSingleQuotes(id.songTitle))
+            .arg(id.sb_item_id)
+            .arg(id.sb_performer_id)
+            .arg(id.year)
+            .arg(Common::escapeSingleQuotes(id.notes))
         ;
 
         dal->customize(q);
         qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery select(q,db);
-        select.next();
+        QSqlQuery insertPerformance(q,db);
+        Q_UNUSED(insertPerformance);
 
-        id.sb_item_id=select.value(0).toInt();
-        id.sb_song_id=select.value(0).toInt();
-        qDebug() << SB_DEBUG_INFO << "id.sb_item_id=" << id.sb_item_id;
     }
     return resultCode;
 }
@@ -389,7 +580,6 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QS
     bool mergeToNewSongFlag=0;
     bool mergeToExistingSongFlag=0;
     bool updatePerformerFlag=0;
-
 
     //	The following flags can be set independently from eachother.
     //	However, they can be turned of by detecting any of the flags above.

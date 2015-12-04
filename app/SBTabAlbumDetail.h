@@ -9,8 +9,9 @@ class SBTabAlbumDetail : public SBTab
 
 public:
     SBTabAlbumDetail();
+    virtual QTableView* subtabID2TableView(int subtabID) const;
+    virtual QTabWidget* tabWidget() const;
 
-    virtual SBID populate(const SBID& id);
 
 private slots:
     void refreshAlbumReviews();
@@ -22,6 +23,7 @@ private:
     QList<QString> currentReviews;
 
     void init();
+    virtual SBID _populate(const SBID& id);
 };
 
 #endif // SBTABALBUMDETAIL_H

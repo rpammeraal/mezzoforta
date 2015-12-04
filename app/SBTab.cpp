@@ -1,7 +1,8 @@
+#include <QAbstractItemModel>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMessageBox>
+#include <QListView>
 #include <QSortFilterProxyModel>
 #include <QSqlRecord>
 #include <QTableView>
@@ -13,15 +14,36 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "SBDialogSelectSongAlbum.h"
+#include "SBMessageBox.h"
 #include "SBModelPerformer.h"
+#include "SBModelSong.h"
 #include "SBSqlQueryModel.h"
 #include "ScreenStack.h"
 
 
 ///	Public methods
-SBTab::SBTab(QWidget *parent) : QWidget(parent)
+SBTab::SBTab(QWidget *parent, bool isEditTabFlag) : QWidget(parent)
 {
     init();
+    _isEditTabFlag=isEditTabFlag;
+}
+
+int
+SBTab::getFirstEligibleSubtabID() const
+{
+    QTabWidget* tw=tabWidget();
+    int subtabID=INT_MAX;
+    if(tw)
+    {
+        for(int i=0;subtabID==INT_MAX && i<tw->count();i++)
+        {
+            if(tw->isTabEnabled(i))
+            {
+                subtabID=i;
+            }
+        }
+    }
+    return subtabID;
 }
 
 void
@@ -31,6 +53,39 @@ SBTab::refreshTabIfCurrent(const SBID &id)
     if(st->currentScreen()==id)
     {
         populate(id);
+    }
+}
+
+///
+/// \brief SBTab::setSubtab
+/// \param subtabID
+///
+/// Set the subTab and sorted as found in screenstack.
+void
+SBTab::setSubtab(const SBID& id) const
+{
+    qDebug() << SB_DEBUG_INFO << id.subtabID;
+    QTabWidget* tw=tabWidget();
+    if(tw)
+    {
+        int subtabID=id.subtabID;
+
+        if(subtabID==INT_MAX)
+        {
+            subtabID=getFirstEligibleSubtabID();
+        }
+        if(subtabID!=INT_MAX)
+        {
+            qDebug() << SB_DEBUG_INFO << "subtab set";
+            tw->setCurrentIndex(id.subtabID);
+        }
+    }
+
+    QTableView* ctv=subtabID2TableView(id.subtabID);
+    if(ctv && id.sortColumn!=INT_MAX)
+    {
+        qDebug() << SB_DEBUG_INFO << "sort applied" << id.sortColumn;
+        ctv->sortByColumn(abs(id.sortColumn),(id.sortColumn>0?Qt::AscendingOrder:Qt::DescendingOrder));
     }
 }
 
@@ -45,6 +100,13 @@ SBTab::handleEnterKey() const
 {
 }
 
+///
+/// \brief SBTab::handleEscapeKey
+/// \return
+///
+/// If edits were made and user agrees to screen to be closed, return 1.
+/// Otherwise return 0.
+///
 bool
 SBTab::handleEscapeKey()
 {
@@ -52,17 +114,20 @@ SBTab::handleEscapeKey()
     bool closeTab=1;
     if(isEditTab()==1 && hasEdits()==1)
     {
-        QMessageBox msg;
-        msg.setIcon(QMessageBox::Question);
-        msg.setText("Discard Changes?");
-        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msg.setDefaultButton(QMessageBox::No);
-        msg.setEscapeButton(QMessageBox::No);
-
-        closeTab=(msg.exec()==QMessageBox::No)?0:1;
+        closeTab=(SBMessageBox::createSBMessageBox("Discard Changes?",
+                                                   "",
+                                                   QMessageBox::Question,
+                                                   QMessageBox::Yes | QMessageBox::No,
+                                                   QMessageBox::No,
+                                                   QMessageBox::No )==QMessageBox::No)?0:1;
     }
     qDebug() << SB_DEBUG_INFO << closeTab;
     return closeTab;	//	Assuming a non-edit tab, default to close tab
+}
+
+void
+SBTab::handleMergeKey()
+{
 }
 
 bool
@@ -74,10 +139,28 @@ SBTab::hasEdits() const
 SBID
 SBTab::populate(const SBID &id)
 {
-    setCurrentSBID(id);
-    Context::instance()->setTab(this);
-    return id;
+    _populatePre(id);
+    SBID result=_populate(id);
+    _populatePost(id);
+
+    return result;
 }
+
+QTableView*
+SBTab::subtabID2TableView(int subtabID) const
+{
+    Q_UNUSED(subtabID);
+    qDebug() << SB_DEBUG_INFO;
+    return NULL;
+}
+
+QTabWidget*
+SBTab::tabWidget() const
+{
+    qDebug() << SB_DEBUG_INFO;
+    return NULL;
+}
+
 
 void
 SBTab::save() const
@@ -86,8 +169,18 @@ SBTab::save() const
 }
 
 ///	Protected methods
+
+void
+SBTab::init()
+{
+    _isEditTabFlag=0;
+    _initDoneFlag=0;
+    tabSortMap.clear();
+    _currentSubtabID=0;
+}
+
 int
-SBTab::populateTableView(QTableView* tv, SBSqlQueryModel* qm,int initialSortColumn)
+SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn)
 {
     QSortFilterProxyModel* pm=NULL;
     QHeaderView* hv=NULL;
@@ -124,13 +217,18 @@ SBTab::populateTableView(QTableView* tv, SBSqlQueryModel* qm,int initialSortColu
     return qm->rowCount();
 }
 
-//	return true if selected
+//	Return true if selected. Automatically saves new performer.
 bool
 SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLineEdit* field, bool saveNewPerformer) const
 {
     bool resultCode=1;
     SBID selectedPerformerID=newID;
+    newID.sb_item_type=SBID::sb_type_performer;
+    selectedPerformerID.sb_item_type=SBID::sb_type_performer;
+    selectedPerformerID.performerName=editPerformerName;
+    selectedPerformerID.sb_performer_id=-1;
 
+    qDebug() << SB_DEBUG_INFO << "saveNewPerformer:" << saveNewPerformer;
     qDebug() << SB_DEBUG_INFO << "editPerformerName:" << editPerformerName;
     qDebug() << SB_DEBUG_INFO << "newID.performerName:" << newID.performerName;
 
@@ -184,6 +282,9 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
         qDebug() << SB_DEBUG_INFO << "selected performer:" << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
     }
 
+    qDebug() << SB_DEBUG_INFO << "saveNewPerformer:" << saveNewPerformer;
+    qDebug() << SB_DEBUG_INFO << "selectedPerformerID.sb_performer_id" << selectedPerformerID.sb_performer_id;
+
     if(selectedPerformerID.sb_performer_id==-1 && saveNewPerformer==1)
     {
         //	Save new performer if new
@@ -222,21 +323,100 @@ SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
     }
 }
 
+void
+SBTab::_populatePre(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO;
+    setCurrentSBID(id);
+    Context::instance()->setTab(this);
+}
+
+SBID
+SBTab::_populate(const SBID &id)
+{
+    Q_UNUSED(id);
+    qDebug() << SB_DEBUG_ERROR << "****** SBTab::_populate called!";
+    return SBID();
+}
+
+void
+SBTab::_populatePost(const SBID& id)
+{
+    qDebug() << SB_DEBUG_INFO;
+    this->setSubtab(id);
+    qDebug() << SB_DEBUG_INFO;
+}
+
 ///	Protected slots
 void
-SBTab::setDetailTabWidget(QTabWidget *detailTabWidget)
+SBTab::sortOrderChanged(int column)
 {
-    _detailTabWidget=detailTabWidget;
+    ScreenStack* st=Context::instance()->getScreenStack();
+    st->debugShow("before sortOrderChanged");
+    if(st && st->getScreenCount())
+    {
+        SBID id=st->currentScreen();
+        qDebug() << SB_DEBUG_INFO << id.sortColumn;
+
+        if(abs(id.sortColumn)==abs(column))
+        {
+    qDebug() << SB_DEBUG_INFO;
+            id.sortColumn*=-1;
+        }
+        else
+        {
+    qDebug() << SB_DEBUG_INFO;
+            id.sortColumn=column;
+        }
+        qDebug() << SB_DEBUG_INFO << id.sortColumn;
+        if(id.subtabID==INT_MAX)
+        {
+            id.subtabID=getFirstEligibleSubtabID();
+        }
+        st->updateCurrentScreen(id);
+    }
+    st->debugShow("after sortOrderChanged");
 }
 
 void
 SBTab::tabBarClicked(int index)
 {
-    //	Update screenstack entry with subtab clicked.
+    _currentSubtabID=index;
     ScreenStack* st=Context::instance()->getScreenStack();
-    SBID id=st->currentScreen();
-    id.tabID=index;
-    st->updateCurrentScreen(id);
+    st->debugShow("before tabBarClicked");
+
+    //	get sort order for clicked tab
+    int prevSortColumn=INT_MAX;
+    if(tabSortMap.contains(index))
+    {
+        prevSortColumn=tabSortMap[index];
+    }
+
+    //	Preserve current sort order for current tab
+    SBID current=st->currentScreen();
+    if(current.subtabID!=index)
+    {
+        tabSortMap[current.subtabID]=current.sortColumn;
+        current.sortColumn=prevSortColumn;
+        st->updateCurrentScreen(current);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "same tab -- no effect";
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+
+    //	Update screenstack entry with subtab clicked.
+    if(st && st->getScreenCount())
+    {
+        SBID id=st->currentScreen();
+        if(id.subtabID!=index)
+        {
+            id.subtabID=index;
+            st->updateCurrentScreen(id);
+        }
+    }
 }
 
 void
@@ -262,9 +442,3 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
 }
 
 //	Private methods
-void
-SBTab::init()
-{
-    _isEditTab=0;
-    _detailTabWidget=NULL;
-}

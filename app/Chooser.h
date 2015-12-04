@@ -44,7 +44,7 @@ private:
     QModelIndex findItem(const SBID& id);
     SBID getPlaylistSelected(const QModelIndex& i);
     void init();
-    void populateModel();
+    void populate();
     void setCurrentIndex(const QModelIndex& i);
 };
 
