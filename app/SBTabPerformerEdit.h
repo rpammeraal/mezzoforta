@@ -17,7 +17,7 @@ public:
     SBTabPerformerEdit(QWidget* parent=0);
 
     virtual void handleDeleteKey();
-    virtual void handleEnterKey() const;
+    virtual void handleEnterKey();
     virtual bool handleEscapeKey();
     virtual bool hasEdits() const;
 
@@ -28,23 +28,23 @@ public slots:
     virtual void save() const;
 
 private slots:
+    void closeRelatedPerformerComboBox();
     void relatedPerformerSelected(const QModelIndex& i);
 
 private:
+    QLineEdit* _relatedPerformerLineEdit;
     QCompleter* addNewRelatedPerformerCompleter;
-    bool connectHasPerformed;
-    bool removeRelatedPerformerButtonMaybeEnabledFlag;
-    bool relatedPerformerBeingAddedFlag;
-    bool relatedPerformerBeingDeletedFlag;
+    bool _removeRelatedPerformerButtonMaybeEnabledFlag;
+    bool _relatedPerformerBeingAddedFlag;
+    bool _relatedPerformerBeingDeletedFlag;
     QList<int> allRelatedPerformers;
     bool relatedPerformerHasChanged;
 
-    void closeRelatedPerformerComboBox();
     void init();
     virtual SBID _populate(const SBID& id);
-    void reinit();
     void setRelatedPerformerBeingAddedFlag(bool flag);
     void setRelatedPerformerBeingDeletedFlag(bool flag);
+    void addItemToRelatedPerformerList(const SBID& performer) const;
 };
 
 #endif // SBTABPERFORMEREDIT_H

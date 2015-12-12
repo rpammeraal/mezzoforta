@@ -78,7 +78,7 @@ Navigator::openScreenByID(SBID &id)
         return;
     }
 
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << id;
     if(checkOutstandingEdits()==1)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -265,6 +265,7 @@ Navigator::resetAllFiltersAndSelections()
 void
 Navigator::showPlaylist(SBID id)
 {
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
@@ -275,6 +276,7 @@ Navigator::showSonglist()
     SBID id;
     id.sb_item_type=SBID::sb_type_allsongs;
 
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
@@ -318,6 +320,7 @@ Navigator::applySonglistFilter()
     SBID id;
     id.sb_item_type=SBID::sb_type_songsearch;
     id.searchCriteria=filter;
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 
     mw->ui.searchEdit->setFocus();
@@ -328,9 +331,12 @@ void
 Navigator::closeCurrentTab()
 {
     ScreenStack* st=Context::instance()->getScreenStack();
+    st->debugShow("closeCurrentTab:334");
     st->removeCurrentScreen();
     SBID id=st->currentScreen();
+    st->debugShow("closeCurrentTab:337");
     activateTab(id);
+    st->debugShow("closeCurrentTab:339");
 }
 
 void
@@ -340,7 +346,8 @@ Navigator::editItem()
     //	All steps prior to this are not relevant.
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID id=st->currentScreen();
-    id.isEdit=1;
+    id.isEditFlag=1;
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
@@ -354,6 +361,7 @@ Navigator::openItemFromCompleter(const QModelIndex& i)
     SBID id;
     id.assign(i.sibling(i.row(), i.column()+2).data().toString(), i.sibling(i.row(), i.column()+1).data().toInt());
 
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
     qDebug() << SB_DEBUG_INFO << id;
 }
@@ -362,15 +370,15 @@ void
 Navigator::openChooserItem(const QModelIndex &i)
 {
     SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
 void
 Navigator::openPerformer(const QString &itemID)
 {
-    SBID id;
-    id.sb_item_type=SBID::sb_type_performer;
-    id.sb_item_id=itemID.toInt();
+    SBID id(SBID::sb_type_performer,itemID.toInt());
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
@@ -392,7 +400,6 @@ Navigator::openOpener(QString i)
 void
 Navigator::openSonglistItem(const QModelIndex& i)
 {
-    SBID id;
 
     qDebug() << ' ';
     qDebug() << SB_DEBUG_INFO << "######################################################################";
@@ -401,9 +408,9 @@ Navigator::openSonglistItem(const QModelIndex& i)
     qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-2).data().toString();
     qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-3).data().toString();
 
-    id.sb_item_id=i.sibling(i.row(), i.column()-1).data().toInt();
-    id.sb_item_type=static_cast<SBID::sb_type>(i.sibling(i.row(), i.column()-2).data().toInt());
+    SBID id(static_cast<SBID::sb_type>(i.sibling(i.row(), i.column()-2).data().toInt()),i.sibling(i.row(), i.column()-1).data().toInt());
 
+    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
 }
 
@@ -440,7 +447,7 @@ Navigator::activateTab(const SBID& to)
     ScreenStack* st=Context::instance()->getScreenStack();
     qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << id.subtabID;
-    qDebug() << SB_DEBUG_INFO << id.sb_item_id;
+    qDebug() << SB_DEBUG_INFO << id.sb_item_id();
     qDebug() << SB_DEBUG_INFO << id.sb_item_type;
 
 
@@ -479,7 +486,8 @@ Navigator::activateTab(const SBID& to)
 
     SBTab* tab=NULL;
     SBID result;
-    bool isEdit=id.isEdit;
+    bool isEditFlag=id.isEditFlag;
+    bool canBeEditedFlag=1;
 
     //	copy screenstack attributes to id
     id.sortColumn=st->currentScreen().sortColumn;
@@ -488,7 +496,7 @@ Navigator::activateTab(const SBID& to)
     switch(id.sb_item_type)
     {
     case SBID::sb_type_song:
-        if(isEdit)
+        if(isEditFlag)
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabSongEdit;
@@ -501,7 +509,7 @@ Navigator::activateTab(const SBID& to)
         break;
 
     case SBID::sb_type_performer:
-        if(isEdit)
+        if(isEditFlag)
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabPerformerEdit;
@@ -514,7 +522,7 @@ Navigator::activateTab(const SBID& to)
         break;
 
     case SBID::sb_type_album:
-        if(isEdit)
+        if(isEditFlag)
         {
             qDebug() << SB_DEBUG_INFO;
             tab=mw->ui.tabAlbumEdit;
@@ -538,6 +546,7 @@ Navigator::activateTab(const SBID& to)
         result=id;
         tab=mw->ui.tabAllSongs;
         filterSongs(id);
+        canBeEditedFlag=0;
         break;
 
     default:
@@ -555,7 +564,7 @@ Navigator::activateTab(const SBID& to)
     qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << result;
 
-    if(result.sb_item_id==-1 && result.sb_item_type!=SBID::sb_type_allsongs && result.sb_item_type!=SBID::sb_type_songsearch)
+    if(result.sb_item_id()==-1 && result.sb_item_type!=SBID::sb_type_allsongs && result.sb_item_type!=SBID::sb_type_songsearch)
     {
         qDebug() << SB_DEBUG_INFO << result;
         //	QMessageBox msgBox;
@@ -572,19 +581,21 @@ Navigator::activateTab(const SBID& to)
 
         return result;
     }
-    if(isEdit==0)
+
+    //	Enable/disable search functionality
+    if(isEditFlag==0)
     {
-        qDebug() << SB_DEBUG_INFO;
-        //	Only set focus on search when not in edit mode.
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->setText(id.searchCriteria);
         mw->ui.leftColumnChooser->setEnabled(1);
-        editAction->setEnabled(1);
+        if(canBeEditedFlag)
+        {
+            editAction->setEnabled(1);
+        }
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(0);
         mw->ui.leftColumnChooser->setEnabled(0);
         editAction->setEnabled(0);
@@ -643,9 +654,13 @@ Navigator::checkOutstandingEdits() const
         }
         else
         {
-            Context::instance()->getScreenStack()->debugShow("627");
-            Context::instance()->getScreenStack()->removeScreen(currentTab->currentSBID(),1);
-            Context::instance()->getScreenStack()->debugShow("629");
+            ScreenStack* st=Context::instance()->getScreenStack();
+            if(st)
+            {
+                st->debugShow("627");
+                st->removeScreen(st->currentScreen(),1);
+                st->debugShow("629");
+            }
         }
     }
     qDebug() << SB_DEBUG_INFO << hasOutstandingEdits;

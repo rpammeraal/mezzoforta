@@ -64,7 +64,7 @@ SBTabSongDetail::setSongWikipediaPage(const QString &url)
     mw->ui.songDetailWikipediaPage->setUrl(url);
     mw->ui.tabSongDetailLists->setTabEnabled(5,1);
 
-    SBID id=currentSBID();
+    SBID id=Context::instance()->getScreenStack()->currentScreen();
     id.wiki=url;
 }
 
@@ -125,7 +125,8 @@ SBTabSongDetail::_populate(const SBID& id)
 
     //	Get detail
     SBID result=SBModelSong::getDetail(id);
-    if(result.sb_item_id==-1)
+    qDebug() << SB_DEBUG_INFO << result;
+    if(result.sb_song_id==-1)
     {
         //	Not found
         return result;
@@ -143,7 +144,6 @@ SBTabSongDetail::_populate(const SBID& id)
     //	Populate song detail tab
     mw->ui.labelSongDetailSongTitle->setText(result.songTitle);
 
-    Navigator* n=Context::instance()->getNavigator();
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
         .arg(result.sb_performer_id)
         .arg(result.performerName);
@@ -203,6 +203,8 @@ SBTabSongDetail::_populate(const SBID& id)
 
     //	Update current eligible tabID
     result.subtabID=mw->ui.tabSongDetailLists->currentIndex();
+
+    qDebug() << SB_DEBUG_INFO << result;
 
     return result;
 }

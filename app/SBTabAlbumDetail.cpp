@@ -123,7 +123,7 @@ SBTabAlbumDetail::_populate(const SBID &id)
 
     //	Get detail
     SBID result=SBModelAlbum::getDetail(id);
-    if(result.sb_item_id==-1)
+    if(result.sb_album_id==-1)
     {
         //	Not found
         return result;
@@ -173,9 +173,9 @@ SBTabAlbumDetail::_populate(const SBID &id)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=SBModelAlbum::getAllSongsOLD(id);
+    qm=SBModelAlbum::getAllSongs(id);
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
     populateTableView(tv,qm,1);
 

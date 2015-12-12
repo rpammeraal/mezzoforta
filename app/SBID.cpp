@@ -12,7 +12,7 @@ SBID::SBID()
 SBID::SBID(const SBID &c)
 {
     this->sb_item_type=c.sb_item_type;
-    this->sb_item_id=c.sb_item_id;
+    //this->sb_item_id=c.sb_item_id;
     this->sb_mbid=c.sb_mbid;
 
     this->sb_performer_id=c.sb_performer_id;
@@ -40,16 +40,14 @@ SBID::SBID(const SBID &c)
     this->subtabID=c.subtabID;
     this->sortColumn=c.sortColumn;
 
-    isEdit=c.isEdit;
+    isEditFlag=c.isEditFlag;
 }
 
-SBID::SBID(SBID::sb_type type, int itemID)
+SBID::SBID(SBID::sb_type itemType, int itemID)
 {
     init();
-    qDebug() << SB_DEBUG_INFO << type << itemID;
-    sb_item_type=type;
-    sb_item_id=itemID;
-    qDebug() << SB_DEBUG_INFO << this->sb_item_type << this->sb_item_id;
+    assign(itemType,itemID);
+    qDebug() << SB_DEBUG_INFO << itemType << itemID;
 }
 
 SBID::SBID(QByteArray encodedData)
@@ -66,7 +64,6 @@ SBID::SBID(QByteArray encodedData)
         >> sb_song_id
         >> sb_playlist_id
         >> i
-        >> sb_item_id
         >> sb_mbid
         >> isOriginalPerformer
         >> performerName
@@ -92,35 +89,77 @@ SBID::~SBID()
 }
 
 void
-SBID::assign(const QString& itemType, int itemID, QString text)
+SBID::assign(const SBID::sb_type itemType, const int itemID)
+{
+    sb_item_type=itemType;
+
+    switch(itemType)
+    {
+    case SBID::sb_type_song:
+        sb_song_id=itemID;
+        break;
+
+    case SBID::sb_type_performer:
+        sb_performer_id=itemID;
+        break;
+
+    case SBID::sb_type_album:
+        sb_album_id=itemID;
+        break;
+
+    case SBID::sb_type_chart:
+        sb_chart_id=itemID;
+        break;
+
+    case SBID::sb_type_playlist:
+        sb_playlist_id=itemID;
+        break;
+
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_position:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        break;
+    }
+}
+
+void
+SBID::assign(const QString& type, const int itemID, const QString& text)
 {
     init();
-    sb_item_id=itemID;
-    if(itemType=="SB_SONG_TYPE")
+    SBID::sb_type itemType;
+    if(type=="SB_SONG_TYPE")
     {
-        sb_item_type=SBID::sb_type_song;
+        itemType=SBID::sb_type_song;
     }
-    else if(itemType=="SB_PERFORMER_TYPE")
+    else if(type=="SB_PERFORMER_TYPE")
     {
-        sb_item_type=SBID::sb_type_performer;
+        itemType=SBID::sb_type_performer;
     }
-    else if(itemType=="SB_ALBUM_TYPE")
+    else if(type=="SB_ALBUM_TYPE")
     {
-        sb_item_type=SBID::sb_type_album;
+        itemType=SBID::sb_type_album;
     }
-    else if(itemType=="SB_CHART_TYPE")
+    else if(type=="SB_CHART_TYPE")
     {
-        sb_item_type=SBID::sb_type_chart;
+        itemType=SBID::sb_type_chart;
     }
-    else if(itemType=="SB_PLAYLIST_TYPE")
+    else if(type=="SB_PLAYLIST_TYPE")
     {
-        sb_item_type=SBID::sb_type_playlist;
+        itemType=SBID::sb_type_playlist;
     }
     else
     {
-        sb_item_type=SBID::sb_type_invalid;
+        itemType=SBID::sb_type_invalid;
     }
+    assign(itemType,itemID);
     setText(text);
+}
+
+bool
+SBID::compareSimple(const SBID &t) const
+{
+    return (this->sb_item_type==t.sb_item_type && (this->sb_item_id()==t.sb_item_id()))?1:0;
 }
 
 QByteArray
@@ -137,7 +176,7 @@ SBID::encode() const
         << sb_song_id
         << sb_playlist_id
         << (int)sb_item_type
-        << sb_item_id
+        << sb_item_id()
         << sb_mbid
         << isOriginalPerformer
         << performerName
@@ -157,39 +196,6 @@ SBID::encode() const
     ;
 
     return encodedData;
-}
-
-void
-SBID::fillOut()
-{
-    switch(this->sb_item_type)
-    {
-    case SBID::sb_type_song:
-        sb_song_id=sb_item_id;
-        break;
-
-    case SBID::sb_type_performer:
-        sb_performer_id=sb_item_id;
-        break;
-
-    case SBID::sb_type_album:
-        sb_album_id=sb_item_id;
-        break;
-
-    case SBID::sb_type_chart:
-        sb_chart_id=sb_item_id;
-        break;
-
-    case SBID::sb_type_playlist:
-        sb_playlist_id=sb_item_id;
-        break;
-
-    case SBID::sb_type_position:
-    case SBID::sb_type_invalid:
-    case SBID::sb_type_allsongs:
-    case SBID::sb_type_songsearch:
-        break;
-    }
 }
 
 bool
@@ -335,6 +341,35 @@ SBID::getType() const
     return t;
 }
 
+int
+SBID::sb_item_id() const
+{
+    switch(this->sb_item_type)
+    {
+    case SBID::sb_type_song:
+        return sb_song_id;
+
+    case SBID::sb_type_performer:
+        return sb_performer_id;
+
+    case SBID::sb_type_album:
+        return sb_album_id;
+
+    case SBID::sb_type_chart:
+        return -1;
+
+    case SBID::sb_type_playlist:
+        return sb_playlist_id;
+
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_position:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+        return -1;
+    }
+    return -1;
+}
+
 void
 SBID::setText(const QString &text)
 {
@@ -372,10 +407,10 @@ void
 SBID::showDebug(const QString& title) const
 {
     qDebug() << SB_DEBUG_INFO << title;
-    qDebug() << SB_DEBUG_INFO << "sb_item_id" << sb_item_id;
+    qDebug() << SB_DEBUG_INFO << "sb_item_id" << sb_item_id();
     qDebug() << SB_DEBUG_INFO << "sb_item_type" << getType();
     qDebug() << SB_DEBUG_INFO << "sb_mbid" << sb_mbid;
-    qDebug() << SB_DEBUG_INFO << "isEdit" << isEdit;
+    qDebug() << SB_DEBUG_INFO << "isEditFlag" << isEditFlag;
     qDebug() << SB_DEBUG_INFO << "sb_performer_id" << sb_performer_id;
     qDebug() << SB_DEBUG_INFO << "sb_album_id" << sb_album_id;
     qDebug() << SB_DEBUG_INFO << "sb_position" << sb_position;
@@ -406,7 +441,7 @@ SBID::operator ==(const SBID& i) const
 {
     if(
         i.sb_item_type==this->sb_item_type &&
-        i.sb_item_id==this->sb_item_id &&
+        i.sb_item_id()==this->sb_item_id() &&
         (
             (i.sb_item_type!=SBID::sb_type_song) ||
             (
@@ -415,7 +450,7 @@ SBID::operator ==(const SBID& i) const
                 i.sb_performer_id==this->sb_performer_id 	//	added to make saveSong work
             )
         ) &&
-        i.isEdit==this->isEdit &&
+        i.isEditFlag==this->isEditFlag &&
         i.searchCriteria==this->searchCriteria)
     {
         return 1;
@@ -432,23 +467,27 @@ SBID::operator !=(const SBID& i) const
 QDebug operator<<(QDebug dbg, const SBID& id)
 {
 
+    QString songTitle=id.songTitle.length() ? id.songTitle : "<N/A>";
+    QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
+    QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
+    QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
     switch(id.sb_item_type)
     {
     case SBID::sb_type_song:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
-                                << id.sb_song_id << "|" << id.songTitle << "|"
-                                << id.sb_performer_id << "|" << id.performerName;
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id() << "|"
+                                << id.sb_song_id << "|" << songTitle << "|"
+                                << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_performer:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
-                                << id.sb_performer_id << "|" << id.performerName;
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id() << "|"
+                                << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_album:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
-                                << id.sb_album_id << "|" << id.albumTitle << "|"
-                                << id.sb_performer_id << "|" << id.performerName;
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id() << "|"
+                                << id.sb_album_id << "|" << albumTitle << "|"
+                                << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_chart:
@@ -456,14 +495,18 @@ QDebug operator<<(QDebug dbg, const SBID& id)
         break;
 
     case SBID::sb_type_playlist:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id << "|"
-                                << id.sb_playlist_id << "|" << id.playlistName;
+        dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id() << "|"
+                                << id.sb_playlist_id << "|" << playlistName;
+        break;
+
+    case SBID::sb_type_invalid:
+        dbg.nospace().noquote() << "<INVALID ID>";
         break;
 
     case SBID::sb_type_position:
-    case SBID::sb_type_invalid:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
+        dbg.nospace().noquote() << "<not implemented in operator<< >";
         break;
     }
 
@@ -475,15 +518,14 @@ void
 SBID::init()
 {
     sb_item_type=sb_type_invalid;
-    sb_item_id=-1;
     sb_mbid=QString();
 
-    sb_performer_id=0;
-    sb_album_id=0;
-    sb_position=0;
-    sb_chart_id=0;
-    sb_song_id=0;
-    sb_playlist_id=0;
+    sb_performer_id=-1;
+    sb_album_id=-1;
+    sb_position=-1;
+    sb_chart_id=-1;
+    sb_song_id=-1;
+    sb_playlist_id=-1;
 
     isOriginalPerformer=0;
     albumTitle=QString();
@@ -502,6 +544,6 @@ SBID::init()
     year=0;
 
     subtabID=INT_MAX;
-    isEdit=0;
+    isEditFlag=0;
     sortColumn=INT_MAX;
 }

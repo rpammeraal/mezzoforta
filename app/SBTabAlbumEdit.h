@@ -16,7 +16,9 @@ public:
 
     //	Virtual
     virtual void handleDeleteKey();
+    virtual void handleEnterKey();
     virtual void handleMergeKey();
+    virtual bool hasEdits() const;
 
 public slots:
     void showContextMenu(const QPoint& qp);
@@ -32,15 +34,14 @@ private slots:
 
 private:
     QMap<int,int> allSongs;
-    bool connectHasPerformed;
     QAction* clearAllAction;
     QAction* deleteSongAction;
     QAction* mergeSongAction;
+    bool _hasChanges;
 
     void getSelectionStatus(int& numRowsSelected, int& numRowsRemoved,int& numRowsMarkedAsMerged);
     void init();
     virtual SBID _populate(const SBID& id);
-    void reinit();
     void setFocusOnRow(QModelIndex idx) const;
 };
 

@@ -24,7 +24,7 @@ void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
     init();
-    SBID fromID=currentSBID();
+    SBID fromID=Context::instance()->getScreenStack()->currentScreen();
     SBID assignID=getSBIDSelected(lastClickedIndex);
     if(assignID.sb_item_type!=SBID::sb_type_invalid)
     {
@@ -50,7 +50,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, const SBID &toID)
 {
     init();
     //	Determine current playlist
-    SBID currentID=currentSBID();
+    SBID currentID=Context::instance()->getScreenStack()->currentScreen();
 
     SBModelPlaylist *mpl=new SBModelPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
@@ -117,6 +117,8 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
 
     QString text;
+    int itemID=-1;
+    SBID::sb_type itemType=SBID::sb_type_invalid;
     for(int i=0; i<aim->columnCount();i++)
     {
         QString header=aim->headerData(i, Qt::Horizontal).toString();
@@ -125,11 +127,11 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 
         if(header=="sb_item_type")
         {
-            id.sb_item_type=static_cast<SBID::sb_type>(aim->data(idy).toInt());
+            itemType=static_cast<SBID::sb_type>(aim->data(idy).toInt());
         }
         else if(header=="sb_item_id")
         {
-            id.sb_item_id=aim->data(idy).toInt();
+            itemID=aim->data(idy).toInt();
         }
         else if(header=="#")
         {
@@ -140,6 +142,7 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
             text=aim->data(idy).toString();
         }
     }
+    id.assign(itemType,itemID);
     return id;
 }
 
@@ -151,7 +154,7 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     SBModelPlaylist pl;
 
     SBID result=pl.getDetail(id);
-    if(result.sb_item_id==-1)
+    if(result.sb_playlist_id==-1)
     {
         //	Not found
         return result;

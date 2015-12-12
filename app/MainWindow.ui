@@ -407,7 +407,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>6</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -2855,6 +2855,12 @@ Click on 'All Songs' to continue.</string>
                   <property name="gridStyle">
                    <enum>Qt::NoPen</enum>
                   </property>
+                  <attribute name="verticalHeaderDefaultSectionSize">
+                   <number>20</number>
+                  </attribute>
+                  <attribute name="verticalHeaderMinimumSectionSize">
+                   <number>20</number>
+                  </attribute>
                  </widget>
                 </item>
                 <item>
@@ -3418,10 +3424,10 @@ Click on 'All Songs' to continue.</string>
   <tabstop>songEditPerformerName</tabstop>
   <tabstop>songEditYearOfRelease</tabstop>
   <tabstop>songEditNotes</tabstop>
-  <tabstop>tabSongEditLists</tabstop>
   <tabstop>songEditLyrics</tabstop>
   <tabstop>pbSongEditSave</tabstop>
   <tabstop>pbSongEditCancel</tabstop>
+  <tabstop>pbPerformerEditCancel</tabstop>
   <tabstop>pbNA2</tabstop>
   <tabstop>buttonBackward</tabstop>
   <tabstop>buttonForward</tabstop>
@@ -3460,15 +3466,15 @@ Click on 'All Songs' to continue.</string>
   <tabstop>albumEditPerformer</tabstop>
   <tabstop>performerDetailNewsPage</tabstop>
   <tabstop>pbAlbumEditSave</tabstop>
-  <tabstop>pbPerformerEditCancel</tabstop>
+  <tabstop>pbPerformerEditSave</tabstop>
   <tabstop>performerEditNotes</tabstop>
   <tabstop>performerEditWebSite</tabstop>
-  <tabstop>pbPerformerEditSave</tabstop>
+  <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
   <tabstop>performerEditName</tabstop>
   <tabstop>tabAlbumEditLists</tabstop>
   <tabstop>performerEditRelatedPerformersList</tabstop>
-  <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
   <tabstop>pbPerformerEditAddRelatedPerformer</tabstop>
+  <tabstop>tabSongEditLists</tabstop>
   <tabstop>pbAlbumEditAddSong</tabstop>
   <tabstop>pbAlbumEditMergeSong</tabstop>
  </tabstops>

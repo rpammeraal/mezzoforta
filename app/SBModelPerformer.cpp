@@ -110,7 +110,7 @@ SBModelPerformer::getDetail(const SBID& id)
                     ") s ON a.artist_id=s.artist_id "
         "WHERE "
             "a.artist_id=%1"
-    ).arg(id.sb_item_id);
+    ).arg(id.sb_performer_id);
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -121,9 +121,8 @@ SBModelPerformer::getDetail(const SBID& id)
 
     if(query.next())
     {
-        result.sb_item_id      =id.sb_item_id;
         result.sb_mbid         =query.value(3).toString();
-        result.sb_performer_id =id.sb_item_id;
+        result.sb_performer_id =id.sb_performer_id;
         result.performerName   =query.value(0).toString();
         result.url             =query.value(1).toString();
         result.notes           =query.value(2).toString();
@@ -134,10 +133,6 @@ SBModelPerformer::getDetail(const SBID& id)
         {
             result.url="http://"+result.url;
         }
-    }
-    else
-    {
-        result.sb_item_id=-1;
     }
 
     return result;
@@ -186,7 +181,7 @@ SBModelPerformer::getAllAlbums(const SBID& id)
     )
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
-        .arg(id.sb_item_id);
+        .arg(id.sb_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -211,7 +206,7 @@ SBModelPerformer::getAllCharts(const SBID& id)
         "WHERE "
             "cp.artist_id=%1 "
         "ORDER BY 1"
-    ).arg(id.sb_item_id);
+    ).arg(id.sb_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -255,7 +250,7 @@ SBModelPerformer::getAllSongs(const SBID& id)
         "ORDER BY "
             "s.title "
     )
-        .arg(id.sb_item_id)
+        .arg(id.sb_performer_id)
         .arg(SBID::sb_type_song);
 
     return new SBSqlQueryModel(q);
@@ -286,13 +281,13 @@ SBModelPerformer::getRelatedPerformers(const SBID& id)
         "WHERE "
             "ar2.artist1_id=%1 "
         "ORDER BY 2 "
-    ).arg(id.sb_item_id);
+    ).arg(id.sb_performer_id);
 
     return new SBSqlQueryModel(q);
 }
 
 SBSqlQueryModel*
-SBModelPerformer::matchPerformer(const SBID &currentSongID, const QString& newPerformerName)
+SBModelPerformer::matchPerformer(const SBID &currentID, const QString& newPerformerName)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -327,7 +322,7 @@ SBModelPerformer::matchPerformer(const SBID &currentSongID, const QString& newPe
         "FROM "
             "___SB_SCHEMA_NAME___artist s "
         "WHERE "
-            "s.artist_id!=%2 AND "
+            "s.artist_id!=(%2) AND "
             "( "
                 "substr(s.soundex,1,length('%3'))='%3' OR "
                 "substr('%3',1,length(s.soundex))=s.soundex "
@@ -336,7 +331,7 @@ SBModelPerformer::matchPerformer(const SBID &currentSongID, const QString& newPe
             "1, 3"
     )
         .arg(newPerformerName)
-        .arg(currentSongID.sb_song_id)
+        .arg(currentID.sb_performer_id)
         .arg(newSoundex)
     ;
 
@@ -403,16 +398,16 @@ SBModelPerformer::saveNewPerformer(SBID &id)
         if(id.sb_item_type==SBID::sb_type_performer)
         {
             //	Only set if type equals performer
-            id.sb_item_id=select.value(0).toInt();
+            id.sb_performer_id=select.value(0).toInt();
         }
         id.sb_performer_id=select.value(0).toInt();
-        qDebug() << SB_DEBUG_INFO << "id.sb_item_id=" << id.sb_item_id;
+        qDebug() << SB_DEBUG_INFO << "id.sb_performer_id=" << id.sb_performer_id;
     }
     return resultCode;
 }
 
 bool
-SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL)
+SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL,bool commitFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -431,10 +426,10 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
     bool extraSQLFlag=0;
 
     qDebug() << SB_DEBUG_INFO << "old"
-        << ":sb_item_id=" << orgPerformerID.sb_item_id
+        << ":sb_performer_id=" << orgPerformerID.sb_performer_id
     ;
     qDebug() << SB_DEBUG_INFO << "new"
-        << ":sb_item_id=" << newPerformerID.sb_item_id
+        << ":sb_performer_id=" << newPerformerID.sb_performer_id
     ;
 
     //	1.	Set attribute flags
@@ -448,18 +443,18 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
     }
 
     //	2.	Determine what need to be done
-    if(newPerformerID.sb_item_id==-1)
+    if(newPerformerID.sb_performer_id==-1)
     {
         nameRenameFlag=1;
         newPerformerID.sb_performer_id=orgPerformerID.sb_performer_id;
         if(newPerformerID.sb_item_type==SBID::sb_type_performer)
         {
-            newPerformerID.sb_item_id=newPerformerID.sb_performer_id;
+            newPerformerID.sb_performer_id=newPerformerID.sb_performer_id;
         }
     }
 
-    if(orgPerformerID.sb_item_id!=newPerformerID.sb_item_id &&
-        newPerformerID.sb_item_id!=-1)
+    if(orgPerformerID.sb_performer_id!=newPerformerID.sb_performer_id &&
+        newPerformerID.sb_performer_id!=-1)
     {
         mergeToExistingPerformer=1;
     }
@@ -526,7 +521,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
                 "artist_id=%2 "
          )
             .arg(Common::escapeSingleQuotes(newPerformerID.performerName))
-            .arg(newPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
     }
@@ -544,7 +539,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
                 "artist_id=%2 "
          )
             .arg(Common::escapeSingleQuotes(newPerformerID.notes))
-            .arg(newPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
     }
@@ -562,7 +557,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
                 "artist_id=%2 "
          )
             .arg(Common::escapeSingleQuotes(newPerformerID.url))
-            .arg(newPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
     }
@@ -583,8 +578,8 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
             "WHERE "
                 "artist1_id=%2 "
         )
-            .arg(newPerformerID.sb_item_id)
-            .arg(orgPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
 
@@ -597,8 +592,8 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
             "WHERE "
                 "artist2_id=%2 "
         )
-            .arg(newPerformerID.sb_item_id)
-            .arg(orgPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
     }
@@ -637,8 +632,8 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
                         "q.artist_id=%1 "
                 ") "
         )
-            .arg(newPerformerID.sb_item_id)
-            .arg(orgPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
 
@@ -652,8 +647,8 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
             "WHERE "
                 "artist_id=%2 "
         )
-            .arg(newPerformerID.sb_item_id)
-            .arg(orgPerformerID.sb_item_id)
+            .arg(newPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
 
@@ -740,7 +735,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
             "WHERE "
                 "artist_id=%1 "
         )
-            .arg(orgPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
 
@@ -763,13 +758,13 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
             "WHERE "
                 "artist_id=%1 "
         )
-            .arg(orgPerformerID.sb_item_id)
+            .arg(orgPerformerID.sb_performer_id)
         ;
         allQueries.append(q);
     }
 
     qDebug() << SB_DEBUG_INFO << allQueries.count();
-    return dal->executeBatch(allQueries);
+    return dal->executeBatch(allQueries,commitFlag);
 }
 
 void
@@ -840,7 +835,7 @@ SBModelPerformer::updateHomePage(const SBID &id)
             "artist_id=%2"
     )
         .arg(id.url)
-        .arg(id.sb_item_id)
+        .arg(id.sb_performer_id)
     ;
     dal->customize(q);
 
@@ -864,7 +859,7 @@ SBModelPerformer::updateMBID(const SBID &id)
             "mbid='%1' "
         "WHERE "
             "artist_id=%2"
-    ).arg(id.sb_mbid).arg(id.sb_item_id);
+    ).arg(id.sb_mbid).arg(id.sb_performer_id);
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;

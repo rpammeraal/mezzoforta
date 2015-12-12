@@ -101,7 +101,7 @@ ExternalData::getCachePath(const SBID& id)
     QString f=QString("%1/%2.%3")
         .arg(p)
         .arg(id.getType())
-        .arg(id.sb_item_id)
+        .arg(id.sb_item_id())
     ;
     return f;
 }

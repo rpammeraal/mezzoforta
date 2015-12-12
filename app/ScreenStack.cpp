@@ -160,18 +160,18 @@ ScreenStack::removeForward()
 void
 ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
 {
-    qDebug() << SB_DEBUG_INFO << id << currentScreenID << stack.count();
+    qDebug() << SB_DEBUG_INFO << id << editOnlyFlag << currentScreenID << stack.count();
     for(int i=stack.count()-1;i>=0;i--)
     {
         const SBID& currentID=stack.at(i);
-        if(currentID==id)
+        if(currentID.compareSimple(id))
         {
             if(
                 (editOnlyFlag==0) ||
                 (
                     editOnlyFlag==1 &&
-                    currentID.isEdit==id.isEdit &&
-                    currentID.isEdit==1
+                    currentID.isEditFlag==id.isEditFlag &&
+                    currentID.isEditFlag==1
                 )
             )
             {
@@ -192,7 +192,7 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     if(currentScreenID>=0 && currentScreenID<stack.count())
     {
-        if(currentScreen()==id)
+        if(id.compareSimple(currentScreen()))
         {
             stack[currentScreenID]=id;
         }
@@ -223,8 +223,7 @@ ScreenStack::updateSBIDInStack(const SBID &id)
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     for(int i=0;i<stack.size();i++)
     {
-        if(stack.at(i).sb_item_id==id.sb_item_id &&
-            stack.at(i).sb_item_type==id.sb_item_type)
+        if(id.compareSimple(stack.at(i))==1)
         {
             stack.replace(i,id);
         }
@@ -260,7 +259,7 @@ ScreenStack::debugShow(const QString& c)
             qDebug() << SB_DEBUG_INFO
                      << isCurrent << i << stack.at(i)
                      << "subtabID=" << stack.at(i).subtabID
-                     << "isEdit:" << stack.at(i).isEdit
+                     << "isEditFlag:" << stack.at(i).isEditFlag
                      << "sortColumn:" << stack.at(i).sortColumn
             ;
         }

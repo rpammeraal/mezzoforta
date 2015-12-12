@@ -118,7 +118,7 @@ SBModelAlbum::getDetail(const SBID& id)
                 "a.name='%3' "
             ") "
     )
-        .arg(id.sb_item_id)
+        .arg(id.sb_album_id)
         .arg(Common::escapeSingleQuotes(id.albumTitle))
         .arg(Common::escapeSingleQuotes(id.performerName))
     ;
@@ -133,7 +133,6 @@ SBModelAlbum::getDetail(const SBID& id)
     if(query.next())
     {
         qDebug() << SB_DEBUG_INFO;
-        result.sb_item_id     =query.value(0).toInt();
         result.sb_album_id    =query.value(0).toInt();
         result.performerName  =query.value(5).toString();
         result.albumTitle     =query.value(1).toString();
@@ -143,13 +142,8 @@ SBModelAlbum::getDetail(const SBID& id)
         result.sb_performer_id=query.value(6).toInt();
         result.sb_mbid        =query.value(7).toString();
     }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO;
-        result.sb_item_id=-1;
-    }
 
-    qDebug() << SB_DEBUG_INFO << result.sb_item_id;
+    qDebug() << SB_DEBUG_INFO << result.sb_album_id;
     qDebug() << SB_DEBUG_INFO << "result.wiki=" << result.wiki;
     return result;
 }
@@ -186,42 +180,10 @@ SBModelAlbum::getAllSongs(const SBID& id)
     )
         .arg(SBID::sb_type_song)
         .arg(SBID::sb_type_album)
-        .arg(id.sb_item_id)
+        .arg(id.sb_album_id)
         .arg(SBID::sb_type_performer)
         .arg(SBID::sb_type_position)
     ;
-
-    return new SBSqlQueryModel(q);
-}
-
-SBSqlQueryModel*
-SBModelAlbum::getAllSongsOLD(const SBID& id)
-{
-    QString q=QString
-    (
-        "SELECT "
-            "%1 AS SB_ALBUM_ID, "
-            "rp.record_position AS \"#\", "
-            "%2 AS SB_ITEM_TYPE1, "
-            "s.song_id AS SB_SONG_ID , "
-            "s.title AS \"song\", "
-            "rp.duration AS \"duration\", "
-            "%3 AS SB_ITEM_TYPE2, "
-            "a.artist_id AS SB_PERFORMER_ID, "
-            "a.name AS \"performer\" "
-        "FROM "
-            "___SB_SCHEMA_NAME___record_performance rp "
-                "join ___SB_SCHEMA_NAME___song s on "
-                    "rp.song_id=s.song_id "
-                "join ___SB_SCHEMA_NAME___artist a on "
-                    "rp.artist_id=a.artist_id "
-        "WHERE "
-            "record_id=%1 "
-        "ORDER BY 2"
-    )
-        .arg(id.sb_item_id)
-        .arg(SBID::sb_type_song)
-        .arg(SBID::sb_type_performer);
 
     return new SBSqlQueryModel(q);
 }
@@ -256,12 +218,14 @@ SBModelAlbum::matchAlbum(const SBID &newAlbum)
                     "p.artist_id=a.artist_id "
         "WHERE "
             "REPLACE(LOWER(p.title),' ','') = REPLACE(LOWER('%1'),' ','') AND "
-            "p.record_id!=%4"
+            "p.record_id!=%4 "
+        "ORDER BY "
+            "1 "
     )
         .arg(Common::escapeSingleQuotes(newAlbum.albumTitle))
         .arg(Common::escapeSingleQuotes(newAlbum.performerName))
         .arg(newAlbum.sb_performer_id)
-        .arg(newAlbum.sb_item_id)
+        .arg(newAlbum.sb_album_id)
     ;
 
     return new SBSqlQueryModel(q);
@@ -286,7 +250,7 @@ SBModelAlbum::mergeAlbum(const SBID& from, const SBID& to)
         "WHERE "
             "rp.record_id=%1 "
     )
-        .arg(to.sb_item_id)
+        .arg(to.sb_album_id)
     ;
     dal->customize(q);
 
@@ -309,7 +273,7 @@ SBModelAlbum::mergeAlbum(const SBID& from, const SBID& to)
             "UPDATE "
                 "___SB_SCHEMA_NAME___record_performance "
             "SET "
-                "op_record=%1, "
+                "op_record_id=%1, "
                 "op_record_position=op_record_position+%2 "
             "WHERE "
                 "op_record_id=%3 "
@@ -388,6 +352,52 @@ SBModelAlbum::mergeAlbum(const SBID& from, const SBID& to)
         )
             .arg(to.sb_album_id)
             .arg(maxPosition)
+            .arg(from.sb_album_id)
+    );
+
+    //	Add existing category items to new album
+    SQL.append
+    (
+        QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___category_record "
+            "( "
+                "record_id, "
+                "category_id "
+            ") "
+            "SELECT "
+                "record_id, "
+                "category_id "
+            "FROM "
+                "___SB_SCHEMA_NAME___category_record cr "
+            "WHERE "
+                "cr.record_id=%1 "
+            "AND  "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL "
+                    "FROM "
+                        "___SB_SCHEMA_NAME___category_record ce "
+                    "WHERE "
+                        "ce.record_id=%2 AND "
+                        "ce.record_id=cr.record_id AND "
+                        "ce.category_id=cr.category_id "
+                ") "
+        )
+            .arg(from.sb_album_id)
+            .arg(to.sb_album_id)
+    );
+
+    //	Remove category items from album
+    SQL.append
+    (
+        QString
+        (
+            "DELETE FROM "
+                "___SB_SCHEMA_NAME___category_record "
+            "WHERE "
+                "record_id=%1 "
+        )
             .arg(from.sb_album_id)
     );
 

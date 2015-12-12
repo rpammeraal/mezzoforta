@@ -13,18 +13,15 @@ class SBTabSongEdit : public SBTab
 public:
     SBTabSongEdit(QWidget* parent=0);
 
-    virtual void handleEnterKey() const;
+    virtual void handleEnterKey();
     virtual bool hasEdits() const;
 
 public slots:
     virtual void save() const;
 
 private:
-    bool connectHasPerformed;
-
     void init();
     virtual SBID _populate(const SBID& id);
-    void reinit();
 };
 
 #endif // SBTABSONGEDIT_H

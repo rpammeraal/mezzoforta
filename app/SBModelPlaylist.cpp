@@ -84,8 +84,8 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
                         "pp.record_id=%4 AND "
                         "pp.record_position=%5 "
                 ") "
-          ).arg(toID.sb_item_id)
-           .arg(assignID.sb_item_id)
+          ).arg(toID.sb_playlist_id)
+           .arg(assignID.sb_song_id)
            .arg(assignID.sb_performer_id)
            .arg(assignID.sb_album_id)
            .arg(assignID.sb_position)
@@ -123,10 +123,11 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_artist_id=%4 "
                 ") "
-          ).arg(toID.sb_item_id)
+          ).arg(toID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_item_id);
+           .arg(assignID.sb_performer_id)
+        ;
         break;
 
     case SBID::sb_type_album:
@@ -159,10 +160,11 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_record_id=%4 "
                 ") "
-          ).arg(toID.sb_item_id)
+          ).arg(toID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_item_id);
+           .arg(assignID.sb_album_id)
+        ;
         break;
 
     case SBID::sb_type_chart:
@@ -199,10 +201,11 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_playlist_id=%4 "
                 ") "
-          ).arg(toID.sb_item_id)
+          ).arg(toID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_item_id);
+           .arg(assignID.sb_playlist_id)
+        ;
         break;
 
     case SBID::sb_type_allsongs:
@@ -240,8 +243,7 @@ SBModelPlaylist::createNewPlaylist() const
     QSqlQuery qID(q,db);
     qID.next();
 
-    result.sb_item_type   =SBID::sb_type_playlist;
-    result.sb_item_id     =qID.value(0).toInt();
+    result.assign(SBID::sb_type_playlist,qID.value(0).toInt());
 
     //	Figure out name of next playlist
     QString playlistName;
@@ -266,7 +268,7 @@ SBModelPlaylist::createNewPlaylist() const
 
     //	Insert
     q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
-            .arg(result.sb_item_id)
+            .arg(result.sb_playlist_id)
             .arg(result.playlistName)
             .arg(dal->getGetDate());
     dal->customize(q);
@@ -295,7 +297,7 @@ SBModelPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID) co
             "WHERE "
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
-          ).arg(fromID.sb_item_id)
+          ).arg(fromID.sb_playlist_id)
            .arg(assignID.sb_position);
         break;
 
@@ -309,8 +311,9 @@ SBModelPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID) co
             "WHERE "
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
-          ).arg(fromID.sb_item_id)
-           .arg(assignID.sb_position);
+          ).arg(fromID.sb_playlist_id)
+           .arg(assignID.sb_position)
+        ;
         break;
 
     case SBID::sb_type_allsongs:
@@ -346,7 +349,7 @@ SBModelPlaylist::deletePlaylist(const SBID &id) const
 
     for(int i=0;i<l.count();i++)
     {
-        QString q=qTemplate.arg(l.at(i)).arg(id.sb_item_id);
+        QString q=qTemplate.arg(l.at(i)).arg(id.sb_playlist_id);
         dal->customize(q);
         qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery toExec(q,db);
@@ -395,7 +398,7 @@ SBModelPlaylist::getDetail(const SBID& id) const
                     ") b ON b.playlist_id=p.playlist_id "
         "WHERE "
             "p.playlist_id=%1 "
-    ).arg(id.sb_item_id);
+    ).arg(id.sb_playlist_id);
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -406,15 +409,10 @@ SBModelPlaylist::getDetail(const SBID& id) const
 
     if(query.next())
     {
-        result.sb_item_id     =id.sb_item_id;
-        result.sb_playlist_id=id.sb_item_id;
-        result.playlistName   =query.value(0).toString();
-        result.duration       =query.value(1).toTime();
-        result.count1         =query.value(2).toInt();
-    }
-    else
-    {
-        result.sb_item_id=-1;
+        result.sb_playlist_id=id.sb_playlist_id;
+        result.playlistName  =query.value(0).toString();
+        result.duration      =query.value(1).toTime();
+        result.count1        =query.value(2).toInt();
     }
 
     return result;
@@ -495,7 +493,7 @@ SBModelPlaylist::getAllItemsByPlaylist(const SBID& id) const
         "WHERE "
             "pp.playlist_id=%1 "
     )
-            .arg(id.sb_item_id)            //	1
+            .arg(id.sb_playlist_id)
             .arg(SBID::sb_type_playlist)
             .arg(SBID::sb_type_chart)
             .arg(SBID::sb_type_album)
@@ -515,9 +513,9 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
 
     qDebug() << SB_DEBUG_INFO << "calculate for" << id;
 
-    if(compositesTraversed.contains(id.sb_item_id)==0)
+    if(compositesTraversed.contains(id.sb_item_id())==0)
     {
-        compositesTraversed.insert(id.sb_item_id,1);
+        compositesTraversed.insert(id.sb_item_id(),1);
         switch(id.sb_item_type)
         {
             case SBID::sb_type_playlist:
@@ -535,7 +533,8 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                             "pc.playlist_id=%2 "
                     )
                         .arg(dal->getIsNull())
-                        .arg(id.sb_item_id);
+                        .arg(id.sb_playlist_id)
+                    ;
                 dal->customize(q);
                 qDebug() << SB_DEBUG_INFO << q;
                 //	Declaring variables in compound statement to avoid compiler errors
@@ -553,26 +552,22 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                         if(playlistID!=0)
                         {
                             qDebug() << SB_DEBUG_INFO;
-                            t.sb_item_type=SBID::sb_type_playlist;
-                            t.sb_item_id=playlistID;
+                            t.assign(SBID::sb_type_playlist,playlistID);
                         }
                         else if(chartID!=0)
                         {
                             qDebug() << SB_DEBUG_INFO;
-                            t.sb_item_type=SBID::sb_type_chart;
-                            t.sb_item_id=chartID;
+                            t.assign(SBID::sb_type_chart,chartID);
                         }
                         else if(albumID!=0)
                         {
                             qDebug() << SB_DEBUG_INFO;
-                            t.sb_item_type=SBID::sb_type_album;
-                            t.sb_item_id=albumID;
+                            t.assign(SBID::sb_type_album,albumID);
                         }
                         else if(performerID!=0)
                         {
                             qDebug() << SB_DEBUG_INFO;
-                            t.sb_item_type=SBID::sb_type_performer;
-                            t.sb_item_id=performerID;
+                            t.assign(SBID::sb_type_performer,performerID);
                         }
                         qDebug() << SB_DEBUG_INFO << t;
 
@@ -597,9 +592,10 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                                     "pp.record_id=rp.record_id AND "
                                     "pp.record_position=rp.record_position "
                         "WHERE "
-                            "pp.playlist_id=%2"
+                            "pp.playlist_id=%1"
                     )
-                        .arg(id.sb_item_id);
+                        .arg(id.sb_playlist_id)
+                    ;
                 break;
 
             case SBID::sb_type_chart:
@@ -619,9 +615,10 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                                     "pp.record_id=rp.record_id AND "
                                     "pp.record_position=rp.record_position "
                         "WHERE "
-                            "pp.chart_id=%2"
+                            "pp.chart_id=%1"
                     )
-                        .arg(id.sb_item_id);
+                        .arg(id.sb_playlist_id)
+                    ;
                 break;
 
             case SBID::sb_type_album:
@@ -636,9 +633,10 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                         "FROM "
                             "___SB_SCHEMA_NAME___record_performance rp "
                         "WHERE "
-                            "rp.record_id=%2"
+                            "rp.record_id=%1"
                     )
-                        .arg(id.sb_item_id);
+                        .arg(id.sb_album_id)
+                    ;
                 break;
 
             case SBID::sb_type_performer:
@@ -655,7 +653,8 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
                         "WHERE "
                             "rp.artist_id=%2"
                     )
-                        .arg(id.sb_item_id);
+                        .arg(id.sb_performer_id)
+                    ;
                 break;
 
             case SBID::sb_type_invalid:
@@ -673,9 +672,7 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
         QSqlQuery querySong(q,db);
         while(querySong.next())
         {
-            SBID songID;
-            songID.sb_item_type=SBID::sb_type_song;
-            songID.sb_item_id=querySong.value(1).toInt();
+            SBID songID(SBID::sb_type_song,querySong.value(1).toInt());
             songID.sb_performer_id=querySong.value(0).toInt();
             songID.sb_album_id=querySong.value(2).toInt();
             songID.sb_position=querySong.value(3).toInt();
@@ -744,9 +741,7 @@ SBModelPlaylist::recalculateAllPlaylistDurations() const
 
     while(query.next())
     {
-        SBID t;
-        t.sb_item_type=SBID::sb_type_playlist;
-        t.sb_item_id=query.value(1).toInt();
+        SBID t(SBID::sb_type_playlist,query.value(1).toInt());
 
         recalculatePlaylistDuration(t);
     }
@@ -786,8 +781,9 @@ SBModelPlaylist::recalculatePlaylistDuration(const SBID &id) const
         "WHERE "
             "playlist_id=%2 "
     )
-            .arg(duration.toString("hh:mm:ss"))
-            .arg(id.sb_item_id);
+        .arg(duration.toString("hh:mm:ss"))
+        .arg(id.sb_playlist_id)
+    ;
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -811,7 +807,7 @@ SBModelPlaylist::renamePlaylist(const SBID &id) const
             "playlist_id=%2 "
     )
         .arg(id.playlistName)
-        .arg(id.sb_item_id)
+        .arg(id.sb_playlist_id)
     ;
     dal->customize(q);
 
@@ -829,11 +825,9 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
     QString q;
     SBID fromID=fID;
     SBID toID=tID;
-    fromID.fillOut();
-    toID.fillOut();
 
     qDebug() << SB_DEBUG_INFO << "from"
-        << "itm" << fromID.sb_item_id
+        << "itm" << fromID.sb_item_id()
         << "typ" << fromID.sb_item_type
         << "pfr" << fromID.sb_performer_id
         << "sng" << fromID.sb_song_id
@@ -841,7 +835,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
         << "pos" << fromID.sb_position
         << "pll" << fromID.sb_playlist_id;
     qDebug() << SB_DEBUG_INFO << "to"
-        << "itm" << toID.sb_item_id
+        << "itm" << toID.sb_item_id()
         << "typ" << toID.sb_item_type
         << "pfr" << toID.sb_performer_id
         << "sng" << toID.sb_song_id
@@ -881,7 +875,8 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
         "ORDER BY 1 DESC "
         "LIMIT 1"
     )
-        .arg(playlistID.sb_item_id);
+        .arg(playlistID.sb_playlist_id)
+    ;
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -909,11 +904,12 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "record_position=%6 "
     )
         .arg(tmpPosition)
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(fromID.sb_performer_id)
         .arg(fromID.sb_song_id)
         .arg(fromID.sb_album_id)
-        .arg(fromID.sb_position);
+        .arg(fromID.sb_position)
+    ;
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -936,8 +932,8 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             ") "
     )
         .arg(tmpPosition)
-        .arg(playlistID.sb_item_id)
-        .arg(fromID.sb_item_id);
+        .arg(playlistID.sb_playlist_id)
+        .arg(fromID.sb_item_id());	//	legitimate use of sb_item_id()!
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -979,12 +975,12 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
                 ") "
         ") b "
     )
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(toID.sb_performer_id)
         .arg(toID.sb_song_id)
         .arg(toID.sb_album_id)
         .arg(toID.sb_position)
-        .arg(toID.sb_item_id);
+        .arg(toID.sb_item_id());
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -1006,7 +1002,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "playlist_position>=%2 AND "
             "playlist_position<%3 "
     )
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(newPosition)
         .arg(tmpPosition);
     dal->customize(q);
@@ -1026,7 +1022,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "playlist_position>=%2 AND "
             "playlist_position<%3 "
     )
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(newPosition)
         .arg(tmpPosition);
     dal->customize(q);
@@ -1047,7 +1043,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "playlist_position=%3 "
     )
         .arg(newPosition)
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(tmpPosition);
     dal->customize(q);
 
@@ -1066,7 +1062,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
             "playlist_position=%3 "
     )
         .arg(newPosition)
-        .arg(playlistID.sb_item_id)
+        .arg(playlistID.sb_playlist_id)
         .arg(tmpPosition);
     dal->customize(q);
 
@@ -1113,8 +1109,9 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
         "ORDER BY "
             "1 "
     )
-        .arg(id.sb_item_id)
-        .arg(maxPosition);
+        .arg(id.sb_playlist_id)
+        .arg(maxPosition)
+    ;
     dal->customize(q);
 
     QSqlQuery query(q,db);
@@ -1136,9 +1133,10 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
                 "WHERE "
                     "playlist_id=%1 AND playlist_position=%2"
             )
-            .arg(id.sb_item_id)
-            .arg(actualPosition)
-            .arg(newPosition);
+                .arg(id.sb_playlist_id)
+                .arg(actualPosition)
+                .arg(newPosition)
+            ;
 
             dal->customize(q);
 
@@ -1155,9 +1153,10 @@ SBModelPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) const
                 "WHERE "
                     "playlist_id=%1 AND playlist_position=%2"
             )
-            .arg(id.sb_item_id)
-            .arg(actualPosition)
-            .arg(newPosition);
+                .arg(id.sb_playlist_id)
+                .arg(actualPosition)
+                .arg(newPosition)
+            ;
 
             dal->customize(q);
 

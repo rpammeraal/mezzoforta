@@ -96,7 +96,7 @@ SBTab::handleDeleteKey()
 }
 
 void
-SBTab::handleEnterKey() const
+SBTab::handleEnterKey()
 {
 }
 
@@ -141,7 +141,10 @@ SBTab::populate(const SBID &id)
 {
     _populatePre(id);
     SBID result=_populate(id);
-    _populatePost(id);
+    qDebug() << SB_DEBUG_INFO << result;
+    Context::instance()->getScreenStack()->debugShow("SBTab::populate");
+    Context::instance()->getScreenStack()->updateCurrentScreen(result);
+    _populatePost(result);
 
     return result;
 }
@@ -224,13 +227,13 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     bool resultCode=1;
     SBID selectedPerformerID=newID;
     newID.sb_item_type=SBID::sb_type_performer;
-    selectedPerformerID.sb_item_type=SBID::sb_type_performer;
+    selectedPerformerID.assign(SBID::sb_type_performer,-1);
     selectedPerformerID.performerName=editPerformerName;
-    selectedPerformerID.sb_performer_id=-1;
 
     qDebug() << SB_DEBUG_INFO << "saveNewPerformer:" << saveNewPerformer;
     qDebug() << SB_DEBUG_INFO << "editPerformerName:" << editPerformerName;
-    qDebug() << SB_DEBUG_INFO << "newID.performerName:" << newID.performerName;
+    qDebug() << SB_DEBUG_INFO << "selectedPerformerID" << selectedPerformerID;
+    qDebug() << SB_DEBUG_INFO << "newID" << newID;
 
     SBModelPerformer* p=new SBModelPerformer();
     SBSqlQueryModel* performerMatches=p->matchPerformer(newID, editPerformerName);
@@ -255,7 +258,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
             qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(editPerformerName,newID,performerMatches);
+            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(newID,performerMatches);
             pu->exec();
 
             qDebug() << SB_DEBUG_INFO << pu->hasSelectedItem();
@@ -295,10 +298,6 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     if(resultCode==1)
     {
         newID.sb_performer_id=selectedPerformerID.sb_performer_id;
-        if(newID.sb_item_type==SBID::sb_type_performer)
-        {
-            newID.sb_item_id=newID.sb_performer_id;
-        }
         newID.performerName=selectedPerformerID.performerName;
     }
     qDebug() << SB_DEBUG_INFO << resultCode;
@@ -327,7 +326,7 @@ void
 SBTab::_populatePre(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO;
-    setCurrentSBID(id);
+    Q_UNUSED(id);
     Context::instance()->setTab(this);
 }
 
@@ -435,6 +434,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
             id=m->determineSBID(idy);
+            qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
             Context::instance()->getNavigator()->openScreenByID(id);
             qDebug() << SB_DEBUG_INFO;
         }

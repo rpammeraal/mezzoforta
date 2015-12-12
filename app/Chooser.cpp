@@ -320,7 +320,7 @@ Chooser::findItem(const SBID& id)
                     if(si1 && si2)
                     {
                         qDebug() << SB_DEBUG_INFO << y << i << si1->text() << si2->text();
-                        if(si1->text().toInt()==id.sb_item_id &&
+                        if(si1->text().toInt()==id.sb_item_id() &&
                             si2->text().toInt()==id.sb_item_type)
                         {
                             index=model->indexFromItem(si1);
@@ -356,8 +356,7 @@ Chooser::getPlaylistSelected(const QModelIndex& i)
 
         if(playlistNameItem && playlistIDItem)
         {
-            id.sb_item_type=(SBID::sb_type)playlistIDType->text().toInt();
-            id.sb_item_id=playlistIDItem->text().toInt();
+            id.assign((SBID::sb_type)playlistIDType->text().toInt(),playlistIDItem->text().toInt());
             id.playlistName=playlistNameItem->text();
         }
     }

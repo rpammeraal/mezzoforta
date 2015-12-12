@@ -47,11 +47,17 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     SBID id;
     QString text;
     QModelIndex n;
+    SBID::sb_type itemType=SBID::sb_type_invalid;
+    int itemID=-1;
 
+    qDebug() << SB_DEBUG_INFO << dragableColumnList.count();
+    qDebug() << SB_DEBUG_INFO << idx.column();
+    qDebug() << SB_DEBUG_INFO << dragableColumnList.at(idx.column());
     if(dragableColumnList.count()==0)
     {
         qDebug() << SB_DEBUG_INFO;
         //	Determine sbid by going through all columns.
+
         for(int i=0;i<aim->columnCount();i++)
         {
             header=aim->headerData(i,Qt::Horizontal).toString().toLower();
@@ -60,11 +66,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if(header=="sb_item_type" || header=="sb_main_item")
             {
-                id.sb_item_type=static_cast<SBID::sb_type>(v.toInt());
+                itemType=static_cast<SBID::sb_type>(v.toInt());
             }
             else if(header=="sb_item_id")
             {
-                id.sb_item_id=v.toInt();
+                itemID=v.toInt();
             }
             else if(header=="#")
             {
@@ -73,40 +79,14 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
-                SBID::sb_type type=static_cast<SBID::sb_type>(v.toInt());
+                itemType=static_cast<SBID::sb_type>(v.toInt());
 
                 //	Move 'cursor'
                 i++;
                 header=aim->headerData(i,Qt::Horizontal).toString().toLower();
                 n=aim->index(idx.row(),i);
                 v=aim->data(n, Qt::DisplayRole);
-
-                switch(type)
-                {
-                case SBID::sb_type_album:
-                    id.sb_album_id=v.toInt();
-                    if(id.sb_item_type==SBID::sb_type_album)
-                    {
-                        id.sb_item_id=id.sb_album_id;
-                    }
-                    break;
-
-                case SBID::sb_type_song:
-                    id.sb_song_id=v.toInt();
-                    if(id.sb_item_type==SBID::sb_type_song)
-                    {
-                        id.sb_item_id=id.sb_song_id;
-                    }
-                    break;
-
-                case SBID::sb_type_performer:
-                    id.sb_performer_id=v.toInt();
-                    if(id.sb_item_type==SBID::sb_type_performer)
-                    {
-                        id.sb_item_id=id.sb_performer_id;
-                    }
-                    break;
-                }
+                itemID=v.toInt();
             }
         }
     }
@@ -121,11 +101,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         //	sb_item_id
         n=aim->index(idx.row(),idx.column()-1);
-        id.sb_item_id=aim->data(n, Qt::DisplayRole).toInt();
+        itemID=aim->data(n, Qt::DisplayRole).toInt();
 
         //	sb_item_type
         n=aim->index(idx.row(),idx.column()-2);
-        id.sb_item_type=static_cast<SBID::sb_type>(aim->data(n, Qt::DisplayRole).toInt());
+        itemType=static_cast<SBID::sb_type>(aim->data(n, Qt::DisplayRole).toInt());
 
         //	text
         n=aim->index(idx.row(),idx.column());
@@ -135,6 +115,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     {
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
+    id.assign(itemType,itemID);
 
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
@@ -165,7 +146,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         }
     }
     id.setText(text);
-    qDebug() << SB_DEBUG_INFO << id << id.sb_album_id << id.sb_position;
+    qDebug() << SB_DEBUG_INFO << id;
     return id;
 }
 

@@ -11,7 +11,6 @@ public:
     static QStringList addSongToAlbum(const SBID& album, const SBID& song);
     static SBID getDetail(const SBID& id);
     static SBSqlQueryModel* getAllSongs(const SBID& id);
-    static SBSqlQueryModel* getAllSongsOLD(const SBID& id); // CWIP::migrate to getAllSongs
     static SBSqlQueryModel* matchAlbum(const SBID& newAlbum);
     static QStringList mergeAlbum(const SBID& from, const SBID& to);
     static QStringList mergeSongInAlbum(const SBID& album, int newPosition, const SBID& song);

@@ -21,17 +21,13 @@ public:
     explicit SBTab(QWidget *parent = 0, bool isEditTabFlag=0);
 
     int getFirstEligibleSubtabID() const;
+    inline bool isEditTab() const { return _isEditTabFlag; }
     void refreshTabIfCurrent(const SBID &id);
     void setSubtab(const SBID& id) const;
 
-    //	Inline
-    inline SBID currentSBID() const { return _currentID; }
-    inline bool isEditTab() const { return _isEditTabFlag; }
-    inline void setCurrentSBID(const SBID& id) { _currentID=id; }
-
     //	Virtual
     virtual void handleDeleteKey();
-    virtual void handleEnterKey() const;
+    virtual void handleEnterKey();
     virtual bool handleEscapeKey();	//	return 1 when currentTab can be closed
     virtual void handleMergeKey();	//	defined as a '*'
     virtual bool hasEdits() const;
@@ -64,7 +60,6 @@ protected slots:
     void tableViewCellClicked(const QModelIndex& i);
 
 private:
-    SBID _currentID;
     bool _isEditTabFlag;
     int _currentSubtabID;
     QMap<int,int> tabSortMap;	//	last sort column by tab

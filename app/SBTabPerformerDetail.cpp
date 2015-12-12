@@ -73,7 +73,7 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.performerDetailHomepage->setUrl(url);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
-    SBID id=currentSBID();
+    SBID id=Context::instance()->getScreenStack()->currentScreen();
     id.url=url;
 }
 
@@ -159,7 +159,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
 
     //	Get detail
     SBID result=mp->getDetail(id);
-    if(result.sb_item_id==-1)
+    if(result.sb_performer_id==-1)
     {
         //	Not found
         return result;

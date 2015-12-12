@@ -233,6 +233,7 @@ DataAccessLayer::addMissingDatabaseItems()
     SQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN soundex VARCHAR NULL");
     SQL.append("ALTER TABLE ___SB_SCHEMA_NAME___song ADD COLUMN soundex VARCHAR NULL");
     SQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___online_performance_alt( LIKE ___SB_SCHEMA_NAME___online_performance)");
+    SQL.append("ALTER TABLE ___SB_SCHEMA_NAME___record_performance ALTER COLUMN duration TYPE interval");
 
     executeBatch(SQL,1,1,0);
 }

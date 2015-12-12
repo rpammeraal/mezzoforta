@@ -38,7 +38,7 @@ public:
 
     static SBDialogSelectSongAlbum* selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
     static SBDialogSelectSongAlbum* selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectSongAlbum* selectPerformer(const QString& editPerformerName, const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectSongAlbum* selectPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
     static SBDialogSelectSongAlbum* selectSongByPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
 
 

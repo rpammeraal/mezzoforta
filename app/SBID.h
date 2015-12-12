@@ -33,11 +33,11 @@ public:
 
     //	Primary identifiers
     sb_type     sb_item_type;
-    int         sb_item_id;
+    //	int         sb_item_id; depreciated: use sb_item_id()
     QString     sb_mbid;
 
     //	Modifiers
-    bool        isEdit;
+    bool        isEditFlag;
 
     //	Secundary identifiers (e.g. if primary is of type 'song',
     //	the following identifiers identify performer and album).
@@ -68,19 +68,21 @@ public:
     int         subtabID;
     int         sortColumn;
 
-    void assign(const QString& itemType,int itemID,QString text="");
+    void assign(const SBID::sb_type type, const int itemID);
+    void assign(const QString& itemType, const int itemID, const QString& text="");
+    bool compareSimple(const SBID& t) const;
     QByteArray encode() const;
-    void fillOut();
     bool fuzzyMatch(const SBID& i);
     QString getIconResourceLocation() const;
     QString getText() const;
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
+    int sb_item_id() const;
     void setText(const QString &text);
     void showDebug(const QString& title) const;
 
-    bool operator==(const SBID& i) const;
-    bool operator!=(const SBID& i) const;
+    bool operator==(const SBID& i) const;	//	maybe convert to compareAll and make this private to force other code
+    bool operator!=(const SBID& i) const;	//	to use either compareSimple or compareAll
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
 private:
@@ -91,7 +93,7 @@ Q_DECLARE_METATYPE(SBID);
 
 inline uint qHash(const SBID& k, uint seed)
 {
-    QString hash=QString("%1%2%3%4").arg(k.sb_item_id).arg(k.sb_song_id).arg(k.sb_performer_id).arg(k.sb_album_id).arg(k.sb_position);
+    const QString hash=QString("%1%2%3%4").arg(k.sb_item_id()).arg(k.sb_song_id).arg(k.sb_performer_id).arg(k.sb_album_id).arg(k.sb_position);
     return qHash(hash,seed);
 }
 

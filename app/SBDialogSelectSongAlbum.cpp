@@ -45,9 +45,7 @@ SBDialogSelectSongAlbum::selectAlbum(const SBID& id, const QSqlQueryModel* m, QW
         SBID currentAlbum;
 
         currentRank=m->data(m->index(i,0)).toInt();
-        currentAlbum.sb_item_type=SBID::sb_type_album;
-        currentAlbum.sb_item_id=m->data(m->index(i,1)).toInt();
-        currentAlbum.sb_album_id=currentAlbum.sb_item_id;
+        currentAlbum.assign(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
         currentAlbum.albumTitle=m->data(m->index(i,2)).toString();
         currentAlbum.sb_performer_id=m->data(m->index(i,3)).toInt();
         currentAlbum.performerName=m->data(m->index(i,4)).toString();
@@ -113,9 +111,7 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
         qDebug() << SB_DEBUG_INFO << i;
         QLabel* l=new QLabel;
 
-        SBID albumID;
-        albumID.sb_item_type=SBID::sb_type_album;
-        albumID.sb_item_id=m->data(m->index(i,1)).toInt();
+        SBID albumID(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
         albumID.sb_position=m->data(m->index(i,8)).toInt();
 
         l->setWindowFlags(Qt::FramelessWindowHint);
@@ -148,67 +144,9 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
 }
 
 SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectPerformer(const QString& editPerformerName, const SBID& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectSongAlbum::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
 {
-    Q_UNUSED(editPerformerName);
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_performer);
-    qDebug() << SB_DEBUG_INFO;
-    d->ui->setupUi(d);
-
-    //	Populate choices
-    QString title=QString("Choose performer");
-    d->setTitle(title);
-    for(int i=0;i<m->rowCount(); i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i;
-        QLabel* l=new QLabel;
-
-        SBID performerID;
-        performerID.sb_item_type=SBID::sb_type_performer;
-        performerID.sb_item_id=m->data(m->index(i,1)).toInt();
-        performerID.performerName=   m->data(m->index(i,2)).toString();
-        qDebug() << SB_DEBUG_INFO << performerID.sb_item_id << performerID.performerName;
-        qDebug() << SB_DEBUG_INFO << m->data(m->index(i,2)).toString();
-
-        d->_itemsDisplayed[performerID.sb_item_id]=performerID;
-
-        l->setWindowFlags(Qt::FramelessWindowHint);
-        l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(performerID);
-        QFile imageFile(imagePath);
-
-        qDebug() << SB_DEBUG_INFO << l;
-        if(imageFile.exists()==0)
-        {
-            imagePath=SBID::getIconResourceLocation(performerID.sb_item_type);
-        }
-        qDebug() << SB_DEBUG_INFO
-            << imagePath
-            << m->data(m->index(i,1)).toString()
-            << m->data(m->index(i,2)).toString()
-        ;
-        l->setText(QString("<html><head><style type=text/css> "
-                           "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
-                   //	set args correctly
-                   .arg(imagePath)
-                   .arg(m->data(m->index(i,1)).toString())
-                   .arg(m->data(m->index(i,2)).toString())
-        );
-        l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-        connect(l, SIGNAL(linkActivated(QString)),
-                d, SLOT(OK(QString)));
-
-        d->ui->vlAlbumList->addWidget(l);
-    }
-    d->updateGeometry();
-    return d;
-}
-
-SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
-{
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_songperformer);
+    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(orgSong,parent,SBDialogSelectSongAlbum::sb_performer);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
@@ -216,9 +154,78 @@ SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& id, const QSqlQueryMo
     QList<SBID> songIDPopulated;
     int lastSeenRank=0;
     int currentRank=0;
-    QString title=QString("Choose Original Performer");
+    QString title=QString("Choose Performer");
     d->setTitle(title);
-    title="<FONT SIZE+=1><B>"+title+"</B></FONT> for <B><I><FONT SIZE=+1>"+id.songTitle+"</FONT></I></B>";
+    d->ui->lHeader->setText(title);
+    d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
+    qDebug() << SB_DEBUG_INFO << m->rowCount();
+    for(int i=0;i<m->rowCount(); i++)
+    {
+        qDebug() << SB_DEBUG_INFO
+                 << m->data(m->index(i,0)).toString()
+                 << m->data(m->index(i,1)).toString()
+                 << m->data(m->index(i,2)).toString()
+        ;
+        SBID songID(SBID::sb_type_performer,m->data(m->index(i,1)).toInt());
+        currentRank=m->data(m->index(i,0)).toInt();
+        songID.performerName=m->data(m->index(i,2)).toString();
+
+
+        qDebug() << SB_DEBUG_INFO << "current songID=" << songID;
+
+        if(songIDPopulated.contains(songID)==0)
+        {
+            QString imagePath=ExternalData::getCachePath(songID);
+            QFile imageFile(imagePath);
+            if(imageFile.exists()==0)
+            {
+                imagePath=SBID::getIconResourceLocation(songID.sb_item_type);
+            }
+            qDebug() << SB_DEBUG_INFO << songID << imagePath;
+
+            QLabel* l=new QLabel;
+            l->setWindowFlags(Qt::FramelessWindowHint);
+            l->setTextFormat(Qt::RichText);
+            l->setFont(QFont("Trebuchet MS",13));
+            l->setText(QString("<html><head><style type=text/css> "
+                               "a:link {color:black; text-decoration:none;} "
+                               //"</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
+                               "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
+                       .arg(imagePath)
+                       .arg(i)
+                       .arg(songID.performerName)
+            );
+            qDebug() << SB_DEBUG_INFO << l->text();
+
+            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+            connect(l, SIGNAL(linkActivated(QString)),
+                    d, SLOT(OK(QString)));
+
+            d->ui->vlAlbumList->addWidget(l);
+
+            d->_itemsDisplayed[i]=songID;
+            songIDPopulated.append(songID);
+        }
+        lastSeenRank=currentRank;
+    }
+    d->updateGeometry();
+    return d;
+}
+
+SBDialogSelectSongAlbum*
+SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
+{
+    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(orgSong,parent,SBDialogSelectSongAlbum::sb_songperformer);
+    qDebug() << SB_DEBUG_INFO;
+    d->ui->setupUi(d);
+
+    //	Populate choices
+    QList<SBID> songIDPopulated;
+    int lastSeenRank=0;
+    int currentRank=0;
+    QString title=QString("Choose Song");
+    d->setTitle(title);
+    title="<FONT SIZE+=1><B>"+title+"</B></FONT> for <B><I><FONT SIZE=+1>"+orgSong.songTitle+"</FONT></I></B>";
     d->ui->lHeader->setText(title+':');
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
     for(int i=0;i<m->rowCount(); i++)
@@ -226,13 +233,13 @@ SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& id, const QSqlQueryMo
         SBID songID;
 
         currentRank=m->data(m->index(i,0)).toInt();
-        songID.sb_item_type=SBID::sb_type_song;
-        songID.sb_item_id=m->data(m->index(i,1)).toInt();
-        songID.sb_song_id=songID.sb_item_id;
+        songID.assign(SBID::sb_type_song,m->data(m->index(i,1)).toInt());
         songID.songTitle=m->data(m->index(i,2)).toString();
         songID.sb_performer_id=m->data(m->index(i,3)).toInt();
         songID.performerName=m->data(m->index(i,4)).toString();
 
+
+        qDebug() << SB_DEBUG_INFO << "current songID=" << songID;
 
         qDebug() << SB_DEBUG_INFO << "start list";
         for(int i=0;i<songIDPopulated.count();i++)
@@ -280,7 +287,7 @@ SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& id, const QSqlQueryMo
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
                            .arg(i)
-                           .arg(songID.performerName)
+                           .arg(songID.songTitle)
                 );
             }
             l->setStyleSheet( ":hover{ background-color: darkgrey; }");
@@ -320,7 +327,7 @@ SBDialogSelectSongAlbum::OK(const QString& i)
     while(it.hasNext())
     {
         it.next();
-        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id << it.value().performerName;
+        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().performerName;
     }
 
     switch(_dialogType)
@@ -337,35 +344,9 @@ SBDialogSelectSongAlbum::OK(const QString& i)
         break;
 
     case sb_performer:
-        {
-            SBID newID;
-            newID.sb_item_type=SBID::sb_type_performer;
-            newID.sb_item_id=i.toInt();
-            newID.sb_performer_id=i.toInt();
-            newID.performerName=_itemsDisplayed[i.toInt()].performerName;
-            qDebug() << SB_DEBUG_INFO << newID.performerName;
-            _songID=newID;
-        }
-        break;
-
     case sb_songperformer:
-        {
-            SBID newID;
-            newID.sb_item_type=SBID::sb_type_song;
-            newID=_itemsDisplayed[i.toInt()];
-            _songID=newID;
-            qDebug() << SB_DEBUG_INFO << newID;
-        }
-        break;
-
     case sb_album:
-        {
-            SBID newID;
-            newID.sb_item_type=SBID::sb_type_album;
-            newID=_itemsDisplayed[i.toInt()];
-            _songID=newID;
-            qDebug() << SB_DEBUG_INFO << newID;
-        }
+        _songID=_itemsDisplayed[i.toInt()];
         break;
     }
     this->close();
