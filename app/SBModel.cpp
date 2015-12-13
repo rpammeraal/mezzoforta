@@ -167,12 +167,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 Qt::ItemFlags
 SBModel::_flags(const QModelIndex &index, Qt::ItemFlags defaultFlags) const
 {
-    qDebug() << SB_DEBUG_INFO;
     if(index.isValid())
     {
         return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     }
-    //return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
 
     //	CWIP:DD maybe drop

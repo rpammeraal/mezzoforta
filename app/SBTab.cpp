@@ -139,9 +139,13 @@ SBTab::hasEdits() const
 SBID
 SBTab::populate(const SBID &id)
 {
+    ScreenStack* st=Context::instance()->getScreenStack();
     _populatePre(id);
+    const SBID onStack=st->currentScreen();
     SBID result=_populate(id);
-    qDebug() << SB_DEBUG_INFO << result;
+    result.sortColumn=onStack.sortColumn;
+    result.subtabID=onStack.subtabID;
+    qDebug() << SB_DEBUG_INFO << result << result.subtabID << result.sortColumn;
     Context::instance()->getScreenStack()->debugShow("SBTab::populate");
     Context::instance()->getScreenStack()->updateCurrentScreen(result);
     _populatePost(result);

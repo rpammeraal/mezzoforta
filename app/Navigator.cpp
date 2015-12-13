@@ -185,7 +185,9 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     if(closeTab==1)
     {
-        closeCurrentTab();
+        qDebug() << SB_DEBUG_INFO;
+        //closeCurrentTab();
+        moveTab(-1);
     }
 }
 
@@ -329,12 +331,11 @@ void
 Navigator::closeCurrentTab()
 {
     ScreenStack* st=Context::instance()->getScreenStack();
-    st->debugShow("closeCurrentTab:334");
+    st->debugShow("closeCurrentTab:333");
     st->removeCurrentScreen();
     SBID id=st->currentScreen();
-    st->debugShow("closeCurrentTab:337");
     activateTab(id);
-    st->debugShow("closeCurrentTab:339");
+    st->debugShow("closeCurrentTab:337");
 }
 
 void
