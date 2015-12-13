@@ -55,7 +55,7 @@ SBTabPerformerEdit::hasEdits() const
     qDebug() << SB_DEBUG_INFO << currentID.notes << mw->ui.performerEditNotes->text() ;
     qDebug() << SB_DEBUG_INFO << currentID.url << mw->ui.performerEditWebSite->text() ;
 
-    if(currentID.sb_item_type!=SBID::sb_type_invalid)
+    if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
         if(currentID.performerName!=mw->ui.performerEditName->text() ||
             currentID.notes!=mw->ui.performerEditNotes->text() ||
@@ -338,7 +338,7 @@ SBTabPerformerEdit::closeRelatedPerformerComboBox()
 void
 SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
 {
-    SBID performer; performer.sb_item_type=SBID::sb_type_performer;
+    SBID performer;
 
     qDebug() << SB_DEBUG_INFO << idx;
     closeRelatedPerformerComboBox();
@@ -351,8 +351,8 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
             qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()-1).data().toString();
             qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()).data().toString();
             qDebug() << SB_DEBUG_INFO << idx.sibling(idx.row(),idx.column()+1).data().toString();
+            performer.assign(SBID::sb_type_performer,idx.sibling(idx.row(),idx.column()+1).data().toInt());
             performer.performerName=idx.sibling(idx.row(),idx.column()).data().toString();
-            performer.sb_performer_id=idx.sibling(idx.row(),idx.column()+1).data().toInt();
         }
             else
         {

@@ -226,7 +226,6 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
 {
     bool resultCode=1;
     SBID selectedPerformerID=newID;
-    newID.sb_item_type=SBID::sb_type_performer;
     selectedPerformerID.assign(SBID::sb_type_performer,-1);
     selectedPerformerID.performerName=editPerformerName;
 

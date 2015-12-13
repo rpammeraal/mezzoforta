@@ -431,7 +431,7 @@ SBTabAlbumEdit::hasEdits() const
     const SBID& currentID=Context::instance()->getScreenStack()->currentScreen();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(currentID.sb_item_type!=SBID::sb_type_invalid)
+    if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
         if(_hasChanges ||
             currentID.albumTitle!=mw->ui.albumEditTitle->text() ||
@@ -872,8 +872,7 @@ SBTabAlbumEdit::save() const
             orgPosition=item->text().toInt();
         }
 
-        song.sb_item_type=SBID::sb_type_song;
-        song.sb_album_id=newAlbum.sb_album_id;
+        song.assign(SBID::sb_type_song,newAlbum.sb_album_id);
 
         //	Get position
         song.sb_position=position;
@@ -909,9 +908,7 @@ SBTabAlbumEdit::save() const
         mergedTo[position]=mergedToIndex;
         qDebug() << SB_DEBUG_INFO << position << orgPosition << song.songTitle << isRemovedFlag << mergedToIndex;
 
-        SBID orgSong;
-        orgSong.sb_item_type=SBID::sb_type_song;
-        orgSong.sb_album_id=newAlbum.sb_album_id;
+        SBID orgSong(SBID::sb_type_song,newAlbum.sb_album_id);
         orgSong.sb_position=orgPosition;
 
         //	org song id

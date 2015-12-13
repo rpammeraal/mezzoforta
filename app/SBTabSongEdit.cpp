@@ -32,7 +32,7 @@ SBTabSongEdit::hasEdits() const
 
     qDebug() << SB_DEBUG_INFO << currentID;
 
-    if(currentID.sb_item_type!=SBID::sb_type_invalid)
+    if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
         if(currentID.songTitle!=mw->ui.songEditTitle->text() ||
             currentID.performerName!=mw->ui.songEditPerformerName->text() ||
@@ -152,8 +152,7 @@ SBTabSongEdit::save() const
     if(editTitle.toLower()!=newSongID.songTitle.toLower() &&
         hasCaseChange==0)
     {
-        SBID selectedSongID;
-        selectedSongID.sb_item_type=SBID::sb_type_song;
+        SBID selectedSongID(SBID::sb_type_song,-1);
         selectedSongID.songTitle=editTitle;
         qDebug() << SB_DEBUG_INFO << selectedSongID;
 

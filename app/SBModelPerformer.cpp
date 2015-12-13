@@ -117,12 +117,11 @@ SBModelPerformer::getDetail(const SBID& id)
 
     QSqlQuery query(q,db);
 
-    result.sb_item_type    =SBID::sb_type_performer;
 
     if(query.next())
     {
+        result.assign(SBID::sb_type_performer,id.sb_performer_id);
         result.sb_mbid         =query.value(3).toString();
-        result.sb_performer_id =id.sb_performer_id;
         result.performerName   =query.value(0).toString();
         result.url             =query.value(1).toString();
         result.notes           =query.value(2).toString();
@@ -395,7 +394,7 @@ SBModelPerformer::saveNewPerformer(SBID &id)
         QSqlQuery select(q,db);
         select.next();
 
-        if(id.sb_item_type==SBID::sb_type_performer)
+        if(id.sb_item_type()==SBID::sb_type_performer)
         {
             //	Only set if type equals performer
             id.sb_performer_id=select.value(0).toInt();
@@ -447,7 +446,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
     {
         nameRenameFlag=1;
         newPerformerID.sb_performer_id=orgPerformerID.sb_performer_id;
-        if(newPerformerID.sb_item_type==SBID::sb_type_performer)
+        if(newPerformerID.sb_item_type()==SBID::sb_type_performer)
         {
             newPerformerID.sb_performer_id=newPerformerID.sb_performer_id;
         }

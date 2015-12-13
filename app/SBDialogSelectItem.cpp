@@ -123,7 +123,7 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
         qDebug() << SB_DEBUG_INFO << l;
         if(imageFile.exists()==0)
         {
-            imagePath=SBID::getIconResourceLocation(albumID.sb_item_type);
+            imagePath=SBID::getIconResourceLocation(albumID.sb_item_type());
         }
         qDebug() << SB_DEBUG_INFO << imagePath;
         l->setText(QString("<html><head><style type=text/css> "
@@ -181,7 +181,7 @@ SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m
             QFile imageFile(imagePath);
             if(imageFile.exists()==0)
             {
-                imagePath=SBID::getIconResourceLocation(songID.sb_item_type);
+                imagePath=SBID::getIconResourceLocation(songID.sb_item_type());
             }
             qDebug() << SB_DEBUG_INFO << songID << imagePath;
 

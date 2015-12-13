@@ -32,7 +32,7 @@ public:
     ~SBID();
 
     //	Primary identifiers
-    sb_type     sb_item_type;
+    //sb_type     sb_item_type;	//	is now private, use sb_item_type()
     //	int         sb_item_id; depreciated: use sb_item_id()
     QString     sb_mbid;
 
@@ -78,6 +78,7 @@ public:
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
     int sb_item_id() const;
+    inline sb_type sb_item_type() const { return _sb_item_type; };
     void setText(const QString &text);
     void showDebug(const QString& title) const;
 
@@ -86,6 +87,7 @@ public:
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
 private:
+    sb_type     _sb_item_type;
     void init();
 };
 

@@ -26,7 +26,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
     init();
     SBID fromID=Context::instance()->getScreenStack()->currentScreen();
     SBID assignID=getSBIDSelected(lastClickedIndex);
-    if(assignID.sb_item_type!=SBID::sb_type_invalid)
+    if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
         SBModelPlaylist* pl=new SBModelPlaylist;
         connect(pl, SIGNAL(si_playlistDetailUpdated(SBID)),
@@ -65,7 +65,7 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
 
     SBID id=getSBIDSelected(idx);
-    if(id.sb_item_type!=SBID::sb_type_invalid)
+    if(id.sb_item_type()!=SBID::sb_type_invalid)
     {
         lastClickedIndex=idx;
 
@@ -111,7 +111,6 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 {
     init();
     SBID id;
-    id.sb_item_type=SBID::sb_type_invalid;
 
     MainWindow* mw=Context::instance()->getMainWindow();
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();

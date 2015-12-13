@@ -28,7 +28,7 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(assignID.sb_item_type)
+    switch(assignID.sb_item_type())
     {
     case SBID::sb_type_song:
         qDebug() << SB_DEBUG_INFO;
@@ -288,7 +288,7 @@ SBModelPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID) co
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(assignID.sb_item_type)
+    switch(assignID.sb_item_type())
     {
     case SBID::sb_type_song:
         q=QString
@@ -405,11 +405,9 @@ SBModelPlaylist::getDetail(const SBID& id) const
 
     QSqlQuery query(q,db);
 
-    result.sb_item_type   =SBID::sb_type_playlist;
-
     if(query.next())
     {
-        result.sb_playlist_id=id.sb_playlist_id;
+        result.assign(SBID::sb_type_playlist,id.sb_playlist_id);
         result.playlistName  =query.value(0).toString();
         result.duration      =query.value(1).toTime();
         result.count1        =query.value(2).toInt();
@@ -516,7 +514,7 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
     if(compositesTraversed.contains(id.sb_item_id())==0)
     {
         compositesTraversed.insert(id.sb_item_id(),1);
-        switch(id.sb_item_type)
+        switch(id.sb_item_type())
         {
             case SBID::sb_type_playlist:
                 //	Calculate duration of all items in playlist_composite
@@ -828,7 +826,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
 
     qDebug() << SB_DEBUG_INFO << "from"
         << "itm" << fromID.sb_item_id()
-        << "typ" << fromID.sb_item_type
+        << "typ" << fromID.sb_item_type()
         << "pfr" << fromID.sb_performer_id
         << "sng" << fromID.sb_song_id
         << "alb" << fromID.sb_album_id
@@ -836,7 +834,7 @@ SBModelPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID
         << "pll" << fromID.sb_playlist_id;
     qDebug() << SB_DEBUG_INFO << "to"
         << "itm" << toID.sb_item_id()
-        << "typ" << toID.sb_item_type
+        << "typ" << toID.sb_item_type()
         << "pfr" << toID.sb_performer_id
         << "sng" << toID.sb_song_id
         << "alb" << toID.sb_album_id

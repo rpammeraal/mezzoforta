@@ -66,9 +66,9 @@ Navigator::openScreenByID(SBID &id)
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID result;
 
-    if(id.sb_item_type==SBID::sb_type_invalid)
+    if(id.sb_item_type()==SBID::sb_type_invalid)
     {
-        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
+        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type();
         return;
     }
 
@@ -86,7 +86,7 @@ Navigator::openScreenByID(SBID &id)
     }
 
     //	Add screen to stack first.
-    if(result.sb_item_type!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
+    if(result.sb_item_type()!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
     {
         st->debugShow("openScreenByID:before pushScreen");
         st->pushScreen(id);
@@ -273,8 +273,7 @@ Navigator::showPlaylist(SBID id)
 void
 Navigator::showSonglist()
 {
-    SBID id;
-    id.sb_item_type=SBID::sb_type_allsongs;
+    SBID id(SBID::sb_type_allsongs,-1);
 
     qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
@@ -317,8 +316,7 @@ Navigator::applySonglistFilter()
     }
 
 
-    SBID id;
-    id.sb_item_type=SBID::sb_type_songsearch;
+    SBID id(SBID::sb_type_songsearch,-1);
     id.searchCriteria=filter;
     qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
     openScreenByID(id);
@@ -448,12 +446,12 @@ Navigator::activateTab(const SBID& to)
     qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << id.subtabID;
     qDebug() << SB_DEBUG_INFO << id.sb_item_id();
-    qDebug() << SB_DEBUG_INFO << id.sb_item_type;
+    qDebug() << SB_DEBUG_INFO << id.sb_item_type();
 
 
     //	Check parameters
     //		1.	Check for non-initialized SBID
-    if(id.sb_item_type==SBID::sb_type_invalid)
+    if(id.sb_item_type()==SBID::sb_type_invalid)
     {
         if(st->count()==0)
         {
@@ -461,7 +459,7 @@ Navigator::activateTab(const SBID& to)
             st->debugShow("Navigator:76");
             return SBID();
         }
-        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type;
+        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type();
         return id;
     }
 
@@ -493,7 +491,7 @@ Navigator::activateTab(const SBID& to)
     id.sortColumn=st->currentScreen().sortColumn;
     id.subtabID=st->currentScreen().subtabID;
 
-    switch(id.sb_item_type)
+    switch(id.sb_item_type())
     {
     case SBID::sb_type_song:
         if(isEditFlag)
@@ -550,7 +548,7 @@ Navigator::activateTab(const SBID& to)
         break;
 
     default:
-        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type;
+        qDebug() << SB_DEBUG_INFO << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type();
     }
 
     if(tab)
@@ -564,7 +562,7 @@ Navigator::activateTab(const SBID& to)
     qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << result;
 
-    if(result.sb_item_id()==-1 && result.sb_item_type!=SBID::sb_type_allsongs && result.sb_item_type!=SBID::sb_type_songsearch)
+    if(result.sb_item_id()==-1 && result.sb_item_type()!=SBID::sb_type_allsongs && result.sb_item_type()!=SBID::sb_type_songsearch)
     {
         qDebug() << SB_DEBUG_INFO << result;
         //	QMessageBox msgBox;

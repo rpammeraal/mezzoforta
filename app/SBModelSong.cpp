@@ -49,11 +49,9 @@ SBModelSong::getDetail(const SBID& id)
     qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
 
-    result.sb_item_type       =SBID::sb_type_song;
-
     if(query.next())
     {
-        result.sb_performer_id    =query.value(2).toInt();
+        result.assign(SBID::sb_type_song,query.value(2).toInt());
         result.sb_song_id         =id.sb_song_id;
         result.performerName      =query.value(3).toString();
         result.songTitle          =query.value(0).toString();

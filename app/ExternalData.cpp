@@ -824,7 +824,7 @@ ExternalData::getMBIDAndMore()
     }
     else
     {
-        if(currentID.sb_item_type==SBID::sb_type_performer)
+        if(currentID.sb_item_type()==SBID::sb_type_performer)
         {
             //	1.	Wikipedia, performer home page
             if(wikipediaURLRetrieved==0 || performerHomepageRetrieved==0)
@@ -870,7 +870,7 @@ ExternalData::getMBIDAndMore()
             qDebug() << SB_DEBUG_INFO << urlString;
             en->get(QNetworkRequest(QUrl(urlString)));
         }
-        else if(currentID.sb_item_type==SBID::sb_type_album)
+        else if(currentID.sb_item_type()==SBID::sb_type_album)
         {
             //	1.	Artwork
             if(artworkRetrieved==0)
@@ -906,7 +906,7 @@ ExternalData::getMBIDAndMore()
                 qDebug() << SB_DEBUG_INFO << "Looks like we already have wiki for album";
             }
         }
-        else if(currentID.sb_item_type==SBID::sb_type_song)
+        else if(currentID.sb_item_type()==SBID::sb_type_song)
         {
             //	CWIP:
             //	Songlyrics are only downloaded if wikipedia page is not known.

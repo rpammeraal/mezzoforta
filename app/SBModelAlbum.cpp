@@ -128,12 +128,11 @@ SBModelAlbum::getDetail(const SBID& id)
 
     QSqlQuery query(q,db);
 
-    result.sb_item_type   =SBID::sb_type_album;
 
     if(query.next())
     {
         qDebug() << SB_DEBUG_INFO;
-        result.sb_album_id    =query.value(0).toInt();
+        result.assign(SBID::sb_type_album,query.value(0).toInt());
         result.performerName  =query.value(5).toString();
         result.albumTitle     =query.value(1).toString();
         result.year           =query.value(3).toInt();

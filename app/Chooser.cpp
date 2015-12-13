@@ -51,7 +51,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
             mb.setInformativeText("Cannot assign items to itself.");
             mb.exec();
     }
-    else if(assignID.sb_item_type==SBID::sb_type_song && assignID.sb_album_id==0)
+    else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==0)
     {
         //	Find out in case of song assignment if record, position are known.
         SBSqlQueryModel* m=SBModelSong::getOnAlbumListBySong(assignID);
@@ -90,7 +90,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
         fromID=assignID;
     }
 
-    if(fromID.sb_item_type!=SBID::sb_type_invalid)
+    if(fromID.sb_item_type()!=SBID::sb_type_invalid)
     {
         SBModelPlaylist pl;
 
@@ -114,7 +114,7 @@ Chooser::deletePlaylist()
     qDebug() << SB_DEBUG_INFO << lastClickedIndex;
     SBID id=getPlaylistSelected(lastClickedIndex);
     qDebug() << SB_DEBUG_INFO;
-    if(id.sb_item_type==SBID::sb_type_playlist)
+    if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         //	Show dialog box
         QString updateText;
@@ -179,7 +179,7 @@ Chooser::renamePlaylist()
     qDebug() << SB_DEBUG_INFO << lastClickedIndex;
     SBID id=getPlaylistSelected(lastClickedIndex);
     qDebug() << SB_DEBUG_INFO << id;
-    if(id.sb_item_type==SBID::sb_type_playlist)
+    if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(id);
         connect(pl, SIGNAL(playlistNameChanged(SBID)),
@@ -195,7 +195,7 @@ Chooser::showContextMenu(const QPoint &p)
     QModelIndex in=mw->ui.leftColumnChooser->indexAt(p);
     SBID id=getPlaylistSelected(in);
 
-    if(id.sb_item_type==SBID::sb_type_playlist)
+    if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         //	Only show in the right context :)
         lastClickedIndex=in;
@@ -320,7 +320,7 @@ Chooser::findItem(const SBID& id)
                     {
                         qDebug() << SB_DEBUG_INFO << y << i << si1->text() << si2->text();
                         if(si1->text().toInt()==id.sb_item_id() &&
-                            si2->text().toInt()==id.sb_item_type)
+                            si2->text().toInt()==id.sb_item_type())
                         {
                             index=model->indexFromItem(si1);
                             found=1;
@@ -340,7 +340,6 @@ Chooser::getPlaylistSelected(const QModelIndex& i)
 {
     qDebug() << SB_DEBUG_INFO << i;
     SBID id;
-    id.sb_item_type=SBID::sb_type_invalid;
 
     //	Get pointer to parent node (hackery going on).
     //	find si with playlists place holder

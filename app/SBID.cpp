@@ -11,7 +11,7 @@ SBID::SBID()
 
 SBID::SBID(const SBID &c)
 {
-    this->sb_item_type=c.sb_item_type;
+    this->_sb_item_type=c._sb_item_type;
     //this->sb_item_id=c.sb_item_id;
     this->sb_mbid=c.sb_mbid;
 
@@ -81,7 +81,7 @@ SBID::SBID(QByteArray encodedData)
         >> duration
         >> searchCriteria
     ;
-    sb_item_type=static_cast<sb_type>(i);
+    _sb_item_type=static_cast<sb_type>(i);
 }
 
 SBID::~SBID()
@@ -91,7 +91,7 @@ SBID::~SBID()
 void
 SBID::assign(const SBID::sb_type itemType, const int itemID)
 {
-    sb_item_type=itemType;
+    _sb_item_type=itemType;
 
     switch(itemType)
     {
@@ -159,7 +159,7 @@ SBID::assign(const QString& type, const int itemID, const QString& text)
 bool
 SBID::compareSimple(const SBID &t) const
 {
-    return (this->sb_item_type==t.sb_item_type && (this->sb_item_id()==t.sb_item_id()))?1:0;
+    return (this->_sb_item_type==t._sb_item_type && (this->sb_item_id()==t.sb_item_id()))?1:0;
 }
 
 QByteArray
@@ -175,7 +175,7 @@ SBID::encode() const
         << sb_chart_id
         << sb_song_id
         << sb_playlist_id
-        << (int)sb_item_type
+        << (int)_sb_item_type
         << sb_item_id()
         << sb_mbid
         << isOriginalPerformer
@@ -217,7 +217,7 @@ SBID::fuzzyMatch(const SBID &i)
 QString
 SBID::getIconResourceLocation() const
 {
-    return getIconResourceLocation(this->sb_item_type);
+    return getIconResourceLocation(this->_sb_item_type);
 }
 
 QString
@@ -265,7 +265,7 @@ SBID::getIconResourceLocation(const SBID::sb_type i)
 QString
 SBID::getText() const
 {
-    switch(this->sb_item_type)
+    switch(this->_sb_item_type)
     {
     case SBID::sb_type_song:
         return songTitle;
@@ -301,7 +301,7 @@ QString
 SBID::getType() const
 {
     QString t;
-    switch(this->sb_item_type)
+    switch(this->_sb_item_type)
     {
     case SBID::sb_type_invalid:
         t="INVALID";
@@ -344,7 +344,7 @@ SBID::getType() const
 int
 SBID::sb_item_id() const
 {
-    switch(this->sb_item_type)
+    switch(this->_sb_item_type)
     {
     case SBID::sb_type_song:
         return sb_song_id;
@@ -373,7 +373,7 @@ SBID::sb_item_id() const
 void
 SBID::setText(const QString &text)
 {
-    switch(this->sb_item_type)
+    switch(this->_sb_item_type)
     {
     case SBID::sb_type_song:
         songTitle=text;
@@ -440,13 +440,13 @@ bool
 SBID::operator ==(const SBID& i) const
 {
     if(
-        i.sb_item_type==this->sb_item_type &&
+        i._sb_item_type==this->_sb_item_type &&
         i.sb_item_id()==this->sb_item_id() &&
         (
-            (i.sb_item_type!=SBID::sb_type_song) ||
+            (i._sb_item_type!=SBID::sb_type_song) ||
             (
                 //	If song, include performer in comparison
-                i.sb_item_type==SBID::sb_type_song &&
+                i._sb_item_type==SBID::sb_type_song &&
                 i.sb_performer_id==this->sb_performer_id 	//	added to make saveSong work
             )
         ) &&
@@ -471,7 +471,7 @@ QDebug operator<<(QDebug dbg, const SBID& id)
     QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
     QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
     QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
-    switch(id.sb_item_type)
+    switch(id._sb_item_type)
     {
     case SBID::sb_type_song:
         dbg.nospace().noquote() << "SBID : " << id.getType() << "|" << id.sb_item_id() << "|"
@@ -517,7 +517,7 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 void
 SBID::init()
 {
-    sb_item_type=sb_type_invalid;
+    _sb_item_type=sb_type_invalid;
     sb_mbid=QString();
 
     sb_performer_id=-1;
