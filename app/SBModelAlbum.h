@@ -8,7 +8,7 @@ class SBSqlQueryModel;
 class SBModelAlbum
 {
 public:
-    static QStringList addSongToAlbum(const SBID& album, const SBID& song);
+    static QStringList addSongToAlbum(const SBID& song);
     static SBID getDetail(const SBID& id);
     static SBSqlQueryModel* getAllSongs(const SBID& id);
     static SBSqlQueryModel* matchAlbum(const SBID& newAlbum);

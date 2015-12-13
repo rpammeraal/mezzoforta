@@ -21,7 +21,7 @@
 #include "SBModelPerformer.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
-#include "SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "SBModelPerformer.h"

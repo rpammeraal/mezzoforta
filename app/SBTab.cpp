@@ -13,7 +13,7 @@
 #include "Context.h"
 #include "MainWindow.h"
 #include "Navigator.h"
-#include "SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
 #include "SBModelPerformer.h"
 #include "SBModelSong.h"
@@ -258,7 +258,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
             qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectPerformer(newID,performerMatches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(newID,performerMatches);
             pu->exec();
 
             qDebug() << SB_DEBUG_INFO << pu->hasSelectedItem();

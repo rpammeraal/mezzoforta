@@ -9,7 +9,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
-#include "SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
 #include "SBModelSong.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
@@ -175,7 +175,7 @@ SBTabSongEdit::save() const
             }
             else
             {
-                SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectSongByPerformer(selectedSongID,songMatches);
+                SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(selectedSongID,songMatches);
                 pu->exec();
 
                 selectedSongID=pu->getSBID();

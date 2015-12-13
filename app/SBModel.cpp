@@ -30,6 +30,7 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
     Q_UNUSED(column);
     Q_UNUSED(parent);
 
+    qDebug() << SB_DEBUG_INFO;
     return true;
 }
 
@@ -50,9 +51,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     SBID::sb_type itemType=SBID::sb_type_invalid;
     int itemID=-1;
 
-    qDebug() << SB_DEBUG_INFO << dragableColumnList.count();
-    qDebug() << SB_DEBUG_INFO << idx.column();
-    qDebug() << SB_DEBUG_INFO << dragableColumnList.at(idx.column());
     if(dragableColumnList.count()==0)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -115,36 +113,52 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     {
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
-    id.assign(itemType,itemID);
+    qDebug() << SB_DEBUG_INFO << id;
 
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
     {
         header=aim->headerData(i,Qt::Horizontal).toString().toLower();
+        qDebug() << SB_DEBUG_INFO << header;
         QModelIndex n=aim->index(idx.row(),i);
         v=aim->data(n, Qt::DisplayRole);
 
-        if(header=="sb_song_id")
+        if(header=="sb_item_type")
+        {
+            itemType=static_cast<SBID::sb_type>(v.toInt());
+            qDebug() << SB_DEBUG_INFO << v.toString();
+        }
+        else if(header=="sb_item_id")
+        {
+            itemID=v.toInt();
+            qDebug() << SB_DEBUG_INFO << v.toString();
+        }
+        else if(header=="sb_song_id")
         {
             id.sb_song_id=v.toInt();
+            qDebug() << SB_DEBUG_INFO << id.sb_song_id;
         }
         else if(header=="sb_performer_id")
         {
             id.sb_performer_id=v.toInt();
+            qDebug() << SB_DEBUG_INFO << id.sb_performer_id;
         }
         else if(header=="sb_album_id")
         {
             id.sb_album_id=v.toInt();
+            qDebug() << SB_DEBUG_INFO << id.sb_album_id;
         }
         else if(header=="sb_position_id" || header=="#")
         {
             id.sb_position=v.toInt();
+            qDebug() << SB_DEBUG_INFO << id.sb_position;
         }
         else if(header.left(3)!="sb_" && text.length()==0)
         {
             text=v.toString();
         }
     }
+    id.assign(itemType,itemID);
     id.setText(text);
     qDebug() << SB_DEBUG_INFO << id;
     return id;
@@ -153,11 +167,12 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 Qt::ItemFlags
 SBModel::_flags(const QModelIndex &index, Qt::ItemFlags defaultFlags) const
 {
+    qDebug() << SB_DEBUG_INFO;
     if(index.isValid())
     {
         return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     }
-    return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    //return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
 
     //	CWIP:DD maybe drop
@@ -224,5 +239,6 @@ SBModel::_setDragableColumns(const QList<bool>& list)
 Qt::DropActions
 SBModel::_supportedDropActions() const
 {
+    qDebug() << SB_DEBUG_INFO;
     return Qt::MoveAction | Qt::CopyAction;
 }

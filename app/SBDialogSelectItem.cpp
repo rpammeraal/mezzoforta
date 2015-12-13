@@ -7,29 +7,29 @@
 
 #include "Common.h"
 #include "ExternalData.h"
-#include "SBDialogSelectSongAlbum.h"
-#include "ui_SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
+#include "ui_SBDialogSelectItem.h"
 
 ///	PUBLIC METHODS
-SBDialogSelectSongAlbum::SBDialogSelectSongAlbum(const SBID& id, QWidget *parent, SBDialogSelectSongAlbum::SB_DialogType newDialogType) :
+SBDialogSelectItem::SBDialogSelectItem(const SBID& id, QWidget *parent, SBDialogSelectItem::SB_DialogType newDialogType) :
     QDialog(parent),
-    ui(new Ui::SBDialogSelectSongAlbum),
+    ui(new Ui::SBDialogSelectItem),
     _songID(id),
     _dialogType(newDialogType)
 {
 }
 
 void
-SBDialogSelectSongAlbum::setTitle(const QString &title)
+SBDialogSelectItem::setTitle(const QString &title)
 {
 
     setWindowTitle(title);
 }
 
-SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem*
+SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_album);
+    SBDialogSelectItem* d=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_album);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
@@ -96,10 +96,10 @@ SBDialogSelectSongAlbum::selectAlbum(const SBID& id, const QSqlQueryModel* m, QW
     return d;
 }
 
-SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem*
+SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(id,parent,SBDialogSelectSongAlbum::sb_songalbum);
+    SBDialogSelectItem* d=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_songalbum);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
@@ -113,6 +113,7 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
 
         SBID albumID(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
         albumID.sb_position=m->data(m->index(i,8)).toInt();
+        albumID.albumTitle=m->data(m->index(i,2)).toString();
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
@@ -127,26 +128,27 @@ SBDialogSelectSongAlbum::selectSongAlbum(const SBID& id, const QSqlQueryModel* m
         qDebug() << SB_DEBUG_INFO << imagePath;
         l->setText(QString("<html><head><style type=text/css> "
                            "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><a href='%2:%3'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %4</a></body></html>")
+                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></body></html>")
                    //	set args correctly
                    .arg(imagePath)
-                   .arg(m->data(m->index(i,1)).toString())
-                   .arg(m->data(m->index(i,8)).toString())
-                   .arg(m->data(m->index(i,2)).toString()));
+                   .arg(i)
+                   .arg(albumID.albumTitle));
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),
                 d, SLOT(OK(QString)));
 
+
         d->ui->vlAlbumList->addWidget(l);
+        d->_itemsDisplayed[i]=albumID;
     }
     d->updateGeometry();
     return d;
 }
 
-SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem*
+SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(orgSong,parent,SBDialogSelectSongAlbum::sb_performer);
+    SBDialogSelectItem* d=new SBDialogSelectItem(orgSong,parent,SBDialogSelectItem::sb_performer);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
@@ -212,10 +214,10 @@ SBDialogSelectSongAlbum::selectPerformer(const SBID& orgSong, const QSqlQueryMod
     return d;
 }
 
-SBDialogSelectSongAlbum*
-SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem*
+SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectSongAlbum* d=new SBDialogSelectSongAlbum(orgSong,parent,SBDialogSelectSongAlbum::sb_songperformer);
+    SBDialogSelectItem* d=new SBDialogSelectItem(orgSong,parent,SBDialogSelectItem::sb_songperformer);
     qDebug() << SB_DEBUG_INFO;
     d->ui->setupUi(d);
 
@@ -305,13 +307,13 @@ SBDialogSelectSongAlbum::selectSongByPerformer(const SBID& orgSong, const QSqlQu
     return d;
 }
 
-SBDialogSelectSongAlbum::~SBDialogSelectSongAlbum()
+SBDialogSelectItem::~SBDialogSelectItem()
 {
     delete ui;
 }
 
 SBID
-SBDialogSelectSongAlbum::getSBID() const
+SBDialogSelectItem::getSBID() const
 {
     return _songID;
 }
@@ -319,7 +321,7 @@ SBDialogSelectSongAlbum::getSBID() const
 
 ///	PRIVATE SLOTS
 void
-SBDialogSelectSongAlbum::OK(const QString& i)
+SBDialogSelectItem::OK(const QString& i)
 {
     _hasSelectedItemFlag=1;
     qDebug() << SB_DEBUG_INFO << i;
@@ -330,30 +332,12 @@ SBDialogSelectSongAlbum::OK(const QString& i)
         qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().performerName;
     }
 
-    switch(_dialogType)
-    {
-    case sb_songalbum:
-        {
-            QStringList l=i.split(":");
-            //	i is albumID selected
-            //	Flash the selected entry a couple of times.
-            _songID.sb_album_id=l.at(0).toInt();
-            _songID.sb_position=l.at(1).toInt();
-            qDebug() << SB_DEBUG_INFO << _songID << _songID.sb_album_id << _songID.sb_position;
-        }
-        break;
-
-    case sb_performer:
-    case sb_songperformer:
-    case sb_album:
-        _songID=_itemsDisplayed[i.toInt()];
-        break;
-    }
+    _songID=_itemsDisplayed[i.toInt()];
     this->close();
 }
 
 void
-SBDialogSelectSongAlbum::init()
+SBDialogSelectItem::init()
 {
     ui=NULL;
     _hasSelectedItemFlag=0;

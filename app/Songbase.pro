@@ -21,7 +21,6 @@ HEADERS     = \
     SBSqlQueryModel.h \
     SBLabel.h \
     SBDialogRenamePlaylist.h \
-    SBDialogSelectSongAlbum.h \
     BackgroundThread.h \
     SBTime.h \
     SBTab.h \
@@ -37,7 +36,8 @@ HEADERS     = \
     SBTabAlbumEdit.h \
     SBModel.h \
     CompleterFactory.h \
-    SBMessageBox.h
+    SBMessageBox.h \
+    SBDialogSelectItem.h
 
 SOURCES     = \
     main.cpp \
@@ -61,7 +61,6 @@ SOURCES     = \
     SBSqlQueryModel.cpp \
     SBLabel.cpp \
     SBDialogRenamePlaylist.cpp \
-    SBDialogSelectSongAlbum.cpp \
     BackgroundThread.cpp \
     SBTime.cpp \
     SBTab.cpp \
@@ -77,7 +76,8 @@ SOURCES     = \
     SBTabAlbumEdit.cpp \
     SBModel.cpp \
     CompleterFactory.cpp \
-    SBMessageBox.cpp
+    SBMessageBox.cpp \
+    SBDialogSelectItem.cpp
 
 # install
 target.path = .
@@ -87,7 +87,7 @@ FORMS += \
     MainWindow.ui \
     DatabaseSelector.ui \
     SBDialogRenamePlaylist.ui \
-    SBDialogSelectSongAlbum.ui
+    SBDialogSelectItem.ui
 
 RESOURCES += \
     resource.qrc

@@ -10,7 +10,7 @@
 #include "Chooser.h"
 #include "MainWindow.h"
 #include "SBDialogRenamePlaylist.h"
-#include "SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
@@ -73,8 +73,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
         else
         {
             //	Ask from which album song should be assigned from
-            //SBDialogSelectSongAlbum* ssa=new SBDialogSelectSongAlbum(assignID,m);
-            SBDialogSelectSongAlbum* ssa=SBDialogSelectSongAlbum::selectSongAlbum(assignID,m);
+            SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(assignID,m);
 
             ssa->exec();
             SBID selectedAlbum=ssa->getSBID();
@@ -406,6 +405,7 @@ Chooser::init()
     mw->ui.leftColumnChooser->setAcceptDrops(1);
     mw->ui.leftColumnChooser->setDropIndicatorShown(1);
     mw->ui.leftColumnChooser->viewport()->setAcceptDrops(1);
+    mw->ui.leftColumnChooser->setDefaultDropAction(Qt::MoveAction);
 }
 
 void

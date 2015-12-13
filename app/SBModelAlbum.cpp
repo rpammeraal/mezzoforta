@@ -6,7 +6,7 @@
 #include "SBSqlQueryModel.h"
 
 QStringList
-SBModelAlbum::addSongToAlbum(const SBID &album, const SBID &song)
+SBModelAlbum::addSongToAlbum(const SBID &song)
 {
     QStringList SQL;
 

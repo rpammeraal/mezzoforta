@@ -11,7 +11,7 @@
 #include "Controller.h"
 #include "MainWindow.h"
 #include "Navigator.h"
-#include "SBDialogSelectSongAlbum.h"
+#include "SBDialogSelectItem.h"
 #include "SBID.h"
 #include "SBMessageBox.h"
 #include "SBModelAlbum.h"
@@ -817,7 +817,7 @@ SBTabAlbumEdit::save() const
         }
         else if(albumMatches->rowCount()>2)
         {
-            SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectAlbum(selectedAlbum,albumMatches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(selectedAlbum,albumMatches);
             pu->exec();
 
             selectedAlbum=pu->getSBID();
@@ -1068,7 +1068,7 @@ SBTabAlbumEdit::save() const
                 }
                 else
                 {
-                    SBDialogSelectSongAlbum* pu=SBDialogSelectSongAlbum::selectSongByPerformer(currentSong,songMatches);
+                    SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(currentSong,songMatches);
                     pu->exec();
 
                     selectedSong=pu->getSBID();
@@ -1247,7 +1247,7 @@ SBTabAlbumEdit::save() const
         if(isNew[songListIt.key()])
         {
             qDebug() << SB_DEBUG_INFO << "NEW:" << "at:" << songListIt.value().sb_position << songListIt.value();
-            SQL.append(SBModelAlbum::addSongToAlbum(newAlbum,songListIt.value()));
+            SQL.append(SBModelAlbum::addSongToAlbum(songListIt.value()));
             refreshModels=1;
         }
     }
