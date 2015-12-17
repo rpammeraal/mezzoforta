@@ -51,8 +51,8 @@ SBModelSong::getDetail(const SBID& id)
 
     if(query.next())
     {
-        result.assign(SBID::sb_type_song,query.value(2).toInt());
-        result.sb_song_id         =id.sb_song_id;
+        result.assign(SBID::sb_type_song,id.sb_song_id);
+        result.sb_performer_id    =query.value(2).toInt();
         result.performerName      =query.value(3).toString();
         result.songTitle          =query.value(0).toString();
         result.year               =query.value(4).toInt();
@@ -116,7 +116,9 @@ SBModelSong::getAllSongs()
             "artistName AS \"performer\", "
             "%3 AS SB_ITEM_TYPE3, "
             "SB_ALBUM_ID, "
-            "recordTitle AS \"album title\" "
+            "recordTitle AS \"album title\", "
+            "%4 AS SB_ITEM_TYPE4, "
+            "SB_POSITION_ID "
         "FROM "
             "( "
                 "SELECT "
@@ -141,7 +143,8 @@ SBModelSong::getAllSongs()
     ).
         arg(SBID::sb_type_song).
         arg(SBID::sb_type_performer).
-        arg(SBID::sb_type_album)
+        arg(SBID::sb_type_album).
+        arg(SBID::sb_type_position)
     ;
 
     return new SBSqlQueryModel(q);
@@ -212,9 +215,9 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
             "r.year AS \"year released\", "
             "%2 AS SB_ITEM_TYPE2, "
             "a.artist_id AS SB_PERFORMER_ID, "
-            "a.name AS \"performer\"  "
-            //"rp.duration \"duration\", "
-            //"rp.record_position AS SB_POSITION_ID "
+            "a.name AS \"performer\",  "
+            "%3 AS SB_ITEM_TYPE3, "
+            "rp.record_position AS SB_POSITION_ID "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
                 "JOIN ___SB_SCHEMA_NAME___record r ON "
@@ -229,6 +232,7 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
         .arg(id.sb_song_id)
+        .arg(SBID::sb_type_position)
     ;
 
     return new SBSqlQueryModel(q);

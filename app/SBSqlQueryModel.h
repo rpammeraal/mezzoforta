@@ -9,7 +9,6 @@
 
 class DataAccessLayer;
 class QAbstractItemModel;
-class SBStandardItemModel;
 
 ///
 /// \brief The SBSqlQueryModel class

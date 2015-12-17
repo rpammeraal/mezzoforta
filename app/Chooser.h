@@ -8,7 +8,8 @@
 
 class QAction;
 class QStandardItem;
-class SBStandardItemModel;
+//class SBStandardItemModel;
+class ChooserModel;
 
 class Chooser : public QObject
 {
@@ -17,7 +18,7 @@ public:
     Chooser();
     ~Chooser();
 
-    SBStandardItemModel* getModel();
+    QStandardItemModel* getModel() const;
 
 public slots:
     void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
@@ -35,9 +36,9 @@ private:
     QAction* newAction;
     QAction* deleteAction;
     QAction* renameAction;
-    SBStandardItemModel* model;
+    //SBStandardItemModel* model;
     QModelIndex lastClickedIndex;
-    QStandardItem* playlistRoot;
+    ChooserModel* _cm;
 
     QList<QStandardItem *> createNode(const QString& itemValue, int itemID, SBID::sb_type type);
     QModelIndex findItem(const QString& toFind);

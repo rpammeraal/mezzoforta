@@ -333,6 +333,9 @@ SBDialogSelectItem::OK(const QString& i)
     }
 
     _songID=_itemsDisplayed[i.toInt()];
+    qDebug() << SB_DEBUG_INFO << _songID;
+    qDebug() << SB_DEBUG_INFO << "position=" << _songID.sb_position;
+
     this->close();
 }
 

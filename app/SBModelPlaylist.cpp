@@ -32,7 +32,7 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
     {
     case SBID::sb_type_song:
         qDebug() << SB_DEBUG_INFO;
-        if(assignID.sb_album_id==0 || assignID.sb_position==0)
+        if(assignID.sb_album_id==-1 || assignID.sb_position==-1)
         {
             qDebug() << "****************************************************************************************";
             qDebug() << "****************************************************************************************";

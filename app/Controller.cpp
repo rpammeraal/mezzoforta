@@ -239,7 +239,6 @@ Controller::openMainWindow(bool startup)
 void
 Controller::setupModels()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO;
 
     refreshModels();
@@ -247,10 +246,6 @@ Controller::setupModels()
     ///	Chooser
     Chooser* lcc=new Chooser();
     Context::instance()->setChooser(lcc);
-
-    const SBStandardItemModel *m=Context::instance()->getChooser()->getModel();
-    mw->ui.leftColumnChooser->setModel((QStandardItemModel *)m);	//	weird that it won't accept a subclass
-
 }
 
 void

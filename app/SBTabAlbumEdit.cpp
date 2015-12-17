@@ -17,7 +17,6 @@
 #include "SBModelAlbum.h"
 #include "SBModelSong.h"
 #include "SBSqlQueryModel.h"
-#include "SBStandardItemModel.h"
 
 
 class AlbumEditModel : public QStandardItemModel
@@ -40,7 +39,28 @@ public:
     AlbumEditModel(SBID id, QObject* parent=0):QStandardItemModel(parent)
     {
         _id=id;
-    };
+    }
+
+    QModelIndex addRow()
+    {
+        qDebug() << SB_DEBUG_INFO;
+        QList<QStandardItem *>column;
+        QStandardItem* item;
+        int newRowID=this->rowCount()+1;
+
+        item=new QStandardItem("0"); column.append(item);	//	deleted
+        item=new QStandardItem("0"); column.append(item);	//	merged
+        item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);	//	orgitem#
+        item=new QStandardItem("0"); column.append(item);	//	orgsongid
+        item=new QStandardItem("0"); column.append(item);	//	orgperformerid
+        item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);	//	item#
+        item=new QStandardItem("Title"); column.append(item);	//	title
+        item=new QStandardItem("Performer"); column.append(item);	//	performer
+        item=new QStandardItem("Notes"); column.append(item);	//	notes
+        this->appendRow(column); column.clear();
+
+        return this->createIndex(newRowID-1,0);
+    }
 
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
     {
@@ -150,27 +170,6 @@ public:
         QStringList types;
         types << "application/vnd.text.list";
         return types;
-    }
-
-    QModelIndex addRow()
-    {
-        qDebug() << SB_DEBUG_INFO;
-        QList<QStandardItem *>column;
-        QStandardItem* item;
-        int newRowID=this->rowCount()+1;
-
-        item=new QStandardItem("0"); column.append(item);	//	deleted
-        item=new QStandardItem("0"); column.append(item);	//	merged
-        item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);	//	orgitem#
-        item=new QStandardItem("0"); column.append(item);	//	orgsongid
-        item=new QStandardItem("0"); column.append(item);	//	orgperformerid
-        item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);	//	item#
-        item=new QStandardItem("Title"); column.append(item);	//	title
-        item=new QStandardItem("Performer"); column.append(item);	//	performer
-        item=new QStandardItem("Notes"); column.append(item);	//	notes
-        this->appendRow(column); column.clear();
-
-        return this->createIndex(newRowID-1,0);
     }
 
     virtual bool removeRows(int row, int count, const QModelIndex &parent)

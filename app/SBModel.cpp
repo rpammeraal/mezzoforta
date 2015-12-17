@@ -30,7 +30,6 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
     Q_UNUSED(column);
     Q_UNUSED(parent);
 
-    qDebug() << SB_DEBUG_INFO;
     return true;
 }
 
@@ -238,6 +237,5 @@ SBModel::_setDragableColumns(const QList<bool>& list)
 Qt::DropActions
 SBModel::_supportedDropActions() const
 {
-    qDebug() << SB_DEBUG_INFO;
     return Qt::MoveAction | Qt::CopyAction;
 }

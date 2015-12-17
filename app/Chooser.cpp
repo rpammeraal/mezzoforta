@@ -14,8 +14,142 @@
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
-#include "SBStandardItemModel.h"
+//#include "SBStandardItemModel.h"
 #include "Navigator.h"
+
+class ChooserModel : public QStandardItemModel
+{
+    friend class Chooser;
+
+
+public:
+    ChooserModel(Chooser* c)
+    {
+        _c=c;
+    }
+
+    //	Inherited methods
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+    {
+        Q_UNUSED(data);
+        Q_UNUSED(action);
+        Q_UNUSED(row);
+        Q_UNUSED(column);
+        Q_UNUSED(parent);
+
+        if(row!=-1)
+        {
+            //	ignore between the lines
+            return false;
+        }
+        return true;
+    }
+
+    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+    {
+        qDebug() << SB_DEBUG_INFO << parent << row << column << parent.row();
+
+        if(row!=-1)
+        {
+            //	ignore between the lines
+            return false;
+        }
+        if (!canDropMimeData(data, action, row, column, parent))
+        {
+            return false;
+        }
+
+        if (action == Qt::IgnoreAction)
+        {
+            return true;
+        }
+
+        QByteArray encodedData = data->data("application/vnd.text.list");
+        SBID id=SBID(encodedData);
+
+        qDebug() << SB_DEBUG_INFO << "Dropping " << id << " on " << parent.row();
+        if(_c)
+        {
+            _c->assignItemToPlaylist(parent,id);
+        }
+        return 1;
+    }
+
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const
+    {
+        Qt::ItemFlags defaultFlags = QStandardItemModel::flags(index);
+        if (index.isValid())
+        {
+            return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        }
+        return Qt::ItemIsDropEnabled | defaultFlags | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    }
+
+    virtual QStringList mimeTypes() const
+    {
+        QStringList types;
+        types << "application/vnd.text.list";
+        return types;
+    }
+
+    void populate()
+    {
+        QStandardItemModel::clear();
+
+        QList<QStandardItem *> record;
+
+        QStandardItem* parentItem = this->invisibleRootItem();
+        QStandardItem* item1;
+
+        item1 = new QStandardItem("Your Songs");
+        parentItem->appendRow(item1);
+
+        record=createNode("All Songs",0,SBID::sb_type_allsongs);
+        item1->appendRow(record);
+
+        item1 = new QStandardItem("");
+        parentItem->appendRow(item1);
+
+        item1 = new QStandardItem("Playlists");
+        this->appendRow(item1);
+        _playlistRoot=item1;
+
+        SBModelPlaylist pl;
+        SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
+        qDebug() << SB_DEBUG_INFO << allPlaylists->rowCount();
+        for(int i=0;i<allPlaylists->rowCount();i++)
+        {
+            QSqlRecord r=allPlaylists->record(i);
+
+            qDebug() << SB_DEBUG_INFO << i << r.value(1).toString();
+            record=createNode(r.value(1).toString(),r.value(0).toInt(),SBID::sb_type_playlist);
+            item1->appendRow(record);
+        }
+        qDebug() << SB_DEBUG_INFO;
+    }
+
+    virtual Qt::DropActions supportedDropActions() const
+    {
+        return Qt::CopyAction | Qt::MoveAction;
+    }
+
+private:
+    QStandardItem* _playlistRoot;
+    Chooser* _c;
+
+    QList<QStandardItem *> createNode(
+        const QString& itemValue,
+        const int itemID,SBID::sb_type type)
+    {
+        QList<QStandardItem *> record;
+        record.append(new QStandardItem(itemValue));
+        record.append(new QStandardItem(QString("%1").arg(itemID)));
+        record.append(new QStandardItem(QString("%1").arg((int)type)));
+
+        return record;
+    }
+
+};
 
 ///	PUBLIC
 Chooser::Chooser() : QObject()
@@ -27,12 +161,6 @@ Chooser::~Chooser()
 {
 }
 
-SBStandardItemModel*
-Chooser::getModel()
-{
-    return model;
-}
-
 
 ///	SLOTS
 void
@@ -40,7 +168,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
 {
     SBID toID=getPlaylistSelected(idx);
     SBID fromID;
-    qDebug() << SB_DEBUG_INFO << "assign" << assignID  << assignID.sb_album_id << assignID.sb_position;
+    qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id;
     qDebug() << SB_DEBUG_INFO << "to" << toID;
 
     if(assignID==toID)
@@ -51,7 +179,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
             mb.setInformativeText("Cannot assign items to itself.");
             mb.exec();
     }
-    else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==0)
+    else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
     {
         //	Find out in case of song assignment if record, position are known.
         SBSqlQueryModel* m=SBModelSong::getOnAlbumListBySong(assignID);
@@ -77,12 +205,14 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
 
             ssa->exec();
             SBID selectedAlbum=ssa->getSBID();
-            if(selectedAlbum.sb_album_id!=0 && selectedAlbum.sb_position!=0)
+            if(selectedAlbum.sb_album_id!=-1 && selectedAlbum.sb_position!=-1)
             {
                 //	If user cancels out, don't continue
-                fromID=selectedAlbum;
+                fromID=assignID;	//	now also assign album attributes
+                fromID.sb_album_id=selectedAlbum.sb_album_id;
+                fromID.sb_position=selectedAlbum.sb_position;
             }
-            qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_album_id << fromID.sb_position;
+            qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_item_type() << fromID.sb_album_id << fromID.sb_position;
         }
     }
     else
@@ -218,6 +348,7 @@ Chooser::_renamePlaylist(const SBID &id)
     SBModelPlaylist pl;
     pl.renamePlaylist(id);
     this->populate();
+    qDebug() << SB_DEBUG_INFO;
     QModelIndex in=findItem(id);
     if(in.isValid())
     {
@@ -240,16 +371,6 @@ Chooser::_clicked(const QModelIndex &idx)
 }
 
 ///	PRIVATE
-QList<QStandardItem *>
-Chooser::createNode(const QString& itemValue, const int itemID,SBID::sb_type type)
-{
-    QList<QStandardItem *> record;
-    record.append(new QStandardItem(itemValue));
-    record.append(new QStandardItem(QString("%1").arg(itemID)));
-    record.append(new QStandardItem(QString("%1").arg((int)type)));
-
-    return record;
-}
 
 QModelIndex
 Chooser::findItem(const QString& toFind)
@@ -258,9 +379,9 @@ Chooser::findItem(const QString& toFind)
     bool found=0;
     qDebug() << SB_DEBUG_INFO << toFind;
 
-    for(int y=0;y<model->rowCount();y++)
+    for(int y=0;_cm && y<_cm->rowCount();y++)
     {
-        QStandardItem* si0=model->item(y,0);
+        QStandardItem* si0=_cm->item(y,0);
         if(si0)
         {
             qDebug() << SB_DEBUG_INFO << y << si0->text();
@@ -274,7 +395,7 @@ Chooser::findItem(const QString& toFind)
                         qDebug() << SB_DEBUG_INFO << y << i << si1->text();
                         if(si1->text()==toFind)
                         {
-                            index=model->indexFromItem(si1);
+                            index=_cm->indexFromItem(si1);
                             found=1;
                             qDebug() << SB_DEBUG_INFO << index;
                         }
@@ -304,9 +425,9 @@ Chooser::findItem(const SBID& id)
     bool found=0;
     qDebug() << SB_DEBUG_INFO << id;
 
-    for(int y=0;y<model->rowCount() && found==0;y++)
+    for(int y=0;_cm && y<_cm->rowCount() && found==0;y++)
     {
-        QStandardItem* si0=model->item(y,0);
+        QStandardItem* si0=_cm->item(y,0);
         if(si0)
         {
             qDebug() << SB_DEBUG_INFO << y << si0->text();
@@ -322,7 +443,7 @@ Chooser::findItem(const SBID& id)
                         if(si1->text().toInt()==id.sb_item_id() &&
                             si2->text().toInt()==id.sb_item_type())
                         {
-                            index=model->indexFromItem(si1);
+                            index=_cm->indexFromItem(si1);
                             found=1;
                             qDebug() << SB_DEBUG_INFO << index;
                         }
@@ -341,26 +462,29 @@ Chooser::getPlaylistSelected(const QModelIndex& i)
     qDebug() << SB_DEBUG_INFO << i;
     SBID id;
 
-    //	Get pointer to parent node (hackery going on).
-    //	find si with playlists place holder
-    QStandardItem* si=playlistRoot;
-    qDebug() << SB_DEBUG_INFO << i.row() << i.column();
-
-    if(si)
+    if(_cm)
     {
-        QStandardItem* playlistNameItem=si->child(i.row(),0);
-        QStandardItem* playlistIDItem=si->child(i.row(),1);
-        QStandardItem* playlistIDType=si->child(i.row(),2);
+        //	Get pointer to parent node (hackery going on).
+        //	find si with playlists place holder
+        QStandardItem* si=_cm->_playlistRoot;
+        qDebug() << SB_DEBUG_INFO << i.row() << i.column();
 
-        if(playlistNameItem && playlistIDItem)
+        if(si)
         {
-            id.assign((SBID::sb_type)playlistIDType->text().toInt(),playlistIDItem->text().toInt());
-            id.playlistName=playlistNameItem->text();
+            QStandardItem* playlistNameItem=si->child(i.row(),0);
+            QStandardItem* playlistIDItem=si->child(i.row(),1);
+            QStandardItem* playlistIDType=si->child(i.row(),2);
+
+            if(playlistNameItem && playlistIDItem)
+            {
+                id.assign((SBID::sb_type)playlistIDType->text().toInt(),playlistIDItem->text().toInt());
+                id.playlistName=playlistNameItem->text();
+            }
         }
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_NPTR;
+        else
+        {
+            qDebug() << SB_DEBUG_NPTR;
+        }
     }
     qDebug() << SB_DEBUG_INFO << id;
     return id;
@@ -369,9 +493,9 @@ Chooser::getPlaylistSelected(const QModelIndex& i)
 void
 Chooser::init()
 {
+    _cm=NULL;
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    model=new SBStandardItemModel();
     this->populate();
 
     //	New playlist
@@ -397,57 +521,40 @@ Chooser::init()
     //	Connections
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
-    connect(model, SIGNAL(assign(QModelIndex,SBID)),
-            this, SLOT(assignItemToPlaylist(QModelIndex,SBID)));
-
-    //	Drag & drop
-    mw->ui.leftColumnChooser->setAcceptDrops(1);
-    mw->ui.leftColumnChooser->setDropIndicatorShown(1);
-    mw->ui.leftColumnChooser->viewport()->setAcceptDrops(1);
-    mw->ui.leftColumnChooser->setDefaultDropAction(Qt::MoveAction);
 }
 
 void
 Chooser::populate()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    model->clear();
-
-    QList<QStandardItem *> record;
-
-    //QStandardItem* item0 = new QStandardItem("Your Songs");
-
-    QStandardItem* parentItem = model->invisibleRootItem();
-    QStandardItem* item1;
-
-    item1 = new QStandardItem("Your Songs");
-    parentItem->appendRow(item1);
-
-    record=createNode("All Songs",0,SBID::sb_type_allsongs);
-    item1->appendRow(record);
-
-    item1 = new QStandardItem("");
-    parentItem->appendRow(item1);
-
-    item1 = new QStandardItem("Playlists");
-    model->appendRow(item1);
-    playlistRoot=item1;
-
-    SBModelPlaylist pl;
-    SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
-    for(int i=0;i<allPlaylists->rowCount();i++)
+    QTreeView* tv=mw->ui.leftColumnChooser;
+    if(_cm==NULL)
     {
-        QSqlRecord r=allPlaylists->record(i);
-
-        record=createNode(r.value(1).toString(),r.value(0).toInt(),SBID::sb_type_playlist);
-        item1->appendRow(record);
+        _cm=new ChooserModel(this);
     }
+
+    _cm->populate();
+
+
+    //	Set up view.
+    tv->setItemsExpandable(0);
+
+    tv->setAcceptDrops(1);
+    tv->setDropIndicatorShown(1);
+
+    tv->viewport()->setAcceptDrops(1);
+    tv->setDefaultDropAction(Qt::MoveAction);
+    tv->setDragDropMode(QAbstractItemView::DropOnly);
+    tv->setDragDropOverwriteMode(false);
 
     if(mw->ui.leftColumnChooser!=NULL)
     {
         mw->ui.leftColumnChooser->expandAll();
     }
-    qDebug() << SB_DEBUG_INFO << model->columnCount();
+
+    tv->setModel(_cm);
+
+    qDebug() << SB_DEBUG_INFO << _cm->columnCount();
 }
 
 void

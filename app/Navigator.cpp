@@ -23,7 +23,6 @@
 #include "SBModelAlbum.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
-#include "SBStandardItemModel.h"
 #include "SBModelPerformer.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
