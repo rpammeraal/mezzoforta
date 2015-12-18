@@ -106,7 +106,7 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
         (
             "UPDATE ___SB_SCHEMA_NAME___record "
             "SET genre=genre || '|%1' "
-            "WHERE record_id=%2 AND genre NOT "+dal->_ilike+" '\%%1\%'"
+            "WHERE record_id= %2 AND genre NOT "+dal->_ilike+" '\%"+"%1"+"\%'"
         ).arg(dstID).arg(id.sb_album_id);
         qDebug() << SB_DEBUG_INFO << q;
 

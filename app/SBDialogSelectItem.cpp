@@ -244,9 +244,9 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
         qDebug() << SB_DEBUG_INFO << "current songID=" << songID;
 
         qDebug() << SB_DEBUG_INFO << "start list";
-        for(int i=0;i<songIDPopulated.count();i++)
+        for(int j=0;i<songIDPopulated.count();j++)
         {
-            qDebug() << SB_DEBUG_INFO << i << songIDPopulated.at(i);
+            qDebug() << SB_DEBUG_INFO << j << songIDPopulated.at(j);
 
         }
         qDebug() << SB_DEBUG_INFO << "end list";
