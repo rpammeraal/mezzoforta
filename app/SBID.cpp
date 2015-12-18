@@ -473,49 +473,50 @@ QDebug operator<<(QDebug dbg, const SBID& id)
     switch(id._sb_item_type)
     {
     case SBID::sb_type_song:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
+        dbg.nospace() << "SBID : " << id.getType() << "|"
                                 << id.sb_song_id << "|" << songTitle << "|"
                                 << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_performer:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
+        dbg.nospace() << "SBID : " << id.getType() << "|"
                                 << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_album:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
+        dbg.nospace() << "SBID : " << id.getType() << "|"
                                 << id.sb_album_id << "|" << albumTitle << "|"
                                 << id.sb_performer_id << "|" << performerName;
         break;
 
     case SBID::sb_type_chart:
-        //	CWIP
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_chart_id << "|" << "<name not implemented for charts>";
         break;
 
     case SBID::sb_type_playlist:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
+        dbg.nospace() << "SBID : " << id.getType() << "|"
                                 << id.sb_playlist_id << "|" << playlistName;
         break;
 
     case SBID::sb_type_invalid:
-        dbg.nospace().noquote() << "<INVALID ID>";
+        dbg.nospace() << "<INVALID ID>";
         break;
 
     case SBID::sb_type_position:
-        dbg.nospace().noquote() << "<sb_type_position>";
+        dbg.nospace() << "<sb_type_position>";
         break;
 
     case SBID::sb_type_allsongs:
-        dbg.nospace().noquote() << "<sb_type_allsongs>";
+        dbg.nospace() << "<sb_type_allsongs>";
         break;
 
     case SBID::sb_type_songsearch:
-        dbg.nospace().noquote() << "<sb_type_songsearch>";
+        dbg.nospace() << "<sb_type_songsearch>";
         break;
 
     default:
-        dbg.nospace().noquote() << "<not implemented in operator<< >";
+        dbg.nospace() << "<not implemented in operator<< >";
         break;
     }
 

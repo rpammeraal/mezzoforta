@@ -784,7 +784,6 @@ SBTabAlbumEdit::save() const
     QMap<int,int> mergedTo;         //	<position:1,mergedToIndex:1>
     QMap<int,int> fromTo;           //	<oldPosition:1,newPosition:1>
     QMap<int,int> toFrom;           //	<newPosition:1,oldPosition:1>
-    bool refreshModels=0;
 
     SBID orgAlbum=SBModelAlbum::getDetail(Context::instance()->getScreenStack()->currentScreen());
     SBID newAlbum=orgAlbum;
@@ -1131,7 +1130,6 @@ SBTabAlbumEdit::save() const
         {
             qDebug() << SB_DEBUG_INFO;
             isRemovedOrg[org.sb_position]=1;
-            refreshModels=1;
 
             if(org.sb_song_id==current.sb_song_id)
             {
@@ -1182,14 +1180,12 @@ SBTabAlbumEdit::save() const
         {
             qDebug() << SB_DEBUG_INFO << "DEL:" << fromToIt.key();
             SQL.append(SBModelAlbum::removeSongFromAlbum(newAlbum,fromToIt.key()));
-            refreshModels=1;
         }
 
         if(isRemovedOrg[fromToIt.key()])
         {
             qDebug() << SB_DEBUG_INFO << "DELorg:" << fromToIt.key();
             SQL.append(SBModelAlbum::removeSongFromAlbum(newAlbum,fromToIt.key()));
-            refreshModels=1;
         }
     }
     qDebug() << SB_DEBUG_INFO << "REMOVALS END";
@@ -1206,7 +1202,6 @@ SBTabAlbumEdit::save() const
             SBID t=songList[mergedToPos];
             qDebug() << SB_DEBUG_INFO << "MRG:" << "from:" << songListIt.key() << "to:" << t.sb_position << songListIt.value();
             SQL.append(SBModelAlbum::mergeSongInAlbum(newAlbum,mergedTo[songListIt.key()],songListIt.value()));
-            refreshModels=1;
         }
     }
 
@@ -1229,7 +1224,6 @@ SBTabAlbumEdit::save() const
             qDebug() << SB_DEBUG_INFO << "RPS:" << "from:" << orgPosition << "to:" << currentPosition << songListIt.value();
             SQL.append(SBModelAlbum::repositionSongOnAlbum(newAlbum.sb_album_id,orgPosition,currentPosition+maxCount));
             tmpList.append(SBModelAlbum::repositionSongOnAlbum(newAlbum.sb_album_id,currentPosition+maxCount,currentPosition));
-            refreshModels=1;
         }
     }
     SQL.append(tmpList); tmpList.clear();
@@ -1244,7 +1238,6 @@ SBTabAlbumEdit::save() const
         {
             qDebug() << SB_DEBUG_INFO << "NEW:" << "at:" << songListIt.value().sb_position << songListIt.value();
             SQL.append(SBModelAlbum::addSongToAlbum(songListIt.value()));
-            refreshModels=1;
         }
     }
     qDebug() << SB_DEBUG_INFO << orgAlbum;
@@ -1256,7 +1249,6 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO << "CMB:" << "to:" << newAlbum;
         SQL.append(SBModelAlbum::mergeAlbum(orgAlbum,newAlbum));
         removedAlbum=orgAlbum;
-        refreshModels=1;
     }
 
     //	G.	Remove original database items
@@ -1264,7 +1256,6 @@ SBTabAlbumEdit::save() const
     {
         qDebug() << SB_DEBUG_INFO << "Remove ORG album";
         SQL.append(SBModelAlbum::removeAlbum(orgAlbum));
-        refreshModels=1;
     }
 
     qDebug() << SB_DEBUG_INFO;
@@ -1288,11 +1279,8 @@ SBTabAlbumEdit::save() const
                 .arg(QChar(180));    //	3
             Context::instance()->getController()->updateStatusBar(updateText);
 
-            //if(refreshModels)
-            {
-                //	Update models!
-                Context::instance()->getController()->refreshModels();
-            }
+            //	Update models!
+            Context::instance()->getController()->refreshModels();
 
             //	Update screenstack
             newAlbum.isEditFlag=0;

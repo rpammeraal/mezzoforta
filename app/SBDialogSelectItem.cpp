@@ -52,9 +52,9 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
 
 
         qDebug() << SB_DEBUG_INFO << "start list";
-        for(int i=0;i<albumIDPopulated.count();i++)
+        for(int j=0;j<albumIDPopulated.count();j++)
         {
-            qDebug() << SB_DEBUG_INFO << i << albumIDPopulated.at(i);
+            qDebug() << SB_DEBUG_INFO << j << albumIDPopulated.at(j);
 
         }
         qDebug() << SB_DEBUG_INFO << "end list";
