@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Songbase [Waco Expressway]</string>
+   <string>Songbase [Mazatlan]</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -177,7 +177,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer">
+            <spacer name="horizontalSpacer_01">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -223,7 +223,7 @@
                <number>0</number>
               </property>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout">
+               <layout class="QVBoxLayout" name="verticalLayout_01">
                 <item>
                  <widget class="QFrame" name="frSearchSchemaInner">
                   <property name="minimumSize">
@@ -413,7 +413,7 @@
            <attribute name="title">
             <string>All Songs</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout2">
+           <layout class="QVBoxLayout" name="verticalLayout_02">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -901,7 +901,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QVBoxLayout" name="verticalLayout_7">
+                <layout class="QVBoxLayout" name="verticalLayout_03">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -990,7 +990,7 @@
                    <property name="textInteractionFlags">
                     <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
                    </property>
-                   <layout class="QGridLayout" name="gridLayout_2">
+                   <layout class="QGridLayout" name="gridLayout02">
                     <property name="leftMargin">
                      <number>0</number>
                     </property>
@@ -1028,7 +1028,7 @@
                <attribute name="title">
                 <string>Performances</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_10">
+               <layout class="QVBoxLayout" name="verticalLayout_04">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1063,7 +1063,7 @@
                <attribute name="title">
                 <string>Albums</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_11">
+               <layout class="QVBoxLayout" name="verticalLayout_05">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1098,7 +1098,7 @@
                <attribute name="title">
                 <string>Charts</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_13">
+               <layout class="QVBoxLayout" name="verticalLayout_06">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1127,7 +1127,7 @@
                <attribute name="title">
                 <string>In The News</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_9">
+               <layout class="QVBoxLayout" name="verticalLayout_07">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1193,7 +1193,7 @@
                     </widget>
                    </item>
                    <item>
-                    <spacer name="horizontalSpacer_3">
+                    <spacer name="horizontalSpacer_02">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>
@@ -1229,7 +1229,7 @@
                <attribute name="title">
                 <string>On Wikipedia</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_8">
+               <layout class="QVBoxLayout" name="verticalLayout_08">
                 <item>
                  <widget class="QWebView" name="performerDetailWikipediaPage"/>
                 </item>
@@ -1376,7 +1376,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout02">
+                <layout class="QGridLayout" name="gridLayout03">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1470,7 +1470,7 @@
                <attribute name="title">
                 <string>Contents</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_12">
+               <layout class="QVBoxLayout" name="verticalLayout_09">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1505,7 +1505,7 @@
                <attribute name="title">
                 <string>Album Reviews</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_15">
+               <layout class="QVBoxLayout" name="verticalLayout_10">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1571,7 +1571,7 @@
                     </widget>
                    </item>
                    <item>
-                    <spacer name="horizontalSpacer_4">
+                    <spacer name="horizontalSpacer_03">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>
@@ -1601,7 +1601,7 @@
                <attribute name="title">
                 <string>On Wikipedia</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_14">
+               <layout class="QVBoxLayout" name="verticalLayout_11">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1741,7 +1741,7 @@
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout03">
+                <layout class="QGridLayout" name="gridLayout04">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -1835,7 +1835,7 @@
                <attribute name="title">
                 <string>Also Performed By</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_2">
+               <layout class="QVBoxLayout" name="verticalLayout_12">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1899,7 +1899,7 @@
                <attribute name="title">
                 <string>Playlists</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_4">
+               <layout class="QVBoxLayout" name="verticalLayout_13">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1931,7 +1931,7 @@
                <attribute name="title">
                 <string>Charts</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_6">
+               <layout class="QVBoxLayout" name="verticalLayout_14">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1963,7 +1963,7 @@
                <attribute name="title">
                 <string>Lyrics</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_5">
+               <layout class="QVBoxLayout" name="verticalLayout_15">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -2038,7 +2038,7 @@
            <attribute name="title">
             <string>Opener</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
+           <layout class="QVBoxLayout" name="verticalLayout_17">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -2219,7 +2219,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_2">
+                <spacer name="horizontalSpacer_04">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -2285,7 +2285,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Waco Expressway</string>
+               <string>Mazatlan</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -2352,7 +2352,7 @@ Click on 'All Songs' to continue.</string>
            <attribute name="title">
             <string>Edit Song</string>
            </attribute>
-           <layout class="QVBoxLayout" name="vlSongDetail">
+           <layout class="QVBoxLayout" name="vlSongDetailSongEdit">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -2366,9 +2366,9 @@ Click on 'All Songs' to continue.</string>
              <number>0</number>
             </property>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_17">
+             <layout class="QVBoxLayout" name="verticalLayout_18">
               <item>
-               <widget class="QFrame" name="frSongDetailDetail">
+               <widget class="QFrame" name="frSongDetailDetailSongEdit">
                 <property name="minimumSize">
                  <size>
                   <width>400</width>
@@ -2387,7 +2387,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout03">
+                <layout class="QGridLayout" name="gridLayout05">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -2591,7 +2591,7 @@ Click on 'All Songs' to continue.</string>
                <attribute name="title">
                 <string>Lyrics</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_5">
+               <layout class="QVBoxLayout" name="verticalLayout_19">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -2624,7 +2624,7 @@ Click on 'All Songs' to continue.</string>
            <attribute name="title">
             <string>Edit Performer</string>
            </attribute>
-           <layout class="QVBoxLayout" name="vlSongDetail">
+           <layout class="QVBoxLayout" name="vlSongDetailPerformerEdit">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -2638,9 +2638,9 @@ Click on 'All Songs' to continue.</string>
              <number>0</number>
             </property>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_17">
+             <layout class="QVBoxLayout" name="verticalLayout_20">
               <item>
-               <widget class="QFrame" name="frPerfomerEditDetail">
+               <widget class="QFrame" name="frPerformerEditDetail_01">
                 <property name="minimumSize">
                  <size>
                   <width>400</width>
@@ -2659,7 +2659,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout03">
+                <layout class="QGridLayout" name="gridLayout06">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -2820,7 +2820,7 @@ Click on 'All Songs' to continue.</string>
                <attribute name="title">
                 <string>Related Performers</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_4">
+               <layout class="QVBoxLayout" name="verticalLayout_21">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -2864,7 +2864,7 @@ Click on 'All Songs' to continue.</string>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QGridLayout" name="gridLayout">
+                 <layout class="QGridLayout" name="gridLayout07">
                   <item row="0" column="1">
                    <widget class="QPushButton" name="pbPerformerEditRemoveRelatedPerformer">
                     <property name="enabled">
@@ -2901,7 +2901,7 @@ Click on 'All Songs' to continue.</string>
                    </widget>
                   </item>
                   <item row="0" column="2">
-                   <spacer name="horizontalSpacer_5">
+                   <spacer name="horizontalSpacer_05">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
@@ -2928,7 +2928,7 @@ Click on 'All Songs' to continue.</string>
            <attribute name="title">
             <string>Edit Album</string>
            </attribute>
-           <layout class="QVBoxLayout" name="vlSongDetail">
+           <layout class="QVBoxLayout" name="vlSongDetailAlbumEdit">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -2942,9 +2942,9 @@ Click on 'All Songs' to continue.</string>
              <number>0</number>
             </property>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_17">
+             <layout class="QVBoxLayout" name="verticalLayout_22">
               <item>
-               <widget class="QFrame" name="frPerfomerEditDetail">
+               <widget class="QFrame" name="frPerformerEditDetail_02">
                 <property name="minimumSize">
                  <size>
                   <width>400</width>
@@ -2963,7 +2963,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout03">
+                <layout class="QGridLayout" name="gridLayout08">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -3134,7 +3134,7 @@ Click on 'All Songs' to continue.</string>
                <attribute name="title">
                 <string>Songs</string>
                </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_4">
+               <layout class="QVBoxLayout" name="verticalLayout_23">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -3172,7 +3172,7 @@ Click on 'All Songs' to continue.</string>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QGridLayout" name="gridLayout">
+                 <layout class="QGridLayout" name="gridLayout09">
                   <item row="0" column="0">
                    <widget class="QPushButton" name="pbAlbumEditAddSong">
                     <property name="maximumSize">
@@ -3190,7 +3190,7 @@ Click on 'All Songs' to continue.</string>
                    </widget>
                   </item>
                   <item row="0" column="4">
-                   <spacer name="horizontalSpacer_5">
+                   <spacer name="horizontalSpacer_06">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>

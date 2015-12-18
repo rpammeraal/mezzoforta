@@ -29,7 +29,7 @@ public:
     }
 
     //	Inherited methods
-    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+    virtual bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
     {
         Q_UNUSED(data);
         Q_UNUSED(action);
@@ -45,7 +45,7 @@ public:
         return true;
     }
 
-    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+    virtual bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
     {
         qDebug() << SB_DEBUG_INFO << parent << row << column << parent.row();
 

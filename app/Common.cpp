@@ -105,7 +105,7 @@ QString
 Common::removeNonAlphanumeric(const QString &s)
 {
     QString t=s;
-    return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\]\\\\]")));
+    return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
 }
 
 QString
@@ -113,7 +113,7 @@ Common::soundex(const QString& input)
 {
     QString code;
     QString name = removeAccents(input.toUpper());
-    name.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\]\\\\]")));
+    name.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\\]")));
     name=name.simplified();
     name.replace(" ","");
 
