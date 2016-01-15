@@ -18,6 +18,7 @@
 #include "ExternalData.h"
 #include "Chooser.h"
 #include "MainWindow.h"
+#include "PlayerController.h"
 #include "SBModelPerformer.h"
 #include "SBID.h"
 #include "SBModelAlbum.h"
@@ -85,18 +86,22 @@ Navigator::openScreenByID(SBID &id)
     }
 
     //	Add screen to stack first.
+    qDebug() << SB_DEBUG_INFO << id;
     if(result.sb_item_type()!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
     {
-        st->debugShow("openScreenByID:before pushScreen");
+        qDebug() << SB_DEBUG_INFO << id;
         st->pushScreen(id);
         st->debugShow("openScreenByID:end");
     }
+    qDebug() << SB_DEBUG_INFO << id;
     result=activateTab(id);
 
     if(result==SBID())
     {
+        qDebug() << SB_DEBUG_INFO << id;
         st->removeScreen(id);
     }
+    qDebug() << SB_DEBUG_INFO << id;
 }
 
 void
@@ -113,6 +118,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     MainWindow* mw=Context::instance()->getMainWindow();
     const int eventKey=event->key();
+    qDebug() << SB_DEBUG_INFO << eventKey;
     if(eventKey==0x01000004 || eventKey==0x01000005)
     {
         //	Return key
@@ -133,6 +139,11 @@ Navigator::keyPressEvent(QKeyEvent *event)
         //	Set focus to search edit and focus all available text if ctrl-L
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->selectAll();
+    }
+    else if(eventKey==81 && event->modifiers() & Qt::ControlModifier)
+    {
+        //	Quit application. Ctrl-Alt-F4 is stupid on laptops.
+        QApplication::quit();
     }
     else if(eventKey==85 && event->modifiers() & Qt::ControlModifier && mw->ui.searchEdit->hasFocus())
     {
@@ -181,6 +192,18 @@ Navigator::keyPressEvent(QKeyEvent *event)
         {
             tab->handleMergeKey();
         }
+    }
+    else if(eventKey==16777350)
+    {
+        Context::instance()->getPlayerController()->playerPlay();
+    }
+    else if(eventKey==16777347)
+    {
+        Context::instance()->getPlayerController()->playerNext();
+    }
+    else if(eventKey==16777346)
+    {
+        Context::instance()->getPlayerController()->playerPrevious();
     }
     if(closeTab==1)
     {
@@ -387,12 +410,18 @@ Navigator::openPerformer(const QUrl &id)
 }
 
 void
-Navigator::openOpener(QString i)
+Navigator::openOpener()
 {
-    //	CWIP: this is stupid.
-    Q_UNUSED(i);
     const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.mainTab->setCurrentIndex(5);
+    QTabWidget* tw=mw->ui.mainTab;
+    int openerTabPosition=-1;
+
+    for(int i=0;openerTabPosition<0 && i<tw->count();i++)
+    {
+        const SBTab* t=dynamic_cast<SBTab *>(tw->widget(i));
+        openerTabPosition=(t==NULL)?i:openerTabPosition;
+    }
+    tw->setCurrentIndex(openerTabPosition);
 }
 
 void
@@ -535,8 +564,8 @@ Navigator::activateTab(const SBID& to)
     case SBID::sb_type_playlist:
         qDebug() << SB_DEBUG_INFO;
         tab=mw->ui.tabPlaylistDetail;
+        canBeEditedFlag=0;
         break;
-
 
     case SBID::sb_type_songsearch:
     case SBID::sb_type_allsongs:
@@ -544,6 +573,13 @@ Navigator::activateTab(const SBID& to)
         result=id;
         tab=mw->ui.tabAllSongs;
         filterSongs(id);
+        canBeEditedFlag=0;
+        break;
+
+    case SBID::sb_type_current_playlist:
+        qDebug() << SB_DEBUG_INFO;
+        result=id;
+        tab=mw->ui.tabCurrentPlaylist;
         canBeEditedFlag=0;
         break;
 
@@ -562,7 +598,10 @@ Navigator::activateTab(const SBID& to)
     qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << result;
 
-    if(result.sb_item_id()==-1 && result.sb_item_type()!=SBID::sb_type_allsongs && result.sb_item_type()!=SBID::sb_type_songsearch)
+    if(result.sb_item_id()==-1 &&
+        result.sb_item_type()!=SBID::sb_type_allsongs &&
+        result.sb_item_type()!=SBID::sb_type_current_playlist &&
+        result.sb_item_type()!=SBID::sb_type_songsearch)
     {
         qDebug() << SB_DEBUG_INFO << result;
         //	QMessageBox msgBox;
@@ -583,23 +622,26 @@ Navigator::activateTab(const SBID& to)
     //	Enable/disable search functionality
     if(isEditFlag==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->setText(id.searchCriteria);
         mw->ui.leftColumnChooser->setEnabled(1);
         if(canBeEditedFlag)
         {
+            qDebug() << SB_DEBUG_INFO;
             editAction->setEnabled(1);
         }
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(0);
         mw->ui.leftColumnChooser->setEnabled(0);
         editAction->setEnabled(0);
     }
 
-    qDebug() << SB_DEBUG_INFO << result;
+    qDebug() << SB_DEBUG_INFO;
     mw->ui.mainTab->insertTab(0,tab,QString(""));
 
     //	Enable/disable forward/back buttons
@@ -627,6 +669,7 @@ Navigator::activateTab(const SBID& to)
     mw->ui.buttonForward->setEnabled(activateForwardButton);
     st->debugShow("Navigator:activateTab:end");
 
+    qDebug() << SB_DEBUG_INFO << id;
     return result;
 }
 

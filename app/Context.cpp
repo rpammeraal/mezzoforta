@@ -40,6 +40,12 @@ Context::setNavigator(Navigator* nssh)
 }
 
 void
+Context::setPlayerController(PlayerController *npc)
+{
+    pc=npc;
+}
+
+void
 Context::setScreenStack(ScreenStack* nst)
 {
     st=nst;
@@ -70,6 +76,7 @@ Context::init()
     dal=NULL;
     lcc=NULL;
     mw=NULL;
+    pc=NULL;
     ssh=NULL;
     st=NULL;
     tab=NULL;

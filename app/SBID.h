@@ -22,7 +22,8 @@ public:
         sb_type_position=6,
 
         sb_type_allsongs=100,
-        sb_type_songsearch=101
+        sb_type_songsearch=101,
+        sb_type_current_playlist=102
     };
 
     SBID();
@@ -32,22 +33,18 @@ public:
     ~SBID();
 
     //	Primary identifiers
-    //sb_type     sb_item_type;	//	is now private, use sb_item_type()
-    //	int         sb_item_id; depreciated: use sb_item_id()
-    QString     sb_mbid;
-
-    //	Modifiers
-    bool        isEditFlag;
-
-    //	Secundary identifiers (e.g. if primary is of type 'song',
-    //	the following identifiers identify performer and album).
     int         sb_performer_id;
     int         sb_album_id;
     int         sb_position;
     int         sb_chart_id;
     int         sb_song_id;
     int         sb_playlist_id;
+    QString     sb_mbid;
 
+    //	Modifiers
+    bool        isEditFlag;
+
+    //	Secundary identifiers
     bool        isOriginalPerformer;
     QString     albumTitle;
     int         count1;
@@ -63,10 +60,12 @@ public:
     QString     url;
     QString     wiki;
     int         year;
+    QString     path;
 
     //	Tertiary identifiers (navigation et al)
     int         subtabID;
     int         sortColumn;
+    int         playPosition;
 
     void assign(const SBID::sb_type type, const int itemID);
     void assign(const QString& itemType, const int itemID, const QString& text="");

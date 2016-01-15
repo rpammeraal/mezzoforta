@@ -27,10 +27,25 @@ class QTableView;
 
 #ifdef Q_OS_WIN
 #define SB_BG_COLOR "#FFFFFF"
+#define SB_VIEW_BG_COLOR "#FFFFFF"
+#define SB_VIEW_BG_ALT_COLOR "#F2F2F2"
+#define SB_VIEW_BG_HIGHLIGHT_COLOR "#A4A4A4"
 #endif
 
 #ifndef SB_BG_COLOR
 #define SB_BG_COLOR "#E3E3E3"
+#endif
+
+#ifndef SB_VIEW_BG_COLOR
+#define SB_VIEW_BG_COLOR "#FFFFFF"
+#endif
+
+#ifndef SB_VIEW_BG_ALT_COLOR
+#define SB_VIEW_BG_ALT_COLOR "#F2F2F2"
+#endif
+
+#ifndef SB_VIEW_BG_HIGHLIGHT_COLOR
+#define SB_VIEW_BG_HIGHLIGHT_COLOR "#A4A4A4"
 #endif
 
 class Common
@@ -41,7 +56,8 @@ public:
 
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
-    static int random(int max);
+    static qint64 random(qint64 max);
+    static qint64 randomOldestFirst(qint64 max);
     static QString removeAccents(const QString& s);
     static QString removeArticles(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);

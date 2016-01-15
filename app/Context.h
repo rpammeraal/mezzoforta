@@ -6,14 +6,15 @@
 #include "Common.h"
 
 class BackgroundThread;
+class Chooser;
 class Controller;
 class DataAccessLayer;
 class ExternalData;
-class Chooser;
 class MainWindow;
-class ScreenStack;
 class Navigator;
+class PlayerController;
 class SBTab;
+class ScreenStack;
 
 
 class Context
@@ -28,13 +29,14 @@ public:
     }
 
     inline BackgroundThread* getBackgroundThread() const { return bgt; }
+    inline Chooser* getChooser() const { return lcc; }
     inline Controller* getController() const { return c; }
     inline DataAccessLayer* getDataAccessLayer() const { return dal; }
-    inline Chooser* getChooser() const { return lcc; }
     inline MainWindow* getMainWindow() const { return mw; }
     inline Navigator* getNavigator() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
-    inline ScreenStack* getScreenStack() const { if(!st) { qDebug() << SB_DEBUG_NPTR; } return st; }
+    inline PlayerController* getPlayerController() const { if(!pc) { qDebug() << SB_DEBUG_NPTR; } return pc; }
     inline SBTab* getTab() const { if(!tab) { qDebug() << SB_DEBUG_NPTR; } return tab; }
+    inline ScreenStack* getScreenStack() const { if(!st) { qDebug() << SB_DEBUG_NPTR; } return st; }
 
     void setBackgroundThread(BackgroundThread* nbgt);
     void setController(Controller* nc);
@@ -42,6 +44,7 @@ public:
     void setChooser(Chooser* nlcc);
     void setMainWindow(MainWindow* nmw);
     void setNavigator(Navigator* nssh);
+    void setPlayerController(PlayerController* npc);
     void setScreenStack(ScreenStack* st);
     void setTab(SBTab* tab);
 
@@ -52,6 +55,7 @@ private:
     Chooser* lcc;
     MainWindow* mw;
     Navigator* ssh;
+    PlayerController* pc;
     ScreenStack* st;
     SBTab* tab;
 

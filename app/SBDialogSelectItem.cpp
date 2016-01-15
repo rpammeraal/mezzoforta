@@ -35,7 +35,6 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
 
     //	Populate choices
     QList<SBID> albumIDPopulated;
-    int currentRank=0;
     QString title=QString("Select album to keep as is");
     d->setTitle(title);
     d->ui->lHeader->setText(title+':');
@@ -44,7 +43,6 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
     {
         SBID currentAlbum;
 
-        currentRank=m->data(m->index(i,0)).toInt();
         currentAlbum.assign(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
         currentAlbum.albumTitle=m->data(m->index(i,2)).toString();
         currentAlbum.sb_performer_id=m->data(m->index(i,3)).toInt();
@@ -52,9 +50,9 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
 
 
         qDebug() << SB_DEBUG_INFO << "start list";
-        for(int i=0;i<albumIDPopulated.count();i++)
+        for(int j=0;j<albumIDPopulated.count();j++)
         {
-            qDebug() << SB_DEBUG_INFO << i << albumIDPopulated.at(i);
+            qDebug() << SB_DEBUG_INFO << j << albumIDPopulated.at(j);
 
         }
         qDebug() << SB_DEBUG_INFO << "end list";
@@ -154,8 +152,6 @@ SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m
 
     //	Populate choices
     QList<SBID> songIDPopulated;
-    int lastSeenRank=0;
-    int currentRank=0;
     QString title=QString("Choose Performer");
     d->setTitle(title);
     d->ui->lHeader->setText(title);
@@ -169,7 +165,6 @@ SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m
                  << m->data(m->index(i,2)).toString()
         ;
         SBID songID(SBID::sb_type_performer,m->data(m->index(i,1)).toInt());
-        currentRank=m->data(m->index(i,0)).toInt();
         songID.performerName=m->data(m->index(i,2)).toString();
 
 
@@ -208,7 +203,6 @@ SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m
             d->_itemsDisplayed[i]=songID;
             songIDPopulated.append(songID);
         }
-        lastSeenRank=currentRank;
     }
     d->updateGeometry();
     return d;
@@ -244,17 +238,15 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
         qDebug() << SB_DEBUG_INFO << "current songID=" << songID;
 
         qDebug() << SB_DEBUG_INFO << "start list";
-        for(int i=0;i<songIDPopulated.count();i++)
+        for(int j=0;i<songIDPopulated.count();j++)
         {
-            qDebug() << SB_DEBUG_INFO << i << songIDPopulated.at(i);
+            qDebug() << SB_DEBUG_INFO << j << songIDPopulated.at(j);
 
         }
         qDebug() << SB_DEBUG_INFO << "end list";
 
         if(songIDPopulated.contains(songID)==0)
         {
-            bool isAlternativeSongFlag=0;
-
             if(currentRank!=lastSeenRank && currentRank==3)
             {
                 QLabel* lh=new QLabel;
@@ -272,7 +264,6 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
 
             if(currentRank==3)
             {
-                isAlternativeSongFlag=1;
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
@@ -283,8 +274,6 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
             }
             else
             {
-
-                isAlternativeSongFlag=0;
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")

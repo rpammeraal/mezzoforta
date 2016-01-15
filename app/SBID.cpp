@@ -37,8 +37,11 @@ SBID::SBID(const SBID &c)
     this->url=c.url;
     this->wiki=c.wiki;
     this->year=c.year;
+    this->path=c.path;
+
     this->subtabID=c.subtabID;
     this->sortColumn=c.sortColumn;
+    this->playPosition=c.playPosition;
 
     isEditFlag=c.isEditFlag;
 }
@@ -69,6 +72,7 @@ SBID::SBID(QByteArray encodedData)
         >> albumTitle
         >> songTitle
         >> year
+        >> path
         >> lyrics
         >> notes
         >> genre
@@ -118,6 +122,7 @@ SBID::assign(const SBID::sb_type itemType, const int itemID)
     case SBID::sb_type_position:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
         break;
     }
 }
@@ -182,6 +187,7 @@ SBID::encode() const
         << albumTitle
         << songTitle
         << year
+        << path
         << lyrics
         << notes
         << genre
@@ -255,7 +261,8 @@ SBID::getIconResourceLocation(const SBID::sb_type i)
     case SBID::sb_type_songsearch:
         break;
 
-    default:
+    case SBID::sb_type_position:
+    case SBID::sb_type_current_playlist:
         break;
     }
     return t;
@@ -290,6 +297,7 @@ SBID::getText() const
     case SBID::sb_type_invalid:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
         return QString("n/a [219]");
         break;
     }
@@ -334,8 +342,9 @@ SBID::getType() const
         t="songsearch";
         break;
 
-    default:
-        t="Unknown";
+    case SBID::sb_type_current_playlist:
+    case SBID::sb_type_position:
+        break;
     }
     return t;
 }
@@ -364,6 +373,7 @@ SBID::sb_item_id() const
     case SBID::sb_type_position:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
         return -1;
     }
     return -1;
@@ -398,6 +408,7 @@ SBID::setText(const QString &text)
     case SBID::sb_type_invalid:
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
         break;
     }
 }
@@ -431,8 +442,10 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "url" << url;
     qDebug() << SB_DEBUG_INFO << "wiki" << wiki;
     qDebug() << SB_DEBUG_INFO << "year" << year;
+    qDebug() << SB_DEBUG_INFO << "path" << path;
     qDebug() << SB_DEBUG_INFO << "subtabID" << subtabID;
     qDebug() << SB_DEBUG_INFO << "sortColumn" << sortColumn;
+    qDebug() << SB_DEBUG_INFO << "playPosition" << playPosition;
 }
 
 bool
@@ -473,51 +486,53 @@ QDebug operator<<(QDebug dbg, const SBID& id)
     switch(id._sb_item_type)
     {
     case SBID::sb_type_song:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
-                                << id.sb_song_id << "|" << songTitle << "|"
-                                << id.sb_performer_id << "|" << performerName;
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_song_id << "|st" << songTitle << "|"
+                                << id.sb_performer_id << "|pn" << performerName;
         break;
 
     case SBID::sb_type_performer:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
-                                << id.sb_performer_id << "|" << performerName;
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_performer_id << "|pn" << performerName;
         break;
 
     case SBID::sb_type_album:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
-                                << id.sb_album_id << "|" << albumTitle << "|"
-                                << id.sb_performer_id << "|" << performerName;
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_album_id << "|at" << albumTitle << "|"
+                                << id.sb_performer_id << "|pn" << performerName;
         break;
 
     case SBID::sb_type_chart:
-        //	CWIP
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_chart_id << "|" << "<name not implemented for charts>";
         break;
 
     case SBID::sb_type_playlist:
-        dbg.nospace().noquote() << "SBID : " << id.getType() << "|"
-                                << id.sb_playlist_id << "|" << playlistName;
+        dbg.nospace() << "SBID : " << id.getType() << "|"
+                                << id.sb_playlist_id << "|pln" << playlistName;
         break;
 
     case SBID::sb_type_invalid:
-        dbg.nospace().noquote() << "<INVALID ID>";
+        dbg.nospace() << "<INVALID ID>";
         break;
 
     case SBID::sb_type_position:
-        dbg.nospace().noquote() << "<sb_type_position>";
+        dbg.nospace() << "<sb_type_position>";
         break;
 
     case SBID::sb_type_allsongs:
-        dbg.nospace().noquote() << "<sb_type_allsongs>";
+        dbg.nospace() << "<sb_type_allsongs>";
         break;
 
     case SBID::sb_type_songsearch:
-        dbg.nospace().noquote() << "<sb_type_songsearch>";
+        dbg.nospace() << "<sb_type_songsearch>";
         break;
 
-    default:
-        dbg.nospace().noquote() << "<not implemented in operator<< >";
+    case SBID::sb_type_current_playlist:
+        dbg.nospace() << "<current playlist>";
         break;
     }
+
 
     return dbg.space();
 }
@@ -526,8 +541,9 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 void
 SBID::init()
 {
+    QString e;
     _sb_item_type=sb_type_invalid;
-    sb_mbid=QString();
+    sb_mbid=e;
 
     sb_performer_id=-1;
     sb_album_id=-1;
@@ -537,22 +553,24 @@ SBID::init()
     sb_playlist_id=-1;
 
     isOriginalPerformer=0;
-    albumTitle=QString();
+    albumTitle=e;
     count1=0;
     count2=0;
     duration=SBTime();
-    genre=QString();
-    lyrics=QString();
-    notes=QString();
-    performerName=QString();
-    playlistName=QString();
-    searchCriteria=QString();
-    songTitle=QString();
-    url=QString();
-    wiki=QString();
+    genre=e;
+    lyrics=e;
+    notes=e;
+    performerName=e;
+    playlistName=e;
+    searchCriteria=e;
+    songTitle=e;
+    url=e;
+    wiki=e;
     year=0;
+    path=e;
 
     subtabID=INT_MAX;
     isEditFlag=0;
     sortColumn=INT_MAX;
+    playPosition=-1;
 }

@@ -33,7 +33,6 @@ private slots:
 
 
 private:
-    QMap<int,int> allSongs;
     QAction* clearAllAction;
     QAction* deleteSongAction;
     QAction* mergeSongAction;

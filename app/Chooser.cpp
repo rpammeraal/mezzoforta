@@ -14,7 +14,6 @@
 #include "SBSqlQueryModel.h"
 #include "SBModelPlaylist.h"
 #include "SBModelSong.h"
-//#include "SBStandardItemModel.h"
 #include "Navigator.h"
 
 class ChooserModel : public QStandardItemModel
@@ -104,7 +103,9 @@ public:
         item1 = new QStandardItem("Your Songs");
         parentItem->appendRow(item1);
 
-        record=createNode("All Songs",0,SBID::sb_type_allsongs);
+        record=createNode("All Songs",-1,SBID::sb_type_allsongs);
+        item1->appendRow(record);
+        record=createNode("Currently Playing",-1,SBID::sb_type_current_playlist);
         item1->appendRow(record);
 
         item1 = new QStandardItem("");
@@ -116,16 +117,13 @@ public:
 
         SBModelPlaylist pl;
         SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
-        qDebug() << SB_DEBUG_INFO << allPlaylists->rowCount();
         for(int i=0;i<allPlaylists->rowCount();i++)
         {
             QSqlRecord r=allPlaylists->record(i);
 
-            qDebug() << SB_DEBUG_INFO << i << r.value(1).toString();
             record=createNode(r.value(1).toString(),r.value(0).toInt(),SBID::sb_type_playlist);
             item1->appendRow(record);
         }
-        qDebug() << SB_DEBUG_INFO;
     }
 
     virtual Qt::DropActions supportedDropActions() const
@@ -139,7 +137,8 @@ private:
 
     QList<QStandardItem *> createNode(
         const QString& itemValue,
-        const int itemID,SBID::sb_type type)
+        const int itemID,
+        SBID::sb_type type)
     {
         QList<QStandardItem *> record;
         record.append(new QStandardItem(itemValue));
@@ -508,6 +507,7 @@ Chooser::init()
     //	Delete playlist
     deleteAction = new QAction(tr("&Delete Playlist"), this);
     deleteAction->setShortcuts(QKeySequence::Delete);
+
     deleteAction->setStatusTip(tr("Delete Playlist"));
     connect(deleteAction, SIGNAL(triggered()),
             this, SLOT(deletePlaylist()));

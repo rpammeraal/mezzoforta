@@ -362,15 +362,13 @@ SBTab::sortOrderChanged(int column)
 
         if(abs(id.sortColumn)==abs(column))
         {
-    qDebug() << SB_DEBUG_INFO;
             id.sortColumn*=-1;
         }
         else
         {
-    qDebug() << SB_DEBUG_INFO;
             id.sortColumn=column;
         }
-        qDebug() << SB_DEBUG_INFO << id.sortColumn;
+
         if(id.subtabID==INT_MAX)
         {
             id.subtabID=getFirstEligibleSubtabID();

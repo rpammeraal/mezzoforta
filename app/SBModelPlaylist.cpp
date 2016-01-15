@@ -211,7 +211,8 @@ SBModelPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) cons
     case SBID::sb_type_allsongs:
     case SBID::sb_type_songsearch:
     case SBID::sb_type_invalid:
-    default:
+    case SBID::sb_type_current_playlist:
+    case SBID::sb_type_position:
         qDebug() << SB_DEBUG_INFO;
         break;
     }
@@ -660,6 +661,7 @@ SBModelPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraver
             case SBID::sb_type_position:
             case SBID::sb_type_allsongs:
             case SBID::sb_type_songsearch:
+            case SBID::sb_type_current_playlist:
                 break;
         }
     }

@@ -148,6 +148,7 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 SBID
 SBTabPlaylistDetail::_populate(const SBID& id)
 {
+    qDebug() << SB_DEBUG_INFO;
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBModelPlaylist pl;

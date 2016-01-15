@@ -1,4 +1,4 @@
-QT += widgets sql xml network webkitwidgets
+QT += widgets sql xml network webkitwidgets multimedia
 
 HEADERS     = \
     MainWindow.h \
@@ -37,7 +37,11 @@ HEADERS     = \
     SBModel.h \
     CompleterFactory.h \
     SBMessageBox.h \
-    SBDialogSelectItem.h
+    SBDialogSelectItem.h \
+    PlayerController.h \
+    SBMediaPlayer.h \
+    SBTabCurrentPlaylist.h \
+    SBModelCurrentPlaylist.h
 
 SOURCES     = \
     main.cpp \
@@ -77,7 +81,11 @@ SOURCES     = \
     SBModel.cpp \
     CompleterFactory.cpp \
     SBMessageBox.cpp \
-    SBDialogSelectItem.cpp
+    SBDialogSelectItem.cpp \
+    PlayerController.cpp \
+    SBMediaPlayer.cpp \
+    SBTabCurrentPlaylist.cpp \
+    SBModelCurrentPlaylist.cpp
 
 # install
 target.path = .

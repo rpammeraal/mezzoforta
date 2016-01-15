@@ -9,15 +9,17 @@
 #include <QTimer>
 
 #include "BackgroundThread.h"
+#include "Chooser.h"
 #include "Common.h"
 #include "CompleterFactory.h"
 #include "Context.h"
 #include "Controller.h"
-#include "MainWindow.h"
 #include "DataAccessLayer.h"
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
-#include "Chooser.h"
+#include "MainWindow.h"
+#include "Navigator.h"
+#include "PlayerController.h"
 #include "SBModelSong.h"
 #include "SBModelPlaylist.h"
 #include "SBID.h"
@@ -25,7 +27,6 @@
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "ScreenStack.h"
-#include "Navigator.h"
 
 class I : public QThread
 {
@@ -229,7 +230,7 @@ Controller::openMainWindow(bool startup)
         }
         mw->show();
 
-        ssh->openOpener(QString());
+        ssh->openOpener();
 
     }
     qDebug() << SB_DEBUG_INFO << "openMainWindow:end";
@@ -246,7 +247,15 @@ Controller::setupModels()
     ///	Chooser
     Chooser* lcc=new Chooser();
     Context::instance()->setChooser(lcc);
+
+    //	PlayerController
+    PlayerController* pc=Context::instance()->getPlayerController();
+    if(pc)
+    {
+        pc->initialize();
+    }
 }
+
 
 void
 Controller::setupUI()
@@ -380,7 +389,6 @@ Controller::setFontSizes() const
     qDebug() << SB_DEBUG_INFO << app->platformName();
         if(app->platformName()=="windows")
         {
-            qDebug() << SB_DEBUG_INFO << "I hear a lama pooping";
             QWidgetList l=app->allWidgets();
             for(int i=0;i<l.count();i++)
             {
@@ -389,12 +397,10 @@ Controller::setFontSizes() const
                 const QString on=w->objectName();
                 if(cn=="QLabel")
                 {
-                    qDebug() << SB_DEBUG_INFO << cn << on;
                     QLabel* l=dynamic_cast<QLabel* >(w);
                     if(l)
                     {
                         QFont f=l->font();
-                        qDebug() << SB_DEBUG_INFO << f.pointSize();
                         f.setPointSize( (f.pointSize()-12 > 9 ? f.pointSize()-12 : 9));
                         l->setFont(f);
                     }
@@ -416,6 +422,11 @@ Controller::init()
     bgt->moveToThread(&backgroundThread);
     backgroundThread.start();
     Context::instance()->setBackgroundThread(bgt);
+
+    //	Instantiate PlayerController thread
+    qDebug() << SB_DEBUG_INFO;
+    PlayerController* pc=new PlayerController();
+    Context::instance()->setPlayerController(pc);
 
     //	Recalculate playlist duration
     updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s

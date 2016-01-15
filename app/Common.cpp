@@ -48,15 +48,87 @@ Common::hideColumns(QTableView* tv)
     tv->verticalHeader()->hide();
 }
 
-int
-Common::random(int max)
+//	Generated number where 0<= number < max
+qint64
+Common::random(qint64 max)
 {
-    long rnd=qrand();
+    qint64 rnd=qrand();
     rnd=rnd * max;
     rnd = rnd / RAND_MAX;
-    qDebug() << SB_DEBUG_INFO << "max=" << max << "rnd=" << rnd;
-    return (int)rnd;
+    return (qint64)rnd;
 }
+
+qint64
+Common::randomOldestFirst(qint64 max)
+{
+    qint64 d=1;
+    qint64 n=0;
+    qint64 o=max;
+    qint64 l=0;
+
+    if(max%2==0)
+    {
+        n=((max+1)*((max)/2));
+    }
+    else
+    {
+        n=((max-1)*((max)/2)+max);
+    }
+    qint64 y=Common::random(n)+1;
+
+    qint64 index=0;
+    while((l<y) && (o>0))
+    {
+        index++;
+        l+=o;
+
+        o-=d;
+    }
+    return index;
+}
+/*
+ *
+
+sub getRandomNumberOldestFirst($)
+{
+        my
+        (
+                $max
+        ) = @_;
+
+        my $index=0;
+        my $d=1;
+        my $n=0;
+        my $o=0;
+        my $l=0;
+
+        if($max % 2 ==0)
+        {
+                $n=(($max+1)*(($max)/2));
+        }
+        else
+        {
+                $n=(($max-1)*(($max)/2)+$max);
+        }
+        $o=$max;
+
+        my $y=int (rand($n))+1;
+
+        $index=0;
+        while(($l<$y) && ($o>0))
+        {
+                $index++;
+                $l+=$o;
+
+                $o-=$d;
+        }
+        return $index;
+}
+
+
+ */
+
+
 
 QString
 Common::removeAccents(const QString &s)

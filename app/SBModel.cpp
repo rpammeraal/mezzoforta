@@ -64,6 +64,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             if(header=="sb_item_type" || header=="sb_main_item")
             {
                 itemType=static_cast<SBID::sb_type>(v.toInt());
+                qDebug() << SB_DEBUG_INFO << header << itemType;
             }
             else if(header=="sb_item_id")
             {
@@ -76,7 +77,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
-                itemType=static_cast<SBID::sb_type>(v.toInt());
+                if(itemType==SBID::sb_type_invalid)
+                {
+                    itemType=static_cast<SBID::sb_type>(v.toInt());
+                    qDebug() << SB_DEBUG_INFO << header << itemType;
+                }
 
                 //	Move 'cursor'
                 i++;
@@ -112,20 +117,24 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     {
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << "interim SBID:" << id;
+    qDebug() << SB_DEBUG_INFO << "itemType:" << itemType;
 
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
     {
         header=aim->headerData(i,Qt::Horizontal).toString().toLower();
-        qDebug() << SB_DEBUG_INFO << header;
         QModelIndex n=aim->index(idx.row(),i);
         v=aim->data(n, Qt::DisplayRole);
+        qDebug() << SB_DEBUG_INFO << header << v.toString();
 
         if(header=="sb_item_type")
         {
-            itemType=static_cast<SBID::sb_type>(v.toInt());
-            qDebug() << SB_DEBUG_INFO << v.toString();
+            if(itemType==SBID::sb_type_invalid)
+            {
+                itemType=static_cast<SBID::sb_type>(v.toInt());
+                qDebug() << SB_DEBUG_INFO << v.toString();
+            }
         }
         else if(header=="sb_item_id")
         {
@@ -157,6 +166,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             text=v.toString();
         }
     }
+    qDebug() << SB_DEBUG_INFO << "itemType:" << itemType << "itemID:" << itemID;
     id.assign(itemType,itemID);
     id.setText(text);
     qDebug() << SB_DEBUG_INFO << id;

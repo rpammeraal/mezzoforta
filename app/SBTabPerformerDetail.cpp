@@ -251,6 +251,8 @@ SBTabPerformerDetail::_populate(const SBID &id)
         frRelated->setText(cs);
     }
 
+    qDebug() << SB_DEBUG_INFO << cs;
+
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;

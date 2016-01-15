@@ -4,3 +4,14 @@ Postgres headers and libraries:
 -	files are installed in: /sw/opt/postgresql-9.4
 -	following instructions at: http://doc.qt.io/qt-5/sql-driver.html#qpsql
 
+Installing ogg/vorbis:
+https://www.xiph.org/
+http://lists.apple.com/archives/unix-porting/2005/Dec/msg00007.html
+http://www.xlr8yourmac.com/audio/issue71.html
+http://www.ogre3d.org/addonforums/viewtopic.php?f=19&t=13341
+http://www.idevgames.com/forums/thread-5787.html
+http://www.freeorion.org/index.php/Compile_In_Mac_OS_X_10.5_or_earlier
+https://github.com/dwrensha/aione/tree/master/functioning/OSX/Frameworks/SDL_mixer.framework/Versions/A/Frameworks/Vorbis.framework
+https://code.google.com/p/hedgewars/wiki/BuildingOnMac
+https://musescore.org/en/developers-handbook/compilation/compile-instructions-windows-mingw-git
+

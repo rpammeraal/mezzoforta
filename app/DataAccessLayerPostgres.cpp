@@ -17,6 +17,7 @@ DataAccessLayerPostgres::DataAccessLayerPostgres(const QString& connectionName) 
     setGetDate("NOW()");
 
     qDebug() << SB_DEBUG_INFO;
+    addMissingDatabaseItems();
 }
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const DataAccessLayerPostgres &c) : DataAccessLayer(c)

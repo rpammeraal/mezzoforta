@@ -79,7 +79,6 @@ ScreenStack::pushScreen(const SBID& id)
 SBID
 ScreenStack::currentScreen()
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
     if(stack.isEmpty()==0)
