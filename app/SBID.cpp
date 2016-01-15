@@ -530,6 +530,9 @@ QDebug operator<<(QDebug dbg, const SBID& id)
 
     case SBID::sb_type_current_playlist:
         dbg.nospace() << "<current playlist>";
+
+    default:
+        dbg.nospace() << "<not implemented in operator<< >";
         break;
     }
 
