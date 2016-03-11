@@ -8,9 +8,14 @@ Ogg/vorbis tools -- as root, execute:
 /sw/bin/fink install libogg
 /sw/bin/fink install libvorbis0
 /sw/bin/fink install lame
-/sw/bin/fink install vorbis-tools
+/sw/bin/fink install vorbis-tools	--	dependency error 20160301
+/sw/bin/fink install libsndfile1-shlibs
+/sw/bin/fink install libsndfile1-dev
+/sw/bin/fink install libsndfile1
 
 Installing ogg/vorbis:
+http://www.xlr8yourmac.com/audio/issue71.html	--	comprehensive description of various ways to install ogg/vorbis
+
 https://www.xiph.org/
 http://lists.apple.com/archives/unix-porting/2005/Dec/msg00007.html
 http://www.xlr8yourmac.com/audio/issue71.html

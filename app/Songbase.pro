@@ -41,7 +41,10 @@ HEADERS     = \
     PlayerController.h \
     SBMediaPlayer.h \
     SBTabCurrentPlaylist.h \
-    SBModelCurrentPlaylist.h
+    SBModelCurrentPlaylist.h \
+    SBAudioDecoder.h \
+    SBAudioDecoderFactory.h \
+    SBAudioDecoderWave.h
 
 SOURCES     = \
     main.cpp \
@@ -85,7 +88,10 @@ SOURCES     = \
     PlayerController.cpp \
     SBMediaPlayer.cpp \
     SBTabCurrentPlaylist.cpp \
-    SBModelCurrentPlaylist.cpp
+    SBModelCurrentPlaylist.cpp \
+    SBAudioDecoder.cpp \
+    SBAudioDecoderFactory.cpp \
+    SBAudioDecoderWave.cpp
 
 # install
 target.path = .
@@ -107,3 +113,8 @@ RC_ICONS = resources/moose.ico
 DISTFILES += \
     PlacesDeveloped.txt \
     resources/moose7.2.bmp
+
+INCLUDEPATH += -F/Library/Frameworks
+LIBS += -framework Ogg -framework Vorbis
+QMAKE_LFLAGS += -F/Library/Frameworks
+QMAKE_CXXFLAGS += -F/Library/Frameworks

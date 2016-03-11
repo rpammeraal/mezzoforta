@@ -583,8 +583,9 @@ SBTabCurrentPlaylist::playlist()
 
     CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
 
+
     int index=0;
-    for(int i=0;i<aem->rowCount();i++)
+    for(int i=0;aem && i<aem->rowCount();i++)
     {
         QStandardItem* item;
         int songID=0;
