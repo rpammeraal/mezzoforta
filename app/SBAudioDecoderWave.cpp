@@ -1,9 +1,9 @@
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 
 #include <QBuffer>
 #include <QDebug>
+#include <QFile>
 
 #include "SBAudioDecoderWave.h"
 
@@ -30,41 +30,21 @@ SBAudioDecoderWave::supportFileExtension(const QString& extension)
 QIODevice*
 SBAudioDecoderWave::stream(const QString& fileName)
 {
+    //	New implementation using Qt infrastructure
     qDebug() << SB_DEBUG_INFO << fileName;
-    QByteArray fnba=fileName.toLatin1();
-
-    int fd=open(fnba.data(), O_RDONLY, (mode_t)0600);
-    if(fd==-1)
+    QFile f(fileName);
+    if(!f.open(QIODevice::ReadOnly))
     {
-        errStr=QString("Error opening file '%1': %2").arg(fileName).arg(QString(strerror(errno)));
+        errStr=QString("Error opening file '%1' [%2]").arg(fileName).arg(f.error());
         qDebug() << SB_DEBUG_ERROR << errStr;
         return NULL;
     }
 
-    qDebug() << SB_DEBUG_INFO << "fd=" << fd;
+    QByteArray ba=f.readAll();
+    qDebug() << SB_DEBUG_INFO << "fileSize=" << f.size();
+    qDebug() << SB_DEBUG_INFO << "ba.size=" << ba.size();
 
-    //	Get length of file
-    off_t fileSize=lseek(fd,0,SEEK_END);
-    lseek(fd,0,SEEK_SET);
-
-    qDebug() << SB_DEBUG_INFO << "fileSize=" << fileSize;
-
-    void* fileMap=malloc((size_t)fileSize+1);
-
-    //	Allocate memory and map file to memory
-    qDebug() << SB_DEBUG_INFO << "Alloc mem";
-    fileMap=malloc((size_t)fileSize+1);
-
-    qDebug() << SB_DEBUG_INFO << "Do mmap";
-    fileMap=mmap(0,fileSize,PROT_READ,MAP_SHARED,fd,0);
-    if(fileMap==MAP_FAILED)
-    {
-        close(fd);
-        errStr=QString("Unable to mmap file '%1': %2").arg(fileName).arg(QString(strerror(errno)));
-        qDebug() << SB_DEBUG_ERROR << errStr;
-        return NULL;
-    }
-
+    char* fileMap=ba.data();
     WaveHeader* wh=(WaveHeader *)fileMap;
     qDebug() << SB_DEBUG_INFO << "ckID=" << wh->ckID;
     qDebug() << SB_DEBUG_INFO << "ckSize=" << wh->ckSize;
@@ -77,7 +57,7 @@ SBAudioDecoderWave::stream(const QString& fileName)
     qDebug() << SB_DEBUG_INFO << "nBitsPerSample=" << wh->nBitsPerSample;
     qDebug() << SB_DEBUG_INFO << "data_ckID=" << wh->data_ckID;
     qDebug() << SB_DEBUG_INFO << "data_ckSize=" << wh->data_ckSize;
-    qDebug() << SB_DEBUG_INFO << "filesize - data_ckSize=" << fileSize - wh->data_ckSize;
+    qDebug() << SB_DEBUG_INFO << "filesize - data_ckSize=" << f.size() - wh->data_ckSize;
 
     //	Check header
     if(strncmp(wh->ckID,"RIFF",4)!=0)
@@ -116,9 +96,20 @@ SBAudioDecoderWave::stream(const QString& fileName)
         qDebug() << SB_DEBUG_INFO << errStr;
         return NULL;
     }
+    qDebug() << SB_DEBUG_INFO << "Wave header correct (so far)";
 
-    void* startOfData=static_cast<char *>(fileMap)+44;
-    QByteArray* ba=new QByteArray((char *)startOfData,wh->data_ckSize);
-    QBuffer* b=new QBuffer(ba);
+    //	Remove header. This may cause the entire data to be copied instead of just updating
+    //	a pointer to start of data. Unknown, but this may cause performance issues on
+    //	mobile devices and/or environments with limited CPU/memory.
+    qDebug() << SB_DEBUG_INFO << "oldSize=" << ba.size();
+    ba=ba.remove(0,sizeof(WaveHeader));
+
+    qDebug() << SB_DEBUG_INFO << "newSize" << ba.size();
+    QBuffer* b=new QBuffer(&ba);
+    b->open(QIODevice::ReadOnly);
+    b->reset();
+    b->seek(0);
+
+
     return b;
 }

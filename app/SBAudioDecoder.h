@@ -13,9 +13,9 @@ protected:
     virtual ~SBAudioDecoder();
 
     static bool supportFileExtension(const QString& extension) ;
-    virtual QIODevice* stream(const QString& fileName);
-    virtual QString error() const { return errStr; }
+    virtual QIODevice* stream(const QString& fileName)=0;
 
+    virtual QString error() const { return errStr; }
     QString errStr;
 };
 

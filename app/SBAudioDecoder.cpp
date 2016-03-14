@@ -11,11 +11,7 @@ SBAudioDecoder::~SBAudioDecoder()
 bool
 SBAudioDecoder::supportFileExtension(const QString& extension)
 {
+    Q_UNUSED(extension);
     return 0;
 }
 
-QIODevice*
-SBAudioDecoder::stream(const QString& fileName)
-{
-    return NULL;
-}
