@@ -116,7 +116,9 @@ DISTFILES += \
     PlacesDeveloped.txt \
     resources/moose7.2.bmp
 
-INCLUDEPATH += -F/Library/Frameworks
-LIBS += -framework Ogg -framework Vorbis
-QMAKE_LFLAGS += -F/Library/Frameworks
-QMAKE_CXXFLAGS += -F/Library/Frameworks
+macx: LIBS += -L/usr/local/lib/ -lportaudio
+
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
+
+macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a

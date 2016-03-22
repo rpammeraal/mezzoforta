@@ -1,8 +1,8 @@
 #ifndef SBAUDIODECODEROGGVORBIS_H
 #define SBAUDIODECODEROGGVORBIS_H
 
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
+//#include <vorbis/codec.h>
+//#include <vorbis/vorbisfile.h>
 
 #include "SBAudioDecoder.h"
 
@@ -18,7 +18,7 @@ protected:
     virtual QIODevice* stream(const QString& fileName);
 
 private:
-    OggVorbis_File vf;
+//    OggVorbis_File vf;
 };
 
 #endif // SBAUDIODECODEROGGVORBIS_H
