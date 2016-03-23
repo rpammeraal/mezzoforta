@@ -30,10 +30,11 @@ SBAudioDecoderOggVorbis::supportFileExtension(const QString& extension)
             ) ? 1: 0;
 }
 
-QIODevice*
+StreamContent
 SBAudioDecoderOggVorbis::stream(const QString& fileName)
 {
     qDebug() << SB_DEBUG_INFO << fileName;
+    StreamContent sc;
     QByteArray fnba=fileName.toLatin1();
     FILE *f=fopen(fnba.data(),"r");
 //    if(!f)
@@ -51,5 +52,5 @@ SBAudioDecoderOggVorbis::stream(const QString& fileName)
 //        return NULL;
 //    }
 
-    return NULL;
+    return sc;
 }

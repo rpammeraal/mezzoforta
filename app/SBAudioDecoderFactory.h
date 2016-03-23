@@ -3,13 +3,15 @@
 
 #include <QIODevice>
 
+#include "StreamContent.h"
+
 class SBAudioDecoderFactory
 {
 public:
     SBAudioDecoderFactory();
     ~SBAudioDecoderFactory();
 
-    QIODevice* stream(const QString& fileName);
+    StreamContent stream(const QString& fileName);
     QString error() const { return errStr; }
 
 private:

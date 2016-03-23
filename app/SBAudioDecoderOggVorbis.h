@@ -5,6 +5,7 @@
 //#include <vorbis/vorbisfile.h>
 
 #include "SBAudioDecoder.h"
+#include "StreamContent.h"
 
 class SBAudioDecoderOggVorbis : public SBAudioDecoder
 {
@@ -15,7 +16,7 @@ protected:
     ~SBAudioDecoderOggVorbis();
 
     static bool supportFileExtension(const QString& extension);
-    virtual QIODevice* stream(const QString& fileName);
+    virtual StreamContent stream(const QString& fileName);
 
 private:
 //    OggVorbis_File vf;

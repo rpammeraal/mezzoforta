@@ -1,6 +1,7 @@
 //#include <ogg/ogg.h>
 //#include <vorbis/codec.h>
 
+#include <string.h>
 #include <portaudio.h>
 
 #include <QAudioDeviceInfo>
@@ -9,6 +10,7 @@
 #include "SBAudioDecoderFactory.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
+#include "StreamContent.h"
 
 #include "Common.h"
 
@@ -20,7 +22,7 @@ PaSampleFormat sampleFormat;
 int bytesPerSample, bitsPerSample;
 
 
-int paStreamCallback
+int staticPaCallBack
 (
     const void *input,
     void *output,
@@ -30,26 +32,10 @@ int paStreamCallback
     void *userData
 )
 {
-    Q_UNUSED(input);
-    Q_UNUSED(timeInfo);
-    Q_UNUSED(statusFlags);
-    Q_UNUSED(userData);
-
-    size_t numRead = fread(output, bytesPerSample * numChannels, frameCount, wavfile);
-    output = (qint8*)output + numRead * numChannels * bytesPerSample;
-    frameCount -= numRead;
-
-    if(frameCount > 0)
-    {
-        memset(output, 0, frameCount * numChannels * bytesPerSample);
-        qDebug() << SB_DEBUG_INFO << "Done";
-        return paComplete;
-    }
-
-    return paContinue;
+    return ((SBMediaPlayer*)userData)->paCallback(input,output,frameCount,timeInfo,statusFlags);
 }
 
-bool portAudioOpen()
+bool portAudioOpen(void* ptr)
 {
     int err=0;
     err=Pa_Initialize();
@@ -79,28 +65,20 @@ bool portAudioOpen()
     outputParameters.sampleFormat = sampleFormat;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
 
-//    err = Pa_OpenStream(
-//        &stream,
-//        NULL, // no input
-//        &outputParameters,
-//        sampleRate,
-//        paFramesPerBufferUnspecified, // framesPerBuffer
-//        0, // flags
-//        &paStreamCallback,
-//        NULL //void *userData
-//        );
+    qDebug() << SB_DEBUG_INFO;
     err = Pa_OpenDefaultStream(
         &stream,
-        NULL, // no input
+        0, // no input
         numChannels,
         sampleFormat,
         sampleRate,
         paFramesPerBufferUnspecified, // framesPerBuffer
         //0, // flags
-        &paStreamCallback,
-        NULL //void *userData
+        &staticPaCallBack,
+        ptr //void *userData
         );
 
+    qDebug() << SB_DEBUG_INFO;
     if(err != paNoError)
     {
         qDebug() << SB_DEBUG_INFO
@@ -178,7 +156,7 @@ int readFmtChunk(qint32 chunkLen) {
     return 0;
 }
 
-int doit()
+int doit(void* ptr)
 {
     qDebug() << SB_DEBUG_INFO;
     wavfile = fopen("/tmp/aap.wav","r");
@@ -219,7 +197,7 @@ int doit()
     qDebug() << SB_DEBUG_INFO;
 
     printf("start playing...\n");
-    int i=portAudioOpen();
+    int i=portAudioOpen(ptr);
     if(i!=1)
     {
         qDebug() << SB_DEBUG_INFO << "Something went wrong with portAudioOpen";
@@ -263,7 +241,23 @@ SBMediaPlayer::setMedia(const QString &fileName)
 {
     if(1)
     {
-        doit();
+        QString fn=QString(fileName).replace("\\","");
+        fn="/tmp/aap.wav";
+        QUrl o=QUrl::fromLocalFile(fn);
+        SBAudioDecoderFactory adf;
+//        QByteArray _stream=adf.stream(fn);
+        _sc=adf.stream(fn);
+        _index=0;
+        _length=62488576;
+        _playerID=555;
+
+    for(int i=0;i<10;i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << (int)((char *)_data)[i];
+    }
+
+        //	try to get data as a void*.
+        doit((void *)this);
     }
 //    if(0)
 //    {
@@ -376,11 +370,96 @@ SBMediaPlayer::setMedia(const QString &fileName)
     return 1;
 }
 
+int
+SBMediaPlayer::paCallback
+(
+    const void *input,
+    void *output,
+    unsigned long frameCount,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags
+)
+{
+    Q_UNUSED(input);
+    Q_UNUSED(timeInfo);
+    Q_UNUSED(statusFlags);
+    int resultCode;
+
+    qint64 toRead=bytesPerSample * numChannels * frameCount;
+
+    qDebug() << SB_DEBUG_INFO
+             << "toRead=" << toRead
+             << ":frameCount=" <<frameCount
+             << ":_index=" << _index
+             << ":_length=" << _length
+    ;
+
+    if(_index+toRead>_length)
+    {
+        toRead=_length-_index;
+    }
+    if(toRead)
+    {
+        memcpy(output,(char *)_sc.data()+_index,toRead);
+        _index+=toRead;
+        resultCode=paContinue;
+    }
+    else
+    {
+        memset(output, 0, frameCount * numChannels * bytesPerSample);
+        qDebug() << SB_DEBUG_INFO << "Done";
+        resultCode=paComplete;
+
+    }
+    return resultCode;
+    /*
+    qint64 toRead=bytesPerSample * numChannels * frameCount;
+    QByteArray segment=_stream.mid(_index,toRead);
+    _index+=toRead;
+    toRead-=segment.size();
+    memcpy(output,segment.constData(),toRead);
+
+    qDebug() << SB_DEBUG_INFO
+             << "frameCount=" << frameCount
+             << ":toRead=" << toRead
+             << ":_index=" << _index
+             << ":_stream.size()" << _stream.size()
+             << ":segment.size()" << segment.size()
+             << ":this" << (qint64)this
+             << ":_playerID=" << _playerID
+    ;
+
+    if(toRead>0)
+    {
+        memset(output, 0, frameCount * numChannels * bytesPerSample);
+        qDebug() << SB_DEBUG_INFO << "Done";
+        return paComplete;
+    }
+
+    return paContinue;
+    */
+
+    //	org way
+    size_t numRead = fread(output, bytesPerSample * numChannels, frameCount, wavfile);
+    output = (qint8*)output + numRead * numChannels * bytesPerSample;
+    frameCount -= numRead;
+
+    if(frameCount > 0)
+    {
+        memset(output, 0, frameCount * numChannels * bytesPerSample);
+        return paComplete;
+    }
+
+    return paContinue;
+}
+
+
 ///	Private methods
 void
 SBMediaPlayer::init()
 {
     _playerID=-1;
+    _index=0;
     //fileLength=0;
 }
 

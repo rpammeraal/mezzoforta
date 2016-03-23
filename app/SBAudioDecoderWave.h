@@ -27,7 +27,7 @@ public:
     virtual ~SBAudioDecoderWave();
 
     static bool supportFileExtension(const QString& extension);
-    virtual QIODevice* stream(const QString& fileName);
+    virtual StreamContent stream(const QString& fileName);
 };
 
 #endif // SBAUDIODECODERWAVE_H

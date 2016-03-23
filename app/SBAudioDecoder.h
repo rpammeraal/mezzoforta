@@ -2,7 +2,9 @@
 #define SBAUDIODECODER_H
 
 #include <QString>
-#include <QIODevice>
+#include <QByteArray>
+
+#include "StreamContent.h"
 
 class SBAudioDecoder
 {
@@ -13,7 +15,7 @@ protected:
     virtual ~SBAudioDecoder();
 
     static bool supportFileExtension(const QString& extension) ;
-    virtual QIODevice* stream(const QString& fileName)=0;
+    virtual StreamContent stream(const QString& fileName)=0;
 
     virtual QString error() const { return errStr; }
     QString errStr;

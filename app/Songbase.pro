@@ -45,7 +45,8 @@ HEADERS     = \
     SBAudioDecoder.h \
     SBAudioDecoderFactory.h \
     SBAudioDecoderWave.h \
-    SBAudioDecoderOggVorbis.h
+    SBAudioDecoderOggVorbis.h \
+    StreamContent.h
 
 SOURCES     = \
     main.cpp \
@@ -93,7 +94,8 @@ SOURCES     = \
     SBAudioDecoder.cpp \
     SBAudioDecoderFactory.cpp \
     SBAudioDecoderWave.cpp \
-    SBAudioDecoderOggVorbis.cpp
+    SBAudioDecoderOggVorbis.cpp \
+    StreamContent.cpp
 
 # install
 target.path = .

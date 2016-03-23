@@ -3,7 +3,11 @@
 
 //#include <vorbis/vorbisfile.h>
 
+#include <portaudio.h>
+
 #include <QMediaPlayer>
+
+#include "StreamContent.h"
 
 #define CHECK(x) { if(!(x)) { \
 fprintf(stderr, "%s:%i: failure at: %s\n", __FILE__, __LINE__, #x); \
@@ -19,12 +23,19 @@ public:
 
     void assignID(int playerID);
     virtual bool setMedia(const QString& fileName);
+    int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
 
 private:
+    QByteArray _stream;
     int _playerID;
+    StreamContent _sc;
 
     void init();
     void clear();
+
+    qint64 _index;
+    qint64 _length;
+    void* _data;
 
     //	Added to ogg/vorbis
 //    OggVorbis_File ovf;

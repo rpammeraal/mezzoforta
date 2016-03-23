@@ -16,11 +16,12 @@ SBAudioDecoderFactory::~SBAudioDecoderFactory()
 
 }
 
-QIODevice*
+StreamContent
 SBAudioDecoderFactory::stream(const QString &fileName)
 {
     //	Determine file extension
-    QIODevice* iod=NULL;
+    StreamContent sc;
+    QByteArray ba;
     QFileInfo fi(fileName);
     QString extension=fi.suffix();
     SBAudioDecoder* ad=NULL;
@@ -37,16 +38,11 @@ SBAudioDecoderFactory::stream(const QString &fileName)
     }
     else
     {
-        iod=ad->stream(fileName);
-
-        if(iod==NULL)
-        {
-            errStr=ad->error();
-        }
-        delete ad; ad=NULL;
+        sc=ad->stream(fileName);
     }
+    delete ad; ad=NULL;
 
-    return iod;
+    return sc;
 }
 
 void
