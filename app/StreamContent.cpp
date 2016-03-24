@@ -4,22 +4,23 @@
 
 StreamContent::StreamContent():_data(new Data())
 {
+    init();
 }
 
-StreamContent::StreamContent(const void* ptr, qint64 length)
+StreamContent::StreamContent(const void* ptr, qint64 length, qint16 numChannels, qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample)
 {
+    init();
+
     qDebug() << SB_DEBUG_INFO << "const ctor";
     void* _ptr=malloc(length);
     memcpy(_ptr,ptr,length);
-    for(int i=0;i<10;i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << (int)((char *)_ptr)[i];
-    }
-    _data=new Data(_ptr,length);
+    _data=new Data(_ptr,length,numChannels,sampleRate,sampleFormat,bitsPerSample);
 }
 
-StreamContent::StreamContent(void* ptr, qint64 length):_data(new Data(ptr,length))
+StreamContent::StreamContent(void* ptr, qint64 length, qint16 numChannels, qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample):
+    _data(new Data(ptr,length,numChannels,sampleRate,sampleFormat,bitsPerSample))
 {
+    init();
     qDebug() << SB_DEBUG_INFO << "non-const ctor";
 }
 
@@ -49,8 +50,10 @@ StreamContent::operator= (const StreamContent& f)
     return *this;
 }
 
-void*
-StreamContent::data() const
+void
+StreamContent::init()
 {
-    return _data->_ptr;
+    _errMsg=QString();
+    _hasErrorFlag=0;
+    qDebug() << SB_DEBUG_INFO;
 }

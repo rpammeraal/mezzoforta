@@ -1,34 +1,85 @@
 #ifndef STREAMCONTENT_H
 #define STREAMCONTENT_H
 
+#include <portaudio.h>
+
 #include <QtGlobal>
+#include <QString>
+
+#include "Common.h"
 
 class StreamContent
 {
 public:
     StreamContent();
-    StreamContent(void* data, qint64 length);
-    StreamContent(const void* data, qint64 length);
+    StreamContent(void* data, qint64 length, qint16 numChannels,qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample);
+    StreamContent(const void* data, qint64 length, qint16 numChannels, qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample);
     StreamContent(const StreamContent& f);
     StreamContent& operator= (const StreamContent& f);
     ~StreamContent();
 
-    void* data() const;
+    inline qint16         bitsPerSample() const { return _data->_bitsPerSample; }
+    inline void*          data() const { return _data->_ptr; }
+    inline QString        errorMsg() const { return _errMsg; }
+    inline bool           hasErrorFlag() const { return _hasErrorFlag; }
+    inline qint64         length() const { return _data->_length; }
+    inline qint16         numChannels() const { return _data->_numChannels; }
+    inline PaSampleFormat sampleFormat() const { return _data->_sampleFormat; }
+    inline qint32         sampleRate() const { return _data->_sampleRate; }
+    inline void           setErrorMsg(const QString& errorMsg) { _errMsg=errorMsg; _hasErrorFlag=1; }
 
 private:
     class Data
     {
     public:
-        Data()                        :_count(1),_ptr(NULL),_length(0) { };
-        Data(void* ptr, qint64 length):_count(1),_ptr(ptr),_length(length) { };
-        Data(const Data& d)           :_count(d._count),_ptr(d._ptr),_length(d._length) { };
+        Data()                        :
+            _count(1),
+            _ptr(NULL),
+            _length(0),
+            _numChannels(0),
+            _sampleRate(0),
+            _sampleFormat(0),
+            _bitsPerSample(0)
+        {
+            qDebug() << SB_DEBUG_INFO;
+        };
+        Data(void* ptr, qint64 length,qint16 numChannels,qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample):
+            _count(1),
+            _ptr(ptr),
+            _length(length),
+            _numChannels(numChannels),
+            _sampleRate(sampleRate),
+            _sampleFormat(sampleFormat),
+            _bitsPerSample(bitsPerSample)
+        {
+            qDebug() << SB_DEBUG_INFO;
+        };
+        Data(const Data& d):
+            _count(d._count),
+            _ptr(d._ptr),
+            _length(d._length),
+            _numChannels(d._numChannels),
+            _sampleRate(d._sampleRate),
+            _sampleFormat(d._sampleFormat),
+            _bitsPerSample(d._bitsPerSample)
+        {
+            qDebug() << SB_DEBUG_INFO;
+        };
 
-        qint64 _count;
-        void* _ptr;
-        qint64 _length;
+        qint64         _count;
+        void*          _ptr;
+        qint64         _length;
+        qint16         _numChannels;
+        qint32         _sampleRate;
+        PaSampleFormat _sampleFormat;
+        qint16         _bitsPerSample;
     };
 
     Data* _data;
+    QString _errMsg;
+    bool _hasErrorFlag;
+
+    void init();
 };
 
 #endif // STREAMCONTENT_H
