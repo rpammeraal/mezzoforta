@@ -57,7 +57,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
 
         if(sc.hasErrorFlag())
         {
-            _errorStr=sc.errorMsg();
+            setErrorMsg(sc.errorMsg());
             return 0;
         }
         portAudioOpen(adf.stream(fn));
@@ -117,6 +117,12 @@ SBMediaPlayer::setMedia(const QString &fileName)
 //    }
 }
 
+QMediaPlayer::State
+SBMediaPlayer::state() const
+{
+    return _state;
+}
+
 int
 SBMediaPlayer::paCallback
 (
@@ -134,11 +140,15 @@ SBMediaPlayer::paCallback
 
     qint64 toRead=(_sc.bitsPerSample()/8) * _sc.numChannels() * frameCount;
 
-    qDebug() << SB_DEBUG_INFO
-             << "toRead=" << toRead
-             << ":frameCount=" <<frameCount
-             << ":_index=" << _index
-    ;
+    if(this->position() % 1000 <= 10)
+    {
+        qDebug() << SB_DEBUG_INFO << "toRead=" << toRead
+                 << ":frameCount=" <<frameCount
+                 << ":_index=" << _index
+                 << ":position=" << this->position()
+                 << this->position() % 1000
+        ;
+    }
 
     if(_index+toRead>_sc.length())
     {
@@ -149,19 +159,73 @@ SBMediaPlayer::paCallback
         memcpy(output,(char *)_sc.data()+_index,toRead);
         _index+=toRead;
         resultCode=paContinue;
+        emit positionChanged(this->position());
     }
     else
     {
         memset(output, 0, frameCount * _sc.numChannels() * (_sc.bitsPerSample()/8));
         qDebug() << SB_DEBUG_INFO << "Done";
         resultCode=paComplete;
-
+        setState(QMediaPlayer::StoppedState);
     }
     return resultCode;
 }
 
+qint64
+SBMediaPlayer::position() const
+{
+    //	CWIP: probably incorrect
+    return index2PositionInMS(_index);
+}
+
+///	Public slots
+void
+SBMediaPlayer::play()
+{
+    qDebug() << SB_DEBUG_INFO;
+    _paError=Pa_StartStream(_stream);
+    qDebug() << SB_DEBUG_INFO;
+    if( _paError != paNoError )
+    {
+        setErrorMsg(Pa_GetErrorText(_paError));
+        qDebug() << SB_DEBUG_INFO
+                 << "Pa_StartStream:"
+                 << Pa_GetErrorText(_paError)
+        ;
+        return;
+    }
+    qDebug() << SB_DEBUG_INFO;
+    setState(QMediaPlayer::PlayingState);
+}
+
+void
+SBMediaPlayer::pause()
+{
+    Pa_StopStream(_stream);
+    setState(QMediaPlayer::PausedState);
+}
+
+void
+SBMediaPlayer::setPosition(qint64 position)
+{
+    qDebug() << SB_DEBUG_INFO << "position=" << position;
+    _index=( position * _sc.bitsPerSample() * _sc.numChannels() * _sc.sampleRate()/8)/1000;
+}
+
+void
+SBMediaPlayer::stop()
+{
+    Pa_StopStream(_stream);
+    setState(QMediaPlayer::StoppedState);
+}
 
 ///	Private methods
+qint64
+SBMediaPlayer::index2PositionInMS(qint64 index) const
+{
+    return index * 1000 / ( _sc.bitsPerSample() * _sc.numChannels() * _sc.sampleRate()/8);
+}
+
 void
 SBMediaPlayer::init()
 {
@@ -170,6 +234,8 @@ SBMediaPlayer::init()
     _portAudioInitFlag=0;
     _paError=paNoError;
     _stream=NULL;
+    _state=QMediaPlayer::StoppedState;
+    _hasErrorFlag=0;
 
     portAudioInit();
 }
@@ -243,20 +309,20 @@ SBMediaPlayer::portAudioOpen(const StreamContent& sc)
         return false;
     }
     qDebug() << SB_DEBUG_INFO;
+    emit durationChanged(index2PositionInMS(_sc.length()));
     return 1;
 }
 
-bool
-SBMediaPlayer::play()
+void
+SBMediaPlayer::setErrorMsg(const QString &errMsg)
 {
-    _paError=Pa_StartStream(_stream);
-    if( _paError != paNoError )
-    {
-        qDebug() << SB_DEBUG_INFO
-                 << "Pa_StartStream:"
-                 << Pa_GetErrorText(_paError)
-        ;
-        return 0;
-    }
-    return 1;
+    _errMsg=errMsg;
+    _hasErrorFlag=1;
+}
+
+void
+SBMediaPlayer::setState(QMediaPlayer::State state)
+{
+    _state=state;
+    emit stateChanged(_state);
 }

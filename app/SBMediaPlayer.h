@@ -11,7 +11,7 @@
 fprintf(stderr, "%s:%i: failure at: %s\n", __FILE__, __LINE__, #x); \
 return(0); } }
 
-class SBMediaPlayer : public QMediaPlayer
+class SBMediaPlayer : public QObject
 {
 
     Q_OBJECT
@@ -22,9 +22,20 @@ public:
 
     void assignID(int playerID);
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
-    bool play();
+    qint64 position() const;
     bool setMedia(const QString& fileName);
+    QMediaPlayer::State state() const;
 
+signals:
+    void durationChanged(qint64 duration);
+    void positionChanged(qint64 position);
+    void stateChanged(QMediaPlayer::State state);
+
+public slots:
+    void play();
+    void pause();
+    void setPosition(qint64 position);
+    void stop();
 
 private:
     int _playerID;
@@ -33,14 +44,18 @@ private:
     bool _portAudioInitFlag;
     PaError _paError;
     PaStream* _stream;
-    QString _errorStr;
+    QString _errMsg;
+    bool _hasErrorFlag;
+    QMediaPlayer::State _state;
 
+    qint64 index2PositionInMS(qint64 index) const;
     void init();
     void clear();
     void portAudioInit();
     bool portAudioOpen(const StreamContent& sc);
+    void setErrorMsg(const QString& errMsg);
+    void setState(QMediaPlayer::State state);
 
-    //	REMOVÉ
 };
 
 #endif // SBMEDIAPLAYER_H

@@ -179,8 +179,7 @@ PlayerController::playerPlay(int playID)
     {
         qDebug() << SB_DEBUG_INFO;
         //	If paused, resume play
-        QMediaPlayer* mp=dynamic_cast<QMediaPlayer *>(&(_playerInstance[_currentPlayerID]));
-        mp->play();
+        _playerInstance[_currentPlayerID].play();
         _playerPlayButton[_currentPlayerID]->setText("||");
         _state=PlayerController::sb_player_state_play;
         _updatePlayerInfo();
