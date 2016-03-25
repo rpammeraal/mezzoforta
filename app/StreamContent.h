@@ -20,13 +20,13 @@ public:
 
     inline qint16         bitsPerSample() const { return _data->_bitsPerSample; }
     inline void*          data() const { return _data->_ptr; }
-    inline QString        errorMsg() const { return _errMsg; }
-    inline bool           hasErrorFlag() const { return _hasErrorFlag; }
+    inline QString        errorMsg() const { return _data->_errMsg; }
+    inline bool           hasErrorFlag() const { return _data->_hasErrorFlag; }
     inline qint64         length() const { return _data->_length; }
     inline qint16         numChannels() const { return _data->_numChannels; }
     inline PaSampleFormat sampleFormat() const { return _data->_sampleFormat; }
     inline qint32         sampleRate() const { return _data->_sampleRate; }
-    inline void           setErrorMsg(const QString& errorMsg) { _errMsg=errorMsg; _hasErrorFlag=1; }
+    inline void           setErrorMsg(const QString& errorMsg) { _data->setErrorMsg(errorMsg); }
 
 private:
     class Data
@@ -39,7 +39,9 @@ private:
             _numChannels(0),
             _sampleRate(0),
             _sampleFormat(0),
-            _bitsPerSample(0)
+            _bitsPerSample(0),
+            _errMsg(QString()),
+            _hasErrorFlag(0)
         {
             qDebug() << SB_DEBUG_INFO;
         };
@@ -50,7 +52,9 @@ private:
             _numChannels(numChannels),
             _sampleRate(sampleRate),
             _sampleFormat(sampleFormat),
-            _bitsPerSample(bitsPerSample)
+            _bitsPerSample(bitsPerSample),
+            _errMsg(QString()),
+            _hasErrorFlag(0)
         {
             qDebug() << SB_DEBUG_INFO;
         };
@@ -61,10 +65,27 @@ private:
             _numChannels(d._numChannels),
             _sampleRate(d._sampleRate),
             _sampleFormat(d._sampleFormat),
-            _bitsPerSample(d._bitsPerSample)
+            _bitsPerSample(d._bitsPerSample),
+            _errMsg(d._errMsg),
+            _hasErrorFlag(d._hasErrorFlag)
         {
             qDebug() << SB_DEBUG_INFO;
         };
+        ~Data()
+        {
+            if(_ptr)
+            {
+                free(_ptr);
+            }
+        }
+
+        inline void           setErrorMsg(const QString& errorMsg)
+            {
+                qDebug() << SB_DEBUG_INFO << "set error to:" << errorMsg;
+                _errMsg=errorMsg;
+                _hasErrorFlag=1;
+            }
+
 
         qint64         _count;
         void*          _ptr;
@@ -73,13 +94,11 @@ private:
         qint32         _sampleRate;
         PaSampleFormat _sampleFormat;
         qint16         _bitsPerSample;
+        QString        _errMsg;
+        bool           _hasErrorFlag;
     };
 
     Data* _data;
-    QString _errMsg;
-    bool _hasErrorFlag;
-
-    void init();
 };
 
 #endif // STREAMCONTENT_H

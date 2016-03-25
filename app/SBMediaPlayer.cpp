@@ -50,10 +50,12 @@ SBMediaPlayer::setMedia(const QString &fileName)
     if(1)
     {
         QString fn=QString(fileName).replace("\\","");
-        fn="/tmp/aap.wav";
+        //fn="/tmp/aap.wav";
+        fn="C:/temp/aap.wav";
         QUrl o=QUrl::fromLocalFile(fn);
         SBAudioDecoderFactory adf;
         StreamContent sc=adf.stream(fn);
+        qDebug() << SB_DEBUG_INFO << sc.hasErrorFlag();
 
         if(sc.hasErrorFlag())
         {

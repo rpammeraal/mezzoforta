@@ -119,8 +119,10 @@ DISTFILES += \
     resources/moose7.2.bmp
 
 macx: LIBS += -L/usr/local/lib/ -lportaudio
-
-INCLUDEPATH += /usr/local/include
-DEPENDPATH += /usr/local/include
-
 macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a
+
+INCLUDEPATH += /usr/local/include C:/usr/local/include
+DEPENDPATH += /usr/local/include C:/usr/local/include
+
+win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86
+

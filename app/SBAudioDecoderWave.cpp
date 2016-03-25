@@ -153,5 +153,6 @@ SBAudioDecoderWave::stream(const QString& fileName)
     qint64 size=f.size()-sizeof(WaveHeader);
     const void* src=(void *)f.map(sizeof(WaveHeader),size);
     sc=StreamContent(src, size,wh->nChannels,wh->nSamplesPerSec,sampleFormat,wh->nBitsPerSample);
+    qDebug() << SB_DEBUG_INFO << "EOF";
     return sc;
 }

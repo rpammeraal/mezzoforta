@@ -4,12 +4,10 @@
 
 StreamContent::StreamContent():_data(new Data())
 {
-    init();
 }
 
 StreamContent::StreamContent(const void* ptr, qint64 length, qint16 numChannels, qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample)
 {
-    init();
 
     qDebug() << SB_DEBUG_INFO << "const ctor";
     void* _ptr=malloc(length);
@@ -20,7 +18,6 @@ StreamContent::StreamContent(const void* ptr, qint64 length, qint16 numChannels,
 StreamContent::StreamContent(void* ptr, qint64 length, qint16 numChannels, qint32 sampleRate, PaSampleFormat sampleFormat, qint16 bitsPerSample):
     _data(new Data(ptr,length,numChannels,sampleRate,sampleFormat,bitsPerSample))
 {
-    init();
     qDebug() << SB_DEBUG_INFO << "non-const ctor";
 }
 
@@ -48,12 +45,4 @@ StreamContent::operator= (const StreamContent& f)
         delete old;
     }
     return *this;
-}
-
-void
-StreamContent::init()
-{
-    _errMsg=QString();
-    _hasErrorFlag=0;
-    qDebug() << SB_DEBUG_INFO;
 }
