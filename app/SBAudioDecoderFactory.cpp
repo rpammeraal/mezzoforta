@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "SBAudioDecoder.h"
 #include "SBAudioDecoderFactory.h"
+#include "SBAudioDecoderOggVorbis.h"
 #include "SBAudioDecoderWave.h"
 
 SBAudioDecoderFactory::SBAudioDecoderFactory()
@@ -29,6 +30,10 @@ SBAudioDecoderFactory::stream(const QString &fileName)
     if(SBAudioDecoderWave::supportFileExtension(extension)==1)
     {
         ad=new SBAudioDecoderWave();
+    }
+    else if(SBAudioDecoderOggVorbis::supportFileExtension(extension)==1)
+    {
+        ad=new SBAudioDecoderOggVorbis();
     }
 
     if(ad==NULL)

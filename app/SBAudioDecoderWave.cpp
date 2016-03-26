@@ -23,10 +23,10 @@ bool
 SBAudioDecoderWave::supportFileExtension(const QString& extension)
 {
     return
-            (
-                extension.compare("wav",Qt::CaseInsensitive)==0 ||
-                extension.compare("wave",Qt::CaseInsensitive)==0
-            ) ? 1: 0;
+        (
+            extension.compare("wav",Qt::CaseInsensitive)==0 ||
+            extension.compare("wave",Qt::CaseInsensitive)==0
+        ) ? 1: 0;
 }
 
 StreamContent
@@ -40,8 +40,8 @@ SBAudioDecoderWave::stream(const QString& fileName)
     if(!f.open(QIODevice::ReadOnly))
     {
         errStr=QString("Error opening file '%1' [%2]").arg(fileName).arg(f.error());
+        sc.setErrorMsg(errStr);
         qDebug() << SB_DEBUG_ERROR << errStr;
-        //	CWIP: add error msg, status to StreamContent
         return sc;
     }
 

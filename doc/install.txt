@@ -8,11 +8,12 @@ Ogg/vorbis tools -- as root, execute:
 /sw/bin/fink install libogg
 /sw/bin/fink install libvorbis0
 /sw/bin/fink install lame
-/sw/bin/fink install vorbis-tools	--	dependency error 20160301
+/sw/bin/fink install vorbis-tools	--	dependency error 20160301, not cricical for building
 /sw/bin/fink install libsndfile1-shlibs
 /sw/bin/fink install libsndfile1-dev
 /sw/bin/fink install libsndfile1
-#/sw/bin/fink install portaudio
+#/sw/bin/fink install portaudio	--	don't install, unless its V19
+/sw/bin/fink install libmad
 
 Install portaudio:
 - remove Werror from ./configure

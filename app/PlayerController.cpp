@@ -226,7 +226,6 @@ PlayerController::playerPlay(int playID)
             {
                 qDebug() << SB_DEBUG_INFO << _currentPlayID << _seekPreviousSongFlag;
 
-                //QString path="c:/Temp/"+_playList[_currentPlayID].path;
                 QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+_playList[_currentPlayID].path;
                 if(_playerInstance[_currentPlayerID].setMedia(path)==0)
                 {

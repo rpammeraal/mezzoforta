@@ -118,11 +118,14 @@ DISTFILES += \
     PlacesDeveloped.txt \
     resources/moose7.2.bmp
 
-macx: LIBS += -L/usr/local/lib/ -lportaudio
-macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile
+macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a
 
-INCLUDEPATH += /usr/local/include C:/usr/local/include
-DEPENDPATH += /usr/local/include C:/usr/local/include
+INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
+DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86
+
+
+
 

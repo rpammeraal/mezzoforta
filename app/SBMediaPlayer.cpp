@@ -51,72 +51,21 @@ SBMediaPlayer::setMedia(const QString &fileName)
     {
         QString fn=QString(fileName).replace("\\","");
         //fn="/tmp/aap.wav";
-        fn="C:/temp/aap.wav";
-        QUrl o=QUrl::fromLocalFile(fn);
+        //fn="C:/temp/aap.wav";
+        fn="/tmp/noot.ogg";
         SBAudioDecoderFactory adf;
         StreamContent sc=adf.stream(fn);
-        qDebug() << SB_DEBUG_INFO << sc.hasErrorFlag();
 
         if(sc.hasErrorFlag())
         {
             setErrorMsg(sc.errorMsg());
+            qDebug() << SB_DEBUG_INFO << sc.errorMsg();
             return 0;
         }
-        portAudioOpen(adf.stream(fn));
+        portAudioOpen(sc);
         play();
     }
     return 1;
-//    if(0)
-//    {
-//        //	Code to use OGG. May be moved to (a subclass of) SBAudioDecoder
-//        QString fn="/tmp/noot.ogg";
-//        QByteArray qBAFilename = fn.toUtf8();
-//        FILE *vorbisfile =  fopen(qBAFilename.data(), "r");
-
-//        if (!vorbisfile)
-//        {
-//            qDebug() << SB_DEBUG_ERROR << "Cannot open: " << fn;
-//            return 0;
-//        }
-
-//        if(ov_open(vorbisfile, &ovf, NULL, 0) < 0)
-//        {
-//            qDebug() << SB_DEBUG_ERROR << "Input is not OGG.";
-//            fileLength = 0;
-//            return 0;
-//        }
-
-//        vorbis_info* vi=ov_info(&ovf, -1);
-//        if(!vi)
-//        {
-//            qDebug() << SB_DEBUG_NPTR << "vorbis_info";
-//            return 0;
-//        }
-//        numChannels=vi->channels;
-//        sampleRate=vi->rate;
-
-//        if(numChannels>2)
-//        {
-//            qDebug() << SB_DEBUG_ERROR << "Can't support more than 2 channels";
-//            ov_clear(&ovf);
-//            init();
-//            return 0;
-//        }
-
-//        fileLength=ov_pcm_total(&ovf,-1)*2;
-//        if(!fileLength)
-//        {
-//            qDebug() << SB_DEBUG_ERROR << "Unknown file length";
-//            ov_clear(&ovf);
-//            init();
-//            return 0;
-//        }
-//        qDebug() << SB_DEBUG_INFO
-//                 << ":fileLength=" << fileLength
-//                 << ":numChannels=" << numChannels
-//                 << ":sampleRate=" << sampleRate
-//        ;
-//    }
 }
 
 QMediaPlayer::State
@@ -264,10 +213,13 @@ SBMediaPlayer::portAudioInit()
 bool
 SBMediaPlayer::portAudioOpen(const StreamContent& sc)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(_paError!=paNoError)
     {
         return 0;
     }
+    qDebug() << SB_DEBUG_INFO;
+
     _sc=sc;
     _index=0;
     PaStreamParameters outputParameters;
