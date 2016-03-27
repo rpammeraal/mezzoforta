@@ -17,18 +17,9 @@ Ogg/vorbis tools -- as root, execute:
 
 Install portaudio:
 - remove Werror from ./configure
+- version of portaudio used is included in repository with updated config scripts
 
-
-Installing ogg/vorbis:
-http://www.xlr8yourmac.com/audio/issue71.html	--	comprehensive description of various ways to install ogg/vorbis
-
-https://www.xiph.org/
-http://lists.apple.com/archives/unix-porting/2005/Dec/msg00007.html
-http://www.xlr8yourmac.com/audio/issue71.html
-http://www.ogre3d.org/addonforums/viewtopic.php?f=19&t=13341
-http://www.idevgames.com/forums/thread-5787.html
-http://www.freeorion.org/index.php/Compile_In_Mac_OS_X_10.5_or_earlier
-https://github.com/dwrensha/aione/tree/master/functioning/OSX/Frameworks/SDL_mixer.framework/Versions/A/Frameworks/Vorbis.framework
-https://code.google.com/p/hedgewars/wiki/BuildingOnMac
-https://musescore.org/en/developers-handbook/compilation/compile-instructions-windows-mingw-git
+Install ogg/vorbis:
+windows: http://blog.pnapieralski.com/osg/how-to-compileinstall-osgaudio-for-windows/
+osx: taken care of by fink
 
