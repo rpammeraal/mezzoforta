@@ -52,7 +52,8 @@ SBMediaPlayer::setMedia(const QString &fileName)
         QString fn=QString(fileName).replace("\\","");
         //fn="/tmp/aap.wav";
         //fn="C:/temp/aap.wav";
-        fn="/tmp/noot.ogg";
+        //fn="/tmp/noot.ogg";
+        fn="C:/temp/noot.ogg";
         SBAudioDecoderFactory adf;
         StreamContent sc=adf.stream(fn);
 
