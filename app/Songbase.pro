@@ -46,7 +46,8 @@ HEADERS     = \
     SBAudioDecoderFactory.h \
     SBAudioDecoderWave.h \
     SBAudioDecoderOggVorbis.h \
-    StreamContent.h
+    StreamContent.h \
+    SBAudioDecoderMP3.h
 
 SOURCES     = \
     main.cpp \
@@ -95,7 +96,8 @@ SOURCES     = \
     SBAudioDecoderFactory.cpp \
     SBAudioDecoderWave.cpp \
     SBAudioDecoderOggVorbis.cpp \
-    StreamContent.cpp
+    StreamContent.cpp \
+    SBAudioDecoderMP3.cpp
 
 # install
 target.path = .
@@ -118,8 +120,8 @@ DISTFILES += \
     PlacesDeveloped.txt \
     resources/moose7.2.bmp
 
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile
-macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag
+macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a /sw/lib/libmad.a /sw/lib/libid3tag.a
 
 INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
 DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include

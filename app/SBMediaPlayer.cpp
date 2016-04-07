@@ -53,7 +53,8 @@ SBMediaPlayer::setMedia(const QString &fileName)
         //fn="/tmp/aap.wav";
         //fn="C:/temp/aap.wav";
         //fn="/tmp/noot.ogg";
-        fn="C:/temp/noot.ogg";
+        //fn="C:/temp/noot.ogg";
+        fn="/tmp/mies.mp3";
         SBAudioDecoderFactory adf;
         StreamContent sc=adf.stream(fn);
 

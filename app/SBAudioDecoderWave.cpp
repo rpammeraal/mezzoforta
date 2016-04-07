@@ -35,6 +35,7 @@ SBAudioDecoderWave::stream(const QString& fileName)
     //	New implementation using Qt infrastructure
     PaSampleFormat sampleFormat;
     StreamContent sc;
+    const void* src=NULL;
     qDebug() << SB_DEBUG_INFO << fileName;
     QFile f(fileName);
     if(!f.open(QIODevice::ReadOnly))
@@ -45,12 +46,10 @@ SBAudioDecoderWave::stream(const QString& fileName)
         return sc;
     }
 
-    QByteArray ba=f.readAll();
     qDebug() << SB_DEBUG_INFO << "fileSize=" << f.size();
-    qDebug() << SB_DEBUG_INFO << "ba.size=" << ba.size();
 
-    void* fileMap=(void *)ba.data();	//	Set filemap to start of data to interpret header.
-    WaveHeader* wh=(WaveHeader *)fileMap;
+    src=(void *)f.map(0,f.size());
+    WaveHeader* wh=(WaveHeader *)src;
     qDebug() << SB_DEBUG_INFO << "ckID=" << wh->ckID;
     qDebug() << SB_DEBUG_INFO << "ckSize=" << wh->ckSize;
     qDebug() << SB_DEBUG_INFO << "wave_ckID=" << wh->wave_ckID;
@@ -151,7 +150,7 @@ SBAudioDecoderWave::stream(const QString& fileName)
     //	Now create memory to put actual audio data in.
     //	Skip header
     qint64 size=f.size()-sizeof(WaveHeader);
-    const void* src=(void *)f.map(sizeof(WaveHeader),size);
+    src=(void *)f.map(sizeof(WaveHeader),size);
     sc=StreamContent(src, size,wh->nChannels,wh->nSamplesPerSec,sampleFormat,wh->nBitsPerSample);
     qDebug() << SB_DEBUG_INFO << "EOF";
     return sc;
