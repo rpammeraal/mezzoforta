@@ -28,9 +28,7 @@ Install libmad:
 windows: use msvc2008 (sigh). Copy lib file in msvc++/Debug to usual place. Use mad.h from msvc++.
 osx: taken care of by fink
 
-Install zlib.dll:
-windows (only): download from http://www.winimage.com/zLibDll/zlib123.zip
 
 Install libid3tag:
-windows: follow instructions at: http://www.mixxx.org/wiki/doku.php/build_windows_dependencies
+windows: NOT SUPPORTED! Code does not handle libid3tag
 osx: taken care of by fink

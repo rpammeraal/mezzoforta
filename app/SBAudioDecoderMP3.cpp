@@ -1,4 +1,6 @@
-//	#include <id3tag.h>
+#ifdef Q_OS_UNIX
+#include <id3tag.h>
+#endif
 
 #include "SBAudioDecoderMP3.h"
 
@@ -64,7 +66,13 @@ SBAudioDecoderMP3::stream(const QString& fileName)
             if(madStream.error==MAD_ERROR_LOSTSYNC)
             {
                 // ignore LOSTSYNC due to ID3 tags
-                int tagsize=0;//id3_tag_query(madStream.this_frame,madStream.bufend-madStream.this_frame);
+                int tagsize=
+#ifdef Q_OS_WIN
+                            0;
+#endif
+#ifdef Q_OS_UNIX
+                            id3_tag_query(madStream.this_frame,madStream.bufend-madStream.this_frame);
+#endif
                 if (tagsize>0)
                 {
                     //qDebug() << "SSMP3::SSMP3() : skipping ID3 tag size " << tagsize;
@@ -161,7 +169,13 @@ SBAudioDecoderMP3::stream(const QString& fileName)
                 if(madStream.error==MAD_ERROR_LOSTSYNC)
                 {
                     // Ignore LOSTSYNC due to ID3 tags
-                    int tagsize = 0;	//	id3_tag_query(madStream.this_frame, madStream.bufend - madStream.this_frame);
+                    int tagsize =
+#ifdef Q_OS_WIN
+                            0;
+#endif
+#ifdef Q_OS_UNIX
+                                   id3_tag_query(madStream.this_frame, madStream.bufend - madStream.this_frame);
+#endif
                     if(tagsize > 0)
                     {
                         mad_stream_skip(&madStream, tagsize);
