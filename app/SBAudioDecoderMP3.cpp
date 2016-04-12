@@ -1,4 +1,4 @@
-#include <id3tag.h>
+//	#include <id3tag.h>
 
 #include "SBAudioDecoderMP3.h"
 
@@ -41,10 +41,10 @@ SBAudioDecoderMP3::stream(const QString& fileName)
     void* buffer = f.map(0, bufferLength);
 
     //	Open up with mad
-    mad_stream* madStream=new mad_stream;
-    mad_stream_init(madStream);
-    mad_stream_options(madStream, MAD_OPTION_IGNORECRC);
-    mad_stream_buffer(madStream,(unsigned char*)buffer,bufferLength);
+    mad_stream madStream;
+    mad_stream_init(&madStream);
+    mad_stream_options(&madStream, MAD_OPTION_IGNORECRC);
+    mad_stream_buffer(&madStream,(unsigned char*)buffer,bufferLength);
 
     //	Decode header, parse data
     mad_header madHeader;
@@ -53,29 +53,29 @@ SBAudioDecoderMP3::stream(const QString& fileName)
     unsigned int frameCount=0;
     unsigned int sampleRate=0;
     int numChannels=0;
-    while((madStream->bufend-madStream->this_frame)>0)
+    while((madStream.bufend-madStream.this_frame)>0)
     {
-        if(mad_header_decode(&madHeader,madStream)==-1)
+        if(mad_header_decode(&madHeader,&madStream)==-1)
         {
-            if(!MAD_RECOVERABLE (madStream->error))
+            if(!MAD_RECOVERABLE (madStream.error))
             {
                 break;
             }
-            if(madStream->error==MAD_ERROR_LOSTSYNC)
+            if(madStream.error==MAD_ERROR_LOSTSYNC)
             {
                 // ignore LOSTSYNC due to ID3 tags
-                int tagsize=id3_tag_query(madStream->this_frame,madStream->bufend-madStream->this_frame);
+                int tagsize=0;//id3_tag_query(madStream.this_frame,madStream.bufend-madStream.this_frame);
                 if (tagsize>0)
                 {
                     //qDebug() << "SSMP3::SSMP3() : skipping ID3 tag size " << tagsize;
-                    mad_stream_skip (madStream, tagsize);
+                    mad_stream_skip (&madStream, tagsize);
                     continue;
                 }
             }
 
             // qDebug() << "MAD: ERR decoding header "
             //          << frameCount << ": "
-            //          << mad_stream_errorstr(madStream)
+            //          << mad_stream_errorstr(&madStream)
             //          << " (len=" << mad_timer_count(fileLength,MAD_UNITS_MILLISECONDS)
             //          << ")";
             continue;
@@ -102,7 +102,7 @@ SBAudioDecoderMP3::stream(const QString& fileName)
         // Add frame to list of frames
         //	Not sure if this is needed
         //MadSeekFrameType* p=new MadSeekFrameType;
-        //p->m_pStreamPos=(unsigned char *)madStream->this_frame;
+        //p->m_pStreamPos=(unsigned char *)madStream.this_frame;
         //p->pos = length();
         //m_qSeekList.append(p);
         frameCount++;
@@ -119,14 +119,14 @@ SBAudioDecoderMP3::stream(const QString& fileName)
     }
 
     //	Reposition MAD to start reading from start
-    mad_stream_finish(madStream);
-    mad_stream_init(madStream);
-    mad_stream_options(madStream, MAD_OPTION_IGNORECRC);
-    mad_stream_buffer(madStream,(unsigned char*)buffer,bufferLength);
-    mad_frame* madFrame=new mad_frame;
-    mad_frame_init(madFrame);
-    mad_synth* madSynth=new mad_synth;
-    mad_synth_init(madSynth);
+    mad_stream_finish(&madStream);
+    mad_stream_init(&madStream);
+    mad_stream_options(&madStream, MAD_OPTION_IGNORECRC);
+    mad_stream_buffer(&madStream,(unsigned char*)buffer,bufferLength);
+    mad_frame madFrame;//=new mad_frame;
+    mad_frame_init(&madFrame);
+    mad_synth madSynth;
+    mad_synth_init(&madSynth);
 
     qDebug() << SB_DEBUG_INFO << "channels=" << numChannels;
     qDebug() << SB_DEBUG_INFO << "sampleRate=" << sampleRate;
@@ -154,57 +154,54 @@ SBAudioDecoderMP3::stream(const QString& fileName)
 
     while(frameIndex<frameCount)
     {
-        if(mad_frame_decode(madFrame,madStream))
+        if(mad_frame_decode(&madFrame,&madStream))
         {
-            if(MAD_RECOVERABLE(madStream->error))
+            if(MAD_RECOVERABLE(madStream.error))
             {
-                if(madStream->error==MAD_ERROR_LOSTSYNC)
+                if(madStream.error==MAD_ERROR_LOSTSYNC)
                 {
                     // Ignore LOSTSYNC due to ID3 tags
-                    int tagsize = id3_tag_query(madStream->this_frame, madStream->bufend - madStream->this_frame);
+                    int tagsize = 0;	//	id3_tag_query(madStream.this_frame, madStream.bufend - madStream.this_frame);
                     if(tagsize > 0)
                     {
-                        mad_stream_skip(madStream, tagsize);
+                        mad_stream_skip(&madStream, tagsize);
                     }
                     continue;
                 }
                 continue;
             }
-            else if(madStream->error==MAD_ERROR_BUFLEN)
+            else if(madStream.error==MAD_ERROR_BUFLEN)
             {
                 qDebug() << "MAD: buflen ERR";
                 break;
             }
             else
             {
-                qDebug() << "MAD: Unrecoverable frame level ERR (" << mad_stream_errorstr(madStream) << ").";
+                qDebug() << "MAD: Unrecoverable frame level ERR (" << mad_stream_errorstr(&madStream) << ").";
                 break;
             }
         }
         ++frameIndex;
-        mad_synth_frame(madSynth,madFrame);
+        mad_synth_frame(&madSynth,&madFrame);
 
-        for (int i=0; i<madSynth->pcm.length; i++)
+        for (int i=0; i<madSynth.pcm.length; i++)
         {
             //	Process left channel.
-            *(samplePtr++) = madScale(madSynth->pcm.samples[0][i]);
+            *(samplePtr++) = madScale(madSynth.pcm.samples[0][i]);
 
             //	Process right channel. If the decoded stream is mono then
             //	right output channel is same as left one.
             if (numChannels==2)
             {
-                *(samplePtr++) = madScale(madSynth->pcm.samples[1][i]);
+                *(samplePtr++) = madScale(madSynth.pcm.samples[1][i]);
             }
             else
             {
-                *(samplePtr++) = madScale(madSynth->pcm.samples[0][i]);
+                *(samplePtr++) = madScale(madSynth.pcm.samples[0][i]);
             }
         }
     }
-    mad_stream_finish(madStream);
-    delete madStream; madStream=NULL;
-    delete madFrame; madFrame=NULL;
-    delete madSynth; madSynth=NULL;
+    mad_stream_finish(&madStream);
 
     unsigned int completed=(char *)samplePtr - (char *)stream;
     qDebug() << SB_DEBUG_INFO
