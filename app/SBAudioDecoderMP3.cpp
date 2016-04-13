@@ -1,3 +1,5 @@
+#include <qsystemdetection.h>
+
 #ifdef Q_OS_UNIX
 #include <id3tag.h>
 #endif

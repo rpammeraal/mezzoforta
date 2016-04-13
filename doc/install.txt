@@ -24,10 +24,13 @@ Install ogg/vorbis:
 windows: http://blog.pnapieralski.com/osg/how-to-compileinstall-osgaudio-for-windows/
 osx: taken care of by fink
 
+Install flac:
+Download from xiph.org
+OSX: ./configure;make;make install
+
 Install libmad:
 windows: use msvc2008 (sigh). Copy lib file in msvc++/Debug to usual place. Use mad.h from msvc++.
 osx: taken care of by fink
-
 
 Install libid3tag:
 windows: NOT SUPPORTED! Code does not handle libid3tag

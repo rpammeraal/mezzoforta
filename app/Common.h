@@ -20,6 +20,7 @@ class QTableView;
 #define SB_DEBUG_ERROR  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__ << "***ERROR***"
 #define SB_DEBUG_INFO  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__
 #define SB_DEBUG_NPTR SB_DEBUG_INFO << "NULL PTR"
+#define SB_DEBUG_IF_NULL(x) if(!x) { qDebug() << SB_DEBUG_NPTR; }
 
 #define SB_SONG_ID "sb_song_id"
 
