@@ -115,7 +115,8 @@ PlayerController::loadPlaylist(QMap<int,int> fromTo)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBTabCurrentPlaylist* cp=mw->ui.tabCurrentPlaylist;
-    qDebug() << SB_DEBUG_INFO << "current before=" << _playList[_currentPlayID];
+    qDebug() << SB_DEBUG_INFO << "current before=" << _getPlaylistEntry(_currentPlayID);
+    qDebug() << SB_DEBUG_INFO << "fromTo.count=" << fromTo.count();
     if(fromTo.contains(_currentPlayID+1))
     {
         qDebug() << SB_DEBUG_INFO << "old _currentPlayID" << _currentPlayID;
@@ -125,7 +126,8 @@ PlayerController::loadPlaylist(QMap<int,int> fromTo)
         qDebug() << SB_DEBUG_INFO << "new _currentPlayID" << _currentPlayID;
     }
     _playList=cp->playlist();
-    qDebug() << SB_DEBUG_INFO << "current after=" << _playList[_currentPlayID];
+    qDebug() << SB_DEBUG_INFO << "current before=" << _getPlaylistEntry(_currentPlayID);
+    qDebug() << SB_DEBUG_INFO << "_playlist.count=" << _playList.count();
 }
 
 void
@@ -166,6 +168,10 @@ bool
 PlayerController::playerPlay(int playID)
 {
     qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID << playID;
+    qDebug() << SB_DEBUG_INFO
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
     if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PlayingState && playID==-1)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -220,18 +226,32 @@ PlayerController::playerPlay(int playID)
                 //_currentPlayID=playID;
                 _updateCurrentPlayerID(playID);
             }
-            qDebug() << SB_DEBUG_INFO << _currentPlayID;
 
             while(_currentPlayID<_playList.count())
             {
-                qDebug() << SB_DEBUG_INFO << _currentPlayID << _seekPreviousSongFlag;
+                qDebug() << SB_DEBUG_INFO
+                         << "_currentPlayID=" << _currentPlayID
+                         << "_playList.count()=" << _playList.count()
+                         << "_seekPreviousSongFlag" << _seekPreviousSongFlag
+                ;
 
-                QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+_playList[_currentPlayID].path;
+                SBID id=_getPlaylistEntry(_currentPlayID);
+                QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+id.path;
+                //	CWIP: check if path is empty
+
+                qDebug() << SB_DEBUG_INFO << "path=" << path;
+
                 if(_playerInstance[_currentPlayerID].setMedia(path)==0)
                 {
                     qDebug() << SB_DEBUG_INFO << "Missing file";
                     _state=PlayerController::sb_player_state_stopped;
+                    qDebug() << SB_DEBUG_INFO
+                             << "_playList.count()=" << _playList.count()
+                    ;
                     calculateNextSongID();
+                    qDebug() << SB_DEBUG_INFO
+                             << "_playList.count()=" << _playList.count()
+                    ;
                 }
                 else
                 {
@@ -244,9 +264,13 @@ PlayerController::playerPlay(int playID)
                     _updatePlayerInfo();
                     return 1;
                 }
+                qDebug() << SB_DEBUG_INFO << "end of loop";
             }
+    qDebug() << SB_DEBUG_INFO;
         }
+    qDebug() << SB_DEBUG_INFO;
     }
+    qDebug() << SB_DEBUG_INFO;
     return 0;
 }
 
@@ -411,6 +435,24 @@ PlayerController::init()
     _currentPlayID=-1;
     _playList.clear();
     _seekPreviousSongFlag=0;
+}
+
+SBID
+PlayerController::_getPlaylistEntry(int playlistID) const
+{
+    if(_playList.contains(playlistID))
+    {
+        for(int i=0;i<_playList.count();i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i << _playList[i];
+        }
+        qDebug() << SB_DEBUG_INFO
+                 << "playlistID=" << playlistID
+                 << _playList[playlistID]
+        ;
+        return _playList[playlistID];
+    }
+    return SBID();
 }
 
 void

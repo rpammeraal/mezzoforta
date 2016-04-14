@@ -6,6 +6,13 @@
 
 #include "StreamContent.h"
 
+///
+/// \brief The SBAudioDecoder class
+///
+/// This class is a parent class for all codecs. Given a fileName, stream()
+/// will open this file, read, decode and return a bytestream accessible in
+/// class streamContent.
+///
 class SBAudioDecoder
 {
 protected:

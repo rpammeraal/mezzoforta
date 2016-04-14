@@ -11,9 +11,16 @@
 fprintf(stderr, "%s:%i: failure at: %s\n", __FILE__, __LINE__, #x); \
 return(0); } }
 
+///
+/// \brief The SBMediaPlayer class
+///
+/// This class is our own implementation of QMediaPlayer, as the latter will not
+/// play anything else than RAW files (on Mac) or RAW/MP3 files (on Windows).
+/// Since we need a bit more than these, the SBMediaPlayer class was created that
+/// used PortAudio.
+///
 class SBMediaPlayer : public QObject
 {
-
     Q_OBJECT
 
 public:
@@ -49,13 +56,12 @@ private:
     QMediaPlayer::State _state;
 
     qint64 index2PositionInMS(qint64 index) const;
+    void closeStream();
     void init();
-    void clear();
     void portAudioInit();
     bool portAudioOpen(const StreamContent& sc);
     void setErrorMsg(const QString& errMsg);
     void setState(QMediaPlayer::State state);
-
 };
 
 #endif // SBMEDIAPLAYER_H

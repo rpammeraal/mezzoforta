@@ -29,6 +29,17 @@ StreamContent::~StreamContent()
     }
 }
 
+QDebug operator<<(QDebug dbg, const StreamContent& sc)
+{
+    dbg.nospace() << "bps=" ; dbg.nospace() << sc.bitsPerSample();
+    dbg.nospace() << ":#channels=" ; dbg.nospace() << sc.numChannels();
+    dbg.nospace() << ":#sampleRate=" ; dbg.nospace() << sc.sampleRate();
+    dbg.nospace() << ":#sampleFormat=" ; dbg.nospace() << sc.sampleFormat();
+    dbg.nospace() << ":#length=" ; dbg.nospace() << sc.length();
+    dbg.space();
+    return dbg;
+}
+
 StreamContent::StreamContent(const StreamContent &f):_data(f._data)
 {
     ++_data->_count;

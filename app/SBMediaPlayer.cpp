@@ -31,11 +31,7 @@ SBMediaPlayer::SBMediaPlayer()
 
 SBMediaPlayer::~SBMediaPlayer()
 {
-    if(_stream)
-    {
-        Pa_CloseStream(_stream);
-        _stream=NULL;
-    }
+    closeStream();
 }
 
 void
@@ -47,28 +43,31 @@ SBMediaPlayer::assignID(int playerID)
 bool
 SBMediaPlayer::setMedia(const QString &fileName)
 {
-    if(1)
+    closeStream();
+    QString fn=QString(fileName).replace("\\","");
+    //fn="/tmp/aap.wav";
+    //fn="C:/temp/aap.wav";
+    //fn="/tmp/noot.ogg";
+    //fn="C:/temp/noot.ogg";
+    //fn="/tmp/mies.mp3";
+    //fn="C:/temp/mies.mp3";
+    //fn="/tmp/wim.flac";
+    if(_stream)
     {
-        QString fn=QString(fileName).replace("\\","");
-        //fn="/tmp/aap.wav";
-        //fn="C:/temp/aap.wav";
-        //fn="/tmp/noot.ogg";
-        //fn="C:/temp/noot.ogg";
-        //fn="/tmp/mies.mp3";
-        //fn="C:/temp/mies.mp3";
-        fn="/tmp/wim.flac";
-        SBAudioDecoderFactory adf;
-        StreamContent sc=adf.stream(fn);
-
-        if(sc.hasErrorFlag())
-        {
-            setErrorMsg(sc.errorMsg());
-            qDebug() << SB_DEBUG_INFO << sc.errorMsg();
-            return 0;
-        }
-        portAudioOpen(sc);
-        play();
+        closeStream();
     }
+    SBAudioDecoderFactory adf;
+    StreamContent sc=adf.stream(fn);
+
+    if(sc.hasErrorFlag())
+    {
+        setErrorMsg(sc.errorMsg());
+        qDebug() << SB_DEBUG_INFO << sc.errorMsg();
+        return 0;
+    }
+
+    portAudioOpen(sc);
+    qDebug() << SB_DEBUG_INFO << _paError;
     return 1;
 }
 
@@ -144,7 +143,6 @@ SBMediaPlayer::play()
     {
         setErrorMsg(Pa_GetErrorText(_paError));
         qDebug() << SB_DEBUG_INFO
-                 << "Pa_StartStream:"
                  << Pa_GetErrorText(_paError)
         ;
         return;
@@ -164,7 +162,18 @@ void
 SBMediaPlayer::setPosition(qint64 position)
 {
     qDebug() << SB_DEBUG_INFO << "position=" << position;
-    _index=( position * _sc.bitsPerSample() * _sc.numChannels() * _sc.sampleRate()/8)/1000;
+    if(position<0)
+    {
+        _index=0;
+    }
+    else
+    {
+        _index=( position * _sc.bitsPerSample() * _sc.numChannels() * _sc.sampleRate()/8)/1000;
+        if(_index>=_sc.length())
+        {
+            _index=_sc.length()-2;
+        }
+    }
 }
 
 void
@@ -179,6 +188,16 @@ qint64
 SBMediaPlayer::index2PositionInMS(qint64 index) const
 {
     return index * 1000 / ( _sc.bitsPerSample() * _sc.numChannels() * _sc.sampleRate()/8);
+}
+
+void
+SBMediaPlayer::closeStream()
+{
+    if(_stream)
+    {
+        Pa_CloseStream(_stream);
+        _stream=NULL;
+    }
 }
 
 void
@@ -204,14 +223,13 @@ SBMediaPlayer::portAudioInit()
         if(_paError != paNoError)
         {
             qDebug() << SB_DEBUG_INFO
-                     << "Pa_Terminate:"
                      << Pa_GetErrorText(_paError)
             ;
             return;
         }
     }
     _portAudioInitFlag=1;
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _paError;
 }
 
 bool
@@ -220,6 +238,9 @@ SBMediaPlayer::portAudioOpen(const StreamContent& sc)
     qDebug() << SB_DEBUG_INFO;
     if(_paError!=paNoError)
     {
+        qDebug() << SB_DEBUG_INFO
+                 << Pa_GetErrorText(_paError)
+        ;
         return 0;
     }
     qDebug() << SB_DEBUG_INFO;
@@ -261,12 +282,11 @@ SBMediaPlayer::portAudioOpen(const StreamContent& sc)
 
         if(_stream)
         {
-            Pa_CloseStream(_stream);
-            _stream=NULL;
+            closeStream();
         }
         return false;
     }
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _paError;
     emit durationChanged(index2PositionInMS(_sc.length()));
     return 1;
 }

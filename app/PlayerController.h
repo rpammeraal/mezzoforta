@@ -79,6 +79,7 @@ private:
     int calculateNextSongID();
     QTime calculateTime(qint64 ms) const;
     void init();
+    SBID _getPlaylistEntry(int playlistID) const;
     void makePlayerVisible(PlayerController::sb_player player);
     void _playerStop();
     void _updateCurrentPlayerID(int newPlayID);

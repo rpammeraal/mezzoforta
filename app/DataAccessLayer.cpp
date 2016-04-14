@@ -36,6 +36,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setIsNull("IFNULL");
     setGetDate("DATE('now')");
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
+    addMissingDatabaseItems();
 }
 
 DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()

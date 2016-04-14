@@ -17,6 +17,7 @@ public:
     StreamContent(const StreamContent& f);
     StreamContent& operator= (const StreamContent& f);
     ~StreamContent();
+    friend QDebug operator<<(QDebug dbg, const StreamContent& id);
 
     inline qint16         bitsPerSample() const { return _data->_bitsPerSample; }
     inline void*          data() const { return _data->_ptr; }

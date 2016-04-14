@@ -5,6 +5,18 @@
 
 #include "StreamContent.h"
 
+///
+/// \brief The SBAudioDecoderFactory class
+///
+///
+///	SBAudioDecoderFactory will open a file, read it and return a bytestream 2 samples per channel,
+///	each sample being 16 bits, embedded and accessible in StreamContent, which holds all parameters
+///	on this bytestream.
+///
+///	In the future we may go back to classical architecture of portAudio calling back for more data,
+///	and have this callback function functioning at the actual decoder level. For now, everything is
+///	streamed from memory.
+///
 class SBAudioDecoderFactory
 {
 public:
