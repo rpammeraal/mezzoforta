@@ -62,19 +62,19 @@ private slots:
 private:
     bool _initDoneFlag;
     PlayerController::sb_player_state _state;
-    int _currentPlayID;
+    int _currentPlayID;         //	index to _playList;
     QMap<int,SBID> _playList;	//	<_currentPlayID:0,SBID>
     bool _seekPreviousSongFlag; //	used if prevSong is clicked
 
     int _currentPlayerID;
-    const int _maxPlayerID;
-    QFrame* _playerFrame[2];
-    QPushButton* _playerPlayButton[2];
-    QSlider* _playerProgressSlider[2];
-    QLabel* _playerDurationLabel[2];
-    QTextBrowser* _playerDataLabel[2];
-    SBMediaPlayer _playerInstance[2];
-    QTime _durationTime[2];
+    static const int _maxPlayerID=2;
+    QFrame* _playerFrame[_maxPlayerID];
+    QPushButton* _playerPlayButton[_maxPlayerID];
+    QSlider* _playerProgressSlider[_maxPlayerID];
+    QLabel* _playerDurationLabel[_maxPlayerID];
+    QTextBrowser* _playerDataLabel[_maxPlayerID];
+    SBMediaPlayer _playerInstance[_maxPlayerID];
+    QTime _durationTime[_maxPlayerID];
 
     int calculateNextSongID();
     QTime calculateTime(qint64 ms) const;

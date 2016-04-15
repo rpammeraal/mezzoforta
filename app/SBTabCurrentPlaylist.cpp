@@ -226,8 +226,8 @@ public:
 
     void populate()
     {
-        //QStandardItemModel::clear();
         qDebug() << SB_DEBUG_INFO << _currentPlayID;
+        _currentPlayID=-1;
         SBSqlQueryModel* qm=SBModelCurrentPlaylist::getAllSongs();
         QList<QStandardItem *>column;
         QStandardItem* item;
@@ -261,18 +261,18 @@ public:
             }
         }
         populateHeader();
-        qDebug() << SB_DEBUG_INFO << _currentPlayID;
+        qDebug() << SB_DEBUG_INFO;
         setSongPlaying(_currentPlayID);
     }
 
     void populate(QMap<int,SBID> newPlaylist,bool addToExisting=0,int offset=0)
     {
-        _currentPlayID=-1;
+        qDebug() << SB_DEBUG_INFO;
         if(!addToExisting)
         {
             QStandardItemModel::clear();
+            _currentPlayID=-1;
         }
-        qDebug() << SB_DEBUG_INFO << _currentPlayID;
         QList<QStandardItem *>column;
         QStandardItem* item;
 
@@ -299,17 +299,13 @@ public:
             item=new QStandardItem(song.albumTitle); column.append(item);                     //	sb_column_albumtitle
             this->appendRow(column); column.clear();
 
-            //if(i%100==0)
-            {
-                //qDebug() << SB_DEBUG_INFO << "Populated" << i << "from " << newPlaylist.count();
-                qDebug() << SB_DEBUG_INFO << "Populated" << i << "from " << newPlaylist.count() << song;
-                QCoreApplication::processEvents();
-            }
+            QCoreApplication::processEvents();
 
         }
         if(!addToExisting)
         {
             populateHeader();
+            setSongPlaying(_currentPlayID);
         }
     }
 
@@ -772,6 +768,7 @@ SBTabCurrentPlaylist::startRadio()
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
+    PlayerController* pc=Context::instance()->getPlayerController();
     const int firstBatchNumber=10;
     bool firstBatchLoaded=false;
 
@@ -842,7 +839,7 @@ SBTabCurrentPlaylist::startRadio()
                 pd.setValue(++progressStep);
                 QCoreApplication::processEvents();
                 //qDebug() << SB_DEBUG_INFO << "Populated" << i << "songs in" << maxNumberAttempts-j << "attempts";
-                qDebug() << SB_DEBUG_INFO << "aa" << i << playList[i];
+                //qDebug() << SB_DEBUG_INFO << "aa" << i << playList[i];
             }
 
             if(i==firstBatchNumber)
@@ -866,6 +863,14 @@ SBTabCurrentPlaylist::startRadio()
     this->_populatePost(SBID());
     QCoreApplication::processEvents();
 
+    //	This code could be reused in other situations.
+    //	Stop player, tell playerController that we have a new playlist and start player.
+    pc->playerStop();
+    pc->loadPlaylist();
+    pc->playerPlay();
+    //	End reuseable
+
+
     QString allIDX=" ";
     for(int i=0;i<indexCovered.count();i++)
     {
@@ -879,7 +884,6 @@ SBTabCurrentPlaylist::startRadio()
     {
         if(indexCovered.contains(i)==0)
         {
-            qDebug() << SB_DEBUG_INFO << "Adding" << i;
             indexCovered.append(i);
 
             SBID item=SBID(SBID::sb_type_song,qm->record(i).value(0).toInt());
@@ -897,19 +901,19 @@ SBTabCurrentPlaylist::startRadio()
 
 //            //if(i%songInterval==0)
 //            {
-                qDebug() << SB_DEBUG_INFO << "bb" << i << playList[i];
-                qDebug() << SB_DEBUG_INFO << "Populated" << i << "idxCvd" << indexCovered.count()
-                         << "playlist" << playList.count();
+//                qDebug() << SB_DEBUG_INFO << "bb" << i << playList[i];
+//                qDebug() << SB_DEBUG_INFO << "Populated" << i << "idxCvd" << indexCovered.count()
+//                         << "playlist" << playList.count();
 //                //pd.setValue(++progressStep);
 //                QCoreApplication::processEvents();
 //            }
         }
     }
 
-    for(int i=0;i<playList.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << playList[i];
-    }
+//    for(int i=0;i<playList.count();i++)
+//    {
+//        qDebug() << SB_DEBUG_INFO << i << playList[i];
+//    }
 
     aem->populate(playList,firstBatchLoaded,firstBatchNumber+1);
     //tv->resizeColumnsToContents();

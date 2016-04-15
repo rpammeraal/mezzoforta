@@ -596,9 +596,6 @@ Navigator::activateTab(const SBID& to)
         result=tab->populate(id);
     }
 
-    qDebug() << SB_DEBUG_INFO << id;
-    qDebug() << SB_DEBUG_INFO << result;
-
     if(result.sb_item_id()==-1 &&
         result.sb_item_type()!=SBID::sb_type_allsongs &&
         result.sb_item_type()!=SBID::sb_type_current_playlist &&
