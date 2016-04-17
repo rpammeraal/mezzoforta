@@ -14,6 +14,13 @@ class QTextBrowser;
 #include "SBMediaPlayer.h"
 #include "SBID.h"
 
+///
+/// \brief The PlayerController class
+///
+/// PlayerController holds the key to playing songs.
+/// It controls two instances of SBMediaPlayer and utilizes these.
+///	The master of to be played list should reside with PlayerController.
+///
 class PlayerController : public QObject
 {
     Q_OBJECT
@@ -38,17 +45,18 @@ public:
 
     explicit PlayerController(QObject *parent = 0);
     void initialize();
+    void loadPlaylist(const QMap<int,SBID> &playList,bool firstBatchLoaded=0);
+    void reorderPlaylist(QMap<int,int> fromTo);
 
 signals:
     void songChanged(int playID);
 
 public slots:
-    void loadPlaylist(QMap<int,int> fromTo=QMap<int,int>());
     void playerPrevious();
     void playerRewind();
     void playerStop();
     bool playerPlay(int playID=-1);
-    void playerPlayNow(int playID);
+    void playerPlayNow_(int playID);
     void playerForward();
     void playerNext();
     void playerDurationChanged(qint64 duration);
@@ -64,7 +72,6 @@ private:
     PlayerController::sb_player_state _state;
     int _currentPlayID;         //	index to _playList;
     QMap<int,SBID> _playList;	//	<_currentPlayID:0,SBID>
-    bool _seekPreviousSongFlag; //	used if prevSong is clicked
 
     int _currentPlayerID;
     static const int _maxPlayerID=2;
@@ -76,13 +83,13 @@ private:
     SBMediaPlayer _playerInstance[_maxPlayerID];
     QTime _durationTime[_maxPlayerID];
 
-    int calculateNextSongID();
+    int calculateNextSongID(int currentPlayID,bool previousFlag=0) const;
     QTime calculateTime(qint64 ms) const;
     void init();
     SBID _getPlaylistEntry(int playlistID) const;
     void makePlayerVisible(PlayerController::sb_player player);
+    bool _playSong(int playID);
     void _playerStop();
-    void _updateCurrentPlayerID(int newPlayID);
     void _updatePlayerInfo();
 };
 

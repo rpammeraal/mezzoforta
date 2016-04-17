@@ -109,37 +109,79 @@ PlayerController::initialize()
     }
 }
 
-///	Public slots
 void
-PlayerController::loadPlaylist(QMap<int,int> fromTo)
+PlayerController::loadPlaylist(const QMap<int, SBID> &playList,bool firstBatchLoaded)
 {
     qDebug() << SB_DEBUG_INFO;
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    SBTabCurrentPlaylist* cp=mw->ui.tabCurrentPlaylist;
-
-    _playList=cp->playlist();
-    _currentPlayID=-1;
+    if(firstBatchLoaded==0)
+    {
+        qDebug() << SB_DEBUG_INFO << "FIRST BATCH";
+        _playList=playList;
+        _currentPlayID=-1;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "SECOND BATCH";
+        for(int i=_playList.count();i<playList.count();i++)
+        {
+            _playList[i]=playList[i];
+        }
+    }
 }
 
 void
+PlayerController::reorderPlaylist(QMap<int, int> fromTo)
+{
+    QMap<int,SBID> newPlayList;
+    for(int i=0;i<_playList.count();i++)
+    {
+        newPlayList[i]=_playList[fromTo[i]];
+    }
+    //	This is the only other method that is allowed to change _currentPlayID
+    _currentPlayID=fromTo[_currentPlayID];
+}
+
+///	Public slots
+void
 PlayerController::playerPrevious()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
 
     _state = PlayerController::sb_player_state_changing_media;
-    _seekPreviousSongFlag=1;
     _playerStop();
-    calculateNextSongID();
-    playerPlay();
+    bool isPlayingFlag=0;
+    int previousPlayID=-2;
+    int newPlayID=_currentPlayID;
+
+    //	Get out of loop if we're stuck. Either:
+    //	-	get a song playing, or
+    //	-	the very first song does not play for whatever reason
+    while(isPlayingFlag==0 && (previousPlayID!=newPlayID))
+    {
+        previousPlayID=newPlayID;
+        newPlayID=calculateNextSongID(previousPlayID,1);
+        isPlayingFlag=_playSong(newPlayID);
+    }
+    //	CWIP:PLAY
+    //	If isPlaying==0 show error
     _state = PlayerController::sb_player_state_play;
-    _seekPreviousSongFlag=0;
     qDebug() << SB_DEBUG_INFO;
 }
 
 void
 PlayerController::playerRewind()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000-10;
     playerSeek(position);
@@ -148,21 +190,37 @@ PlayerController::playerRewind()
 void
 PlayerController::playerStop()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
     _state=PlayerController::sb_player_state_stopped;
     _playerStop();
     _playerPlayButton[_currentPlayerID]->setText(">");
     _updatePlayerInfo();
 }
 
+///
+/// \brief PlayerController::playerPlay
+/// \param playID
+/// \return
+///
+/// Plays the song in _playList at position playID.
+/// PlayID must be vetted by calculateNextSong.
+/// returns 1 on success, 0 on failure.
 bool
 PlayerController::playerPlay(int playID)
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID << playID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
     qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
              << "_currentPlayID=" << _currentPlayID
              << "_playList.count()=" << _playList.count()
     ;
+
+    //	Handle UI stuff
     if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PlayingState && playID==-1)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -187,88 +245,37 @@ PlayerController::playerPlay(int playID)
                  << "_currentPlayID=" << _currentPlayID
                  << "_playList.count()=" << _playList.count()
         ;
-        if(_currentPlayID==-1 || _currentPlayID>=_playList.count())
+        if(playID==-1 || playID>=_playList.count())
         {
             if(_playList.count()==0)
             {
-                qDebug() << SB_DEBUG_INFO << "Attempt to load playlist";
-                loadPlaylist();
+                qDebug() << SB_DEBUG_INFO << "No playlist";
+                return 0;
             }
             if(_playList.count())
             {
                 qDebug() << SB_DEBUG_INFO << "Reset playlist";
-                _updateCurrentPlayerID(0);
-            }
-            else
-            {
-                qDebug() << SB_DEBUG_INFO << "No playlist found";
-                _state=PlayerController::sb_player_state_stopped;
-                _playerPlayButton[_currentPlayerID]->setText(">");
-                _updateCurrentPlayerID(-1);
-                return 0;
+                playID=0;
             }
         }
-        qDebug() << SB_DEBUG_INFO << _currentPlayID;
+        qDebug() << SB_DEBUG_INFO << playID;
 
-        if(_currentPlayID>=0)
-        {
-            if(playID!=-1)
-            {
-                //_currentPlayID=playID;
-                _updateCurrentPlayerID(playID);
-            }
-
-            while(_currentPlayID<_playList.count())
-            {
-                qDebug() << SB_DEBUG_INFO
-                         << "_currentPlayID=" << _currentPlayID
-                         << "_playList.count()=" << _playList.count()
-                         << "_seekPreviousSongFlag" << _seekPreviousSongFlag
-                ;
-
-                SBID id=_getPlaylistEntry(_currentPlayID);
-                QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+id.path;
-                //	CWIP: check if path is empty
-
-                qDebug() << SB_DEBUG_INFO << "path=" << path;
-
-                if(_playerInstance[_currentPlayerID].setMedia(path)==0)
-                {
-                    qDebug() << SB_DEBUG_INFO << "Missing file";
-                    _state=PlayerController::sb_player_state_stopped;
-                    qDebug() << SB_DEBUG_INFO
-                             << "_playList.count()=" << _playList.count()
-                    ;
-                    calculateNextSongID();
-                    qDebug() << SB_DEBUG_INFO
-                             << "_playList.count()=" << _playList.count()
-                    ;
-                }
-                else
-                {
-                    qDebug() << SB_DEBUG_INFO;
-                    //	Instruct player to play
-                    _state=PlayerController::sb_player_state_play;
-                    qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-                    _playerInstance[_currentPlayerID].play();
-                    _playerPlayButton[_currentPlayerID]->setText("||");
-                    _updatePlayerInfo();
-                    return 1;
-                }
-                qDebug() << SB_DEBUG_INFO << "end of loop";
-            }
-    qDebug() << SB_DEBUG_INFO;
-        }
-    qDebug() << SB_DEBUG_INFO;
+        return _playSong(playID);
     }
     qDebug() << SB_DEBUG_INFO;
     return 0;
 }
 
 void
-PlayerController::playerPlayNow(int playID)
+PlayerController::playerPlayNow_(int playID)
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID << playID;
+    //	Untested! Possibly deprecated. Possibly in wrong class
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
     if(playID==_currentPlayID)
     {
         return;
@@ -288,8 +295,6 @@ PlayerController::playerPlayNow(int playID)
     }
     _state=PlayerController::sb_player_state_changing_media;
     _playerStop();
-    //_currentPlayID=playID;
-    _updateCurrentPlayerID(playID);
     playerPlay(playID);
     _state = PlayerController::sb_player_state_play;
 }
@@ -297,13 +302,16 @@ PlayerController::playerPlayNow(int playID)
 void
 PlayerController::playerForward()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+    ;
     if(_currentPlayID==-1)
     {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
         return;
     }
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000+10;
     playerSeek(position);
@@ -312,12 +320,29 @@ PlayerController::playerForward()
 void
 PlayerController::playerNext()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state_=" << _state
+             << ":_currentPlayID=" << _currentPlayID
+             << ":_playList.count()=" << _playList.count()
+    ;
     _state = PlayerController::sb_player_state_changing_media;
     _playerStop();
-    //_currentPlayID++;
-    _updateCurrentPlayerID(_currentPlayID+1);
-    playerPlay();
+    bool isPlayingFlag=0;
+    int previousPlayID=-2;
+    int newPlayID=_currentPlayID;
+
+    //	Get out of loop if we're stuck. Either:
+    //	-	get a song playing, or
+    //	-	the very first song does not play for whatever reason
+    while(isPlayingFlag==0 && (previousPlayID!=newPlayID))
+    {
+        previousPlayID=newPlayID;
+        newPlayID=calculateNextSongID(previousPlayID);
+        isPlayingFlag=_playSong(newPlayID);
+    }
+    //	CWIP:PLAY
+    //	If isPlaying==0 show error
     _state = PlayerController::sb_player_state_play;
 }
 
@@ -373,9 +398,8 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID << playerState;
     if(_state==PlayerController::sb_player_state_play)
     {
-        //	Continue with next
-        calculateNextSongID();
-        playerPlay();
+        //	Continue with next song
+        playerNext();
     }
 }
 
@@ -405,16 +429,15 @@ PlayerController::calculateTime(qint64 ms) const
 }
 
 int
-PlayerController::calculateNextSongID()
+PlayerController::calculateNextSongID(int currentPlayID,bool previousFlag) const
 {
-    int newCurrentPlayID=_currentPlayID;
-    newCurrentPlayID+=(_seekPreviousSongFlag==1)?-1:1;
-    if(newCurrentPlayID<0 || newCurrentPlayID==_playList.count())
+    int newPlayID=currentPlayID;
+    newPlayID+=(previousFlag==1)?-1:1;
+    if(newPlayID<0 || newPlayID==_playList.count())
     {
-        newCurrentPlayID=0;
+        newPlayID=0;
     }
-    _updateCurrentPlayerID(newCurrentPlayID);
-    return _currentPlayID;
+    return newPlayID;
 }
 
 void
@@ -425,7 +448,6 @@ PlayerController::init()
     _state=PlayerController::sb_player_state_stopped;
     _currentPlayID=-1;
     _playList.clear();
-    _seekPreviousSongFlag=0;
 }
 
 SBID
@@ -454,6 +476,59 @@ PlayerController::makePlayerVisible(PlayerController::sb_player player)
 }
 
 ///
+/// \brief PlayerController::_playSong
+/// \param playID
+/// \return
+///
+/// plays song in _playList with index playID.
+/// Returns 1 on success, 0 otherwise.
+bool
+PlayerController::_playSong(int playID)
+{
+    qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    qDebug() << SB_DEBUG_INFO
+             << "_currentPlayID=" << _currentPlayID
+             << "_playList.count()=" << _playList.count()
+             << "playID=" << playID
+    ;
+    if(!_playList.contains(playID))
+    {
+        qDebug() << SB_DEBUG_ERROR << "playID not in playlist";
+        //	CWIP: error
+        return 0;
+    }
+
+    SBID id=_getPlaylistEntry(playID);
+    QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+id.path;
+    //	CWIP: check if path is empty
+
+    qDebug() << SB_DEBUG_INFO << "path=" << path;
+
+    if(_playerInstance[_currentPlayerID].setMedia(path)==0)
+    {
+        qDebug() << SB_DEBUG_INFO << "Missing file";
+        _state=PlayerController::sb_player_state_stopped;
+        return 0;
+    }
+
+    //	Instruct player to play
+    _state=PlayerController::sb_player_state_play;
+    _playerInstance[_currentPlayerID].play();
+    _playerPlayButton[_currentPlayerID]->setText("||");
+    _updatePlayerInfo();
+
+    //	This is the only time that _currentPlayID may be assigned to something else.
+    _currentPlayID=playID;
+    emit songChanged(_currentPlayID);
+
+    qDebug() << SB_DEBUG_INFO
+             << "_currentPlayID=" << _currentPlayID
+    ;
+
+    return 1;
+}
+
+///
 /// \brief PlayerController::_playerStop
 ///
 /// Stops the current physical player without changing the UI.
@@ -462,14 +537,6 @@ PlayerController::_playerStop()
 {
     _playerInstance[_currentPlayerID].stop();
     playerSeek(0);
-}
-
-void
-PlayerController::_updateCurrentPlayerID(int newPlayID)
-{
-    _currentPlayID=newPlayID;
-    qDebug() << SB_DEBUG_INFO << "emit songChanged:newPlayID" << newPlayID;
-    emit songChanged(_currentPlayID);
 }
 
 void

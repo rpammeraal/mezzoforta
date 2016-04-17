@@ -265,13 +265,28 @@ public:
         setSongPlaying(_currentPlayID);
     }
 
-    void populate(QMap<int,SBID> newPlaylist,bool addToExisting=0,int offset=0)
+    ///
+    /// \brief populate
+    /// \param newPlaylist
+    /// \param firstBatchHasLoadedFlag: provides a way to split loading in two batches:
+    /// 	-	first batch (a small set of records) is immediately loaded, displayed and music starts to play
+    ///		-	second batch (with the remainder) is loaded while playing music.
+    void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0)
     {
-        qDebug() << SB_DEBUG_INFO;
-        if(!addToExisting)
+        qDebug() << SB_DEBUG_INFO << "newPlaylist.count()=" << newPlaylist.count();
+        int offset=0;
+
+        if(!firstBatchHasLoadedFlag)
         {
             QStandardItemModel::clear();
             _currentPlayID=-1;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << "Appending at position " << offset;
+            //	Set the index to get the first record from to count().
+            //	This works in data structures where the index is 0-based.
+            offset=this->rowCount();
         }
         QList<QStandardItem *>column;
         QStandardItem* item;
@@ -302,11 +317,13 @@ public:
             QCoreApplication::processEvents();
 
         }
-        if(!addToExisting)
+        if(!firstBatchHasLoadedFlag)
         {
             populateHeader();
             setSongPlaying(_currentPlayID);
         }
+        qDebug() << SB_DEBUG_INFO << "newPlaylist.count()" << newPlaylist.count();
+        qDebug() << SB_DEBUG_INFO << "rowCount.count()" << this->rowCount();
     }
 
     void populateHeader()
@@ -369,7 +386,7 @@ public:
 
 
         setSongPlaying(_currentPlayID);
-        Context::instance()->getPlayerController()->loadPlaylist(toFrom);
+        Context::instance()->getPlayerController()->reorderPlaylist(toFrom);
     }
 
     virtual bool removeRows(int row, int count, const QModelIndex &parent)
@@ -392,7 +409,6 @@ public:
     ///	setSongPlaying() returns tableView row that is current.
     virtual QModelIndex setSongPlaying(int playID)
     {
-        qDebug() << SB_DEBUG_INFO;
         QStandardItem* item=NULL;
         int oldRowID=-1;
         int newRowID=-1;
@@ -523,7 +539,7 @@ public:
         qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
         _currentPlayID=fromTo[_currentPlayID+1]-1;
         qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
-        Context::instance()->getPlayerController()->loadPlaylist(fromTo);
+        Context::instance()->getPlayerController()->reorderPlaylist(fromTo);
         //paintRow(oldPlayID);
         //paintRow(_currentPlayID);
         setSongPlaying(_currentPlayID);
@@ -581,6 +597,7 @@ SBTabCurrentPlaylist::playlist()
 
 
     int index=0;
+    qDebug() << SB_DEBUG_INFO << "aem->rowCount()" << aem->rowCount();
     for(int i=0;aem && i<aem->rowCount();i++)
     {
         QStandardItem* item;
@@ -769,7 +786,7 @@ SBTabCurrentPlaylist::startRadio()
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
     PlayerController* pc=Context::instance()->getPlayerController();
-    const int firstBatchNumber=10;
+    const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
 
     qDebug() << SB_DEBUG_INFO;
@@ -798,13 +815,13 @@ SBTabCurrentPlaylist::startRadio()
 
     qDebug() << SB_DEBUG_INFO << "randomizing " << numSongs << "songs";
     bool found=1;
-    int i=0;
-    for(;found && i<numSongs;i++)
+    int nextOpenSlotIndex=0;
+    for(;found && nextOpenSlotIndex<numSongs;nextOpenSlotIndex++)
     {
         found=0;
-        int j=maxNumberAttempts;
         int idx=-1;
-        while(!found && --j)
+
+        for(int j=maxNumberAttempts;j && !found;j--)
         {
             idx=Common::randomOldestFirst(numSongs);
             if(indexCovered.contains(idx)==0)
@@ -812,116 +829,91 @@ SBTabCurrentPlaylist::startRadio()
                 found=1;
                 indexCovered.append(idx);
             }
-            if(j==0)
+        }
+
+        if(!found)
+        {
+            //	If we can't get a random index after n tries, get the first
+            //	not-used index
+            for(int i=0;i<numSongs && found==0;i++)
             {
-                qDebug() << "too many attempts -- quitting";
-                return;
+                if(indexCovered.contains(i)==0)
+                {
+                    idx=i;
+                    found=1;
+                }
             }
         }
 
-        if(found)
+        SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
+
+        item.songTitle=qm->record(idx).value(1).toString();
+        item.sb_performer_id=qm->record(idx).value(2).toInt();
+        item.performerName=qm->record(idx).value(3).toString();
+        item.sb_album_id=qm->record(idx).value(4).toInt();
+        item.albumTitle=qm->record(idx).value(5).toString();
+        item.sb_position=qm->record(idx).value(6).toInt();
+        item.path=qm->record(idx).value(7).toString();
+        item.duration=qm->record(idx).value(8).toTime();
+
+        playList[nextOpenSlotIndex]=item;
+
+        if(nextOpenSlotIndex%songInterval==0 || nextOpenSlotIndex+1==numSongs)
         {
-            SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
+            //	Update progress
+            pd.setValue(++progressStep);
+            QCoreApplication::processEvents();
+        }
 
-            item.songTitle=qm->record(idx).value(1).toString();
-            item.sb_performer_id=qm->record(idx).value(2).toInt();
-            item.performerName=qm->record(idx).value(3).toString();
-            item.sb_album_id=qm->record(idx).value(4).toInt();
-            item.albumTitle=qm->record(idx).value(5).toString();
-            item.sb_position=qm->record(idx).value(6).toInt();
-            item.path=qm->record(idx).value(7).toString();
-            item.duration=qm->record(idx).value(8).toTime();
-
-            playList[i]=item;
-
-            //if(i%songInterval==0)
+        //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
+        if(nextOpenSlotIndex+1==firstBatchNumber || nextOpenSlotIndex+1==numSongs)
+        {
+            if(!firstBatchLoaded)
             {
-                pd.setValue(++progressStep);
-                QCoreApplication::processEvents();
-                //qDebug() << SB_DEBUG_INFO << "Populated" << i << "songs in" << maxNumberAttempts-j << "attempts";
-                //qDebug() << SB_DEBUG_INFO << "aa" << i << playList[i];
-            }
-
-            if(i==firstBatchNumber)
-            {
+                qDebug() << SB_DEBUG_INFO << "sending to aem first batch:playList.count()=" << playList.count();
                 firstBatchLoaded=true;
                 aem->populate(playList);
+                this->_populatePost(SBID());
+
+                //	This code could be reused in other situations.
+                //	Stop player, tell playerController that we have a new playlist and start player.
+                pc->playerStop();
+                pc->loadPlaylist(playList,firstBatchLoaded);
+                pc->playerPlay();
+                //	End reuseable
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO << "sending to aem 2nd batch:playList.count()=" << playList.count();
+                pc->loadPlaylist(playList,firstBatchLoaded);
+                aem->populate(playList,firstBatchLoaded);
+                qDebug() << SB_DEBUG_INFO << "after sending to aem 2nd batch:playList.count()=" << playList.count();
             }
         }
+//        qDebug() << SB_DEBUG_INFO
+//                 << ":nextOpenSlotIndex=" << nextOpenSlotIndex
+//                 << ":found=" << found
+//                 << ":numSongs=" << numSongs
+//        ;
     }
-
-    qDebug() << SB_DEBUG_INFO << "Populated" << playList.count() << "of" << numSongs;
-    qDebug() << SB_DEBUG_INFO << "indexCovered.count" << indexCovered.count();
-    qDebug() << SB_DEBUG_INFO << "firstBatchLoaded" << firstBatchLoaded;
-
-    if(!firstBatchLoaded)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        firstBatchLoaded=true;
-        aem->populate(playList);
-    }
-    this->_populatePost(SBID());
-    QCoreApplication::processEvents();
-
-    //	This code could be reused in other situations.
-    //	Stop player, tell playerController that we have a new playlist and start player.
-    pc->playerStop();
-    pc->loadPlaylist();
-    pc->playerPlay();
-    //	End reuseable
-
 
     QString allIDX=" ";
     for(int i=0;i<indexCovered.count();i++)
     {
         if(indexCovered.contains(i))
-        allIDX+=QString("%1 ").arg(i);
-    }
-    qDebug() << SB_DEBUG_INFO << "allIDX=" << allIDX;
-
-    //	Populate the rest of list in sequential order
-    for(i=0;i<numSongs;i++)
-    {
-        if(indexCovered.contains(i)==0)
         {
-            indexCovered.append(i);
-
-            SBID item=SBID(SBID::sb_type_song,qm->record(i).value(0).toInt());
-
-            item.songTitle=qm->record(i).value(1).toString();
-            item.sb_performer_id=qm->record(i).value(2).toInt();
-            item.performerName=qm->record(i).value(3).toString();
-            item.sb_album_id=qm->record(i).value(4).toInt();
-            item.albumTitle=qm->record(i).value(5).toString();
-            item.sb_position=qm->record(i).value(6).toInt();
-            item.path=qm->record(i).value(7).toString();
-            item.duration=qm->record(i).value(8).toTime();
-
-            playList[playList.count()]=item;
-
-//            //if(i%songInterval==0)
-//            {
-//                qDebug() << SB_DEBUG_INFO << "bb" << i << playList[i];
-//                qDebug() << SB_DEBUG_INFO << "Populated" << i << "idxCvd" << indexCovered.count()
-//                         << "playlist" << playList.count();
-//                //pd.setValue(++progressStep);
-//                QCoreApplication::processEvents();
-//            }
+            allIDX+=QString("%1 ").arg(i);
         }
     }
+    qDebug() << SB_DEBUG_INFO << "allIDX=" << allIDX;
+    qDebug() << SB_DEBUG_INFO << "Populated" << playList.count() << "of" << numSongs;
+    qDebug() << SB_DEBUG_INFO << "indexCovered.count" << indexCovered.count();
 
+//    qDebug() << SB_DEBUG_INFO << "contents playlist";
 //    for(int i=0;i<playList.count();i++)
 //    {
 //        qDebug() << SB_DEBUG_INFO << i << playList[i];
 //    }
-
-    aem->populate(playList,firstBatchLoaded,firstBatchNumber+1);
-    //tv->resizeColumnsToContents();
-    //aem->populate(playList);
-
-    pd.setValue(++progressStep);
-    qDebug() << SB_DEBUG_INFO << "Populated" << playList.count() << "of" << numSongs;
-    qDebug() << SB_DEBUG_INFO << "indexCovered.count" << indexCovered.count();
 }
 
 void
@@ -943,7 +935,8 @@ void
 SBTabCurrentPlaylist::tableViewCellDoubleClicked(QModelIndex idx)
 {
     qDebug() << SB_DEBUG_INFO << idx.row();
-    Context::instance()->getPlayerController()->playerPlayNow(idx.row());
+    //	CWIP:PLAY
+    //Context::instance()->getPlayerController()->playerPlayNow(idx.row());
 }
 
 ///	Private methods

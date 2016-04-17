@@ -7,6 +7,12 @@
 
 class CurrentPlaylistModel;
 
+///
+/// \brief The SBTabCurrentPlaylist class
+///
+/// The UI representation of the current playlist (akin to TabSongDetail).
+/// It represents the playlist controlled by PlayerController.
+///
 class SBTabCurrentPlaylist : public SBTab
 {
     Q_OBJECT
