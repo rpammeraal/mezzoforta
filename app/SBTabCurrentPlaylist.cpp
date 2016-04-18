@@ -224,35 +224,54 @@ public:
         }
     }
 
-    void populate()
+
+    ///
+    /// \brief populate
+    /// \return
+    ///
+    ///	This populate() is called when the playlist is taken from the current_playlist table.
+    ///	It'll also create a playlist (to be consumed by PlayerController).
+    ///
+    QMap<int,SBID> populate()
     {
         qDebug() << SB_DEBUG_INFO << _currentPlayID;
         _currentPlayID=-1;
         SBSqlQueryModel* qm=SBModelCurrentPlaylist::getAllSongs();
         QList<QStandardItem *>column;
         QStandardItem* item;
+        QMap<int,SBID> playlist;
 
         for(int i=0;i<qm->rowCount();i++)
         {
             QString idStr;
+            SBID id=SBID(SBID::sb_type_song,qm->record(i).value(2).toInt());
             idStr.sprintf("%08d",i+1);
 
             item=new QStandardItem("0"); column.append(item);                                 //	sb_column_deleteflag
             item=new QStandardItem(qm->record(i).value(8).toString()); column.append(item);   //	sb_column_albumid
+            id.sb_album_id=qm->record(i).value(8).toInt();
             item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);            //	sb_column_displayplaylistid
             item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
             item=new QStandardItem(qm->record(i).value(2).toString()); column.append(item);   //	sb_column_songid
             item=new QStandardItem(qm->record(i).value(5).toString()); column.append(item);   //	sb_column_performerid
+            id.sb_performer_id=qm->record(i).value(5).toInt();
             item=new QStandardItem(idStr); column.append(item);                               //	sb_column_playlistid
             item=new QStandardItem(qm->record(i).value(11).toString()); column.append(item);  //	sb_column_position
+            id.sb_position=qm->record(i).value(11).toInt();
             item=new QStandardItem(qm->record(i).value(12).toString()); column.append(item);  //	sb_column_path
+            id.path=qm->record(i).value(12).toString();
 
             item=new QStandardItem(qm->record(i).value(3).toString()); column.append(item);   //	sb_column_songtitle
+            id.songTitle=qm->record(i).value(3).toString();
             item=new QStandardItem(qm->record(i).value(13).toString()); column.append(item);  //	sb_column_duration
             item=new QStandardItem(qm->record(i).value(6).toString()); column.append(item);   //	sb_column_performername
+            id.performerName=qm->record(i).value(6).toString();
             item=new QStandardItem(qm->record(i).value(9).toString()); column.append(item);   //	sb_column_albumtitle
+            id.albumTitle=qm->record(i).value(9).toString();
+
             this->appendRow(column); column.clear();
+            playlist[playlist.count()]=id;
 
             if(i%100==0)
             {
@@ -263,6 +282,7 @@ public:
         populateHeader();
         qDebug() << SB_DEBUG_INFO;
         setSongPlaying(_currentPlayID);
+        return playlist;
     }
 
     ///
@@ -294,24 +314,28 @@ public:
         for(int i=offset;i<newPlaylist.count();i++)
         {
             SBID song=newPlaylist[i];
+            if(firstBatchHasLoadedFlag)
+            {
+                qDebug() << SB_DEBUG_INFO << song;
+            }
             QString idStr;
             idStr.sprintf("%08d",i+1);
 
-            item=new QStandardItem("0"); column.append(item);                                 //	sb_column_deleteflag
-            item=new QStandardItem(song.sb_album_id); column.append(item);                    //	sb_column_albumid
-            item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);            //	sb_column_displayplaylistid
+            item=new QStandardItem("0"); column.append(item);                                       //	sb_column_deleteflag
+            item=new QStandardItem(QString("%1").arg(song.sb_album_id)); column.append(item);       //	sb_column_albumid
+            item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);                  //	sb_column_displayplaylistid
             item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
-            item=new QStandardItem(song.sb_song_id); column.append(item);                     //	sb_column_songid
-            item=new QStandardItem(song.sb_performer_id); column.append(item);                //	sb_column_performerid
-            item=new QStandardItem(idStr); column.append(item);                               //	sb_column_playlistid
-            item=new QStandardItem(song.sb_position); column.append(item);                    //	sb_column_position
-            item=new QStandardItem(song.path); column.append(item);                           //	sb_column_path
+            item=new QStandardItem(QString("%1").arg(song.sb_song_id)); column.append(item);        //	sb_column_songid
+            item=new QStandardItem(QString("%1").arg(song.sb_performer_id)); column.append(item);	//	sb_column_performerid
+            item=new QStandardItem(idStr); column.append(item);                                     //	sb_column_playlistid
+            item=new QStandardItem(QString("%1").arg(song.sb_position)); column.append(item);       //	sb_column_position
+            item=new QStandardItem(song.path); column.append(item);                                 //	sb_column_path
 
-            item=new QStandardItem(song.songTitle); column.append(item);                      //	sb_column_songtitle
-            item=new QStandardItem(song.duration.toString()); column.append(item);            //	sb_column_duration
-            item=new QStandardItem(song.performerName); column.append(item);                  //	sb_column_performername
-            item=new QStandardItem(song.albumTitle); column.append(item);                     //	sb_column_albumtitle
+            item=new QStandardItem(song.songTitle); column.append(item);                            //	sb_column_songtitle
+            item=new QStandardItem(song.duration.toString()); column.append(item);                  //	sb_column_duration
+            item=new QStandardItem(song.performerName); column.append(item);                        //	sb_column_performername
+            item=new QStandardItem(song.albumTitle); column.append(item);                           //	sb_column_albumtitle
             this->appendRow(column); column.clear();
 
             QCoreApplication::processEvents();
@@ -579,107 +603,6 @@ SBTabCurrentPlaylist::SBTabCurrentPlaylist(QWidget* parent) : SBTab(parent,0)
 {
 }
 
-
-QMap<int,SBID>
-SBTabCurrentPlaylist::playlist()
-{
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    QMap<int,SBID> playlist;
-    SBID song;
-
-    if(_playlistLoadedFlag==0)
-    {
-       this->_populate(song);	//	argument song is ignored
-    }
-
-    CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
-
-
-    int index=0;
-    qDebug() << SB_DEBUG_INFO << "aem->rowCount()" << aem->rowCount();
-    for(int i=0;aem && i<aem->rowCount();i++)
-    {
-        QStandardItem* item;
-        int songID=0;
-
-        //	sb_column_playlistid
-        item=aem->item(i,CurrentPlaylistModel::sb_column_playlistid);
-        if(item)
-        {
-            index=item->text().toInt();
-        }
-
-        //	sb_column_songid
-        item=aem->item(i,CurrentPlaylistModel::sb_column_songid);
-        if(item)
-        {
-            songID=item->text().toInt();
-            song.assign(SBID::sb_type_song,songID);
-        }
-
-        //	sb_column_albumid
-        item=aem->item(i,CurrentPlaylistModel::sb_column_albumid);
-        if(item)
-        {
-            song.sb_album_id=item->text().toInt();
-        }
-
-        //	sb_column_performerid
-        item=aem->item(i,CurrentPlaylistModel::sb_column_performerid);
-        if(item)
-        {
-            song.sb_performer_id=item->text().toInt();
-        }
-
-        //	sb_column_position
-        item=aem->item(i,CurrentPlaylistModel::sb_column_position);
-        if(item)
-        {
-            song.sb_position=item->text().toInt();
-        }
-
-        //	sb_column_path
-        item=aem->item(i,CurrentPlaylistModel::sb_column_path);
-        if(item)
-        {
-            song.path=item->text();
-        }
-
-        //	sb_column_songtitle
-        item=aem->item(i,CurrentPlaylistModel::sb_column_songtitle);
-        if(item)
-        {
-            song.songTitle=item->text();
-        }
-
-        //	sb_column_performername
-        item=aem->item(i,CurrentPlaylistModel::sb_column_performername);
-        if(item)
-        {
-            song.performerName=item->text();
-        }
-
-        //	sb_column_albumtitle
-        item=aem->item(i,CurrentPlaylistModel::sb_column_albumtitle);
-        if(item)
-        {
-            song.albumTitle=item->text();
-        }
-
-        if(song.sb_item_type()!=SBID::sb_type_invalid)
-        {
-            playlist[index-1]=song;
-        }
-    }
-    for(int i=0;i<playlist.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << playlist[i];
-    }
-
-    return playlist;
-}
-
 QTableView*
 SBTabCurrentPlaylist::subtabID2TableView(int subtabID) const
 {
@@ -763,8 +686,10 @@ SBTabCurrentPlaylist::clearPlaylist()
     qDebug() << SB_DEBUG_INFO;
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
+    PlayerController* pc=Context::instance()->getPlayerController();
     CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
     aem->clear();
+    pc->clearPlaylist();
 }
 
 void
@@ -871,7 +796,6 @@ SBTabCurrentPlaylist::startRadio()
             if(!firstBatchLoaded)
             {
                 qDebug() << SB_DEBUG_INFO << "sending to aem first batch:playList.count()=" << playList.count();
-                firstBatchLoaded=true;
                 aem->populate(playList);
                 this->_populatePost(SBID());
 
@@ -881,6 +805,8 @@ SBTabCurrentPlaylist::startRadio()
                 pc->loadPlaylist(playList,firstBatchLoaded);
                 pc->playerPlay();
                 //	End reuseable
+
+                firstBatchLoaded=true;
             }
             else
             {
@@ -988,6 +914,7 @@ SBTabCurrentPlaylist::init()
 SBID
 SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
 {
+    qDebug() << SB_DEBUG_INFO << idx;
     SBID id;
 
     MainWindow* mw=Context::instance()->getMainWindow();
@@ -995,7 +922,18 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     CurrentPlaylistModel* aem=dynamic_cast<CurrentPlaylistModel *>(tv->model());
     SBID::sb_type itemType=SBID::sb_type_invalid;
     QStandardItem* item;
+    QStandardItem* i2;
     int itemID=-1;
+
+    qDebug() << SB_DEBUG_INFO << "showing 1st 5 items";
+    for(int i=0;i<5;i++)
+    {
+        item=aem->item(i,CurrentPlaylistModel::sb_column_songtitle);
+        i2=aem->item(i,CurrentPlaylistModel::sb_column_songid);
+        qDebug() << SB_DEBUG_INFO << i << item->text() << i2->text();
+    }
+    qDebug() << SB_DEBUG_INFO << "end:showing 1st 5 items";
+
 
     switch((CurrentPlaylistModel::sb_column_type)idx.column())
     {
@@ -1035,22 +973,34 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     return id;
 }
 
+///
+/// \brief SBTabCurrentPlaylist::_populate
+/// \param id
+/// \return
+///
+/// Populates a regular playlist from database
+///
 SBID
 SBTabCurrentPlaylist::_populate(const SBID& id)
 {
     Q_UNUSED(id);
+    qDebug() << SB_DEBUG_INFO;
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
+    PlayerController* pc=Context::instance()->getPlayerController();
 
     //	Populate playlist
 
     CurrentPlaylistModel* plm=dynamic_cast<CurrentPlaylistModel *>(tv->model());
     if(plm==NULL)
     {
+        QMap<int,SBID> playList;
+
         plm=new CurrentPlaylistModel();
-        plm->populate();
+        playList=plm->populate();
         tv->setModel(plm);
+        pc->loadPlaylist(playList);
     }
 
     _playlistLoadedFlag=1;

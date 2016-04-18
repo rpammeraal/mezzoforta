@@ -19,7 +19,6 @@ class SBTabCurrentPlaylist : public SBTab
 
 public:
     SBTabCurrentPlaylist(QWidget* parent=0);
-    QMap<int,SBID> playlist();
 
     //	Virtual
     virtual QTableView* subtabID2TableView(int subtabID) const;

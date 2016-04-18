@@ -44,6 +44,8 @@ public:
 
 
     explicit PlayerController(QObject *parent = 0);
+
+    void clearPlaylist();
     void initialize();
     void loadPlaylist(const QMap<int,SBID> &playList,bool firstBatchLoaded=0);
     void reorderPlaylist(QMap<int,int> fromTo);
@@ -90,7 +92,8 @@ private:
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(int playID);
     void _playerStop();
-    void _updatePlayerInfo();
+    void _refreshPlayingNowData() const;
+    void _updatePlayState(PlayerController::sb_player_state newState);
 };
 
 #endif // PLAYERCONTROLLER_H

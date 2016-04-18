@@ -18,6 +18,13 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent)
 }
 
 void
+PlayerController::clearPlaylist()
+{
+    qDebug() << SB_DEBUG_INFO;
+    _playList.clear();
+}
+
+void
 PlayerController::initialize()
 {
     qDebug() << SB_DEBUG_INFO;
@@ -152,25 +159,38 @@ PlayerController::playerPrevious()
              << "_playList.count()=" << _playList.count()
     ;
 
-    _state = PlayerController::sb_player_state_changing_media;
-    _playerStop();
-    bool isPlayingFlag=0;
-    int previousPlayID=-2;
-    int newPlayID=_currentPlayID;
-
-    //	Get out of loop if we're stuck. Either:
-    //	-	get a song playing, or
-    //	-	the very first song does not play for whatever reason
-    while(isPlayingFlag==0 && (previousPlayID!=newPlayID))
+    //	If 1st song of playlist is playing, simply do a seek to start.
+    if(_currentPlayID==0)
     {
-        previousPlayID=newPlayID;
-        newPlayID=calculateNextSongID(previousPlayID,1);
-        isPlayingFlag=_playSong(newPlayID);
+        qDebug() << SB_DEBUG_INFO;
+        playerSeek(0);
     }
-    //	CWIP:PLAY
-    //	If isPlaying==0 show error
-    _state = PlayerController::sb_player_state_play;
-    qDebug() << SB_DEBUG_INFO;
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        _state=PlayerController::sb_player_state_changing_media;
+        _playerStop();
+        bool isPlayingFlag=0;
+        int previousPlayID=-2;
+        int newPlayID=_currentPlayID;
+
+        //	Get out of loop if we're stuck. Either:
+        //	-	get a song playing, or
+        //	-	the very first song does not play for whatever reason
+        while(isPlayingFlag==0 && (previousPlayID!=newPlayID))
+        {
+            previousPlayID=newPlayID;
+            newPlayID=calculateNextSongID(previousPlayID,1);
+            isPlayingFlag=_playSong(newPlayID);
+        }
+        //	CWIP:PLAY
+        //	If isPlaying==0 show error
+        qDebug() << SB_DEBUG_INFO;
+        if(!isPlayingFlag)
+        {
+            playerStop();
+        }
+    }
 }
 
 void
@@ -196,10 +216,8 @@ PlayerController::playerStop()
              << "_currentPlayID=" << _currentPlayID
              << "_playList.count()=" << _playList.count()
     ;
-    _state=PlayerController::sb_player_state_stopped;
+    _updatePlayState(PlayerController::sb_player_state_stopped);
     _playerStop();
-    _playerPlayButton[_currentPlayerID]->setText(">");
-    _updatePlayerInfo();
 }
 
 ///
@@ -226,18 +244,14 @@ PlayerController::playerPlay(int playID)
         qDebug() << SB_DEBUG_INFO;
         //	If playing, pause
         _playerInstance[_currentPlayerID].pause();
-        _playerPlayButton[_currentPlayerID]->setText(">");
-        _state=PlayerController::sb_player_state_pause;
-        _updatePlayerInfo();
+        _updatePlayState(PlayerController::sb_player_state_pause);
     }
     else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PausedState)
     {
         qDebug() << SB_DEBUG_INFO;
         //	If paused, resume play
         _playerInstance[_currentPlayerID].play();
-        _playerPlayButton[_currentPlayerID]->setText("||");
-        _state=PlayerController::sb_player_state_play;
-        _updatePlayerInfo();
+        _updatePlayState(PlayerController::sb_player_state_play);
     }
     else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState)
     {
@@ -293,10 +307,8 @@ PlayerController::playerPlayNow_(int playID)
             return;
         }
     }
-    _state=PlayerController::sb_player_state_changing_media;
     _playerStop();
     playerPlay(playID);
-    _state = PlayerController::sb_player_state_play;
 }
 
 void
@@ -326,12 +338,14 @@ PlayerController::playerNext()
              << ":_currentPlayID=" << _currentPlayID
              << ":_playList.count()=" << _playList.count()
     ;
-    _state = PlayerController::sb_player_state_changing_media;
+
+    _state=PlayerController::sb_player_state_changing_media;
     _playerStop();
     bool isPlayingFlag=0;
     int previousPlayID=-2;
     int newPlayID=_currentPlayID;
 
+    qDebug() << SB_DEBUG_INFO;
     //	Get out of loop if we're stuck. Either:
     //	-	get a song playing, or
     //	-	the very first song does not play for whatever reason
@@ -340,10 +354,19 @@ PlayerController::playerNext()
         previousPlayID=newPlayID;
         newPlayID=calculateNextSongID(previousPlayID);
         isPlayingFlag=_playSong(newPlayID);
+        qDebug() << SB_DEBUG_INFO
+                 << "isPlayingFlag=" << isPlayingFlag
+                 << ":previousPlayID=" << previousPlayID
+                 << ":newPlayID=" << newPlayID
+        ;
     }
+    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
     //	CWIP:PLAY
     //	If isPlaying==0 show error
-    _state = PlayerController::sb_player_state_play;
+    if(!isPlayingFlag)
+    {
+        playerStop();
+    }
 }
 
 void
@@ -389,13 +412,18 @@ PlayerController::playerSeek(int ms)
 void
 PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 {
+    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO
+             << "_state=" << _state
+             << ":_currentPlayID=" << _currentPlayID
+             << ":playerState=" << playerState
+    ;
     if((_state==PlayerController::sb_player_state_changing_media) ||
             playerState==QMediaPlayer::PausedState ||
             playerState==QMediaPlayer::PlayingState)
     {
         return;
     }
-    qDebug() << SB_DEBUG_INFO << "**************************************" << _state << _currentPlayID << playerState;
     if(_state==PlayerController::sb_player_state_play)
     {
         //	Continue with next song
@@ -404,6 +432,12 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 }
 
 ///	Private slots
+
+///
+/// \brief PlayerController::playerDataClicked
+/// \param url
+///
+/// Is called when an item in player is clicked.
 void
 PlayerController::playerDataClicked(const QUrl &url)
 {
@@ -411,7 +445,7 @@ PlayerController::playerDataClicked(const QUrl &url)
     QStringList l=url.toString().split('_');
     SBID item(static_cast<SBID::sb_type>(l[0].toInt()),l[1].toInt());
     Context::instance()->getNavigator()->openScreenByID(item);
-    _updatePlayerInfo();
+    _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
 
 ///	Private methods
@@ -433,7 +467,11 @@ PlayerController::calculateNextSongID(int currentPlayID,bool previousFlag) const
 {
     int newPlayID=currentPlayID;
     newPlayID+=(previousFlag==1)?-1:1;
-    if(newPlayID<0 || newPlayID==_playList.count())
+    qDebug() << SB_DEBUG_INFO
+             << ":newPlayID=" << newPlayID
+             << ":_playList.count()=" << _playList.count()
+    ;
+    if(newPlayID<0 || newPlayID>=_playList.count())
     {
         newPlayID=0;
     }
@@ -491,6 +529,7 @@ PlayerController::_playSong(int playID)
              << "_playList.count()=" << _playList.count()
              << "playID=" << playID
     ;
+
     if(!_playList.contains(playID))
     {
         qDebug() << SB_DEBUG_ERROR << "playID not in playlist";
@@ -507,18 +546,16 @@ PlayerController::_playSong(int playID)
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
         qDebug() << SB_DEBUG_INFO << "Missing file";
-        _state=PlayerController::sb_player_state_stopped;
+        _updatePlayState(PlayerController::sb_player_state_stopped);
         return 0;
     }
 
     //	Instruct player to play
-    _state=PlayerController::sb_player_state_play;
+    _currentPlayID=playID;	//	This is the only time that _currentPlayID may be assigned to something else.
     _playerInstance[_currentPlayerID].play();
-    _playerPlayButton[_currentPlayerID]->setText("||");
-    _updatePlayerInfo();
 
-    //	This is the only time that _currentPlayID may be assigned to something else.
-    _currentPlayID=playID;
+    _updatePlayState(PlayerController::sb_player_state_play);
+
     emit songChanged(_currentPlayID);
 
     qDebug() << SB_DEBUG_INFO
@@ -540,20 +577,23 @@ PlayerController::_playerStop()
 }
 
 void
-PlayerController::_updatePlayerInfo()
+PlayerController::_refreshPlayingNowData() const
 {
     QString playState;
     switch(_state)
     {
     case PlayerController::sb_player_state_stopped:
+        _playerPlayButton[_currentPlayerID]->setText(">");
         playState="Stopped: ";
         break;
 
     case PlayerController::sb_player_state_play:
         playState="Now Playing: ";
+        _playerPlayButton[_currentPlayerID]->setText("||");
         break;
 
     case PlayerController::sb_player_state_pause:
+        _playerPlayButton[_currentPlayerID]->setText(">");
         playState="Paused: ";
         break;
 
@@ -561,9 +601,11 @@ PlayerController::_updatePlayerInfo()
         //	ignore
         break;
     }
+    qDebug() << SB_DEBUG_INFO << playState << _state;
 
     playState="<BODY BGCOLOR=\"#f0f0f0\"><CENTER>"+playState;
-    if(_currentPlayID>=0)
+    if(_state==PlayerController::sb_player_state_pause ||
+       _state==PlayerController::sb_player_state_play)
     {
         playState+=QString(
             "<A HREF=\"%1_%2\">%3</A> by "
@@ -583,5 +625,23 @@ PlayerController::_updatePlayerInfo()
         ;
     }
     playState+="</CENTER></BODY>";
+    qDebug() << SB_DEBUG_INFO << playState;
     _playerDataLabel[_currentPlayerID]->setText(playState);
+}
+
+void
+PlayerController::_updatePlayState(PlayerController::sb_player_state newState)
+{
+    qDebug() << SB_DEBUG_INFO
+             << "_currentPlayID=" << _currentPlayID
+             << ":_state=" << _state
+             << ":newState=" << newState
+    ;
+    if(newState==_state)
+    {
+        return;
+    }
+    _state=newState;
+
+    return _refreshPlayingNowData();
 }
