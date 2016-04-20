@@ -538,7 +538,13 @@ PlayerController::_playSong(int playID)
     }
 
     SBID id=_getPlaylistEntry(playID);
-    QString path="/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+id.path;
+    QString path=
+#ifdef Q_OS_UNIX
+            "/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+id.path;
+#endif
+#ifdef Q_OS_WIN
+            "D:/songbase/files/rock/"+id.path;
+#endif
     //	CWIP: check if path is empty
 
     qDebug() << SB_DEBUG_INFO << "path=" << path;

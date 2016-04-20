@@ -1,6 +1,9 @@
 #ifndef SBAUDIODECODERFLAC_H
 #define SBAUDIODECODERFLAC_H
 
+#include <qsystemdetection.h>
+
+#ifdef Q_OS_UNIX
 #include "FLAC/all.h"
 
 #include <QFile>
@@ -63,5 +66,7 @@ private:
         return sample << shift;
     };
 };
+
+#endif
 
 #endif // SBAUDIODECODERFLAC_H

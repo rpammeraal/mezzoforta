@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QObject>
 #include <QTime>
+#include <qsystemdetection.h>
 
 class QFrame;
 class QLabel;

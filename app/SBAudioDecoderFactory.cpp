@@ -41,10 +41,12 @@ SBAudioDecoderFactory::stream(const QString &fileName)
     {
         ad=new SBAudioDecoderMP3();
     }
+#ifdef Q_OS_UNIX
     else if(SBAudioDecoderFlac::supportFileExtension(extension)==1)
     {
         ad=new SBAudioDecoderFlac();
     }
+#endif
 
     if(ad==NULL)
     {
