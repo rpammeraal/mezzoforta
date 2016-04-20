@@ -41,7 +41,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
             .arg(fromID.getText())     //	4
             .arg(assignID.getType())   //	5
             .arg(fromID.getType());    //	6
-        Context::instance()->getController()->updateStatusBar(updateText);
+        Context::instance()->getController()->updateStatusBarText(updateText);
     }
 }
 

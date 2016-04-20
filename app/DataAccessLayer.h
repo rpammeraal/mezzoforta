@@ -52,6 +52,7 @@ public:
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
     const QString& getGetDate() const;
+    const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
     QString getDriverName() const;
@@ -65,6 +66,7 @@ protected:
     void addMissingDatabaseItems();
 
     void setGetDate(const QString& n);
+    void setGetDateTime(const QString& n);
     void setILike(const QString& n);
     void setIsNull(const QString& n);
     void setConvertToSecondsFromTime(const QString& n);
@@ -75,9 +77,10 @@ private:
     QString _schemaName; //	in use for postgres
     QString _connectionName;
     QString _convertToSecondsFromTime;
-    QString _ilike;      //	returns the case insensitive version of SQL like
-    QString _isnull;     // returns the equivalent of ISNULL
-    QString _getdate;    //	return current timestamp
+    QString _ilike;          //	returns the case insensitive version of SQL like
+    QString _isnull;         // returns the equivalent of ISNULL
+    QString _getDate;        //	return current timestamp
+    QString _getDateTime;    //	return current timestamp
 
     QString _getSchemaName() const;
 

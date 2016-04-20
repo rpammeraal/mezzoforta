@@ -1,13 +1,13 @@
-#ifndef SBAUDIODECODERWAVE_H
-#define SBAUDIODECODERWAVE_H
+#ifndef AUDIODECODERWAVE_H
+#define AUDIODECODERWAVE_H
 
-#include "SBAudioDecoder.h"
+#include "AudioDecoder.h"
 
-class SBAudioDecoderWave : public SBAudioDecoder
+class AudioDecoderWave : public AudioDecoder
 {
 public:
-    SBAudioDecoderWave();
-    virtual ~SBAudioDecoderWave();
+    AudioDecoderWave();
+    virtual ~AudioDecoderWave();
 
     static bool supportFileExtension(const QString& extension);
     virtual StreamContent stream(const QString& fileName);
@@ -31,4 +31,4 @@ private:
 	} WaveHeader;
 };
 
-#endif // SBAUDIODECODERWAVE_H
+#endif // AUDIODECODERWAVE_H

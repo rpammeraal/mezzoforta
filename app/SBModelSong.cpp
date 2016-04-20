@@ -570,6 +570,40 @@ SBModelSong::saveNewSong(SBID &id)
 }
 
 bool
+SBModelSong::updateLastPlayDate(const SBID &id)
+{
+    qDebug() << SB_DEBUG_INFO << id;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___online_performance "
+        "SET "
+            "last_play_date=%1 "
+        "WHERE "
+            "song_id=%2 AND "
+            "artist_id=%3 AND "
+            "record_id=%4 AND "
+            "record_position=%5 "
+    )
+        .arg(dal->getGetDateTime())
+        .arg(id.sb_song_id)
+        .arg(id.sb_performer_id)
+        .arg(id.sb_album_id)
+        .arg(id.sb_position)
+    ;
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery query(q,db);
+    query.exec();
+
+    return 1;	//	CWIP: need proper error handling
+}
+
+bool
 SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QStringList& extraSQL,bool commitFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();

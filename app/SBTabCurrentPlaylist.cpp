@@ -630,7 +630,7 @@ SBTabCurrentPlaylist::deletePlaylistItem()
             .arg(QChar(180))           //	3
             .arg(assignID.getType())   //	4
         ;
-        Context::instance()->getController()->updateStatusBar(updateText);
+        Context::instance()->getController()->updateStatusBarText(updateText);
     }
 }
 
@@ -645,6 +645,16 @@ SBTabCurrentPlaylist::movePlaylistItem(const SBID& fromID, const SBID &toID)
     SBModelPlaylist *mpl=new SBModelPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
+}
+
+void
+SBTabCurrentPlaylist::playSong()
+{
+    qDebug() << SB_DEBUG_INFO << _lastClickedIndex;
+    PlayerController* pc=Context::instance()->getPlayerController();
+
+    pc->playerStop();
+    pc->playerPlay(_lastClickedIndex.row());
 }
 
 void
@@ -663,6 +673,7 @@ SBTabCurrentPlaylist::showContextMenuPlaylist(const QPoint &p)
 
         QMenu menu(NULL);
         menu.addAction(deletePlaylistItemAction);
+        menu.addAction(playSongNowAction);
         menu.exec(gp);
     }
 }
@@ -803,7 +814,8 @@ SBTabCurrentPlaylist::startRadio()
                 //	Stop player, tell playerController that we have a new playlist and start player.
                 pc->playerStop();
                 pc->loadPlaylist(playList,firstBatchLoaded);
-                pc->playerPlay();
+                //pc->playerPlay();
+                pc->playerNext();
                 //	End reuseable
 
                 firstBatchLoaded=true;
@@ -905,6 +917,13 @@ SBTabCurrentPlaylist::init()
         deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
         connect(deletePlaylistItemAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
+
+        //	Play song now
+        playSongNowAction = new QAction(tr("Play Song"), this);
+        playSongNowAction->setStatusTip(tr("Play Song"));
+        connect(playSongNowAction, SIGNAL(triggered(bool)),
+                this, SLOT(playSong()));
+
         _initDoneFlag=1;
     }
 }

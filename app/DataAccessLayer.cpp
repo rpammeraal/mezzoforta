@@ -35,6 +35,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setILike("LIKE");
     setIsNull("IFNULL");
     setGetDate("DATE('now')");
+    setGetDateTime("DATETIME('now')");
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
     addMissingDatabaseItems();
 }
@@ -178,7 +179,8 @@ DataAccessLayer::customize(QString &s) const
 {
     return s.replace("___SB_SCHEMA_NAME___",_getSchemaName()).
       replace("___SB_DB_ISNULL___",getIsNull()).
-      replace("___SB_DB_GETDATE___",getGetDate());
+      replace("___SB_DB_GETDATE___",getGetDate()).
+      replace("___SB_DB_GETDATETIME___",getGetDateTime());
 }
 
 const QString&
@@ -197,13 +199,19 @@ DataAccessLayer::getDriverName() const
 const QString&
 DataAccessLayer::getGetDate() const
 {
-    return _getdate;
+    return _getDate;
+}
+
+const QString&
+DataAccessLayer::getGetDateTime() const
+{
+    return _getDateTime;
 }
 
 const QString&
 DataAccessLayer::getConvertToSecondsFromTime() const
 {
-    return _getdate;
+    return _getDate;
 }
 
 
@@ -253,7 +261,13 @@ DataAccessLayer::addMissingDatabaseItems()
 void
 DataAccessLayer::setGetDate(const QString& n)
 {
-    _getdate=n;
+    _getDate=n;
+}
+
+void
+DataAccessLayer::setGetDateTime(const QString& n)
+{
+    _getDateTime=n;
 }
 
 void
@@ -291,7 +305,8 @@ DataAccessLayer::init()
     _convertToSecondsFromTime="";
     _ilike="";
     _isnull="";
-    _getdate="";
+    _getDate="";
+    _getDateTime="";
 }
 
 void
@@ -302,5 +317,6 @@ DataAccessLayer::init(const DataAccessLayer& copy)
     _convertToSecondsFromTime=copy._convertToSecondsFromTime;
     _ilike=copy._ilike;
     _isnull=copy._isnull;
-    _getdate=copy._getdate;
+    _getDate=copy._getDate;
+    _getDateTime=copy._getDateTime;
 }

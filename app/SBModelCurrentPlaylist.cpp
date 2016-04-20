@@ -54,7 +54,7 @@ SBModelCurrentPlaylist::getAllOnlineSongs()
                             "op.record_position=rp.record_position "
             ") a "
         "ORDER BY "
-            "SB_PLAY_ORDER "
+            "SB_PLAY_ORDER DESC "
         "LIMIT 100 "
     );
 

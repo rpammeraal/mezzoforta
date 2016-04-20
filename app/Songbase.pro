@@ -42,13 +42,13 @@ HEADERS     = \
     SBMediaPlayer.h \
     SBTabCurrentPlaylist.h \
     SBModelCurrentPlaylist.h \
-    SBAudioDecoder.h \
-    SBAudioDecoderFactory.h \
-    SBAudioDecoderWave.h \
-    SBAudioDecoderOggVorbis.h \
     StreamContent.h \
-    SBAudioDecoderMP3.h \
-    SBAudioDecoderFlac.h
+    AudioDecoder.h \
+    AudioDecoderFactory.h \
+    AudioDecoderFlac.h \
+    AudioDecoderMP3.h \
+    AudioDecoderOggVorbis.h \
+    AudioDecoderWave.h
 
 SOURCES     = \
     main.cpp \
@@ -93,13 +93,13 @@ SOURCES     = \
     SBMediaPlayer.cpp \
     SBTabCurrentPlaylist.cpp \
     SBModelCurrentPlaylist.cpp \
-    SBAudioDecoder.cpp \
-    SBAudioDecoderFactory.cpp \
-    SBAudioDecoderWave.cpp \
-    SBAudioDecoderOggVorbis.cpp \
     StreamContent.cpp \
-    SBAudioDecoderMP3.cpp \
-    SBAudioDecoderFlac.cpp
+    AudioDecoder.cpp \
+    AudioDecoderFactory.cpp \
+    AudioDecoderFlac.cpp \
+    AudioDecoderMP3.cpp \
+    AudioDecoderOggVorbis.cpp \
+    AudioDecoderWave.cpp
 
 # install
 target.path = .

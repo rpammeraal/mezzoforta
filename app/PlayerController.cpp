@@ -4,11 +4,13 @@
 
 #include "Common.h"
 #include "Context.h"
+#include "Controller.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
 #include "SBModelCurrentPlaylist.h"
+#include "SBModelSong.h"
 #include "SBSqlQueryModel.h"
 
 
@@ -112,6 +114,10 @@ PlayerController::initialize()
         connect(mw->ui.hsMusicPlayerProgressLeft,SIGNAL(sliderMoved(int)),
                 this, SLOT(playerSeek(int)));
         connect(mw->ui.hsMusicPlayerProgressRight,SIGNAL(sliderMoved(int)),
+                this, SLOT(playerSeek(int)));
+        connect(mw->ui.hsMusicPlayerProgressLeft,SIGNAL(valueChanged(int)),
+                this, SLOT(playerSeek(int)));
+        connect(mw->ui.hsMusicPlayerProgressRight,SIGNAL(valueChanged(int)),
                 this, SLOT(playerSeek(int)));
     }
 }
@@ -523,6 +529,8 @@ PlayerController::makePlayerVisible(PlayerController::sb_player player)
 bool
 PlayerController::_playSong(int playID)
 {
+    Controller* c=Context::instance()->getController();
+
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
     qDebug() << SB_DEBUG_INFO
              << "_currentPlayID=" << _currentPlayID
@@ -551,6 +559,7 @@ PlayerController::_playSong(int playID)
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
+        c->updateStatusBarText(_playerInstance[_currentPlayerID].error());
         qDebug() << SB_DEBUG_INFO << "Missing file";
         _updatePlayState(PlayerController::sb_player_state_stopped);
         return 0;
@@ -563,6 +572,11 @@ PlayerController::_playSong(int playID)
     _updatePlayState(PlayerController::sb_player_state_play);
 
     emit songChanged(_currentPlayID);
+
+    //	Update timestamp in online_performance
+    //	Do this in both radio and non-radio mode.
+    qDebug() << SB_DEBUG_INFO << "Updating timestamp for " << _playList[playID];
+    SBModelSong::updateLastPlayDate(_playList[playID]);
 
     qDebug() << SB_DEBUG_INFO
              << "_currentPlayID=" << _currentPlayID

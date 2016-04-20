@@ -64,6 +64,12 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreenByID(SBID &id)
 {
+    if(!_threadPrioritySetFlag)
+    {
+        QThread::currentThread()->setPriority(QThread::LowestPriority);
+        _threadPrioritySetFlag=1;
+    }
+
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID result;
 

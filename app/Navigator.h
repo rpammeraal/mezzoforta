@@ -60,6 +60,7 @@ public slots:
 
 private:
     //	Private variables
+    bool _threadPrioritySetFlag;
 
     //	Private methods
     SBID activateTab(const SBID& id);

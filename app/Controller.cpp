@@ -121,7 +121,7 @@ Controller::changeSchema(const QString& newSchema)
 }
 
 void
-Controller::updateStatusBar(const QString &s)
+Controller::updateStatusBarText(const QString &s)
 {
     Context::instance()->getMainWindow()->ui.statusBar->setText(s);
     statusBarResetTimer.start(10000);

@@ -7,20 +7,20 @@
 #include <QDebug>
 #include <QFile>
 
-#include "SBAudioDecoderWave.h"
+#include "AudioDecoderWave.h"
 
 #include "Common.h"
 
-SBAudioDecoderWave::SBAudioDecoderWave()
+AudioDecoderWave::AudioDecoderWave()
 {
 }
 
-SBAudioDecoderWave::~SBAudioDecoderWave()
+AudioDecoderWave::~AudioDecoderWave()
 {
 }
 
 bool
-SBAudioDecoderWave::supportFileExtension(const QString& extension)
+AudioDecoderWave::supportFileExtension(const QString& extension)
 {
     return
         (
@@ -30,7 +30,7 @@ SBAudioDecoderWave::supportFileExtension(const QString& extension)
 }
 
 StreamContent
-SBAudioDecoderWave::stream(const QString& fileName)
+AudioDecoderWave::stream(const QString& fileName)
 {
     //	New implementation using Qt infrastructure
     PaSampleFormat sampleFormat;

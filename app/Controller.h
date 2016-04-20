@@ -48,7 +48,7 @@ public slots:
     void changeSchema(const QString& newSchema);
 
     //	General UI
-    void updateStatusBar(const QString &s);
+    void updateStatusBarText(const QString &s);
 
 protected:
 

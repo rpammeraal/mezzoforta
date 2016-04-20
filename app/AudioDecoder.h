@@ -1,5 +1,5 @@
-#ifndef SBAUDIODECODER_H
-#define SBAUDIODECODER_H
+#ifndef AUDIOdECODER_H
+#define AUDIOdECODER_H
 
 #include <QString>
 #include <QByteArray>
@@ -7,19 +7,19 @@
 #include "StreamContent.h"
 
 ///
-/// \brief The SBAudioDecoder class
+/// \brief The AudioDecoder class
 ///
 /// This class is a parent class for all codecs. Given a fileName, stream()
 /// will open this file, read, decode and return a bytestream accessible in
 /// class streamContent.
 ///
-class SBAudioDecoder
+class AudioDecoder
 {
 protected:
-    friend class SBAudioDecoderFactory;
+    friend class AudioDecoderFactory;
 
-    SBAudioDecoder();
-    virtual ~SBAudioDecoder();
+    AudioDecoder();
+    virtual ~AudioDecoder();
 
     static bool supportFileExtension(const QString& extension) ;
     virtual StreamContent stream(const QString& fileName)=0;
@@ -28,4 +28,4 @@ protected:
     QString errStr;
 };
 
-#endif // SBAUDIODECODER_H
+#endif // AUDIOdECODER_H

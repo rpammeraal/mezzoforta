@@ -239,7 +239,7 @@ SBTabSongEdit::save() const
                 .arg(QChar(96))      //	1
                 .arg(newSongID.songTitle)   //	2
                 .arg(QChar(180));    //	3
-            Context::instance()->getController()->updateStatusBar(updateText);
+            Context::instance()->getController()->updateStatusBarText(updateText);
 
             if(orgSongID!=newSongID)
             {

@@ -1277,7 +1277,7 @@ SBTabAlbumEdit::save() const
                 .arg(QChar(96))      //	1
                 .arg(newAlbum.albumTitle)
                 .arg(QChar(180));    //	3
-            Context::instance()->getController()->updateStatusBar(updateText);
+            Context::instance()->getController()->updateStatusBarText(updateText);
 
             //	Update models!
             Context::instance()->getController()->refreshModels();

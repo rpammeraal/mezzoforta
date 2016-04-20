@@ -29,6 +29,7 @@ signals:
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
+    void playSong();
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(int playID);
 
@@ -41,6 +42,7 @@ private slots:
 
 private:
     QAction* deletePlaylistItemAction;
+    QAction* playSongNowAction;
     QModelIndex _lastClickedIndex;
     CurrentPlaylistModel* _pm;
     bool _playlistLoadedFlag;

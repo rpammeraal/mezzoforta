@@ -296,7 +296,7 @@ SBTabPerformerEdit::save() const
                 .arg(QChar(96))      //	1
                 .arg(newPerformerID.performerName)	//	2
                 .arg(QChar(180));    //	3
-            Context::instance()->getController()->updateStatusBar(updateText);
+            Context::instance()->getController()->updateStatusBarText(updateText);
 
             qDebug() << SB_DEBUG_INFO;
             if(orgPerformerID.sb_performer_id!=newPerformerID.sb_performer_id)

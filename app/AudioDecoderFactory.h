@@ -1,15 +1,15 @@
-#ifndef SBAUDIODECODERFACTORY_H
-#define SBAUDIODECODERFACTORY_H
+#ifndef AUDIODECODERFACTORY_H
+#define AUDIODECODERFACTORY_H
 
 #include <QIODevice>
 
 #include "StreamContent.h"
 
 ///
-/// \brief The SBAudioDecoderFactory class
+/// \brief The AudioDecoderFactory class
 ///
 ///
-///	SBAudioDecoderFactory will open a file, read it and return a bytestream 2 samples per channel,
+///	AudioDecoderFactory will open a file, read it and return a bytestream 2 samples per channel,
 ///	each sample being 16 bits, embedded and accessible in StreamContent, which holds all parameters
 ///	on this bytestream.
 ///
@@ -17,11 +17,11 @@
 ///	and have this callback function functioning at the actual decoder level. For now, everything is
 ///	streamed from memory.
 ///
-class SBAudioDecoderFactory
+class AudioDecoderFactory
 {
 public:
-    SBAudioDecoderFactory();
-    ~SBAudioDecoderFactory();
+    AudioDecoderFactory();
+    ~AudioDecoderFactory();
 
     StreamContent stream(const QString& fileName);
     QString error() const { return errStr; }
@@ -32,4 +32,4 @@ private:
     void init();
 };
 
-#endif // SBAUDIODECODERFACTORY_H
+#endif // AUDIODECODERFACTORY_H

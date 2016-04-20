@@ -1,14 +1,14 @@
-#ifndef SBAUDIODECODERMP3_H
-#define SBAUDIODECODERMP3_H
+#ifndef AUDIODECODERMP3_H
+#define AUDIODECODERMP3_H
 
 #include <mad.h>
-#include "SBAudioDecoder.h"
+#include "AudioDecoder.h"
 
-class SBAudioDecoderMP3 : public SBAudioDecoder
+class AudioDecoderMP3 : public AudioDecoder
 {
 public:
-    SBAudioDecoderMP3();
-    virtual ~SBAudioDecoderMP3();
+    AudioDecoderMP3();
+    virtual ~AudioDecoderMP3();
 
     static bool supportFileExtension(const QString& extension);
     virtual StreamContent stream(const QString& fileName);
@@ -33,4 +33,4 @@ private:
 
 };
 
-#endif // SBAUDIODECODERMP3_H
+#endif // AUDIODECODERMP3_H

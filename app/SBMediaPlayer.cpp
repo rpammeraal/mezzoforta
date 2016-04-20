@@ -3,8 +3,9 @@
 
 #include <QAudioDeviceInfo>
 #include "QFileInfo"
+#include <QThread>
 
-#include "SBAudioDecoderFactory.h"
+#include "AudioDecoderFactory.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
 #include "StreamContent.h"
@@ -56,7 +57,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
     {
         closeStream();
     }
-    SBAudioDecoderFactory adf;
+    AudioDecoderFactory adf;
     StreamContent sc=adf.stream(fn);
 
     if(sc.hasErrorFlag())
@@ -92,6 +93,12 @@ SBMediaPlayer::paCallback
     Q_UNUSED(statusFlags);
     int resultCode;
 
+    if(!_threadPrioritySetFlag)
+    {
+        QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
+        _threadPrioritySetFlag=1;
+    }
+
     qint64 toRead=(_sc.bitsPerSample()/8) * _sc.numChannels() * frameCount;
 
     if(this->position() % 1000 <= 10)
@@ -100,7 +107,7 @@ SBMediaPlayer::paCallback
                  << ":frameCount=" <<frameCount
                  << ":_index=" << _index
                  << ":position=" << this->position()
-                 << this->position() % 1000
+                 << ":statusFlags=" << statusFlags
         ;
     }
 
@@ -209,6 +216,7 @@ SBMediaPlayer::init()
     _paError=paNoError;
     _stream=NULL;
     _state=QMediaPlayer::StoppedState;
+    _threadPrioritySetFlag=0;
     _hasErrorFlag=0;
 
     portAudioInit();

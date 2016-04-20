@@ -1,5 +1,5 @@
-#ifndef SBAUDIODECODERFLAC_H
-#define SBAUDIODECODERFLAC_H
+#ifndef AudioDecoderFLAC_H
+#define AudioDecoderFLAC_H
 
 #include <qsystemdetection.h>
 
@@ -8,14 +8,14 @@
 
 #include <QFile>
 
-#include "SBAudioDecoder.h"
+#include "AudioDecoder.h"
 
 
-class SBAudioDecoderFlac : public SBAudioDecoder
+class AudioDecoderFlac : public AudioDecoder
 {
 public:
-    SBAudioDecoderFlac();
-    virtual ~SBAudioDecoderFlac();
+    AudioDecoderFlac();
+    virtual ~AudioDecoderFlac();
 
     static bool supportFileExtension(const QString& extension);
     virtual StreamContent stream(const QString& fileName);
@@ -69,4 +69,4 @@ private:
 
 #endif
 
-#endif // SBAUDIODECODERFLAC_H
+#endif // AudioDecoderFLAC_H

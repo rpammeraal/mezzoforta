@@ -231,7 +231,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
             .arg(toID.getText())       //	4
             .arg(assignID.getType())   //	5
             .arg(toID.getType());      //	6
-        Context::instance()->getController()->updateStatusBar(updateText);
+        Context::instance()->getController()->updateStatusBarText(updateText);
         qDebug() << SB_DEBUG_INFO;
     }
 }
@@ -264,7 +264,7 @@ Chooser::deletePlaylist()
                     .arg(QChar(96))      //	1
                     .arg(id.getText())   //	2
                     .arg(QChar(180));    //	3
-                Context::instance()->getController()->updateStatusBar(updateText);
+                Context::instance()->getController()->updateStatusBarText(updateText);
                 break;
 
             case QMessageBox::Cancel:
@@ -297,7 +297,7 @@ Chooser::newPlaylist()
             .arg(QChar(96))      //	1
             .arg(id.getText())   //	2
             .arg(QChar(180));    //	3
-        Context::instance()->getController()->updateStatusBar(updateText);
+        Context::instance()->getController()->updateStatusBarText(updateText);
     }
     qDebug() << SB_DEBUG_INFO;
 }
@@ -357,7 +357,7 @@ Chooser::_renamePlaylist(const SBID &id)
         .arg(QChar(96))      //	1
         .arg(id.getText())   //	2
         .arg(QChar(180));    //	3
-    Context::instance()->getController()->updateStatusBar(updateText);
+    Context::instance()->getController()->updateStatusBarText(updateText);
 
     mw->ui.tabPlaylistDetail->refreshTabIfCurrent(id);
 }

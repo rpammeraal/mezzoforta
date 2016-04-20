@@ -31,6 +31,7 @@ public:
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
     qint64 position() const;
     bool setMedia(const QString& fileName);
+    inline QString error() const { return _errMsg; }
     QMediaPlayer::State state() const;
 
 signals:
@@ -54,6 +55,7 @@ private:
     QString _errMsg;
     bool _hasErrorFlag;
     QMediaPlayer::State _state;
+    bool _threadPrioritySetFlag;
 
     qint64 index2PositionInMS(qint64 index) const;
     void closeStream();

@@ -10,19 +10,19 @@
 #include <QFile>
 
 #include "Common.h"
-#include "SBAudioDecoderOggVorbis.h"
+#include "AudioDecoderOggVorbis.h"
 
-SBAudioDecoderOggVorbis::SBAudioDecoderOggVorbis()
+AudioDecoderOggVorbis::AudioDecoderOggVorbis()
 {
 }
 
-SBAudioDecoderOggVorbis::~SBAudioDecoderOggVorbis()
+AudioDecoderOggVorbis::~AudioDecoderOggVorbis()
 {
 }
 
 
 bool
-SBAudioDecoderOggVorbis::supportFileExtension(const QString& extension)
+AudioDecoderOggVorbis::supportFileExtension(const QString& extension)
 {
     return
         (
@@ -31,7 +31,7 @@ SBAudioDecoderOggVorbis::supportFileExtension(const QString& extension)
 }
 
 StreamContent
-SBAudioDecoderOggVorbis::stream(const QString& fileName)
+AudioDecoderOggVorbis::stream(const QString& fileName)
 {
     qDebug() << SB_DEBUG_INFO << fileName << this;
     PaSampleFormat sampleFormat=paInt16;	//	2 bytes per sample per channel.

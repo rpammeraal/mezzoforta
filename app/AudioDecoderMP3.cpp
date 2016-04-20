@@ -4,20 +4,20 @@
 #include <id3tag.h>
 #endif
 
-#include "SBAudioDecoderMP3.h"
+#include "AudioDecoderMP3.h"
 
 #include <QFile>
 
-SBAudioDecoderMP3::SBAudioDecoderMP3()
+AudioDecoderMP3::AudioDecoderMP3()
 {
 }
 
-SBAudioDecoderMP3::~SBAudioDecoderMP3()
+AudioDecoderMP3::~AudioDecoderMP3()
 {
 }
 
 bool
-SBAudioDecoderMP3::supportFileExtension(const QString& extension)
+AudioDecoderMP3::supportFileExtension(const QString& extension)
 {
     return
         (
@@ -26,7 +26,7 @@ SBAudioDecoderMP3::supportFileExtension(const QString& extension)
 }
 
 StreamContent
-SBAudioDecoderMP3::stream(const QString& fileName)
+AudioDecoderMP3::stream(const QString& fileName)
 {
     PaSampleFormat sampleFormat=paInt16;
     StreamContent sc;

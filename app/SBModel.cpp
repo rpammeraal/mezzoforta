@@ -1,6 +1,7 @@
 #include "SBModel.h"
 
 #include <QAbstractItemModel>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QMimeData>
 
@@ -57,6 +58,8 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         for(int i=0;i<aim->columnCount();i++)
         {
+            QCoreApplication::processEvents();
+
             header=aim->headerData(i,Qt::Horizontal).toString().toLower();
             n=aim->index(idx.row(),i);
             v=aim->data(n, Qt::DisplayRole);
@@ -123,6 +126,8 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
     {
+        QCoreApplication::processEvents();
+
         header=aim->headerData(i,Qt::Horizontal).toString().toLower();
         QModelIndex n=aim->index(idx.row(),i);
         v=aim->data(n, Qt::DisplayRole);
