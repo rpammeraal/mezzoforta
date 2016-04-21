@@ -43,13 +43,13 @@ HEADERS     = \
     AudioDecoderMP3.h \
     AudioDecoderOggVorbis.h \
     AudioDecoderWave.h \
-    SBCurrentPlaylistModel.h \
     DataEntityAlbum.h \
     DataEntityCurrentPlaylist.h \
     DataEntityGenrelist.h \
     DataEntityPerformer.h \
     DataEntityPlaylist.h \
-    DataEntitySong.h
+    DataEntitySong.h \
+    SBModelCurrentPlaylist.h
 
 SOURCES     = \
     main.cpp \
@@ -95,13 +95,13 @@ SOURCES     = \
     AudioDecoderMP3.cpp \
     AudioDecoderOggVorbis.cpp \
     AudioDecoderWave.cpp \
-    SBCurrentPlaylistModel.cpp \
     DataEntityAlbum.cpp \
     DataEntityCurrentPlaylist.cpp \
     DataEntityGenreList.cpp \
     DataEntityPerformer.cpp \
     DataEntityPlaylist.cpp \
-    DataEntitySong.cpp
+    DataEntitySong.cpp \
+    SBModelCurrentPlaylist.cpp
 
 # install
 target.path = .

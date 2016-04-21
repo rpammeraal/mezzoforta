@@ -10,10 +10,10 @@
 #include "DataEntityCurrentPlaylist.h"
 #include "SBSqlQueryModel.h"
 
-#include "SBCurrentPlaylistModel.h"
+#include "SBModelCurrentPlaylist.h"
 
 
-SBCurrentPlaylistModel::SBCurrentPlaylistModel(QObject* parent):QStandardItemModel(parent)
+SBModelCurrentPlaylist::SBModelCurrentPlaylist(QObject* parent):QStandardItemModel(parent)
 {
     qDebug() << SB_DEBUG_INFO;
     qDebug() << SB_DEBUG_INFO << "++++++++++++++++++++++++++++++++++++++";
@@ -22,7 +22,7 @@ SBCurrentPlaylistModel::SBCurrentPlaylistModel(QObject* parent):QStandardItemMod
 
 //	Methods related to drag&drop
 bool
-SBCurrentPlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+SBModelCurrentPlaylist::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
     Q_UNUSED(action);
     qDebug() << SB_DEBUG_INFO << row << column << parent;
@@ -75,7 +75,7 @@ SBCurrentPlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction actio
 
 
 Qt::ItemFlags
-SBCurrentPlaylistModel::flags(const QModelIndex &index) const
+SBModelCurrentPlaylist::flags(const QModelIndex &index) const
 {
     if(index.isValid())
     {
@@ -89,7 +89,7 @@ SBCurrentPlaylistModel::flags(const QModelIndex &index) const
 }
 
 QMimeData*
-SBCurrentPlaylistModel::mimeData(const QModelIndexList & indexes) const
+SBModelCurrentPlaylist::mimeData(const QModelIndexList & indexes) const
 {
     foreach (const QModelIndex &idx, indexes)
     {
@@ -117,7 +117,7 @@ SBCurrentPlaylistModel::mimeData(const QModelIndexList & indexes) const
 }
 
 QStringList
-SBCurrentPlaylistModel::mimeTypes() const
+SBModelCurrentPlaylist::mimeTypes() const
 {
     QStringList types;
     types << "application/vnd.text.list";
@@ -125,14 +125,14 @@ SBCurrentPlaylistModel::mimeTypes() const
 }
 
 Qt::DropActions
-SBCurrentPlaylistModel::supportedDropActions() const
+SBModelCurrentPlaylist::supportedDropActions() const
 {
     return Qt::MoveAction;
 }
 
 //	Methods unrelated to drag&drop
 QModelIndex
-SBCurrentPlaylistModel::addRow()
+SBModelCurrentPlaylist::addRow()
 {
     qDebug() << SB_DEBUG_INFO;
     QList<QStandardItem *>column;
@@ -159,14 +159,14 @@ SBCurrentPlaylistModel::addRow()
 }
 
 void
-SBCurrentPlaylistModel::clear()
+SBModelCurrentPlaylist::clear()
 {
     _currentPlayID=-1;
     QStandardItemModel::clear();
 }
 
 QString
-SBCurrentPlaylistModel::formatDisplayPlayID(int playID,bool isCurrent)
+SBModelCurrentPlaylist::formatDisplayPlayID(int playID,bool isCurrent)
 {
     QString str;
 
@@ -175,7 +175,7 @@ SBCurrentPlaylistModel::formatDisplayPlayID(int playID,bool isCurrent)
 }
 
 void
-SBCurrentPlaylistModel::paintRow(int i)
+SBModelCurrentPlaylist::paintRow(int i)
 {
     if(i<0 || i>=this->rowCount())
     {
@@ -192,7 +192,7 @@ SBCurrentPlaylistModel::paintRow(int i)
 
     for(int j=0;j<this->columnCount();j++)
     {
-        item=this->item(i,SBCurrentPlaylistModel::sb_column_playlistid);
+        item=this->item(i,SBModelCurrentPlaylist::sb_column_playlistid);
         if(item)
         {
             playlistID=item->text().toInt();
@@ -200,7 +200,7 @@ SBCurrentPlaylistModel::paintRow(int i)
             item=this->item(i,j);
             if(item)
             {
-                if(j==SBCurrentPlaylistModel::sb_column_displayplaylistid)
+                if(j==SBModelCurrentPlaylist::sb_column_displayplaylistid)
                 {
                     item->setBackground(QBrush(newColor));
                 }
@@ -221,7 +221,7 @@ SBCurrentPlaylistModel::paintRow(int i)
 ///	It'll also create a playlist (to be consumed by PlayerController).
 ///
 QMap<int,SBID>
-SBCurrentPlaylistModel::populate()
+SBModelCurrentPlaylist::populate()
 {
     qDebug() << SB_DEBUG_INFO << _currentPlayID;
     _currentPlayID=-1;
@@ -281,7 +281,7 @@ SBCurrentPlaylistModel::populate()
 /// 	-	first batch (a small set of records) is immediately loaded, displayed and music starts to play
 ///		-	second batch (with the remainder) is loaded while playing music.
 void
-SBCurrentPlaylistModel::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag)
+SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag)
 {
     qDebug() << SB_DEBUG_INFO << "newPlaylist.count()=" << newPlaylist.count();
     int offset=0;
@@ -341,7 +341,7 @@ SBCurrentPlaylistModel::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
 }
 
 void
-SBCurrentPlaylistModel::populateHeader()
+SBModelCurrentPlaylist::populateHeader()
 {
     QList<QStandardItem *>column;
     QStandardItem* item;
@@ -363,7 +363,7 @@ SBCurrentPlaylistModel::populateHeader()
 }
 
 void
-SBCurrentPlaylistModel::reorderItems()
+SBModelCurrentPlaylist::reorderItems()
 {
     QMap<int,int> toFrom;	//	map from old to new index (1-based)
     //	Create map
@@ -406,7 +406,7 @@ SBCurrentPlaylistModel::reorderItems()
 }
 
 bool
-SBCurrentPlaylistModel::removeRows(int row, int count, const QModelIndex &parent)
+SBModelCurrentPlaylist::removeRows(int row, int count, const QModelIndex &parent)
 {
     qDebug() << SB_DEBUG_INFO << row << count << parent.row() << parent.column();
     bool result=QStandardItemModel::removeRows(row,count,parent);
@@ -416,7 +416,7 @@ SBCurrentPlaylistModel::removeRows(int row, int count, const QModelIndex &parent
 }
 
 void
-SBCurrentPlaylistModel::repaintAll()
+SBModelCurrentPlaylist::repaintAll()
 {
     for(int i=0;i<this->rowCount();i++)
     {
@@ -427,7 +427,7 @@ SBCurrentPlaylistModel::repaintAll()
 ///	setSongPlaying() returns tableView row that is current.
 
 QModelIndex
-SBCurrentPlaylistModel::setSongPlaying(int playID)
+SBModelCurrentPlaylist::setSongPlaying(int playID)
 {
     QStandardItem* item=NULL;
     int oldRowID=-1;
@@ -494,7 +494,7 @@ SBCurrentPlaylistModel::setSongPlaying(int playID)
 }
 
 void
-SBCurrentPlaylistModel::shuffle()
+SBModelCurrentPlaylist::shuffle()
 {
     QList<int> usedIndex; //	list of already used random numbers
     QMap<int,int> fromTo; //	map from old to new index (1-based)
@@ -568,7 +568,7 @@ SBCurrentPlaylistModel::shuffle()
 
 ///	Debugging
 void
-SBCurrentPlaylistModel::debugShow(const QString& title)
+SBModelCurrentPlaylist::debugShow(const QString& title)
 {
     qDebug() << SB_DEBUG_INFO << title;
     for(int i=0;i<this->rowCount();i++)

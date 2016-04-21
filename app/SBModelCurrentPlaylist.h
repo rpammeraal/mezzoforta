@@ -1,9 +1,9 @@
-#ifndef SBCURRENTPLAYLISTMODEL_H
-#define SBCURRENTPLAYLISTMODEL_H
+#ifndef SBMODELCURRENTPLAYLIST_H
+#define SBMODELCURRENTPLAYLIST_H
 
 #include <QStandardItemModel>
 
-class SBCurrentPlaylistModel : public QStandardItemModel
+class SBModelCurrentPlaylist : public QStandardItemModel
 {
 public:
     enum sb_column_type
@@ -24,7 +24,7 @@ public:
         sb_column_albumtitle=11
     };
 
-    SBCurrentPlaylistModel(QObject* parent=0);
+    SBModelCurrentPlaylist(QObject* parent=0);
 
     //	Methods related to drag&drop
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
@@ -58,4 +58,4 @@ private:
     int _currentPlayID;             //	0-based
 };
 
-#endif // SBCURRENTPLAYLISTMODEL_H
+#endif // SBMODELCURRENTPLAYLIST_H
