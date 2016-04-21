@@ -3,13 +3,13 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBSqlQueryModel.h"
-#include "SBModelSong.h"
+#include "DataEntitySong.h"
 
 #include <QMessageBox>
 #include <QStringList>
 
 SBID
-SBModelSong::getDetail(const SBID& id)
+DataEntitySong::getDetail(const SBID& id)
 {
     SBID result=id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -65,7 +65,7 @@ SBModelSong::getDetail(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelSong::findSong(const SBID& id)
+DataEntitySong::findSong(const SBID& id)
 {
     QString q=QString
     (
@@ -101,7 +101,7 @@ SBModelSong::findSong(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelSong::getAllSongs()
+DataEntitySong::getAllSongs()
 {
     //	Main query
     QString q=QString
@@ -151,7 +151,7 @@ SBModelSong::getAllSongs()
 }
 
 int
-SBModelSong::getMaxSongID()
+DataEntitySong::getMaxSongID()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -177,7 +177,7 @@ SBModelSong::getMaxSongID()
 }
 
 SBSqlQueryModel*
-SBModelSong::getPerformedByListBySong(const SBID& id)
+DataEntitySong::getPerformedByListBySong(const SBID& id)
 {
     QString q=QString
     (
@@ -204,7 +204,7 @@ SBModelSong::getPerformedByListBySong(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelSong::getOnAlbumListBySong(const SBID& id)
+DataEntitySong::getOnAlbumListBySong(const SBID& id)
 {
     QString q=QString
     (
@@ -239,7 +239,7 @@ SBModelSong::getOnAlbumListBySong(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelSong::getOnChartListBySong(const SBID& id)
+DataEntitySong::getOnChartListBySong(const SBID& id)
 {
     QString q=QString
     (
@@ -267,7 +267,7 @@ SBModelSong::getOnChartListBySong(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelSong::getOnPlaylistListBySong(const SBID& id)
+DataEntitySong::getOnPlaylistListBySong(const SBID& id)
 {
     QString q=QString
     (
@@ -310,7 +310,7 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
 }
 
 ///
-/// \brief SBModelSong::matchSong
+/// \brief DataEntitySong::matchSong
 /// \param newSongID
 /// \param newSongTitle
 /// \return
@@ -323,7 +323,7 @@ SBModelSong::getOnPlaylistListBySong(const SBID& id)
 /// 	                                  Syndayz Bloody Syndayz/Whoever
 ///
 SBSqlQueryModel*
-SBModelSong::matchSong(const SBID &newSongID)
+DataEntitySong::matchSong(const SBID &newSongID)
 {
     qDebug() << SB_DEBUG_INFO;
 
@@ -390,7 +390,7 @@ SBModelSong::matchSong(const SBID &newSongID)
 }
 
 ///
-/// \brief SBModelSong::matchSongWithinPerformer
+/// \brief DataEntitySong::matchSongWithinPerformer
 /// \param newSongID
 /// \param newSongTitle
 /// \return
@@ -404,7 +404,7 @@ SBModelSong::matchSong(const SBID &newSongID)
 /// -	Syndayz Bloody Syndayz/Whoever -> Syndayz Bloody Syndayz/Whoever (Unchanged).
 ///
 SBSqlQueryModel*
-SBModelSong::matchSongWithinPerformer(const SBID& newSongID, const QString& newSongTitle)
+DataEntitySong::matchSongWithinPerformer(const SBID& newSongID, const QString& newSongTitle)
 {
     //	Matches a song by artist
     qDebug() << SB_DEBUG_INFO;
@@ -474,7 +474,7 @@ SBModelSong::matchSongWithinPerformer(const SBID& newSongID, const QString& newS
 }
 
 ///
-/// \brief SBModelSong::saveNewSong
+/// \brief DataEntitySong::saveNewSong
 /// \param id
 /// \return
 ///
@@ -482,7 +482,7 @@ SBModelSong::matchSongWithinPerformer(const SBID& newSongID, const QString& newS
 /// back to parameter. Assumption is that performer already
 /// exists.
 bool
-SBModelSong::saveNewSong(SBID &id)
+DataEntitySong::saveNewSong(SBID &id)
 {
     bool resultCode=1;
 
@@ -570,7 +570,7 @@ SBModelSong::saveNewSong(SBID &id)
 }
 
 bool
-SBModelSong::updateLastPlayDate(const SBID &id)
+DataEntitySong::updateLastPlayDate(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -604,7 +604,7 @@ SBModelSong::updateLastPlayDate(const SBID &id)
 }
 
 bool
-SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QStringList& extraSQL,bool commitFlag)
+DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QStringList& extraSQL,bool commitFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList allQueries;
@@ -1078,7 +1078,7 @@ SBModelSong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const QS
 }
 
 void
-SBModelSong::updateSoundexFields()
+DataEntitySong::updateSoundexFields()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());

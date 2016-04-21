@@ -15,8 +15,8 @@
 #include "Navigator.h"
 #include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
-#include "SBModelPerformer.h"
-#include "SBModelSong.h"
+#include "DataEntityPerformer.h"
+#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 #include "ScreenStack.h"
 
@@ -238,7 +238,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     qDebug() << SB_DEBUG_INFO << "selectedPerformerID" << selectedPerformerID;
     qDebug() << SB_DEBUG_INFO << "newID" << newID;
 
-    SBModelPerformer* p=new SBModelPerformer();
+    DataEntityPerformer* p=new DataEntityPerformer();
     SBSqlQueryModel* performerMatches=p->matchPerformer(newID, editPerformerName);
     qDebug() << SB_DEBUG_INFO << performerMatches->rowCount();
     qDebug() << SB_DEBUG_INFO << performerMatches->record(1).value(0).toInt();

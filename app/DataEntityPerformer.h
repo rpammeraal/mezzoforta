@@ -1,5 +1,5 @@
-#ifndef SBMODELPERFORMER_H
-#define SBMODELPERFORMER_H
+#ifndef DATAENTITYPERFORMER_H
+#define DATAENTITYPERFORMER_H
 
 #include <QObject>
 
@@ -7,13 +7,13 @@
 
 class SBSqlQueryModel;
 
-class SBModelPerformer : public QObject
+class DataEntityPerformer : public QObject
 {
     Q_OBJECT
 
 public:
-    SBModelPerformer();
-    ~SBModelPerformer();
+    DataEntityPerformer();
+    ~DataEntityPerformer();
 
     QString addRelatedPerformerSQL(int performerID1, int performerID2) const;
     QString deleteRelatedPerformerSQL(int performerID1, int performerID2) const;
@@ -34,4 +34,4 @@ public slots:
     void updateMBID(const SBID& id);
 };
 
-#endif // SBMODELPERFORMER_H
+#endif // DATAENTITYPERFORMER_H

@@ -3,7 +3,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
-#include "SBModelPlaylist.h"
+#include "DataEntityPlaylist.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -28,7 +28,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
     SBID assignID=getSBIDSelected(lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        SBModelPlaylist* pl=new SBModelPlaylist;
+        DataEntityPlaylist* pl=new DataEntityPlaylist;
         connect(pl, SIGNAL(si_playlistDetailUpdated(SBID)),
                  this, SLOT(sl_updatePlaylistDetail(SBID)));
 
@@ -52,7 +52,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, const SBID &toID)
     //	Determine current playlist
     SBID currentID=Context::instance()->getScreenStack()->currentScreen();
 
-    SBModelPlaylist *mpl=new SBModelPlaylist();
+    DataEntityPlaylist *mpl=new DataEntityPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
 }
@@ -151,7 +151,7 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     qDebug() << SB_DEBUG_INFO;
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBModelPlaylist pl;
+    DataEntityPlaylist pl;
 
     SBID result=pl.getDetail(id);
     if(result.sb_playlist_id==-1)

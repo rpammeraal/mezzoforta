@@ -1,16 +1,16 @@
-#ifndef SBMODELGENRELIST_H
-#define SBMODELGENRELIST_H
+#ifndef DATAENTITYGENRELIST_H
+#define DATAENTITYGENRELIST_H
 
 #include "SBSqlQueryModel.h"
 
 class DataAccessLayer;
 
-class SBModelGenrelist
+class DataEntityGenrelist
 {
 
 public:
-    SBModelGenrelist();
-    ~SBModelGenrelist();
+    DataEntityGenrelist();
+    ~DataEntityGenrelist();
 
     void applyFilter(const QString& filter, const bool doExactSearch);
     virtual bool assign(const QString& dstID, const SBID& id);
@@ -22,4 +22,4 @@ protected:
     virtual SBID getSBID(const QModelIndex &i) const;
 };
 
-#endif // SBMODELGENRELIST_H
+#endif // DATAENTITYGENRELIST_H

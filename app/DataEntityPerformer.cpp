@@ -4,18 +4,18 @@
 #include "DataAccessLayer.h"
 #include "SBID.h"
 #include "SBSqlQueryModel.h"
-#include "SBModelPerformer.h"
+#include "DataEntityPerformer.h"
 
-SBModelPerformer::SBModelPerformer()
+DataEntityPerformer::DataEntityPerformer()
 {
 }
 
-SBModelPerformer::~SBModelPerformer()
+DataEntityPerformer::~DataEntityPerformer()
 {
 }
 
 QString
-SBModelPerformer::addRelatedPerformerSQL(int performerID1, int performerID2) const
+DataEntityPerformer::addRelatedPerformerSQL(int performerID1, int performerID2) const
 {
     if(performerID1==performerID2)
     {
@@ -60,7 +60,7 @@ SBModelPerformer::addRelatedPerformerSQL(int performerID1, int performerID2) con
 }
 
 QString
-SBModelPerformer::deleteRelatedPerformerSQL(int performerID1, int performerID2) const
+DataEntityPerformer::deleteRelatedPerformerSQL(int performerID1, int performerID2) const
 {
     return QString
     (
@@ -76,7 +76,7 @@ SBModelPerformer::deleteRelatedPerformerSQL(int performerID1, int performerID2) 
 }
 
 SBID
-SBModelPerformer::getDetail(const SBID& id)
+DataEntityPerformer::getDetail(const SBID& id)
 {
     SBID result=id;
 
@@ -138,7 +138,7 @@ SBModelPerformer::getDetail(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPerformer::getAllAlbums(const SBID& id)
+DataEntityPerformer::getAllAlbums(const SBID& id)
 {
     QString q=QString
     (
@@ -186,7 +186,7 @@ SBModelPerformer::getAllAlbums(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPerformer::getAllCharts(const SBID& id)
+DataEntityPerformer::getAllCharts(const SBID& id)
 {
     QString q=QString
     (
@@ -211,7 +211,7 @@ SBModelPerformer::getAllCharts(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPerformer::getAllPerformers()
+DataEntityPerformer::getAllPerformers()
 {
     QString q=QString
     (
@@ -228,7 +228,7 @@ SBModelPerformer::getAllPerformers()
 }
 
 SBSqlQueryModel*
-SBModelPerformer::getAllSongs(const SBID& id)
+DataEntityPerformer::getAllSongs(const SBID& id)
 {
     QString q=QString
     (
@@ -256,7 +256,7 @@ SBModelPerformer::getAllSongs(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPerformer::getRelatedPerformers(const SBID& id)
+DataEntityPerformer::getRelatedPerformers(const SBID& id)
 {
     QString q=QString
     (
@@ -286,7 +286,7 @@ SBModelPerformer::getRelatedPerformers(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelPerformer::matchPerformer(const SBID &currentID, const QString& newPerformerName)
+DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPerformerName)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -338,7 +338,7 @@ SBModelPerformer::matchPerformer(const SBID &currentID, const QString& newPerfor
 }
 
 bool
-SBModelPerformer::saveNewPerformer(SBID &id)
+DataEntityPerformer::saveNewPerformer(SBID &id)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -406,7 +406,7 @@ SBModelPerformer::saveNewPerformer(SBID &id)
 }
 
 bool
-SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL,bool commitFlag)
+DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL,bool commitFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -767,7 +767,7 @@ SBModelPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newP
 }
 
 void
-SBModelPerformer::updateSoundexFields()
+DataEntityPerformer::updateSoundexFields()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -818,7 +818,7 @@ SBModelPerformer::updateSoundexFields()
 }
 
 void
-SBModelPerformer::updateHomePage(const SBID &id)
+DataEntityPerformer::updateHomePage(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -844,7 +844,7 @@ SBModelPerformer::updateHomePage(const SBID &id)
 }
 
 void
-SBModelPerformer::updateMBID(const SBID &id)
+DataEntityPerformer::updateMBID(const SBID &id)
 {
     qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();

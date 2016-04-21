@@ -4,20 +4,20 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
-#include "SBModelGenrelist.h"
+#include "DataEntityGenrelist.h"
 
 
-SBModelGenrelist::SBModelGenrelist() //: SBModel()
+DataEntityGenrelist::DataEntityGenrelist() //: SBModel()
 {
     applyFilter(QString(),0);
 }
 
-SBModelGenrelist::~SBModelGenrelist()
+DataEntityGenrelist::~DataEntityGenrelist()
 {
 }
 
 void
-SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
+DataEntityGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
 {
     Q_UNUSED(filter);
     Q_UNUSED(doExactSearch);
@@ -97,7 +97,7 @@ SBModelGenrelist::applyFilter(const QString &filter, const bool doExactSearch)
 }
 
 bool
-SBModelGenrelist::assign(const QString& dstID, const SBID& id)
+DataEntityGenrelist::assign(const QString& dstID, const SBID& id)
 {
     if(dstID.length()>0)
     {
@@ -120,27 +120,27 @@ SBModelGenrelist::assign(const QString& dstID, const SBID& id)
 }
 
 SBID::sb_type
-SBModelGenrelist::getSBType(int column) const
+DataEntityGenrelist::getSBType(int column) const
 {
     Q_UNUSED(column);
     return SBID::sb_type_invalid;
 }
 
 void
-SBModelGenrelist::resetFilter()
+DataEntityGenrelist::resetFilter()
 {
     applyFilter(QString(),0);
 }
 
 const char*
-SBModelGenrelist::whoami() const
+DataEntityGenrelist::whoami() const
 {
-    return "SBModelGenrelist";
+    return "DataEntityGenrelist";
 }
 
 ///	PROTECTED
 SBID
-SBModelGenrelist::getSBID(const QModelIndex &i) const
+DataEntityGenrelist::getSBID(const QModelIndex &i) const
 {
     Q_UNUSED(i);
     qDebug() << SB_DEBUG_INFO;

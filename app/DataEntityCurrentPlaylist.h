@@ -1,5 +1,5 @@
-#ifndef SBMODELCURRENTPLAYLIST_H
-#define SBMODELCURRENTPLAYLIST_H
+#ifndef DATAENTITYCURRENTPLAYLIST_H
+#define DATAENTITYCURRENTPLAYLIST_H
 
 #include <QSqlQueryModel>
 
@@ -7,7 +7,7 @@
 
 class SBSqlQueryModel;
 
-class SBModelCurrentPlaylist
+class DataEntityCurrentPlaylist
 {
 public:
     static SBSqlQueryModel* getAllOnlineSongs();
@@ -19,4 +19,4 @@ public:
 private:
 };
 
-#endif // SBMODELCURRENTPLAYLIST_H
+#endif // DATAENTITYCURRENTPLAYLIST_H

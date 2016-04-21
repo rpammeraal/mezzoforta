@@ -4,7 +4,7 @@
 #include "Context.h"
 #include "ExternalData.h"
 #include "MainWindow.h"
-#include "SBModelSong.h"
+#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -124,7 +124,7 @@ SBTabSongDetail::_populate(const SBID& id)
     mw->ui.tabSongDetailLists->setTabEnabled(5,0);
 
     //	Get detail
-    SBID result=SBModelSong::getDetail(id);
+    SBID result=DataEntitySong::getDetail(id);
     qDebug() << SB_DEBUG_INFO << result;
     if(result.sb_song_id==-1)
     {
@@ -161,13 +161,13 @@ SBTabSongDetail::_populate(const SBID& id)
 
     //	populate songDetailPerformedByList
     tv=mw->ui.songDetailPerformedBy;
-    qm=SBModelSong::getPerformedByListBySong(id);
+    qm=DataEntitySong::getPerformedByListBySong(id);
     rowCount=populateTableView(tv,qm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(0,rowCount>0);
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    qm=SBModelSong::getOnAlbumListBySong(id);
+    qm=DataEntitySong::getOnAlbumListBySong(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
@@ -176,7 +176,7 @@ SBTabSongDetail::_populate(const SBID& id)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    qm=SBModelSong::getOnPlaylistListBySong(id);
+    qm=DataEntitySong::getOnPlaylistListBySong(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);
@@ -185,7 +185,7 @@ SBTabSongDetail::_populate(const SBID& id)
 
     //  populate tabSongDetailChartList
     //tv=mw->ui.songDetailChartList;
-    //qm=SBModelSong::getOnChartListBySong(id);
+    //qm=DataEntitySong::getOnChartListBySong(id);
     //rowCount=populateTableView(tv,qm,0);
     mw->ui.tabSongDetailLists->setTabEnabled(3,0);	//	rowCount>0);
 

@@ -2,11 +2,11 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
-#include "SBModelAlbum.h"
+#include "DataEntityAlbum.h"
 #include "SBSqlQueryModel.h"
 
 QStringList
-SBModelAlbum::addSongToAlbum(const SBID &song)
+DataEntityAlbum::addSongToAlbum(const SBID &song)
 {
     QStringList SQL;
 
@@ -88,7 +88,7 @@ SBModelAlbum::addSongToAlbum(const SBID &song)
 }
 
 SBID
-SBModelAlbum::getDetail(const SBID& id)
+DataEntityAlbum::getDetail(const SBID& id)
 {
     SBID result=id;
     qDebug() << SB_DEBUG_INFO << "id.wiki=" << id.wiki;
@@ -149,7 +149,7 @@ SBModelAlbum::getDetail(const SBID& id)
 
 
 SBSqlQueryModel*
-SBModelAlbum::getAllSongs(const SBID& id)
+DataEntityAlbum::getAllSongs(const SBID& id)
 {
     QString q=QString
     (
@@ -188,7 +188,7 @@ SBModelAlbum::getAllSongs(const SBID& id)
 }
 
 SBSqlQueryModel*
-SBModelAlbum::matchAlbum(const SBID &newAlbum)
+DataEntityAlbum::matchAlbum(const SBID &newAlbum)
 {
     qDebug() << SB_DEBUG_INFO;
 
@@ -232,7 +232,7 @@ SBModelAlbum::matchAlbum(const SBID &newAlbum)
 }
 
 QStringList
-SBModelAlbum::mergeAlbum(const SBID& from, const SBID& to)
+DataEntityAlbum::mergeAlbum(const SBID& from, const SBID& to)
 {
     QStringList SQL;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -404,7 +404,7 @@ SBModelAlbum::mergeAlbum(const SBID& from, const SBID& to)
 }
 
 QStringList
-SBModelAlbum::mergeSongInAlbum(const SBID& album, int newPosition, const SBID& song)
+DataEntityAlbum::mergeSongInAlbum(const SBID& album, int newPosition, const SBID& song)
 {
     QStringList SQL;
 
@@ -506,7 +506,7 @@ SBModelAlbum::mergeSongInAlbum(const SBID& album, int newPosition, const SBID& s
 }
 
 QStringList
-SBModelAlbum::removeAlbum(const SBID& album)
+DataEntityAlbum::removeAlbum(const SBID& album)
 {
     QStringList SQL;
 
@@ -591,7 +591,7 @@ SBModelAlbum::removeAlbum(const SBID& album)
 }
 
 QStringList
-SBModelAlbum::removeSongFromAlbum(const SBID& album, int position)
+DataEntityAlbum::removeSongFromAlbum(const SBID& album, int position)
 {
     QStringList SQL;
 
@@ -674,7 +674,7 @@ SBModelAlbum::removeSongFromAlbum(const SBID& album, int position)
 }
 
 QStringList
-SBModelAlbum::repositionSongOnAlbum(int albumID, int fromPosition, int toPosition)
+DataEntityAlbum::repositionSongOnAlbum(int albumID, int fromPosition, int toPosition)
 {
     QStringList SQL;
 
@@ -772,7 +772,7 @@ SBModelAlbum::repositionSongOnAlbum(int albumID, int fromPosition, int toPositio
 }
 
 bool
-SBModelAlbum::updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum, const QStringList &extraSQL,bool commitFlag)
+DataEntityAlbum::updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum, const QStringList &extraSQL,bool commitFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 

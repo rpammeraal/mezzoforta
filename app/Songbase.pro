@@ -7,14 +7,9 @@ HEADERS     = \
     DatabaseSelector.h \
     DataAccessLayer.h \
     DataAccessLayerPostgres.h \
-    SBModelPlaylist.h \
-    SBModelGenrelist.h \
     SBID.h \
     Context.h \
     ScreenStack.h \
-    SBModelSong.h \
-    SBModelAlbum.h \
-    SBModelPerformer.h \
     SBIDExtended.h \
     ExternalData.h \
     SBStandardItemModel.h \
@@ -41,7 +36,6 @@ HEADERS     = \
     PlayerController.h \
     SBMediaPlayer.h \
     SBTabCurrentPlaylist.h \
-    SBModelCurrentPlaylist.h \
     StreamContent.h \
     AudioDecoder.h \
     AudioDecoderFactory.h \
@@ -49,7 +43,13 @@ HEADERS     = \
     AudioDecoderMP3.h \
     AudioDecoderOggVorbis.h \
     AudioDecoderWave.h \
-    SBCurrentPlaylistModel.h
+    SBCurrentPlaylistModel.h \
+    DataEntityAlbum.h \
+    DataEntityCurrentPlaylist.h \
+    DataEntityGenrelist.h \
+    DataEntityPerformer.h \
+    DataEntityPlaylist.h \
+    DataEntitySong.h
 
 SOURCES     = \
     main.cpp \
@@ -59,14 +59,9 @@ SOURCES     = \
     DatabaseSelector.cpp \
     DataAccessLayer.cpp \
     DataAccessLayerPostgres.cpp \
-    SBModelPlaylist.cpp \
-    SBModelGenreList.cpp \
     SBID.cpp \
     Context.cpp \
     ScreenStack.cpp \
-    SBModelSong.cpp \
-    SBModelAlbum.cpp \
-    SBModelPerformer.cpp \
     SBIDExtended.cpp \
     ExternalData.cpp \
     SBStandardItemModel.cpp \
@@ -93,7 +88,6 @@ SOURCES     = \
     PlayerController.cpp \
     SBMediaPlayer.cpp \
     SBTabCurrentPlaylist.cpp \
-    SBModelCurrentPlaylist.cpp \
     StreamContent.cpp \
     AudioDecoder.cpp \
     AudioDecoderFactory.cpp \
@@ -101,7 +95,13 @@ SOURCES     = \
     AudioDecoderMP3.cpp \
     AudioDecoderOggVorbis.cpp \
     AudioDecoderWave.cpp \
-    SBCurrentPlaylistModel.cpp
+    SBCurrentPlaylistModel.cpp \
+    DataEntityAlbum.cpp \
+    DataEntityCurrentPlaylist.cpp \
+    DataEntityGenreList.cpp \
+    DataEntityPerformer.cpp \
+    DataEntityPlaylist.cpp \
+    DataEntitySong.cpp
 
 # install
 target.path = .

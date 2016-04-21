@@ -12,8 +12,8 @@
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
-#include "SBModelPlaylist.h"
-#include "SBModelSong.h"
+#include "DataEntityPlaylist.h"
+#include "DataEntitySong.h"
 #include "Navigator.h"
 
 class ChooserModel : public QStandardItemModel
@@ -115,7 +115,7 @@ public:
         this->appendRow(item1);
         _playlistRoot=item1;
 
-        SBModelPlaylist pl;
+        DataEntityPlaylist pl;
         SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
         for(int i=0;i<allPlaylists->rowCount();i++)
         {
@@ -181,7 +181,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
     else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
     {
         //	Find out in case of song assignment if record, position are known.
-        SBSqlQueryModel* m=SBModelSong::getOnAlbumListBySong(assignID);
+        SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(assignID);
         if(m->rowCount()==0)
         {
             //	Can't assign -- does not exist on an album
@@ -221,7 +221,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
 
     if(fromID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        SBModelPlaylist pl;
+        DataEntityPlaylist pl;
 
         pl.assignPlaylistItem(fromID, toID);
         QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
@@ -252,7 +252,7 @@ Chooser::deletePlaylist()
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
         int result=msgBox.exec();
-        SBModelPlaylist pl;
+        DataEntityPlaylist pl;
         switch(result)
         {
             case QMessageBox::Ok:
@@ -280,7 +280,7 @@ Chooser::newPlaylist()
     qDebug() << SB_DEBUG_INFO;
 
     //	Create placeholder in database
-    SBModelPlaylist pl;
+    DataEntityPlaylist pl;
     SBID id=pl.createNewPlaylist();
 
     //	Refresh this
@@ -344,7 +344,7 @@ Chooser::_renamePlaylist(const SBID &id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     qDebug() << SB_DEBUG_INFO << id;
-    SBModelPlaylist pl;
+    DataEntityPlaylist pl;
     pl.renamePlaylist(id);
     this->populate();
     qDebug() << SB_DEBUG_INFO;

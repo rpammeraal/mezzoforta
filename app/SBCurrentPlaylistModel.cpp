@@ -7,7 +7,7 @@
 #include "Context.h"
 #include "PlayerController.h"
 #include "SBID.h"
-#include "SBModelCurrentPlaylist.h"
+#include "DataEntityCurrentPlaylist.h"
 #include "SBSqlQueryModel.h"
 
 #include "SBCurrentPlaylistModel.h"
@@ -225,7 +225,7 @@ SBCurrentPlaylistModel::populate()
 {
     qDebug() << SB_DEBUG_INFO << _currentPlayID;
     _currentPlayID=-1;
-    SBSqlQueryModel* qm=SBModelCurrentPlaylist::getAllSongs();
+    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllSongs();
     QList<QStandardItem *>column;
     QStandardItem* item;
     QMap<int,SBID> playlist;

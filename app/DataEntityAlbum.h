@@ -1,11 +1,11 @@
-#ifndef SBMODELALBUM_H
-#define SBMODELALBUM_H
+#ifndef DATAENTITYALBUM_H
+#define DATAENTITYALBUM_H
 
 #include "SBID.h"
 
 class SBSqlQueryModel;
 
-class SBModelAlbum
+class DataEntityAlbum
 {
 public:
     static QStringList addSongToAlbum(const SBID& song);
@@ -21,4 +21,4 @@ public:
 
 };
 
-#endif // SBMODELALBUM_H
+#endif // DATAENTITYALBUM_H

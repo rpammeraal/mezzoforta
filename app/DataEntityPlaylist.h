@@ -1,5 +1,5 @@
-#ifndef SBMODELPLAYLIST_H
-#define SBMODELPLAYLIST_H
+#ifndef DATAENTITYPLAYLIST_H
+#define DATAENTITYPLAYLIST_H
 
 #include <QHash>
 #include <QObject>
@@ -9,13 +9,13 @@
 
 class SBSqlQueryModel;
 
-class SBModelPlaylist : public QObject
+class DataEntityPlaylist : public QObject
 {
     Q_OBJECT
 
 public:
-    SBModelPlaylist();
-    ~SBModelPlaylist();
+    DataEntityPlaylist();
+    ~DataEntityPlaylist();
 
     void assignPlaylistItem(const SBID& assignID, const SBID& toID) const;
     SBID createNewPlaylist() const;
@@ -35,5 +35,5 @@ private:
     void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX) const;
 };
 
-#endif // SBMODELPLAYLIST_H
+#endif // DATAENTITYPLAYLIST_H
 

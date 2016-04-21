@@ -4,7 +4,7 @@
 #include "ExternalData.h"
 #include "MainWindow.h"
 #include "Navigator.h"
-#include "SBModelPerformer.h"
+#include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 
 SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
@@ -155,7 +155,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
     mw->ui.tabPerformerDetailLists->setTabEnabled(4,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
-    SBModelPerformer* mp=new SBModelPerformer();
+    DataEntityPerformer* mp=new DataEntityPerformer();
 
     //	Get detail
     SBID result=mp->getDetail(id);
@@ -277,7 +277,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
 
     //	Populate charts
     //tv=mw->ui.performerDetailCharts;
-    //qm=SBModelPerformer::getAllCharts(id);
+    //qm=DataEntityPerformer::getAllCharts(id);
     //rowCount=populateTableView(tv,qm,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,0);	//rowCount>0);
     //connect(tv, SIGNAL(clicked(QModelIndex)),

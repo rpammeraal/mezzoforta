@@ -1,5 +1,5 @@
-#ifndef SBMODELSONG_H
-#define SBMODELSONG_H
+#ifndef DATAENTITYSONG_H
+#define DATAENTITYSONG_H
 
 #include <QSqlQueryModel>
 
@@ -7,7 +7,7 @@
 
 class SBSqlQueryModel;
 
-class SBModelSong
+class DataEntitySong
 {
 public:
     static SBID getDetail(const SBID& id);
@@ -28,4 +28,4 @@ public:
 private:
 };
 
-#endif // SBMODELSONG_H
+#endif // DATAENTITYSONG_H

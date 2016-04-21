@@ -8,9 +8,9 @@
 #include "SBCurrentPlaylistModel.h"
 #include "MainWindow.h"
 #include "PlayerController.h"
-#include "SBModelCurrentPlaylist.h"
-#include "SBModelPlaylist.h"
-#include "SBModelSong.h"
+#include "DataEntityCurrentPlaylist.h"
+#include "DataEntityPlaylist.h"
+#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -58,7 +58,7 @@ SBTabCurrentPlaylist::movePlaylistItem(const SBID& fromID, const SBID &toID)
     qDebug() << SB_DEBUG_INFO << currentID << fromID << toID;
     return;
 
-    SBModelPlaylist *mpl=new SBModelPlaylist();
+    DataEntityPlaylist *mpl=new DataEntityPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
 }
@@ -157,7 +157,7 @@ SBTabCurrentPlaylist::startRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=SBModelCurrentPlaylist::getAllOnlineSongs();
+    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllOnlineSongs();
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 

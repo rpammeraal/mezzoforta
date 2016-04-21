@@ -20,10 +20,10 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayerController.h"
-#include "SBModelSong.h"
-#include "SBModelPlaylist.h"
+#include "DataEntitySong.h"
+#include "DataEntityPlaylist.h"
 #include "SBID.h"
-#include "SBModelPerformer.h"
+#include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "ScreenStack.h"
@@ -63,7 +63,7 @@ Controller::refreshModels()
     MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Songlist
-    SBSqlQueryModel* sm=SBModelSong::getAllSongs();
+    SBSqlQueryModel* sm=DataEntitySong::getAllSongs();
     QList<bool> dragableColumns;
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0;
@@ -218,8 +218,8 @@ Controller::openMainWindow(bool startup)
 
         mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
 
-        SBModelSong::updateSoundexFields();
-        SBModelPerformer::updateSoundexFields();
+        DataEntitySong::updateSoundexFields();
+        DataEntityPerformer::updateSoundexFields();
 
         _resetStatusBar();
 

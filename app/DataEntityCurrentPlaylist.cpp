@@ -1,4 +1,4 @@
-#include "SBModelCurrentPlaylist.h"
+#include "DataEntityCurrentPlaylist.h"
 
 #include "Common.h"
 #include "Controller.h"
@@ -10,7 +10,7 @@
 #include <QStringList>
 
 SBSqlQueryModel*
-SBModelCurrentPlaylist::getAllOnlineSongs()
+DataEntityCurrentPlaylist::getAllOnlineSongs()
 {
     //	Main query
     QString q=QString
@@ -62,7 +62,7 @@ SBModelCurrentPlaylist::getAllOnlineSongs()
 }
 
 SBSqlQueryModel*
-SBModelCurrentPlaylist::getAllSongs()
+DataEntityCurrentPlaylist::getAllSongs()
 {
     //	Main query
     QString q=QString
@@ -127,7 +127,7 @@ SBModelCurrentPlaylist::getAllSongs()
 }
 
 void
-SBModelCurrentPlaylist::resetPlaylist()
+DataEntityCurrentPlaylist::resetPlaylist()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -149,7 +149,7 @@ SBModelCurrentPlaylist::resetPlaylist()
 
 
 void
-SBModelCurrentPlaylist::setSongAttributes(int playID,bool activeFlag, bool hasPlayedFlag)
+DataEntityCurrentPlaylist::setSongAttributes(int playID,bool activeFlag, bool hasPlayedFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());

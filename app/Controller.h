@@ -16,7 +16,7 @@ class QSqlDatabase;
 
 class BackgroundThread;
 class MainWindow;
-class SBModelPlaylist;
+class DataEntityPlaylist;
 class Navigator;
 
 #define SB_TAB_UNDEF    -1

@@ -3,7 +3,7 @@
 #include "Context.h"
 #include "ExternalData.h"
 #include "MainWindow.h"
-#include "SBModelAlbum.h"
+#include "DataEntityAlbum.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -122,7 +122,7 @@ SBTabAlbumDetail::_populate(const SBID &id)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBID result=SBModelAlbum::getDetail(id);
+    SBID result=DataEntityAlbum::getDetail(id);
     if(result.sb_album_id==-1)
     {
         //	Not found
@@ -173,7 +173,7 @@ SBTabAlbumDetail::_populate(const SBID &id)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=SBModelAlbum::getAllSongs(id);
+    qm=DataEntityAlbum::getAllSongs(id);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
     qm->setDragableColumns(dragableColumns);

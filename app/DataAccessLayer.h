@@ -30,8 +30,8 @@ class DataAccessLayer : public QObject
 
 public:
     friend class SBModel;
-    friend class SBModelPlaylist;
-    friend class SBModelGenrelist;
+    friend class DataEntityPlaylist;
+    friend class DataEntityGenrelist;
     friend class DatabaseSelector;
 
     DataAccessLayer();

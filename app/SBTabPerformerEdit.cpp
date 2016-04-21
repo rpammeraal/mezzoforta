@@ -8,7 +8,7 @@
 #include "CompleterFactory.h"
 #include "MainWindow.h"
 #include "SBID.h"
-#include "SBModelPerformer.h"
+#include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -182,7 +182,7 @@ SBTabPerformerEdit::save() const
     //	1.	Rename U2 to Simple Minds.
     //	2.	Rename Simple Minds -> Dire Straitz
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBModelPerformer* p=new SBModelPerformer();
+    DataEntityPerformer* p=new DataEntityPerformer();
     SBID orgPerformerID=Context::instance()->getScreenStack()->currentScreen();
     SBID newPerformerID=orgPerformerID;
     QStringList SQL;
@@ -287,7 +287,7 @@ SBTabPerformerEdit::save() const
     {
         qDebug() << SB_DEBUG_INFO;
 
-        SBModelPerformer* p=new SBModelPerformer();
+        DataEntityPerformer* p=new DataEntityPerformer();
         const bool successFlag=p->updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
 
         if(successFlag==1)
@@ -453,7 +453,7 @@ SBTabPerformerEdit::_populate(const SBID& id)
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
-    SBModelPerformer* p=new SBModelPerformer();
+    DataEntityPerformer* p=new DataEntityPerformer();
     SBID result=p->getDetail(id);
     result.isEditFlag=1;
     if(result.sb_performer_id==-1)

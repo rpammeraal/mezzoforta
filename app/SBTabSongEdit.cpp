@@ -10,7 +10,7 @@
 #include "Controller.h"
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
-#include "SBModelSong.h"
+#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -157,7 +157,7 @@ SBTabSongEdit::save() const
         qDebug() << SB_DEBUG_INFO << selectedSongID;
 
         qDebug() << SB_DEBUG_INFO << editTitle << "!=" << newSongID.songTitle << newSongID.sb_song_id;
-        SBSqlQueryModel* songMatches=SBModelSong::matchSongWithinPerformer(newSongID, editTitle);
+        SBSqlQueryModel* songMatches=DataEntitySong::matchSongWithinPerformer(newSongID, editTitle);
 
         qDebug() << SB_DEBUG_INFO << songMatches->rowCount();
 
@@ -204,7 +204,7 @@ SBTabSongEdit::save() const
     //		Goal is to detect another way of merging songs.
     qDebug() << SB_DEBUG_INFO << orgSongID;
     qDebug() << SB_DEBUG_INFO << newSongID;
-    SBSqlQueryModel* existingSongs=SBModelSong::findSong(newSongID);
+    SBSqlQueryModel* existingSongs=DataEntitySong::findSong(newSongID);
     qDebug() << SB_DEBUG_INFO << existingSongs->rowCount();
     if(existingSongs!=0 && existingSongs->rowCount()==1)
     {
@@ -231,7 +231,7 @@ SBTabSongEdit::save() const
     {
         qDebug() << SB_DEBUG_INFO;
 
-        const bool successFlag=SBModelSong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
+        const bool successFlag=DataEntitySong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
 
         if(successFlag==1)
         {
@@ -291,7 +291,7 @@ SBTabSongEdit::_populate(const SBID& id)
     init();
 
     //	Get detail
-    SBID result=SBModelSong::getDetail(id);
+    SBID result=DataEntitySong::getDetail(id);
     if(result.sb_song_id==-1)
     {
         //	Not found

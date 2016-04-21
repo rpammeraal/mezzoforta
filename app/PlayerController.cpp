@@ -9,8 +9,8 @@
 #include "Navigator.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
-#include "SBModelCurrentPlaylist.h"
-#include "SBModelSong.h"
+#include "DataEntityCurrentPlaylist.h"
+#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 
 
@@ -576,7 +576,7 @@ PlayerController::_playSong(int playID)
     //	Update timestamp in online_performance
     //	Do this in both radio and non-radio mode.
     qDebug() << SB_DEBUG_INFO << "Updating timestamp for " << _playList[playID];
-    SBModelSong::updateLastPlayDate(_playList[playID]);
+    DataEntitySong::updateLastPlayDate(_playList[playID]);
 
     qDebug() << SB_DEBUG_INFO
              << "_currentPlayID=" << _currentPlayID
