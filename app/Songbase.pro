@@ -48,7 +48,8 @@ HEADERS     = \
     AudioDecoderFlac.h \
     AudioDecoderMP3.h \
     AudioDecoderOggVorbis.h \
-    AudioDecoderWave.h
+    AudioDecoderWave.h \
+    SBCurrentPlaylistModel.h
 
 SOURCES     = \
     main.cpp \
@@ -99,7 +100,8 @@ SOURCES     = \
     AudioDecoderFlac.cpp \
     AudioDecoderMP3.cpp \
     AudioDecoderOggVorbis.cpp \
-    AudioDecoderWave.cpp
+    AudioDecoderWave.cpp \
+    SBCurrentPlaylistModel.cpp
 
 # install
 target.path = .
