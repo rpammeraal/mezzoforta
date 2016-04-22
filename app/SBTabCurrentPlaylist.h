@@ -31,7 +31,7 @@ public slots:
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void playSong();
     void showContextMenuPlaylist(const QPoint &p);
-    void songChanged(int playID);
+    void songChanged(const SBID& song);
 
 private slots:
     void clearPlaylist();

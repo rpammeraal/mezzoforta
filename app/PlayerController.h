@@ -11,6 +11,7 @@ class QLabel;
 class QPushButton;
 class QSlider;
 class QTextBrowser;
+class SBModelCurrentPlaylist;
 
 #include "SBMediaPlayer.h"
 #include "SBID.h"
@@ -25,6 +26,8 @@ class QTextBrowser;
 class PlayerController : public QObject
 {
     Q_OBJECT
+
+    friend class SBTabCUrrentPlaylist;
 
 public:
     enum sb_player
@@ -46,20 +49,17 @@ public:
 
     explicit PlayerController(QObject *parent = 0);
 
-    void clearPlaylist();
     void initialize();
-    void loadPlaylist(const QMap<int,SBID> &playList,bool firstBatchLoaded=0);
-    void reorderPlaylist(QMap<int,int> fromTo);
+    void setModelCurrentPlaylist(SBModelCurrentPlaylist* mcp);
 
 signals:
-    void songChanged(int playID);
+    void songChanged(const SBID& song);
 
 public slots:
     void playerPrevious();
     void playerRewind();
     void playerStop();
-    bool playerPlay(int playID=-1);
-    void playerPlayNow_(int playID);
+    bool playerPlay();
     void playerForward();
     void playerNext();
     void playerDurationChanged(qint64 duration);
@@ -73,8 +73,8 @@ private slots:
 private:
     bool _initDoneFlag;
     PlayerController::sb_player_state _state;
-    int _currentPlayID;         //	index to _playList;
-    QMap<int,SBID> _playList;	//	<_currentPlayID:0,SBID>
+    SBID _currentSong;
+    SBModelCurrentPlaylist* _modelCurrentPlaylist;
 
     int _currentPlayerID;
     static const int _maxPlayerID=2;
@@ -86,12 +86,11 @@ private:
     SBMediaPlayer _playerInstance[_maxPlayerID];
     QTime _durationTime[_maxPlayerID];
 
-    int calculateNextSongID(int currentPlayID,bool previousFlag=0) const;
+    SBID calculateNextSongID(bool previousFlag=0) const;
     QTime calculateTime(qint64 ms) const;
     void init();
-    SBID _getPlaylistEntry(int playlistID) const;
     void makePlayerVisible(PlayerController::sb_player player);
-    bool _playSong(int playID);
+    bool _playSong(const SBID& song);
     void _playerStop();
     void _refreshPlayingNowData() const;
     void _updatePlayState(PlayerController::sb_player_state newState);

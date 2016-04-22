@@ -70,7 +70,7 @@ SBTabCurrentPlaylist::playSong()
     PlayerController* pc=Context::instance()->getPlayerController();
 
     pc->playerStop();
-    pc->playerPlay(_lastClickedIndex.row());
+    //CWIP:PLAY pc->playerPlay(_lastClickedIndex.row());
 }
 
 void
@@ -95,13 +95,13 @@ SBTabCurrentPlaylist::showContextMenuPlaylist(const QPoint &p)
 }
 
 void
-SBTabCurrentPlaylist::songChanged(int playID)
+SBTabCurrentPlaylist::songChanged(const SBID& song)
 {
-    qDebug() << SB_DEBUG_INFO << playID;
+    qDebug() << SB_DEBUG_INFO << song;
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    QModelIndex idx=aem->setSongPlaying(playID);
+    QModelIndex idx=aem->setSongPlaying(song.playPosition);
     qDebug() << SB_DEBUG_INFO << idx << idx.row() << idx.column();
     tv->scrollTo(idx);
 }
@@ -113,10 +113,8 @@ SBTabCurrentPlaylist::clearPlaylist()
     qDebug() << SB_DEBUG_INFO;
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    PlayerController* pc=Context::instance()->getPlayerController();
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     aem->clear();
-    pc->clearPlaylist();
 }
 
 void
@@ -226,20 +224,14 @@ SBTabCurrentPlaylist::startRadio()
                 aem->populate(playList);
                 this->_populatePost(SBID());
 
-                //	This code could be reused in other situations.
-                //	Stop player, tell playerController that we have a new playlist and start player.
                 pc->playerStop();
-                pc->loadPlaylist(playList,firstBatchLoaded);
-                //pc->playerPlay();
-                pc->playerNext();
-                //	End reuseable
+                pc->playerPlay();
 
                 firstBatchLoaded=true;
             }
             else
             {
                 qDebug() << SB_DEBUG_INFO << "sending to aem 2nd batch:playList.count()=" << playList.count();
-                pc->loadPlaylist(playList,firstBatchLoaded);
                 aem->populate(playList,firstBatchLoaded);
                 qDebug() << SB_DEBUG_INFO << "after sending to aem 2nd batch:playList.count()=" << playList.count();
             }
@@ -320,8 +312,8 @@ SBTabCurrentPlaylist::init()
                 this, SLOT(startRadio()));
 
         //	If playerController changes song, we want to update our view.
-        connect(Context::instance()->getPlayerController(),SIGNAL(songChanged(int)),
-                this, SLOT(songChanged(int)));
+        connect(Context::instance()->getPlayerController(),SIGNAL(songChanged(const SBID &)),
+                this, SLOT(songChanged(const SBID &)));
 
         //	Context menu
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -423,19 +415,19 @@ SBTabCurrentPlaylist::_populate(const SBID& id)
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    PlayerController* pc=Context::instance()->getPlayerController();
 
     //	Populate playlist
 
     SBModelCurrentPlaylist* plm=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     if(plm==NULL)
     {
+        PlayerController* pc=Context::instance()->getPlayerController();
         QMap<int,SBID> playList;
 
         plm=new SBModelCurrentPlaylist();
+        pc->setModelCurrentPlaylist(plm);
         playList=plm->populate();
         tv->setModel(plm);
-        pc->loadPlaylist(playList);
     }
 
     _playlistLoadedFlag=1;

@@ -3,6 +3,10 @@
 
 #include <QStandardItemModel>
 
+///
+/// \brief The SBModelCurrentPlaylist class
+///
+/// SBModelCurrentPlaylist holds a playlist model.
 class SBModelCurrentPlaylist : public QStandardItemModel
 {
 public:
@@ -39,6 +43,11 @@ public:
     QString formatDisplayPlayID(int playID,bool isCurrent=0);
     void paintRow(int i);
 
+    //	Methods related to playlists
+    int playlistCount() const;
+    SBID getNextSong(bool previousFlag=0);
+    SBID getSongFromPlaylist(int playlistIndex);
+    int currentPlaylistIndex() const;	//	index of song in playlist
 
     QMap<int,SBID> populate();
     void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);

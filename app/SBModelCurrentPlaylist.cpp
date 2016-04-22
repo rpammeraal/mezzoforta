@@ -5,9 +5,9 @@
 
 #include "Common.h"
 #include "Context.h"
-#include "PlayerController.h"
 #include "SBID.h"
 #include "DataEntityCurrentPlaylist.h"
+#include "MainWindow.h"
 #include "SBSqlQueryModel.h"
 
 #include "SBModelCurrentPlaylist.h"
@@ -212,13 +212,127 @@ SBModelCurrentPlaylist::paintRow(int i)
     }
 }
 
+//	Methods related to playlists
+int
+SBModelCurrentPlaylist::playlistCount() const
+{
+    return this->rowCount();
+}
+
+SBID
+SBModelCurrentPlaylist::getNextSong(bool previousFlag)
+{
+    SBID song;
+    int newPlayID=_currentPlayID+(previousFlag==1?-1:1);
+    qDebug() << SB_DEBUG_INFO
+             << "newPlayID=" << newPlayID
+    ;
+    if(newPlayID<0)
+    {
+        newPlayID=0;
+    }
+    else if(newPlayID>=this->playlistCount())
+    {
+        newPlayID=this->playlistCount()-1;
+    }
+    song=getSongFromPlaylist(newPlayID);
+    song.playPosition=newPlayID;
+    qDebug() << SB_DEBUG_INFO << song << "song.playPosition=" << song.playPosition;
+    return song;
+}
+
+SBID
+SBModelCurrentPlaylist::getSongFromPlaylist(int playlistIndex)
+{
+    qDebug() << SB_DEBUG_INFO << "_currentPlayID=" << _currentPlayID;
+    QStandardItem* item;
+    SBID song;
+    int songID=0;
+
+    if(playlistIndex<0 || playlistIndex>=playlistCount())
+    {
+        return song;
+    }
+    //	sb_column_playlistid
+//    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_playlistid);
+//    if(item)
+//    {
+//        index=item->text().toInt();
+//    }
+
+    //	sb_column_songid
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_songid);
+    if(item)
+    {
+        songID=item->text().toInt();
+        song.assign(SBID::sb_type_song,songID);
+    }
+
+    //	sb_column_albumid
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_albumid);
+    if(item)
+    {
+        song.sb_album_id=item->text().toInt();
+    }
+
+    //	sb_column_performerid
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_performerid);
+    if(item)
+    {
+        song.sb_performer_id=item->text().toInt();
+    }
+
+    //	sb_column_position
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_position);
+    if(item)
+    {
+        song.sb_position=item->text().toInt();
+    }
+
+    //	sb_column_path
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_path);
+    if(item)
+    {
+        song.path=item->text();
+    }
+
+    //	sb_column_songtitle
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_songtitle);
+    if(item)
+    {
+        song.songTitle=item->text();
+    }
+
+    //	sb_column_performername
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_performername);
+    if(item)
+    {
+        song.performerName=item->text();
+    }
+
+    //	sb_column_albumtitle
+    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_albumtitle);
+    if(item)
+    {
+        song.albumTitle=item->text();
+    }
+
+    //	playlistPosition
+    song.playPosition=_currentPlayID;
+    return song;
+}
+
+int
+SBModelCurrentPlaylist::currentPlaylistIndex() const
+{
+    return _currentPlayID;
+}
 
 ///
 /// \brief populate
 /// \return
 ///
 ///	This populate() is called when the playlist is taken from the current_playlist table.
-///	It'll also create a playlist (to be consumed by PlayerController).
 ///
 QMap<int,SBID>
 SBModelCurrentPlaylist::populate()
@@ -232,6 +346,7 @@ SBModelCurrentPlaylist::populate()
 
     for(int i=0;i<qm->rowCount();i++)
     {
+        _currentPlayID=0;	//	since we have at least one entry, set default 1st song to play to index 0.
         QString idStr;
         SBID id=SBID(SBID::sb_type_song,qm->record(i).value(2).toInt());
         idStr.sprintf("%08d",i+1);
@@ -288,8 +403,7 @@ SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
 
     if(!firstBatchHasLoadedFlag)
     {
-        QStandardItemModel::clear();
-        _currentPlayID=-1;
+        this->clear();
     }
     else
     {
@@ -303,6 +417,10 @@ SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
 
     for(int i=offset;i<newPlaylist.count();i++)
     {
+        if(_currentPlayID==-1)
+        {
+            _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
+        }
         SBID song=newPlaylist[i];
         if(firstBatchHasLoadedFlag)
         {
@@ -402,7 +520,6 @@ SBModelCurrentPlaylist::reorderItems()
 
 
     setSongPlaying(_currentPlayID);
-    Context::instance()->getPlayerController()->reorderPlaylist(toFrom);
 }
 
 bool
@@ -560,7 +677,6 @@ SBModelCurrentPlaylist::shuffle()
     qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
     _currentPlayID=fromTo[_currentPlayID+1]-1;
     qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
-    Context::instance()->getPlayerController()->reorderPlaylist(fromTo);
     //paintRow(oldPlayID);
     //paintRow(_currentPlayID);
     setSongPlaying(_currentPlayID);
