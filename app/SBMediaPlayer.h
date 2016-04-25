@@ -29,7 +29,7 @@ public:
 
     void assignID(int playerID);
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
-    qint64 positionX() const;
+    qint64 position() const;
     bool setMedia(const QString& fileName);
     inline QString error() const { return _errMsg; }
     QMediaPlayer::State state() const;
