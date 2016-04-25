@@ -70,7 +70,14 @@ SBTabCurrentPlaylist::playSong()
     PlayerController* pc=Context::instance()->getPlayerController();
 
     pc->playerStop();
-    //CWIP:PLAY pc->playerPlay(_lastClickedIndex.row());
+    qDebug() << SB_DEBUG_INFO;
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
+    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
+    qDebug() << SB_DEBUG_INFO;
+    aem->setCurrentSongByID(_lastClickedIndex.row());
+    qDebug() << SB_DEBUG_INFO;
+    pc->playerPlay();
 }
 
 void
@@ -101,7 +108,7 @@ SBTabCurrentPlaylist::songChanged(const SBID& song)
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    QModelIndex idx=aem->setSongPlaying(song.playPosition);
+    QModelIndex idx=aem->setCurrentSongByID(song.playPosition);
     qDebug() << SB_DEBUG_INFO << idx << idx.row() << idx.column();
     tv->scrollTo(idx);
 }
@@ -281,8 +288,6 @@ void
 SBTabCurrentPlaylist::tableViewCellDoubleClicked(QModelIndex idx)
 {
     qDebug() << SB_DEBUG_INFO << idx.row();
-    //	CWIP:PLAY
-    //Context::instance()->getPlayerController()->playerPlayNow(idx.row());
 }
 
 ///	Private methods

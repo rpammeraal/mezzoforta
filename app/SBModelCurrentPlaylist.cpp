@@ -385,7 +385,7 @@ SBModelCurrentPlaylist::populate()
     }
     populateHeader();
     qDebug() << SB_DEBUG_INFO;
-    setSongPlaying(_currentPlayID);
+    setCurrentSongByID(_currentPlayID);
     return playlist;
 }
 
@@ -452,7 +452,7 @@ SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
     if(!firstBatchHasLoadedFlag)
     {
         populateHeader();
-        setSongPlaying(_currentPlayID);
+        setCurrentSongByID(_currentPlayID);
     }
     qDebug() << SB_DEBUG_INFO << "newPlaylist.count()" << newPlaylist.count();
     qDebug() << SB_DEBUG_INFO << "rowCount.count()" << this->rowCount();
@@ -519,7 +519,7 @@ SBModelCurrentPlaylist::reorderItems()
     qDebug() << SB_DEBUG_INFO << "end";
 
 
-    setSongPlaying(_currentPlayID);
+    setCurrentSongByID(_currentPlayID);
 }
 
 bool
@@ -541,16 +541,24 @@ SBModelCurrentPlaylist::repaintAll()
     }
 }
 
-///	setSongPlaying() returns tableView row that is current.
 
+///
+/// \brief SBModelCurrentPlaylist::setCurrentSongByID
+/// \param playID
+/// \return
+///
+///	setCurrentSongByID() returns tableView row that is current.
+/// It also sets/unsets the indicator to the current song.
+/// This is the *ONLY* function that may assign a new value
+/// to _currentPlayID.
 QModelIndex
-SBModelCurrentPlaylist::setSongPlaying(int playID)
+SBModelCurrentPlaylist::setCurrentSongByID(int playID)
 {
+    qDebug() << SB_DEBUG_INFO << "start" << playID << _currentPlayID;
     QStandardItem* item=NULL;
     int oldRowID=-1;
     int newRowID=-1;
 
-    qDebug() << SB_DEBUG_INFO << "start" << playID << _currentPlayID;
     if(_currentPlayID<this->rowCount() && _currentPlayID>=0)
     {
         //	Don't execute if, if _currentPlayID:
@@ -560,7 +568,7 @@ SBModelCurrentPlaylist::setSongPlaying(int playID)
         for(int i=0;oldRowID==-1 && i<this->rowCount();i++)
         {
             item=this->item(i,sb_column_playlistid);
-            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt();
+            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt()-1;
 
             if(item->text().toInt()-1==_currentPlayID)
             {
@@ -576,7 +584,7 @@ SBModelCurrentPlaylist::setSongPlaying(int playID)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << "++++++++++++++++++++++++++++++++++++++";
+    qDebug() << SB_DEBUG_INFO;
 
     if(playID<this->rowCount() && playID>=0)
     {
@@ -585,7 +593,7 @@ SBModelCurrentPlaylist::setSongPlaying(int playID)
         for(int i=0;newRowID==-1 && i<this->rowCount();i++)
         {
             item=this->item(i,sb_column_playlistid);
-            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt();
+            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt()-1;
 
             if(item->text().toInt()-1==_currentPlayID)
             {
@@ -679,7 +687,7 @@ SBModelCurrentPlaylist::shuffle()
     qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
     //paintRow(oldPlayID);
     //paintRow(_currentPlayID);
-    setSongPlaying(_currentPlayID);
+    setCurrentSongByID(_currentPlayID);
 }
 
 ///	Debugging

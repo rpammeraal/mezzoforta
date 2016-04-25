@@ -44,10 +44,10 @@ public:
     void paintRow(int i);
 
     //	Methods related to playlists
+    int currentPlaylistIndex() const;	//	index of song in playlist
     int playlistCount() const;
     SBID getNextSong(bool previousFlag=0);
     SBID getSongFromPlaylist(int playlistIndex);
-    int currentPlaylistIndex() const;	//	index of song in playlist
 
     QMap<int,SBID> populate();
     void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
@@ -56,8 +56,7 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent);
     void repaintAll();
 
-    ///	setSongPlaying() returns tableView row that is current.
-    virtual QModelIndex setSongPlaying(int playID);
+    virtual QModelIndex setCurrentSongByID(int playID);
     void shuffle();
 
     ///	Debugging
