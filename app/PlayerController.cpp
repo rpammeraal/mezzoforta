@@ -322,7 +322,6 @@ PlayerController::playerPositionChanged(qint64 durationMS)
 void
 PlayerController::playerSeek(int ms)
 {
-    qDebug() << SB_DEBUG_INFO << ms;
     _playerInstance[_currentPlayerID].setPosition(ms * 1000);
 }
 

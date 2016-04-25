@@ -99,17 +99,11 @@ SBMediaPlayer::paCallback
         _threadPrioritySetFlag=1;
     }
 
+    const PaStreamInfo* si=Pa_GetStreamInfo(_stream);
+    //qDebug() << SB_DEBUG_INFO << si->inputLatency << si->outputLatency << si->sampleRate;
+
     qint64 toRead=(_sc.bitsPerSample()/8) * _sc.numChannels() * frameCount;
 
-    if(this->position() % 1000 <= 10)
-    {
-        qDebug() << SB_DEBUG_INFO << "toRead=" << toRead
-                 << ":frameCount=" <<frameCount
-                 << ":_index=" << _index
-                 << ":position=" << this->position()
-                 << ":statusFlags=" << statusFlags
-        ;
-    }
 
     if(_index+toRead>_sc.length())
     {
@@ -168,7 +162,6 @@ SBMediaPlayer::pause()
 void
 SBMediaPlayer::setPosition(qint64 position)
 {
-    qDebug() << SB_DEBUG_INFO << "position=" << position;
     if(position<0)
     {
         _index=0;
@@ -253,11 +246,46 @@ SBMediaPlayer::portAudioOpen(const StreamContent& sc)
     }
     qDebug() << SB_DEBUG_INFO;
 
+    ////////////////////
+    ///
+    /// tmp code to query audio devices
+    ///
+    ////////////////////
+    int numDevices=Pa_GetDeviceCount();
+    qDebug() << SB_DEBUG_INFO << "numDevices=" << numDevices;
+    for(int i=0;i<numDevices;i++)
+    {
+        const PaDeviceInfo* devInfo=Pa_GetDeviceInfo(i);
+        qDebug() << SB_DEBUG_INFO
+                 << devInfo->name
+                 << devInfo->maxOutputChannels
+                 << devInfo->hostApi
+                 << devInfo->defaultHighOutputLatency
+                 << devInfo->defaultLowOutputLatency
+        ;
+    }
+    ////////////////////
+
     _sc=sc;
     _index=0;
     PaStreamParameters outputParameters;
+    PaStreamParameters inputParameters;
+    qDebug() << SB_DEBUG_INFO;
+    bzero(&inputParameters,sizeof(inputParameters));
+    qDebug() << SB_DEBUG_INFO;
+    bzero(&outputParameters,sizeof(outputParameters));
+    qDebug() << SB_DEBUG_INFO;
 
+    qDebug() << SB_DEBUG_INFO;
+    outputParameters.channelCount=_sc.numChannels();
     outputParameters.device = Pa_GetDefaultOutputDevice();
+    outputParameters.hostApiSpecificStreamInfo=NULL;
+    outputParameters.sampleFormat=_sc.sampleFormat();
+    outputParameters.suggestedLatency=128;
+
+    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO;
+
     if(	outputParameters.device==paNoDevice)
     {
         qDebug() << SB_DEBUG_INFO
@@ -266,25 +294,53 @@ SBMediaPlayer::portAudioOpen(const StreamContent& sc)
         _paError=paNoDevice;
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << "numChannels=" << outputParameters.channelCount;
 
-    _paError = Pa_OpenDefaultStream(
+//    for(int myChannels=0;myChannels<99;myChannels++)
+//    {
+//        outputParameters.channelCount=myChannels;
+//        _paError=Pa_IsFormatSupported(NULL,&outputParameters,_sc.sampleRate());
+//        if(_paError != paNoError)
+//        {
+//            qDebug() << SB_DEBUG_INFO
+//                     << "Pa_IsFormatSupported:"
+//                     << myChannels
+//                     << Pa_GetErrorText(_paError)
+//            ;
+//        }
+//        else
+//        {
+//            qDebug() << SB_DEBUG_INFO << "###############################SUPPORTED:myChannels=" << myChannels;
+//        }
+//    }
+
+    _paError = Pa_OpenStream(
         &_stream,
-        0, // no input
-        _sc.numChannels(),
-        _sc.sampleFormat(),
+        NULL,
+        &outputParameters,
         _sc.sampleRate(),
-        paFramesPerBufferUnspecified, // framesPerBuffer
-        //0, // flags
+        paFramesPerBufferUnspecified,
+        paPrimeOutputBuffersUsingStreamCallback,
         &staticPaCallBack,
-        (void *)this //void *userData
-        );
+        (void *)this
+    );
+//    _paError = Pa_OpenDefaultStream(
+//        &_stream,
+//        0, // no input
+//        _sc.numChannels(),
+//        _sc.sampleFormat(),
+//        _sc.sampleRate(),
+//        paFramesPerBufferUnspecified, // framesPerBuffer
+//        //0, // flags
+//        &staticPaCallBack,
+//        (void *)this //void *userData
+//        );
 
     qDebug() << SB_DEBUG_INFO;
     if(_paError != paNoError)
     {
         qDebug() << SB_DEBUG_INFO
-                 << "Pa_OpenDefaultStream:"
+                 << "Pa_OpenStream:"
                  << Pa_GetErrorText(_paError)
         ;
 
