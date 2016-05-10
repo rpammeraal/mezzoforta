@@ -1,17 +1,17 @@
-#ifndef AUDIODECODEROGGVORBIS_H
-#define AUDIODECODEROGGVORBIS_H
+//#ifndef AUDIODECODEROGGVORBIS_H
+//#define AUDIODECODEROGGVORBIS_H
 
-#include "AudioDecoder.h"
-#include "StreamContent.h"
+//#include "AudioDecoder.h"
+//#include "StreamContent.h"
 
-class AudioDecoderOggVorbis : public AudioDecoder
-{
-public:
-    AudioDecoderOggVorbis();
-    virtual ~AudioDecoderOggVorbis();
+//class AudioDecoderOggVorbis : public AudioDecoder
+//{
+//public:
+//    AudioDecoderOggVorbis();
+//    virtual ~AudioDecoderOggVorbis();
 
-    static bool supportFileExtension(const QString& extension);
-    virtual StreamContent stream(const QString& fileName);
-};
+//    static bool supportFileExtension(const QString& extension);
+//    virtual StreamContent stream(const QString& fileName);
+//};
 
-#endif // AUDIODECODEROGGVORBIS_H
+//#endif // AUDIODECODEROGGVORBIS_H

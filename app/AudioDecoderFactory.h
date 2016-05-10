@@ -3,8 +3,9 @@
 
 #include <QIODevice>
 
-#include "StreamContent.h"
+//#include "StreamContent.h"
 
+class AudioDecoder;
 ///
 /// \brief The AudioDecoderFactory class
 ///
@@ -23,7 +24,9 @@ public:
     AudioDecoderFactory();
     ~AudioDecoderFactory();
 
-    StreamContent stream(const QString& fileName);
+    //StreamContent stream(const QString& fileName);
+    AudioDecoder* openFile(const QString& fileName);
+
     QString error() const { return errStr; }
 
 private:

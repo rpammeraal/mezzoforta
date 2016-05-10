@@ -174,6 +174,7 @@ PlayerController::playerRewind()
     ;
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000-10;
+    qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
 }
 
@@ -246,6 +247,7 @@ PlayerController::playerForward()
     }
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000+10;
+    qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
 }
 
@@ -320,9 +322,9 @@ PlayerController::playerPositionChanged(qint64 durationMS)
 }
 
 void
-PlayerController::playerSeek(int ms)
+PlayerController::playerSeek(int s)
 {
-    _playerInstance[_currentPlayerID].setPosition(ms * 1000);
+    _playerInstance[_currentPlayerID].setPosition(s * 1000 );
 }
 
 void
@@ -459,6 +461,7 @@ void
 PlayerController::_playerStop()
 {
     _playerInstance[_currentPlayerID].stop();
+    qDebug() << SB_DEBUG_INFO;
     playerSeek(0);
 }
 
