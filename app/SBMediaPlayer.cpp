@@ -10,7 +10,6 @@
 #include "AudioDecoderFactory.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
-#include "StreamContent.h"
 
 #include "Common.h"
 
@@ -48,7 +47,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
 {
     closeStream();
     QString fn=QString(fileName).replace("\\","");
-    fn="/tmp/aap.wav";
+    //fn="/tmp/aap.wav";
     //fn="C:/temp/aap.wav";
     //fn="/tmp/noot.ogg";
     //fn="C:/temp/noot.ogg";
@@ -60,19 +59,22 @@ SBMediaPlayer::setMedia(const QString &fileName)
         closeStream();
     }
     AudioDecoderFactory adf;
-    AudioDecoder* ad=adf.openFile(fn);
+    _ad=adf.openFile(fn);
+    qDebug() << SB_DEBUG_INFO;
 
-    if(!ad)
+    if(!_ad)
     {
+        qDebug() << SB_DEBUG_INFO;
         setErrorMsg("File not supported");
         return 0;
     }
-    if(ad->error().length())
+        qDebug() << SB_DEBUG_INFO;
+    if(_ad->error().length())
     {
         setErrorMsg(_ad->error());
         return 0;
     }
-    portAudioOpen(ad);
+    portAudioOpen(_ad);
 
     /*
     if(sc.hasErrorFlag())
@@ -116,13 +118,19 @@ SBMediaPlayer::paCallback
     }
 
     //const PaStreamInfo* si=Pa_GetStreamInfo(_stream);
-    int samplesRead=_ad->getSamples(output,sampleCount);
-    _index+=_ad->samplesToBytes(samplesRead);
+    qint64 samplesRead=_ad->getSamples(output,sampleCount);
 
     if(samplesRead)
     {
         resultCode=paContinue;
-        emit positionChanged(this->position());
+        qint64 newPositionInSec=this->position()/1000;
+
+        //	Eliminate a barrage of signals by only updating once a second.
+        if(newPositionInSec!=_oldPositionInSec)
+        {
+            _oldPositionInSec=newPositionInSec;
+            emit positionChanged(this->position());
+        }
     }
     else
     {
@@ -166,7 +174,7 @@ SBMediaPlayer::paCallback
 qint64
 SBMediaPlayer::position() const
 {
-    return _ad->index2MS(_index);
+    return _ad->index2MS(_ad->getIndex());
 }
 
 ///	Public slots
@@ -202,7 +210,10 @@ SBMediaPlayer::setPosition(qint64 position)
     {
         position=0;
     }
-    _index=_ad->setPosition(position);
+    if(_ad)
+    {
+        _ad->setPosition(position);
+    }
     return;
 }
 
@@ -228,13 +239,13 @@ void
 SBMediaPlayer::init()
 {
     _playerID=-1;
-    _index=0;
     _portAudioInitFlag=0;
     _paError=paNoError;
     _stream=NULL;
     _state=QMediaPlayer::StoppedState;
     _threadPrioritySetFlag=0;
     _hasErrorFlag=0;
+    _oldPositionInSec=0;
 
     portAudioInit();
 }
@@ -256,127 +267,6 @@ SBMediaPlayer::portAudioInit()
     _portAudioInitFlag=1;
     qDebug() << SB_DEBUG_INFO << _paError;
 }
-
-//	TO BE REMOVED: once all formats are supported with non-memory streaming
-//bool
-//SBMediaPlayer::portAudioOpen(const StreamContent& sc)
-//{
-//    qDebug() << SB_DEBUG_INFO;
-//    if(_paError!=paNoError)
-//    {
-//        qDebug() << SB_DEBUG_INFO
-//                 << Pa_GetErrorText(_paError)
-//        ;
-//        return 0;
-//    }
-//    qDebug() << SB_DEBUG_INFO;
-
-//    ////////////////////
-//    ///
-//    /// tmp code to query audio devices
-//    ///
-//    ////////////////////
-//    int numDevices=Pa_GetDeviceCount();
-//    qDebug() << SB_DEBUG_INFO << "numDevices=" << numDevices;
-//    for(int i=0;i<numDevices;i++)
-//    {
-//        const PaDeviceInfo* devInfo=Pa_GetDeviceInfo(i);
-//        qDebug() << SB_DEBUG_INFO
-//                 << devInfo->name
-//                 << devInfo->maxOutputChannels
-//                 << devInfo->hostApi
-//                 << devInfo->defaultHighOutputLatency
-//                 << devInfo->defaultLowOutputLatency
-//        ;
-//    }
-//    ////////////////////
-
-//    _sc=sc;
-//    _index=0;
-//    PaStreamParameters outputParameters;
-//    qDebug() << SB_DEBUG_INFO;
-
-//    qDebug() << SB_DEBUG_INFO;
-//    outputParameters.channelCount=_sc.numChannels();
-//    outputParameters.device = Pa_GetDefaultOutputDevice();
-//    outputParameters.hostApiSpecificStreamInfo=NULL;
-//    outputParameters.sampleFormat=_sc.sampleFormat();
-//    outputParameters.suggestedLatency=128;
-
-//    qDebug() << SB_DEBUG_INFO;
-//    qDebug() << SB_DEBUG_INFO;
-
-//    if(	outputParameters.device==paNoDevice)
-//    {
-//        qDebug() << SB_DEBUG_INFO
-//                 << "No device available"
-//        ;
-//        _paError=paNoDevice;
-//        return 0;
-//    }
-//    qDebug() << SB_DEBUG_INFO << "numChannels=" << outputParameters.channelCount;
-
-////    for(int myChannels=0;myChannels<99;myChannels++)
-////    {
-////        outputParameters.channelCount=myChannels;
-////        _paError=Pa_IsFormatSupported(NULL,&outputParameters,_sc.sampleRate());
-////        if(_paError != paNoError)
-////        {
-////            qDebug() << SB_DEBUG_INFO
-////                     << "Pa_IsFormatSupported:"
-////                     << myChannels
-////                     << Pa_GetErrorText(_paError)
-////            ;
-////        }
-////        else
-////        {
-////            qDebug() << SB_DEBUG_INFO << "###############################SUPPORTED:myChannels=" << myChannels;
-////        }
-////    }
-
-//    _paError = Pa_OpenStream(
-//        &_stream,
-//        NULL,
-//        &outputParameters,
-//        _sc.sampleRate(),
-//        //	The following should calculate out to 512 samples with 2 channels and 16 bit per sample
-//        (_blockSize * 8)/(_sc.numChannels() * sc.bitsPerSample()),
-//        paPrimeOutputBuffersUsingStreamCallback,
-//        &staticPaCallBack,
-//        (void *)this
-//    );
-
-////    _paError = Pa_OpenDefaultStream(
-////        &_stream,
-////        0, // no input
-////        _sc.numChannels(),
-////        _sc.sampleFormat(),
-////        _sc.sampleRate(),
-////        paFramesPerBufferUnspecified, // framesPerBuffer
-////        //0, // flags
-////        &staticPaCallBack,
-////        (void *)this //void *userData
-////        );
-
-//    qDebug() << SB_DEBUG_INFO;
-//    if(_paError != paNoError)
-//    {
-//        qDebug() << SB_DEBUG_INFO
-//                 << "Pa_OpenStream:"
-//                 << Pa_GetErrorText(_paError)
-//        ;
-
-//        if(_stream)
-//        {
-//            closeStream();
-//        }
-//        return false;
-//    }
-//    qDebug() << SB_DEBUG_INFO << _paError;
-//    //	durationChanged should be either s or ms
-//    emit durationChanged(_ad->lengthInMs());
-//    return 1;
-//}
 
 bool
 SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
@@ -412,7 +302,6 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
     ////////////////////
 
     _ad=ad;
-    _index=0;
     PaStreamParameters outputParameters;
     qDebug() << SB_DEBUG_INFO;
 
@@ -493,10 +382,8 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
         return false;
     }
     qDebug() << SB_DEBUG_INFO << _paError;
-    //	Duration in ms: CWIP
     qDebug() << SB_DEBUG_INFO << _ad->lengthInBytes() << _ad->lengthInMs();
     emit durationChanged(_ad->lengthInMs());
-    //emit durationChanged(120*1000);	//	2m for testing purposes
     return 1;
 }
 

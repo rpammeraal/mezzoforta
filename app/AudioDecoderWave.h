@@ -5,18 +5,15 @@
 
 class AudioDecoderWave : public AudioDecoder
 {
-public:
-    virtual qint64 getSamples(void* buffer, qint64 sampleCount);
-    virtual qint64 setPosition(qint64 position);	//	in ms
+    Q_OBJECT
 
 protected:
     friend class AudioDecoderFactory;
 
-    AudioDecoderWave(const QString& fileName=QString());	//	CWIP: remove default
+    AudioDecoderWave(const QString& fileName);
     virtual ~AudioDecoderWave();
 
     static bool supportFileExtension(const QString& extension);
-    //virtual StreamContent stream(const QString& fileName);
 
 private:
     typedef struct WaveHeader

@@ -36,7 +36,6 @@ HEADERS     = \
     PlayerController.h \
     SBMediaPlayer.h \
     SBTabCurrentPlaylist.h \
-    StreamContent.h \
     AudioDecoder.h \
     AudioDecoderFactory.h \
     AudioDecoderFlac.h \
@@ -49,7 +48,12 @@ HEADERS     = \
     DataEntityPerformer.h \
     DataEntityPlaylist.h \
     DataEntitySong.h \
-    SBModelCurrentPlaylist.h
+    SBModelCurrentPlaylist.h \
+    AudioDecoderOggVorbisReader.h \
+    AudioDecoderWaveReader.h \
+    AudioDecoderMP3Reader.h \
+    AudioDecoderFlacReader.h \
+    AudioDecoderReader.h
 
 SOURCES     = \
     main.cpp \
@@ -88,7 +92,6 @@ SOURCES     = \
     PlayerController.cpp \
     SBMediaPlayer.cpp \
     SBTabCurrentPlaylist.cpp \
-    StreamContent.cpp \
     AudioDecoder.cpp \
     AudioDecoderFactory.cpp \
     AudioDecoderFlac.cpp \
@@ -101,7 +104,12 @@ SOURCES     = \
     DataEntityPerformer.cpp \
     DataEntityPlaylist.cpp \
     DataEntitySong.cpp \
-    SBModelCurrentPlaylist.cpp
+    SBModelCurrentPlaylist.cpp \
+    AudioDecoderOggVorbisReader.cpp \
+    AudioDecoderWaveReader.cpp \
+    AudioDecoderMP3Reader.cpp \
+    AudioDecoderFlacReader.cpp \
+    AudioDecoderReader.cpp
 
 # install
 target.path = .

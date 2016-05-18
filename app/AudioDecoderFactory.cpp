@@ -1,3 +1,4 @@
+#include <qsystemdetection.h>
 #include <QFileInfo>
 #include <QString>
 
@@ -19,65 +20,52 @@ AudioDecoderFactory::~AudioDecoderFactory()
 
 }
 
-//StreamContent
-//AudioDecoderFactory::stream(const QString &fileName)
-//{
-//    //	Determine file extension
-//    StreamContent sc;
-//    QByteArray ba;
-//    QFileInfo fi(fileName);
-//    QString extension=fi.suffix();
-//    AudioDecoder* ad=NULL;
-
-//    if(AudioDecoderWave::supportFileExtension(extension)==1)
-//    {
-//        ad=new AudioDecoderWave();
-//    }
-//    else if(AudioDecoderOggVorbis::supportFileExtension(extension)==1)
-//    {
-//        ad=new AudioDecoderOggVorbis();
-//    }
-//    else if(AudioDecoderMP3::supportFileExtension(extension)==1)
-//    {
-//        ad=new AudioDecoderMP3();
-//    }
-//#ifdef Q_OS_UNIX
-//    else if(AudioDecoderFlac::supportFileExtension(extension)==1)
-//    {
-//        ad=new AudioDecoderFlac();
-//    }
-//#endif
-
-//    if(ad==NULL)
-//    {
-//        errStr=QString("No decoder found for filename `%1', extension `%2'").arg(fileName).arg(extension);
-//        qDebug() << SB_DEBUG_INFO << "No decoder found for `" << fileName << "'";
-//    }
-//    else
-//    {
-//        sc=ad->stream(fileName);
-//    }
-//    delete ad; ad=NULL;
-
-//    return sc;
-//}
-
 AudioDecoder*
 AudioDecoderFactory::openFile(const QString &fileName)
 {
+    //	Flensburg - Neumuenster
     QByteArray ba;
     QFileInfo fi(fileName);
     QString extension=fi.suffix();
+    AudioDecoder* ad=NULL;
 
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
-        return new AudioDecoderWave(fileName);
+        qDebug() << SB_DEBUG_INFO;
+        ad=new AudioDecoderWave(fileName);
     }
-    return NULL;
+    else if(AudioDecoderOggVorbis::supportFileExtension(extension)==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        ad=new AudioDecoderOggVorbis(fileName);
+    }
+    else if(AudioDecoderMP3::supportFileExtension(extension)==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        ad=new AudioDecoderMP3(fileName);
+    }
+#ifdef Q_OS_UNIX
+    else if(AudioDecoderFlac::supportFileExtension(extension)==1)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        ad=new AudioDecoderFlac(fileName);
+    }
+#endif
+
+    if(ad)
+    {
+        if(ad->error().length()!=0)
+        {
+            _error=ad->error();
+            delete ad; ad=NULL;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
+    return ad;
 }
 
 void
 AudioDecoderFactory::init()
 {
-    errStr.clear();
+    _error.clear();
 }

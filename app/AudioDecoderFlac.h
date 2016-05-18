@@ -1,72 +1,76 @@
-//#ifndef AudioDecoderFLAC_H
-//#define AudioDecoderFLAC_H
+#ifndef AudioDecoderFLAC_H
+#define AudioDecoderFLAC_H
 
-//#include <qsystemdetection.h>
+#include <qsystemdetection.h>
 
-//#ifdef Q_OS_UNIX
-//#include "FLAC/all.h"
+#ifdef Q_OS_UNIX
+#include "FLAC/all.h"
 
-//#include <QFile>
+#include <QFile>
 
-//#include "AudioDecoder.h"
+#include "AudioDecoder.h"
 
 
-//class AudioDecoderFlac : public AudioDecoder
-//{
-//public:
-//    AudioDecoderFlac();
-//    virtual ~AudioDecoderFlac();
+class AudioDecoderFlac : public AudioDecoder
+{
+    Q_OBJECT
 
-//    static bool supportFileExtension(const QString& extension);
-//    virtual StreamContent stream(const QString& fileName);
+public:
+    //	Flac specific methods
+    FLAC__StreamDecoderReadStatus flacRead(FLAC__byte buffer[], size_t *bytes);
+    FLAC__StreamDecoderSeekStatus flacSeek(FLAC__uint64 offset);
+    FLAC__StreamDecoderTellStatus flacTell(FLAC__uint64 *offset);
+    FLAC__StreamDecoderLengthStatus flacLength(FLAC__uint64 *length);
+    FLAC__bool flacEOF();
+    FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__Frame *frame, const FLAC__int32 *const buffer[]);
+    void flacMetadata(const FLAC__StreamMetadata *metadata);
+    void flacError(FLAC__StreamDecoderErrorStatus status);
 
-//    //	Flac specific methods
-//    FLAC__StreamDecoderReadStatus flacRead(FLAC__byte buffer[], size_t *bytes);
-//    FLAC__StreamDecoderSeekStatus flacSeek(FLAC__uint64 offset);
-//    FLAC__StreamDecoderTellStatus flacTell(FLAC__uint64 *offset);
-//    FLAC__StreamDecoderLengthStatus flacLength(FLAC__uint64 *length);
-//    FLAC__bool flacEOF();
-//    FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__Frame *frame, const FLAC__int32 *const buffer[]);
-//    void flacMetadata(const FLAC__StreamMetadata *metadata);
-//    void flacError(FLAC__StreamDecoderErrorStatus status);
+protected:
+    friend class AudioDecoderFactory;
 
-//private:
-//    QFile* f;
-//    qint64 numSamples;
-//    int numChannels;
-//    int sampleRate;
-//    qint64 bitsPerSample;
-//    qint64 minBlockSize;
-//    qint64 maxBlockSize;
-//    qint64 minFrameSize;
-//    qint64 maxFrameSize;
-//    unsigned int flacBufferLength;
-//    FLAC__int16* flacBuffer;
-//    FLAC__int16* leftOverBuffer;
+    AudioDecoderFlac(const QString& fileName);
+    virtual ~AudioDecoderFlac();
 
-//    void init();
-//    void exit();
+    static bool supportFileExtension(const QString& extension);
 
-//    inline int getShift() const
-//    {
-//        return 16 - bitsPerSample;
-//    }
 
-//    inline FLAC__int16 shift(FLAC__int32 sample) const
-//    {
-//        int shift(getShift());
-//        if (shift==0)
-//        {
-//            return sample;
-//        }
-//        else if(shift<0)
-//        {
-//            return sample >> abs(shift);
-//        }
-//        return sample << shift;
-//    };
-//};
+private:
+    friend class AudioDecoderFlacReader;
 
-//#endif
+    qint64               _numSamples;
+    qint64               _minBlockSize;
+    qint64               _maxBlockSize;
+    qint64               _minFrameSize;
+    qint64               _maxFrameSize;
+    unsigned int         _flacBufferLength;
+    FLAC__int16*         _flacBuffer;
+    FLAC__int16*         _leftOverBuffer;
+    FLAC__StreamDecoder* _flacDecoder;
 
-//#endif // AudioDecoderFLAC_H
+    void init();
+    virtual void exit();
+
+    inline int getShift() const
+    {
+        return 16 - _bitsPerSample;
+    }
+
+    inline FLAC__int16 shift(FLAC__int32 sample) const
+    {
+        int shift(getShift());
+        if (shift==0)
+        {
+            return sample;
+        }
+        else if(shift<0)
+        {
+            return sample >> abs(shift);
+        }
+        return sample << shift;
+    };
+};
+
+#endif
+
+#endif // AudioDecoderFLAC_H

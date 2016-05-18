@@ -5,8 +5,6 @@
 
 #include <QMediaPlayer>
 
-//#include "StreamContent.h"
-
 #define CHECK(x) { if(!(x)) { \
 fprintf(stderr, "%s:%i: failure at: %s\n", __FILE__, __LINE__, #x); \
 return(0); } }
@@ -52,7 +50,7 @@ public slots:
 private:
     int _playerID;
     AudioDecoder* _ad;
-    qint64 _index;	//	byte pointer to stream. Not sample pointer :) May want to rethink this being a sample pointer
+    //qint64 _index;	//	byte pointer to stream. Not sample pointer :) May want to rethink this being a sample pointer
     bool _portAudioInitFlag;
     PaError _paError;
     PaStream* _stream;
@@ -60,9 +58,9 @@ private:
     bool _hasErrorFlag;
     QMediaPlayer::State _state;
     bool _threadPrioritySetFlag;
-    const qint64 _blockSize=BUFFERSIZE;
     qint64 _bufferIndex;
     void* _buffer[BUFFERSIZE];
+    qint64 _oldPositionInSec;
 
     void closeStream();
     void init();

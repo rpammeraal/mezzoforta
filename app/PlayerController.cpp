@@ -113,6 +113,9 @@ PlayerController::initialize()
                 this, SLOT(playerSeek(int)));
         connect(mw->ui.hsMusicPlayerProgressRight,SIGNAL(valueChanged(int)),
                 this, SLOT(playerSeek(int)));
+
+        mw->ui.hsMusicPlayerProgressLeft->setTracking(1);
+        mw->ui.hsMusicPlayerProgressRight->setTracking(1);
     }
 }
 
@@ -468,7 +471,6 @@ PlayerController::_playerStop()
 void
 PlayerController::_refreshPlayingNowData() const
 {
-    qDebug() << SB_DEBUG_INFO << "_currentSong=" << _currentSong;
     QString playState;
     switch(_state)
     {
@@ -491,7 +493,6 @@ PlayerController::_refreshPlayingNowData() const
         //	ignore
         break;
     }
-    qDebug() << SB_DEBUG_INFO << playState << _state;
 
     playState="<BODY BGCOLOR=\"#f0f0f0\"><CENTER>"+playState;
     if(_state==PlayerController::sb_player_state_pause ||
@@ -515,7 +516,6 @@ PlayerController::_refreshPlayingNowData() const
         ;
     }
     playState+="</CENTER></BODY>";
-    qDebug() << SB_DEBUG_INFO << playState;
     _playerDataLabel[_currentPlayerID]->setText(playState);
 }
 

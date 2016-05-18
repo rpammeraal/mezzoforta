@@ -1,146 +1,134 @@
-//#include <errno.h>
-//#include <fcntl.h>
+#include <errno.h>
+#include <fcntl.h>
 
-//#include <ogg/ogg.h>
-//#include <vorbis/codec.h>
-//#include <vorbis/vorbisfile.h>
 
 //#include <QByteArray>
 //#include <QDebug>
 //#include <QFile>
 
-//#include "Common.h"
-//#include "AudioDecoderOggVorbis.h"
+#include "AudioDecoderOggVorbis.h"
+#include "AudioDecoderOggVorbisReader.h"
+#include "Common.h"
 
-//AudioDecoderOggVorbis::AudioDecoderOggVorbis()
-//{
-//}
+///	Protected methods
+AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
+{
+    //	Init. What else.
+    init();
+    qDebug() << SB_DEBUG_INFO << fileName << this;
 
-//AudioDecoderOggVorbis::~AudioDecoderOggVorbis()
-//{
-//}
+    //	Open file
+    _file=new QFile(fileName);
+    if(!_file->open(QIODevice::ReadOnly))
+    {
+        _error=QString("Error opening file '%1' [%2]").arg(fileName).arg(_file->error());
+        qDebug() << SB_DEBUG_ERROR << _error;
+        return;
+    }
 
+    int resultCode=0;
+    int fd=_file->handle();
+    FILE* fp=fdopen(fd,"r");
 
-//bool
-//AudioDecoderOggVorbis::supportFileExtension(const QString& extension)
-//{
-//    return
-//        (
-//            extension.compare("ogg",Qt::CaseInsensitive)==0
-//        ) ? 1: 0;
-//}
+#ifdef Q_OS_WIN
+    resultCode=ov_open_callbacks(fp,&ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
+#endif
+#ifdef Q_OS_UNIX
+    resultCode=ov_open(fp,&ovf,NULL,0);
+#endif
+    if(resultCode!=0)
+    {
+        _error=QString("Could not open '%s' as a OGG file").arg(fileName);
+        qDebug() << SB_DEBUG_ERROR << _error;
+        return;
+    }
 
-//StreamContent
-//AudioDecoderOggVorbis::stream(const QString& fileName)
-//{
-//    qDebug() << SB_DEBUG_INFO << fileName << this;
-//    PaSampleFormat sampleFormat=paInt16;	//	2 bytes per sample per channel.
-//    int bitsPerSample=16;	//	sampleFormat and bitsPerSample should correspond with eachother
-//    StreamContent sc;
-//    QFile f(fileName);
-//    if(!f.open(QIODevice::ReadOnly))
-//    {
-//        _error=QString("Error opening file '%1' [%2]").arg(fileName).arg(f.error());
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_ERROR << _error;
-//        return sc;
-//    }
+    vorbis_info* vi=ov_info(&ovf,-1);
+    if(vi==NULL)
+    {
+        _error=QString("Could not get metadata from '%s'").arg(fileName);
+        qDebug() << SB_DEBUG_NPTR << _error;
+        return;
+    }
+    qDebug() << SB_DEBUG_INFO << "channels=" << vi->channels;
+    qDebug() << SB_DEBUG_INFO << "rate=" << vi->rate;
 
-//    OggVorbis_File ovf;
-//    vorbis_info* info;
-//    int resultCode=0;
-//    int fd=f.handle();
-//    FILE* fp=fdopen(fd,"r");
+    char **ptr=ov_comment(&ovf,-1)->user_comments;
+    while(*ptr)
+    {
+        qDebug() << SB_DEBUG_INFO << *ptr;
+        ++ptr;
+    }
+    qDebug() << SB_DEBUG_INFO << "encoded by " <<  ov_comment(&ovf,-1)->vendor;
 
-//#ifdef Q_OS_WIN
-//    resultCode=ov_open_callbacks(fp,&ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
-//#endif
-//#ifdef Q_OS_UNIX
-//    resultCode=ov_open(fp,&ovf,NULL,0);
-//#endif
-//    if(resultCode!=0)
-//    {
-//        _error=QString("Could not open '%s' as a OGG file").arg(fileName);
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_ERROR << _error;
-//        return sc;
-//    }
+    if(vi->channels!=2)
+    {
+        _error=QString("Only 2 ogg/vorbis channels supported '%s'").arg(fileName);
+        qDebug() << SB_DEBUG_NPTR << _error;
+        return;
+    }
 
-//    info=ov_info(&ovf,-1);
-//    if(info==NULL)
-//    {
-//        _error=QString("Could not get metadata from '%s'").arg(fileName);
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_NPTR << _error;
-//        return sc;
-//    }
-//    qDebug() << SB_DEBUG_INFO << "channels=" << info->channels;
-//    qDebug() << SB_DEBUG_INFO << "rate=" << info->rate;
+    qint64 numFrames=ov_pcm_total(&ovf,-1);
+    if(!numFrames)
+    {
+        _error=QString("Zero frames in '%s'").arg(fileName);
+        qDebug() << SB_DEBUG_NPTR << _error;
+        return;
+    }
 
-//    char **ptr=ov_comment(&ovf,-1)->user_comments;
-//    while(*ptr)
-//    {
-//        qDebug() << SB_DEBUG_INFO << *ptr;
-//        ++ptr;
-//    }
-//    qDebug() << SB_DEBUG_INFO << "encoded by " <<  ov_comment(&ovf,-1)->vendor;
+    //	Set stream parameters
+    //	1.	_bitsPerSample
+    _bitsPerSample=16;	//	CWIP: to be derived from meta data at some point
 
-//    if(info->channels!=2)
-//    {
-//        _error=QString("Only 2 ogg/vorbis channels supported '%s'").arg(fileName);
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_NPTR << _error;
-//        return sc;
-//    }
+    //	2.	_length
+    _length=numFrames*vi->channels*(_bitsPerSample/8);
 
-//    qint64 numFrames=ov_pcm_total(&ovf,-1);
-//    if(!numFrames)
-//    {
-//        _error=QString("Zero frames in '%s'").arg(fileName);
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_NPTR << _error;
-//        return sc;
-//    }
+    //	3.	_numChannels
+    _numChannels=vi->channels;
 
-//    qint64 size=numFrames*info->channels*(bitsPerSample/8);
-//    void* src=malloc(size);
-//    if(!src)
-//    {
-//        _error=QString("Unable to allocate memory '%s'").arg(fileName);
-//        sc.setErrorMsg(_error);
-//        qDebug() << SB_DEBUG_NPTR << _error;
-//        return sc;
-//    }
+    //	4.	_sampleRate
+    _sampleRate=vi->rate;
 
-//    const int bufferSize=8192;
-//    int endianity;
-//    int currentSection=0;
-//#ifdef Q_BIG_ENDIAN
-//    endianity=0;
-//#else
-//    endianity=1;
-//#endif
+    //	5.	_sampleFormat
+    _sampleFormat=paInt16;	//	2 bytes per sample per channel. CWIP: to be derived from meta data
 
-//    qint64 i=0;
-//    while(i<size)
-//    {
-//        qint64 bytesRead=ov_read(&ovf,((char *)src)+i,bufferSize,endianity,(bitsPerSample/8),1,&currentSection);
+    //	Set file up for reading
+    _file->reset();
+    _file->seek(0);
+    ov_time_seek(&ovf,0);
 
-//        if(i==0)
-//        {
-//            qDebug() << SB_DEBUG_INFO << "Reading data:size=" << size;
-//        }
-//        if(bytesRead<=0)
-//        {
-//            _error=QString("Unable to read '%s'").arg(fileName);
-//            sc.setErrorMsg(_error);
-//            qDebug() << SB_DEBUG_NPTR << _error;
-//            return sc;
-//        }
-//        i+=bytesRead;
-//    }
-//    sc=StreamContent(src,size,info->channels,info->rate,sampleFormat,bitsPerSample);
-//    qDebug() << SB_DEBUG_INFO << "EOF";
-//    ov_clear(&ovf);
-//    return sc;
-//}
+    //	Allocate buffer to store stream in
+    _stream=(char *)malloc(this->lengthInBytes());
+
+    //	Put reader to work.
+    _adr=new AudioDecoderOggVorbisReader(this);
+    _adr->moveToThread(&_workerThread);
+    connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
+    connect(this, &AudioDecoderOggVorbis::startBackfill, _adr, &AudioDecoderReader::backFill);
+    _workerThread.start();
+    emit startBackfill();
+}
+
+AudioDecoderOggVorbis::~AudioDecoderOggVorbis()
+{
+    ov_clear(&ovf);
+}
+
+bool
+AudioDecoderOggVorbis::supportFileExtension(const QString& extension)
+{
+    return
+        (
+            extension.compare("ogg",Qt::CaseInsensitive)==0
+        ) ? 1: 0;
+}
+
+void
+AudioDecoderOggVorbis::init()
+{
+#ifdef Q_BIG_ENDIAN
+    endianity=0;
+#else
+    endianity=1;
+#endif
+}

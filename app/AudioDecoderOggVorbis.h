@@ -1,17 +1,33 @@
-//#ifndef AUDIODECODEROGGVORBIS_H
-//#define AUDIODECODEROGGVORBIS_H
+#ifndef AUDIODECODEROGGVORBIS_H
+#define AUDIODECODEROGGVORBIS_H
 
-//#include "AudioDecoder.h"
-//#include "StreamContent.h"
+#include <ogg/ogg.h>
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
 
-//class AudioDecoderOggVorbis : public AudioDecoder
-//{
-//public:
-//    AudioDecoderOggVorbis();
-//    virtual ~AudioDecoderOggVorbis();
+#include "AudioDecoder.h"
 
-//    static bool supportFileExtension(const QString& extension);
-//    virtual StreamContent stream(const QString& fileName);
-//};
+#define SB_VORBIS_BUFFER_SIZE 4096
 
-//#endif // AUDIODECODEROGGVORBIS_H
+class AudioDecoderOggVorbis : public AudioDecoder
+{
+    Q_OBJECT
+
+protected:
+    friend class AudioDecoderFactory;
+
+    AudioDecoderOggVorbis(const QString& fileName);
+    virtual ~AudioDecoderOggVorbis();
+
+    static bool supportFileExtension(const QString& extension);
+
+private:
+    friend class AudioDecoderOggVorbisReader;
+
+    OggVorbis_File ovf;
+    int endianity;
+
+    void init();
+};
+
+#endif // AUDIODECODEROGGVORBIS_H

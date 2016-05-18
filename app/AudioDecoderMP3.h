@@ -1,36 +1,25 @@
-//#ifndef AUDIODECODERMP3_H
-//#define AUDIODECODERMP3_H
+#ifndef AUDIODECODERMP3_H
+#define AUDIODECODERMP3_H
 
-//#include <mad.h>
-//#include "AudioDecoder.h"
+#include <mad.h>
+#include "AudioDecoder.h"
 
-//class AudioDecoderMP3 : public AudioDecoder
-//{
-//public:
-//    AudioDecoderMP3();
-//    virtual ~AudioDecoderMP3();
+class AudioDecoderMP3 : public AudioDecoder
+{
+protected:
+    friend class AudioDecoderFactory;
 
-//    static bool supportFileExtension(const QString& extension);
-//    virtual StreamContent stream(const QString& fileName);
+    AudioDecoderMP3(const QString& fileName);
+    virtual ~AudioDecoderMP3();
 
-//private:
-//    inline signed int madScale(mad_fixed_t sample) const
-//    {
-//        sample += (1L << (MAD_F_FRACBITS - 16));
+    static bool supportFileExtension(const QString& extension);
 
-//        if (sample >= MAD_F_ONE)
-//        {
-//            sample = MAD_F_ONE - 1;
-//        }
-//        else if (sample < -MAD_F_ONE)
-//        {
-//            sample = -MAD_F_ONE;
-//        }
+private:
+    friend class AudioDecoderMP3Reader;
+    qint64      _frameCount;
+    mad_timer_t _fileLength;
 
-//        return sample >> (MAD_F_FRACBITS + 1 - 16);
-//    }
+    void init();
+};
 
-
-//};
-
-//#endif // AUDIODECODERMP3_H
+#endif // AUDIODECODERMP3_H
