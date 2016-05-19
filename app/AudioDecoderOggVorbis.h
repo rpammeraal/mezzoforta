@@ -13,19 +13,22 @@ class AudioDecoderOggVorbis : public AudioDecoder
 {
     Q_OBJECT
 
+public:
+    virtual ~AudioDecoderOggVorbis();
+
 protected:
     friend class AudioDecoderFactory;
 
     AudioDecoderOggVorbis(const QString& fileName);
-    virtual ~AudioDecoderOggVorbis();
 
     static bool supportFileExtension(const QString& extension);
 
 private:
     friend class AudioDecoderOggVorbisReader;
 
-    OggVorbis_File ovf;
-    int endianity;
+    OggVorbis_File _ovf;
+    int            _endianity;
+    int            _ovInitialized;
 
     void init();
 };

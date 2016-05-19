@@ -109,7 +109,6 @@ SBTabCurrentPlaylist::songChanged(const SBID& song)
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     QModelIndex idx=aem->setCurrentSongByID(song.playPosition);
-    qDebug() << SB_DEBUG_INFO << idx << idx.row() << idx.column();
     tv->scrollTo(idx);
 }
 

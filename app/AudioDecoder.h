@@ -22,25 +22,25 @@ class AudioDecoder : public QObject
     Q_OBJECT
 
 public:
-    //	Public methods
-    qint64 getSamples(void* buffer, qint64 sampleCount);
-    qint64 setPosition(qint64 position);
-    inline qint64 getIndex() const { return _index; }
+    virtual ~AudioDecoder();
+    quint64 getSamples(void* buffer, quint64 sampleCount);
+    quint64 setPosition(quint64 position);
+    inline quint64 getIndex() const { return _index; }
 
     //	Meta data
-    inline qint16 bitsPerSample() const { return _bitsPerSample; }
+    inline quint16 bitsPerSample() const { return _bitsPerSample; }
     inline QString error() const { return _error; }
-    inline qint64 lengthInBytes() const { return _length; }
-    inline qint64 lengthInMs() const { return index2MS(_length); }
-    inline qint16 numChannels() const { return _numChannels; }
+    inline quint64 lengthInBytes() const { return _length; }
+    inline quint64 lengthInMs() const { return index2MS(_length); }
+    inline quint16 numChannels() const { return _numChannels; }
     inline PaSampleFormat sampleFormat() const { return _sampleFormat; }
-    inline qint32 sampleRate() const { return _sampleRate; }
+    inline quint32 sampleRate() const { return _sampleRate; }
     inline int bytesPerStereoSample() const { return bitsPerSample()*2/8; }
 
     //	Conversion
-    qint64 bytesToSamples(qint64 bytes) const { return (bytes * 8)/(_numChannels * _bitsPerSample); }
-    qint64 samplesToBytes(qint64 samples) const { return (samples * _numChannels * _bitsPerSample)/8 ;}
-    qint64 ms2Index(qint64 ms) const { return (_sampleRate * ms * _bitsPerSample * _numChannels * 1.0)/(8 * 1000.0); }
+    quint64 bytesToSamples(quint64 bytes) const { return (_numChannels*_bitsPerSample==0)?0:(bytes * 8)/(_numChannels * _bitsPerSample); }
+    quint64 samplesToBytes(quint64 samples) const { return (samples * _numChannels * _bitsPerSample)/8 ;}
+    quint64 ms2Index(quint64 ms) const { return (_sampleRate * ms * _bitsPerSample * _numChannels * 1.0)/(8 * 1000.0); }
     /*
 
              44100sr * 1000ms * 16bps *2ch
@@ -48,7 +48,7 @@ public:
                 8b/b * 1000ms/s
      */
 
-    qint64 index2MS(qint64 index) const { return (index * 8.0 * 1000)/(_sampleRate * _numChannels * _bitsPerSample); }
+    quint64 index2MS(quint64 index) const { return (_sampleRate*_numChannels*_bitsPerSample==0)?0:(index * 8.0 * 1000)/(_sampleRate * _numChannels * _bitsPerSample); }
     /*
              176400 * 8b/b * 1000ms   1411200000
     176400 = ---------------------- = ---------- = 1000ms
@@ -63,23 +63,22 @@ protected:
     friend class AudioDecoderWaveReader;
 
     //	Stream parameters
-    qint16              _bitsPerSample;
-    qint64              _length;	//	in bytes
-    qint16              _numChannels;
-    qint32              _sampleRate;
+    quint16             _bitsPerSample;
+    quint64             _length;	//	in bytes
+    quint16             _numChannels;
+    quint32             _sampleRate;
     PaSampleFormat      _sampleFormat;
     char*               _stream;	//	pointer to stream in memory
 
     //	Other
     QFile*              _file;
-    qint64              _index;	//	pointer in bytes
-    qint64              _maxScrollableIndex;	//	pointer in bytes to end of _stream read so far by *Reader class
+    quint64             _index;	//	pointer in bytes
+    quint64             _maxScrollableIndex;	//	pointer in bytes to end of _stream read so far by *Reader class
     QString             _error;
     QThread             _workerThread;
     AudioDecoderReader* _adr;
 
     AudioDecoder();
-    virtual ~AudioDecoder();
 
     static bool supportFileExtension(const QString& extension) ;
 

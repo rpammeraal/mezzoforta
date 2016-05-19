@@ -225,6 +225,7 @@ SBModelCurrentPlaylist::getNextSong(bool previousFlag)
     SBID song;
     int newPlayID=_currentPlayID+(previousFlag==1?-1:1);
     qDebug() << SB_DEBUG_INFO
+             << "_currentPlayID=" << _currentPlayID
              << "newPlayID=" << newPlayID
     ;
     if(newPlayID<0)
@@ -554,7 +555,6 @@ SBModelCurrentPlaylist::repaintAll()
 QModelIndex
 SBModelCurrentPlaylist::setCurrentSongByID(int playID)
 {
-    qDebug() << SB_DEBUG_INFO << "start" << playID << _currentPlayID;
     QStandardItem* item=NULL;
     int oldRowID=-1;
     int newRowID=-1;
@@ -564,19 +564,15 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
         //	Don't execute if, if _currentPlayID:
         //	-	greater than rowcount, or
         //	-	not set (-1), or
-        qDebug() << SB_DEBUG_INFO << this->rowCount();
         for(int i=0;oldRowID==-1 && i<this->rowCount();i++)
         {
             item=this->item(i,sb_column_playlistid);
-            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt()-1;
 
             if(item->text().toInt()-1==_currentPlayID)
             {
-                qDebug() << SB_DEBUG_INFO;
                 item=this->item(i,sb_column_displayplaylistid);
                 if(item!=NULL)
                 {
-                    qDebug() << SB_DEBUG_INFO << "found:i=" << i;
                     item->setText(formatDisplayPlayID(_currentPlayID+1));
                     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
                     oldRowID=i;
@@ -584,7 +580,6 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
 
     if(playID<this->rowCount() && playID>=0)
     {
@@ -593,15 +588,12 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
         for(int i=0;newRowID==-1 && i<this->rowCount();i++)
         {
             item=this->item(i,sb_column_playlistid);
-            qDebug() << SB_DEBUG_INFO << i << "playlistid=" << item->text().toInt()-1;
 
             if(item->text().toInt()-1==_currentPlayID)
             {
-                qDebug() << SB_DEBUG_INFO;
                 item=this->item(i,sb_column_displayplaylistid);
                 if(item!=NULL)
                 {
-                    qDebug() << SB_DEBUG_INFO << "found:i=" << i;
                     item->setText(formatDisplayPlayID(_currentPlayID+1,1));
                     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
                     paintRow(i);

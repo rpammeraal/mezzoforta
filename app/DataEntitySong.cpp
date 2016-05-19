@@ -572,7 +572,6 @@ DataEntitySong::saveNewSong(SBID &id)
 bool
 DataEntitySong::updateLastPlayDate(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
@@ -596,7 +595,6 @@ DataEntitySong::updateLastPlayDate(const SBID &id)
     ;
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
     query.exec();
 

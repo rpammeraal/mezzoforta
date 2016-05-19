@@ -31,36 +31,35 @@ public:
 
     void assignID(int playerID);
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
-    qint64 position() const;
+    quint64 position() const;
     bool setMedia(const QString& fileName);
     inline QString error() const { return _errMsg; }
     QMediaPlayer::State state() const;
 
 signals:
-    void durationChanged(qint64 duration);
-    void positionChanged(qint64 position);
+    void durationChanged(quint64 duration);
+    void positionChanged(quint64 position);
     void stateChanged(QMediaPlayer::State state);
 
 public slots:
     void play();
     void pause();
-    void setPosition(qint64 position);
+    void setPosition(quint64 position);
     void stop();
 
 private:
-    int _playerID;
-    AudioDecoder* _ad;
-    //qint64 _index;	//	byte pointer to stream. Not sample pointer :) May want to rethink this being a sample pointer
-    bool _portAudioInitFlag;
-    PaError _paError;
-    PaStream* _stream;
-    QString _errMsg;
-    bool _hasErrorFlag;
+    int                 _playerID;
+    AudioDecoder*       _ad;
+    bool                _portAudioInitFlag;
+    PaError             _paError;
+    PaStream*           _stream;
+    QString             _errMsg;
+    bool                _hasErrorFlag;
     QMediaPlayer::State _state;
-    bool _threadPrioritySetFlag;
-    qint64 _bufferIndex;
-    void* _buffer[BUFFERSIZE];
-    qint64 _oldPositionInSec;
+    bool                _threadPrioritySetFlag;
+    quint64             _bufferIndex;
+    void*               _buffer[BUFFERSIZE];
+    quint64             _oldPositionInSec;
 
     void closeStream();
     void init();

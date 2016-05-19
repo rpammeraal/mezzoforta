@@ -294,6 +294,13 @@ Navigator::resetAllFiltersAndSelections()
 }
 
 void
+Navigator::showCurrentPlaylist()
+{
+    SBID id(SBID::sb_type_current_playlist,-1);
+    openScreenByID(id);
+}
+
+void
 Navigator::showPlaylist(SBID id)
 {
     qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;

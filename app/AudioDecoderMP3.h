@@ -6,17 +6,21 @@
 
 class AudioDecoderMP3 : public AudioDecoder
 {
+    Q_OBJECT
+
+public:
+    virtual ~AudioDecoderMP3();
+
 protected:
     friend class AudioDecoderFactory;
 
     AudioDecoderMP3(const QString& fileName);
-    virtual ~AudioDecoderMP3();
 
     static bool supportFileExtension(const QString& extension);
 
 private:
     friend class AudioDecoderMP3Reader;
-    qint64      _frameCount;
+    quint64     _frameCount;
     mad_timer_t _fileLength;
 
     void init();

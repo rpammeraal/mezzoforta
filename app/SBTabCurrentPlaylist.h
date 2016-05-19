@@ -32,11 +32,11 @@ public slots:
     void playSong();
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& song);
+    void startRadio();
 
 private slots:
     void clearPlaylist();
     void shufflePlaylist();
-    void startRadio();
     virtual void tableViewCellClicked(QModelIndex idx);
     virtual void tableViewCellDoubleClicked(QModelIndex idx);
 

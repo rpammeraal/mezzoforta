@@ -16,6 +16,8 @@ class AudioDecoderFlac : public AudioDecoder
     Q_OBJECT
 
 public:
+    virtual ~AudioDecoderFlac();
+
     //	Flac specific methods
     FLAC__StreamDecoderReadStatus flacRead(FLAC__byte buffer[], size_t *bytes);
     FLAC__StreamDecoderSeekStatus flacSeek(FLAC__uint64 offset);
@@ -30,7 +32,6 @@ protected:
     friend class AudioDecoderFactory;
 
     AudioDecoderFlac(const QString& fileName);
-    virtual ~AudioDecoderFlac();
 
     static bool supportFileExtension(const QString& extension);
 
@@ -38,11 +39,11 @@ protected:
 private:
     friend class AudioDecoderFlacReader;
 
-    qint64               _numSamples;
-    qint64               _minBlockSize;
-    qint64               _maxBlockSize;
-    qint64               _minFrameSize;
-    qint64               _maxFrameSize;
+    quint64              _numSamples;
+    quint64              _minBlockSize;
+    quint64              _maxBlockSize;
+    quint64              _minFrameSize;
+    quint64              _maxFrameSize;
     unsigned int         _flacBufferLength;
     FLAC__int16*         _flacBuffer;
     FLAC__int16*         _leftOverBuffer;

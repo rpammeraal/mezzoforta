@@ -20,7 +20,7 @@ AudioDecoderWave::AudioDecoderWave(const QString& fileName)
     _file=new QFile(fileName);
     if(!_file->open(QIODevice::ReadOnly))
     {
-        _error=QString("Error opening file '%1' [%2]").arg(fileName).arg(_file->error());
+        _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }

@@ -62,8 +62,8 @@ public slots:
     bool playerPlay();
     void playerForward();
     void playerNext();
-    void playerDurationChanged(qint64 duration);
-    void playerPositionChanged(qint64 duration);
+    void playerDurationChanged(quint64 duration);
+    void playerPositionChanged(quint64 duration);
     void playerSeek(int ms);
     void playerStateChanged(QMediaPlayer::State playerState);
 
@@ -87,7 +87,7 @@ private:
     QTime _durationTime[_maxPlayerID];
 
     SBID calculateNextSongID(bool previousFlag=0) const;
-    QTime calculateTime(qint64 ms) const;
+    QTime calculateTime(quint64 ms) const;
     void init();
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(const SBID& song);

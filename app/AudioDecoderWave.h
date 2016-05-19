@@ -7,11 +7,13 @@ class AudioDecoderWave : public AudioDecoder
 {
     Q_OBJECT
 
+public:
+    virtual ~AudioDecoderWave();
+
 protected:
     friend class AudioDecoderFactory;
 
     AudioDecoderWave(const QString& fileName);
-    virtual ~AudioDecoderWave();
 
     static bool supportFileExtension(const QString& extension);
 

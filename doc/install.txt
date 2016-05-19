@@ -1,6 +1,6 @@
 Postgres headers and libraries:
 -	install fink as root
--	fink install 'postgresql94-dev-1:9.4.1-3' (or latest and greatest)
+-	/sw/bin/fink install postgresql94-dev
 -	files are installed in: /sw/opt/postgresql-9.4
 -	following instructions at: http://doc.qt.io/qt-5/sql-driver.html#qpsql
 

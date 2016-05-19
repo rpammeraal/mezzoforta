@@ -92,12 +92,12 @@ PlayerController::initialize()
             _playerInstance[i].assignID(i);
 
             //	durationChanged
-            connect(&_playerInstance[i],SIGNAL(durationChanged(qint64)),
-                    this, SLOT(playerDurationChanged(qint64)));
+            connect(&_playerInstance[i],SIGNAL(durationChanged(quint64)),
+                    this, SLOT(playerDurationChanged(quint64)));
 
             //	positionChanged
-            connect(&_playerInstance[i],SIGNAL(positionChanged(qint64)),
-                    this, SLOT(playerPositionChanged(qint64)));
+            connect(&_playerInstance[i],SIGNAL(positionChanged(quint64)),
+                    this, SLOT(playerPositionChanged(quint64)));
 
             //	stateChanged
             connect(&_playerInstance[i],SIGNAL(stateChanged(QMediaPlayer::State)),
@@ -175,7 +175,7 @@ PlayerController::playerRewind()
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;
-    qint64 position=_playerInstance[_currentPlayerID].position();
+    quint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000-10;
     qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
@@ -206,6 +206,21 @@ PlayerController::playerPlay()
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;
+
+    if(_modelCurrentPlaylist==NULL)
+    {
+        //	No playlist loaded - switch to radio.
+
+        //	Open CurrentPlaylistTab
+        Context::instance()->getNavigator()->showCurrentPlaylist();
+
+        MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.tabCurrentPlaylist->startRadio();
+
+        //	Return now, as startRadio() will call playerPlay() on its own.
+        return 1;
+    }
+
     SBID song=_modelCurrentPlaylist->getSongFromPlaylist(_modelCurrentPlaylist->currentPlaylistIndex());
     qDebug() << SB_DEBUG_INFO
              << song
@@ -248,8 +263,8 @@ PlayerController::playerForward()
     {
         return;
     }
-    qint64 position=_playerInstance[_currentPlayerID].position();
-    position=position/1000+10;
+    quint64 position=_playerInstance[_currentPlayerID].position();
+    position=(position/1000)+10;
     qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
 }
@@ -272,6 +287,7 @@ PlayerController::playerNext()
     //	Get out of loop if we're stuck. Either:
     //	-	get a song playing, or
     //	-	the very first song does not play for whatever reason
+    qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
     while(isPlayingFlag==0 && (previousSong!=newSong))
     {
         previousSong=newSong;
@@ -292,22 +308,19 @@ PlayerController::playerNext()
 }
 
 void
-PlayerController::playerDurationChanged(qint64 durationMS)
+PlayerController::playerDurationChanged(quint64 durationMS)
 {
 
     const int durationSec=durationMS/1000;
-    qDebug() << SB_DEBUG_INFO << "ms:" << durationMS << "s:" << durationSec;
 
     _playerProgressSlider[_currentPlayerID]->setValue(0);
     _playerProgressSlider[_currentPlayerID]->setMaximum(durationSec);
 
     _durationTime[_currentPlayerID]=calculateTime(durationMS);
-
-    qDebug() << SB_DEBUG_INFO << _durationTime[_currentPlayerID];
 }
 
 void
-PlayerController::playerPositionChanged(qint64 durationMS)
+PlayerController::playerPositionChanged(quint64 durationMS)
 {
     QString tStr;
     const int durationSec=durationMS/1000;
@@ -333,11 +346,6 @@ PlayerController::playerSeek(int s)
 void
 PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state=" << _state
-             << ":playerState=" << playerState
-    ;
     if((_state==PlayerController::sb_player_state_changing_media) ||
             playerState==QMediaPlayer::PausedState ||
             playerState==QMediaPlayer::PlayingState)
@@ -358,7 +366,6 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 /// \param url
 ///
 /// Is called when an item in player is clicked.
-/// CWIP: to be moved to SBTabCurrentPlaylist. PlayerController should not do UI.
 void
 PlayerController::playerDataClicked(const QUrl &url)
 {
@@ -371,7 +378,7 @@ PlayerController::playerDataClicked(const QUrl &url)
 
 ///	Private methods
 QTime
-PlayerController::calculateTime(qint64 ms) const
+PlayerController::calculateTime(quint64 ms) const
 {
     const int s=ms/1000;
     const int seconds = (s) % 60;
@@ -427,9 +434,8 @@ PlayerController::_playSong(const SBID& song)
 #ifdef Q_OS_WIN
             "D:/songbase/files/rock/"+song.path;
 #endif
-    //	CWIP: check if path is empty
-
-    qDebug() << SB_DEBUG_INFO << "path=" << path;
+    emit songChanged(song);	//	changed to here, so we can continue in case of error of playing a song.
+    //	This used to be here after instructing player to play
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
@@ -444,15 +450,11 @@ PlayerController::_playSong(const SBID& song)
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
-    qDebug() << SB_DEBUG_INFO << "song.playPosition=" << song.playPosition;
-    emit songChanged(song);
 
     //	Update timestamp in online_performance
     //	Do this in both radio and non-radio mode.
-    qDebug() << SB_DEBUG_INFO << "Updating timestamp for " << song;
     DataEntitySong::updateLastPlayDate(_currentSong);
 
-    qDebug() << SB_DEBUG_INFO << "_currentSong=" << _currentSong;
     return 1;
 }
 
@@ -522,10 +524,6 @@ PlayerController::_refreshPlayingNowData() const
 void
 PlayerController::_updatePlayState(PlayerController::sb_player_state newState)
 {
-    qDebug() << SB_DEBUG_INFO
-             << ":_state=" << _state
-             << ":newState=" << newState
-    ;
     if(newState==_state)
     {
         return;

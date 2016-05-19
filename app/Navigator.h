@@ -41,6 +41,7 @@ public:
     void navigateDetailTab(int direction=1);
     void removeFromScreenStack(const SBID& id);
     void resetAllFiltersAndSelections();
+    void showCurrentPlaylist();
     void showPlaylist(SBID id);
     void showSonglist();
 

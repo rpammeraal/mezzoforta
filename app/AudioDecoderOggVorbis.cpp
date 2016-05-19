@@ -21,7 +21,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     _file=new QFile(fileName);
     if(!_file->open(QIODevice::ReadOnly))
     {
-        _error=QString("Error opening file '%1' [%2]").arg(fileName).arg(_file->error());
+        _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
@@ -31,10 +31,10 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     FILE* fp=fdopen(fd,"r");
 
 #ifdef Q_OS_WIN
-    resultCode=ov_open_callbacks(fp,&ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
+    resultCode=ov_open_callbacks(fp,&_ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
 #endif
 #ifdef Q_OS_UNIX
-    resultCode=ov_open(fp,&ovf,NULL,0);
+    resultCode=ov_open(fp,&_ovf,NULL,0);
 #endif
     if(resultCode!=0)
     {
@@ -42,8 +42,9 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
+    _ovInitialized=1;
 
-    vorbis_info* vi=ov_info(&ovf,-1);
+    vorbis_info* vi=ov_info(&_ovf,-1);
     if(vi==NULL)
     {
         _error=QString("Could not get metadata from '%s'").arg(fileName);
@@ -53,13 +54,13 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     qDebug() << SB_DEBUG_INFO << "channels=" << vi->channels;
     qDebug() << SB_DEBUG_INFO << "rate=" << vi->rate;
 
-    char **ptr=ov_comment(&ovf,-1)->user_comments;
+    char **ptr=ov_comment(&_ovf,-1)->user_comments;
     while(*ptr)
     {
         qDebug() << SB_DEBUG_INFO << *ptr;
         ++ptr;
     }
-    qDebug() << SB_DEBUG_INFO << "encoded by " <<  ov_comment(&ovf,-1)->vendor;
+    qDebug() << SB_DEBUG_INFO << "encoded by " <<  ov_comment(&_ovf,-1)->vendor;
 
     if(vi->channels!=2)
     {
@@ -68,7 +69,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
         return;
     }
 
-    qint64 numFrames=ov_pcm_total(&ovf,-1);
+    quint64 numFrames=ov_pcm_total(&_ovf,-1);
     if(!numFrames)
     {
         _error=QString("Zero frames in '%s'").arg(fileName);
@@ -95,7 +96,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     //	Set file up for reading
     _file->reset();
     _file->seek(0);
-    ov_time_seek(&ovf,0);
+    ov_time_seek(&_ovf,0);
 
     //	Allocate buffer to store stream in
     _stream=(char *)malloc(this->lengthInBytes());
@@ -111,7 +112,12 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 
 AudioDecoderOggVorbis::~AudioDecoderOggVorbis()
 {
-    ov_clear(&ovf);
+    qDebug() << SB_DEBUG_INFO;
+    if(_ovInitialized)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        ov_clear(&_ovf);
+    }
 }
 
 bool
@@ -127,8 +133,9 @@ void
 AudioDecoderOggVorbis::init()
 {
 #ifdef Q_BIG_ENDIAN
-    endianity=0;
+    _endianity=0;
 #else
-    endianity=1;
+    _endianity=1;
 #endif
+    _ovInitialized=0;
 }

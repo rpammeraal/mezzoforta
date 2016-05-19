@@ -49,22 +49,22 @@ Common::hideColumns(QTableView* tv)
 }
 
 //	Generated number where 0<= number < max
-qint64
-Common::random(qint64 max)
+quint64
+Common::random(quint64 max)
 {
-    qint64 rnd=qrand();
+    quint64 rnd=qrand();
     rnd=rnd * max;
     rnd = rnd / RAND_MAX;
-    return (qint64)rnd;
+    return (quint64)rnd;
 }
 
-qint64
-Common::randomOldestFirst(qint64 max)
+quint64
+Common::randomOldestFirst(quint64 max)
 {
-    qint64 d=1;
-    qint64 n=0;
-    qint64 o=max;
-    qint64 l=0;
+    quint64 d=1;
+    quint64 n=0;
+    quint64 o=max;
+    quint64 l=0;
 
     if(max%2==0)
     {
@@ -74,9 +74,9 @@ Common::randomOldestFirst(qint64 max)
     {
         n=((max-1)*((max)/2)+max);
     }
-    qint64 y=Common::random(n)+1;
+    quint64 y=Common::random(n)+1;
 
-    qint64 index=0;
+    quint64 index=0;
     while((l<y) && (o>0))
     {
         index++;

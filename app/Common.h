@@ -57,8 +57,8 @@ public:
 
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
-    static qint64 random(qint64 max);
-    static qint64 randomOldestFirst(qint64 max);
+    static quint64 random(quint64 max);
+    static quint64 randomOldestFirst(quint64 max);
     static QString removeAccents(const QString& s);
     static QString removeArticles(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);

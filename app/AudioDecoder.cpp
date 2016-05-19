@@ -1,15 +1,26 @@
 #include <QDebug>
+#include <QCoreApplication>
 
 #include "Common.h"
 #include "AudioDecoder.h"
 #include "AudioDecoderReader.h"
 
 ///	Public methods
-qint64
-AudioDecoder::getSamples(void* buffer, qint64 sampleCount)
+quint64
+AudioDecoder::getSamples(void* buffer, quint64 sampleCount)
 {
-    SB_DEBUG_IF_NULL(_file);
-    qint64 bytesToRead=samplesToBytes(sampleCount);
+    SB_DEBUG_IF_NULL(_stream);
+    if(_index==0)
+    {
+        QCoreApplication::processEvents();
+
+        qDebug() << SB_DEBUG_INFO << "started play" << &_stream;
+    }
+    quint64 bytesToRead=samplesToBytes(sampleCount);
+    while(_index>=_maxScrollableIndex && _index<_length)
+    {
+        qDebug() << SB_DEBUG_INFO << "WARNING! Reading unfilled area" << _index << _maxScrollableIndex << _length;
+    }
     if(_index+bytesToRead>lengthInBytes())
     {
         bytesToRead=lengthInBytes()-_index;
@@ -23,22 +34,28 @@ AudioDecoder::getSamples(void* buffer, qint64 sampleCount)
     return bytesToSamples(bytesToRead);
 }
 
-qint64
-AudioDecoder::setPosition(qint64 position)
+quint64
+AudioDecoder::setPosition(quint64 position)
 {
-    qDebug() << SB_DEBUG_INFO << position/1000 <<  index2MS(_index)/1000;
-    if(std::abs((position/1000)-(index2MS(_index)/1000))>=2)
+    if(_index>0)
     {
-        //	Don't reposition unless there's more than 1 sec of difference.
-        _index=ms2Index(position);
-        if(_index%bytesPerStereoSample()!=0)
+        qDebug() << SB_DEBUG_INFO << position/1000 <<  index2MS(_index)/1000;
+        qint64 newPosInSec=position/1000;
+        qint64 currPosInSec=index2MS(_index)/1000;
+        if(std::abs(newPosInSec-currPosInSec)>=2)
         {
-            //	Align with stero sample
-            _index=(_index/4)*4;
-        }
-        if(_index>this->_maxScrollableIndex)
-        {
-            _index-=bytesPerStereoSample();
+            //	Don't reposition unless there's more than 1 sec of difference.
+            _index=ms2Index(position);
+            if(_index%bytesPerStereoSample()!=0)
+            {
+                //	Align with stero sample
+                _index=(_index/4)*4;
+            }
+            qDebug() << SB_DEBUG_INFO << _index << this->_maxScrollableIndex;
+            if(_index>this->_maxScrollableIndex)
+            {
+                _index=_maxScrollableIndex-bytesPerStereoSample();
+            }
         }
     }
     return _index;
@@ -52,6 +69,7 @@ AudioDecoder::AudioDecoder()
 
 AudioDecoder::~AudioDecoder()
 {
+    qDebug() << SB_DEBUG_INFO;
     AudioDecoder::exit();
 }
 
@@ -81,12 +99,12 @@ AudioDecoder::init()
 void
 AudioDecoder::exit()
 {
-    if(_adr)
-    {
-        delete _adr;_adr=NULL;
-    }
+    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO;
     if(_stream!=NULL)
     {
+        qDebug() << SB_DEBUG_INFO;
         free(_stream); _stream=NULL;
     }
+    qDebug() << SB_DEBUG_INFO;
 }

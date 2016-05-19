@@ -23,12 +23,10 @@ AudioDecoderMP3Reader::~AudioDecoderMP3Reader()
 void
 AudioDecoderMP3Reader::backFill()
 {
-    qDebug() << SB_DEBUG_INFO;
-    SB_DEBUG_IF_NULL(_ad);
-
+    qDebug() << SB_DEBUG_INFO << "start";
 
     //	Get size and buffer to file
-    qint64 bufferLength = _ad->_file->size();
+    quint64 bufferLength = _ad->_file->size();
     void* buffer = _ad->_file->map(0, bufferLength);
 
     //	Open up with mad
@@ -48,18 +46,8 @@ AudioDecoderMP3Reader::backFill()
     mad_synth madSynth;
     mad_synth_init(&madSynth);
 
-    //	Allocate memory
-    int bitsPerSample=16;
-    //qint64 totalSamplesRounded=numChannels*sampleRate*(fileLength.seconds+1);
-    qint64 totalSamplesRounded=_ad->numChannels()*_ad->sampleRate()*(dynamic_cast<AudioDecoderMP3 *>(_ad)->_fileLength.seconds+1);
-
-    qint64 streamLength=totalSamplesRounded*(bitsPerSample/8);
-    qint16* samplePtr=(qint16 *)(_ad->_stream);
-
-    qDebug() << SB_DEBUG_INFO << "totalSamplesRounded=" << totalSamplesRounded;
-    qDebug() << SB_DEBUG_INFO << "streamLength=" << streamLength;
-
     //	Read MP3 stream and stow in memory
+    qint16* samplePtr=(qint16 *)(_ad->_stream);
     unsigned int frameIndex=0;
 
     while(frameIndex<dynamic_cast<AudioDecoderMP3 *>(_ad)->_frameCount)
@@ -115,8 +103,15 @@ AudioDecoderMP3Reader::backFill()
             {
                 *(samplePtr++) = madScale(madSynth.pcm.samples[0][i]);
             }
+
+            quint64 bytesReadSoFar=(char *)samplePtr-(char *)(_ad->_stream);
+            if(bytesReadSoFar%1000==0)
+            {
+                _ad->_maxScrollableIndex=bytesReadSoFar;
+            }
         }
     }
     mad_stream_finish(&madStream);
+    qDebug() << SB_DEBUG_INFO << "end";
     emit QThread::currentThread()->exit();
 }

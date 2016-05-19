@@ -18,13 +18,13 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
     _file=new QFile(fileName);
     if(!_file->open(QIODevice::ReadOnly))
     {
-        _error=QString("Error opening file '%1' [%2]").arg(fileName).arg(_file->error());
+        _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
 
     //	Get size and buffer to file
-    qint64 bufferLength = _file->size();
+    quint64 bufferLength = _file->size();
     void* buffer = _file->map(0, bufferLength);
 
     //	Open up with mad
@@ -118,7 +118,7 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
     _bitsPerSample=16;	//	CWIP: to be derived from meta data at some point
 
     //	2.	_length
-    qint64 totalSamplesRounded=numChannels*sampleRate*(_fileLength.seconds+1);
+    quint64 totalSamplesRounded=numChannels*sampleRate*(_fileLength.seconds+1);
     int bitsPerSample=16;
     _length=totalSamplesRounded*(bitsPerSample/8);
 
