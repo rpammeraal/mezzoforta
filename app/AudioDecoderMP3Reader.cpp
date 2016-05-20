@@ -23,7 +23,7 @@ AudioDecoderMP3Reader::~AudioDecoderMP3Reader()
 void
 AudioDecoderMP3Reader::backFill()
 {
-    qDebug() << SB_DEBUG_INFO << "start";
+    qDebug() << SB_DEBUG_INFO << "start" << _fileName;
 
     //	Get size and buffer to file
     quint64 bufferLength = _ad->_file->size();

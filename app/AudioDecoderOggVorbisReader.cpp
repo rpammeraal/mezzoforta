@@ -6,17 +6,18 @@
 
 AudioDecoderOggVorbisReader::AudioDecoderOggVorbisReader(AudioDecoderOggVorbis* adov):AudioDecoderReader(adov)
 {
+    qDebug() << SB_DEBUG_INFO << _fileName;
 }
 
 AudioDecoderOggVorbisReader::~AudioDecoderOggVorbisReader()
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _fileName;
 }
 
 void
 AudioDecoderOggVorbisReader::backFill()
 {
-    qDebug() << SB_DEBUG_INFO << "start";
+    qDebug() << SB_DEBUG_INFO << "start" << _fileName;
     quint64 index=0;
     const int bufferSize=8192;
     int currentSection=0;
@@ -32,13 +33,12 @@ AudioDecoderOggVorbisReader::backFill()
 
         if(bytesRead<=0)
         {
-            //_ad->_error=QString("Unable to read '%s'").arg(fileName);
-            qDebug() << SB_DEBUG_NPTR;
+            _ad->_error=QString("Unable to read '%s'").arg(_fileName);
             return;
         }
         index+=bytesRead;
         _ad->_maxScrollableIndex=index;
     }
-    qDebug() << SB_DEBUG_INFO << "end";
+    qDebug() << SB_DEBUG_INFO << "end" << _fileName;
     emit QThread::currentThread()->exit();
 }

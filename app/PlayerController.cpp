@@ -175,9 +175,10 @@ PlayerController::playerRewind()
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;
-    quint64 position=_playerInstance[_currentPlayerID].position();
+    qint64 position=_playerInstance[_currentPlayerID].position();
+    qDebug() << SB_DEBUG_INFO << position;
     position=position/1000-10;
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << position;
     playerSeek(position);
 }
 
@@ -263,7 +264,7 @@ PlayerController::playerForward()
     {
         return;
     }
-    quint64 position=_playerInstance[_currentPlayerID].position();
+    qint64 position=_playerInstance[_currentPlayerID].position();
     position=(position/1000)+10;
     qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
@@ -273,7 +274,7 @@ PlayerController::playerForward()
 void
 PlayerController::playerNext()
 {
-    qDebug() << SB_DEBUG_INFO << "**************************************";
+    qDebug() << SB_DEBUG_INFO << ">|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|";
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;

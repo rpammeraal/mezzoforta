@@ -37,7 +37,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setGetDate("DATE('now')");
     setGetDateTime("DATETIME('now')");
     qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
-    addMissingDatabaseItems();
+    addMissingDatabaseItems();	//	CWIP: already called if postgres. Need to find more elegant way to call this.
 }
 
 DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()

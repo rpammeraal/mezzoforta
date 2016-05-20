@@ -13,6 +13,8 @@ public:
     AudioDecoderReader(AudioDecoder* ad);
     virtual ~AudioDecoderReader();
 
+    QString _fileName;
+
 public slots:
     virtual void backFill()=0;
 

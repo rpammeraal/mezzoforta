@@ -238,14 +238,12 @@ SBModelCurrentPlaylist::getNextSong(bool previousFlag)
     }
     song=getSongFromPlaylist(newPlayID);
     song.playPosition=newPlayID;
-    qDebug() << SB_DEBUG_INFO << song << "song.playPosition=" << song.playPosition;
     return song;
 }
 
 SBID
 SBModelCurrentPlaylist::getSongFromPlaylist(int playlistIndex)
 {
-    qDebug() << SB_DEBUG_INFO << "_currentPlayID=" << _currentPlayID;
     QStandardItem* item;
     SBID song;
     int songID=0;
@@ -602,7 +600,6 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << "end" << playID << _currentPlayID << oldRowID;
     if(oldRowID>=0)
     {
         paintRow(oldRowID);

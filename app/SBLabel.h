@@ -23,7 +23,7 @@ public:
     void setSBID(const SBID& nid);
 
 private:
-    SBID id;
+    SBID _id;
 };
 
 #endif // SBLABEL_H

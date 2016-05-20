@@ -12,6 +12,8 @@
 SBSqlQueryModel*
 DataEntityCurrentPlaylist::getAllOnlineSongs()
 {
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+
     //	Main query
     QString q=QString
     (
@@ -38,7 +40,7 @@ DataEntityCurrentPlaylist::getAllOnlineSongs()
                     "op.record_position AS SB_POSITION_ID, "
                     "op.path AS SB_PATH, "
                     "rp.duration, "
-                    "op.play_order AS SB_PLAY_ORDER "
+                    "%1(op.last_play_date,'1/1/1900') AS SB_PLAY_ORDER "
                 "FROM "
                     "___SB_SCHEMA_NAME___online_performance op "
                         "JOIN ___SB_SCHEMA_NAME___artist a ON  "
@@ -54,9 +56,11 @@ DataEntityCurrentPlaylist::getAllOnlineSongs()
                             "op.record_position=rp.record_position "
             ") a "
         "ORDER BY "
-            "SB_PLAY_ORDER DESC "
+            "SB_PLAY_ORDER "
         "LIMIT 100 "
-    );
+    )
+            .arg(dal->getIsNull())
+    ;
 
     return new SBSqlQueryModel(q);
 }

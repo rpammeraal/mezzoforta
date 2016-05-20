@@ -24,7 +24,7 @@ class AudioDecoder : public QObject
 public:
     virtual ~AudioDecoder();
     quint64 getSamples(void* buffer, quint64 sampleCount);
-    quint64 setPosition(quint64 position);
+    quint64 setPosition(qint64 position);
     inline quint64 getIndex() const { return _index; }
 
     //	Meta data
@@ -55,6 +55,8 @@ public:
              44100sr * 2ch * 16bps    1411200
      */
 
+    QString _fileName;
+
 protected:
     friend class AudioDecoderFactory;
     friend class AudioDecoderFlacReader;
@@ -82,13 +84,14 @@ protected:
 
     static bool supportFileExtension(const QString& extension) ;
 
+signals:
+    void startBackfill();
+
 private:
 
     void init();
     virtual void exit();
 
-signals:
-    void startBackfill();
 };
 
 #endif // AUDIODECODER_H

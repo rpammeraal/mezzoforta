@@ -180,6 +180,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
     }
     else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
     {
+        qDebug() << SB_DEBUG_INFO;
         //	Find out in case of song assignment if record, position are known.
         SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(assignID);
         if(m->rowCount()==0)
@@ -199,6 +200,7 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Ask from which album song should be assigned from
             SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(assignID,m);
 

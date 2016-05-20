@@ -13,6 +13,8 @@
 ///	Protected methods
 AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 {
+    _fileName=fileName;	//	CWIP
+
     //	Init. What else.
     init();
     qDebug() << SB_DEBUG_INFO << fileName << this;
@@ -51,16 +53,14 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
         qDebug() << SB_DEBUG_NPTR << _error;
         return;
     }
-    qDebug() << SB_DEBUG_INFO << "channels=" << vi->channels;
-    qDebug() << SB_DEBUG_INFO << "rate=" << vi->rate;
 
-    char **ptr=ov_comment(&_ovf,-1)->user_comments;
-    while(*ptr)
-    {
-        qDebug() << SB_DEBUG_INFO << *ptr;
-        ++ptr;
-    }
-    qDebug() << SB_DEBUG_INFO << "encoded by " <<  ov_comment(&_ovf,-1)->vendor;
+    //	CWIP: to be used for song recognition
+//    char **ptr=ov_comment(&_ovf,-1)->user_comments;
+//    while(*ptr)
+//    {
+//        qDebug() << SB_DEBUG_INFO << *ptr;
+//        ++ptr;
+//    }
 
     if(vi->channels!=2)
     {
@@ -104,6 +104,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     //	Put reader to work.
     _adr=new AudioDecoderOggVorbisReader(this);
     _adr->moveToThread(&_workerThread);
+    _adr->_fileName=this->_fileName;
     connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
     connect(this, &AudioDecoderOggVorbis::startBackfill, _adr, &AudioDecoderReader::backFill);
     _workerThread.start();
@@ -112,12 +113,16 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 
 AudioDecoderOggVorbis::~AudioDecoderOggVorbis()
 {
-    qDebug() << SB_DEBUG_INFO;
+    //	Tell reader to stop. This slows down repeatedly clicking the next song/prev song buttons
+    _workerThread.exit();
+    _workerThread.wait();
     if(_ovInitialized)
     {
         qDebug() << SB_DEBUG_INFO;
         ov_clear(&_ovf);
+        _ovInitialized=0;
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 bool

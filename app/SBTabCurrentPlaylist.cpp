@@ -201,6 +201,14 @@ SBTabCurrentPlaylist::startRadio()
             }
         }
 
+        qDebug() << SB_DEBUG_INFO
+                 << "index=" << nextOpenSlotIndex
+                 << qm->record(idx).value(1).toString()
+                 << qm->record(idx).value(3).toString()
+                 << qm->record(idx).value(5).toString();
+        ;
+
+
         SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
 
         item.songTitle=qm->record(idx).value(1).toString();

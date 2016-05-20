@@ -35,11 +35,14 @@ AudioDecoder::getSamples(void* buffer, quint64 sampleCount)
 }
 
 quint64
-AudioDecoder::setPosition(quint64 position)
+AudioDecoder::setPosition(qint64 position)
 {
-    if(_index>0)
+    if(position<0)
     {
-        qDebug() << SB_DEBUG_INFO << position/1000 <<  index2MS(_index)/1000;
+        _index=0;
+    }
+    else if(_index>0)
+    {
         qint64 newPosInSec=position/1000;
         qint64 currPosInSec=index2MS(_index)/1000;
         if(std::abs(newPosInSec-currPosInSec)>=2)
@@ -51,7 +54,6 @@ AudioDecoder::setPosition(quint64 position)
                 //	Align with stero sample
                 _index=(_index/4)*4;
             }
-            qDebug() << SB_DEBUG_INFO << _index << this->_maxScrollableIndex;
             if(_index>this->_maxScrollableIndex)
             {
                 _index=_maxScrollableIndex-bytesPerStereoSample();
@@ -69,7 +71,7 @@ AudioDecoder::AudioDecoder()
 
 AudioDecoder::~AudioDecoder()
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _fileName;
     AudioDecoder::exit();
 }
 

@@ -44,7 +44,7 @@ signals:
 public slots:
     void play();
     void pause();
-    void setPosition(quint64 position);
+    void setPosition(qint64 position);
     void stop();
 
 private:

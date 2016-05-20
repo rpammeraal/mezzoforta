@@ -70,7 +70,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
         setErrorMsg(adf.error());
         return 0;
     }
-        qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO;
     if(_ad->error().length())
     {
         setErrorMsg(_ad->error());
@@ -191,12 +191,8 @@ SBMediaPlayer::pause()
 }
 
 void
-SBMediaPlayer::setPosition(quint64 position)
+SBMediaPlayer::setPosition(qint64 position)
 {
-    if(position<0)
-    {
-        position=0;
-    }
     if(_ad)
     {
         _ad->setPosition(position);

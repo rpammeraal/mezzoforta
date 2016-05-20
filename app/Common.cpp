@@ -277,3 +277,24 @@ Common::toTitleCase(QString &s)
         }
     }
 }
+
+QString convertByteArray2String(const QByteArray& a)
+{
+    const char* c=a.data();
+    QString s=QString("length=%1:").arg(a.size());
+
+    for(int i=0;i<a.size();i++)
+    {
+        char j=c[i];
+        if(isprint(j))
+        {
+            s.append(j);
+        }
+        else
+        {
+            s.append('-');
+        }
+    }
+
+    return s;
+}

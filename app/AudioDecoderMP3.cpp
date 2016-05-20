@@ -148,6 +148,8 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
 
 AudioDecoderMP3::~AudioDecoderMP3()
 {
+    _workerThread.exit();
+    _workerThread.wait();
 }
 
 bool

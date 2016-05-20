@@ -66,4 +66,9 @@ public:
     static void toTitleCase(QString &);
     static char ParseChar(QChar c);
 };
+
+QString convertByteArray2String(const QByteArray& a);
+
 #endif // COMMON_H
+
+

@@ -149,8 +149,10 @@ AudioDecoderWave::AudioDecoderWave(const QString& fileName)
 
 AudioDecoderWave::~AudioDecoderWave()
 {
+    //	Tell reader to stop. This slows down repeatedly clicking the next song/prev song buttons
+    _workerThread.exit();
+    _workerThread.wait();
 }
-
 
 bool
 AudioDecoderWave::supportFileExtension(const QString& extension)

@@ -15,6 +15,7 @@ DataAccessLayerPostgres::DataAccessLayerPostgres(const QString& connectionName) 
     setILike("ILIKE");
     setIsNull("COALESCE");
     setGetDate("NOW()");
+    setGetDateTime("NOW()");
 
     qDebug() << SB_DEBUG_INFO;
 }
@@ -57,6 +58,8 @@ DataAccessLayerPostgres::initAvailableSchemas()
         QString schema=query.value(0).toString().toLower();
         Common::toTitleCase(schema);
         availableSchemas << schema;
+        _setSchema(schema);
+        addMissingDatabaseItems();
     }
 
     qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:schemas=" << availableSchemas;

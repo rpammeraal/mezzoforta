@@ -56,6 +56,7 @@ SBID::SBID(QByteArray encodedData)
 {
     init();
 
+    qDebug() << SB_DEBUG_INFO << convertByteArray2String(encodedData);
     QDataStream ds(&encodedData, QIODevice::ReadOnly);
     int i;
     ds
@@ -73,7 +74,7 @@ SBID::SBID(QByteArray encodedData)
         >> songTitle
         >> year
         >> path
-        >> lyrics
+        //>> lyrics
         >> notes
         >> genre
         >> url
@@ -85,6 +86,7 @@ SBID::SBID(QByteArray encodedData)
         >> searchCriteria
     ;
     _sb_item_type=static_cast<sb_type>(i);
+    qDebug() << SB_DEBUG_INFO << *this;
 }
 
 SBID::~SBID()
@@ -172,6 +174,7 @@ SBID::encode() const
     QByteArray encodedData;
     QDataStream ds(&encodedData, QIODevice::WriteOnly);
 
+    qDebug() << SB_DEBUG_INFO << *this;
     ds
         << sb_performer_id
         << sb_album_id
@@ -188,7 +191,7 @@ SBID::encode() const
         << songTitle
         << year
         << path
-        << lyrics
+        //<< lyrics
         << notes
         << genre
         << url
@@ -199,6 +202,7 @@ SBID::encode() const
         << duration
         << searchCriteria
     ;
+    qDebug() << SB_DEBUG_INFO << convertByteArray2String(encodedData);
 
     return encodedData;
 }

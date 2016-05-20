@@ -98,7 +98,7 @@ SBDialogSelectItem*
 SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
     SBDialogSelectItem* d=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_songalbum);
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << id;
     d->ui->setupUi(d);
 
     //	Populate choices

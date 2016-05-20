@@ -232,7 +232,7 @@ DataEntitySong::getOnAlbumListBySong(const SBID& id)
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
         .arg(id.sb_song_id)
-        .arg(SBID::sb_type_position)
+        //.arg(SBID::sb_type_position)
     ;
 
     return new SBSqlQueryModel(q);
@@ -595,6 +595,7 @@ DataEntitySong::updateLastPlayDate(const SBID &id)
     ;
     dal->customize(q);
 
+    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
     query.exec();
 
