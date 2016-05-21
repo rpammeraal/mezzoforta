@@ -52,13 +52,13 @@ DataEntitySong::getDetail(const SBID& id)
     if(query.next())
     {
         result.assign(SBID::sb_type_song,id.sb_song_id);
-        result.sb_performer_id    =query.value(2).toInt();
-        result.performerName      =query.value(3).toString();
-        result.songTitle          =query.value(0).toString();
-        result.year               =query.value(4).toInt();
-        result.lyrics             =query.value(5).toString();
-        result.notes              =query.value(1).toString();
-        result.isOriginalPerformer=query.value(6).toBool();
+        result.sb_performer_id        =query.value(2).toInt();
+        result.performerName          =query.value(3).toString();
+        result.songTitle              =query.value(0).toString();
+        result.year                   =query.value(4).toInt();
+        result.lyrics                 =query.value(5).toString();
+        result.notes                  =query.value(1).toString();
+        result.isOriginalPerformerFlag=query.value(6).toBool();
     }
 
     return result;
@@ -626,12 +626,12 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
     qDebug() << SB_DEBUG_INFO << "old"
         << ":sb_song_id=" << oldSongID.sb_song_id
         << ":sb_performer_id=" << oldSongID.sb_performer_id
-        << ":isOriginalPerformer=" << oldSongID.isOriginalPerformer
+        << ":isOriginalPerformerFlag=" << oldSongID.isOriginalPerformerFlag
     ;
     qDebug() << SB_DEBUG_INFO << "new"
         << ":sb_song_id=" << newSongID.sb_song_id
         << ":sb_performer_id=" << newSongID.sb_performer_id
-        << ":isOriginalPerformer=" << newSongID.isOriginalPerformer
+        << ":isOriginalPerformerFlag=" << newSongID.isOriginalPerformerFlag
     ;
 
     //	1.	Set attribute flags

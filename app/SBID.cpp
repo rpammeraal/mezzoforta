@@ -22,7 +22,7 @@ SBID::SBID(const SBID &c)
     this->sb_song_id=c.sb_song_id;
     this->sb_playlist_id=c.sb_playlist_id;
 
-    this->isOriginalPerformer=c.isOriginalPerformer;
+    this->isOriginalPerformerFlag=c.isOriginalPerformerFlag;
     this->albumTitle=c.albumTitle;
     this->count1=c.count1;
     this->count2=c.count2;
@@ -55,38 +55,40 @@ SBID::SBID(SBID::sb_type itemType, int itemID)
 SBID::SBID(QByteArray encodedData)
 {
     init();
+    qDebug() << SB_DEBUG_INFO << encodedData.size() << convertByteArray2String(encodedData);
+    QString s=QString(encodedData);
+    QStringList sl=s.split('_');
+    for(int i=0;i<sl.size();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << sl[i];
+    }
+    _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
+    sb_performer_id          =sl[1].toInt();
+    sb_album_id              =sl[2].toInt();
+    sb_position              =sl[3].toInt();
+    sb_chart_id              =sl[4].toInt();
+    sb_song_id               =sl[5].toInt();
+    sb_playlist_id           =sl[6].toInt();
+    sb_mbid                  =sl[7].replace("___SB_UNDERSCORE_123___","_");
+    isOriginalPerformerFlag  =sl[8].toInt();
+    performerName            =sl[9];
+    albumTitle               =sl[10];
+    songTitle                =sl[11];
+    year                     =sl[12].toInt();
+    path                     =sl[13];
+    lyrics                   =sl[14];
+    notes                    =sl[15];
+    genre                    =sl[16];
+    url                      =sl[17];
+    wiki                     =sl[18];
+    playlistName             =sl[19];
+    count1                   =sl[20].toInt();
+    count2                   =sl[21].toInt();
+    int msSecsSinceStartOfDay=sl[22].toInt(); QTime t; duration=t.addMSecs(msSecsSinceStartOfDay);
+    playlistName             =sl[23];
 
-    qDebug() << SB_DEBUG_INFO << convertByteArray2String(encodedData);
-    QDataStream ds(&encodedData, QIODevice::ReadOnly);
-    int i;
-    ds
-        >> sb_performer_id
-        >> sb_album_id
-        >> sb_position
-        >> sb_chart_id
-        >> sb_song_id
-        >> sb_playlist_id
-        >> i
-        >> sb_mbid
-        >> isOriginalPerformer
-        >> performerName
-        >> albumTitle
-        >> songTitle
-        >> year
-        >> path
-        //>> lyrics
-        >> notes
-        >> genre
-        >> url
-        >> wiki
-        >> playlistName
-        >> count1
-        >> count2
-        >> duration
-        >> searchCriteria
-    ;
-    _sb_item_type=static_cast<sb_type>(i);
     qDebug() << SB_DEBUG_INFO << *this;
+    return;
 }
 
 SBID::~SBID()
@@ -171,38 +173,39 @@ SBID::compareSimple(const SBID &t) const
 QByteArray
 SBID::encode() const
 {
-    QByteArray encodedData;
-    QDataStream ds(&encodedData, QIODevice::WriteOnly);
+    //	Put all attributes in a stringlist
+    QStringList sl;
+    sl.append(QString("%1").arg(_sb_item_type));
+    sl.append(QString("%1").arg(sb_performer_id));
+    sl.append(QString("%1").arg(sb_album_id));
+    sl.append(QString("%1").arg(sb_position));
+    sl.append(QString("%1").arg(sb_chart_id));
+    sl.append(QString("%1").arg(sb_song_id));
+    sl.append(QString("%1").arg(sb_playlist_id));
+    sl.append(sb_mbid);
+    sl.append(QString("%1").arg(isOriginalPerformerFlag));
+    sl.append(SB_REPLACE_UNDERSCORE(performerName));
+    sl.append(SB_REPLACE_UNDERSCORE(albumTitle));
+    sl.append(SB_REPLACE_UNDERSCORE(songTitle));
+    sl.append(QString("%1").arg(year));
+    sl.append(SB_REPLACE_UNDERSCORE(path));
+    sl.append(SB_REPLACE_UNDERSCORE(lyrics));
+    sl.append(SB_REPLACE_UNDERSCORE(notes));
+    sl.append(SB_REPLACE_UNDERSCORE(genre));
+    sl.append(SB_REPLACE_UNDERSCORE(url));
+    sl.append(SB_REPLACE_UNDERSCORE(wiki));
+    sl.append(SB_REPLACE_UNDERSCORE(playlistName));
+    sl.append(QString("%1").arg(count1));
+    sl.append(QString("%1").arg(count2));
+    sl.append(QString("%").arg(duration.msecsSinceStartOfDay()));
+    sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
 
-    qDebug() << SB_DEBUG_INFO << *this;
-    ds
-        << sb_performer_id
-        << sb_album_id
-        << sb_position
-        << sb_chart_id
-        << sb_song_id
-        << sb_playlist_id
-        << (int)_sb_item_type
-        << sb_item_id()
-        << sb_mbid
-        << isOriginalPerformer
-        << performerName
-        << albumTitle
-        << songTitle
-        << year
-        << path
-        //<< lyrics
-        << notes
-        << genre
-        << url
-        << wiki
-        << playlistName
-        << count1
-        << count2
-        << duration
-        << searchCriteria
-    ;
-    qDebug() << SB_DEBUG_INFO << convertByteArray2String(encodedData);
+    QString combined=sl.join('_');
+    qDebug() << SB_DEBUG_INFO << this->sb_album_id;
+    qDebug() << SB_DEBUG_INFO << combined.length() << combined.size() << sl.join('_').length() << sl.join('_');
+
+    QByteArray encodedData;
+    encodedData.append(combined);
 
     return encodedData;
 }
@@ -431,7 +434,7 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "sb_chart_id" << sb_chart_id;
     qDebug() << SB_DEBUG_INFO << "sb_song_id" << sb_song_id;
     qDebug() << SB_DEBUG_INFO << "sb_playlist_id" << sb_playlist_id;
-    qDebug() << SB_DEBUG_INFO << "isOriginalPerformer" << isOriginalPerformer;
+    qDebug() << SB_DEBUG_INFO << "isOriginalPerformerFlag" << isOriginalPerformerFlag;
     qDebug() << SB_DEBUG_INFO << "albumTitle" << albumTitle;
     qDebug() << SB_DEBUG_INFO << "count1" << count1;
     qDebug() << SB_DEBUG_INFO << "count2" << count2;
@@ -560,7 +563,7 @@ SBID::init()
     sb_song_id=-1;
     sb_playlist_id=-1;
 
-    isOriginalPerformer=0;
+    isOriginalPerformerFlag=0;
     albumTitle=e;
     count1=0;
     count2=0;

@@ -45,7 +45,7 @@ public:
     bool        isEditFlag;
 
     //	Secundary identifiers
-    bool        isOriginalPerformer;
+    bool        isOriginalPerformerFlag;
     QString     albumTitle;
     int         count1;
     int         count2;

@@ -33,7 +33,11 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
+        qDebug() << SB_DEBUG_INFO << _id;
         QByteArray ba=_id.encode();
+        SBID tmp=SBID(ba);
+        qDebug() << SB_DEBUG_INFO << tmp;
+
         mimeData->setData("application/vnd.text.list", ba);
         drag->setMimeData(mimeData);
         const QPixmap* pm=this->pixmap();
