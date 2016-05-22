@@ -1,6 +1,8 @@
 #ifndef AUDIODECODERFLACREADER_H
 #define AUDIODECODERFLACREADER_H
 
+#ifdef Q_OS_UNIX
+
 #include <QObject>
 
 #include "AudioDecoderReader.h"
@@ -19,4 +21,5 @@ public slots:
     virtual void backFill();
 };
 
+#endif
 #endif // AUDIODECODERFLACREADER_H

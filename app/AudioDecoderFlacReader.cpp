@@ -1,8 +1,11 @@
 #include <QDebug>
 
 #include "Common.h"
+#include "AudioDecoderReader.h"
 #include "AudioDecoderFlacReader.h"
 #include "AudioDecoderFlac.h"
+
+#ifdef Q_OS_UNIX
 
 AudioDecoderFlacReader::AudioDecoderFlacReader(AudioDecoderFlac* adf):AudioDecoderReader(adf)
 {
@@ -53,3 +56,5 @@ AudioDecoderFlacReader::backFill()
     qDebug() << SB_DEBUG_INFO << "end";
     emit QThread::currentThread()->exit();
 }
+
+#endif
