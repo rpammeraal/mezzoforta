@@ -205,13 +205,14 @@ Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
             SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(assignID,m);
 
             ssa->exec();
-            SBID selectedAlbum=ssa->getSBID();
-            if(selectedAlbum.sb_album_id!=-1 && selectedAlbum.sb_position!=-1)
+            SBID selectedSong=ssa->getSBID();
+            if(selectedSong.sb_album_id!=-1 && selectedSong.sb_position!=-1)
             {
                 //	If user cancels out, don't continue
                 fromID=assignID;	//	now also assign album attributes
-                fromID.sb_album_id=selectedAlbum.sb_album_id;
-                fromID.sb_position=selectedAlbum.sb_position;
+                fromID.sb_album_id=selectedSong.sb_album_id;
+                fromID.sb_position=selectedSong.sb_position;
+                fromID.sb_performer_id=selectedSong.sb_performer_id;
             }
             qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_item_type() << fromID.sb_album_id << fromID.sb_position;
         }

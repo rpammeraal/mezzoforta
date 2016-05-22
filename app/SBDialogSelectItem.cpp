@@ -97,50 +97,59 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
 SBDialogSelectItem*
 SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectItem* d=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_songalbum);
+    SBDialogSelectItem* dialog=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_songalbum);
     qDebug() << SB_DEBUG_INFO << id;
-    d->ui->setupUi(d);
+    dialog->ui->setupUi(dialog);
 
     //	Populate choices
-    QString title=QString("Choose album for song %1%2%3:").arg(QChar(96)).arg(d->_songID.songTitle).arg(QChar(180));
-    d->setTitle(title);
+    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(dialog->_songID.songTitle).arg(QChar(180));
+    dialog->setTitle(title);
     for(int i=0;i<m->rowCount(); i++)
     {
-        qDebug() << SB_DEBUG_INFO << i;
         QLabel* l=new QLabel;
 
-        SBID albumID(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
-        albumID.sb_position=m->data(m->index(i,8)).toInt();
-        albumID.albumTitle=m->data(m->index(i,2)).toString();
+        SBID songChoice(SBID::sb_type_song,id.sb_song_id);
+        songChoice.songTitle=id.songTitle;
+        songChoice.sb_album_id=m->data(m->index(i,1)).toInt();
+        songChoice.albumTitle=m->data(m->index(i,2)).toString();
+        songChoice.year=m->data(m->index(i,3)).toInt();
+        songChoice.sb_performer_id=m->data(m->index(i,5)).toInt();
+        songChoice.performerName=m->data(m->index(i,6)).toString();
+        songChoice.sb_position=m->data(m->index(i,8)).toInt();
+        songChoice.duration=m->data(m->index(i,9)).toTime();
+        qDebug() << SB_DEBUG_INFO << i << songChoice << songChoice.sb_performer_id;
+
+        SBID albumIcon(SBID::sb_type_album,songChoice.sb_album_id);
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(albumID);
+        QString imagePath=ExternalData::getCachePath(albumIcon);
         QFile imageFile(imagePath);
 
-        qDebug() << SB_DEBUG_INFO << l;
         if(imageFile.exists()==0)
         {
-            imagePath=SBID::getIconResourceLocation(albumID.sb_item_type());
+            imagePath=SBID::getIconResourceLocation(songChoice.sb_item_type());
         }
-        qDebug() << SB_DEBUG_INFO << imagePath;
         l->setText(QString("<html><head><style type=text/css> "
                            "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></body></html>")
+                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
                    //	set args correctly
                    .arg(imagePath)
                    .arg(i)
-                   .arg(albumID.albumTitle));
+                   .arg(songChoice.albumTitle)
+                   .arg(songChoice.performerName)
+                   .arg(songChoice.duration.toString()));
+
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),
-                d, SLOT(OK(QString)));
+                dialog, SLOT(OK(QString)));
 
 
-        d->ui->vlAlbumList->addWidget(l);
-        d->_itemsDisplayed[i]=albumID;
+        dialog->ui->vlAlbumList->addWidget(l);
+        dialog->_itemsDisplayed[i]=songChoice;
     }
-    d->updateGeometry();
-    return d;
+    dialog->updateGeometry();
+    return dialog;
 }
 
 SBDialogSelectItem*
@@ -318,7 +327,7 @@ SBDialogSelectItem::OK(const QString& i)
     while(it.hasNext())
     {
         it.next();
-        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().performerName;
+        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().performerName << it.value().sb_performer_id;
     }
 
     _songID=_itemsDisplayed[i.toInt()];
