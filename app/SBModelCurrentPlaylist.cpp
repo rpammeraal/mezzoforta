@@ -482,10 +482,8 @@ SBModelCurrentPlaylist::populateHeader()
 void
 SBModelCurrentPlaylist::reorderItems()
 {
-    QMap<int,int> toFrom;	//	map from old to new index (1-based)
+    QMap<int,int> toFrom;	//	map from old to new index (0-based)
     //	Create map
-    qDebug() << SB_DEBUG_INFO << "start";
-    qDebug() << SB_DEBUG_INFO << "_currentPlayID:before" << _currentPlayID;
 
     //	Reset first column
     for(int i=0;i<this->rowCount();i++)
@@ -502,9 +500,7 @@ SBModelCurrentPlaylist::reorderItems()
 
             item->setText(QString("%1").arg(i+1));
             toFrom[playID-1]=i;
-            qDebug() << SB_DEBUG_INFO << i << "playID=" << playID;
         }
-
 
         item=this->item(i,sb_column_displayplaylistid);
         if(item!=NULL)
@@ -514,9 +510,7 @@ SBModelCurrentPlaylist::reorderItems()
         }
         paintRow(i);
     }
-    qDebug() << SB_DEBUG_INFO << "_currentPlayID:after" << _currentPlayID;
-    qDebug() << SB_DEBUG_INFO << "end";
-
+    _currentPlayID=toFrom[_currentPlayID];
 
     setCurrentSongByID(_currentPlayID);
 }
@@ -604,7 +598,7 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
     {
         paintRow(oldRowID);
     }
-    return this->index(newRowID,0);
+    return this->index(newRowID,2);	//	index 2: first column visible
 }
 
 void
@@ -656,11 +650,10 @@ SBModelCurrentPlaylist::shuffle()
         {
             item=this->item(i,sb_column_playlistid);
             playID=item->text().toInt();
-            //qDebug() << SB_DEBUG_INFO << "assigning from" << playID << "to" << fromTo[playID];
 
-            item->setText(QString("%1").arg(fromTo[playID]));
+            //	Pad up to 10 chars so that view will sort correctly.
+            item->setText(QString("%1").arg(fromTo[playID],10,10,QChar('0')));
         }
-
 
         item=this->item(i,sb_column_displayplaylistid);
         if(item!=NULL)
@@ -668,14 +661,11 @@ SBModelCurrentPlaylist::shuffle()
             item->setText(formatDisplayPlayID(fromTo[playID]));
             item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
         }
-        //paintRow(i);
     }
     debugShow("after shuffle");
     qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
     _currentPlayID=fromTo[_currentPlayID+1]-1;
     qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
-    //paintRow(oldPlayID);
-    //paintRow(_currentPlayID);
     setCurrentSongByID(_currentPlayID);
 }
 
@@ -692,13 +682,14 @@ SBModelCurrentPlaylist::debugShow(const QString& title)
             if(j!=7 && j<9)
             {
                 QStandardItem* item=this->item(i,j);
+                row+=QString("|c[%1]=").arg(j);
                 if(item)
                 {
-                    row+="|'"+item->text()+"'";
+                    row+="'"+item->text()+"'";
                 }
                 else
                 {
-                    row+="|<NULL>";
+                    row+="<NULL>";
                 }
             }
         }

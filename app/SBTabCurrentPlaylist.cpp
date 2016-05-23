@@ -104,11 +104,12 @@ SBTabCurrentPlaylist::showContextMenuPlaylist(const QPoint &p)
 void
 SBTabCurrentPlaylist::songChanged(const SBID& song)
 {
-    qDebug() << SB_DEBUG_INFO << song;
+    qDebug() << SB_DEBUG_INFO << song << song.playPosition;
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     QModelIndex idx=aem->setCurrentSongByID(song.playPosition);
+    qDebug() << SB_DEBUG_INFO << idx;
     tv->scrollTo(idx);
 }
 

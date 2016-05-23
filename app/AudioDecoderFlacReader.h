@@ -1,4 +1,6 @@
 #ifndef AUDIODECODERFLACREADER_H
+#include <qsystemdetection.h>
+
 #define AUDIODECODERFLACREADER_H
 
 #ifdef Q_OS_UNIX

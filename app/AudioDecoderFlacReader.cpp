@@ -1,3 +1,5 @@
+#include <qsystemdetection.h>
+
 #include <QDebug>
 
 #include "Common.h"
