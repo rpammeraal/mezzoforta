@@ -51,6 +51,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     SBID::sb_type itemType=SBID::sb_type_invalid;
     int itemID=-1;
 
+    qDebug() << SB_DEBUG_INFO << idx;
     if(dragableColumnList.count()==0)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -67,7 +68,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             if(header=="sb_item_type" || header=="sb_main_item")
             {
                 itemType=static_cast<SBID::sb_type>(v.toInt());
-                qDebug() << SB_DEBUG_INFO << header << itemType;
             }
             else if(header=="sb_item_id")
             {
@@ -83,7 +83,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 if(itemType==SBID::sb_type_invalid)
                 {
                     itemType=static_cast<SBID::sb_type>(v.toInt());
-                    qDebug() << SB_DEBUG_INFO << header << itemType;
                 }
 
                 //	Move 'cursor'
@@ -100,7 +99,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 dragableColumnList.at(idx.column())==1
             )
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Determine sbid from relatively from actual column that is clicked
         QModelIndex n;
 
@@ -120,8 +118,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     {
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
-    qDebug() << SB_DEBUG_INFO << "interim SBID:" << id;
-    qDebug() << SB_DEBUG_INFO << "itemType:" << itemType;
 
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
@@ -131,50 +127,47 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         header=aim->headerData(i,Qt::Horizontal).toString().toLower();
         QModelIndex n=aim->index(idx.row(),i);
         v=aim->data(n, Qt::DisplayRole);
-        qDebug() << SB_DEBUG_INFO << header << v.toString();
 
+        qDebug() << SB_DEBUG_INFO << header << v.toString();
         if(header=="sb_item_type")
         {
             if(itemType==SBID::sb_type_invalid)
             {
                 itemType=static_cast<SBID::sb_type>(v.toInt());
-                qDebug() << SB_DEBUG_INFO << v.toString();
             }
         }
         else if(header=="sb_item_id")
         {
             itemID=v.toInt();
-            qDebug() << SB_DEBUG_INFO << v.toString();
         }
         else if(header=="sb_song_id")
         {
             id.sb_song_id=v.toInt();
-            qDebug() << SB_DEBUG_INFO << id.sb_song_id;
         }
         else if(header=="sb_performer_id")
         {
             id.sb_performer_id=v.toInt();
-            qDebug() << SB_DEBUG_INFO << id.sb_performer_id;
         }
         else if(header=="sb_album_id")
         {
             id.sb_album_id=v.toInt();
-            qDebug() << SB_DEBUG_INFO << id.sb_album_id;
         }
-        else if(header=="sb_position_id" || header=="#")
+        else if(header=="sb_position_id")
         {
             id.sb_position=v.toInt();
-            qDebug() << SB_DEBUG_INFO << id.sb_position;
+        }
+        else if(header=="#")
+        {
+            id.playPosition=v.toInt();
         }
         else if(header.left(3)!="sb_" && text.length()==0)
         {
             text=v.toString();
         }
     }
-    qDebug() << SB_DEBUG_INFO << "itemType:" << itemType << "itemID:" << itemID;
     id.assign(itemType,itemID);
     id.setText(text);
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id << id.playPosition;
     return id;
 }
 
@@ -224,7 +217,7 @@ SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexe
         {
             QMimeData* mimeData = new QMimeData();
             SBID id=_determineSBID(aim, i);
-            qDebug() << SB_DEBUG_INFO << id;
+            qDebug() << SB_DEBUG_INFO << id << id.playPosition;
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
             qDebug() << SB_DEBUG_INFO << "Dragging " << id;

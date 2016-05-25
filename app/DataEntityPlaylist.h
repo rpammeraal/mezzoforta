@@ -28,6 +28,7 @@ public:
     void recalculateAllPlaylistDurations() const;
     void recalculatePlaylistDuration(const SBID& id) const;
     void renamePlaylist(const SBID& id) const;
+    void reorderItem(const SBID& playlistID, const SBID& fromID, int row) const;
     void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
 
 private:

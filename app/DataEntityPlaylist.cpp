@@ -818,6 +818,208 @@ DataEntityPlaylist::renamePlaylist(const SBID &id) const
 }
 
 void
+DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, int row) const
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+    SBID fromID=fID;
+
+    qDebug() << SB_DEBUG_INFO << "from"
+        << "itm" << fromID.sb_item_id()
+        << "typ" << fromID.sb_item_type()
+        << "pfr" << fromID.sb_performer_id
+        << "sng" << fromID.sb_song_id
+        << "alb" << fromID.sb_album_id
+        << "pos" << fromID.sb_position
+        << "pll" << fromID.sb_playlist_id;
+    qDebug() << SB_DEBUG_INFO << "row" << row;
+
+    //	-1.	Discard plan
+    q="DISCARD PLAN";
+    QSqlQuery discardPlan(q,db);
+    discardPlan.next();
+
+    //	0.	Make sure ordering is sane
+    reorderPlaylistPositions(playlistID);
+
+    //	1.	Find max position in current playlist
+    q=QString
+    (
+        "SELECT "
+            "a.playlist_position "
+        "FROM "
+        "( "
+            "SELECT "
+                "MAX(pp.playlist_position) AS playlist_position "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_performance pp "
+            //"WHERE "
+                //"pp.playlist_id=%1 "
+            "UNION "
+            "SELECT "
+                "MAX(pc.playlist_position) "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_composite pc "
+            //"WHERE "
+                //"pc.playlist_id=%1 "
+        ") a "
+        "ORDER BY 1 DESC "
+        "LIMIT 1"
+    )
+        .arg(playlistID.sb_playlist_id)
+    ;
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery maxPosition(q,db);
+    maxPosition.next();
+    int tmpPosition=maxPosition.value(0).toInt();
+    qDebug() << SB_DEBUG_INFO << "tmpPosition=" << tmpPosition;
+    tmpPosition+=10;
+    qDebug() << SB_DEBUG_INFO << "tmpPosition=" << tmpPosition;
+
+
+    //	2.	Assign tmpPosition to fromID
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "artist_id=%3 AND "
+            "song_id=%4 AND "
+            "record_id=%5 AND "
+            "record_position=%6 "
+    )
+        .arg(tmpPosition)
+        .arg(playlistID.sb_playlist_id)
+        .arg(fromID.sb_performer_id)
+        .arg(fromID.sb_song_id)
+        .arg(fromID.sb_album_id)
+        .arg(fromID.sb_position)
+    ;
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery assignMin1Position(q,db);
+    assignMin1Position.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "( "
+                "playlist_playlist_id=%3 OR "
+                "playlist_chart_id=%3 OR "
+                "playlist_record_id=%3 OR "
+                "playlist_artist_id=%3 "
+            ") "
+    )
+        .arg(tmpPosition)
+        .arg(playlistID.sb_playlist_id)
+        .arg(fromID.sb_item_id());	//	legitimate use of sb_item_id()!
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery assignMin1Composite(q,db);
+    assignMin1Composite.next();
+
+    //	3.	Reorder with fromID 'gone'
+    reorderPlaylistPositions(playlistID,tmpPosition);
+
+    int newPosition=row;
+    qDebug() << SB_DEBUG_INFO << "newPosition=" << newPosition;
+
+    //	5.	Add 1 to all position from toID onwards
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=playlist_position+1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position>=%2 AND "
+            "playlist_position<%3 "
+    )
+        .arg(playlistID.sb_playlist_id)
+        .arg(newPosition)
+        .arg(tmpPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToPositionPerformance(q,db);
+    updateToPositionPerformance.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=playlist_position+1 "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position>=%2 AND "
+            "playlist_position<%3 "
+    )
+        .arg(playlistID.sb_playlist_id)
+        .arg(newPosition)
+        .arg(tmpPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToPositionComposite(q,db);
+    updateToPositionComposite.next();
+
+    //	6.	Reassign position to fromID
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "playlist_position=%3 "
+    )
+        .arg(newPosition)
+        .arg(playlistID.sb_playlist_id)
+        .arg(tmpPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToNewPositionPerformance(q,db);
+    updateToNewPositionPerformance.next();
+
+    q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___playlist_composite "
+        "SET "
+            "playlist_position=%1 "
+        "WHERE "
+            "playlist_id=%2 AND "
+            "playlist_position=%3 "
+    )
+        .arg(newPosition)
+        .arg(playlistID.sb_playlist_id)
+        .arg(tmpPosition);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery updateToNewPositionComposite(q,db);
+    updateToNewPositionComposite.next();
+}
+
+void
 DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const SBID &tID) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -1079,7 +1281,7 @@ DataEntityPlaylist::reorderPlaylistPositions(const SBID &id,int maxPosition) con
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
-    qDebug() << SB_DEBUG_INFO << id;
+    qDebug() << SB_DEBUG_INFO << id << id.playPosition << maxPosition;
 
     QString q=QString
     (

@@ -56,13 +56,8 @@ SBID::SBID(SBID::sb_type itemType, int itemID)
 SBID::SBID(QByteArray encodedData)
 {
     init();
-    qDebug() << SB_DEBUG_INFO << encodedData.size() << convertByteArray2String(encodedData);
     QString s=QString(encodedData);
     QStringList sl=s.split('_');
-    for(int i=0;i<sl.size();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << sl[i];
-    }
     _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
     sb_performer_id          =sl[1].toInt();
     sb_album_id              =sl[2].toInt();
@@ -87,9 +82,10 @@ SBID::SBID(QByteArray encodedData)
     count2                   =sl[21].toInt();
     int msSecsSinceStartOfDay=sl[22].toInt(); QTime t; duration=t.addMSecs(msSecsSinceStartOfDay);
     playlistName             =sl[23];
-    isPlayingFlag            =sl[24].toInt();
+    playPosition             =sl[24].toInt();
+    isPlayingFlag            =sl[25].toInt();
 
-    qDebug() << SB_DEBUG_INFO << *this;
+    qDebug() << SB_DEBUG_INFO << "ctor" << *this;
     return;
 }
 
@@ -199,13 +195,12 @@ SBID::encode() const
     sl.append(SB_REPLACE_UNDERSCORE(playlistName));
     sl.append(QString("%1").arg(count1));
     sl.append(QString("%1").arg(count2));
-    sl.append(QString("%").arg(duration.msecsSinceStartOfDay()));
+    sl.append(QString("%1").arg(duration.msecsSinceStartOfDay()));
     sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
+    sl.append(QString("%1").arg(playPosition));
     sl.append(QString("%1").arg(isPlayingFlag));
 
     QString combined=sl.join('_');
-    qDebug() << SB_DEBUG_INFO << this->sb_album_id;
-    qDebug() << SB_DEBUG_INFO << combined.length() << combined.size() << sl.join('_').length() << sl.join('_');
 
     QByteArray encodedData;
     encodedData.append(combined);

@@ -46,14 +46,16 @@ SBTabPlaylistDetail::deletePlaylistItem()
 }
 
 void
-SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, const SBID &toID)
+SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 {
+    qDebug() << SB_DEBUG_INFO;
+
     init();
     //	Determine current playlist
     SBID currentID=Context::instance()->getScreenStack()->currentScreen();
 
     DataEntityPlaylist *mpl=new DataEntityPlaylist();
-    mpl->reorderItem(currentID,fromID,toID);
+    mpl->reorderItem(currentID,fromID,row);
     refreshTabIfCurrent(currentID);
 }
 
@@ -111,6 +113,8 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 {
     init();
     SBID id;
+
+    qDebug() << SB_DEBUG_INFO << idx;
 
     MainWindow* mw=Context::instance()->getMainWindow();
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
@@ -170,8 +174,8 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     populateTableView(tv,qm,0);
     connect(tv, SIGNAL(clicked(QModelIndex)),
             this, SLOT(tableViewCellClicked(QModelIndex)));
-    connect(qm, SIGNAL(assign(const SBID&,const SBID&)),
-            this, SLOT(movePlaylistItem(const SBID&, const SBID&)));
+    connect(qm, SIGNAL(assign(const SBID&,int)),
+            this, SLOT(movePlaylistItem(const SBID&, int)));
 
     //	Context menu
     tv->setContextMenuPolicy(Qt::CustomContextMenu);

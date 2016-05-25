@@ -105,7 +105,7 @@ public:
 
         record=createNode("All Songs",-1,SBID::sb_type_allsongs);
         item1->appendRow(record);
-        record=createNode("Currently Playing",-1,SBID::sb_type_current_playlist);
+        record=createNode("Songs in Queue",-1,SBID::sb_type_current_playlist);
         item1->appendRow(record);
 
         item1 = new QStandardItem("");

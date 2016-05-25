@@ -24,7 +24,6 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
 {
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     PlayerController* pc=Context::instance()->getPlayerController();
 
     qDebug() << SB_DEBUG_INFO;
@@ -43,21 +42,6 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     pc->playerPlay();
 
     return;
-
-    ///OLD
-//    qDebug() << SB_DEBUG_INFO;
-//    PlayerController* pc=Context::instance()->getPlayerController();
-//    this->clearPlaylist();
-//    DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
-//    qDebug() << SB_DEBUG_INFO;
-//    this->_populate(playlistID);
-//    this->_populatePost(playlistID);
-
-//    qDebug() << SB_DEBUG_INFO;
-//    pc->playerStop();
-//    qDebug() << SB_DEBUG_INFO;
-//    pc->playerPlay();
-//    qDebug() << SB_DEBUG_INFO;
 }
 
 QTableView*

@@ -87,9 +87,25 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     qDebug() << SB_DEBUG_INFO << "Dropping " << fromID;
 
     const QModelIndex n=this->index(parent.row(),0);
+    qDebug() << SB_DEBUG_INFO << "idx=" << n;
+
     SBID toID=determineSBID(n);
 
     emit assign(fromID,toID);
+    qDebug() << SB_DEBUG_INFO << row;
+    if(row>=0)
+    {
+        if(fromID.playPosition>row)
+        {
+            row+=1;
+        }
+        qDebug() << SB_DEBUG_INFO << fromID << fromID.playPosition << "to row" << row;
+        emit assign(fromID,row);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "row < 0" << row << "drag/drop abortée";
+    }
     return 1;
 }
 
