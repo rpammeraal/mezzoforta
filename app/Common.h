@@ -56,6 +56,13 @@ public:
     Common();
     ~Common();
 
+    enum sb_play_mode
+    {
+        sb_stopped=0,
+        sb_paused =1,
+        sp_playing=2
+    };
+
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static quint64 random(quint64 max);

@@ -42,6 +42,7 @@ SBID::SBID(const SBID &c)
     this->subtabID=c.subtabID;
     this->sortColumn=c.sortColumn;
     this->playPosition=c.playPosition;
+    this->isPlayingFlag=c.isPlayingFlag;
 
     isEditFlag=c.isEditFlag;
 }
@@ -86,6 +87,7 @@ SBID::SBID(QByteArray encodedData)
     count2                   =sl[21].toInt();
     int msSecsSinceStartOfDay=sl[22].toInt(); QTime t; duration=t.addMSecs(msSecsSinceStartOfDay);
     playlistName             =sl[23];
+    isPlayingFlag            =sl[24].toInt();
 
     qDebug() << SB_DEBUG_INFO << *this;
     return;
@@ -199,6 +201,7 @@ SBID::encode() const
     sl.append(QString("%1").arg(count2));
     sl.append(QString("%").arg(duration.msecsSinceStartOfDay()));
     sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
+    sl.append(QString("%1").arg(isPlayingFlag));
 
     QString combined=sl.join('_');
     qDebug() << SB_DEBUG_INFO << this->sb_album_id;
@@ -453,6 +456,7 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "subtabID" << subtabID;
     qDebug() << SB_DEBUG_INFO << "sortColumn" << sortColumn;
     qDebug() << SB_DEBUG_INFO << "playPosition" << playPosition;
+    qDebug() << SB_DEBUG_INFO << "isPlayingFlag" << isPlayingFlag;
 }
 
 bool
@@ -584,4 +588,5 @@ SBID::init()
     isEditFlag=0;
     sortColumn=INT_MAX;
     playPosition=-1;
+    isPlayingFlag=0;
 }

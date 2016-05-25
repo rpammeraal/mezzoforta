@@ -10,9 +10,11 @@ class SBSqlQueryModel;
 class DataEntityCurrentPlaylist
 {
 public:
+    static void clearPlaylist();
     static SBSqlQueryModel* getAllOnlineSongs();
     static SBSqlQueryModel* getAllSongs();
     static SBID getFirstUnplayedSong();
+    static void populateFromPlaylist(const SBID& playlistID);
     static void resetPlaylist();
     static void setSongAttributes(int playID,bool activeFlag=0, bool hasPlayedFlag=0);
 

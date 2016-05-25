@@ -5,18 +5,59 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "SBModelCurrentPlaylist.h"
-#include "MainWindow.h"
-#include "PlayerController.h"
 #include "DataEntityCurrentPlaylist.h"
 #include "DataEntityPlaylist.h"
 #include "DataEntitySong.h"
-#include "SBSqlQueryModel.h"
+#include "MainWindow.h"
 #include "Navigator.h"
+#include "PlayerController.h"
+#include "SBModelCurrentPlaylist.h"
+#include "SBSqlQueryModel.h"
 
 
 SBTabCurrentPlaylist::SBTabCurrentPlaylist(QWidget* parent) : SBTab(parent,0)
 {
+}
+
+void
+SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
+{
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
+    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
+    PlayerController* pc=Context::instance()->getPlayerController();
+
+    qDebug() << SB_DEBUG_INFO;
+    this->clearPlaylist();
+    qDebug() << SB_DEBUG_INFO;
+    DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
+
+    qDebug() << SB_DEBUG_INFO;
+    this->_populate(SBID());
+    qDebug() << SB_DEBUG_INFO;
+    this->_populatePost(SBID());
+
+    qDebug() << SB_DEBUG_INFO;
+    pc->playerStop();
+    qDebug() << SB_DEBUG_INFO;
+    pc->playerPlay();
+
+    return;
+
+    ///OLD
+//    qDebug() << SB_DEBUG_INFO;
+//    PlayerController* pc=Context::instance()->getPlayerController();
+//    this->clearPlaylist();
+//    DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
+//    qDebug() << SB_DEBUG_INFO;
+//    this->_populate(playlistID);
+//    this->_populatePost(playlistID);
+
+//    qDebug() << SB_DEBUG_INFO;
+//    pc->playerStop();
+//    qDebug() << SB_DEBUG_INFO;
+//    pc->playerPlay();
+//    qDebug() << SB_DEBUG_INFO;
 }
 
 QTableView*
@@ -61,6 +102,12 @@ SBTabCurrentPlaylist::movePlaylistItem(const SBID& fromID, const SBID &toID)
     DataEntityPlaylist *mpl=new DataEntityPlaylist();
     mpl->reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
+}
+
+void
+SBTabCurrentPlaylist::handleItemHighlight(QModelIndex &idx)
+{
+    qDebug() << SB_DEBUG_INFO << idx;
 }
 
 void
@@ -121,7 +168,11 @@ SBTabCurrentPlaylist::clearPlaylist()
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    aem->clear();
+    if(aem)
+    {
+        aem->clear();
+    }
+    DataEntityCurrentPlaylist::clearPlaylist();
 }
 
 void
@@ -315,6 +366,8 @@ SBTabCurrentPlaylist::init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv,SIGNAL(doubleClicked(QModelIndex)),
                 this, SLOT(tableViewCellDoubleClicked(QModelIndex)));
+        connect(tv,SIGNAL(viewportEntered()),
+                this, SLOT(handleItemHighlight(QModelIndex&)));
 
         //	Buttons
         connect(mw->ui.pbClearPlaylist, SIGNAL(clicked(bool)),
@@ -378,6 +431,7 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     switch((SBModelCurrentPlaylist::sb_column_type)idx.column())
     {
     case SBModelCurrentPlaylist::sb_column_deleteflag:
+    case SBModelCurrentPlaylist::sb_column_playflag:
     case SBModelCurrentPlaylist::sb_column_albumid:
     case SBModelCurrentPlaylist::sb_column_displayplaylistid:
     case SBModelCurrentPlaylist::sb_column_songid:
@@ -431,17 +485,16 @@ SBTabCurrentPlaylist::_populate(const SBID& id)
 
     //	Populate playlist
 
-    SBModelCurrentPlaylist* plm=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    if(plm==NULL)
+    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
+    if(aem==NULL)
     {
         PlayerController* pc=Context::instance()->getPlayerController();
-        QMap<int,SBID> playList;
 
-        plm=new SBModelCurrentPlaylist();
-        pc->setModelCurrentPlaylist(plm);
-        playList=plm->populate();
-        tv->setModel(plm);
+        aem=new SBModelCurrentPlaylist();
+        pc->setModelCurrentPlaylist(aem);
+        tv->setModel(aem);
     }
+    aem->populate();
 
     _playlistLoadedFlag=1;
     return SBID(SBID::sb_type_current_playlist,-1);
@@ -464,12 +517,14 @@ SBTabCurrentPlaylist::_populatePost(const SBID &id)
     tv->setDefaultDropAction(Qt::MoveAction);
     tv->setDragDropOverwriteMode(false);
     tv->setColumnHidden(0,1);	//	sb_column_deleteflag
-    tv->setColumnHidden(1,1);	//	sb_column_albumid
-    tv->setColumnHidden(3,1);	//	sb_column_songid
-    tv->setColumnHidden(4,1);	//	sb_column_performerid
-    tv->setColumnHidden(5,1);	//	sb_column_playlistid
-    tv->setColumnHidden(6,1);	//	sb_column_position
-    tv->setColumnHidden(7,1);	//	sb_column_path
+    tv->setColumnHidden(1,0);	//	sb_column_playflag
+    tv->setColumnHidden(2,1);	//	sb_column_albumid
+    tv->setColumnHidden(3,1);	//	sb_column_displayplaylistid
+    tv->setColumnHidden(4,1);	//	sb_column_songid
+    tv->setColumnHidden(5,1);	//	sb_column_performerid
+    tv->setColumnHidden(6,1);	//	sb_column_playlistid
+    tv->setColumnHidden(7,1);	//	sb_column_position
+    tv->setColumnHidden(8,1);	//	sb_column_path
 
     QHeaderView* hv=NULL;
     hv=tv->horizontalHeader();

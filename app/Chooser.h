@@ -24,6 +24,7 @@ public slots:
     void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();
     void newPlaylist();
+    void playPlaylist();
     void renamePlaylist();
     void showContextMenu(const QPoint& p);
 
@@ -36,6 +37,8 @@ private:
     QAction* newAction;
     QAction* deleteAction;
     QAction* renameAction;
+    QAction* playPlaylistAction;
+
     //SBStandardItemModel* model;
     QModelIndex lastClickedIndex;
     ChooserModel* _cm;

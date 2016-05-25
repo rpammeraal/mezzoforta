@@ -245,7 +245,6 @@ DataAccessLayer::addMissingDatabaseItems()
     allSQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___online_performance_alt( LIKE ___SB_SCHEMA_NAME___online_performance)");
     //allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___record_performance ALTER COLUMN duration TYPE interval");
     allSQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___current_playlist( current_playlist_id int, play_position int, has_played_flag bool, active_flag bool, song_id int, artist_id int, record_id int, record_position int)");
-    allSQL.append("INSERT INTO ___SB_SCHEMA_NAME___current_playlist SELECT record_position, record_position,'f','f',song_id,artist_id,record_id,record_position FROM ___SB_SCHEMA_NAME___record_performance WHERE record_id=1387 AND NOT EXISTS(SELECT 1 FROM ___SB_SCHEMA_NAME___current_playlist);");
 
     //	Execute each statement in its own transaction -- one statement (incorrectly) will prevent the
     //	other statements from being executed.

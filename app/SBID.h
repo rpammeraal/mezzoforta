@@ -66,6 +66,7 @@ public:
     int         subtabID;
     int         sortColumn;
     int         playPosition;
+    bool        isPlayingFlag;	//	CWIP: not used
 
     void assign(const SBID::sb_type type, const int itemID);
     void assign(const QString& itemType, const int itemID, const QString& text="");

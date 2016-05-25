@@ -141,3 +141,7 @@ DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad
 
 
+@macx
+{
+	LIBS += -framework Carbon
+}@

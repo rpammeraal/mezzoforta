@@ -62,7 +62,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
     }
     AudioDecoderFactory adf;
     _ad=adf.openFile(fn);
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << fileName;
 
     if(!_ad)
     {

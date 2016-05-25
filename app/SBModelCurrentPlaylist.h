@@ -13,20 +13,22 @@ public:
     enum sb_column_type
     {
         sb_column_deleteflag=0,
-        sb_column_albumid=1,
-        sb_column_displayplaylistid=2,
-        sb_column_songid=3,
-        sb_column_performerid=4,
-        sb_column_playlistid=5,
-        sb_column_position=6,
-        sb_column_path=7,
+        sb_column_playflag=1,
+        sb_column_albumid=2,
+        sb_column_displayplaylistid=3,
+        sb_column_songid=4,
+        sb_column_performerid=5,
+        sb_column_playlistid=6,
+        sb_column_position=7,
+        sb_column_path=8,
 
-        sb_column_startofdata=8,
-        sb_column_songtitle=8,
-        sb_column_duration=9,
-        sb_column_performername=10,
-        sb_column_albumtitle=11
+        sb_column_startofdata=9,
+        sb_column_songtitle=9,
+        sb_column_duration=10,
+        sb_column_performername=11,
+        sb_column_albumtitle=12
     };
+    //	Note: modify SBTabCurrentPlaylist as well when sb_column_type is modified in any way
 
     SBModelCurrentPlaylist(QObject* parent=0);
 

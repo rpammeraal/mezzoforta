@@ -141,7 +141,8 @@ SBModelCurrentPlaylist::addRow()
     QString idStr;
     idStr.sprintf("%08d",newRowID);
 
-    item=new QStandardItem("0"); column.append(item);                         //	sb_column_deletedflag
+    item=new QStandardItem("0"); column.append(item);                         //	sb_column_deleteflag
+    item=new QStandardItem(""); column.append(item);                          //	sb_column_playflag
     item=new QStandardItem("0"); column.append(item);                         //	sb_column_albumid
     item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item); //	sb_column_displayplaylistid
     item=new QStandardItem("0"); column.append(item);                         //	sb_column_songid
@@ -252,12 +253,6 @@ SBModelCurrentPlaylist::getSongFromPlaylist(int playlistIndex)
     {
         return song;
     }
-    //	sb_column_playlistid
-//    item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_playlistid);
-//    if(item)
-//    {
-//        index=item->text().toInt();
-//    }
 
     //	sb_column_songid
     item=this->item(playlistIndex,SBModelCurrentPlaylist::sb_column_songid);
@@ -351,6 +346,7 @@ SBModelCurrentPlaylist::populate()
         idStr.sprintf("%08d",i+1);
 
         item=new QStandardItem("0"); column.append(item);                                 //	sb_column_deleteflag
+        item=new QStandardItem(""); column.append(item);                                  //	sb_column_playflag
         item=new QStandardItem(qm->record(i).value(8).toString()); column.append(item);   //	sb_column_albumid
         id.sb_album_id=qm->record(i).value(8).toInt();
         item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);            //	sb_column_displayplaylistid
@@ -381,6 +377,8 @@ SBModelCurrentPlaylist::populate()
             qDebug() << SB_DEBUG_INFO << "Populated" << i << "from " << qm->rowCount();
             QCoreApplication::processEvents();
         }
+
+        qDebug() << SB_DEBUG_INFO << "path=" << qm->record(i).value(12).toString();
     }
     populateHeader();
     qDebug() << SB_DEBUG_INFO;
@@ -429,6 +427,7 @@ SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
         idStr.sprintf("%08d",i+1);
 
         item=new QStandardItem("0"); column.append(item);                                       //	sb_column_deleteflag
+        item=new QStandardItem(""); column.append(item);                                        //	sb_column_playflag
         item=new QStandardItem(QString("%1").arg(song.sb_album_id)); column.append(item);       //	sb_column_albumid
         item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);                  //	sb_column_displayplaylistid
         item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
@@ -464,19 +463,19 @@ SBModelCurrentPlaylist::populateHeader()
     QStandardItem* item;
 
     int columnIndex=0;
-    item=new QStandardItem("DEL"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);
-
-    item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("Duration"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);
-    item=new QStandardItem("Album"); this->setHorizontalHeaderItem(columnIndex++,item);
+    item=new QStandardItem("DEL"); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_deleteflag
+    item=new QStandardItem(""); this->setHorizontalHeaderItem(columnIndex++,item);           // sb_column_playflag
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_albumid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_displayplaylistid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_songid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_performerid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_playlistid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_position
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_path
+    item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
+    item=new QStandardItem("Duration"); this->setHorizontalHeaderItem(columnIndex++,item);   //	sb_column_duration
+    item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
+    item=new QStandardItem("Album"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_albumtitle
 }
 
 void
@@ -551,6 +550,7 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
     int oldRowID=-1;
     int newRowID=-1;
 
+    //	Mark current song in UI as not being played.
     if(_currentPlayID<this->rowCount() && _currentPlayID>=0)
     {
         //	Don't execute if, if _currentPlayID:
@@ -562,6 +562,7 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
 
             if(item->text().toInt()-1==_currentPlayID)
             {
+                //	Found item that is pointing to by _currentPlayID
                 item=this->item(i,sb_column_displayplaylistid);
                 if(item!=NULL)
                 {
@@ -569,10 +570,17 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
                     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
                     oldRowID=i;
                 }
+
+                item=this->item(i,sb_column_playflag);
+                if(item!=NULL)
+                {
+                    item->setIcon(QIcon());
+                }
             }
         }
     }
 
+    //	Now mark the new song in UI as being played.
     if(playID<this->rowCount() && playID>=0)
     {
         _currentPlayID=playID;
@@ -591,6 +599,12 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
                     paintRow(i);
                     newRowID=i;
                 }
+
+                item=this->item(i,sb_column_playflag);
+                if(item!=NULL)
+                {
+                    item->setIcon(QIcon(":/images/playing.png"));
+                }
             }
         }
     }
@@ -598,7 +612,7 @@ SBModelCurrentPlaylist::setCurrentSongByID(int playID)
     {
         paintRow(oldRowID);
     }
-    return this->index(newRowID,2);	//	index 2: first column visible
+    return this->index(newRowID,sb_column_playflag);
 }
 
 void
@@ -679,7 +693,7 @@ SBModelCurrentPlaylist::debugShow(const QString& title)
         QString row=QString("row=%1").arg(i);
         for(int j=0;j<this->columnCount();j++)
         {
-            if(j!=7 && j<9)
+            if(j!=sb_column_path)
             {
                 QStandardItem* item=this->item(i,j);
                 row+=QString("|c[%1]=").arg(j);

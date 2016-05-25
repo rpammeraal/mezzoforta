@@ -211,6 +211,7 @@ PlayerController::playerPlay()
     if(_modelCurrentPlaylist==NULL)
     {
         //	No playlist loaded - switch to radio.
+        qDebug() << SB_DEBUG_INFO;
 
         //	Open CurrentPlaylistTab
         Context::instance()->getNavigator()->showCurrentPlaylist();
@@ -437,6 +438,8 @@ PlayerController::_playSong(const SBID& song)
 #endif
     emit songChanged(song);	//	changed to here, so we can continue in case of error of playing a song.
     //	This used to be here after instructing player to play
+
+    qDebug() << SB_DEBUG_INFO << path;
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {

@@ -20,6 +20,8 @@ class SBTabCurrentPlaylist : public SBTab
 public:
     SBTabCurrentPlaylist(QWidget* parent=0);
 
+    void playPlaylist(const SBID& playlistID);
+
     //	Virtual
     virtual QTableView* subtabID2TableView(int subtabID) const;
 
@@ -29,6 +31,7 @@ signals:
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
+    void handleItemHighlight(QModelIndex& idx);
     void playSong();
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& song);

@@ -9,6 +9,21 @@
 #include <QMessageBox>
 #include <QStringList>
 
+void
+DataEntityCurrentPlaylist::clearPlaylist()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q="TRUNCATE TABLE ___SB_SCHEMA_NAME___current_playlist ";
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery q2(q,db);
+    q2.exec();
+}
+
 SBSqlQueryModel*
 DataEntityCurrentPlaylist::getAllOnlineSongs()
 {
@@ -128,6 +143,47 @@ DataEntityCurrentPlaylist::getAllSongs()
     ;
 
     return new SBSqlQueryModel(q);
+}
+
+void
+DataEntityCurrentPlaylist::populateFromPlaylist(const SBID &playlistID)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___current_playlist "
+        "("
+            "current_playlist_id, "
+            "play_position, "
+            "has_played_flag, "
+            "active_flag, "
+            "song_id, "
+            "artist_id, "
+            "record_id, "
+            "record_position "
+        ") "
+        "SELECT "
+            "playlist_position, "
+            "playlist_position, "
+            "'F', "
+            "'F', "
+            "song_id, "
+            "artist_id, "
+            "record_id, "
+            "record_position "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_performance "
+        "WHERE "
+            "playlist_id=%1 "
+    ).arg(playlistID.sb_playlist_id);
+    dal->customize(q);
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery q2(q,db);
+    q2.exec();
 }
 
 void
