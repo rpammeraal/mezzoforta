@@ -25,6 +25,7 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     PlayerController* pc=Context::instance()->getPlayerController();
+    _playlistLoadedFlag=0;
 
     qDebug() << SB_DEBUG_INFO;
     this->clearPlaylist();
@@ -32,7 +33,7 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
 
     qDebug() << SB_DEBUG_INFO;
-    this->_populate(SBID());
+    this->_populatePlaylistFromDB(SBID());
     qDebug() << SB_DEBUG_INFO;
     this->_populatePost(SBID());
 
@@ -167,7 +168,7 @@ SBTabCurrentPlaylist::shufflePlaylist()
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     aem->shuffle();
-    tv->sortByColumn(5,Qt::AscendingOrder);
+    tv->sortByColumn(SBModelCurrentPlaylist::sb_column_playlistid,Qt::AscendingOrder);
     aem->repaintAll();
 }
 
@@ -180,6 +181,7 @@ SBTabCurrentPlaylist::startRadio()
     PlayerController* pc=Context::instance()->getPlayerController();
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
+    _playlistLoadedFlag=0;
 
     qDebug() << SB_DEBUG_INFO;
     this->clearPlaylist();
@@ -456,13 +458,23 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
 /// \param id
 /// \return
 ///
-/// Populates a regular playlist from database
+/// The _populate() method with other screens is used to actively populate a screen
+/// with the specified SBID.
+/// With SBTabCurrentPlaylist things are slightly different, as the playlist is
+/// pre-populated in the database. Population happens at a different time from when
+/// the current playlist (aka Songs in Queue) is opened.
 ///
 SBID
 SBTabCurrentPlaylist::_populate(const SBID& id)
 {
+    return SBID(SBID::sb_type_current_playlist,-1);
+}
+
+SBID
+SBTabCurrentPlaylist::_populatePlaylistFromDB(const SBID& id)
+{
     Q_UNUSED(id);
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _playlistLoadedFlag;
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
@@ -480,7 +492,6 @@ SBTabCurrentPlaylist::_populate(const SBID& id)
     }
     aem->populate();
 
-    _playlistLoadedFlag=1;
     return SBID(SBID::sb_type_current_playlist,-1);
 }
 
@@ -501,9 +512,9 @@ SBTabCurrentPlaylist::_populatePost(const SBID &id)
     tv->setDefaultDropAction(Qt::MoveAction);
     tv->setDragDropOverwriteMode(false);
     tv->setColumnHidden(0,1);	//	sb_column_deleteflag
-    tv->setColumnHidden(1,0);	//	sb_column_playflag
+    tv->setColumnHidden(1,1);	//	sb_column_playflag
     tv->setColumnHidden(2,1);	//	sb_column_albumid
-    tv->setColumnHidden(3,1);	//	sb_column_displayplaylistid
+    tv->setColumnHidden(3,0);	//	sb_column_displayplaylistid
     tv->setColumnHidden(4,1);	//	sb_column_songid
     tv->setColumnHidden(5,1);	//	sb_column_performerid
     tv->setColumnHidden(6,1);	//	sb_column_playlistid

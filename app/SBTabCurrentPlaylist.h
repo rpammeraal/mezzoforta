@@ -53,6 +53,7 @@ private:
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);
     virtual SBID _populate(const SBID& id);
+    SBID _populatePlaylistFromDB(const SBID& id);
     virtual void _populatePost(const SBID& id);
 };
 

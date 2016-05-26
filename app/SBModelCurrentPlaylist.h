@@ -15,10 +15,10 @@ public:
         sb_column_deleteflag=0,
         sb_column_playflag=1,
         sb_column_albumid=2,
-        sb_column_displayplaylistid=3,
+        sb_column_displayplaylistid=3,	//	CWIP: rename to displayplaylistpositionid
         sb_column_songid=4,
         sb_column_performerid=5,
-        sb_column_playlistid=6,
+        sb_column_playlistid=6,	//	CWIP: rename to playlistpositionid
         sb_column_position=7,
         sb_column_path=8,
 
@@ -44,6 +44,7 @@ public:
     virtual void clear();
     QString formatDisplayPlayID(int playID,bool isCurrent=0);
     void paintRow(int i);
+    virtual void sort(int column, Qt::SortOrder order);
 
     //	Methods related to playlists
     int currentPlaylistIndex() const;	//	index of song in playlist
