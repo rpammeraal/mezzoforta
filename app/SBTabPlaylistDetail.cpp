@@ -4,6 +4,7 @@
 #include "Controller.h"
 #include "MainWindow.h"
 #include "DataEntityPlaylist.h"
+#include "PlayerController.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -79,6 +80,13 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
     }
 }
 
+void
+SBTabPlaylistDetail::songChanged(const SBID &newSong)
+{
+    qDebug() << SB_DEBUG_INFO;
+    //	Go thru all items, reset icon, set icon if newSong is found
+}
+
 ///	Private methods
 void
 SBTabPlaylistDetail::init()
@@ -97,6 +105,16 @@ SBTabPlaylistDetail::init()
         deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
         connect(deletePlaylistItemAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
+
+        //	Be aware of song changes
+        PlayerController* pc=Context::instance()->getPlayerController();
+        if(pc)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            connect(pc,SIGNAL(songChanged(SBID)),
+                    this,SLOT(songChanged(SBID)));
+        }
+        qDebug() << SB_DEBUG_INFO;
     }
 }
 
@@ -188,4 +206,11 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     mw->ui.playlistDetailSongList->setDefaultDropAction(Qt::MoveAction);
 
     return result;
+}
+
+
+void
+SBTabPlaylistDetail::_populatePost(const SBID& id)
+{
+    QHeaderView* hv=NULL;
 }

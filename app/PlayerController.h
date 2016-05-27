@@ -27,8 +27,6 @@ class PlayerController : public QObject
 {
     Q_OBJECT
 
-    friend class SBTabCUrrentPlaylist;
-
 public:
     enum sb_player
     {
@@ -46,10 +44,11 @@ public:
         sb_player_state_changing_media=4
     };
 
-
     explicit PlayerController(QObject *parent = 0);
 
     void initialize();
+    inline SBID currentSongPlaying() const { return _currentSongPlaying; }
+    inline SBID currentPlaylistPlaying() const { return _currentPlaylistPlaying; }
     void setModelCurrentPlaylist(SBModelCurrentPlaylist* mcp);
 
 signals:
@@ -67,31 +66,41 @@ public slots:
     void playerSeek(int ms);
     void playerStateChanged(QMediaPlayer::State playerState);
 
+    //	The following methods are used for the first song and
+    //	sets whether playlist or radio. If radio, update last played date
+    //	is set at the start of song.
+    bool playerPlayInPlaylist(const SBID& playlistID);
+    bool playerPlayInRadio();
+
 private slots:
     void playerDataClicked(const QUrl& url);
 
 private:
-    bool _initDoneFlag;
-    PlayerController::sb_player_state _state;
-    SBID _currentSong;
-    SBModelCurrentPlaylist* _modelCurrentPlaylist;
+    static const int                  _maxPlayerID=2;
 
-    int _currentPlayerID;
-    static const int _maxPlayerID=2;
-    QFrame* _playerFrame[_maxPlayerID];
-    QPushButton* _playerPlayButton[_maxPlayerID];
-    QSlider* _playerProgressSlider[_maxPlayerID];
-    QLabel* _playerDurationLabel[_maxPlayerID];
-    QTextBrowser* _playerDataLabel[_maxPlayerID];
-    SBMediaPlayer _playerInstance[_maxPlayerID];
-    QTime _durationTime[_maxPlayerID];
+    int                               _currentPlayerID;
+    SBID                              _currentSongPlaying;
+    QTime                             _durationTime[_maxPlayerID];
+    bool                              _initDoneFlag;
+    SBModelCurrentPlaylist*           _modelCurrentPlaylist;
+    QFrame*                           _playerFrame[_maxPlayerID];
+    QPushButton*                      _playerPlayButton[_maxPlayerID];
+    QSlider*                          _playerProgressSlider[_maxPlayerID];
+    QLabel*                           _playerDurationLabel[_maxPlayerID];
+    QTextBrowser*                     _playerDataLabel[_maxPlayerID];
+    SBMediaPlayer                     _playerInstance[_maxPlayerID];
+    SBID                              _currentPlaylistPlaying;
+    bool                              _radioPlayingFlag;
+    PlayerController::sb_player_state _state;
 
     SBID calculateNextSongID(bool previousFlag=0) const;
     QTime calculateTime(quint64 ms) const;
-    void init();
+    void _init();
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(const SBID& song);
     void _playerStop();
+    void _setRadioPlaying();
+    void _setPlaylistPlaying(const SBID& playlistID);
     void _refreshPlayingNowData() const;
     void _updatePlayState(PlayerController::sb_player_state newState);
 };

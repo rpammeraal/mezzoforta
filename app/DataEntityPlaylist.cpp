@@ -500,7 +500,7 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
             .arg(SBID::sb_type_song)
             .arg(SBID::sb_type_position);
 
-    return new SBSqlQueryModel(q);
+    return new SBSqlQueryModel(q,0);
 }
 
 void

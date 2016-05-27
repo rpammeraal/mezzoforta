@@ -18,6 +18,7 @@ public slots:
     //void movePlaylistItem(const SBID& fromID, const SBID& toID);
     void movePlaylistItem(const SBID& fromID, int row);
     void showContextMenuPlaylist(const QPoint &p);
+    void songChanged(const SBID& newSong);
 
 private:
     QAction* deletePlaylistItemAction;
@@ -26,6 +27,7 @@ private:
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);
     virtual SBID _populate(const SBID& id);
+    virtual void _populatePost(const SBID& id);
 };
 
 #endif // SBTABPLAYLISTDETAIL_H

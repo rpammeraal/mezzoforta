@@ -15,16 +15,19 @@ SBSqlQueryModel::SBSqlQueryModel()
     _init();
 }
 
-SBSqlQueryModel::SBSqlQueryModel(const QString& query)
+SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
 {
     _init();
+    _positionColumn=positionColumn;
 
     QString q=query;
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
+    qDebug() << SB_DEBUG_INFO
+             << "positionColumn=" << _positionColumn
+             << "query=" << q;
     QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
 
@@ -56,6 +59,10 @@ SBSqlQueryModel::data(const QModelIndex &item, int role) const
         QFont f;
         f.setFamily("Trebuchet MS");
         return QVariant(f);
+    }
+    else if(role==Qt::TextAlignmentRole && item.column()==_positionColumn)
+    {
+        return Qt::AlignRight;
     }
     return QSqlQueryModel::data(item,role);
 }
@@ -289,12 +296,6 @@ SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
 //    return id;
 //}
 
-int
-SBSqlQueryModel::getSelectedColumn() const
-{
-    return selectedColumn;
-}
-
 void
 SBSqlQueryModel::handleSQLError() const
 {
@@ -311,7 +312,7 @@ SBSqlQueryModel::handleSQLError() const
 void
 SBSqlQueryModel::setSelectedColumn(int c)
 {
-    selectedColumn=c;
+    _selectedColumn=c;
 }
 
 void
@@ -333,6 +334,7 @@ void
 SBSqlQueryModel::_init()
 {
     SBModel::_init();
-    selectedColumn=0;
+    _selectedColumn=0;
+    _positionColumn=-1;	//	-1: impossible column
 }
 

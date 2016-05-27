@@ -50,7 +50,7 @@ private:
     CurrentPlaylistModel* _pm;
     bool _playlistLoadedFlag;
 
-    void init();
+    void _init();
     SBID getSBIDSelected(const QModelIndex& idx);
     virtual SBID _populate(const SBID& id);
     SBID _populatePlaylistFromDB(const SBID& id);

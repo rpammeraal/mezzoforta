@@ -17,7 +17,7 @@
 
 PlayerController::PlayerController(QObject *parent) : QObject(parent)
 {
-    init();
+    _init();
 }
 
 void
@@ -147,7 +147,7 @@ PlayerController::playerPrevious()
         _playerStop();
         bool isPlayingFlag=0;
         SBID previousSong;
-        SBID newSong=_currentSong;
+        SBID newSong=_currentSongPlaying;
 
         //	Get out of loop if we're stuck. Either:
         //	-	get a song playing, or
@@ -193,6 +193,7 @@ PlayerController::playerStop()
     _playerStop();
 }
 
+
 ///
 /// \brief PlayerController::playerPlay
 /// \param playID
@@ -203,6 +204,7 @@ PlayerController::playerStop()
 bool
 PlayerController::playerPlay()
 {
+    qDebug() << SB_DEBUG_INFO;
     qDebug() << SB_DEBUG_INFO << "**************************************";
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
@@ -216,7 +218,10 @@ PlayerController::playerPlay()
         //	Open CurrentPlaylistTab
         Context::instance()->getNavigator()->showCurrentPlaylist();
 
+        qDebug() << SB_DEBUG_INFO;
         MainWindow* mw=Context::instance()->getMainWindow();
+
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.tabCurrentPlaylist->startRadio();
 
         //	Return now, as startRadio() will call playerPlay() on its own.
@@ -284,13 +289,13 @@ PlayerController::playerNext()
     _playerStop();
     bool isPlayingFlag=0;
     SBID previousSong;
-    SBID newSong=_currentSong;
+    SBID newSong=_currentSongPlaying;
 
     //	Get out of loop if we're stuck. Either:
     //	-	get a song playing, or
     //	-	the very first song does not play for whatever reason
     qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
-    while(isPlayingFlag==0 && (previousSong!=newSong))
+    while(isPlayingFlag==0 && ((previousSong!=newSong) || newSong.sb_item_type()==SBID::sb_type_invalid))
     {
         previousSong=newSong;
         newSong=calculateNextSongID();
@@ -302,7 +307,7 @@ PlayerController::playerNext()
     }
     //	CWIP:PLAY
     //	If isPlaying==0 show error
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
     if(!isPlayingFlag)
     {
         playerStop();
@@ -361,6 +366,21 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     }
 }
 
+bool
+PlayerController::playerPlayInPlaylist(const SBID& playlistID)
+{
+    _setPlaylistPlaying(playlistID);
+    return this->playerPlay();
+}
+
+bool
+PlayerController::playerPlayInRadio()
+{
+    _setRadioPlaying();
+    return this->playerPlay();
+}
+
+
 ///	Private slots
 
 ///
@@ -400,13 +420,15 @@ PlayerController::calculateNextSongID(bool previousFlag) const
 }
 
 void
-PlayerController::init()
+PlayerController::_init()
 {
-    _initDoneFlag=0;
     _currentPlayerID=0;
-    _state=PlayerController::sb_player_state_stopped;
-    _currentSong=SBID();
+    _currentSongPlaying=SBID();
+    _initDoneFlag=0;
     _modelCurrentPlaylist=NULL;
+    _currentPlaylistPlaying=SBID();
+    _radioPlayingFlag=0;
+    _state=PlayerController::sb_player_state_stopped;
 }
 
 void
@@ -450,14 +472,17 @@ PlayerController::_playSong(const SBID& song)
     }
 
     //	Instruct player to play
-    _currentSong=song;
+    _currentSongPlaying=song;
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
 
     //	Update timestamp in online_performance
-    //	Do this in both radio and non-radio mode.
-    DataEntitySong::updateLastPlayDate(_currentSong);
+    //	Do this in radio mode only.
+    if(_radioPlayingFlag)
+    {
+        DataEntitySong::updateLastPlayDate(_currentSongPlaying);
+    }
 
     return 1;
 }
@@ -472,6 +497,20 @@ PlayerController::_playerStop()
     _playerInstance[_currentPlayerID].stop();
     qDebug() << SB_DEBUG_INFO;
     playerSeek(0);
+}
+
+void
+PlayerController::_setRadioPlaying()
+{
+    _radioPlayingFlag=1;
+    _currentPlaylistPlaying=SBID();
+}
+
+void
+PlayerController::_setPlaylistPlaying(const SBID &playlistID)
+{
+    _radioPlayingFlag=0;
+    _currentPlaylistPlaying=playlistID;
 }
 
 void
@@ -509,16 +548,16 @@ PlayerController::_refreshPlayingNowData() const
             "<A HREF=\"%4_%5\">%6</A> from the "
             "<A HREF=\"%7_%8\">'%9'</A> album")
             .arg(SBID::sb_type_song)
-            .arg(_currentSong.sb_song_id)
-            .arg(_currentSong.songTitle)
+            .arg(_currentSongPlaying.sb_song_id)
+            .arg(_currentSongPlaying.songTitle)
 
             .arg(SBID::sb_type_performer)
-            .arg(_currentSong.sb_performer_id)
-            .arg(_currentSong.performerName)
+            .arg(_currentSongPlaying.sb_performer_id)
+            .arg(_currentSongPlaying.performerName)
 
             .arg(SBID::sb_type_album)
-            .arg(_currentSong.sb_album_id)
-            .arg(_currentSong.albumTitle)
+            .arg(_currentSongPlaying.sb_album_id)
+            .arg(_currentSongPlaying.albumTitle)
         ;
     }
     playState+="</CENTER></BODY>";

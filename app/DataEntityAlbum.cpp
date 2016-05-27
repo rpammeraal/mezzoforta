@@ -166,7 +166,7 @@ DataEntityAlbum::getAllSongs(const SBID& id)
             "a.artist_id AS SB_PERFORMER_ID, "
             "a.name AS \"performer\", "
             "%5 AS SB_POSITION, "
-            "rp.record_position "
+            "rp.record_position AS SB_ALBUM_POSITION "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
                 "join ___SB_SCHEMA_NAME___song s on "

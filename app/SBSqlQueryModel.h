@@ -21,7 +21,7 @@ class SBSqlQueryModel : public QSqlQueryModel, public SBModel
 
 public:
     SBSqlQueryModel();
-    SBSqlQueryModel(const QString& query);
+    SBSqlQueryModel(const QString& query,int positionColumn=-1);
     ~SBSqlQueryModel();
 
     //	Inherited methods
@@ -36,7 +36,7 @@ public:
 
     //	Native methods
     SBID determineSBID(const QModelIndex &idx) const;
-    int getSelectedColumn() const;
+    inline int getSelectedColumn() const { return _selectedColumn; }
     void handleSQLError() const;
     void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
@@ -51,7 +51,8 @@ public slots:
 protected:
 
 private:
-    int selectedColumn;
+    int _selectedColumn;
+    int _positionColumn;
 
     void _init();
 };
