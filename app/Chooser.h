@@ -14,6 +14,7 @@ class ChooserModel;
 class Chooser : public QObject
 {
     Q_OBJECT
+
 public:
     Chooser();
     ~Chooser();
@@ -24,6 +25,7 @@ public slots:
     void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();
     void newPlaylist();
+    void playlistChanged(const SBID& playlistID);
     void playPlaylist();
     void renamePlaylist();
     void showContextMenu(const QPoint& p);

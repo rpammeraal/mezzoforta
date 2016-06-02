@@ -15,6 +15,7 @@
 #include "DataEntityPlaylist.h"
 #include "DataEntitySong.h"
 #include "Navigator.h"
+#include "PlayerController.h"
 
 class ChooserModel : public QStandardItemModel
 {
@@ -306,6 +307,41 @@ Chooser::newPlaylist()
 }
 
 void
+Chooser::playlistChanged(const SBID &playlistID)
+{
+    for(int y=0;_cm && y<_cm->rowCount();y++)
+    {
+        QStandardItem* si0=_cm->item(y,0);
+        if(si0)
+        {
+            if(si0->hasChildren())
+            {
+                for(int i=0;i<si0->rowCount();i++)
+                {
+                    QStandardItem* sia=si0->child(i,0);
+                    QStandardItem* sib=si0->child(i,1);
+                    QStandardItem* sic=si0->child(i,2);
+                    if(sia && sib && sic)
+                    {
+                        if(sib->text().toInt()==playlistID.sb_item_id() &&
+                            sic->text().toInt()==playlistID.sb_item_type())
+                        {
+                            QStandardItem* newItem=new QStandardItem(QIcon(":/images/playing.png"),sia->text());
+                            si0->setChild(i,0,newItem);
+                        }
+                        else
+                        {
+                            QStandardItem* newItem=new QStandardItem(QIcon(),sia->text());
+                            si0->setChild(i,0,newItem);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
 Chooser::playPlaylist()
 {
     qDebug() << SB_DEBUG_INFO << lastClickedIndex;
@@ -397,7 +433,6 @@ Chooser::findItem(const QString& toFind)
 {
     QModelIndex index;
     bool found=0;
-    qDebug() << SB_DEBUG_INFO << toFind;
 
     for(int y=0;_cm && y<_cm->rowCount();y++)
     {
@@ -549,6 +584,14 @@ Chooser::init()
     //	Connections
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
+
+    PlayerController* pc=Context::instance()->getPlayerController();
+    SB_DEBUG_IF_NULL(pc);
+    if(pc)
+    {
+        connect(pc,SIGNAL(playlistChanged(const SBID&)),
+                this, SLOT(playlistChanged(SBID)));
+    }
 }
 
 void

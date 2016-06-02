@@ -504,6 +504,8 @@ PlayerController::_setRadioPlaying()
 {
     _radioPlayingFlag=1;
     _currentPlaylistPlaying=SBID();
+    qDebug() << SB_DEBUG_INFO;
+    emit playlistChanged(SBID());
 }
 
 void
@@ -511,6 +513,8 @@ PlayerController::_setPlaylistPlaying(const SBID &playlistID)
 {
     _radioPlayingFlag=0;
     _currentPlaylistPlaying=playlistID;
+    qDebug() << SB_DEBUG_INFO;
+    emit playlistChanged(playlistID);
 }
 
 void

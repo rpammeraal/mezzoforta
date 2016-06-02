@@ -145,3 +145,5 @@ win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvo
 {
 	LIBS += -framework Carbon
 }@
+
+QMAKE_CXXFLAGS="-O0"

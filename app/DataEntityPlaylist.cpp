@@ -449,7 +449,7 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
             "0 AS SB_ITEM_TYPE2, "
             "0 AS SB_POSITION_ID, "
             "0 AS SB_ITEM_TYPE3, "
-            "0 AS SB_PERFORMER_ID "
+            "a.artist_id AS SB_PERFORMER_ID "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_composite pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist p ON "

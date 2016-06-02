@@ -53,6 +53,7 @@ public:
 
 signals:
     void songChanged(const SBID& song);
+    void playlistChanged(const SBID& playlist);
 
 public slots:
     void playerPrevious();

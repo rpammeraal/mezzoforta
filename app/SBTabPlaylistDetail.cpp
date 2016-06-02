@@ -1,3 +1,5 @@
+#include <QAbstractItemModel>
+
 #include "SBTabPlaylistDetail.h"
 
 #include "Context.h"
@@ -83,8 +85,30 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
 void
 SBTabPlaylistDetail::songChanged(const SBID &newSong)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << newSong;
     //	Go thru all items, reset icon, set icon if newSong is found
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.playlistDetailSongList;
+    QAbstractItemModel* aim=tv->model();
+
+    qDebug() << SB_DEBUG_INFO << aim->metaObject()->className();
+    for(int i=0;i<aim->rowCount();i++)
+    {
+        for(int j=0;j<aim->columnCount();j++) {
+            QModelIndex idx=aim->index(i,j);
+            QVariant v=aim->data(idx);
+            qDebug() << SB_DEBUG_INFO << i << j << v.toString();
+        }
+        SBID id=SBID((SBID::sb_type)aim->data(aim->index(i,1)).toInt(),aim->data(aim->index(i,2)).toInt());
+        id.sb_performer_id=aim->data(aim->index(i,9)).toInt();
+        qDebug() << SB_DEBUG_INFO << i <<  "found=" << id;
+        if(id==newSong)
+        {
+            qDebug() << SB_DEBUG_INFO << "MATCH";
+            QStandardItem* newItem=new QStandardItem(QIcon(":/images/playing.png"),aim->data(aim->index(i,3)).toString());
+            //aim->setData(aim->index(i,3),newItem);
+        }
+    }
 }
 
 ///	Private methods
