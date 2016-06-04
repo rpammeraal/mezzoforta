@@ -10,7 +10,6 @@ HEADERS     = \
     SBID.h \
     Context.h \
     ScreenStack.h \
-    SBIDExtended.h \
     ExternalData.h \
     SBStandardItemModel.h \
     SBSqlQueryModel.h \
@@ -66,7 +65,6 @@ SOURCES     = \
     SBID.cpp \
     Context.cpp \
     ScreenStack.cpp \
-    SBIDExtended.cpp \
     ExternalData.cpp \
     SBStandardItemModel.cpp \
     SBSqlQueryModel.cpp \

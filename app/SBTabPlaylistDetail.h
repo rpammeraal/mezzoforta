@@ -20,12 +20,17 @@ public slots:
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& newSong);
 
+private slots:
+    virtual void tableViewCellClicked(QModelIndex idx);
+    void playlistReordered();
+
 private:
     QAction* deletePlaylistItemAction;
     QModelIndex lastClickedIndex;
 
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);
+    QMap<int,SBID> _getAllItemsByPlaylist(const SBID& id) const;
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
 };

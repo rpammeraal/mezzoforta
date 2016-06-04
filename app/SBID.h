@@ -73,6 +73,7 @@ public:
     bool compareSimple(const SBID& t) const;
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
+    QString getGenericDescription() const;
     QString getIconResourceLocation() const;
     QString getText() const;
     static QString getIconResourceLocation(const SBID::sb_type t);

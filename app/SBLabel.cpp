@@ -62,5 +62,4 @@ void
 SBLabel::setSBID(const SBID &id)
 {
     _id=id;
-    qDebug() << SB_DEBUG_INFO << this << _id;
 }

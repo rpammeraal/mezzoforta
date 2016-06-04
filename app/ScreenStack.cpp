@@ -59,7 +59,7 @@ ScreenStack::pushScreen(const SBID& id)
     else
     {
         SBID current=currentScreen();
-        if(!(current==id))
+        if(!(current.compareSimple(id)))	//	this needs to be a compareSimple
         {
             doPush=1;
             while(getCurrentScreenID()+1<=getScreenCount()-1)
@@ -122,14 +122,12 @@ ScreenStack::previousScreen()
 int
 ScreenStack::getCurrentScreenID() const
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return currentScreenID;
 }
 
 int
 ScreenStack::getScreenCount() const
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     return stack.length();
 }
 

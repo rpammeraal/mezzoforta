@@ -31,6 +31,7 @@ public:
     void reorderItem(const SBID& playlistID, const SBID& fromID, int row) const;
     void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
 
+
 private:
     void init();
     void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX) const;

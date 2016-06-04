@@ -3,30 +3,37 @@
 
 #include <QStandardItemModel>
 
+#include "SBID.h"
+
 ///
 /// \brief The SBModelCurrentPlaylist class
 ///
 /// SBModelCurrentPlaylist holds a playlist model.
 class SBModelCurrentPlaylist : public QStandardItemModel
 {
+    Q_OBJECT
+
 public:
     enum sb_column_type
     {
         sb_column_deleteflag=0,
-        sb_column_playflag=1,
-        sb_column_albumid=2,
-        sb_column_displayplaylistpositionid=3,	//	CWIP: rename to displayplaylistpositionid
-        sb_column_songid=4,
-        sb_column_performerid=5,
-        sb_column_playlistpositionid=6,	//	CWIP: rename to playlistpositionid
-        sb_column_position=7,
-        sb_column_path=8,
+        sb_column_item_type=1,
+        sb_column_item_id=2,
+        sb_column_playflag=3,
+        sb_column_albumid=4,
+        sb_column_displayplaylistpositionid=5,
+        sb_column_songid=6,
+        sb_column_performerid=7,
+        sb_column_playlistpositionid=8,
+        sb_column_position=9,
+        sb_column_path=10,
 
-        sb_column_startofdata=9,
-        sb_column_songtitle=9,
-        sb_column_duration=10,
-        sb_column_performername=11,
-        sb_column_albumtitle=12
+        sb_column_startofdata=11,
+        sb_column_songtitle=11,
+        sb_column_duration=12,
+        sb_column_performername=13,
+        sb_column_albumtitle=14,
+        sb_column_generic=15
     };
     //	Note: modify SBTabCurrentPlaylist as well when sb_column_type is modified in any way
 
@@ -63,6 +70,9 @@ public:
 
     ///	Debugging
     void debugShow(const QString& title=QString());
+
+signals:
+    void playlistOrderChanged();
 
 private:
     int _currentPlayID;             //	0-based

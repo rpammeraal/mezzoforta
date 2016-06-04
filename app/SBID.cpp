@@ -165,7 +165,12 @@ SBID::assign(const QString& type, const int itemID, const QString& text)
 bool
 SBID::compareSimple(const SBID &t) const
 {
-    return (this->_sb_item_type==t._sb_item_type && (this->sb_item_id()==t.sb_item_id()))?1:0;
+    return
+    (
+        (this->_sb_item_type==t._sb_item_type) &&
+        (this->sb_item_id()==t.sb_item_id()) &&
+        (this->isEditFlag==t.isEditFlag)	//	Need to include this, otherwise editing won't work.
+    )?1:0;
 }
 
 QByteArray
@@ -222,6 +227,57 @@ SBID::fuzzyMatch(const SBID &i)
     }
 
     return match;
+}
+
+QString
+SBID::getGenericDescription() const
+{
+    QString description;
+
+    switch(this->sb_item_type())
+    {
+    case sb_type_song:
+        description="Song";
+        break;
+
+    case sb_type_performer:
+        description="Performer";
+        break;
+
+    case sb_type_album:
+        description="Album";
+        break;
+
+    case sb_type_chart:
+        description="Chart";
+        break;
+
+    case sb_type_playlist:
+        description="Playlist";
+        break;
+
+    default:
+        description="Unknown -- type="+this->getType();
+    }
+
+    description+=" - "+this->getText();
+
+    switch(this->sb_item_type())
+    {
+    case sb_type_song:
+        description+=QString(" by %1 [%2]").arg(this->performerName).arg(this->duration.toString());
+        break;
+
+    case sb_type_album:
+        description+=" by "+this->performerName;
+        break;
+
+    default:
+        ;
+    }
+
+
+    return description;
 }
 
 QString
