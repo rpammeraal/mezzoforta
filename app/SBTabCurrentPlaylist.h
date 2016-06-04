@@ -52,6 +52,7 @@ private:
 
     void _init();
     SBID getSBIDSelected(const QModelIndex& idx);
+    QMap<int,SBID> _getCurrentPlaylist();
     virtual SBID _populate(const SBID& id);
     SBID _populatePlaylistFromDB(const SBID& id);
     virtual void _populatePost(const SBID& id);

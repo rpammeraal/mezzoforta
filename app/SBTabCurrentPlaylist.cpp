@@ -466,6 +466,30 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     return id;
 }
 
+QMap<int,SBID>
+SBTabCurrentPlaylist::_getCurrentPlaylist()
+{
+    qDebug() << SB_DEBUG_INFO;
+    QMap<int,SBID> list;
+    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllSongs();
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        QString idStr;
+        SBID id=SBID(SBID::sb_type_song,qm->record(i).value(2).toInt());
+        id.songTitle=qm->record(i).value(3).toString();
+        id.sb_performer_id=qm->record(i).value(5).toInt();
+        id.performerName=qm->record(i).value(6).toString();
+        id.sb_album_id=qm->record(i).value(8).toInt();
+        id.albumTitle=qm->record(i).value(9).toString();
+        id.sb_position=qm->record(i).value(11).toInt();
+        id.path=qm->record(i).value(12).toString();
+
+        list[i]=id;
+    }
+
+    return list;
+}
+
 ///
 /// \brief SBTabCurrentPlaylist::_populate
 /// \param id
@@ -508,7 +532,9 @@ SBTabCurrentPlaylist::_populatePlaylistFromDB(const SBID& id)
         tv->setModel(aem);
     }
     qDebug() << SB_DEBUG_INFO;
-    aem->populate();
+
+    QMap<int,SBID> playlist=this->_getCurrentPlaylist();
+    aem->populate(playlist,0);
 
     return SBID(SBID::sb_type_current_playlist,-1);
 }

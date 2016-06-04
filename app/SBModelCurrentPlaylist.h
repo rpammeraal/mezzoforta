@@ -52,7 +52,6 @@ public:
     SBID getNextSong(bool previousFlag=0);
     SBID getSongFromPlaylist(int playlistIndex);
 
-    QMap<int,SBID> populate();
     void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
     void populateHeader();
     void reorderItems();
