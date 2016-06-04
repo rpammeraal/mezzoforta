@@ -483,6 +483,7 @@ SBTabCurrentPlaylist::_getCurrentPlaylist()
         id.albumTitle=qm->record(i).value(9).toString();
         id.sb_position=qm->record(i).value(11).toInt();
         id.path=qm->record(i).value(12).toString();
+        id.duration=qm->record(i).value(13).toTime();
 
         list[i]=id;
     }
