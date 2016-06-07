@@ -12,6 +12,7 @@ class SBTime : public QTime
 public:
     SBTime();
     SBTime(const SBTime& t);
+    SBTime(const QString& t);
 
     SBTime& operator=(const SBTime& t);
     SBTime& operator=(const QTime& t);

@@ -79,7 +79,7 @@ Navigator::openScreenByID(SBID &id)
         return;
     }
 
-    if(st->getScreenCount() && id==st->currentScreen())
+    if(st->getScreenCount() && id.compareSimple(st->currentScreen()))
     {
         qDebug() << SB_DEBUG_INFO << "dup call to current screen" << id;
         return;
@@ -633,22 +633,26 @@ Navigator::activateTab(const SBID& to)
     //	Enable/disable search functionality
     if(isEditFlag==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
         mw->ui.searchEdit->setText(id.searchCriteria);
         mw->ui.leftColumnChooser->setEnabled(1);
         if(canBeEditedFlag)
         {
+            qDebug() << SB_DEBUG_INFO;
             editAction->setEnabled(1);
         }
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO;
         mw->ui.searchEdit->setEnabled(0);
         mw->ui.leftColumnChooser->setEnabled(0);
         editAction->setEnabled(0);
     }
 
+    qDebug() << SB_DEBUG_INFO;
     mw->ui.mainTab->insertTab(0,tab,QString(""));
 
     //	Enable/disable forward/back buttons
@@ -711,6 +715,7 @@ Navigator::checkOutstandingEdits() const
             }
         }
     }
+    qDebug() << SB_DEBUG_INFO << hasOutstandingEdits;
     return hasOutstandingEdits;
 }
 

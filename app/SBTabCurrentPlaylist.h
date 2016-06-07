@@ -51,7 +51,7 @@ private:
     bool _playlistLoadedFlag;
 
     void _init();
-    SBID getSBIDSelected(const QModelIndex& idx);
+    SBID getSBIDSelected(const QModelIndex& idx) const;
     QMap<int,SBID> _getCurrentPlaylist();
     virtual SBID _populate(const SBID& id);
     SBID _populatePlaylistFromDB(const SBID& id);

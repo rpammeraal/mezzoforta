@@ -68,11 +68,12 @@ public:
         SBID id=SBID(encodedData);
 
         qDebug() << SB_DEBUG_INFO << "Dropping " << id << " on " << parent.row();
-        if(_c)
+        if(_c && id.sb_item_type()!=SBID::sb_type_invalid)
         {
             _c->assignItemToPlaylist(parent,id);
+            return 1;
         }
-        return 1;
+        return 0;
     }
 
     virtual Qt::ItemFlags flags(const QModelIndex &index) const

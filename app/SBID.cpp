@@ -57,7 +57,13 @@ SBID::SBID(QByteArray encodedData)
 {
     init();
     QString s=QString(encodedData);
+    if(!s.length())
+    {
+        qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
+        return;
+    }
     QStringList sl=s.split('_');
+
     _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
     sb_performer_id          =sl[1].toInt();
     sb_album_id              =sl[2].toInt();
@@ -265,7 +271,11 @@ SBID::getGenericDescription() const
     switch(this->sb_item_type())
     {
     case sb_type_song:
-        description+=QString(" by %1 [%2]").arg(this->performerName).arg(this->duration.toString());
+        description+=QString(" [%3] / %1 - %2").
+            arg(this->performerName).
+            arg(this->albumTitle.length()?QString("on '%1'").arg(albumTitle):QString()).
+            arg(this->duration.toString())
+        ;
         break;
 
     case sb_type_album:

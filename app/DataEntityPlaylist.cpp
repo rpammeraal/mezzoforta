@@ -420,27 +420,38 @@ DataEntityPlaylist::getDetail(const SBID& id) const
 SBSqlQueryModel*
 DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
 {
+    this->reorderPlaylistPositions(id);
+
     //	Main query
     QString q=QString
     (
         "SELECT "
-            "pc.playlist_position as \"#\", "                      	  //	0
+            "pc.playlist_position as \"#\", "
             "CASE "
                 "WHEN pc.playlist_playlist_id IS NOT NULL THEN %2 "
                 "WHEN pc.playlist_chart_id    IS NOT NULL THEN %3 "
                 "WHEN pc.playlist_record_id   IS NOT NULL THEN %4 "
                 "WHEN pc.playlist_artist_id   IS NOT NULL THEN %5 "
-            "END AS SB_ITEM_TYPE, "                      		      //	1
-            "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "	//	2
-            "p.name, "                                                //	3
-            "c.name, "                                                //	4
-            "NULL, "                                                  //	5
-            "r.record_id, "                                           //	6
-            "r.title, "                                               //	7
-            "NULL, "                                                  //	8
-            "NULL, "                                                  //	9
-            "COALESCE(a.artist_id,ra.artist_id), "                    //	10
-            "COALESCE(a.name,ra.name) "                               //	11
+            "END AS SB_ITEM_TYPE, "
+            "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
+            "CASE "
+                "WHEN pc.playlist_playlist_id IS NOT NULL THEN 'playlist' "
+                "WHEN pc.playlist_chart_id    IS NOT NULL THEN 'chart' "
+                "WHEN pc.playlist_record_id   IS NOT NULL THEN 'album' "
+                "WHEN pc.playlist_artist_id   IS NOT NULL THEN 'artist' "
+            "END || ': ' || "
+            "COALESCE(p.name,c.name,r.title,a.name) || "
+            "CASE "
+                "WHEN pc.playlist_record_id   IS NOT NULL THEN ' - ' || ra.name "
+                "WHEN pc.playlist_artist_id   IS NOT NULL AND pc.playlist_record_id IS NOT NULL THEN ' - ' || a.name "
+                "ELSE '' "
+            "END  as item, "
+            "0 AS SB_ITEM_TYPE1, "
+            "0 AS SB_ALBUM_ID, "
+            "0 AS SB_ITEM_TYPE2, "
+            "0 AS SB_POSITION_ID, "
+            "0 AS SB_ITEM_TYPE3, "
+            "a.artist_id AS SB_PERFORMER_ID "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_composite pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist p ON "
@@ -457,18 +468,16 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
             "pc.playlist_id=%1 "
         "UNION "
         "SELECT "
-            "pp.playlist_position, "                    //	0
-            "%6, "                                      //	1
-            "s.song_id, "                               //	2
-            "NULL, "                                    //	3
-            "NULL, "                                    //	4
-            "s.title, "                                 //	5
-            "r.record_id AS SB_ALBUM_ID, "              //	6
-            "r.title, "                                 //	7
-            "rp.record_position AS SB_POSITION_ID, "    //	8
-            "rp.duration, "                             //	9
-            "a.artist_id AS SB_PERFORMER_ID, "          //	10
-            "a.name "                                   //	11
+            "pp.playlist_position, "
+            "%6, "
+            "s.song_id, "
+            "'song - ' || s.title || ' / ' || a.name || ' - ' || r.title, "
+            "%3 AS SB_ITEM_TYPE1, "
+            "r.record_id AS SB_ALBUM_ID, "
+            "%7 AS SB_ITEM_TYPE2, "
+            "rp.record_position AS SB_POSITION_ID, "
+            "%5 AS SB_ITEM_TYPE3, "
+            "pp.artist_id AS SB_PERFORMER_ID "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_performance pp  "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
@@ -484,14 +493,15 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
                     "rp.record_id=r.record_id "
         "WHERE "
             "pp.playlist_id=%1 "
+        "ORDER BY 1"
     )
-        .arg(id.sb_playlist_id)
-        .arg(SBID::sb_type_playlist)
-        .arg(SBID::sb_type_chart)
-        .arg(SBID::sb_type_album)
-        .arg(SBID::sb_type_performer)  //	5
-        .arg(SBID::sb_type_song)
-    ;
+            .arg(id.sb_playlist_id)
+            .arg(SBID::sb_type_playlist)
+            .arg(SBID::sb_type_chart)
+            .arg(SBID::sb_type_album)
+            .arg(SBID::sb_type_performer)  //	5
+            .arg(SBID::sb_type_song)
+            .arg(SBID::sb_type_position);
 
     return new SBSqlQueryModel(q,0);
 }
@@ -499,6 +509,7 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
 void
 DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed,QList<SBID>& allSongs,const SBID &id) const
 {
+    this->reorderPlaylistPositions(id);
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;

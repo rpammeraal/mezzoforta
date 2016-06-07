@@ -13,6 +13,11 @@ SBTime::SBTime(const SBTime &t):QTime(t)
     //setHMS(t.hour(),t.minute(),t.second());
 }
 
+SBTime::SBTime(const QString &t)
+{
+    this->fromString(t);
+}
+
 SBTime&
 SBTime::operator =(const SBTime& t)
 {

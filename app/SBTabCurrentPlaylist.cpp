@@ -37,6 +37,7 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     {
         pc->playerNext();
     }
+
     return;
 }
 
@@ -328,7 +329,6 @@ SBTabCurrentPlaylist::tableViewCellClicked(QModelIndex idx)
         Context::instance()->getNavigator()->openScreenByID(item);
     }
 }
-
 void
 SBTabCurrentPlaylist::tableViewCellDoubleClicked(QModelIndex idx)
 {
@@ -340,7 +340,7 @@ SBTabCurrentPlaylist::tableViewCellDoubleClicked(QModelIndex idx)
 void
 SBTabCurrentPlaylist::_init()
 {
-    qDebug() << SB_DEBUG_INFO << "PBSTARTRADIO";
+    qDebug() << SB_DEBUG_INFO;
 
     _pm=NULL;
     _playlistLoadedFlag=0;
@@ -393,7 +393,7 @@ SBTabCurrentPlaylist::_init()
 
 //	Due to the nature of drag/drop, this view differs from others.
 SBID
-SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
+SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx) const
 {
     qDebug() << SB_DEBUG_INFO << idx;
     SBID id;
@@ -403,24 +403,12 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     SBID::sb_type itemType=SBID::sb_type_invalid;
     QStandardItem* item;
-    QStandardItem* i2;
     int itemID=-1;
-
-    qDebug() << SB_DEBUG_INFO << "showing 1st 5 items";
-    for(int i=0;i<5;i++)
-    {
-        item=aem->item(i,SBModelCurrentPlaylist::sb_column_songtitle);
-        i2=aem->item(i,SBModelCurrentPlaylist::sb_column_songid);
-        qDebug() << SB_DEBUG_INFO << i << item->text() << i2->text();
-    }
-    qDebug() << SB_DEBUG_INFO << "end:showing 1st 5 items";
 
 
     switch((SBModelCurrentPlaylist::sb_column_type)idx.column())
     {
     case SBModelCurrentPlaylist::sb_column_deleteflag:
-    case SBModelCurrentPlaylist::sb_column_item_type:
-    case SBModelCurrentPlaylist::sb_column_item_id:
     case SBModelCurrentPlaylist::sb_column_playflag:
     case SBModelCurrentPlaylist::sb_column_albumid:
     case SBModelCurrentPlaylist::sb_column_displayplaylistpositionid:
@@ -429,7 +417,6 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx)
     case SBModelCurrentPlaylist::sb_column_playlistpositionid:
     case SBModelCurrentPlaylist::sb_column_position:
     case SBModelCurrentPlaylist::sb_column_path:
-    case SBModelCurrentPlaylist::sb_column_generic:
         break;
 
     case SBModelCurrentPlaylist::sb_column_songtitle:
@@ -535,7 +522,6 @@ SBTabCurrentPlaylist::_populatePlaylistFromDB(const SBID& id)
 void
 SBTabCurrentPlaylist::_populatePost(const SBID &id)
 {
-    //	1.	Init
     Q_UNUSED(id);
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
@@ -548,25 +534,18 @@ SBTabCurrentPlaylist::_populatePost(const SBID &id)
     tv->setDropIndicatorShown(1);
     tv->setDragDropMode(QAbstractItemView::InternalMove);
     tv->setDefaultDropAction(Qt::MoveAction);
-    tv->setDragDropOverwriteMode(false);
+    tv->setDragDropOverwriteMode(false);	
 
     //	3.	Set visibility
     tv->setColumnHidden(0,1);	//	sb_column_deleteflag
-    tv->setColumnHidden(1,1);	//	sb_column_item_type
-    tv->setColumnHidden(2,1);	//	sb_column_item_id
-    tv->setColumnHidden(3,1);	//	sb_column_playflag
-    tv->setColumnHidden(4,1);	//	sb_column_albumid
-    tv->setColumnHidden(5,0);	//	sb_column_displayplaylistpositionid
-    tv->setColumnHidden(6,1);	//	sb_column_songid
-    tv->setColumnHidden(7,1);	//	sb_column_performerid
-    tv->setColumnHidden(8,1);	//	sb_column_playlistpositionid
-    tv->setColumnHidden(9,1);	//	sb_column_position
-    tv->setColumnHidden(10,1);	//	sb_column_path
-    tv->setColumnHidden(11,0);	//	sb_column_songtitle
-    tv->setColumnHidden(12,0);	//	sb_column_duration
-    tv->setColumnHidden(13,0);	//	sb_column_performername
-    tv->setColumnHidden(14,0);	//	sb_column_albumtitle
-    tv->setColumnHidden(15,0);	//	sb_column_generic
+    tv->setColumnHidden(1,1);	//	sb_column_playflag
+    tv->setColumnHidden(2,1);	//	sb_column_albumid
+    tv->setColumnHidden(3,0);	//	sb_column_displayplaylistpositionid
+    tv->setColumnHidden(4,1);	//	sb_column_songid
+    tv->setColumnHidden(5,1);	//	sb_column_performerid
+    tv->setColumnHidden(6,1);	//	sb_column_playlistpositionid
+    tv->setColumnHidden(7,1);	//	sb_column_position
+    tv->setColumnHidden(8,1);	//	sb_column_path
 
     //	4.	Set headers.
     QHeaderView* hv=NULL;

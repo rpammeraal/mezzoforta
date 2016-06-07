@@ -443,6 +443,7 @@ Controller::init()
 void
 Controller::_resetStatusBar()
 {
+    qDebug() << SB_DEBUG_INFO;
     Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
 }
 

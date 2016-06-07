@@ -15,7 +15,7 @@ DataEntityCurrentPlaylist::clearPlaylist()
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
-    QString q="TRUNCATE TABLE ___SB_SCHEMA_NAME___current_playlist ";
+    QString q="DELETE FROM ___SB_SCHEMA_NAME___current_playlist ";
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO << q;

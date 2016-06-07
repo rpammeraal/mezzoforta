@@ -64,6 +64,7 @@ SBTab::refreshTabIfCurrent(const SBID &id)
 void
 SBTab::setSubtab(const SBID& id) const
 {
+    qDebug() << SB_DEBUG_INFO << id.subtabID;
     QTabWidget* tw=tabWidget();
     if(tw)
     {
@@ -75,6 +76,7 @@ SBTab::setSubtab(const SBID& id) const
         }
         if(subtabID!=INT_MAX)
         {
+            qDebug() << SB_DEBUG_INFO << "subtab set";
             tw->setCurrentIndex(id.subtabID);
         }
     }
@@ -82,6 +84,7 @@ SBTab::setSubtab(const SBID& id) const
     QTableView* ctv=subtabID2TableView(id.subtabID);
     if(ctv && id.sortColumn!=INT_MAX)
     {
+        qDebug() << SB_DEBUG_INFO << "sort applied" << id.sortColumn;
         ctv->sortByColumn(abs(id.sortColumn),(id.sortColumn>0?Qt::AscendingOrder:Qt::DescendingOrder));
     }
 }
@@ -341,7 +344,9 @@ SBTab::_populate(const SBID &id)
 void
 SBTab::_populatePost(const SBID& id)
 {
+    qDebug() << SB_DEBUG_INFO;
     this->setSubtab(id);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Protected slots
@@ -417,7 +422,6 @@ SBTab::tabBarClicked(int index)
 void
 SBTab::tableViewCellClicked(const QModelIndex& idx)
 {
-    qDebug() << SB_DEBUG_INFO << idx << idx.row() << idx.column();
     SBID id;
     const QSortFilterProxyModel* sfpm=dynamic_cast<const QSortFilterProxyModel *>(idx.model());
 

@@ -228,6 +228,22 @@ PlayerController::playerPlay()
         return 1;
     }
 
+    int currentIndex=_modelCurrentPlaylist->currentPlaylistIndex();
+    qDebug() << SB_DEBUG_INFO << currentIndex;
+    if(currentIndex==-1)
+    {
+        if(_modelCurrentPlaylist->rowCount())
+        {
+            currentIndex++;
+            qDebug() << SB_DEBUG_INFO << currentIndex;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << currentIndex;
+            return 0;
+        }
+    }
+
     SBID song=_modelCurrentPlaylist->getSongFromPlaylist(_modelCurrentPlaylist->currentPlaylistIndex());
     qDebug() << SB_DEBUG_INFO
              << song
