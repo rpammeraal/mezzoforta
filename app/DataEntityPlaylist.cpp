@@ -507,22 +507,306 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBID& id) const
 }
 
 void
-DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed,QList<SBID>& allSongs,const SBID &id) const
+DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraversed,QList<SBID>& allSongs,const SBID &rootID) const
 {
-    this->reorderPlaylistPositions(id);
+    this->reorderPlaylistPositions(rootID);
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    qDebug() << SB_DEBUG_INFO << "calculate for" << id;
+    qDebug() << SB_DEBUG_INFO << "retrieve " << rootID;
+    if(compositesTraversed.contains(rootID))
+    {
+        return;
+    }
+    compositesTraversed.append(rootID);
 
+    //	If rootID is a playlist, traverse trough all items within this playlist, recurse when neccessary.
+    switch(rootID.sb_item_type())
+    {
+    case SBID::sb_type_playlist:
+        q=QString
+            (
+                "SELECT "
+                    "0 AS composite_flag, "
+                    "pp.playlist_position, "
+                    "0 AS playlist_id, "
+                    "0 AS chart_id, "
+                    "pp.record_id, "
+                    "pp.artist_id, "
+                    "pp.song_id, "
+                    "pp.record_position, "
+                    "op.path, "
+                    "s.title, "
+                    "a.name, "
+                    "r.title, "
+                    "rp.duration "
+                "FROM "
+                    "___SB_SCHEMA_NAME___playlist_performance pp "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "op.artist_id=pp.artist_id AND "
+                            "op.song_id=pp.song_id AND "
+                            "op.record_id=pp.record_id AND "
+                            "op.record_position=pp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                            "pp.artist_id=rp.artist_id AND "
+                            "pp.song_id=rp.song_id AND "
+                            "pp.record_id=rp.record_id AND "
+                            "pp.record_position=rp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON "
+                            "pp.song_id=s.song_id "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                            "pp.artist_id=a.artist_id "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON "
+                            "pp.record_id=r.record_id "
+                "WHERE "
+                    "pp.playlist_id=%2 "
+                "UNION "
+                "SELECT "
+                    "1 AS composite_flag,"
+                    "pc.playlist_position, "
+                    "%1(playlist_playlist_id,0) AS playlist_id, "
+                    "%1(playlist_chart_id,0) AS chart_id, "
+                    "%1(playlist_record_id,0) AS record_id, "
+                    "%1(playlist_artist_id,0) AS artist_id, "
+                    "0 AS song_id, "
+                    "0 AS record_position, "
+                    "'' AS path, "
+                    "'' AS song_title, "
+                    "'' AS performer_name, "
+                    "'' AS record_title, "
+                    "NULL AS duration "
+                "FROM "
+                    "___SB_SCHEMA_NAME___playlist_composite pc "
+                "WHERE "
+                    "pc.playlist_id=%2 "
+                "ORDER BY "
+                    "2 "
+            )
+                .arg(dal->getIsNull())
+                .arg(rootID.sb_playlist_id)
+            ;
+
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        {
+            QSqlQuery allItems(q,db);
+
+            while(allItems.next())
+            {
+                bool compositeFlag=allItems.value(0).toInt();
+                int playlistID=allItems.value(2).toInt();
+                int chartID=allItems.value(3).toInt();
+                int albumID=allItems.value(4).toInt();
+                int performerID=allItems.value(5).toInt();
+
+                if(compositeFlag)
+                {
+                    SBID t;
+                    if(playlistID!=0)
+                    {
+                        qDebug() << SB_DEBUG_INFO;
+                        t.assign(SBID::sb_type_playlist,playlistID);
+                    }
+                    else if(chartID!=0)
+                    {
+                        qDebug() << SB_DEBUG_INFO;
+                        t.assign(SBID::sb_type_chart,chartID);
+                    }
+                    else if(albumID!=0)
+                    {
+                        qDebug() << SB_DEBUG_INFO;
+                        t.assign(SBID::sb_type_album,albumID);
+                    }
+                    else if(performerID!=0)
+                    {
+                        qDebug() << SB_DEBUG_INFO;
+                        t.assign(SBID::sb_type_performer,performerID);
+                    }
+                    qDebug() << SB_DEBUG_INFO << t;
+
+                    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,t);
+                }
+                else
+                {
+                int songID=allItems.value(6).toInt();
+                    SBID song=SBID(SBID::sb_type_song,songID);
+                    song.sb_album_id=albumID;
+                    song.sb_performer_id=performerID;
+                    song.sb_position=allItems.value(7).toInt();
+                    song.path=allItems.value(8).toString();
+                    song.songTitle=allItems.value(9).toString();
+                    song.performerName=allItems.value(10).toString();
+                    song.albumTitle=allItems.value(11).toString();
+                    song.playPosition=allSongs.count()+1;
+                    song.duration=allItems.value(12).toTime();
+
+                    if(allSongs.contains(song)==0)
+                    {
+                        allSongs.append(song);
+                    }
+                }
+            }
+        }
+        //	We're now done for this item, if it is a playlist:
+        //	-	playlist_performances were retrieved
+        //	-	recursed through all playlist_composites
+        //	Set q to <empty>, since other case statements will set this variable.
+        q=QString();
+        break;
+
+    case SBID::sb_type_chart:
+        q=QString
+            (
+                "SELECT "
+                    "pp.artist_id, "
+                    "pp.song_id, "
+                    "pp.record_id, "
+                    "pp.record_position, "
+                    "rp.duration, "
+                    "s.title, "
+                    "a.name, "
+                    "r.title, "
+                    "op.path "
+                "FROM "
+                    "___SB_SCHEMA_NAME___chart_performance pp "
+                        "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                            "pp.artist_id=rp.artist_id AND "
+                            "pp.song_id=rp.song_id AND "
+                            "pp.record_id=rp.record_id AND "
+                            "pp.record_position=rp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "op.artist_id=pp.artist_id AND "
+                            "op.song_id=pp.song_id AND "
+                            "op.record_id=pp.record_id AND "
+                            "op.record_position=pp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON "
+                            "pp.song_id=s.song_id "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                            "pp.artist_id=a.artist_id "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON "
+                            "pp.record_id=r.record_id "
+                "WHERE "
+                    "pp.chart_id=%1 "
+                "ORDER BY "
+                    "pp.chart_position "
+            )
+                .arg(rootID.sb_playlist_id)
+            ;
+        break;
+
+    case SBID::sb_type_album:
+        q=QString
+            (
+                "SELECT "
+                    "pp.artist_id, "
+                    "pp.song_id, "
+                    "pp.record_id, "
+                    "pp.record_position, "
+                    "pp.duration, "
+                    "s.title, "
+                    "a.name, "
+                    "r.title, "
+                    "op.path "
+                "FROM "
+                    "___SB_SCHEMA_NAME___record_performance pp "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "op.artist_id=pp.artist_id AND "
+                            "op.song_id=pp.song_id AND "
+                            "op.record_id=pp.record_id AND "
+                            "op.record_position=pp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON "
+                            "pp.song_id=s.song_id "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                            "pp.artist_id=a.artist_id "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON "
+                            "pp.record_id=r.record_id "
+                "WHERE "
+                    "pp.record_id=%1 "
+                "ORDER BY "
+                    "pp.record_position "
+            )
+                .arg(rootID.sb_album_id)
+            ;
+        break;
+
+    case SBID::sb_type_performer:
+        q=QString
+            (
+                "SELECT "
+                    "pp.artist_id, "
+                    "pp.song_id, "
+                    "pp.record_id, "
+                    "pp.record_position, "
+                    "pp.duration, "
+                    "s.title, "
+                    "a.name, "
+                    "r.title, "
+                    "op.path "
+                "FROM "
+                    "___SB_SCHEMA_NAME___record_performance pp "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "op.artist_id=pp.artist_id AND "
+                            "op.song_id=pp.song_id AND "
+                            "op.record_id=pp.record_id AND "
+                            "op.record_position=pp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON "
+                            "pp.song_id=s.song_id "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                            "pp.artist_id=a.artist_id "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON "
+                            "pp.record_id=r.record_id "
+                "WHERE "
+                    "pp.artist_id=%2"
+            )
+                .arg(rootID.sb_performer_id)
+            ;
+        break;
+
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_song:
+    case SBID::sb_type_position:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
+        break;
+    }
+
+    if(q.length())
+    {
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery querySong(q,db);
+        while(querySong.next())
+        {
+            SBID song(SBID::sb_type_song,querySong.value(1).toInt());
+            song.sb_performer_id=querySong.value(0).toInt();
+            song.sb_album_id=querySong.value(2).toInt();
+            song.sb_position=querySong.value(3).toInt();
+            song.duration=querySong.value(4).toTime();
+            song.songTitle=querySong.value(5).toString();
+            song.performerName=querySong.value(6).toString();
+            song.albumTitle=querySong.value(7).toString();
+            song.path=querySong.value(8).toString();
+            song.playPosition=allSongs.count()+1;
+
+            if(allSongs.contains(song)==0)
+            {
+                allSongs.append(song);
+            }
+        }
+    }
+
+    return;
+    //	OLD
+
+    /*
     if(compositesTraversed.contains(id.sb_item_id())==0)
     {
         compositesTraversed.insert(id.sb_item_id(),1);
         switch(id.sb_item_type())
         {
             case SBID::sb_type_playlist:
-                //	Calculate duration of all items in playlist_composite
                 q=QString
                     (
                         "SELECT "
@@ -534,13 +818,14 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                             "___SB_SCHEMA_NAME___playlist_composite pc "
                         "WHERE "
                             "pc.playlist_id=%2 "
+                        "ORDER BY "
+                            "pc.playlist_position "
                     )
                         .arg(dal->getIsNull())
                         .arg(id.sb_playlist_id)
                     ;
                 dal->customize(q);
                 qDebug() << SB_DEBUG_INFO << q;
-                //	Declaring variables in compound statement to avoid compiler errors
                 {
                     QSqlQuery queryComposite(q,db);
 
@@ -578,7 +863,6 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                     }
                 }
 
-                //	Calculate duration of all songs in playlist_performance
                 q=QString
                     (
                         "SELECT "
@@ -586,7 +870,11 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                             "pp.song_id, "
                             "pp.record_id, "
                             "pp.record_position, "
-                            "rp.duration "
+                            "rp.duration, "
+                            "s.title, "
+                            "a.name, "
+                            "r.title, "
+                            "op.path "
                         "FROM "
                             "___SB_SCHEMA_NAME___playlist_performance pp "
                                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -594,8 +882,21 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                                     "pp.song_id=rp.song_id AND "
                                     "pp.record_id=rp.record_id AND "
                                     "pp.record_position=rp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                                    "op.artist_id=pp.artist_id AND "
+                                    "op.song_id=pp.song_id AND "
+                                    "op.record_id=pp.record_id AND "
+                                    "op.record_position=pp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                                    "pp.song_id=s.song_id "
+                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                                    "pp.artist_id=a.artist_id "
+                                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                                    "pp.record_id=r.record_id "
                         "WHERE "
                             "pp.playlist_id=%1"
+                        "ORDER BY "
+                            "pp.playlist_position "
                     )
                         .arg(id.sb_playlist_id)
                     ;
@@ -609,7 +910,11 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                             "pp.song_id, "
                             "pp.record_id, "
                             "pp.record_position, "
-                            "rp.duration "
+                            "rp.duration, "
+                            "s.title, "
+                            "a.name, "
+                            "r.title, "
+                            "op.path "
                         "FROM "
                             "___SB_SCHEMA_NAME___chart_performance pp "
                                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -617,6 +922,17 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                                     "pp.song_id=rp.song_id AND "
                                     "pp.record_id=rp.record_id AND "
                                     "pp.record_position=rp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                                    "op.artist_id=pp.artist_id AND "
+                                    "op.song_id=pp.song_id AND "
+                                    "op.record_id=pp.record_id AND "
+                                    "op.record_position=pp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                                    "pp.song_id=s.song_id "
+                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                                    "pp.artist_id=a.artist_id "
+                                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                                    "pp.record_id=r.record_id "
                         "WHERE "
                             "pp.chart_id=%1"
                     )
@@ -628,15 +944,32 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                 q=QString
                     (
                         "SELECT "
-                            "rp.artist_id, "
-                            "rp.song_id, "
-                            "rp.record_id, "
-                            "rp.record_position, "
-                            "rp.duration "
+                            "pp.artist_id, "
+                            "pp.song_id, "
+                            "pp.record_id, "
+                            "pp.record_position, "
+                            "pp.duration, "
+                            "s.title, "
+                            "a.name, "
+                            "r.title, "
+                            "op.path "
                         "FROM "
-                            "___SB_SCHEMA_NAME___record_performance rp "
+                            "___SB_SCHEMA_NAME___record_performance pp "
+                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                                    "op.artist_id=pp.artist_id AND "
+                                    "op.song_id=pp.song_id AND "
+                                    "op.record_id=pp.record_id AND "
+                                    "op.record_position=pp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                                    "pp.song_id=s.song_id "
+                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                                    "pp.artist_id=a.artist_id "
+                                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                                    "pp.record_id=r.record_id "
                         "WHERE "
-                            "rp.record_id=%1"
+                            "pp.record_id=%1"
+                        "ORDER BY "
+                            "pp.record_position "
                     )
                         .arg(id.sb_album_id)
                     ;
@@ -646,15 +979,30 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
                 q=QString
                     (
                         "SELECT "
-                            "rp.artist_id, "
-                            "rp.song_id, "
-                            "rp.record_id, "
-                            "rp.record_position, "
-                            "rp.duration "
+                            "pp.artist_id, "
+                            "pp.song_id, "
+                            "pp.record_id, "
+                            "pp.record_position, "
+                            "pp.duration, "
+                            "s.title, "
+                            "a.name, "
+                            "r.title, "
+                            "op.path "
                         "FROM "
-                            "___SB_SCHEMA_NAME___record_performance rp "
+                            "___SB_SCHEMA_NAME___record_performance pp "
+                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                                    "op.artist_id=pp.artist_id AND "
+                                    "op.song_id=pp.song_id AND "
+                                    "op.record_id=pp.record_id AND "
+                                    "op.record_position=pp.record_position "
+                                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                                    "pp.song_id=s.song_id "
+                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                                    "pp.artist_id=a.artist_id "
+                                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                                    "pp.record_id=r.record_id "
                         "WHERE "
-                            "rp.artist_id=%2"
+                            "pp.artist_id=%2"
                     )
                         .arg(id.sb_performer_id)
                     ;
@@ -681,6 +1029,10 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
             songID.sb_album_id=querySong.value(2).toInt();
             songID.sb_position=querySong.value(3).toInt();
             songID.duration=querySong.value(4).toTime();
+            songID.songTitle=querySong.value(5).toString();
+            songID.performerName=querySong.value(6).toString();
+            songID.albumTitle=querySong.value(7).toString();
+            songID.path=querySong.value(8).toString();
 
             if(allSongs.contains(songID)==0)
             {
@@ -688,6 +1040,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTra
             }
         }
     }
+    */
 }
 
 SBSqlQueryModel*
@@ -754,7 +1107,7 @@ DataEntityPlaylist::recalculateAllPlaylistDurations() const
 void
 DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
 {
-    QHash<int,int> compositesTraversed;
+    QList<SBID> compositesTraversed;
     QList<SBID> allSongs;
 
     //	Get all songs
@@ -795,6 +1148,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
     QSqlQuery query(q,db);
     query.exec();
 }
+
 void
 DataEntityPlaylist::renamePlaylist(const SBID &id) const
 {

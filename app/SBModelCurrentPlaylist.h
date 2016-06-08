@@ -7,6 +7,7 @@
 /// \brief The SBModelCurrentPlaylist class
 ///
 /// SBModelCurrentPlaylist holds a playlist model.
+/// NOTE: It does NOT rely on any database table!
 class SBModelCurrentPlaylist : public QStandardItemModel
 {
 public:

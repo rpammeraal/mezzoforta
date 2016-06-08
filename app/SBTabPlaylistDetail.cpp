@@ -31,11 +31,9 @@ SBTabPlaylistDetail::deletePlaylistItem()
     SBID assignID=getSBIDSelected(lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        DataEntityPlaylist* pl=new DataEntityPlaylist;
-        connect(pl, SIGNAL(si_playlistDetailUpdated(SBID)),
-                 this, SLOT(sl_updatePlaylistDetail(SBID)));
+        DataEntityPlaylist pl;
 
-        pl->deletePlaylistItem(assignID,fromID);
+        pl.deletePlaylistItem(assignID,fromID);
         refreshTabIfCurrent(fromID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
@@ -57,8 +55,8 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
     //	Determine current playlist
     SBID currentID=Context::instance()->getScreenStack()->currentScreen();
 
-    DataEntityPlaylist *mpl=new DataEntityPlaylist();
-    mpl->reorderItem(currentID,fromID,row);
+    DataEntityPlaylist mpl;
+    mpl.reorderItem(currentID,fromID,row);
     refreshTabIfCurrent(currentID);
 }
 

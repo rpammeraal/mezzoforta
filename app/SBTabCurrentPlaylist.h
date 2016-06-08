@@ -21,6 +21,7 @@ public:
     SBTabCurrentPlaylist(QWidget* parent=0);
 
     void playPlaylist(const SBID& playlistID);
+    void enqueuePlaylist(const SBID& playlistID);
     inline bool playingRadioFlag() const { return _playingRadioFlag; }
 
     //	Virtual
@@ -54,10 +55,9 @@ private:
 
     void _init();
     SBID getSBIDSelected(const QModelIndex& idx) const;
-    QMap<int,SBID> _getCurrentPlaylist();
     virtual SBID _populate(const SBID& id);
-    SBID _populatePlaylistFromDB(const SBID& id);
     virtual void _populatePost(const SBID& id);
+
 };
 
 #endif // SBTABCURRENTPLAYLIST_H

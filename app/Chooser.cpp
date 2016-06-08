@@ -280,6 +280,23 @@ Chooser::deletePlaylist()
 }
 
 void
+Chooser::enqueuePlaylist()
+{
+    qDebug() << SB_DEBUG_INFO << lastClickedIndex;
+    SBID id=getPlaylistSelected(lastClickedIndex);
+    qDebug() << SB_DEBUG_INFO << id;
+    if(id.sb_item_type()==SBID::sb_type_playlist)
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        SBTabCurrentPlaylist* cpl=mw->ui.tabCurrentPlaylist;
+        if(cpl)
+        {
+            cpl->enqueuePlaylist(id);
+        }
+    }
+}
+
+void
 Chooser::newPlaylist()
 {
     qDebug() << SB_DEBUG_INFO;
@@ -389,6 +406,7 @@ Chooser::showContextMenu(const QPoint &p)
 
         QMenu menu(NULL);
         menu.addAction(playPlaylistAction);
+        menu.addAction(enqueuePlaylistAction);
         menu.addAction(newAction);
         menu.addAction(deleteAction);
         menu.addAction(renameAction);
@@ -557,9 +575,15 @@ Chooser::init()
     //	Play playlist
     playPlaylistAction = new QAction(tr("&Play Playlist"), this);
     playPlaylistAction->setShortcuts(QKeySequence::New);
-    playPlaylistAction->setStatusTip(tr("Create New Playlist"));
+    playPlaylistAction->setStatusTip(tr("Play Playlist"));
     connect(playPlaylistAction, SIGNAL(triggered()),
             this, SLOT(playPlaylist()));
+
+    //	Enqueue playlist
+    enqueuePlaylistAction = new QAction(tr("Enqeue Playlist"), this);
+    enqueuePlaylistAction->setStatusTip(tr("Enqueue Playlist"));
+    connect(enqueuePlaylistAction, SIGNAL(triggered()),
+            this, SLOT(enqueuePlaylist()));
 
     //	New playlist
     newAction = new QAction(tr("&New Playlist"), this);

@@ -24,6 +24,7 @@ public:
 public slots:
     void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();
+    void enqueuePlaylist();
     void newPlaylist();
     void playlistChanged(const SBID& playlistID);
     void playPlaylist();
@@ -40,6 +41,7 @@ private:
     QAction* deleteAction;
     QAction* renameAction;
     QAction* playPlaylistAction;
+    QAction* enqueuePlaylistAction;
 
     //SBStandardItemModel* model;
     QModelIndex lastClickedIndex;

@@ -22,17 +22,37 @@ SBTabCurrentPlaylist::SBTabCurrentPlaylist(QWidget* parent) : SBTab(parent,0)
 void
 SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
 {
+    _init();
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     PlayerController* pc=Context::instance()->getPlayerController();
+    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     _playlistLoadedFlag=0;
     _playingRadioFlag=0;
 
     this->clearPlaylist();
-    DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
+    QList<SBID> compositesTraversed;
+    QList<SBID> allSongs;
+    QMap<int,SBID> playList;
 
-    this->_populatePlaylistFromDB(SBID());
-    this->_populatePost(SBID());
+    //	Get all songs
+    qDebug() << SB_DEBUG_INFO;
+    compositesTraversed.clear();
+    allSongs.clear();
+    DataEntityPlaylist mpl;
+    mpl.getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,playlistID);
+
+    //	Populate playlist
+    for(int i=0;i<allSongs.count();i++)
+    {
+        playList[i]=allSongs.at(i);
+    }
 
     pc->playerStop();
+
+    SB_DEBUG_IF_NULL(aem);
+    aem->populate(playList);
+
     bool isPlayingFlag=pc->playerPlayInPlaylist(playlistID);
     if(isPlayingFlag==0)
     {
@@ -40,6 +60,12 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     }
 
     return;
+}
+
+void
+SBTabCurrentPlaylist::enqueuePlaylist(const SBID &playlistID)
+{
+
 }
 
 QTableView*
@@ -81,8 +107,8 @@ SBTabCurrentPlaylist::movePlaylistItem(const SBID& fromID, const SBID &toID)
     qDebug() << SB_DEBUG_INFO << currentID << fromID << toID;
     return;
 
-    DataEntityPlaylist *mpl=new DataEntityPlaylist();
-    mpl->reorderItem(currentID,fromID,toID);
+    DataEntityPlaylist mpl;
+    mpl.reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
 }
 
@@ -157,7 +183,7 @@ SBTabCurrentPlaylist::clearPlaylist()
     {
         aem->clear();
     }
-    DataEntityCurrentPlaylist::clearPlaylist();
+    //DataEntityCurrentPlaylist::clearPlaylist();
 }
 
 void
@@ -175,10 +201,10 @@ SBTabCurrentPlaylist::shufflePlaylist()
 void
 SBTabCurrentPlaylist::startRadio()
 {
+    _init();
     qDebug() << SB_DEBUG_INFO;
     MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    this->_populatePlaylistFromDB(SBID());
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     PlayerController* pc=Context::instance()->getPlayerController();
     const int firstBatchNumber=5;
@@ -398,6 +424,20 @@ SBTabCurrentPlaylist::_init()
         connect(playSongNowAction, SIGNAL(triggered(bool)),
                 this, SLOT(playSong()));
 
+        //	Set up model
+        SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
+        if(aem==NULL)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            PlayerController* pc=Context::instance()->getPlayerController();
+
+            SB_DEBUG_IF_NULL(pc);
+            aem=new SBModelCurrentPlaylist();
+            pc->setModelCurrentPlaylist(aem);
+            tv->setModel(aem);
+        }
+        qDebug() << SB_DEBUG_INFO;
+
         _initDoneFlag=1;
     }
 }
@@ -457,31 +497,6 @@ SBTabCurrentPlaylist::getSBIDSelected(const QModelIndex &idx) const
     return id;
 }
 
-QMap<int,SBID>
-SBTabCurrentPlaylist::_getCurrentPlaylist()
-{
-    qDebug() << SB_DEBUG_INFO;
-    QMap<int,SBID> list;
-    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllSongs();
-    for(int i=0;i<qm->rowCount();i++)
-    {
-        QString idStr;
-        SBID id=SBID(SBID::sb_type_song,qm->record(i).value(2).toInt());
-        id.songTitle=qm->record(i).value(3).toString();
-        id.sb_performer_id=qm->record(i).value(5).toInt();
-        id.performerName=qm->record(i).value(6).toString();
-        id.sb_album_id=qm->record(i).value(8).toInt();
-        id.albumTitle=qm->record(i).value(9).toString();
-        id.sb_position=qm->record(i).value(11).toInt();
-        id.path=qm->record(i).value(12).toString();
-        id.duration=qm->record(i).value(13).toTime();
-
-        list[i]=id;
-    }
-
-    return list;
-}
-
 ///
 /// \brief SBTabCurrentPlaylist::_populate
 /// \param id
@@ -498,36 +513,6 @@ SBTabCurrentPlaylist::_populate(const SBID& id)
 {
     Q_UNUSED(id);
     _init();
-    return SBID(SBID::sb_type_current_playlist,-1);
-}
-
-SBID
-SBTabCurrentPlaylist::_populatePlaylistFromDB(const SBID& id)
-{
-    Q_UNUSED(id);
-    qDebug() << SB_DEBUG_INFO << _playlistLoadedFlag;
-    _init();
-    this->_populate(SBID());
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-
-    //	Populate playlist
-
-    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    if(aem==NULL)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        PlayerController* pc=Context::instance()->getPlayerController();
-
-        aem=new SBModelCurrentPlaylist();
-        pc->setModelCurrentPlaylist(aem);
-        tv->setModel(aem);
-    }
-    qDebug() << SB_DEBUG_INFO;
-
-    QMap<int,SBID> playlist=this->_getCurrentPlaylist();
-    aem->populate(playlist,0);
-
     return SBID(SBID::sb_type_current_playlist,-1);
 }
 

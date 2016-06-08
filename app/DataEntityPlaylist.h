@@ -23,7 +23,7 @@ public:
     void deletePlaylist(const SBID& id) const;
     SBID getDetail(const SBID& id) const;
     SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id) const;
-    void getAllItemsByPlaylistRecursive(QHash<int,int>& compositesTraversed, QList<SBID>& allSongs, const SBID& id) const;
+    void getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraversed, QList<SBID>& allSongs, const SBID& id) const;
     SBSqlQueryModel* getAllPlaylists() const;
     void recalculateAllPlaylistDurations() const;
     void recalculatePlaylistDuration(const SBID& id) const;
