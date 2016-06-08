@@ -24,6 +24,7 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
 {
     PlayerController* pc=Context::instance()->getPlayerController();
     _playlistLoadedFlag=0;
+    _playingRadioFlag=0;
 
     this->clearPlaylist();
     DataEntityCurrentPlaylist::populateFromPlaylist(playlistID);
@@ -102,7 +103,13 @@ SBTabCurrentPlaylist::playSong()
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
     aem->setCurrentSongByID(_lastClickedIndex.row());
-    pc->playerPlay();
+
+    bool isPlaying=0;
+    isPlaying=pc->playerPlay();
+    if(isPlaying==0)
+    {
+        pc->playerNext();
+    }
 }
 
 void
@@ -177,6 +184,7 @@ SBTabCurrentPlaylist::startRadio()
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
     _playlistLoadedFlag=0;
+    _playingRadioFlag=1;
 
     this->clearPlaylist();
 
@@ -204,6 +212,7 @@ SBTabCurrentPlaylist::startRadio()
     qDebug() << SB_DEBUG_INFO << "randomizing " << numSongs << "songs";
     bool found=1;
     int nextOpenSlotIndex=0;
+    _populatePost(SBID());
     for(;found && nextOpenSlotIndex<numSongs;nextOpenSlotIndex++)
     {
         found=0;
@@ -229,6 +238,7 @@ SBTabCurrentPlaylist::startRadio()
                 {
                     idx=i;
                     found=1;
+                    indexCovered.append(idx);
                 }
             }
         }
@@ -252,6 +262,7 @@ SBTabCurrentPlaylist::startRadio()
         item.duration=qm->record(idx).value(8).toTime();
 
         playList[nextOpenSlotIndex]=item;
+        qDebug() << SB_DEBUG_INFO << idx << nextOpenSlotIndex << item;
 
         if(nextOpenSlotIndex%songInterval==0 || nextOpenSlotIndex+1==numSongs)
         {
@@ -344,6 +355,7 @@ SBTabCurrentPlaylist::_init()
 
     _pm=NULL;
     _playlistLoadedFlag=0;
+    _playingRadioFlag=0;
     if(_initDoneFlag==0)
     {
         MainWindow* mw=Context::instance()->getMainWindow();

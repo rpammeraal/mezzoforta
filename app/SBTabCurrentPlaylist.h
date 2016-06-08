@@ -21,6 +21,7 @@ public:
     SBTabCurrentPlaylist(QWidget* parent=0);
 
     void playPlaylist(const SBID& playlistID);
+    inline bool playingRadioFlag() const { return _playingRadioFlag; }
 
     //	Virtual
     virtual QTableView* subtabID2TableView(int subtabID) const;
@@ -49,6 +50,7 @@ private:
     QModelIndex _lastClickedIndex;
     CurrentPlaylistModel* _pm;
     bool _playlistLoadedFlag;
+    bool _playingRadioFlag;
 
     void _init();
     SBID getSBIDSelected(const QModelIndex& idx) const;

@@ -51,6 +51,7 @@ public:
     int playlistCount() const;
     SBID getNextSong(bool previousFlag=0);
     SBID getSongFromPlaylist(int playlistIndex);
+    void resetCurrentPlayID();
 
     void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
     void populateHeader();
@@ -65,7 +66,7 @@ public:
     void debugShow(const QString& title=QString());
 
 private:
-    int _currentPlayID;             //	0-based
+    int _currentPlayID;             //	0-based, CWIP: should be maintained in player controller
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H

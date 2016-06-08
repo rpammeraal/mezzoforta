@@ -304,23 +304,57 @@ PlayerController::playerNext()
     _state=PlayerController::sb_player_state_changing_media;
     _playerStop();
     bool isPlayingFlag=0;
-    SBID previousSong;
-    SBID newSong=_currentSongPlaying;
+    //SBID previousSong=_currentSongPlaying;
+    SBID newSong;
+    int maxTries=_modelCurrentPlaylist->rowCount();
+    int currentTry=0;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTabCurrentPlaylist* cpl=mw->ui.tabCurrentPlaylist;
+    SB_DEBUG_IF_NULL(cpl);
 
     //	Get out of loop if we're stuck. Either:
     //	-	get a song playing, or
     //	-	the very first song does not play for whatever reason
     qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
-    while(isPlayingFlag==0 && ((previousSong!=newSong) || newSong.sb_item_type()==SBID::sb_type_invalid))
+    while(
+        currentTry++<maxTries && //	only try as many times as there are songs, and
+        isPlayingFlag==0         //	we still don't have anything playing as of now
+    )
     {
-        previousSong=newSong;
         newSong=calculateNextSongID();
-        isPlayingFlag=_playSong(newSong);
-        qDebug() << SB_DEBUG_INFO
-                 << "isPlayingFlag=" << isPlayingFlag
-                 << "newSong=" << newSong
-        ;
+        if(newSong.compareSimple(_currentSongPlaying))
+        {
+            //	End of the list
+            if(cpl->playingRadioFlag())
+            {
+                qDebug() << SB_DEBUG_INFO;
+                this->playerStop();
+                cpl->startRadio();	//	restart radio
+                return;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO << _modelCurrentPlaylist->currentPlaylistIndex();
+                this->playerStop();
+                qDebug() << SB_DEBUG_INFO << _modelCurrentPlaylist->currentPlaylistIndex();
+                _modelCurrentPlaylist->resetCurrentPlayID();
+            }
+        }
+        else
+        {
+            isPlayingFlag=_playSong(newSong);
+        }
     }
+//    while(isPlayingFlag==0 && ((previousSong.compareSimple(newSong)==0) || newSong.sb_item_type()==SBID::sb_type_invalid))
+//    {
+//        previousSong=newSong;
+//        newSong=calculateNextSongID();
+//        isPlayingFlag=_playSong(newSong);
+//        qDebug() << SB_DEBUG_INFO
+//                 << "isPlayingFlag=" << isPlayingFlag
+//                 << "newSong=" << newSong
+//        ;
+//    }
     //	CWIP:PLAY
     //	If isPlaying==0 show error
     qDebug() << SB_DEBUG_INFO << isPlayingFlag;

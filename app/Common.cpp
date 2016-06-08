@@ -53,9 +53,9 @@ quint64
 Common::random(quint64 max)
 {
     quint64 rnd=qrand();
-    rnd=rnd * max;
-    rnd = rnd / RAND_MAX;
-    return (quint64)rnd;
+    rnd=rnd * (max);
+    rnd = rnd % max;
+    return (quint64)rnd-1;
 }
 
 quint64

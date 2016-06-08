@@ -55,6 +55,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
     //fn="C:/temp/mies.mp3";
     //fn="/tmp/wim.flac";
     //fn="/Volumes/bigtmp/wim.flac";
+    //fn="/bogus/i/dont/exist.flac";
 
     if(_stream)
     {

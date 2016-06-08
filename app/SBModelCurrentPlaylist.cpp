@@ -340,6 +340,13 @@ SBModelCurrentPlaylist::getSongFromPlaylist(int playlistIndex)
     return song;
 }
 
+void
+SBModelCurrentPlaylist::resetCurrentPlayID()
+{
+    setCurrentSongByID(-1);
+    _currentPlayID=-1;
+}
+
 int
 SBModelCurrentPlaylist::currentPlaylistIndex() const
 {
@@ -507,6 +514,7 @@ SBModelCurrentPlaylist::repaintAll()
 QModelIndex
 SBModelCurrentPlaylist::setCurrentSongByID(int playID)
 {
+    qDebug() << SB_DEBUG_INFO << _currentPlayID << playID;
     QStandardItem* item=NULL;
     int oldRowID=-1;
     int newRowID=-1;

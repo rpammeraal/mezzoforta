@@ -40,7 +40,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 #endif
     if(resultCode!=0)
     {
-        _error=QString("Could not open '%s' as a OGG file").arg(fileName);
+        _error=QString("Could not open '%1' as a OGG file").arg(fileName);
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
@@ -49,7 +49,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     vorbis_info* vi=ov_info(&_ovf,-1);
     if(vi==NULL)
     {
-        _error=QString("Could not get metadata from '%s'").arg(fileName);
+        _error=QString("Could not get metadata from '%1'").arg(fileName);
         qDebug() << SB_DEBUG_NPTR << _error;
         return;
     }
@@ -64,7 +64,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 
     if(vi->channels!=2)
     {
-        _error=QString("Only 2 ogg/vorbis channels supported '%s'").arg(fileName);
+        _error=QString("Only 2 ogg/vorbis channels supported '%1'").arg(fileName);
         qDebug() << SB_DEBUG_NPTR << _error;
         return;
     }
@@ -72,7 +72,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     quint64 numFrames=ov_pcm_total(&_ovf,-1);
     if(!numFrames)
     {
-        _error=QString("Zero frames in '%s'").arg(fileName);
+        _error=QString("Zero frames in '%1'").arg(fileName);
         qDebug() << SB_DEBUG_NPTR << _error;
         return;
     }
