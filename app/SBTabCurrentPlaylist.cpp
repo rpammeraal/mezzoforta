@@ -27,7 +27,6 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     PlayerController* pc=Context::instance()->getPlayerController();
     SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
-    _playlistLoadedFlag=0;
     _playingRadioFlag=0;
 
     this->clearPlaylist();
@@ -58,14 +57,35 @@ SBTabCurrentPlaylist::playPlaylist(const SBID &playlistID)
     {
         pc->playerNext();
     }
-
-    return;
 }
 
 void
 SBTabCurrentPlaylist::enqueuePlaylist(const SBID &playlistID)
 {
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
+    SBModelCurrentPlaylist* aem=dynamic_cast<SBModelCurrentPlaylist *>(tv->model());
 
+    QList<SBID> allSongs=aem->getAllSongs(); //	Get list of all songs currently in model
+    QList<SBID> compositesTraversed;
+    QMap<int,SBID> playList;
+
+    //	Get all songs
+    qDebug() << SB_DEBUG_INFO << "currently in queue=" << allSongs.count();
+    compositesTraversed.clear();
+    allSongs.clear();
+    DataEntityPlaylist mpl;
+    mpl.getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,playlistID);
+
+    //	Populate playlist
+    for(int i=0;i<allSongs.count();i++)
+    {
+        playList[i]=allSongs.at(i);
+        qDebug() << SB_DEBUG_INFO << "Adding" << allSongs.at(i);
+    }
+
+    aem->populate(playList,1);
+    this->_populatePost(playlistID);
 }
 
 QTableView*
@@ -209,7 +229,6 @@ SBTabCurrentPlaylist::startRadio()
     PlayerController* pc=Context::instance()->getPlayerController();
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
-    _playlistLoadedFlag=0;
     _playingRadioFlag=1;
 
     this->clearPlaylist();
@@ -239,8 +258,10 @@ SBTabCurrentPlaylist::startRadio()
     bool found=1;
     int nextOpenSlotIndex=0;
     _populatePost(SBID());
-    for(;found && nextOpenSlotIndex<numSongs;nextOpenSlotIndex++)
+    int index=0;
+    while(index<numSongs)
     {
+        qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex;
         found=0;
         int idx=-1;
 
@@ -251,6 +272,11 @@ SBTabCurrentPlaylist::startRadio()
             {
                 found=1;
                 indexCovered.append(idx);
+                qDebug() << SB_DEBUG_INFO << "idx=" << idx << "not used yet";
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO << "idx=" << idx << "already used";
             }
         }
 
@@ -265,16 +291,12 @@ SBTabCurrentPlaylist::startRadio()
                     idx=i;
                     found=1;
                     indexCovered.append(idx);
+                    qDebug() << SB_DEBUG_INFO << "taking idx=" << idx;
                 }
             }
         }
 
-//        qDebug() << SB_DEBUG_INFO
-//                 << "index=" << nextOpenSlotIndex
-//                 << qm->record(idx).value(1).toString()
-//                 << qm->record(idx).value(3).toString()
-//                 << qm->record(idx).value(5).toString();
-//        ;
+        qDebug() << SB_DEBUG_INFO << "random is " << idx;
 
         SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
 
@@ -287,10 +309,10 @@ SBTabCurrentPlaylist::startRadio()
         item.path=qm->record(idx).value(7).toString();
         item.duration=qm->record(idx).value(8).toTime();
 
-        playList[nextOpenSlotIndex]=item;
-        qDebug() << SB_DEBUG_INFO << idx << nextOpenSlotIndex << item;
+        playList[nextOpenSlotIndex++]=item;
+        qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex-1 << playList[nextOpenSlotIndex-1];
 
-        if(nextOpenSlotIndex%songInterval==0 || nextOpenSlotIndex+1==numSongs)
+        if(index%songInterval==0 || index+1==numSongs)
         {
             //	Update progress
             pd.setValue(++progressStep);
@@ -298,7 +320,7 @@ SBTabCurrentPlaylist::startRadio()
         }
 
         //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
-        if(nextOpenSlotIndex+1==firstBatchNumber || nextOpenSlotIndex+1==numSongs)
+        if(index+1==firstBatchNumber || index+1==numSongs)
         {
             if(!firstBatchLoaded)
             {
@@ -309,14 +331,16 @@ SBTabCurrentPlaylist::startRadio()
 
                 pc->playerStop();
                 bool isPlayingFlag=pc->playerPlayInRadio();
-                qDebug() << SB_DEBUG_INFO << isPlayingFlag;
                 if(isPlayingFlag==0)
                 {
-                    qDebug() << SB_DEBUG_INFO;
                     pc->playerNext();
                 }
 
                 firstBatchLoaded=true;
+
+                //	Got the first batch loaded, clear playList and reset nextOpenSlotIndex
+                playList.clear();
+                nextOpenSlotIndex=0;
             }
             else
             {
@@ -325,11 +349,7 @@ SBTabCurrentPlaylist::startRadio()
                 qDebug() << SB_DEBUG_INFO << "after sending to aem 2nd batch:playList.count()=" << playList.count();
             }
         }
-//        qDebug() << SB_DEBUG_INFO
-//                 << ":nextOpenSlotIndex=" << nextOpenSlotIndex
-//                 << ":found=" << found
-//                 << ":numSongs=" << numSongs
-//        ;
+        index++;
     }
 
     QString allIDX=" ";
@@ -344,11 +364,11 @@ SBTabCurrentPlaylist::startRadio()
     qDebug() << SB_DEBUG_INFO << "Populated" << playList.count() << "of" << numSongs;
     qDebug() << SB_DEBUG_INFO << "indexCovered.count" << indexCovered.count();
 
-//    qDebug() << SB_DEBUG_INFO << "contents playlist";
-//    for(int i=0;i<playList.count();i++)
-//    {
-//        qDebug() << SB_DEBUG_INFO << i << playList[i];
-//    }
+    qDebug() << SB_DEBUG_INFO << "contents playlist";
+    for(int i=0;i<playList.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << playList[i];
+    }
 }
 
 void
@@ -380,7 +400,6 @@ SBTabCurrentPlaylist::_init()
     qDebug() << SB_DEBUG_INFO;
 
     _pm=NULL;
-    _playlistLoadedFlag=0;
     _playingRadioFlag=0;
     if(_initDoneFlag==0)
     {

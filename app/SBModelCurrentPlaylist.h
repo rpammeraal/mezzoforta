@@ -49,7 +49,8 @@ public:
 
     //	Methods related to playlists
     int currentPlaylistIndex() const;	//	index of song in playlist
-    int playlistCount() const;
+    int playlistCount() const { return this->rowCount(); }
+    QList<SBID> getAllSongs();
     SBID getNextSong(bool previousFlag=0);
     SBID getSongFromPlaylist(int playlistIndex);
     void resetCurrentPlayID();

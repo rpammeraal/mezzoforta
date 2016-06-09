@@ -50,7 +50,6 @@ private:
     QAction* playSongNowAction;
     QModelIndex _lastClickedIndex;
     CurrentPlaylistModel* _pm;
-    bool _playlistLoadedFlag;
     bool _playingRadioFlag;
 
     void _init();

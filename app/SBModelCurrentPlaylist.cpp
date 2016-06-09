@@ -226,10 +226,17 @@ SBModelCurrentPlaylist::sort(int column, Qt::SortOrder order)
 }
 
 //	Methods related to playlists
-int
-SBModelCurrentPlaylist::playlistCount() const
+QList<SBID>
+SBModelCurrentPlaylist::getAllSongs()
 {
-    return this->rowCount();
+    QList<SBID> list;
+
+    for(int i=0;i<playlistCount();i++)
+    {
+        SBID item=getSongFromPlaylist(i);
+        list.append(item);
+    }
+    return list;
 }
 
 SBID
@@ -367,38 +374,29 @@ SBModelCurrentPlaylist::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLo
 
     if(!firstBatchHasLoadedFlag)
     {
-        qDebug() << SB_DEBUG_INFO;
         this->clear();
-        qDebug() << SB_DEBUG_INFO;
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "Appending at position " << offset;
-        //	Set the index to get the first record from to count().
-        //	This works in data structures where the index is 0-based.
         offset=this->rowCount();
     }
     QList<QStandardItem *>column;
     QStandardItem* item;
 
-    for(int i=offset;i<newPlaylist.count();i++)
+    for(int i=0;i<newPlaylist.count();i++)
     {
         if(_currentPlayID==-1)
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
         }
         SBID song=newPlaylist[i];
-//        if(firstBatchHasLoadedFlag)
-//        {
-//            qDebug() << SB_DEBUG_INFO << song;
-//        }
         QString idStr;
-        idStr.sprintf("%08d",i+1);
+        idStr.sprintf("%08d",offset+i+1);
 
         item=new QStandardItem("0"); column.append(item);                                       //	sb_column_deleteflag
         item=new QStandardItem(""); column.append(item);                                        //	sb_column_playflag
         item=new QStandardItem(QString("%1").arg(song.sb_album_id)); column.append(item);       //	sb_column_albumid
-        item=new QStandardItem(formatDisplayPlayID(i+1)); column.append(item);                  //	sb_column_displayplaylistpositionid
+        item=new QStandardItem(formatDisplayPlayID(offset+i+1)); column.append(item);           //	sb_column_displayplaylistpositionid
         item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
         item=new QStandardItem(QString("%1").arg(song.sb_song_id)); column.append(item);        //	sb_column_songid

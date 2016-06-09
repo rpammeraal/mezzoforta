@@ -52,83 +52,30 @@ Common::hideColumns(QTableView* tv)
 quint64
 Common::random(quint64 max)
 {
-    quint64 rnd=qrand();
-    rnd=rnd * (max);
-    rnd = rnd % max;
-    return (quint64)rnd-1;
+    return (qrand() % max);
 }
 
 quint64
 Common::randomOldestFirst(quint64 max)
 {
-    quint64 d=1;
-    quint64 n=0;
+    //	calculate 1-based
+    max++;
+    quint64 n=((max)*(max+1))/2;
+    quint64 rnd=Common::random(n)+1;
+    quint64 index=1;
     quint64 o=max;
-    quint64 l=0;
+    quint64 l=1;
 
-    if(max%2==0)
-    {
-        n=((max+1)*((max)/2));
-    }
-    else
-    {
-        n=((max-1)*((max)/2)+max);
-    }
-    quint64 y=Common::random(n)+1;
+    index=1;
 
-    quint64 index=0;
-    while((l<y) && (o>0))
+    while(rnd>=(l+o) && (o-1>1))
     {
         index++;
         l+=o;
-
-        o-=d;
+        o--;
     }
-    return index;
+    return index-1;
 }
-/*
- *
-
-sub getRandomNumberOldestFirst($)
-{
-        my
-        (
-                $max
-        ) = @_;
-
-        my $index=0;
-        my $d=1;
-        my $n=0;
-        my $o=0;
-        my $l=0;
-
-        if($max % 2 ==0)
-        {
-                $n=(($max+1)*(($max)/2));
-        }
-        else
-        {
-                $n=(($max-1)*(($max)/2)+$max);
-        }
-        $o=$max;
-
-        my $y=int (rand($n))+1;
-
-        $index=0;
-        while(($l<$y) && ($o>0))
-        {
-                $index++;
-                $l+=$o;
-
-                $o-=$d;
-        }
-        return $index;
-}
-
-
- */
-
-
 
 QString
 Common::removeAccents(const QString &s)
