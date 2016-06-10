@@ -1,5 +1,5 @@
-#ifndef SBTABCURRENTPLAYLIST_H
-#define SBTABCURRENTPLAYLIST_H
+#ifndef SBTABQUEUEUDSONGS_H
+#define SBTABQUEUEUDSONGS_H
 
 #include <QMap>
 
@@ -8,17 +8,17 @@
 class CurrentPlaylistModel;
 
 ///
-/// \brief The SBTabCurrentPlaylist class
+/// \brief The SBTabQueuedSongs class
 ///
 /// The UI representation of the current playlist (akin to TabSongDetail).
 /// It represents the playlist controlled by PlayerController.
 ///
-class SBTabCurrentPlaylist : public SBTab
+class SBTabQueuedSongs : public SBTab
 {
     Q_OBJECT
 
 public:
-    SBTabCurrentPlaylist(QWidget* parent=0);
+    SBTabQueuedSongs(QWidget* parent=0);
 
     void playPlaylist(const SBID& playlistID);
     void enqueuePlaylist(const SBID& playlistID);
@@ -59,4 +59,4 @@ private:
 
 };
 
-#endif // SBTABCURRENTPLAYLIST_H
+#endif // SBTABQUEUEUDSONGS_H

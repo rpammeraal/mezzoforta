@@ -11,7 +11,7 @@ class QLabel;
 class QPushButton;
 class QSlider;
 class QTextBrowser;
-class SBModelCurrentPlaylist;
+class SBModelQueuedSongs;
 
 #include "SBMediaPlayer.h"
 #include "SBID.h"
@@ -49,7 +49,7 @@ public:
     void initialize();
     inline SBID currentSongPlaying() const { return _currentSongPlaying; }
     inline SBID currentPlaylistPlaying() const { return _currentPlaylistPlaying; }
-    void setModelCurrentPlaylist(SBModelCurrentPlaylist* mcp);
+    void setModelCurrentPlaylist(SBModelQueuedSongs* mcp);
 
 signals:
     void songChanged(const SBID& song);
@@ -83,7 +83,7 @@ private:
     SBID                              _currentSongPlaying;
     QTime                             _durationTime[_maxPlayerID];
     bool                              _initDoneFlag;
-    SBModelCurrentPlaylist*           _modelCurrentPlaylist;
+    SBModelQueuedSongs*               _modelCurrentPlaylist;
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];
     QSlider*                          _playerProgressSlider[_maxPlayerID];

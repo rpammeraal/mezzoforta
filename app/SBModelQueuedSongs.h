@@ -4,11 +4,11 @@
 #include <QStandardItemModel>
 
 ///
-/// \brief The SBModelCurrentPlaylist class
+/// \brief The SBModelQueuedSongs class
 ///
-/// SBModelCurrentPlaylist holds a playlist model.
+/// SBModelQueuedSongs holds a playlist model.
 /// NOTE: It does NOT rely on any database table!
-class SBModelCurrentPlaylist : public QStandardItemModel
+class SBModelQueuedSongs : public QStandardItemModel
 {
 public:
     enum sb_column_type
@@ -29,9 +29,9 @@ public:
         sb_column_performername=11,
         sb_column_albumtitle=12
     };
-    //	Note: modify SBTabCurrentPlaylist as well when sb_column_type is modified in any way
+    //	Note: modify SBTabQueuedSongs as well when sb_column_type is modified in any way
 
-    SBModelCurrentPlaylist(QObject* parent=0);
+    SBModelQueuedSongs(QObject* parent=0);
 
     //	Methods related to drag&drop
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);

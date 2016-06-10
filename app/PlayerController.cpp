@@ -9,7 +9,7 @@
 #include "Navigator.h"
 #include "SBMediaPlayer.h"
 #include "SBMessageBox.h"
-#include "SBModelCurrentPlaylist.h"
+#include "SBModelQueuedSongs.h"
 #include "DataEntityCurrentPlaylist.h"
 #include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
@@ -120,7 +120,7 @@ PlayerController::initialize()
 }
 
 void
-PlayerController::setModelCurrentPlaylist(SBModelCurrentPlaylist *mcp)
+PlayerController::setModelCurrentPlaylist(SBModelQueuedSongs *mcp)
 {
     _modelCurrentPlaylist=mcp;
 }
@@ -309,7 +309,7 @@ PlayerController::playerNext()
     int maxTries=_modelCurrentPlaylist->rowCount();
     int currentTry=0;
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBTabCurrentPlaylist* cpl=mw->ui.tabCurrentPlaylist;
+    SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
     SB_DEBUG_IF_NULL(cpl);
 
     //	Get out of loop if we're stuck. Either:

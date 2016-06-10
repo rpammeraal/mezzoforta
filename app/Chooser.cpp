@@ -288,7 +288,7 @@ Chooser::enqueuePlaylist()
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         const MainWindow* mw=Context::instance()->getMainWindow();
-        SBTabCurrentPlaylist* cpl=mw->ui.tabCurrentPlaylist;
+        SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
         if(cpl)
         {
             cpl->enqueuePlaylist(id);
@@ -368,7 +368,7 @@ Chooser::playPlaylist()
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         const MainWindow* mw=Context::instance()->getMainWindow();
-        SBTabCurrentPlaylist* cpl=mw->ui.tabCurrentPlaylist;
+        SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
         if(cpl)
         {
             cpl->playPlaylist(id);

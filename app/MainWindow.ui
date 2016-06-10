@@ -3254,7 +3254,7 @@ Click on 'All Songs' to continue.</string>
             </item>
            </layout>
           </widget>
-          <widget class="SBTabCurrentPlaylist" name="tabCurrentPlaylist">
+          <widget class="SBTabQueuedSongs" name="tabCurrentPlaylist">
            <attribute name="title">
             <string>Currently Playing</string>
            </attribute>
@@ -4522,9 +4522,9 @@ Click on 'All Songs' to continue.</string>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>SBTabCurrentPlaylist</class>
+   <class>SBTabQueuedSongs</class>
    <extends>QWidget</extends>
-   <header>SBTabCurrentPlaylist.h</header>
+   <header>SBTabQueuedSongs.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
