@@ -57,7 +57,7 @@ DataEntityCurrentPlaylist::getAllOnlineSongs()
             ") a "
         "ORDER BY "
             "SB_PLAY_ORDER "
-        "LIMIT 1000 "
+        "LIMIT 10 "
     )
             .arg(dal->getIsNull())
     ;

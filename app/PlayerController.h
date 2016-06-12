@@ -72,6 +72,7 @@ public slots:
     //	is set at the start of song.
     bool playerPlayInPlaylist(const SBID& playlistID);
     bool playerPlayInRadio();
+    inline bool radioPlayingFlag() const { return _radioPlayingFlag; }
 
 private slots:
     void playerDataClicked(const QUrl& url);

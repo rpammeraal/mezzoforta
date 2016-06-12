@@ -585,20 +585,56 @@ SBModelQueuedSongs::setCurrentSongByID(int playID)
 }
 
 void
-SBModelQueuedSongs::shuffle()
+SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
 {
-    QList<int> usedIndex; //	list of already used random numbers
-    QMap<int,int> fromTo; //	map from old to new index (1-based)
-    int index=1;          //	1-based
+    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
+    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
+    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
+    qDebug() << SB_DEBUG_INFO << _currentPlayID << skipPlayedSongsFlag;
+    QMap<int,int> pp2vpMap=_populateMapPlaylistPosition2ViewPosition();
 
-    qDebug() << SB_DEBUG_INFO << _currentPlayID;
-    //	Assign current playing to first spot
-    if(_currentPlayID>=0 && _currentPlayID<this->rowCount())
+    QList<int> usedIndex;                           //	list of already used random numbers (1-based)
+    QMap<int,int> fromTo;                           //	map from old to new index (1-based)
+    int index=1;                                    //	1-based
+
+
+    //	skip played songs -- used by radio mode
+    if(skipPlayedSongsFlag)
     {
-        qDebug() << SB_DEBUG_INFO << "from" << index << "to" << _currentPlayID+1;
-        fromTo[index++]=(_currentPlayID+1);
-        usedIndex.append(_currentPlayID+1);
+        while(index<=_currentPlayID+1)
+        {
+            qDebug() << SB_DEBUG_INFO << index;
+            fromTo[index]=index;
+            usedIndex.append(index);
+            index++;
+        }
     }
+    else if(_currentPlayID>=0 && _currentPlayID<this->rowCount())
+    {
+        //	Assign current playing to first spot, used by non-radio mode
+        qDebug() << SB_DEBUG_INFO << "from" << index << "to" << _currentPlayID+1;
+        if(fromTo.contains(index)==0)
+        {
+            fromTo[index]=(_currentPlayID+1);
+            usedIndex.append(_currentPlayID+1);
+            index++;
+        }
+    }
+
+    for(int i=1;i<this->rowCount();i++)
+    {
+        if(fromTo.contains(i))
+        {
+            qDebug() << SB_DEBUG_INFO << i << fromTo[i];
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << usedIndex.count();
+
+    for(int i=0;i<usedIndex.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << usedIndex[i];
+    }
+
 
     //	Create fromTo mapping
     while(index<=this->rowCount())
@@ -618,37 +654,58 @@ SBModelQueuedSongs::shuffle()
         usedIndex.append(randomIndex);
     }
 
+    for(int i=1;i<this->rowCount()+1;i++)
+    {
+        if(fromTo.contains(i))
+        {
+            qDebug() << SB_DEBUG_INFO << i << fromTo[i];
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << usedIndex.count();
+
+    for(int i=0;i<usedIndex.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << usedIndex[i];
+    }
+
+    debugShow("before shuffle");
+
     //	Assign
     qDebug() << SB_DEBUG_INFO;
     for(int i=0;i<this->rowCount();i++)
     {
         //	Iterate using a 0-based iterator, fromTo is 1-based.
-        //qDebug() << SB_DEBUG_INFO << "from" << i+1 << "to" << fromTo[i+1];
+        int orgPosition=i+1;
+        int newPosition=fromTo[orgPosition];
 
-        int playID=-1;	//	playID:1-based
+        int viewPosition=pp2vpMap[orgPosition];
+
+        QString newPositionStr;
+        newPositionStr.sprintf("%08d",newPosition);
+
+        qDebug() << SB_DEBUG_INFO << "from" << orgPosition << "to" << newPosition << "located in view at " << viewPosition;
+
         QStandardItem* item;
 
-        item=this->item(i,sb_column_playlistpositionid);
+        item=this->item(viewPosition,sb_column_playlistpositionid);
         if(item!=NULL)
         {
-            item=this->item(i,sb_column_playlistpositionid);
-            playID=item->text().toInt();
-
-            //	Pad up to 10 chars so that view will sort correctly.
-            item->setText(QString("%1").arg(fromTo[playID],10,10,QChar('0')));
+            item->setText(newPositionStr);
         }
 
-        item=this->item(i,sb_column_displayplaylistpositionid);
+        item=this->item(viewPosition,sb_column_displayplaylistpositionid);
         if(item!=NULL)
         {
-            item->setText(formatDisplayPlayID(fromTo[playID]));
+            item->setText(formatDisplayPlayID(newPosition));
             item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
         }
     }
-    qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
-    _currentPlayID=fromTo[_currentPlayID+1]-1;
+    //qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
+    //_currentPlayID=fromTo[_currentPlayID+1]-1;
     qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
     setCurrentSongByID(_currentPlayID);
+    debugShow("end of shuffle");
+    _populateMapPlaylistPosition2ViewPosition();
 }
 
 ///	Debugging
@@ -677,4 +734,26 @@ SBModelQueuedSongs::debugShow(const QString& title)
         }
         qDebug() << SB_DEBUG_INFO << row;
     }
+}
+
+QMap<int,int>
+SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
+{
+    QMap<int,int> mapPlaylistPosition2ViewPosition; //	map from playlist position to view position
+    qDebug() << SB_DEBUG_INFO << this->rowCount();
+    for(int i=0;i<this->rowCount();i++)
+    {
+        QStandardItem* item=this->item(i,sb_column_playlistpositionid);
+        if(item)
+        {
+            mapPlaylistPosition2ViewPosition[item->text().toInt()]=i;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << mapPlaylistPosition2ViewPosition.count();
+    //for(int i=0;i<mapPlaylistPosition2ViewPosition.count();i++)
+    for(int i=0;i< 20 && i<mapPlaylistPosition2ViewPosition.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i << mapPlaylistPosition2ViewPosition[i];
+    }
+    return mapPlaylistPosition2ViewPosition;
 }

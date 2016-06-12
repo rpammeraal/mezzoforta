@@ -1,11 +1,13 @@
-#ifndef SBTABQUEUEUDSONGS_H
-#define SBTABQUEUEUDSONGS_H
+#ifndef SBTABQUEUEDSONGS_H
+#define SBTABQUEUEDSONGS_H
 
 #include <QMap>
 
 #include "SBTab.h"
 
 class CurrentPlaylistModel;
+class SBModelQueuedSongs;
+class SBSortFilterProxyQueuedSongsModel;
 
 ///
 /// \brief The SBTabQueuedSongs class
@@ -22,6 +24,8 @@ public:
 
     void playPlaylist(const SBID& playlistID);
     void enqueuePlaylist(const SBID& playlistID);
+    SBModelQueuedSongs* model() const;
+    SBSortFilterProxyQueuedSongsModel* proxyModel() const;
     inline bool playingRadioFlag() const { return _playingRadioFlag; }
 
     //	Virtual
@@ -53,10 +57,10 @@ private:
     bool _playingRadioFlag;
 
     void _init();
-    SBID getSBIDSelected(const QModelIndex& idx) const;
+    SBID _getSBIDSelected(const QModelIndex& idx) const;
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
 
 };
 
-#endif // SBTABQUEUEUDSONGS_H
+#endif // SBTABQUEUEDSONGS_H

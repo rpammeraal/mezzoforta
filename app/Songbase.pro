@@ -52,7 +52,8 @@ HEADERS     = \
     AudioDecoderFlacReader.h \
     AudioDecoderReader.h \
     SBTabQueuedSongs.h \
-    SBModelQueuedSongs.h
+    SBModelQueuedSongs.h \
+    SBSortFilterProxyQueuedSongsModel.h
 
 SOURCES     = \
     main.cpp \
@@ -107,7 +108,8 @@ SOURCES     = \
     AudioDecoderFlacReader.cpp \
     AudioDecoderReader.cpp \
     SBTabQueuedSongs.cpp \
-    SBModelQueuedSongs.cpp
+    SBModelQueuedSongs.cpp \
+    SBSortFilterProxyQueuedSongsModel.cpp
 
 # install
 target.path = .

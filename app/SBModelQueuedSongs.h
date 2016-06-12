@@ -62,13 +62,16 @@ public:
     void repaintAll();
 
     virtual QModelIndex setCurrentSongByID(int playID);
-    void shuffle();
+    void shuffle(bool skipPlayedSongsFlag=0);
 
     ///	Debugging
     void debugShow(const QString& title=QString());
+    QMap<int,int> _populateMapPlaylistPosition2ViewPosition();
 
 private:
-    int _currentPlayID;             //	0-based, CWIP: should be maintained in player controller
+    int           _currentPlayID;                    //	0-based, CWIP: should be maintained in player controller
+    //QMap<int,int> _mapPlaylistPosition2ViewPosition; //	map from playlist position to view position
+
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H
