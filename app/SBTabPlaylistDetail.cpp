@@ -58,6 +58,14 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
     DataEntityPlaylist mpl;
     mpl.reorderItem(currentID,fromID,row);
     refreshTabIfCurrent(currentID);
+
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.playlistDetailSongList;
+    QAbstractItemModel* m=tv->model();
+    SB_DEBUG_IF_NULL(m);
+
+    QModelIndex idx=m->index(row,0);
+    tv->scrollTo(idx);
 }
 
 void
@@ -204,5 +212,5 @@ SBTabPlaylistDetail::_populate(const SBID& id)
 void
 SBTabPlaylistDetail::_populatePost(const SBID& id)
 {
-    QHeaderView* hv=NULL;
+    Q_UNUSED(id);
 }

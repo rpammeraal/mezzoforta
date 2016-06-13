@@ -57,7 +57,6 @@ private:
     bool _playingRadioFlag;
 
     void _init();
-    SBID _getSBIDSelected(const QModelIndex& idx) const;
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
 

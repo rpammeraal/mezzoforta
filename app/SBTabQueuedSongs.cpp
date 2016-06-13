@@ -89,7 +89,7 @@ SBModelQueuedSongs*
 SBTabQueuedSongs::model() const
 {
     SBSortFilterProxyQueuedSongsModel* sm=proxyModel();
-    SBModelQueuedSongs* aem=dynamic_cast<SBModelQueuedSongs *>(sm->model());
+    SBModelQueuedSongs* aem=dynamic_cast<SBModelQueuedSongs *>(sm->sourceModel());
     SB_RETURN_NULL_IF_NULL(aem);
 
     return aem;
@@ -119,7 +119,7 @@ SBTabQueuedSongs::subtabID2TableView(int subtabID) const
 void
 SBTabQueuedSongs::deletePlaylistItem()
 {
-    SBID assignID=_getSBIDSelected(_lastClickedIndex);
+    SBID assignID=this->model()->getSBIDSelected(_lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
         SBModelQueuedSongs* aem=model();
@@ -185,7 +185,7 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
     qDebug() << SB_DEBUG_INFO;
 
-    SBID id=_getSBIDSelected(idx);
+    SBID id=this->model()->getSBIDSelected(idx);
     qDebug() << SB_DEBUG_INFO << id;
     if(id.sb_item_type()!=SBID::sb_type_invalid)
     {
@@ -208,6 +208,8 @@ SBTabQueuedSongs::songChanged(const SBID& song)
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBModelQueuedSongs* aem=model();
     QModelIndex idx=aem->setCurrentSongByID(song.playPosition);
+    SBSortFilterProxyQueuedSongsModel* sm=proxyModel();
+    idx=sm->mapFromSource(idx);
     qDebug() << SB_DEBUG_INFO << idx;
     tv->scrollTo(idx);
 }
@@ -407,7 +409,7 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
     {
         SBSortFilterProxyQueuedSongsModel* sm=proxyModel();
         QModelIndex sourceIDX=sm->mapToSource(idx);
-        SBID item=_getSBIDSelected(sourceIDX);
+        SBID item=this->model()->getSBIDSelected(sourceIDX);
         qDebug() << SB_DEBUG_INFO << item;
         Context::instance()->getNavigator()->openScreenByID(item);
     }
@@ -489,59 +491,6 @@ SBTabQueuedSongs::_init()
     }
 }
 
-
-//	Due to the nature of drag/drop, this view differs from others.
-//	idx must a source idx
-SBID
-SBTabQueuedSongs::_getSBIDSelected(const QModelIndex &idx) const
-{
-    qDebug() << SB_DEBUG_INFO << idx;
-    SBID id;
-
-    SBModelQueuedSongs* aem=model();
-    SBID::sb_type itemType=SBID::sb_type_invalid;
-    QStandardItem* item;
-    int itemID=-1;
-
-
-    switch((SBModelQueuedSongs::sb_column_type)idx.column())
-    {
-    case SBModelQueuedSongs::sb_column_deleteflag:
-    case SBModelQueuedSongs::sb_column_playflag:
-    case SBModelQueuedSongs::sb_column_albumid:
-    case SBModelQueuedSongs::sb_column_displayplaylistpositionid:
-    case SBModelQueuedSongs::sb_column_songid:
-    case SBModelQueuedSongs::sb_column_performerid:
-    case SBModelQueuedSongs::sb_column_playlistpositionid:
-    case SBModelQueuedSongs::sb_column_position:
-    case SBModelQueuedSongs::sb_column_path:
-        break;
-
-    case SBModelQueuedSongs::sb_column_songtitle:
-    case SBModelQueuedSongs::sb_column_duration:
-        itemType=SBID::sb_type_song;
-        item=aem->item(idx.row(),SBModelQueuedSongs::sb_column_songid);
-        itemID=(item!=NULL)?item->text().toInt():-1;
-        break;
-
-    case SBModelQueuedSongs::sb_column_performername:
-        itemType=SBID::sb_type_performer;
-        item=aem->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
-        itemID=(item!=NULL)?item->text().toInt():-1;
-        break;
-
-    case SBModelQueuedSongs::sb_column_albumtitle:
-        itemType=SBID::sb_type_album;
-        item=aem->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
-        itemID=(item!=NULL)?item->text().toInt():-1;
-        break;
-
-    }
-
-    id.assign(itemType,itemID);
-    qDebug() << SB_DEBUG_INFO << id;
-    return id;
-}
 
 ///
 /// \brief SBTabQueuedSongs::_populate

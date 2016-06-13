@@ -2,6 +2,7 @@
 #define SBMODELCURRENTPLAYLIST_H
 
 #include <QStandardItemModel>
+#include <QList>
 
 ///
 /// \brief The SBModelQueuedSongs class
@@ -16,10 +17,10 @@ public:
         sb_column_deleteflag=0,
         sb_column_playflag=1,
         sb_column_albumid=2,
-        sb_column_displayplaylistpositionid=3,	//	CWIP: rename to displayplaylistpositionid
+        sb_column_displayplaylistpositionid=3,
         sb_column_songid=4,
         sb_column_performerid=5,
-        sb_column_playlistpositionid=6,	//	CWIP: rename to playlistpositionid
+        sb_column_playlistpositionid=6,
         sb_column_position=7,
         sb_column_path=8,
 
@@ -43,7 +44,8 @@ public:
     //	Methods unrelated to drag&drop
     QModelIndex addRow();
     virtual void clear();
-    QString formatDisplayPlayID(int playID,bool isCurrent=0);
+    QString formatDisplayPlayID(int playID,bool isCurrent=0) const;
+    SBID getSBIDSelected(const QModelIndex& idx) const;
     void paintRow(int i);
     virtual void sort(int column, Qt::SortOrder order);
 
@@ -69,9 +71,9 @@ public:
     QMap<int,int> _populateMapPlaylistPosition2ViewPosition();
 
 private:
-    int           _currentPlayID;                    //	0-based, CWIP: should be maintained in player controller
-    //QMap<int,int> _mapPlaylistPosition2ViewPosition; //	map from playlist position to view position
+    int  _currentPlayID;                    //	0-based, CWIP: should be maintained in player controller
 
+    QList<QStandardItem *> createRecord(const SBID& id,int playPosition) const;
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H

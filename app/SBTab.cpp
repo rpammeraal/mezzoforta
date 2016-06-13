@@ -145,8 +145,6 @@ SBTab::populate(const SBID &id)
     SBID result=_populate(id);
     result.sortColumn=onStack.sortColumn;
     result.subtabID=onStack.subtabID;
-    qDebug() << SB_DEBUG_INFO << result << result.subtabID << result.sortColumn;
-    Context::instance()->getScreenStack()->debugShow("SBTab::populate");
     Context::instance()->getScreenStack()->updateCurrentScreen(result);
     _populatePost(result);
 

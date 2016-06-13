@@ -27,23 +27,19 @@ SBLabel::SBLabel(const QString& text, QWidget* parent, Qt::WindowFlags f) : QLab
 void
 SBLabel::mousePressEvent(QMouseEvent* me)
 {
-    qDebug() << SB_DEBUG_INFO << _id;
     if (me->button() == Qt::LeftButton && this->geometry().contains(me->pos()))
     {
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-        qDebug() << SB_DEBUG_INFO << _id;
         QByteArray ba=_id.encode();
         SBID tmp=SBID(ba);
-        qDebug() << SB_DEBUG_INFO << tmp;
 
         mimeData->setData("application/vnd.text.list", ba);
         drag->setMimeData(mimeData);
         const QPixmap* pm=this->pixmap();
         if(pm && pm->isNull()==0)
         {
-            qDebug() << SB_DEBUG_INFO;
             drag->setPixmap(pm->scaledToWidth(50));
         }
         else
@@ -51,7 +47,6 @@ SBLabel::mousePressEvent(QMouseEvent* me)
             QString l=_id.getIconResourceLocation();
             QPixmap pb(l);
             int result=pb.load(l);
-            qDebug() << SB_DEBUG_INFO << l << result;
             drag->setPixmap(pb.scaledToWidth(50));
         }
         drag->exec();
@@ -62,5 +57,4 @@ void
 SBLabel::setSBID(const SBID &id)
 {
     _id=id;
-    qDebug() << SB_DEBUG_INFO << this << _id;
 }

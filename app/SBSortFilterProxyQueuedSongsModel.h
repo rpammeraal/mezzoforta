@@ -11,15 +11,16 @@ class SBSortFilterProxyQueuedSongsModel : public QSortFilterProxyModel
 public:
     SBSortFilterProxyQueuedSongsModel(QObject* parent=Q_NULLPTR);
 
-    virtual inline QAbstractItemModel* model() { return _aim; }
-    virtual void setSourceModel(QAbstractItemModel *sourceModel);
     virtual void sort(int column, Qt::SortOrder order);
 
+    //	Methods related to drag&drop
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
+    virtual QMimeData* mimeData(const QModelIndexList & indexes) const;
+    virtual QStringList mimeTypes() const;
+    virtual Qt::DropActions supportedDropActions() const;
+
 private:
-    QAbstractItemModel* _aim;
-
-    void _init();
-
 };
 
 #endif // SBSORTFILTERPROXYQUEUEDSONGSMODEL_H

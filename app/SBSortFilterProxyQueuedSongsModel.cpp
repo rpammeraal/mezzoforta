@@ -8,14 +8,6 @@
 
 SBSortFilterProxyQueuedSongsModel::SBSortFilterProxyQueuedSongsModel(QObject* parent):QSortFilterProxyModel(parent)
 {
-    _init();
-}
-
-void
-SBSortFilterProxyQueuedSongsModel::setSourceModel(QAbstractItemModel *sourceModel)
-{
-    _aim=sourceModel;
-    QSortFilterProxyModel::setSourceModel(sourceModel);
 }
 
 void
@@ -29,8 +21,38 @@ SBSortFilterProxyQueuedSongsModel::sort(int column, Qt::SortOrder order)
     QSortFilterProxyModel::sort(column,order);
 }
 
-void
-SBSortFilterProxyQueuedSongsModel::_init()
+bool
+SBSortFilterProxyQueuedSongsModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    _aim=NULL;
+    Q_UNUSED(data);
+    Q_UNUSED(action);
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
+    return 0;
+}
+
+Qt::ItemFlags
+SBSortFilterProxyQueuedSongsModel::flags(const QModelIndex &index) const
+{
+    return sourceModel()->flags(index);
+}
+
+QMimeData*
+SBSortFilterProxyQueuedSongsModel::mimeData(const QModelIndexList &indexes) const
+{
+    qDebug() << SB_DEBUG_INFO;
+    return sourceModel()->mimeData(indexes);
+}
+
+QStringList
+SBSortFilterProxyQueuedSongsModel::mimeTypes() const
+{
+    return sourceModel()->mimeTypes();
+}
+
+Qt::DropActions
+SBSortFilterProxyQueuedSongsModel::supportedDropActions() const
+{
+    return sourceModel()->supportedDropActions();
 }
