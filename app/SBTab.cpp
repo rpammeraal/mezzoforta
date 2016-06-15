@@ -334,8 +334,7 @@ SBTab::_populatePre(const SBID &id)
 SBID
 SBTab::_populate(const SBID &id)
 {
-    Q_UNUSED(id);
-    qDebug() << SB_DEBUG_ERROR << "****** SBTab::_populate called!";
+    _currentID=id;
     return SBID();
 }
 

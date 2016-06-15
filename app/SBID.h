@@ -79,7 +79,7 @@ public:
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
     int sb_item_id() const;
-    inline sb_type sb_item_type() const { return _sb_item_type; };
+    inline sb_type sb_item_type() const { return _sb_item_type; }
     void setText(const QString &text);
     void showDebug(const QString& title) const;
 
@@ -100,5 +100,28 @@ inline uint qHash(const SBID& k, uint seed)
     return qHash(hash,seed);
 }
 
+class SBIDSong : public SBID
+{
+public:
+    SBIDSong():SBID() { }
+    SBIDSong(const SBID& c):SBID(c) { }
+    SBIDSong(const SBIDSong& c):SBID(c) { }
+    SBIDSong(SBID::sb_type type, int itemID):SBID(type,itemID) { }
+    SBIDSong(QByteArray encodedData):SBID(encodedData) { }
+    ~SBIDSong() { }
+
+    bool operator==(const SBID& i) const
+    {
+        if(
+            i.sb_song_id==this->sb_song_id &&
+            i.sb_performer_id==this->sb_performer_id &&
+            i.sb_album_id==this->sb_album_id &&
+            i.sb_position==this->sb_position)
+        {
+            return 1;
+        }
+        return 0;
+    }
+};
 
 #endif // SBID_H

@@ -47,8 +47,7 @@ public:
     explicit PlayerController(QObject *parent = 0);
 
     void initialize();
-    inline SBID currentSongPlaying() const { return _currentSongPlaying; }
-    inline SBID currentPlaylistPlaying() const { return _currentPlaylistPlaying; }
+    inline SBIDSong currentSongPlaying() const { return _currentSongPlaying; }
     void setModelCurrentPlaylist(SBModelQueuedSongs* mcp);
 
 signals:
@@ -70,8 +69,9 @@ public slots:
     //	The following methods are used for the first song and
     //	sets whether playlist or radio. If radio, update last played date
     //	is set at the start of song.
-    bool playerPlayInPlaylist(const SBID& playlistID);
+    bool playerPlayNonRadio(const SBID& id);
     bool playerPlayInRadio();
+
     inline bool radioPlayingFlag() const { return _radioPlayingFlag; }
 
 private slots:
@@ -81,7 +81,7 @@ private:
     static const int                  _maxPlayerID=2;
 
     int                               _currentPlayerID;
-    SBID                              _currentSongPlaying;
+    SBIDSong                          _currentSongPlaying;
     QTime                             _durationTime[_maxPlayerID];
     bool                              _initDoneFlag;
     SBModelQueuedSongs*               _modelCurrentPlaylist;
@@ -91,18 +91,16 @@ private:
     QLabel*                           _playerDurationLabel[_maxPlayerID];
     QTextBrowser*                     _playerDataLabel[_maxPlayerID];
     SBMediaPlayer                     _playerInstance[_maxPlayerID];
-    SBID                              _currentPlaylistPlaying;
     bool                              _radioPlayingFlag;
     PlayerController::sb_player_state _state;
 
-    SBID calculateNextSongID(bool previousFlag=0) const;
+    SBIDSong calculateNextSongID(bool previousFlag=0) const;
     QTime calculateTime(quint64 ms) const;
     void _init();
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(const SBID& song);
     void _playerStop();
-    void _setRadioPlaying();
-    void _setPlaylistPlaying(const SBID& playlistID);
+
     void _refreshPlayingNowData() const;
     void _updatePlayState(PlayerController::sb_player_state newState);
 };

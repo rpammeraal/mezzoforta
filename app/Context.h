@@ -14,6 +14,7 @@ class MainWindow;
 class Navigator;
 class PlayerController;
 class SBTab;
+class SBTabQueuedSongs;
 class ScreenStack;
 
 
@@ -28,36 +29,39 @@ public:
         return &_instance;
     }
 
-    inline BackgroundThread* getBackgroundThread() const { return bgt; }
-    inline Chooser* getChooser() const { return lcc; }
-    inline Controller* getController() const { return c; }
-    inline DataAccessLayer* getDataAccessLayer() const { return dal; }
-    inline MainWindow* getMainWindow() const { return mw; }
-    inline Navigator* getNavigator() const { if(!ssh) { qDebug() << SB_DEBUG_NPTR; } return ssh; }
-    inline PlayerController* getPlayerController() const { if(!pc) { qDebug() << SB_DEBUG_NPTR; } return pc; }
-    inline SBTab* getTab() const { if(!tab) { qDebug() << SB_DEBUG_NPTR; } return tab; }
-    inline ScreenStack* getScreenStack() const { if(!st) { qDebug() << SB_DEBUG_NPTR; } return st; }
+    inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
+    inline Chooser* getChooser() const { SB_DEBUG_IF_NULL(_lcc); return _lcc; }
+    inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
+    inline DataAccessLayer* getDataAccessLayer() const { SB_DEBUG_IF_NULL(_dal); return _dal; }
+    inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
+    inline Navigator* getNavigator() const { SB_DEBUG_IF_NULL(_ssh); return _ssh; }
+    inline PlayerController* getPlayerController() const { SB_DEBUG_IF_NULL(_pc); return _pc; }
+    inline ScreenStack* getScreenStack() const { SB_DEBUG_IF_NULL(_st); return _st; }
+    inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
+    inline SBTabQueuedSongs* getTabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
 
-    void setBackgroundThread(BackgroundThread* nbgt);
-    void setController(Controller* nc);
-    void setDataAccessLayer(DataAccessLayer* ndal);
-    void setChooser(Chooser* nlcc);
-    void setMainWindow(MainWindow* nmw);
-    void setNavigator(Navigator* nssh);
-    void setPlayerController(PlayerController* npc);
+    void setBackgroundThread(BackgroundThread* bgt);
+    void setController(Controller* c);
+    void setDataAccessLayer(DataAccessLayer* dal);
+    void setChooser(Chooser* lcc);
+    void setMainWindow(MainWindow* mw);
+    void setNavigator(Navigator* ssh);
+    void setPlayerController(PlayerController* pc);
     void setScreenStack(ScreenStack* st);
     void setTab(SBTab* tab);
+    void setTabQueuedSongs(SBTabQueuedSongs* tabQS);
 
 private:
-    BackgroundThread* bgt;
-    Controller* c;
-    DataAccessLayer* dal;
-    Chooser* lcc;
-    MainWindow* mw;
-    Navigator* ssh;
-    PlayerController* pc;
-    ScreenStack* st;
-    SBTab* tab;
+    BackgroundThread* _bgt;
+    Controller* _c;
+    DataAccessLayer* _dal;
+    Chooser* _lcc;
+    MainWindow* _mw;
+    Navigator* _ssh;
+    PlayerController* _pc;
+    ScreenStack* _st;
+    SBTab* _tab;
+    SBTabQueuedSongs* _tabQS;
 
     Context();
     ~Context();
@@ -65,7 +69,7 @@ private:
     Context(Context const&);
     void operator=(Context const&);
 
-    void init();
+    void _init();
 };
 
 #endif // CONTEXT_H

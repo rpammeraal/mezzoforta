@@ -22,8 +22,7 @@ class SBTabQueuedSongs : public SBTab
 public:
     SBTabQueuedSongs(QWidget* parent=0);
 
-    void playPlaylist(const SBID& playlistID);
-    void enqueuePlaylist(const SBID& playlistID);
+    void playItemNow(const SBID& id,const bool enqueueFlag=0);
     SBModelQueuedSongs* model() const;
     SBSortFilterProxyQueuedSongsModel* proxyModel() const;
     inline bool playingRadioFlag() const { return _playingRadioFlag; }
@@ -52,13 +51,13 @@ private slots:
 private:
     QAction* deletePlaylistItemAction;
     QAction* playSongNowAction;
-    QModelIndex _lastClickedIndex;
     CurrentPlaylistModel* _pm;
     bool _playingRadioFlag;
 
     void _init();
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
+    QMap<int,SBID> _retrievePlaylistItems(const SBID& id);
 
 };
 

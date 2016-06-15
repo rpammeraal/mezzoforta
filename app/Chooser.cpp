@@ -291,7 +291,7 @@ Chooser::enqueuePlaylist()
         SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
         if(cpl)
         {
-            cpl->enqueuePlaylist(id);
+            cpl->playItemNow(id,1);
         }
     }
 }
@@ -371,7 +371,7 @@ Chooser::playPlaylist()
         SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
         if(cpl)
         {
-            cpl->playPlaylist(id);
+            cpl->playItemNow(id);
         }
     }
 }

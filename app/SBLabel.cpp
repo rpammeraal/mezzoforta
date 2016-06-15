@@ -46,7 +46,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         {
             QString l=_id.getIconResourceLocation();
             QPixmap pb(l);
-            int result=pb.load(l);
+            pb.load(l);
             drag->setPixmap(pb.scaledToWidth(50));
         }
         drag->exec();

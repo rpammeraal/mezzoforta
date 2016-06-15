@@ -20,6 +20,7 @@ class SBTab : public QWidget
 public:
     explicit SBTab(QWidget *parent = 0, bool isEditTabFlag=0);
 
+    inline SBID currentID() const { return _currentID; }
     int getFirstEligibleSubtabID() const;
     inline bool isEditTab() const { return _isEditTabFlag; }
     void refreshTabIfCurrent(const SBID &id);
@@ -44,6 +45,7 @@ public slots:
 
 protected:
     bool _initDoneFlag;
+    QModelIndex _lastClickedIndex;
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
@@ -61,6 +63,7 @@ protected slots:
 
 private:
     bool _isEditTabFlag;
+    SBID _currentID;
     int _currentSubtabID;
     QMap<int,int> tabSortMap;	//	last sort column by tab
 

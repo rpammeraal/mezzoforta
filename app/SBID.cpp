@@ -168,6 +168,12 @@ SBID::assign(const QString& type, const int itemID, const QString& text)
     setText(text);
 }
 
+///
+/// \brief SBID::compareSimple
+/// \param t
+/// \return
+///
+/// Compares on sb_item_type and sb_item_id
 bool
 SBID::compareSimple(const SBID &t) const
 {
@@ -179,6 +185,12 @@ SBID::compareSimple(const SBID &t) const
     )?1:0;
 }
 
+///
+/// \brief SBID::compareSong
+/// \param t
+/// \return
+///
+/// Compares on song_id, performer_id, album_id and album_position
 QByteArray
 SBID::encode() const
 {

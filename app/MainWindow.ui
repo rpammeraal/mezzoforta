@@ -413,7 +413,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>9</number>
+           <number>4</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -1760,7 +1760,7 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
-                 <item row="4" column="0">
+                 <item row="3" column="0">
                   <spacer name="verticalSpacer06">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
@@ -1773,32 +1773,119 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="labelSongDetailSongPerformerName">
+                 <item row="2" column="0">
+                  <widget class="QTextBrowser" name="frSongDetailSongDetail">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>18</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>12</pointsize>
-                     <weight>75</weight>
-                     <bold>true</bold>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>performerName</string>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
                    </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="sizeAdjustPolicy">
+                    <enum>QAbstractScrollArea::AdjustToContents</enum>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="textInteractionFlags">
+                    <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout02">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                   </layout>
+
                   </widget>
                  </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="labelSongDetailSongNotes">
+                 <item row="1" column="0">
+                  <widget class="QTextBrowser" name="frSongDetailSongPerformerName">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>18</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>12</pointsize>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>songNotes</string>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
                    </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="sizeAdjustPolicy">
+                    <enum>QAbstractScrollArea::AdjustToContents</enum>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="textInteractionFlags">
+                    <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout02">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                   </layout>
                   </widget>
                  </item>
                  <item row="0" column="0">
@@ -1814,19 +1901,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="labelSongDetailSongDetail">
-                   <property name="font">
-                    <font>
-                     <family>Trebuchet MS</family>
-                     <pointsize>12</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>songDetails</string>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -1835,40 +1909,8 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
-              <widget class="QWidget" name="tabSongDetailPerformedBy">
-               <attribute name="title">
-                <string>Also Performed By</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_12">
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QTableView" name="songDetailPerformedBy">
-                  <property name="alternatingRowColors">
-                   <bool>true</bool>
-                  </property>
-                  <property name="selectionMode">
-                   <enum>QAbstractItemView::SingleSelection</enum>
-                  </property>
-                  <property name="selectionBehavior">
-                   <enum>QAbstractItemView::SelectRows</enum>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
               <widget class="QWidget" name="tabSongDetailAlbums">
                <attribute name="title">
                 <string>Albums</string>
@@ -4549,7 +4591,6 @@ Click on 'All Songs' to continue.</string>
   <tabstop>albumDetailReviews</tabstop>
   <tabstop>albumDetailsWikipediaPage</tabstop>
   <tabstop>tabSongDetailLists</tabstop>
-  <tabstop>songDetailPerformedBy</tabstop>
   <tabstop>songDetailAlbums</tabstop>
   <tabstop>songDetailPlaylists</tabstop>
   <tabstop>songDetailCharts</tabstop>

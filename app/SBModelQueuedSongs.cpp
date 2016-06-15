@@ -255,14 +255,14 @@ SBModelQueuedSongs::sort(int column, Qt::SortOrder order)
 }
 
 //	Methods related to playlists
-QList<SBID>
+QList<SBIDSong>
 SBModelQueuedSongs::getAllSongs()
 {
-    QList<SBID> list;
+    QList<SBIDSong> list;
 
     for(int i=0;i<playlistCount();i++)
     {
-        SBID item=getSongFromPlaylist(i);
+        SBIDSong item=getSongFromPlaylist(i);
         list.append(item);
     }
     return list;
@@ -793,5 +793,6 @@ SBModelQueuedSongs::createRecord(const SBID& id,int playPosition) const
     item=new QStandardItem(id.performerName); record.append(item);                        //	sb_column_performername
     item=new QStandardItem(id.albumTitle); record.append(item);                           //	sb_column_albumtitle
 
+    qDebug() << SB_DEBUG_INFO << id.path;
     return record;
 }

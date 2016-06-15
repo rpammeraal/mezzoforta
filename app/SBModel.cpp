@@ -156,6 +156,14 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             id.sb_position=v.toInt();
         }
+        else if(header=="sb_path")
+        {
+            id.path=v.toString();
+        }
+        else if(header=="duration")
+        {
+            id.duration=v.toTime();
+        }
         else if(header=="#")
         {
             id.playPosition=v.toInt();

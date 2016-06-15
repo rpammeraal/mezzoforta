@@ -146,8 +146,8 @@ PlayerController::playerPrevious()
         _state=PlayerController::sb_player_state_changing_media;
         _playerStop();
         bool isPlayingFlag=0;
-        SBID previousSong;
-        SBID newSong=_currentSongPlaying;
+        SBIDSong previousSong;
+        SBIDSong newSong=_currentSongPlaying;
 
         //	Get out of loop if we're stuck. Either:
         //	-	get a song playing, or
@@ -305,7 +305,7 @@ PlayerController::playerNext()
     _playerStop();
     bool isPlayingFlag=0;
     //SBID previousSong=_currentSongPlaying;
-    SBID newSong;
+    SBIDSong newSong;
     int maxTries=_modelCurrentPlaylist->rowCount();
     int currentTry=0;
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -315,14 +315,15 @@ PlayerController::playerNext()
     //	Get out of loop if we're stuck. Either:
     //	-	get a song playing, or
     //	-	the very first song does not play for whatever reason
-    qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
+    qDebug() << SB_DEBUG_INFO;
     while(
         currentTry++<maxTries && //	only try as many times as there are songs, and
         isPlayingFlag==0         //	we still don't have anything playing as of now
     )
     {
         newSong=calculateNextSongID();
-        if(newSong.compareSimple(_currentSongPlaying))
+        qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
+        if(newSong==_currentSongPlaying)
         {
             //	End of the list
             if(cpl->playingRadioFlag())
@@ -345,16 +346,8 @@ PlayerController::playerNext()
             isPlayingFlag=_playSong(newSong);
         }
     }
-//    while(isPlayingFlag==0 && ((previousSong.compareSimple(newSong)==0) || newSong.sb_item_type()==SBID::sb_type_invalid))
-//    {
-//        previousSong=newSong;
-//        newSong=calculateNextSongID();
-//        isPlayingFlag=_playSong(newSong);
-//        qDebug() << SB_DEBUG_INFO
-//                 << "isPlayingFlag=" << isPlayingFlag
-//                 << "newSong=" << newSong
-//        ;
-//    }
+    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
+
     //	CWIP:PLAY
     //	If isPlaying==0 show error
     qDebug() << SB_DEBUG_INFO << isPlayingFlag;
@@ -417,16 +410,26 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 }
 
 bool
-PlayerController::playerPlayInPlaylist(const SBID& playlistID)
+PlayerController::playerPlayNonRadio(const SBID& id)
 {
-    _setPlaylistPlaying(playlistID);
+    _radioPlayingFlag=0;
+    if(id.sb_item_type()==SBID::sb_type_playlist)
+    {
+        emit playlistChanged(id);
+    }
+    else
+    {
+        emit playlistChanged(SBID());
+    }
     return this->playerPlay();
 }
 
 bool
 PlayerController::playerPlayInRadio()
 {
-    _setRadioPlaying();
+    _radioPlayingFlag=1;
+    qDebug() << SB_DEBUG_INFO;
+    emit playlistChanged(SBID());
     return this->playerPlay();
 }
 
@@ -462,11 +465,11 @@ PlayerController::calculateTime(quint64 ms) const
     return QTime(hours,minutes,seconds);
 }
 
-SBID
+SBIDSong
 PlayerController::calculateNextSongID(bool previousFlag) const
 {
     SB_DEBUG_IF_NULL(_modelCurrentPlaylist);
-    return _modelCurrentPlaylist->getNextSong(previousFlag);
+    return SBIDSong(_modelCurrentPlaylist->getNextSong(previousFlag));
 }
 
 void
@@ -476,7 +479,6 @@ PlayerController::_init()
     _currentSongPlaying=SBID();
     _initDoneFlag=0;
     _modelCurrentPlaylist=NULL;
-    _currentPlaylistPlaying=SBID();
     _radioPlayingFlag=0;
     _state=PlayerController::sb_player_state_stopped;
 }
@@ -547,24 +549,6 @@ PlayerController::_playerStop()
     _playerInstance[_currentPlayerID].stop();
     qDebug() << SB_DEBUG_INFO;
     playerSeek(0);
-}
-
-void
-PlayerController::_setRadioPlaying()
-{
-    _radioPlayingFlag=1;
-    _currentPlaylistPlaying=SBID();
-    qDebug() << SB_DEBUG_INFO;
-    emit playlistChanged(SBID());
-}
-
-void
-PlayerController::_setPlaylistPlaying(const SBID &playlistID)
-{
-    _radioPlayingFlag=0;
-    _currentPlaylistPlaying=playlistID;
-    qDebug() << SB_DEBUG_INFO;
-    emit playlistChanged(playlistID);
 }
 
 void

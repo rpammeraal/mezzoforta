@@ -18,71 +18,77 @@
 
 SBTabQueuedSongs::SBTabQueuedSongs(QWidget* parent) : SBTab(parent,0)
 {
+    Context::instance()->setTabQueuedSongs(this);
 }
 
 void
-SBTabQueuedSongs::playPlaylist(const SBID &playlistID)
+SBTabQueuedSongs::playItemNow(const SBID &id,const bool enqueueFlag)
 {
     _init();
     PlayerController* pc=Context::instance()->getPlayerController();
     SBModelQueuedSongs* aem=model();
     _playingRadioFlag=0;
+    QList<SBIDSong> songsInQueue;
 
-    this->clearPlaylist();
-    QList<SBID> compositesTraversed;
-    QList<SBID> allSongs;
-    QMap<int,SBID> playList;
-
-    //	Get all songs
-    qDebug() << SB_DEBUG_INFO;
-    compositesTraversed.clear();
-    allSongs.clear();
-    DataEntityPlaylist mpl;
-    mpl.getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,playlistID);
-
-    //	Populate playlist
-    for(int i=0;i<allSongs.count();i++)
+    if(enqueueFlag==0)
     {
-        playList[i]=allSongs.at(i);
+        this->clearPlaylist();
+        pc->playerStop();
+    }
+    else
+    {
+        songsInQueue=aem->getAllSongs(); //	Get list of all songs currently in model
     }
 
-    pc->playerStop();
-
-    aem->populate(playList);
-    this->_populatePost(playlistID);
-
-    bool isPlayingFlag=pc->playerPlayInPlaylist(playlistID);
-    if(isPlayingFlag==0)
+    QMap<int,SBID> list;
+    switch(id.sb_item_type())
     {
-        pc->playerNext();
-    }
-}
+    case SBID::sb_type_playlist:
+        qDebug() << SB_DEBUG_INFO;
+        list=_retrievePlaylistItems(id);
+        break;
 
-void
-SBTabQueuedSongs::enqueuePlaylist(const SBID &playlistID)
-{
-    SBModelQueuedSongs* aem=model();
+    case SBID::sb_type_song:
+        qDebug() << SB_DEBUG_INFO;
+        list[0]=id;
+        break;
 
-    QList<SBID> allSongs=aem->getAllSongs(); //	Get list of all songs currently in model
-    QList<SBID> compositesTraversed;
-    QMap<int,SBID> playList;
-
-    //	Get all songs
-    qDebug() << SB_DEBUG_INFO << "currently in queue=" << allSongs.count();
-    compositesTraversed.clear();
-    allSongs.clear();
-    DataEntityPlaylist mpl;
-    mpl.getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,playlistID);
-
-    //	Populate playlist
-    for(int i=0;i<allSongs.count();i++)
-    {
-        playList[i]=allSongs.at(i);
-        qDebug() << SB_DEBUG_INFO << "Adding" << allSongs.at(i);
+    default:
+        qDebug() << SB_DEBUG_ERROR << "playType" << id.sb_item_type() << "not supported for " << id;
     }
 
-    aem->populate(playList,1);
-    this->_populatePost(playlistID);
+    qDebug() << SB_DEBUG_INFO << list.count();
+
+    //	Check for dups
+    QMap<int,SBID> toAdd;
+    int j=0;
+    for(int i=0;i<list.count();i++)
+    {
+        const SBIDSong id=SBIDSong(list[i]);
+        if(songsInQueue.contains(id)==0)
+        {
+            qDebug() << SB_DEBUG_INFO << id << id.path;
+            toAdd[j++]=(SBID)(id);
+            songsInQueue.append(id);
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << "already exists" << id;
+        }
+    }
+
+    //	Send to model
+    aem->populate(toAdd,enqueueFlag);
+    this->_populatePost(id);
+
+    if(enqueueFlag==0)
+    {
+        bool isPlayingFlag=pc->playerPlayNonRadio(id);
+        if(isPlayingFlag==0)
+        {
+            pc->playerNext();
+        }
+    }
 }
 
 SBModelQueuedSongs*
@@ -551,4 +557,26 @@ SBTabQueuedSongs::_populatePost(const SBID &id)
     hv->setDefaultSectionSize(18);
 
     tv->setEditTriggers(QAbstractItemView::AllEditTriggers);
+}
+
+QMap<int,SBID>
+SBTabQueuedSongs::_retrievePlaylistItems(const SBID &id)
+{
+    QList<SBID> compositesTraversed;
+    QList<SBID> allSongs;
+    QMap<int,SBID> playList;
+
+    //	Get all songs
+    qDebug() << SB_DEBUG_INFO;
+    compositesTraversed.clear();
+    allSongs.clear();
+    DataEntityPlaylist mpl;
+    mpl.getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
+
+    //	Populate playlist
+    for(int i=0;i<allSongs.count();i++)
+    {
+        playList[i]=allSongs.at(i);
+    }
+    return playList;
 }

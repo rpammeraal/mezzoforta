@@ -4,64 +4,69 @@
 
 ///	PUBLIC
 void
-Context::setBackgroundThread(BackgroundThread* nbgt)
+Context::setBackgroundThread(BackgroundThread* bgt)
 {
-    bgt=nbgt;
+    _bgt=bgt;
 }
 
 void
-Context::setController(Controller* nc)
+Context::setController(Controller* c)
 {
-    c=nc;
+    _c=c;
 }
 
 void
-Context::setDataAccessLayer(DataAccessLayer* ndal)
+Context::setDataAccessLayer(DataAccessLayer* dal)
 {
-    dal=ndal;
+    _dal=dal;
 }
 
 void
-Context::setChooser(Chooser *nlcc)
+Context::setChooser(Chooser *lcc)
 {
-    lcc=nlcc;
+    _lcc=lcc;
 }
 
 void
-Context::setMainWindow(MainWindow* nmw)
+Context::setMainWindow(MainWindow* mw)
 {
-    mw=nmw;
+    _mw=mw;
 }
 
 void
-Context::setNavigator(Navigator* nssh)
+Context::setNavigator(Navigator* ssh)
 {
-    ssh=nssh;
+    _ssh=ssh;
 }
 
 void
-Context::setPlayerController(PlayerController *npc)
+Context::setPlayerController(PlayerController *pc)
 {
-    pc=npc;
+    _pc=pc;
 }
 
 void
-Context::setScreenStack(ScreenStack* nst)
+Context::setScreenStack(ScreenStack* st)
 {
-    st=nst;
+    _st=st;
 }
 
 void
-Context::setTab(SBTab *ntab)
+Context::setTab(SBTab *tab)
 {
-    tab=ntab;
+    _tab=tab;
+}
+void
+Context::setTabQueuedSongs(SBTabQueuedSongs* tabQS)
+{
+    _tabQS=tabQS;
 }
 
 
 ///	PRIVATE
 Context::Context()
 {
-    init();
+    _init();
 }
 
 Context::~Context()
@@ -70,14 +75,15 @@ Context::~Context()
 }
 
 void
-Context::init()
+Context::_init()
 {
-    c=NULL;
-    dal=NULL;
-    lcc=NULL;
-    mw=NULL;
-    pc=NULL;
-    ssh=NULL;
-    st=NULL;
-    tab=NULL;
+    _bgt=NULL;
+    _c=NULL;
+    _dal=NULL;
+    _lcc=NULL;
+    _mw=NULL;
+    _pc=NULL;
+    _ssh=NULL;
+    _st=NULL;
+    _tab=NULL;
 }
