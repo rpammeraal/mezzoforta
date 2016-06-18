@@ -1138,7 +1138,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
         "WHERE "
             "playlist_id=%2 "
     )
-        .arg(duration.toString("hh:mm:ss"))
+        .arg("%1:%2:%3").arg(duration.hour()+24*duration.days()).arg(duration.minute()).arg(duration.second())
         .arg(id.sb_playlist_id)
     ;
     dal->customize(q);

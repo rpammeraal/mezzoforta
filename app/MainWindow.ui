@@ -413,7 +413,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>9</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -1828,7 +1828,6 @@
                      <number>0</number>
                     </property>
                    </layout>
-
                   </widget>
                  </item>
                  <item row="1" column="0">
@@ -3431,22 +3430,6 @@ Click on 'All Songs' to continue.</string>
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QLabel" name="labelCurrentPlaylistPlaylistName">
-                   <property name="font">
-                    <font>
-                     <family>Trebuchet MS</family>
-                     <pointsize>14</pointsize>
-                     <weight>75</weight>
-                     <italic>true</italic>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Currently Playing</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <layout class="QHBoxLayout" name="horizontalLayout">
                    <item>
                     <widget class="QPushButton" name="pbClearPlaylist">
@@ -3485,16 +3468,63 @@ Click on 'All Songs' to continue.</string>
                   </layout>
                  </item>
                  <item>
-                  <widget class="QLabel" name="labelCurrentPlaylist">
+                  <widget class="QTextBrowser" name="frCurrentPlaylistDetails">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>18</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>12</pointsize>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>playlistDetail</string>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
                    </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="sizeAdjustPolicy">
+                    <enum>QAbstractScrollArea::AdjustToContents</enum>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="textInteractionFlags">
+                    <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout02">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                   </layout>
+
+
+
                   </widget>
                  </item>
                  <item>

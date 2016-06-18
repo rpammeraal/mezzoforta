@@ -22,6 +22,7 @@ public:
 
     inline SBID currentID() const { return _currentID; }
     int getFirstEligibleSubtabID() const;
+    inline int currentSubtabID() const { return _currentSubtabID; }
     inline bool isEditTab() const { return _isEditTabFlag; }
     void refreshTabIfCurrent(const SBID &id);
     void setSubtab(const SBID& id) const;
@@ -38,8 +39,6 @@ public:
 
 public slots:
     virtual void save() const;
-
-    //	Static
 
 public slots:
 

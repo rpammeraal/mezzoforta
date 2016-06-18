@@ -8,7 +8,6 @@
 
 class QAction;
 class QStandardItem;
-//class SBStandardItemModel;
 class ChooserModel;
 
 class Chooser : public QObject
@@ -16,13 +15,21 @@ class Chooser : public QObject
     Q_OBJECT
 
 public:
+    //	row number of each 'tree root'
+    enum sb_root
+    {
+        sb_your_songs=0,
+        sb_empty1,
+        sb_playlists
+    };
+
     Chooser();
     ~Chooser();
 
     QStandardItemModel* getModel() const;
 
 public slots:
-    void assignItemToPlaylist(const QModelIndex& idx, const SBID& assignID);
+    void assignItem(const QModelIndex& idx, const SBID& assignID);
     void deletePlaylist();
     void enqueuePlaylist();
     void newPlaylist();
@@ -37,23 +44,22 @@ private slots:
 
 private:
     //	Context menu actions
-    QAction* newAction;
-    QAction* deleteAction;
-    QAction* renameAction;
-    QAction* playPlaylistAction;
-    QAction* enqueuePlaylistAction;
+    QAction* _newAction;
+    QAction* _deleteAction;
+    QAction* _renameAction;
+    QAction* _playPlaylistAction;
+    QAction* _enqueuePlaylistAction;
 
     //SBStandardItemModel* model;
-    QModelIndex lastClickedIndex;
+    QModelIndex _lastClickedIndex;
     ChooserModel* _cm;
 
-    QList<QStandardItem *> createNode(const QString& itemValue, int itemID, SBID::sb_type type);
-    QModelIndex findItem(const QString& toFind);
-    QModelIndex findItem(const SBID& id);
-    SBID getPlaylistSelected(const QModelIndex& i);
-    void init();
-    void populate();
-    void setCurrentIndex(const QModelIndex& i);
+    QModelIndex _findItem(const QString& toFind);
+    QModelIndex _findItem(const SBID& id);
+    SBID _getPlaylistSelected(const QModelIndex& i);
+    void _init();
+    void _populate();
+    void _setCurrentIndex(const QModelIndex& i);
 };
 
 #endif // LEFTCOLUMNCHOOSER_H

@@ -86,7 +86,7 @@ SBID::SBID(QByteArray encodedData)
     playlistName             =sl[19];
     count1                   =sl[20].toInt();
     count2                   =sl[21].toInt();
-    int msSecsSinceStartOfDay=sl[22].toInt(); QTime t; duration=t.addMSecs(msSecsSinceStartOfDay);
+    duration.setDuration(sl[22].toInt());
     playlistName             =sl[23];
     playPosition             =sl[24].toInt();
     isPlayingFlag            =sl[25].toInt();

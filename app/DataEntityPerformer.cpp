@@ -256,6 +256,44 @@ DataEntityPerformer::getAllSongs(const SBID& id)
 }
 
 SBSqlQueryModel*
+DataEntityPerformer::getAllOnlineSongs(const SBID& id)
+{
+    QString q=QString
+    (
+        "SELECT "
+            "s.song_id AS SB_SONG_ID, "
+            "a.artist_id AS SB_PERFORMER_ID, "
+            "r.record_id AS SB_ALBUM_ID, "
+            "rp.record_position AS \"#\", "
+            "s.title AS song_title, "
+            "a.name AS \"performer\", "
+            "r.title AS album_title, "
+            "rp.duration AS \"duration\", "
+            "op.path AS SB_PATH "
+        "FROM "
+            "___SB_SCHEMA_NAME___record_performance rp "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "rp.song_id=s.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "rp.artist_id=a.artist_id "
+                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "rp.op_song_id=op.song_id AND "
+                    "rp.op_artist_id=op.artist_id AND "
+                    "rp.op_record_id=op.record_id AND "
+                    "rp.op_record_position=op.record_position "
+        "WHERE "
+            "rp.artist_id=%1 "
+        "ORDER BY "
+            "r.year, "
+            "rp.record_position "
+    ).arg(id.sb_performer_id);
+
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
 DataEntityPerformer::getRelatedPerformers(const SBID& id)
 {
     QString q=QString

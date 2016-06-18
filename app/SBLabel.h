@@ -22,6 +22,9 @@ public:
     virtual void mousePressEvent(QMouseEvent* me);
     void setSBID(const SBID& nid);
 
+protected:
+    virtual void contextMenuEvent(QContextMenuEvent *ev);
+
 private:
     SBID _id;
 };

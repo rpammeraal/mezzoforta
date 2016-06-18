@@ -5,7 +5,9 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
+#include "DataEntityAlbum.h"
 #include "DataEntityCurrentPlaylist.h"
+#include "DataEntityPerformer.h"
 #include "DataEntityPlaylist.h"
 #include "DataEntitySong.h"
 #include "MainWindow.h"
@@ -22,7 +24,7 @@ SBTabQueuedSongs::SBTabQueuedSongs(QWidget* parent) : SBTab(parent,0)
 }
 
 void
-SBTabQueuedSongs::playItemNow(const SBID &id,const bool enqueueFlag)
+SBTabQueuedSongs::playItemNow(const SBID &toPlay,const bool enqueueFlag)
 {
     _init();
     PlayerController* pc=Context::instance()->getPlayerController();
@@ -41,20 +43,63 @@ SBTabQueuedSongs::playItemNow(const SBID &id,const bool enqueueFlag)
     }
 
     QMap<int,SBID> list;
-    switch(id.sb_item_type())
+    switch(toPlay.sb_item_type())
     {
     case SBID::sb_type_playlist:
         qDebug() << SB_DEBUG_INFO;
-        list=_retrievePlaylistItems(id);
+        list=_retrievePlaylistItems(toPlay);
         break;
 
     case SBID::sb_type_song:
         qDebug() << SB_DEBUG_INFO;
-        list[0]=id;
+        list[0]=toPlay;
+        break;
+
+    case SBID::sb_type_album:
+        {
+            SBSqlQueryModel* qm=DataEntityAlbum::getAllSongs(toPlay);
+            for(int i=0;i<qm->rowCount();i++)
+            {
+                SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,5)).toInt());
+                song.sb_position=qm->data(qm->index(i,1)).toInt();
+                song.songTitle=qm->data(qm->index(i,6)).toString();
+                song.duration=qm->data(qm->index(i,7)).toTime();
+                song.sb_performer_id=qm->data(qm->index(i,9)).toInt();
+                song.performerName=qm->data(qm->index(i,10)).toString();
+                song.path=qm->data(qm->index(i,13)).toString();
+                song.sb_album_id=toPlay.sb_album_id;
+                song.albumTitle=toPlay.albumTitle;
+                list[list.count()]=song;
+
+                qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
+            }
+        }
+        break;
+
+    case SBID::sb_type_performer:
+        {
+            DataEntityPerformer dep;
+            SBSqlQueryModel* qm=dep.getAllOnlineSongs(toPlay);
+            for(int i=0;i<qm->rowCount();i++)
+            {
+                SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,0)).toInt());
+                song.sb_performer_id=qm->data(qm->index(i,1)).toInt();
+                song.sb_album_id=qm->data(qm->index(i,2)).toInt();
+                song.sb_position=qm->data(qm->index(i,3)).toInt();
+                song.songTitle=qm->data(qm->index(i,4)).toString();
+                song.performerName=qm->data(qm->index(i,5)).toString();
+                song.albumTitle=qm->data(qm->index(i,6)).toString();
+                song.duration=qm->data(qm->index(i,7)).toTime();
+                song.path=qm->data(qm->index(i,8)).toString();
+                list[list.count()]=song;
+
+                qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
+            }
+        }
         break;
 
     default:
-        qDebug() << SB_DEBUG_ERROR << "playType" << id.sb_item_type() << "not supported for " << id;
+        qDebug() << SB_DEBUG_ERROR << "playType" << toPlay.sb_item_type() << "not supported for " << toPlay;
     }
 
     qDebug() << SB_DEBUG_INFO << list.count();
@@ -67,7 +112,7 @@ SBTabQueuedSongs::playItemNow(const SBID &id,const bool enqueueFlag)
         const SBIDSong id=SBIDSong(list[i]);
         if(songsInQueue.contains(id)==0)
         {
-            qDebug() << SB_DEBUG_INFO << id << id.path;
+            qDebug() << SB_DEBUG_INFO << id << id.duration << id.path;
             toAdd[j++]=(SBID)(id);
             songsInQueue.append(id);
         }
@@ -79,16 +124,20 @@ SBTabQueuedSongs::playItemNow(const SBID &id,const bool enqueueFlag)
 
     //	Send to model
     aem->populate(toAdd,enqueueFlag);
-    this->_populatePost(id);
+    qDebug() << SB_DEBUG_INFO;
+    this->_populatePost(toPlay);
 
     if(enqueueFlag==0)
     {
-        bool isPlayingFlag=pc->playerPlayNonRadio(id);
+        bool isPlayingFlag=pc->playerPlayNonRadio(toPlay);
         if(isPlayingFlag==0)
         {
             pc->playerNext();
         }
     }
+    qDebug() << SB_DEBUG_INFO;
+    updateDetail();
+
 }
 
 SBModelQueuedSongs*
@@ -140,6 +189,7 @@ SBTabQueuedSongs::deletePlaylistItem()
         ;
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
+    updateDetail();
 }
 
 void
@@ -230,7 +280,7 @@ SBTabQueuedSongs::clearPlaylist()
     {
         aem->clear();
     }
-    //DataEntityCurrentPlaylist::clearPlaylist();
+    updateDetail();
 }
 
 void
@@ -404,6 +454,43 @@ SBTabQueuedSongs::startRadio()
 }
 
 void
+SBTabQueuedSongs::updateDetail() const
+{
+    SBTime totalDuration;
+    QString detail;
+
+    PlayerController* pc=Context::instance()->getPlayerController();
+    if(pc && pc->radioPlayingFlag())
+    {
+        //	Don't update if radio is playing
+        return;
+    }
+    qDebug() << SB_DEBUG_INFO;
+    SBModelQueuedSongs* aem=model();
+    if(aem)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        const int numSongs=aem->numSongs();
+        if(numSongs)
+        {
+            SBTime totalDuration=aem->totalDuration();
+            qDebug() << SB_DEBUG_INFO << totalDuration.toString();
+
+            detail+=QString("%1 song%2 %3 %4")
+                    .arg(numSongs)
+                    .arg(numSongs>1?"s":"")
+                    .arg(QChar(8226))
+                    .arg(totalDuration.toString())
+            ;
+        }
+    }
+    detail="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+detail+"</BODY>";
+    qDebug() << SB_DEBUG_INFO << detail;
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.frCurrentPlaylistDetails->setText(detail);
+}
+
+void
 SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
 {
     qDebug() << SB_DEBUG_INFO << idx.column() << idx.row();
@@ -514,6 +601,8 @@ SBTabQueuedSongs::_populate(const SBID& id)
 {
     Q_UNUSED(id);
     _init();
+    updateDetail();
+
     return SBID(SBID::sb_type_current_playlist,-1);
 }
 

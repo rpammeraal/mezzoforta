@@ -112,11 +112,12 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
         songChoice.songTitle=id.songTitle;
         songChoice.sb_album_id=m->data(m->index(i,1)).toInt();
         songChoice.albumTitle=m->data(m->index(i,2)).toString();
-        songChoice.year=m->data(m->index(i,3)).toInt();
-        songChoice.sb_performer_id=m->data(m->index(i,5)).toInt();
-        songChoice.performerName=m->data(m->index(i,6)).toString();
-        songChoice.sb_position=m->data(m->index(i,8)).toInt();
-        songChoice.duration=m->data(m->index(i,9)).toTime();
+        songChoice.duration=m->data(m->index(i,3)).toTime();
+        songChoice.year=m->data(m->index(i,4)).toInt();
+        songChoice.sb_performer_id=m->data(m->index(i,6)).toInt();
+        songChoice.performerName=m->data(m->index(i,7)).toString();
+        songChoice.sb_position=m->data(m->index(i,9)).toInt();
+        songChoice.path=m->data(m->index(i,10)).toString();
         qDebug() << SB_DEBUG_INFO << i << songChoice << songChoice.sb_performer_id;
 
         SBID albumIcon(SBID::sb_type_album,songChoice.sb_album_id);
@@ -138,7 +139,7 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
                    .arg(i)
                    .arg(songChoice.albumTitle)
                    .arg(songChoice.performerName)
-                   .arg(songChoice.duration.toString()));
+                   .arg(songChoice.duration.toString(SBTime::sb_hhmmss_format)));
 
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),

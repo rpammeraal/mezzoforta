@@ -22,10 +22,12 @@ public:
     SBTabSongDetail(QWidget* parent=0);
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
+    static SBID selectSongFromAlbum(const SBID& song);
 
 public slots:
     void playNow(bool enqueueFlag=0);
-    void showContextMenuAlbums(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
+    void showContextMenuLabel(const QPoint &p);
     void enqueue();
 
 private slots:

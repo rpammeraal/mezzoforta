@@ -58,3 +58,11 @@ SBLabel::setSBID(const SBID &id)
 {
     _id=id;
 }
+
+///	Protected methods
+void
+SBLabel::contextMenuEvent(QContextMenuEvent *ev)
+{
+    qDebug() << SB_DEBUG_INFO;
+    emit customContextMenuRequested(ev->globalPos());
+}

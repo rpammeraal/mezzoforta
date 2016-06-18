@@ -184,7 +184,7 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
-    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2 playtime").arg(result.duration.toString());
+    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2").arg(result.duration.toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;

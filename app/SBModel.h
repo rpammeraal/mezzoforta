@@ -14,7 +14,7 @@ public:
     SBModel();
 
 protected:
-    QList<bool> dragableColumnList;
+    QList<bool> _dragableColumnList;
 
     void debugShow(const QString& header=QString("none")) const;
     virtual bool _canDropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
@@ -22,7 +22,7 @@ protected:
     Qt::ItemFlags _flags(const QModelIndex &index, Qt::ItemFlags defaultFlags) const;
     virtual QMimeData * _mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexes) const;
     virtual QStringList _mimeTypes() const;
-    void _setDragableColumns(const QList<bool>& list);
+    void setDragableColumns(const QList<bool>& list);
     virtual Qt::DropActions _supportedDropActions() const;
     void _init();
 

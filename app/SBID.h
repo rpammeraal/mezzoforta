@@ -100,6 +100,14 @@ inline uint qHash(const SBID& k, uint seed)
     return qHash(hash,seed);
 }
 
+///
+/// \brief The SBIDSong class
+///
+/// Use SBIDSong class *only* in situations in the context of song. Instances
+/// of this class will compare objects correctly by using the follwing four
+/// fields: song_id, performer_id, album_id and position_id, hence the
+/// operator==().
+///
 class SBIDSong : public SBID
 {
 public:

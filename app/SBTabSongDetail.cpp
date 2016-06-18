@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include "SBTabSongDetail.h"
 
 #include "Common.h"
@@ -5,8 +7,9 @@
 #include "ExternalData.h"
 #include "MainWindow.h"
 #include "DataEntitySong.h"
-#include "SBSqlQueryModel.h"
 #include "Navigator.h"
+#include "SBDialogSelectItem.h"
+#include "SBSqlQueryModel.h"
 
 SBTabSongDetail::SBTabSongDetail(QWidget* parent) : SBTab(parent,0)
 {
@@ -42,54 +45,158 @@ SBTabSongDetail::tabWidget() const
     return mw->ui.tabSongDetailLists;
 }
 
+SBID
+SBTabSongDetail::selectSongFromAlbum(const SBID &song)
+{
+    SBID songOnAlbum;
+    SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(song);
+    if(m->rowCount()==0)
+    {
+        //	Can't assign -- does not exist on an album
+        QMessageBox mb;
+        mb.setText("This song does not appear on any album.");
+        mb.setInformativeText("Songs that do not appear on an album cannot be used.");
+        mb.exec();
+    }
+    else if(m->rowCount()==1)
+    {
+        //	Populate assignID and assign
+        songOnAlbum=song;
+        songOnAlbum.sb_album_id=m->data(m->index(0,1)).toInt();
+        songOnAlbum.albumTitle=m->data(m->index(0,2)).toString();
+        songOnAlbum.duration=m->data(m->index(0,3)).toTime();
+        songOnAlbum.year=m->data(m->index(0,4)).toInt();
+        songOnAlbum.sb_performer_id=m->data(m->index(0,6)).toInt();
+        songOnAlbum.performerName=m->data(m->index(0,7)).toString();
+        songOnAlbum.sb_position=m->data(m->index(0,9)).toInt();
+        songOnAlbum.path=m->data(m->index(0,10)).toString();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        //	Ask from which album song should be assigned from
+        SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(song,m);
+
+        ssa->exec();
+        SBID selectedSong=ssa->getSBID();
+        if(selectedSong.sb_album_id!=-1 && selectedSong.sb_position!=-1)
+        {
+            //	If user cancels out, don't continue
+            songOnAlbum=song;	//	now also assign album attributes
+            songOnAlbum.sb_album_id=selectedSong.sb_album_id;
+            songOnAlbum.sb_position=selectedSong.sb_position;
+            songOnAlbum.sb_performer_id=selectedSong.sb_performer_id;
+            songOnAlbum.path=selectedSong.path;
+            songOnAlbum.duration=selectedSong.duration;
+            songOnAlbum.albumTitle=selectedSong.albumTitle;
+        }
+    }
+    return songOnAlbum;
+}
+
 ///	Public slots
 void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
-    QTableView* tv=mw->ui.songDetailAlbums; SB_DEBUG_IF_NULL(tv);
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabSongDetail::sb_tab_albums:
+        tv=mw->ui.songDetailAlbums;
+        break;
+
+    case SBTabSongDetail::sb_tab_playlists:
+        tv=mw->ui.songDetailPlaylists;
+        break;
+
+    case SBTabSongDetail::sb_tab_charts:
+    case SBTabSongDetail::sb_tab_lyrics:
+    case SBTabSongDetail::sb_tab_wikipedia:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+        return;
+    }
+    SB_DEBUG_IF_NULL(tv);
+
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
-    SBID itemToPlay=this->currentID();
-
-    itemToPlay.sb_performer_id=selectedID.sb_performer_id;
-    itemToPlay.sb_album_id=selectedID.sb_album_id;
-    itemToPlay.sb_position=selectedID.sb_position;
-    itemToPlay.path=selectedID.path;
-    itemToPlay.albumTitle=selectedID.albumTitle;
-    itemToPlay.duration=selectedID.duration;
-
     SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
-    tqs->playItemNow(itemToPlay,enqueueFlag);
+
+    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        //	Context menu from SBLabel is clicked
+        selectedID=selectSongFromAlbum(this->currentID());
+    }
+    tqs->playItemNow(selectedID,enqueueFlag);
 }
 
 void
-SBTabSongDetail::showContextMenuAlbums(const QPoint &p)
+SBTabSongDetail::showContextMenuView(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
-    QTableView* tv=mw->ui.songDetailAlbums; SB_DEBUG_IF_NULL(tv);
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabSongDetail::sb_tab_albums:
+        tv=mw->ui.songDetailAlbums;
+        break;
+
+    case SBTabSongDetail::sb_tab_playlists:
+        tv=mw->ui.songDetailPlaylists;
+        break;
+
+    case SBTabSongDetail::sb_tab_charts:
+    case SBTabSongDetail::sb_tab_lyrics:
+    case SBTabSongDetail::sb_tab_wikipedia:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+        return;
+    }
+    SB_DEBUG_IF_NULL(tv);
+
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBID selectedID=sm->determineSBID(idx);
 
+    qDebug() << SB_DEBUG_INFO << selectedID;
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
         _lastClickedIndex=idx;
-        QString itemString=mw->ui.labelSongDetailSongTitle->text();
 
         QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(itemString));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(itemString));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
         _menu->exec(gp);
     }
+}
+
+void
+SBTabSongDetail::showContextMenuLabel(const QPoint &p)
+{
+    _lastClickedIndex=QModelIndex();
+    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    QTableView* tv=mw->ui.songDetailAlbums; SB_DEBUG_IF_NULL(tv);
+
+    QString itemString=mw->ui.labelSongDetailSongTitle->text();
+
+    _menu=new QMenu(NULL);
+
+    _playNowAction->setText(QString("Play '%1' Now").arg(itemString));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(itemString));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
 }
 
 void
@@ -160,7 +267,7 @@ SBTabSongDetail::_init()
                 this, SLOT(sortOrderChanged(int)));
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showContextMenuAlbums(QPoint)));
+                this, SLOT(showContextMenuView(QPoint)));
 
         //		2.	Playlist
         tv=mw->ui.songDetailPlaylists;
@@ -168,6 +275,15 @@ SBTabSongDetail::_init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuView(QPoint)));
+
+        //		3.	Icon
+        qDebug() << SB_DEBUG_INFO;
+        SBLabel* l=mw->ui.labelSongDetailIcon;
+        connect(l, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuLabel(QPoint)));
 
         _menu=NULL;
     }
@@ -270,7 +386,7 @@ SBTabSongDetail::_populate(const SBID& id)
     tv=mw->ui.songDetailAlbums;
     qm=DataEntitySong::getOnAlbumListBySong(id);
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,qm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_albums,rowCount>0);
@@ -288,12 +404,12 @@ SBTabSongDetail::_populate(const SBID& id)
     //tv=mw->ui.songDetailChartList;
     //qm=DataEntitySong::getOnChartListBySong(id);
     //rowCount=populateTableView(tv,qm,0);
-    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,0);	//	rowCount>0);
+    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,0);
 
     //	lyrics
+    qDebug() << SB_DEBUG_INFO << result.lyrics.length();
     if(result.lyrics.length()>0)
     {
-        //mw->ui.songDetailLyrics->setText(result.lyrics);
         QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+result.lyrics;
         html.replace("\n","<BR>");
         mw->ui.songDetailLyrics->setHtml(html);

@@ -318,7 +318,7 @@ SBSqlQueryModel::setSelectedColumn(int c)
 void
 SBSqlQueryModel::setDragableColumns(const QList<bool>& list)
 {
-    SBModel::_setDragableColumns(list);
+    SBModel::setDragableColumns(list);
 }
 
 ///	SLOTS

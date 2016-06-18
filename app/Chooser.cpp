@@ -8,14 +8,16 @@
 #include "Context.h"
 #include "Controller.h"
 #include "Chooser.h"
+#include "DataEntityPlaylist.h"
+#include "DataEntitySong.h"
 #include "MainWindow.h"
+#include "Navigator.h"
+#include "PlayerController.h"
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
-#include "Navigator.h"
-#include "PlayerController.h"
+#include "SBTabQueuedSongs.h"
+#include "SBTabSongDetail.h"
 
 class ChooserModel : public QStandardItemModel
 {
@@ -70,7 +72,7 @@ public:
         qDebug() << SB_DEBUG_INFO << "Dropping " << id << " on " << parent.row();
         if(_c && id.sb_item_type()!=SBID::sb_type_invalid)
         {
-            _c->assignItemToPlaylist(parent,id);
+            _c->assignItem(parent,id);
             return 1;
         }
         return 0;
@@ -155,7 +157,7 @@ private:
 ///	PUBLIC
 Chooser::Chooser() : QObject()
 {
-    init();
+    _init();
 }
 
 Chooser::~Chooser()
@@ -164,90 +166,76 @@ Chooser::~Chooser()
 
 
 ///	SLOTS
+
 void
-Chooser::assignItemToPlaylist(const QModelIndex &idx, const SBID& assignID)
+Chooser::assignItem(const QModelIndex &idx, const SBID &assignID)
 {
-    SBID toID=getPlaylistSelected(idx);
-    SBID fromID;
-    qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id;
-    qDebug() << SB_DEBUG_INFO << "to" << toID;
-
-    if(assignID==toID)
+    QModelIndex p=idx.parent();
+    Chooser::sb_root rootType=(Chooser::sb_root)p.row();
+    switch(rootType)
     {
-        //	Do not allow the same item to be assigned to itself
-            QMessageBox mb;
-            mb.setText("Ouroboros Error               ");
-            mb.setInformativeText("Cannot assign items to itself.");
-            mb.exec();
-    }
-    else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        //	Find out in case of song assignment if record, position are known.
-        SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(assignID);
-        if(m->rowCount()==0)
+    case Chooser::sb_your_songs:
+    case Chooser::sb_playlists:
         {
-            //	Can't assign -- does not exist on an album
-            QMessageBox mb;
-            mb.setText("This song does not appear on any album.");
-            mb.setInformativeText("Songs that do not appear on an album cannot be assigned to a playlist.");
-            mb.exec();
-        }
-        else if(m->rowCount()==1)
-        {
-            //	Populate assignID and assign
-            fromID=assignID;
-            fromID.sb_album_id=m->data(m->index(0,1)).toInt();
-            fromID.sb_position=m->data(m->index(0,8)).toInt();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO;
-            //	Ask from which album song should be assigned from
-            SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(assignID,m);
 
-            ssa->exec();
-            SBID selectedSong=ssa->getSBID();
-            if(selectedSong.sb_album_id!=-1 && selectedSong.sb_position!=-1)
+            SBID toID=_getPlaylistSelected(idx);
+            SBID fromID;
+            qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id;
+            qDebug() << SB_DEBUG_INFO << "to" << toID;
+
+            if(assignID==toID)
             {
-                //	If user cancels out, don't continue
-                fromID=assignID;	//	now also assign album attributes
-                fromID.sb_album_id=selectedSong.sb_album_id;
-                fromID.sb_position=selectedSong.sb_position;
-                fromID.sb_performer_id=selectedSong.sb_performer_id;
+                //	Do not allow the same item to be assigned to itself
+                    QMessageBox mb;
+                    mb.setText("Ouroboros Error               ");
+                    mb.setInformativeText("Cannot assign items to itself.");
+                    mb.exec();
             }
-            qDebug() << SB_DEBUG_INFO << fromID << fromID.sb_item_type() << fromID.sb_album_id << fromID.sb_position;
+            else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
+            {
+                fromID=SBTabSongDetail::selectSongFromAlbum(assignID);
+            }
+            else
+            {
+                fromID=assignID;
+            }
+
+            if(fromID.sb_item_type()!=SBID::sb_type_invalid)
+            {
+                if(rootType==Chooser::sb_playlists)
+                {
+                    DataEntityPlaylist pl;
+
+                    pl.assignPlaylistItem(fromID, toID);
+                    QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
+                        .arg(QChar(96))            //	1
+                        .arg(assignID.getText())   //	2
+                        .arg(QChar(180))           //	3
+                        .arg(toID.getText())       //	4
+                        .arg(assignID.getType())   //	5
+                        .arg(toID.getType());      //	6
+                    Context::instance()->getController()->updateStatusBarText(updateText);
+                    qDebug() << SB_DEBUG_INFO;
+                }
+                else if(rootType==Chooser::sb_your_songs)
+                {
+                    SBTabQueuedSongs* qs=Context::instance()->getTabQueuedSongs();
+                    qs->playItemNow(fromID,1);
+                }
+            }
+
         }
-    }
-    else
-    {
-        fromID=assignID;
-    }
-
-    if(fromID.sb_item_type()!=SBID::sb_type_invalid)
-    {
-        DataEntityPlaylist pl;
-
-        pl.assignPlaylistItem(fromID, toID);
-        QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
-            .arg(QChar(96))            //	1
-            .arg(assignID.getText())   //	2
-            .arg(QChar(180))           //	3
-            .arg(toID.getText())       //	4
-            .arg(assignID.getType())   //	5
-            .arg(toID.getType());      //	6
-        Context::instance()->getController()->updateStatusBarText(updateText);
-        qDebug() << SB_DEBUG_INFO;
+    case Chooser::sb_empty1:
+    default:
+        break;
     }
 }
 
 void
 Chooser::deletePlaylist()
 {
-    setCurrentIndex(lastClickedIndex);
-    qDebug() << SB_DEBUG_INFO << lastClickedIndex;
-    SBID id=getPlaylistSelected(lastClickedIndex);
-    qDebug() << SB_DEBUG_INFO;
+    _setCurrentIndex(_lastClickedIndex);
+    SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         //	Show dialog box
@@ -263,7 +251,7 @@ Chooser::deletePlaylist()
             case QMessageBox::Ok:
                 pl.deletePlaylist(id);
                 Context::instance()->getNavigator()->removeFromScreenStack(id);
-                this->populate();
+                this->_populate();
 
                 updateText=QString("Removed playlist %1%2%3.")
                     .arg(QChar(96))      //	1
@@ -282,9 +270,7 @@ Chooser::deletePlaylist()
 void
 Chooser::enqueuePlaylist()
 {
-    qDebug() << SB_DEBUG_INFO << lastClickedIndex;
-    SBID id=getPlaylistSelected(lastClickedIndex);
-    qDebug() << SB_DEBUG_INFO << id;
+    SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         const MainWindow* mw=Context::instance()->getMainWindow();
@@ -306,14 +292,14 @@ Chooser::newPlaylist()
     SBID id=pl.createNewPlaylist();
 
     //	Refresh this
-    this->populate();
+    this->_populate();
 
-    QModelIndex newPlaylistIndex=findItem(id.playlistName);
+    QModelIndex newPlaylistIndex=_findItem(id.playlistName);
     qDebug() << SB_DEBUG_INFO << newPlaylistIndex << newPlaylistIndex.isValid();
     if(newPlaylistIndex.isValid())
     {
         qDebug() << SB_DEBUG_INFO << newPlaylistIndex;
-        setCurrentIndex(newPlaylistIndex);
+        _setCurrentIndex(newPlaylistIndex);
 
         QString updateText=QString("Created playlist %1%2%3.")
             .arg(QChar(96))      //	1
@@ -362,9 +348,7 @@ Chooser::playlistChanged(const SBID &playlistID)
 void
 Chooser::playPlaylist()
 {
-    qDebug() << SB_DEBUG_INFO << lastClickedIndex;
-    SBID id=getPlaylistSelected(lastClickedIndex);
-    qDebug() << SB_DEBUG_INFO << id;
+    SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         const MainWindow* mw=Context::instance()->getMainWindow();
@@ -379,9 +363,7 @@ Chooser::playPlaylist()
 void
 Chooser::renamePlaylist()
 {
-    qDebug() << SB_DEBUG_INFO << lastClickedIndex;
-    SBID id=getPlaylistSelected(lastClickedIndex);
-    qDebug() << SB_DEBUG_INFO << id;
+    SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(id);
@@ -396,20 +378,20 @@ Chooser::showContextMenu(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex in=mw->ui.leftColumnChooser->indexAt(p);
-    SBID id=getPlaylistSelected(in);
+    SBID id=_getPlaylistSelected(in);
 
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         //	Only show in the right context :)
-        lastClickedIndex=in;
+        _lastClickedIndex=in;
         QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
 
         QMenu menu(NULL);
-        menu.addAction(playPlaylistAction);
-        menu.addAction(enqueuePlaylistAction);
-        menu.addAction(newAction);
-        menu.addAction(deleteAction);
-        menu.addAction(renameAction);
+        menu.addAction(_playPlaylistAction);
+        menu.addAction(_enqueuePlaylistAction);
+        menu.addAction(_newAction);
+        menu.addAction(_deleteAction);
+        menu.addAction(_renameAction);
         menu.exec(gp);
     }
 }
@@ -422,12 +404,12 @@ Chooser::_renamePlaylist(const SBID &id)
     qDebug() << SB_DEBUG_INFO << id;
     DataEntityPlaylist pl;
     pl.renamePlaylist(id);
-    this->populate();
+    this->_populate();
     qDebug() << SB_DEBUG_INFO;
-    QModelIndex in=findItem(id);
+    QModelIndex in=_findItem(id);
     if(in.isValid())
     {
-        setCurrentIndex(in);
+        _setCurrentIndex(in);
     }
     QString updateText=QString("Renamed playlist %1%2%3.")
         .arg(QChar(96))      //	1
@@ -441,14 +423,12 @@ Chooser::_renamePlaylist(const SBID &id)
 void
 Chooser::_clicked(const QModelIndex &idx)
 {
-    qDebug() << SB_DEBUG_INFO;
-    lastClickedIndex=idx;
+    _lastClickedIndex=idx;
 }
 
 ///	PRIVATE
-
 QModelIndex
-Chooser::findItem(const QString& toFind)
+Chooser::_findItem(const QString& toFind)
 {
     QModelIndex index;
     bool found=0;
@@ -493,7 +473,7 @@ Chooser::findItem(const QString& toFind)
 }
 
 QModelIndex
-Chooser::findItem(const SBID& id)
+Chooser::_findItem(const SBID& id)
 {
     QModelIndex index;
     bool found=0;
@@ -531,9 +511,11 @@ Chooser::findItem(const SBID& id)
 }
 
 SBID
-Chooser::getPlaylistSelected(const QModelIndex& i)
+Chooser::_getPlaylistSelected(const QModelIndex& i)
 {
-    qDebug() << SB_DEBUG_INFO << i;
+    qDebug() << SB_DEBUG_INFO << i << i.row() << i.column();
+    QModelIndex p=i.parent();
+    qDebug() << SB_DEBUG_INFO << p << p.row() << p.column();
     SBID id;
 
     if(_cm)
@@ -565,45 +547,45 @@ Chooser::getPlaylistSelected(const QModelIndex& i)
 }
 
 void
-Chooser::init()
+Chooser::_init()
 {
     _cm=NULL;
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    this->populate();
+    this->_populate();
 
     //	Play playlist
-    playPlaylistAction = new QAction(tr("&Play Playlist"), this);
-    playPlaylistAction->setShortcuts(QKeySequence::New);
-    playPlaylistAction->setStatusTip(tr("Play Playlist"));
-    connect(playPlaylistAction, SIGNAL(triggered()),
+    _playPlaylistAction = new QAction(tr("&Play Playlist"), this);
+    _playPlaylistAction->setShortcuts(QKeySequence::New);
+    _playPlaylistAction->setStatusTip(tr("Play Playlist"));
+    connect(_playPlaylistAction, SIGNAL(triggered()),
             this, SLOT(playPlaylist()));
 
     //	Enqueue playlist
-    enqueuePlaylistAction = new QAction(tr("Enqeue Playlist"), this);
-    enqueuePlaylistAction->setStatusTip(tr("Enqueue Playlist"));
-    connect(enqueuePlaylistAction, SIGNAL(triggered()),
+    _enqueuePlaylistAction = new QAction(tr("Enqeue Playlist"), this);
+    _enqueuePlaylistAction->setStatusTip(tr("Enqueue Playlist"));
+    connect(_enqueuePlaylistAction, SIGNAL(triggered()),
             this, SLOT(enqueuePlaylist()));
 
     //	New playlist
-    newAction = new QAction(tr("&New Playlist"), this);
-    newAction->setShortcuts(QKeySequence::New);
-    newAction->setStatusTip(tr("Create New Playlist"));
-    connect(newAction, SIGNAL(triggered()),
+    _newAction = new QAction(tr("&New Playlist"), this);
+    _newAction->setShortcuts(QKeySequence::New);
+    _newAction->setStatusTip(tr("Create New Playlist"));
+    connect(_newAction, SIGNAL(triggered()),
             this, SLOT(newPlaylist()));
 
     //	Delete playlist
-    deleteAction = new QAction(tr("&Delete Playlist"), this);
-    deleteAction->setShortcuts(QKeySequence::Delete);
+    _deleteAction = new QAction(tr("&Delete Playlist"), this);
+    _deleteAction->setShortcuts(QKeySequence::Delete);
 
-    deleteAction->setStatusTip(tr("Delete Playlist"));
-    connect(deleteAction, SIGNAL(triggered()),
+    _deleteAction->setStatusTip(tr("Delete Playlist"));
+    connect(_deleteAction, SIGNAL(triggered()),
             this, SLOT(deletePlaylist()));
 
     //	Rename playlist
-    renameAction = new QAction(tr("&Rename Playlist"), this);
-    renameAction->setStatusTip(tr("Rename Playlist"));
-    connect(renameAction, SIGNAL(triggered()),
+    _renameAction = new QAction(tr("&Rename Playlist"), this);
+    _renameAction->setStatusTip(tr("Rename Playlist"));
+    connect(_renameAction, SIGNAL(triggered()),
             this, SLOT(renamePlaylist()));
 
     //	Connections
@@ -620,7 +602,7 @@ Chooser::init()
 }
 
 void
-Chooser::populate()
+Chooser::_populate()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTreeView* tv=mw->ui.leftColumnChooser;
@@ -654,12 +636,12 @@ Chooser::populate()
 }
 
 void
-Chooser::setCurrentIndex(const QModelIndex &i)
+Chooser::_setCurrentIndex(const QModelIndex &i)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     if(mw->ui.leftColumnChooser!=NULL)
     {
         mw->ui.leftColumnChooser->setCurrentIndex(i);
-        lastClickedIndex=i;
+        _lastClickedIndex=i;
     }
 }

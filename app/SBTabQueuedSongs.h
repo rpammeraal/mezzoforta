@@ -30,9 +30,6 @@ public:
     //	Virtual
     virtual QTableView* subtabID2TableView(int subtabID) const;
 
-signals:
-    void playlistChanged();
-
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
@@ -41,6 +38,7 @@ public slots:
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& song);
     void startRadio();
+    void updateDetail() const;
 
 private slots:
     void clearPlaylist();

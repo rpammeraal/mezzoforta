@@ -22,6 +22,7 @@ public:
     SBSqlQueryModel* getAllCharts(const SBID& id);
     SBSqlQueryModel* getAllPerformers();
     SBSqlQueryModel* getAllSongs(const SBID& id);
+    SBSqlQueryModel* getAllOnlineSongs(const SBID& id);
     SBSqlQueryModel* getRelatedPerformers(const SBID& id);
     SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);
     bool saveNewPerformer(SBID& newPerformerID);

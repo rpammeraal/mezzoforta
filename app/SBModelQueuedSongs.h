@@ -55,7 +55,9 @@ public:
     QList<SBIDSong> getAllSongs();
     SBID getNextSong(bool previousFlag=0);
     SBID getSongFromPlaylist(int playlistIndex);
+    inline int numSongs() const { return this->rowCount(); }
     void resetCurrentPlayID();
+    inline SBTime totalDuration() const { return _totalDuration; }
 
     void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
     void populateHeader();
@@ -72,8 +74,10 @@ public:
 
 private:
     int  _currentPlayID;                    //	0-based, CWIP: should be maintained in player controller
+    SBTime _totalDuration;
 
     QList<QStandardItem *> createRecord(const SBID& id,int playPosition) const;
+
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H

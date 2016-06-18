@@ -3,7 +3,6 @@
 
 #include <QMap>
 #include <QObject>
-#include <QTime>
 #include <qsystemdetection.h>
 
 class QFrame;
@@ -15,6 +14,7 @@ class SBModelQueuedSongs;
 
 #include "SBMediaPlayer.h"
 #include "SBID.h"
+#include "SBTime.h"
 
 ///
 /// \brief The PlayerController class
@@ -82,7 +82,7 @@ private:
 
     int                               _currentPlayerID;
     SBIDSong                          _currentSongPlaying;
-    QTime                             _durationTime[_maxPlayerID];
+    SBTime                            _durationTime[_maxPlayerID];
     bool                              _initDoneFlag;
     SBModelQueuedSongs*               _modelCurrentPlaylist;
     QFrame*                           _playerFrame[_maxPlayerID];
@@ -95,7 +95,7 @@ private:
     PlayerController::sb_player_state _state;
 
     SBIDSong calculateNextSongID(bool previousFlag=0) const;
-    QTime calculateTime(quint64 ms) const;
+    SBTime calculateTime(quint64 ms) const;
     void _init();
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(const SBID& song);

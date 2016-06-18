@@ -375,13 +375,13 @@ PlayerController::playerPositionChanged(quint64 durationMS)
     QString tStr;
     const int durationSec=durationMS/1000;
 
-    QTime currentTime=calculateTime(durationMS);
+    SBTime currentTime=calculateTime(durationMS);
     QString format = "mm:ss";
     if(_durationTime[_currentPlayerID].hour()>=1)
     {
         format = "hh:mm:ss";
     }
-    tStr = currentTime.toString(format) + " / " + _durationTime[_currentPlayerID].toString(format);
+    tStr = currentTime.toString(SBTime::sb_hhmmss_format) + " / " + _durationTime[_currentPlayerID].toString(SBTime::sb_hhmmss_format);
 
     _playerProgressSlider[_currentPlayerID]->setValue(durationSec);
     _playerDurationLabel[_currentPlayerID]->setText(tStr);
@@ -452,7 +452,7 @@ PlayerController::playerDataClicked(const QUrl &url)
 }
 
 ///	Private methods
-QTime
+SBTime
 PlayerController::calculateTime(quint64 ms) const
 {
     const int s=ms/1000;
@@ -462,7 +462,7 @@ PlayerController::calculateTime(quint64 ms) const
     const int h=(m/24);
     const int hours = (h) % 24;
 
-    return QTime(hours,minutes,seconds);
+    return SBTime(hours,minutes,seconds);
 }
 
 SBIDSong
