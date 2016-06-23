@@ -433,7 +433,7 @@ Controller::init()
     statusBarResetTimer.setSingleShot(0);
     connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
             this, SLOT(_updateAllplaylistDurations()));
-    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
+    connect(this, SIGNAL(s_recalculateAllPlaylistDurations()),
             bgt, SLOT(recalculateAllPlaylistDurations()));
 
     qDebug() << SB_DEBUG_INFO << updateAllPlaylistDurationTimer.interval();

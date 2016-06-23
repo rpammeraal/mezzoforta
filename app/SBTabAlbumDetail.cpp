@@ -153,7 +153,12 @@ SBTabAlbumDetail::_populate(const SBID &id)
     if(details.length()>0 && genre.length()>0)
     {
         //	8226 is el buleto
-        details=details+" "+QChar(8226)+" "+genre.replace('|',", ");
+        details=details+" "+QChar(8226)+" ";
+    }
+
+    if(genre.length()>0)
+    {
+        details+=genre.replace('|',", ");
     }
 
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
@@ -175,7 +180,7 @@ SBTabAlbumDetail::_populate(const SBID &id)
     tv=mw->ui.albumDetailAlbumContents;
     qm=DataEntityAlbum::getAllSongs(id);
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0;
+    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
     populateTableView(tv,qm,1);
 

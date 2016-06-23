@@ -791,6 +791,7 @@ SBTabAlbumEdit::save() const
 
     newAlbum.albumTitle=mw->ui.albumEditTitle->text();
     newAlbum.performerName=mw->ui.albumEditPerformer->text();
+    newAlbum.year=mw->ui.albumEditYear->text().toInt();
 
     qDebug() << SB_DEBUG_INFO << "orgAlbum" << orgAlbum;
     qDebug() << SB_DEBUG_INFO << "newAlbum" << newAlbum;
@@ -1264,6 +1265,7 @@ SBTabAlbumEdit::save() const
             orgAlbum.sb_album_id!=newAlbum.sb_album_id ||
             orgAlbum.albumTitle!=newAlbum.albumTitle ||
             orgAlbum.sb_performer_id!=newAlbum.sb_performer_id ||
+            orgAlbum.year!=newAlbum.year ||
             SQL.count()>0
         ) &&
             newAlbum.sb_album_id!=-1

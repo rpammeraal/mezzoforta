@@ -77,6 +77,7 @@ private:
     SBTime _totalDuration;
 
     QList<QStandardItem *> createRecord(const SBID& id,int playPosition) const;
+    QString _formatPlaylistPosition(int playlistPositionID) const;
 
 };
 

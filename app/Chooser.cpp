@@ -49,8 +49,6 @@ public:
 
     virtual bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
     {
-        qDebug() << SB_DEBUG_INFO << parent << row << column << parent.row();
-
         if(row!=-1)
         {
             //	ignore between the lines
@@ -168,7 +166,7 @@ Chooser::~Chooser()
 ///	SLOTS
 
 void
-Chooser::assignItem(const QModelIndex &idx, const SBID &assignID)
+Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
 {
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
@@ -180,10 +178,10 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &assignID)
 
             SBID toID=_getPlaylistSelected(idx);
             SBID fromID;
-            qDebug() << SB_DEBUG_INFO << "assign" << assignID << assignID.sb_album_id;
+            qDebug() << SB_DEBUG_INFO << "assign" << toBeAssignedToID << toBeAssignedToID.sb_album_id;
             qDebug() << SB_DEBUG_INFO << "to" << toID;
 
-            if(assignID==toID)
+            if(toBeAssignedToID==toID)
             {
                 //	Do not allow the same item to be assigned to itself
                     QMessageBox mb;
@@ -191,14 +189,17 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &assignID)
                     mb.setInformativeText("Cannot assign items to itself.");
                     mb.exec();
             }
-            else if(assignID.sb_item_type()==SBID::sb_type_song && assignID.sb_album_id==-1)
+            else if(toBeAssignedToID.sb_item_type()==SBID::sb_type_song && toBeAssignedToID.sb_album_id==-1)
             {
-                fromID=SBTabSongDetail::selectSongFromAlbum(assignID);
+                fromID=SBTabSongDetail::selectSongFromAlbum(toBeAssignedToID);
             }
             else
             {
-                fromID=assignID;
+                fromID=toBeAssignedToID;
             }
+
+            qDebug() << SB_DEBUG_INFO << "fromID" << fromID << fromID.sb_album_id << fromID.sb_position;
+            qDebug() << SB_DEBUG_INFO << "to" << toID;
 
             if(fromID.sb_item_type()!=SBID::sb_type_invalid)
             {
@@ -209,10 +210,10 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &assignID)
                     pl.assignPlaylistItem(fromID, toID);
                     QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
                         .arg(QChar(96))            //	1
-                        .arg(assignID.getText())   //	2
+                        .arg(toBeAssignedToID.getText())   //	2
                         .arg(QChar(180))           //	3
                         .arg(toID.getText())       //	4
-                        .arg(assignID.getType())   //	5
+                        .arg(toBeAssignedToID.getType())   //	5
                         .arg(toID.getType());      //	6
                     Context::instance()->getController()->updateStatusBarText(updateText);
                     qDebug() << SB_DEBUG_INFO;
@@ -377,22 +378,38 @@ void
 Chooser::showContextMenu(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    QModelIndex in=mw->ui.leftColumnChooser->indexAt(p);
-    SBID id=_getPlaylistSelected(in);
+    QModelIndex idx=mw->ui.leftColumnChooser->indexAt(p);
 
-    if(id.sb_item_type()==SBID::sb_type_playlist)
+    QModelIndex pIdx=idx.parent();
+    Chooser::sb_root rootType=(Chooser::sb_root)pIdx.row();
+    switch(rootType)
     {
-        //	Only show in the right context :)
-        _lastClickedIndex=in;
-        QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
+    case Chooser::sb_playlists:
+        {
+            SBID id=_getPlaylistSelected(idx);
 
-        QMenu menu(NULL);
-        menu.addAction(_playPlaylistAction);
-        menu.addAction(_enqueuePlaylistAction);
-        menu.addAction(_newAction);
-        menu.addAction(_deleteAction);
-        menu.addAction(_renameAction);
-        menu.exec(gp);
+            qDebug() << SB_DEBUG_INFO << id;
+            if(id.sb_item_type()==SBID::sb_type_playlist)
+            {
+                //	Only show in the right context :)
+                _lastClickedIndex=idx;
+                QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
+
+                QMenu menu(NULL);
+                menu.addAction(_playPlaylistAction);
+                menu.addAction(_enqueuePlaylistAction);
+                menu.addAction(_newAction);
+                menu.addAction(_deleteAction);
+                menu.addAction(_renameAction);
+                menu.exec(gp);
+            }
+        }
+        break;
+
+    case Chooser::sb_your_songs:
+    case Chooser::sb_empty1:
+    default:
+        break;
     }
 }
 
@@ -513,9 +530,7 @@ Chooser::_findItem(const SBID& id)
 SBID
 Chooser::_getPlaylistSelected(const QModelIndex& i)
 {
-    qDebug() << SB_DEBUG_INFO << i << i.row() << i.column();
     QModelIndex p=i.parent();
-    qDebug() << SB_DEBUG_INFO << p << p.row() << p.column();
     SBID id;
 
     if(_cm)
@@ -523,7 +538,6 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
         //	Get pointer to parent node (hackery going on).
         //	find si with playlists place holder
         QStandardItem* si=_cm->_playlistRoot;
-        qDebug() << SB_DEBUG_INFO << i.row() << i.column();
 
         if(si)
         {

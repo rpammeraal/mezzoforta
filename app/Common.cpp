@@ -21,12 +21,10 @@ Common::~Common()
 QString
 Common::escapeSingleQuotes(const QString &s)
 {
-    const QString before("'");
-    const QString after("''");
+    static QString singleQuote=QString("'");	//	No need to instantiate these every time this method is called.
+    static QString doubleQuotes=QString("''");
 
-    QString a=s;
-    a.replace(before,after);
-    return a;
+    return QString(s).replace(singleQuote,doubleQuotes);
 }
 
 void

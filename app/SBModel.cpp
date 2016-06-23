@@ -167,9 +167,17 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             id.sb_album_id=v.toInt();
         }
+        else if(header=="sb_album_position")
+        {
+            id.sb_position=v.toInt();
+        }
         else if(header=="sb_position_id")
         {
             id.sb_position=v.toInt();
+        }
+        else if(header=="album_title")
+        {
+            id.albumTitle=v.toString();
         }
         else if(header=="sb_path")
         {

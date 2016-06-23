@@ -112,7 +112,6 @@ SBTabQueuedSongs::playItemNow(const SBID &toPlay,const bool enqueueFlag)
         const SBIDSong id=SBIDSong(list[i]);
         if(songsInQueue.contains(id)==0)
         {
-            qDebug() << SB_DEBUG_INFO << id << id.duration << id.path;
             toAdd[j++]=(SBID)(id);
             songsInQueue.append(id);
         }

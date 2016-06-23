@@ -98,26 +98,7 @@ SBTabSongDetail::selectSongFromAlbum(const SBID &song)
 void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=NULL;
-    switch((sb_tab)currentSubtabID())
-    {
-    case SBTabSongDetail::sb_tab_albums:
-        tv=mw->ui.songDetailAlbums;
-        break;
-
-    case SBTabSongDetail::sb_tab_playlists:
-        tv=mw->ui.songDetailPlaylists;
-        break;
-
-    case SBTabSongDetail::sb_tab_charts:
-    case SBTabSongDetail::sb_tab_lyrics:
-    case SBTabSongDetail::sb_tab_wikipedia:
-    default:
-        qDebug() << SB_DEBUG_ERROR << "case not handled";
-        return;
-    }
-    SB_DEBUG_IF_NULL(tv);
+    QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
@@ -137,25 +118,7 @@ void
 SBTabSongDetail::showContextMenuView(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
-    QTableView* tv=NULL;
-    switch((sb_tab)currentSubtabID())
-    {
-    case SBTabSongDetail::sb_tab_albums:
-        tv=mw->ui.songDetailAlbums;
-        break;
-
-    case SBTabSongDetail::sb_tab_playlists:
-        tv=mw->ui.songDetailPlaylists;
-        break;
-
-    case SBTabSongDetail::sb_tab_charts:
-    case SBTabSongDetail::sb_tab_lyrics:
-    case SBTabSongDetail::sb_tab_wikipedia:
-    default:
-        qDebug() << SB_DEBUG_ERROR << "case not handled";
-        return;
-    }
-    SB_DEBUG_IF_NULL(tv);
+    QTableView* tv=_determineViewCurrentTab();
 
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
@@ -422,4 +385,29 @@ SBTabSongDetail::_populate(const SBID& id)
 
 
     return result;
+}
+
+QTableView*
+SBTabSongDetail::_determineViewCurrentTab() const
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabSongDetail::sb_tab_albums:
+        tv=mw->ui.songDetailAlbums;
+        break;
+
+    case SBTabSongDetail::sb_tab_playlists:
+        tv=mw->ui.songDetailPlaylists;
+        break;
+
+    case SBTabSongDetail::sb_tab_charts:
+    case SBTabSongDetail::sb_tab_lyrics:
+    case SBTabSongDetail::sb_tab_wikipedia:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+    }
+    SB_DEBUG_IF_NULL(tv);
+    return tv;
 }

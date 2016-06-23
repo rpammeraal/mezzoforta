@@ -7,9 +7,14 @@
 /// For no appearant reason.
 /// So, we'll implement these here
 
-class SBTime : public QTime
+class SBTime
 {
 public:
+    const static int msDay=1000*60*60*24;
+    const static int msHr =1000*60*60;
+    const static int msMin=1000*60;
+    const static int msSec=1000;
+
     enum sb_displayformat
     {
         sb_default_format=0,
@@ -18,6 +23,7 @@ public:
     };
 
     SBTime();
+    SBTime(const QTime& t);
     SBTime(const SBTime& t);
     SBTime(const QString& t);
     SBTime(int hours, int minutes, int seconds);
@@ -25,13 +31,25 @@ public:
     SBTime& operator=(const SBTime& t);
     SBTime& operator=(const QTime& t);
     SBTime& operator+=(const SBTime& t);
+    SBTime& operator-=(const SBTime& t);
 
-    inline int days() const { return _days; }
+    bool setHMS(int h, int m, int s, int ms=0);
+
+    inline int day() const { return _ms/msDay; }
+    inline int hour() const{ return (_ms-(day()*msDay))/msHr; }
+    inline int minute() const { return (_ms-(day()*msDay)-(hour()*msHr))/msMin; }
+    inline int second() const { return (_ms-(day()*msDay)-(hour()*msHr)-(minute()*msMin))/msSec; }
+    inline int ms() const { return (_ms-(day()*msDay)-(hour()*msHr)-(minute()*msMin)) % msSec; }
+    inline int MS() const { return _ms; }
+    inline QTime toTime() const { return QTime(hour(),minute(),second(),ms()); }
+
+    friend QDebug operator<<(QDebug dbg, const SBTime& t);
+
     void setDuration(int ms);
     QString toString(SBTime::sb_displayformat displayFormat=SBTime::sb_default_format) const;
 
 private:
-    int _days;
+    qint64 _ms;
 };
 
 #endif // SBTIME_H

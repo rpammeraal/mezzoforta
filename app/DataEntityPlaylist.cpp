@@ -22,17 +22,20 @@ DataEntityPlaylist::~DataEntityPlaylist()
 }
 
 void
-DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) const
+DataEntityPlaylist::assignPlaylistItem(const SBID &toBeAssignedID, const SBID &toPlaylistID) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(assignID.sb_item_type())
+    qDebug() << SB_DEBUG_INFO << "toBeAssignedID" << toBeAssignedID;
+    qDebug() << SB_DEBUG_INFO << "toPlaylistID" << toPlaylistID;
+
+    switch(toBeAssignedID.sb_item_type())
     {
     case SBID::sb_type_song:
         qDebug() << SB_DEBUG_INFO;
-        if(assignID.sb_album_id==-1 || assignID.sb_position==-1)
+        if(toBeAssignedID.sb_album_id==-1 || toBeAssignedID.sb_position==-1)
         {
             qDebug() << "****************************************************************************************";
             qDebug() << "****************************************************************************************";
@@ -84,11 +87,11 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) c
                         "pp.record_id=%4 AND "
                         "pp.record_position=%5 "
                 ") "
-          ).arg(toID.sb_playlist_id)
-           .arg(assignID.sb_song_id)
-           .arg(assignID.sb_performer_id)
-           .arg(assignID.sb_album_id)
-           .arg(assignID.sb_position)
+          ).arg(toPlaylistID.sb_playlist_id)
+           .arg(toBeAssignedID.sb_song_id)
+           .arg(toBeAssignedID.sb_performer_id)
+           .arg(toBeAssignedID.sb_album_id)
+           .arg(toBeAssignedID.sb_position)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull());
         break;
@@ -123,10 +126,10 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) c
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_artist_id=%4 "
                 ") "
-          ).arg(toID.sb_playlist_id)
+          ).arg(toPlaylistID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_performer_id)
+           .arg(toBeAssignedID.sb_performer_id)
         ;
         break;
 
@@ -160,10 +163,10 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) c
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_record_id=%4 "
                 ") "
-          ).arg(toID.sb_playlist_id)
+          ).arg(toPlaylistID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_album_id)
+           .arg(toBeAssignedID.sb_album_id)
         ;
         break;
 
@@ -201,10 +204,10 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) c
                         "pp.playlist_id=%1 AND "
                         "pp.playlist_playlist_id=%4 "
                 ") "
-          ).arg(toID.sb_playlist_id)
+          ).arg(toPlaylistID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(assignID.sb_playlist_id)
+           .arg(toBeAssignedID.sb_playlist_id)
         ;
         break;
 
@@ -223,7 +226,7 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &assignID, const SBID &toID) c
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
         qDebug() << SB_DEBUG_INFO << q;
-        recalculatePlaylistDuration(toID);
+        recalculatePlaylistDuration(toPlaylistID);
         qDebug() << SB_DEBUG_INFO;
     }
     qDebug() << SB_DEBUG_INFO;
@@ -410,7 +413,7 @@ DataEntityPlaylist::getDetail(const SBID& id) const
     {
         result.assign(SBID::sb_type_playlist,id.sb_playlist_id);
         result.playlistName  =query.value(0).toString();
-        result.duration      =query.value(1).toTime();
+        result.duration      =query.value(1).toString();
         result.count1        =query.value(2).toInt();
     }
 
@@ -543,16 +546,16 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
                     "rp.duration "
                 "FROM "
                     "___SB_SCHEMA_NAME___playlist_performance pp "
-                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.artist_id=pp.artist_id AND "
-                            "op.song_id=pp.song_id AND "
-                            "op.record_id=pp.record_id AND "
-                            "op.record_position=pp.record_position "
                         "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
                             "pp.artist_id=rp.artist_id AND "
                             "pp.song_id=rp.song_id AND "
                             "pp.record_id=rp.record_id AND "
                             "pp.record_position=rp.record_position "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "op.artist_id=rp.op_artist_id AND "
+                            "op.song_id=rp.op_song_id AND "
+                            "op.record_id=rp.op_record_id AND "
+                            "op.record_position=rp.op_record_position "
                         "JOIN ___SB_SCHEMA_NAME___song s ON "
                             "pp.song_id=s.song_id "
                         "JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -676,10 +679,10 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
                             "pp.record_id=rp.record_id AND "
                             "pp.record_position=rp.record_position "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.artist_id=pp.artist_id AND "
-                            "op.song_id=pp.song_id AND "
-                            "op.record_id=pp.record_id AND "
-                            "op.record_position=pp.record_position "
+                            "op.artist_id=rp.op_artist_id AND "
+                            "op.song_id=rp.op_song_id AND "
+                            "op.record_id=rp.op_record_id AND "
+                            "op.record_position=rp.op_record_position "
                         "JOIN ___SB_SCHEMA_NAME___song s ON "
                             "pp.song_id=s.song_id "
                         "JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -699,32 +702,32 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
         q=QString
             (
                 "SELECT "
-                    "pp.artist_id, "
-                    "pp.song_id, "
-                    "pp.record_id, "
-                    "pp.record_position, "
-                    "pp.duration, "
+                    "rp.artist_id, "
+                    "rp.song_id, "
+                    "rp.record_id, "
+                    "rp.record_position, "
+                    "rp.duration, "
                     "s.title, "
                     "a.name, "
                     "r.title, "
                     "op.path "
                 "FROM "
-                    "___SB_SCHEMA_NAME___record_performance pp "
+                    "___SB_SCHEMA_NAME___record_performance rp "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.artist_id=pp.artist_id AND "
-                            "op.song_id=pp.song_id AND "
-                            "op.record_id=pp.record_id AND "
-                            "op.record_position=pp.record_position "
+                            "op.artist_id=rp.op_artist_id AND "
+                            "op.song_id=rp.op_song_id AND "
+                            "op.record_id=rp.op_record_id AND "
+                            "op.record_position=rp.op_record_position "
                         "JOIN ___SB_SCHEMA_NAME___song s ON "
-                            "pp.song_id=s.song_id "
+                            "rp.song_id=s.song_id "
                         "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                            "pp.artist_id=a.artist_id "
+                            "rp.artist_id=a.artist_id "
                         "JOIN ___SB_SCHEMA_NAME___record r ON "
-                            "pp.record_id=r.record_id "
+                            "rp.record_id=r.record_id "
                 "WHERE "
-                    "pp.record_id=%1 "
+                    "rp.record_id=%1 "
                 "ORDER BY "
-                    "pp.record_position "
+                    "rp.record_position "
             )
                 .arg(rootID.sb_album_id)
             ;
@@ -734,30 +737,30 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
         q=QString
             (
                 "SELECT "
-                    "pp.artist_id, "
-                    "pp.song_id, "
-                    "pp.record_id, "
-                    "pp.record_position, "
-                    "pp.duration, "
+                    "rp.artist_id, "
+                    "rp.song_id, "
+                    "rp.record_id, "
+                    "rp.record_position, "
+                    "rp.duration, "
                     "s.title, "
                     "a.name, "
                     "r.title, "
                     "op.path "
                 "FROM "
-                    "___SB_SCHEMA_NAME___record_performance pp "
+                    "___SB_SCHEMA_NAME___record_performance rp "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.artist_id=pp.artist_id AND "
-                            "op.song_id=pp.song_id AND "
-                            "op.record_id=pp.record_id AND "
-                            "op.record_position=pp.record_position "
+                            "op.artist_id=rp.op_artist_id AND "
+                            "op.song_id=rp.op_song_id AND "
+                            "op.record_id=rp.op_record_id AND "
+                            "op.record_position=rp.op_record_position "
                         "JOIN ___SB_SCHEMA_NAME___song s ON "
-                            "pp.song_id=s.song_id "
+                            "rp.song_id=s.song_id "
                         "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                            "pp.artist_id=a.artist_id "
+                            "rp.artist_id=a.artist_id "
                         "JOIN ___SB_SCHEMA_NAME___record r ON "
-                            "pp.record_id=r.record_id "
+                            "rp.record_id=r.record_id "
                 "WHERE "
-                    "pp.artist_id=%2"
+                    "rp.artist_id=%2"
             )
                 .arg(rootID.sb_performer_id)
             ;
@@ -796,251 +799,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
             }
         }
     }
-
     return;
-    //	OLD
-
-    /*
-    if(compositesTraversed.contains(id.sb_item_id())==0)
-    {
-        compositesTraversed.insert(id.sb_item_id(),1);
-        switch(id.sb_item_type())
-        {
-            case SBID::sb_type_playlist:
-                q=QString
-                    (
-                        "SELECT "
-                            "%1(playlist_playlist_id,0), "
-                            "%1(playlist_chart_id,0), "
-                            "%1(playlist_record_id,0), "
-                            "%1(playlist_artist_id,0) "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___playlist_composite pc "
-                        "WHERE "
-                            "pc.playlist_id=%2 "
-                        "ORDER BY "
-                            "pc.playlist_position "
-                    )
-                        .arg(dal->getIsNull())
-                        .arg(id.sb_playlist_id)
-                    ;
-                dal->customize(q);
-                qDebug() << SB_DEBUG_INFO << q;
-                {
-                    QSqlQuery queryComposite(q,db);
-
-                    while(queryComposite.next())
-                    {
-                        int playlistID=queryComposite.value(0).toInt();
-                        int chartID=queryComposite.value(1).toInt();
-                        int albumID=queryComposite.value(2).toInt();
-                        int performerID=queryComposite.value(3).toInt();
-
-                        SBID t;
-                        if(playlistID!=0)
-                        {
-                            qDebug() << SB_DEBUG_INFO;
-                            t.assign(SBID::sb_type_playlist,playlistID);
-                        }
-                        else if(chartID!=0)
-                        {
-                            qDebug() << SB_DEBUG_INFO;
-                            t.assign(SBID::sb_type_chart,chartID);
-                        }
-                        else if(albumID!=0)
-                        {
-                            qDebug() << SB_DEBUG_INFO;
-                            t.assign(SBID::sb_type_album,albumID);
-                        }
-                        else if(performerID!=0)
-                        {
-                            qDebug() << SB_DEBUG_INFO;
-                            t.assign(SBID::sb_type_performer,performerID);
-                        }
-                        qDebug() << SB_DEBUG_INFO << t;
-
-                        getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,t);
-                    }
-                }
-
-                q=QString
-                    (
-                        "SELECT "
-                            "pp.artist_id, "
-                            "pp.song_id, "
-                            "pp.record_id, "
-                            "pp.record_position, "
-                            "rp.duration, "
-                            "s.title, "
-                            "a.name, "
-                            "r.title, "
-                            "op.path "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___playlist_performance pp "
-                                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                                    "pp.artist_id=rp.artist_id AND "
-                                    "pp.song_id=rp.song_id AND "
-                                    "pp.record_id=rp.record_id AND "
-                                    "pp.record_position=rp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                                    "op.artist_id=pp.artist_id AND "
-                                    "op.song_id=pp.song_id AND "
-                                    "op.record_id=pp.record_id AND "
-                                    "op.record_position=pp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                                    "pp.song_id=s.song_id "
-                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                                    "pp.artist_id=a.artist_id "
-                                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                                    "pp.record_id=r.record_id "
-                        "WHERE "
-                            "pp.playlist_id=%1"
-                        "ORDER BY "
-                            "pp.playlist_position "
-                    )
-                        .arg(id.sb_playlist_id)
-                    ;
-                break;
-
-            case SBID::sb_type_chart:
-                q=QString
-                    (
-                        "SELECT "
-                            "pp.artist_id, "
-                            "pp.song_id, "
-                            "pp.record_id, "
-                            "pp.record_position, "
-                            "rp.duration, "
-                            "s.title, "
-                            "a.name, "
-                            "r.title, "
-                            "op.path "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___chart_performance pp "
-                                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                                    "pp.artist_id=rp.artist_id AND "
-                                    "pp.song_id=rp.song_id AND "
-                                    "pp.record_id=rp.record_id AND "
-                                    "pp.record_position=rp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                                    "op.artist_id=pp.artist_id AND "
-                                    "op.song_id=pp.song_id AND "
-                                    "op.record_id=pp.record_id AND "
-                                    "op.record_position=pp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                                    "pp.song_id=s.song_id "
-                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                                    "pp.artist_id=a.artist_id "
-                                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                                    "pp.record_id=r.record_id "
-                        "WHERE "
-                            "pp.chart_id=%1"
-                    )
-                        .arg(id.sb_playlist_id)
-                    ;
-                break;
-
-            case SBID::sb_type_album:
-                q=QString
-                    (
-                        "SELECT "
-                            "pp.artist_id, "
-                            "pp.song_id, "
-                            "pp.record_id, "
-                            "pp.record_position, "
-                            "pp.duration, "
-                            "s.title, "
-                            "a.name, "
-                            "r.title, "
-                            "op.path "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___record_performance pp "
-                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                                    "op.artist_id=pp.artist_id AND "
-                                    "op.song_id=pp.song_id AND "
-                                    "op.record_id=pp.record_id AND "
-                                    "op.record_position=pp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                                    "pp.song_id=s.song_id "
-                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                                    "pp.artist_id=a.artist_id "
-                                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                                    "pp.record_id=r.record_id "
-                        "WHERE "
-                            "pp.record_id=%1"
-                        "ORDER BY "
-                            "pp.record_position "
-                    )
-                        .arg(id.sb_album_id)
-                    ;
-                break;
-
-            case SBID::sb_type_performer:
-                q=QString
-                    (
-                        "SELECT "
-                            "pp.artist_id, "
-                            "pp.song_id, "
-                            "pp.record_id, "
-                            "pp.record_position, "
-                            "pp.duration, "
-                            "s.title, "
-                            "a.name, "
-                            "r.title, "
-                            "op.path "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___record_performance pp "
-                                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                                    "op.artist_id=pp.artist_id AND "
-                                    "op.song_id=pp.song_id AND "
-                                    "op.record_id=pp.record_id AND "
-                                    "op.record_position=pp.record_position "
-                                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                                    "pp.song_id=s.song_id "
-                                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                                    "pp.artist_id=a.artist_id "
-                                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                                    "pp.record_id=r.record_id "
-                        "WHERE "
-                            "pp.artist_id=%2"
-                    )
-                        .arg(id.sb_performer_id)
-                    ;
-                break;
-
-            case SBID::sb_type_invalid:
-            case SBID::sb_type_song:
-            case SBID::sb_type_position:
-            case SBID::sb_type_allsongs:
-            case SBID::sb_type_songsearch:
-            case SBID::sb_type_current_playlist:
-                break;
-        }
-    }
-    if(q.length())
-    {
-        dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery querySong(q,db);
-        while(querySong.next())
-        {
-            SBID songID(SBID::sb_type_song,querySong.value(1).toInt());
-            songID.sb_performer_id=querySong.value(0).toInt();
-            songID.sb_album_id=querySong.value(2).toInt();
-            songID.sb_position=querySong.value(3).toInt();
-            songID.duration=querySong.value(4).toTime();
-            songID.songTitle=querySong.value(5).toString();
-            songID.performerName=querySong.value(6).toString();
-            songID.albumTitle=querySong.value(7).toString();
-            songID.path=querySong.value(8).toString();
-
-            if(allSongs.contains(songID)==0)
-            {
-                allSongs.append(songID);
-            }
-        }
-    }
-    */
 }
 
 SBSqlQueryModel*
@@ -1111,7 +870,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
     QList<SBID> allSongs;
 
     //	Get all songs
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << id;
     compositesTraversed.clear();
     allSongs.clear();
     getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
@@ -1122,6 +881,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
     qDebug() << SB_DEBUG_INFO << allSongs.count();
     for(int i=0;i<allSongs.count();i++)
     {
+        qDebug() << SB_DEBUG_INFO << allSongs.at(i) << allSongs.at(i).duration << duration;
         duration+=allSongs.at(i).duration;
     }
 
@@ -1138,7 +898,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
         "WHERE "
             "playlist_id=%2 "
     )
-        .arg("%1:%2:%3").arg(duration.hour()+24*duration.days()).arg(duration.minute()).arg(duration.second())
+        .arg(duration.toString(SBTime::sb_hhmmss_format))
         .arg(id.sb_playlist_id)
     ;
     dal->customize(q);

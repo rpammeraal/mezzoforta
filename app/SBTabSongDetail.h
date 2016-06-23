@@ -42,6 +42,7 @@ private:
 
     void _init();
     virtual SBID _populate(const SBID& id);
+    QTableView* _determineViewCurrentTab() const;
 };
 
 #endif // SBTABSONGDETAIL_H

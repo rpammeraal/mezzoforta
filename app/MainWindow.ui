@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>814</width>
+    <width>810</width>
     <height>574</height>
    </rect>
   </property>
@@ -413,7 +413,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>9</number>
+           <number>5</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -2340,7 +2340,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_6">
+             <widget class="QLabel" name="labelAbout">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -3522,9 +3528,6 @@ Click on 'All Songs' to continue.</string>
                      <number>0</number>
                     </property>
                    </layout>
-
-
-
                   </widget>
                  </item>
                  <item>
@@ -4468,7 +4471,7 @@ Click on 'All Songs' to continue.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>814</width>
+     <width>810</width>
      <height>22</height>
     </rect>
    </property>
@@ -4601,22 +4604,22 @@ Click on 'All Songs' to continue.</string>
  </customwidgets>
  <tabstops>
   <tabstop>songEditTitle</tabstop>
+  <tabstop>pbSongEditSave</tabstop>
   <tabstop>songEditPerformerName</tabstop>
+  <tabstop>pbSongEditCancel</tabstop>
   <tabstop>songEditYearOfRelease</tabstop>
   <tabstop>songEditNotes</tabstop>
-  <tabstop>songEditLyrics</tabstop>
-  <tabstop>pbSongEditSave</tabstop>
-  <tabstop>pbSongEditCancel</tabstop>
-  <tabstop>pbPerformerEditCancel</tabstop>
   <tabstop>pbNA2</tabstop>
-  <tabstop>buttonBackward</tabstop>
-  <tabstop>buttonForward</tabstop>
-  <tabstop>searchEdit</tabstop>
-  <tabstop>performerDetailHomepage</tabstop>
-  <tabstop>leftColumnChooser</tabstop>
-  <tabstop>mainTab</tabstop>
-  <tabstop>allSongsList</tabstop>
-  <tabstop>albumDetailAlbumContents</tabstop>
+  <tabstop>performerEditName</tabstop>
+  <tabstop>pbPerformerEditSave</tabstop>
+  <tabstop>performerEditWebSite</tabstop>
+  <tabstop>pbPerformerEditCancel</tabstop>
+  <tabstop>performerEditNotes</tabstop>
+  <tabstop>albumEditTitle</tabstop>
+  <tabstop>pbAlbumEditSave</tabstop>
+  <tabstop>albumEditPerformer</tabstop>
+  <tabstop>pbAlbumEditCancel</tabstop>
+  <tabstop>albumEditYear</tabstop>
   <tabstop>albumDetailReviewsHome</tabstop>
   <tabstop>albumDetailReviews</tabstop>
   <tabstop>albumDetailsWikipediaPage</tabstop>
@@ -4636,26 +4639,49 @@ Click on 'All Songs' to continue.</string>
   <tabstop>playlistDetailSongList</tabstop>
   <tabstop>performerDetailWikipediaPage</tabstop>
   <tabstop>frPerformerDetailDetailAll</tabstop>
-  <tabstop>albumEditSongList</tabstop>
+  <tabstop>allSongsList</tabstop>
   <tabstop>pbAlbumEditRemoveSong</tabstop>
-  <tabstop>albumEditYear</tabstop>
-  <tabstop>albumEditTitle</tabstop>
+  <tabstop>songEditLyrics</tabstop>
+  <tabstop>performerDetailHomepage</tabstop>
   <tabstop>tabPerformerEditLists</tabstop>
-  <tabstop>pbAlbumEditCancel</tabstop>
-  <tabstop>albumEditPerformer</tabstop>
-  <tabstop>performerDetailNewsPage</tabstop>
-  <tabstop>pbAlbumEditSave</tabstop>
-  <tabstop>pbPerformerEditSave</tabstop>
-  <tabstop>performerEditNotes</tabstop>
-  <tabstop>performerEditWebSite</tabstop>
-  <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
-  <tabstop>performerEditName</tabstop>
   <tabstop>tabAlbumEditLists</tabstop>
+  <tabstop>albumDetailAlbumContents</tabstop>
+  <tabstop>performerDetailNewsPage</tabstop>
+  <tabstop>mainTab</tabstop>
+  <tabstop>albumEditSongList</tabstop>
+  <tabstop>searchEdit</tabstop>
+  <tabstop>buttonBackward</tabstop>
+  <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
+  <tabstop>buttonForward</tabstop>
+  <tabstop>leftColumnChooser</tabstop>
   <tabstop>performerEditRelatedPerformersList</tabstop>
   <tabstop>pbPerformerEditAddRelatedPerformer</tabstop>
   <tabstop>tabSongEditLists</tabstop>
   <tabstop>pbAlbumEditAddSong</tabstop>
   <tabstop>pbAlbumEditMergeSong</tabstop>
+  <tabstop>frSongDetailSongDetail</tabstop>
+  <tabstop>frSongDetailSongPerformerName</tabstop>
+  <tabstop>pbClearPlaylist</tabstop>
+  <tabstop>pbShufflePlaylist</tabstop>
+  <tabstop>pbStartRadio</tabstop>
+  <tabstop>frCurrentPlaylistDetails</tabstop>
+  <tabstop>currentPlaylistDetailSongList</tabstop>
+  <tabstop>hsMusicPlayerProgressLeft</tabstop>
+  <tabstop>lMusicPlayerDataLeft</tabstop>
+  <tabstop>pbMusicPlayerControlLeftPREV</tabstop>
+  <tabstop>pbMusicPlayerControlLeftREW</tabstop>
+  <tabstop>pbMusicPlayerControlLeftSTOP</tabstop>
+  <tabstop>pbMusicPlayerControlLeftPLAY</tabstop>
+  <tabstop>pbMusicPlayerControlLeftFWD</tabstop>
+  <tabstop>pbMusicPlayerControlLeftNEXT</tabstop>
+  <tabstop>hsMusicPlayerProgressRight</tabstop>
+  <tabstop>lMusicPlayerDataRight</tabstop>
+  <tabstop>pbMusicPlayerControlRightPREV</tabstop>
+  <tabstop>pbMusicPlayerControlRightREW</tabstop>
+  <tabstop>pbMusicPlayerControlRightSTOP</tabstop>
+  <tabstop>pbMusicPlayerControlRightPLAY</tabstop>
+  <tabstop>pbMusicPlayerControlRightFWD</tabstop>
+  <tabstop>pbMusicPlayerControlRightNEXT</tabstop>
  </tabstops>
  <resources>
   <include location="resource.qrc"/>

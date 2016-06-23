@@ -367,7 +367,7 @@ DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPer
         "ORDER BY "
             "1, 3"
     )
-        .arg(newPerformerName)
+        .arg(Common::escapeSingleQuotes(newPerformerName))
         .arg(currentID.sb_performer_id)
         .arg(newSoundex)
     ;
@@ -871,7 +871,7 @@ DataEntityPerformer::updateHomePage(const SBID &id)
         "WHERE "
             "artist_id=%2"
     )
-        .arg(id.url)
+        .arg(Common::escapeSingleQuotes(id.url))
         .arg(id.sb_performer_id)
     ;
     dal->customize(q);

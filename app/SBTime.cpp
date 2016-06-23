@@ -1,69 +1,138 @@
 #include <QDebug>
+#include <QTime>
 
 #include "Common.h"
 #include "SBTime.h"
 
 SBTime::SBTime()
 {
-    _days=0;
-    setHMS(0,0,0);
+    _ms=0;
 }
 
-SBTime::SBTime(const SBTime &t):QTime(t)
+SBTime::SBTime(const SBTime &t)
 {
-    _days=t._days;
+    _ms=t._ms;
+}
+
+SBTime::SBTime(const QTime& t)
+{
+    _ms=t.msec()+(1000*t.second())+(1000*60*t.minute())+(1000*60*24*t.hour());
 }
 
 SBTime::SBTime(const QString &t)
 {
-    this->fromString(t);
+    QStringList sl=t.split(":");
+    bool hasMSFlag=0;
+    bool msPopulatedFlag=0;
+    bool secPopulatedFlag=0;
+    bool minPopulatedFlag=0;
+    bool hrPopulatedFlag=0;
+    bool dayPopulatedFlag=0;
+    int multiplier=0;
+    _ms=0;
+
+    if(sl.length()>=2 && sl.length()<=5)
+    {
+        if(sl.at(sl.length()-1).length()==3)
+        {
+            hasMSFlag=1;
+        }
+        for(int i=sl.length()-1;i>=0;i--)
+        {
+            multiplier=0;
+            if(msPopulatedFlag==0)
+            {
+                if(hasMSFlag==1)
+                {
+                    multiplier=1;
+                }
+                msPopulatedFlag=1;
+            }
+            if(multiplier==0 && secPopulatedFlag==0)
+            {
+                multiplier=msSec;
+                secPopulatedFlag=1;
+            }
+            if(multiplier==0 && minPopulatedFlag==0)
+            {
+                multiplier=msMin;
+                minPopulatedFlag=1;
+            }
+            if(multiplier==0 && hrPopulatedFlag==0)
+            {
+                multiplier=msHr;
+                hrPopulatedFlag=1;
+            }
+            if(multiplier==0 && dayPopulatedFlag==0)
+            {
+                multiplier=msDay;
+                dayPopulatedFlag=1;
+            }
+            _ms+=(sl.at(i).toInt()*multiplier);
+        }
+    }
 }
 
-SBTime::SBTime(int hours, int minutes, int seconds):QTime(hours,minutes,seconds)
+SBTime::SBTime(int hours, int minutes, int seconds)
 {
-    _days=0;
+    setHMS(hours,minutes,seconds);
 }
 
 SBTime&
 SBTime::operator =(const SBTime& t)
 {
-    _days=t._days;
-    setHMS(t.hour(),t.minute(),t.second());
+    _ms=t._ms;
     return *this;
 }
 
 SBTime&
 SBTime::operator =(const QTime& t)
 {
-    setHMS(t.hour(),t.minute(),t.second());
+    (*this)=SBTime(t);
     return *this;
 }
 
 SBTime&
 SBTime::operator+=(const SBTime& t)
 {
-    qDebug() << SB_DEBUG_INFO << "current=" << this->toString();
-    qDebug() << SB_DEBUG_INFO << "toadd=" << t.toString();
-    static const int maxPerDay=1000*24*60*60;
+    _ms+=t._ms;
+    return (*this);
+}
 
-    int toAdd=t.msecsSinceStartOfDay();
-    _days+=t._days;
-    if(this->msecsSinceStartOfDay()+toAdd>maxPerDay)
+SBTime&
+SBTime::operator-=(const SBTime& t)
+{
+    _ms-=t._ms;
+    if(_ms<0)
     {
-        _days++;
-        toAdd=toAdd-maxPerDay;
+        _ms=0;
     }
-    (*this)=QTime::addMSecs(toAdd);
-    qDebug() << SB_DEBUG_INFO << "current now=" << this->toString();
 
     return (*this);
+}
+
+bool
+SBTime::setHMS(int hours, int minutes, int seconds, int ms)
+{
+    _ms=(1000*seconds)+(1000*60*minutes)+(1000*60*24*hours)+ms;
+    if(ms<0)
+    {
+        return false;
+    }
+    return true;
+}
+
+QDebug
+operator<<(QDebug dbg, const SBTime& t)
+{
+    dbg.nospace() << t.toString(SBTime::sb_hhmmss_format);
+    return dbg.space();
 }
 
 void
 SBTime::setDuration(int ms)
 {
-    setHMS(0,0,0,ms);
-    qDebug() << SB_DEBUG_INFO << this->toString(SBTime::sb_hhmmss_format);
+    _ms=ms;
 }
 
 QString
@@ -73,9 +142,9 @@ SBTime::toString(SBTime::sb_displayformat displayFormat) const
     switch(displayFormat)
     {
     case SBTime::sb_default_format:
-            if(this->days())
+            if(this->day())
             {
-                duration+=QString("%1 day%2 ").arg(this->days()).arg(this->days()>1?"s":"");
+                duration+=QString("%1 day%2 ").arg(this->day()).arg(this->day()>1?"s":"");
             }
             if(this->hour())
             {
@@ -85,9 +154,9 @@ SBTime::toString(SBTime::sb_displayformat displayFormat) const
         break;
 
     case SBTime::sb_hhmmss_format:
-            if(this->hour()+this->days()>0)
+            if(this->hour()+this->day()>0)
             {
-                duration+=QString("%1:").arg(this->days()*24+this->hour());
+                duration+=QString("%1:").arg(this->day()*24+this->hour());
             }
             duration+=QString().sprintf("%02d:%02d",this->minute(),this->second());
         break;

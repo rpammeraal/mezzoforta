@@ -27,22 +27,24 @@ void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
     init();
-    SBID fromID=Context::instance()->getScreenStack()->currentScreen();
+    SBID currentID=SBTab::currentID();
     SBID assignID=getSBIDSelected(lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
         DataEntityPlaylist pl;
 
-        pl.deletePlaylistItem(assignID,fromID);
-        refreshTabIfCurrent(fromID);
+        pl.deletePlaylistItem(assignID,currentID);
+        refreshTabIfCurrent(currentID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
             .arg(assignID.getText())   //	2
             .arg(QChar(180))           //	3
-            .arg(fromID.getText())     //	4
+            .arg(currentID.getText())     //	4
             .arg(assignID.getType())   //	5
-            .arg(fromID.getType());    //	6
+            .arg(currentID.getType());    //	6
         Context::instance()->getController()->updateStatusBarText(updateText);
+
+        _populate(currentID);
     }
 }
 
@@ -181,10 +183,11 @@ SBTabPlaylistDetail::_populate(const SBID& id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
     mw->ui.labelPlaylistDetailIcon->setSBID(result);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(result.playlistName);
-    QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2").arg(result.duration.toString());
+    const QString detail=QString("%1 items ").arg(result.count1)+QChar(8226)+QString(" %2").arg(result.duration.toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;

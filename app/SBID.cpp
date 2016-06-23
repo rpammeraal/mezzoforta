@@ -90,8 +90,6 @@ SBID::SBID(QByteArray encodedData)
     playlistName             =sl[23];
     playPosition             =sl[24].toInt();
     isPlayingFlag            =sl[25].toInt();
-
-    qDebug() << SB_DEBUG_INFO << "ctor" << *this;
     return;
 }
 
@@ -218,7 +216,7 @@ SBID::encode() const
     sl.append(SB_REPLACE_UNDERSCORE(playlistName));
     sl.append(QString("%1").arg(count1));
     sl.append(QString("%1").arg(count2));
-    sl.append(QString("%1").arg(duration.msecsSinceStartOfDay()));
+    sl.append(QString("%1").arg(duration.MS()));
     sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
     sl.append(QString("%1").arg(playPosition));
     sl.append(QString("%1").arg(isPlayingFlag));
@@ -514,7 +512,7 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "albumTitle" << albumTitle;
     qDebug() << SB_DEBUG_INFO << "count1" << count1;
     qDebug() << SB_DEBUG_INFO << "count2" << count2;
-    qDebug() << SB_DEBUG_INFO << "duration" << duration;
+    qDebug() << SB_DEBUG_INFO << "duration" << duration.toString();
     qDebug() << SB_DEBUG_INFO << "genre" << genre;
     //qDebug() << SB_DEBUG_INFO << "lyrics" << lyrics;
     qDebug() << SB_DEBUG_INFO << "notes" << notes;
@@ -560,7 +558,8 @@ SBID::operator !=(const SBID& i) const
     return !(this->operator==(i));
 }
 
-QDebug operator<<(QDebug dbg, const SBID& id)
+QDebug
+operator<<(QDebug dbg, const SBID& id)
 {
 
     QString songTitle=id.songTitle.length() ? id.songTitle : "<N/A>";
@@ -570,30 +569,37 @@ QDebug operator<<(QDebug dbg, const SBID& id)
     switch(id._sb_item_type)
     {
     case SBID::sb_type_song:
-        dbg.nospace() << "SBID : " << id.getType() << "|"
-                                << id.sb_song_id << "|st" << songTitle << "|"
-                                << id.sb_performer_id << "|pn" << performerName;
+        dbg.nospace() << "SBID: " << id.getType()
+                      << "|" << id.sb_song_id << "|st" << songTitle
+                      << "|" << id.sb_performer_id << "|pn" << performerName
+                      << "|" << id.sb_album_id << "|an" << albumTitle
+        ;
         break;
 
     case SBID::sb_type_performer:
-        dbg.nospace() << "SBID : " << id.getType() << "|"
-                                << id.sb_performer_id << "|pn" << performerName;
+        dbg.nospace() << "SBID: " << id.getType()
+                      << "|" << id.sb_performer_id << "|pn" << performerName
+        ;
         break;
 
     case SBID::sb_type_album:
-        dbg.nospace() << "SBID : " << id.getType() << "|"
-                                << id.sb_album_id << "|at" << albumTitle << "|"
-                                << id.sb_performer_id << "|pn" << performerName;
+        dbg.nospace() << "SBID: " << id.getType()
+                      << "|" << id.sb_album_id << "|at" << albumTitle
+                      << "|" << id.sb_performer_id << "|pn" << performerName
+        ;
         break;
 
     case SBID::sb_type_chart:
-        dbg.nospace() << "SBID : " << id.getType() << "|"
-                                << id.sb_chart_id << "|" << "<name not implemented for charts>";
+        dbg.nospace() << "SBID  " << id.getType()
+                      << "|" << id.sb_chart_id
+                      << "|" << "<name not implemented for charts>"
+        ;
         break;
 
     case SBID::sb_type_playlist:
-        dbg.nospace() << "SBID : " << id.getType() << "|"
-                                << id.sb_playlist_id << "|pln" << playlistName;
+        dbg.nospace() << "SBID: " << id.getType()
+                      << "|" << id.sb_playlist_id << "|pln" << playlistName
+        ;
         break;
 
     case SBID::sb_type_invalid:
