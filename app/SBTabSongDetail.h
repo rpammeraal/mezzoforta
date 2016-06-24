@@ -25,10 +25,10 @@ public:
     static SBID selectSongFromAlbum(const SBID& song);
 
 public slots:
+    void enqueue();
     void playNow(bool enqueueFlag=0);
     void showContextMenuView(const QPoint &p);
     void showContextMenuLabel(const QPoint &p);
-    void enqueue();
 
 private slots:
     void setSongLyricsPage(const QString& url);

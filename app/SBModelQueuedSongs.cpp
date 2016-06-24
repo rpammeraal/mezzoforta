@@ -402,7 +402,7 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
     if(!firstBatchHasLoadedFlag)
     {
         this->clear();
-        _totalDuration=SBTime();
+        _totalDuration=Duration();
     }
     else
     {
@@ -420,7 +420,7 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
         const SBID id=newPlaylist[i];
         record=createRecord(id,i+offset+1);
         _totalDuration+=id.duration;
-        SBTime newTime=_totalDuration;
+        Duration newTime=_totalDuration;
         this->appendRow(record);
 
         QCoreApplication::processEvents();
@@ -462,7 +462,7 @@ SBModelQueuedSongs::reorderItems()
 {
     qDebug() << SB_DEBUG_INFO;
     //	TODO: recalculate duration while we're here.
-    _totalDuration=SBTime();
+    _totalDuration=Duration();
     qDebug() << SB_DEBUG_INFO;
 
     QMap<int,int> toFrom;	//	map from old to new index (0-based)
@@ -501,7 +501,7 @@ SBModelQueuedSongs::reorderItems()
             QTime t1; t1.toString(item->text());
             QTime t2; t2=item->data().toTime();
             qDebug() << SB_DEBUG_INFO << _totalDuration << item->text();
-            SBTime t=SBTime(item->text());
+            Duration t=Duration(item->text());
             qDebug() << SB_DEBUG_INFO << t;
             _totalDuration+=t;
             qDebug() << SB_DEBUG_INFO << _totalDuration;
@@ -793,22 +793,22 @@ SBModelQueuedSongs::createRecord(const SBID& id,int playPosition) const
     QStandardItem* item;
     QList<QStandardItem *>record;
 
-    item=new QStandardItem("0"); record.append(item);                                             //	sb_column_deleteflag
-    item=new QStandardItem(""); record.append(item);                                              //	sb_column_playflag
-    item=new QStandardItem(QString("%1").arg(id.sb_album_id)); record.append(item);               //	sb_column_albumid
-    item=new QStandardItem(formatDisplayPlayID(playPosition)); record.append(item);               //	sb_column_displayplaylistpositionid
+    item=new QStandardItem("0"); record.append(item);                                              //	sb_column_deleteflag
+    item=new QStandardItem(""); record.append(item);                                               //	sb_column_playflag
+    item=new QStandardItem(QString("%1").arg(id.sb_album_id)); record.append(item);                //	sb_column_albumid
+    item=new QStandardItem(formatDisplayPlayID(playPosition)); record.append(item);                //	sb_column_displayplaylistpositionid
     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
-    item=new QStandardItem(QString("%1").arg(id.sb_song_id)); record.append(item);                //	sb_column_songid
-    item=new QStandardItem(QString("%1").arg(id.sb_performer_id)); record.append(item);	          //	sb_column_performerid
-    item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);           //	sb_column_playlistpositionid
-    item=new QStandardItem(QString("%1").arg(id.sb_position)); record.append(item);               //	sb_column_position
-    item=new QStandardItem(id.path); record.append(item);                                         //	sb_column_path
+    item=new QStandardItem(QString("%1").arg(id.sb_song_id)); record.append(item);                 //	sb_column_songid
+    item=new QStandardItem(QString("%1").arg(id.sb_performer_id)); record.append(item);	           //	sb_column_performerid
+    item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);            //	sb_column_playlistpositionid
+    item=new QStandardItem(QString("%1").arg(id.sb_position)); record.append(item);                //	sb_column_position
+    item=new QStandardItem(id.path); record.append(item);                                          //	sb_column_path
 
-    item=new QStandardItem(id.songTitle); record.append(item);                                    //	sb_column_songtitle
-    item=new QStandardItem(id.duration.toString(SBTime::sb_hhmmss_format)); record.append(item);  //	sb_column_duration
-    item=new QStandardItem(id.performerName); record.append(item);                                //	sb_column_performername
-    item=new QStandardItem(id.albumTitle); record.append(item);                                   //	sb_column_albumtitle
+    item=new QStandardItem(id.songTitle); record.append(item);                                     //	sb_column_songtitle
+    item=new QStandardItem(id.duration.toString(Duration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
+    item=new QStandardItem(id.performerName); record.append(item);                                 //	sb_column_performername
+    item=new QStandardItem(id.albumTitle); record.append(item);                                    //	sb_column_albumtitle
 
     return record;
 }

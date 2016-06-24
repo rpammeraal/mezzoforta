@@ -14,7 +14,7 @@ class SBModelQueuedSongs;
 
 #include "SBMediaPlayer.h"
 #include "SBID.h"
-#include "SBTime.h"
+#include "Duration.h"
 
 ///
 /// \brief The PlayerController class
@@ -82,7 +82,7 @@ private:
 
     int                               _currentPlayerID;
     SBIDSong                          _currentSongPlaying;
-    SBTime                            _durationTime[_maxPlayerID];
+    Duration                          _durationTime[_maxPlayerID];
     bool                              _initDoneFlag;
     SBModelQueuedSongs*               _modelCurrentPlaylist;
     QFrame*                           _playerFrame[_maxPlayerID];
@@ -95,7 +95,7 @@ private:
     PlayerController::sb_player_state _state;
 
     SBIDSong calculateNextSongID(bool previousFlag=0) const;
-    SBTime calculateTime(quint64 ms) const;
+    Duration calculateTime(quint64 ms) const;
     void _init();
     void makePlayerVisible(PlayerController::sb_player player);
     bool _playSong(const SBID& song);

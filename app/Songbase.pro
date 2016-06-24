@@ -16,7 +16,6 @@ HEADERS     = \
     SBLabel.h \
     SBDialogRenamePlaylist.h \
     BackgroundThread.h \
-    SBTime.h \
     SBTab.h \
     SBTabPerformerEdit.h \
     SBTabSongEdit.h \
@@ -53,7 +52,8 @@ HEADERS     = \
     AudioDecoderReader.h \
     SBTabQueuedSongs.h \
     SBModelQueuedSongs.h \
-    SBSortFilterProxyQueuedSongsModel.h
+    SBSortFilterProxyQueuedSongsModel.h \
+    Duration.h
 
 SOURCES     = \
     main.cpp \
@@ -72,7 +72,6 @@ SOURCES     = \
     SBLabel.cpp \
     SBDialogRenamePlaylist.cpp \
     BackgroundThread.cpp \
-    SBTime.cpp \
     SBTab.cpp \
     SBTabPerformerEdit.cpp \
     SBTabSongEdit.cpp \
@@ -109,7 +108,8 @@ SOURCES     = \
     AudioDecoderReader.cpp \
     SBTabQueuedSongs.cpp \
     SBModelQueuedSongs.cpp \
-    SBSortFilterProxyQueuedSongsModel.cpp
+    SBSortFilterProxyQueuedSongsModel.cpp \
+    Duration.cpp
 
 # install
 target.path = .

@@ -96,6 +96,12 @@ SBTabSongDetail::selectSongFromAlbum(const SBID &song)
 
 ///	Public slots
 void
+SBTabSongDetail::enqueue()
+{
+    this->playNow(1);
+}
+
+void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
     QTableView* tv=_determineViewCurrentTab();
@@ -161,13 +167,6 @@ SBTabSongDetail::showContextMenuLabel(const QPoint &p)
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
 }
-
-void
-SBTabSongDetail::enqueue()
-{
-    this->playNow(1);
-}
-
 
 ///	Private slots
 void

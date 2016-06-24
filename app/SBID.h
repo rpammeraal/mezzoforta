@@ -6,7 +6,7 @@
 #include <QDataStream>
 #include <QStandardItem>
 
-#include "SBTime.h"
+#include "Duration.h"
 
 class SBID
 {
@@ -49,7 +49,7 @@ public:
     QString     albumTitle;
     int         count1;
     int         count2;
-    SBTime      duration;
+    Duration      duration;
     QString     genre;
     QString     lyrics;
     QString     notes;

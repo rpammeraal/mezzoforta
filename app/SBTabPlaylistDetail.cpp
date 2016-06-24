@@ -23,15 +23,25 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 }
 
 ///	Public slots
+
+void
+SBTabPlaylistDetail::enqueue()
+{
+    this->playNow(1);
+}
+
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
     init();
     SBID currentID=SBTab::currentID();
-    SBID assignID=getSBIDSelected(lastClickedIndex);
+    SBID assignID=getSBIDSelected(_lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
         DataEntityPlaylist pl;
+
+        qDebug() << SB_DEBUG_INFO << "assignID=" << assignID;
+        return;
 
         pl.deletePlaylistItem(assignID,currentID);
         refreshTabIfCurrent(currentID);
@@ -71,21 +81,44 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 }
 
 void
+SBTabPlaylistDetail::playNow(bool enqueueFlag)
+{
+    init();
+    SBID selectedID=getSBIDSelected(_lastClickedIndex);
+    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    {
+        qDebug() << SB_DEBUG_INFO << selectedID.playPosition;
+        qDebug() << SB_DEBUG_INFO << selectedID;
+        //SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+
+        //tqs->playItemNow(selectedID,enqueueFlag);
+    }
+}
+
+void
 SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
 {
     init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
 
-    SBID id=getSBIDSelected(idx);
-    if(id.sb_item_type()!=SBID::sb_type_invalid)
+    SBID selectedID=getSBIDSelected(idx);
+    qDebug() << SB_DEBUG_INFO << selectedID;
+    //	title etc not populated
+    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        lastClickedIndex=idx;
+        _lastClickedIndex=idx;
 
         QPoint gp = mw->ui.playlistDetailSongList->mapToGlobal(p);
 
         QMenu menu(NULL);
-        menu.addAction(deletePlaylistItemAction);
+
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+
+        menu.addAction(_playNowAction);
+        menu.addAction(_enqueueAction);
+        menu.addAction(_deletePlaylistItemAction);
         menu.exec(gp);
     }
 }
@@ -103,10 +136,23 @@ SBTabPlaylistDetail::init()
         connect(mw->ui.playlistDetailSongList->horizontalHeader(), SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
 
-        //	Delete playlist
-        deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
-        deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
-        connect(deletePlaylistItemAction, SIGNAL(triggered()),
+        //	Menu actions
+        //		1.	Play Now
+        _playNowAction = new QAction(tr("Play Now"), this);
+        _playNowAction->setStatusTip(tr("Play Now"));
+        connect(_playNowAction, SIGNAL(triggered()),
+                this, SLOT(playNow()));
+
+        //		2.	Enqueue
+        _enqueueAction = new QAction(tr("Enqueue"), this);
+        _enqueueAction->setStatusTip(tr("Enqueue"));
+        connect(_enqueueAction, SIGNAL(triggered()),
+                this, SLOT(enqueue()));
+
+        //		3.	Delete item from playlist
+        _deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
+        _deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
+        connect(_deletePlaylistItemAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
     }
 }
@@ -166,6 +212,7 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
     id.assign(itemType,itemID);
     lastIdx=idx;
     lastSong=id;
+    id.setText(text);
     return id;
 }
 

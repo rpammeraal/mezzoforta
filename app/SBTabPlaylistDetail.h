@@ -14,13 +14,16 @@ public:
     virtual QTableView* subtabID2TableView(int subtabID) const;
 
 public slots:
+    void enqueue();
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, int row);
+    void playNow(bool enqueueFlag=0);
     void showContextMenuPlaylist(const QPoint &p);
 
 private:
-    QAction* deletePlaylistItemAction;
-    QModelIndex lastClickedIndex;
+    QAction* _deletePlaylistItemAction;
+    QAction* _playNowAction;
+    QAction* _enqueueAction;
 
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);

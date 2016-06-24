@@ -530,7 +530,6 @@ Chooser::_findItem(const SBID& id)
 SBID
 Chooser::_getPlaylistSelected(const QModelIndex& i)
 {
-    QModelIndex p=i.parent();
     SBID id;
 
     if(_cm)

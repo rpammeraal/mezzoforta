@@ -650,7 +650,7 @@ SBID::init()
     albumTitle=e;
     count1=0;
     count2=0;
-    duration=SBTime();
+    duration=Duration();
     genre=e;
     lyrics=e;
     notes=e;

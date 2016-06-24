@@ -877,7 +877,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
     qDebug() << SB_DEBUG_INFO;
 
     //	Calculate duration
-    SBTime duration;
+    Duration duration;
     qDebug() << SB_DEBUG_INFO << allSongs.count();
     for(int i=0;i<allSongs.count();i++)
     {
@@ -898,7 +898,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
         "WHERE "
             "playlist_id=%2 "
     )
-        .arg(duration.toString(SBTime::sb_hhmmss_format))
+        .arg(duration.toString(Duration::sb_hhmmss_format))
         .arg(id.sb_playlist_id)
     ;
     dal->customize(q);

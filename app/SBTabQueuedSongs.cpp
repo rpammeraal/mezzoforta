@@ -51,7 +51,7 @@ SBTabQueuedSongs::playItemNow(const SBID &toPlay,const bool enqueueFlag)
         break;
 
     case SBID::sb_type_song:
-        qDebug() << SB_DEBUG_INFO;
+        //	toPlay *must* have path populated.
         list[0]=toPlay;
         break;
 
@@ -202,12 +202,6 @@ SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
     DataEntityPlaylist mpl;
     mpl.reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
-}
-
-void
-SBTabQueuedSongs::handleItemHighlight(QModelIndex &idx)
-{
-    qDebug() << SB_DEBUG_INFO << idx;
 }
 
 void
@@ -455,7 +449,7 @@ SBTabQueuedSongs::startRadio()
 void
 SBTabQueuedSongs::updateDetail() const
 {
-    SBTime totalDuration;
+    Duration totalDuration;
     QString detail;
 
     PlayerController* pc=Context::instance()->getPlayerController();
@@ -472,7 +466,7 @@ SBTabQueuedSongs::updateDetail() const
         const int numSongs=aem->numSongs();
         if(numSongs)
         {
-            SBTime totalDuration=aem->totalDuration();
+            Duration totalDuration=aem->totalDuration();
             qDebug() << SB_DEBUG_INFO << totalDuration.toString();
 
             detail+=QString("%1 song%2 %3 %4")
@@ -531,8 +525,6 @@ SBTabQueuedSongs::_init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv,SIGNAL(doubleClicked(QModelIndex)),
                 this, SLOT(tableViewCellDoubleClicked(QModelIndex)));
-        connect(tv,SIGNAL(viewportEntered()),
-                this, SLOT(handleItemHighlight(QModelIndex&)));
 
         //	Buttons
         connect(mw->ui.pbClearPlaylist, SIGNAL(clicked(bool)),

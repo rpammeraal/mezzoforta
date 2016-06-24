@@ -2,24 +2,24 @@
 #include <QTime>
 
 #include "Common.h"
-#include "SBTime.h"
+#include "Duration.h"
 
-SBTime::SBTime()
+Duration::Duration()
 {
     _ms=0;
 }
 
-SBTime::SBTime(const SBTime &t)
+Duration::Duration(const Duration &t)
 {
     _ms=t._ms;
 }
 
-SBTime::SBTime(const QTime& t)
+Duration::Duration(const QTime& t)
 {
     _ms=t.msec()+(1000*t.second())+(1000*60*t.minute())+(1000*60*24*t.hour());
 }
 
-SBTime::SBTime(const QString &t)
+Duration::Duration(const QString &t)
 {
     QStringList sl=t.split(":");
     bool hasMSFlag=0;
@@ -73,34 +73,34 @@ SBTime::SBTime(const QString &t)
     }
 }
 
-SBTime::SBTime(int hours, int minutes, int seconds)
+Duration::Duration(int hours, int minutes, int seconds)
 {
     setHMS(hours,minutes,seconds);
 }
 
-SBTime&
-SBTime::operator =(const SBTime& t)
+Duration&
+Duration::operator =(const Duration& t)
 {
     _ms=t._ms;
     return *this;
 }
 
-SBTime&
-SBTime::operator =(const QTime& t)
+Duration&
+Duration::operator =(const QTime& t)
 {
-    (*this)=SBTime(t);
+    (*this)=Duration(t);
     return *this;
 }
 
-SBTime&
-SBTime::operator+=(const SBTime& t)
+Duration&
+Duration::operator+=(const Duration& t)
 {
     _ms+=t._ms;
     return (*this);
 }
 
-SBTime&
-SBTime::operator-=(const SBTime& t)
+Duration&
+Duration::operator-=(const Duration& t)
 {
     _ms-=t._ms;
     if(_ms<0)
@@ -112,7 +112,7 @@ SBTime::operator-=(const SBTime& t)
 }
 
 bool
-SBTime::setHMS(int hours, int minutes, int seconds, int ms)
+Duration::setHMS(int hours, int minutes, int seconds, int ms)
 {
     _ms=(1000*seconds)+(1000*60*minutes)+(1000*60*24*hours)+ms;
     if(ms<0)
@@ -123,25 +123,25 @@ SBTime::setHMS(int hours, int minutes, int seconds, int ms)
 }
 
 QDebug
-operator<<(QDebug dbg, const SBTime& t)
+operator<<(QDebug dbg, const Duration& t)
 {
-    dbg.nospace() << t.toString(SBTime::sb_hhmmss_format);
+    dbg.nospace() << t.toString(Duration::sb_hhmmss_format);
     return dbg.space();
 }
 
 void
-SBTime::setDuration(int ms)
+Duration::setDuration(int ms)
 {
     _ms=ms;
 }
 
 QString
-SBTime::toString(SBTime::sb_displayformat displayFormat) const
+Duration::toString(Duration::sb_displayformat displayFormat) const
 {
     QString duration;
     switch(displayFormat)
     {
-    case SBTime::sb_default_format:
+    case Duration::sb_default_format:
             if(this->day())
             {
                 duration+=QString("%1 day%2 ").arg(this->day()).arg(this->day()>1?"s":"");
@@ -153,7 +153,7 @@ SBTime::toString(SBTime::sb_displayformat displayFormat) const
             duration+=QString("%1 min ").arg(this->second()>=30?this->minute()+1:this->minute());
         break;
 
-    case SBTime::sb_hhmmss_format:
+    case Duration::sb_hhmmss_format:
             if(this->hour()+this->day()>0)
             {
                 duration+=QString("%1:").arg(this->day()*24+this->hour());

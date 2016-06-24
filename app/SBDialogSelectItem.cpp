@@ -139,7 +139,7 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
                    .arg(i)
                    .arg(songChoice.albumTitle)
                    .arg(songChoice.performerName)
-                   .arg(songChoice.duration.toString(SBTime::sb_hhmmss_format)));
+                   .arg(songChoice.duration.toString(Duration::sb_hhmmss_format)));
 
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),

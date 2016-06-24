@@ -33,7 +33,6 @@ public:
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
-    void handleItemHighlight(QModelIndex& idx);
     void playSong();
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& song);
