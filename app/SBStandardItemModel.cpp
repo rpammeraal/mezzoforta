@@ -76,8 +76,6 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
     //const QModelIndex n=this->index(parent.row(),parent.column());
     qDebug() << SB_DEBUG_INFO << "Dropping on " << row;
 
-    //QList<QStandardItem *> rowToBeMoved=takeRow(id.sb_position);
-    //this->insertRow(receivingID.sb_position, rowToBeMoved);
     this->beginRemoveRows(parent,id.sb_position,id.sb_position);
     this->removeRow(id.sb_position);
     this->endRemoveRows();

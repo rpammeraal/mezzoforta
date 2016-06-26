@@ -21,6 +21,7 @@ SBID::SBID(const SBID &c)
     this->sb_chart_id=c.sb_chart_id;
     this->sb_song_id=c.sb_song_id;
     this->sb_playlist_id=c.sb_playlist_id;
+    this->sb_playlist_position=c.sb_playlist_position;
 
     this->isOriginalPerformerFlag=c.isOriginalPerformerFlag;
     this->albumTitle=c.albumTitle;
@@ -90,6 +91,7 @@ SBID::SBID(QByteArray encodedData)
     playlistName             =sl[23];
     playPosition             =sl[24].toInt();
     isPlayingFlag            =sl[25].toInt();
+    sb_playlist_position     =sl[26].toInt();
     return;
 }
 
@@ -220,6 +222,7 @@ SBID::encode() const
     sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
     sl.append(QString("%1").arg(playPosition));
     sl.append(QString("%1").arg(isPlayingFlag));
+    sl.append(QString("%1").arg(sb_playlist_position));
 
     QString combined=sl.join('_');
 
@@ -508,6 +511,7 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "sb_chart_id" << sb_chart_id;
     qDebug() << SB_DEBUG_INFO << "sb_song_id" << sb_song_id;
     qDebug() << SB_DEBUG_INFO << "sb_playlist_id" << sb_playlist_id;
+    qDebug() << SB_DEBUG_INFO << "sb_playlist_position" << sb_playlist_position;
     qDebug() << SB_DEBUG_INFO << "isOriginalPerformerFlag" << isOriginalPerformerFlag;
     qDebug() << SB_DEBUG_INFO << "albumTitle" << albumTitle;
     qDebug() << SB_DEBUG_INFO << "count1" << count1;
@@ -645,6 +649,7 @@ SBID::init()
     sb_chart_id=-1;
     sb_song_id=-1;
     sb_playlist_id=-1;
+    sb_playlist_position=-1;
 
     isOriginalPerformerFlag=0;
     albumTitle=e;

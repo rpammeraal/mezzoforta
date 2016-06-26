@@ -1,4 +1,5 @@
 #include <QAbstractItemModel>
+#include <QMenu>
 
 #include "SBTabPlaylistDetail.h"
 
@@ -40,7 +41,9 @@ SBTabPlaylistDetail::deletePlaylistItem()
     {
         DataEntityPlaylist pl;
 
+        qDebug() << SB_DEBUG_INFO << assignID.sb_playlist_id << assignID.sb_playlist_position;
         qDebug() << SB_DEBUG_INFO << "assignID=" << assignID;
+        qDebug() << SB_DEBUG_INFO << "currentID=" << currentID;
         return;
 
         pl.deletePlaylistItem(assignID,currentID);
@@ -65,7 +68,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 
     init();
     //	Determine current playlist
-    SBID currentID=Context::instance()->getScreenStack()->currentScreen();
+    SBID currentID=SBTab::currentID();
 
     DataEntityPlaylist mpl;
     mpl.reorderItem(currentID,fromID,row);
@@ -83,15 +86,27 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
+    if(_menu)
+    {
+        _menu->hide();
+    }
     init();
+    const SBID currentID=SBTab::currentID();
     SBID selectedID=getSBIDSelected(_lastClickedIndex);
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        qDebug() << SB_DEBUG_INFO << selectedID.playPosition;
-        qDebug() << SB_DEBUG_INFO << selectedID;
-        //SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+        DataEntityPlaylist pl;
 
-        //tqs->playItemNow(selectedID,enqueueFlag);
+        if(selectedID.sb_item_type()==SBID::sb_type_song)
+        {
+            selectedID.sb_playlist_id=currentID.sb_playlist_id;
+            selectedID=pl.getDetailPlaylistItemSong(selectedID);	//	gets path, fills in 4 field titles
+        }
+        qDebug() << SB_DEBUG_INFO << selectedID.sb_playlist_id << selectedID.sb_playlist_position;
+        qDebug() << SB_DEBUG_INFO << "selectedID=" << selectedID;
+        SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+
+        tqs->playItemNow(selectedID,enqueueFlag);
     }
 }
 
@@ -111,15 +126,19 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
 
         QPoint gp = mw->ui.playlistDetailSongList->mapToGlobal(p);
 
-        QMenu menu(NULL);
+        if(_menu)
+        {
+            delete _menu;
+        }
+        _menu=new QMenu(NULL);
 
         _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
         _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
 
-        menu.addAction(_playNowAction);
-        menu.addAction(_enqueueAction);
-        menu.addAction(_deletePlaylistItemAction);
-        menu.exec(gp);
+        _menu->addAction(_playNowAction);
+        _menu->addAction(_enqueueAction);
+        _menu->addAction(_deletePlaylistItemAction);
+        _menu->exec(gp);
     }
 }
 
@@ -127,6 +146,7 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
 void
 SBTabPlaylistDetail::init()
 {
+    _menu=NULL;
     if(_initDoneFlag==0)
     {
         MainWindow* mw=Context::instance()->getMainWindow();
@@ -171,10 +191,10 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
     static QModelIndex lastIdx;
     static SBID lastSong;
 
-    if(lastIdx==idx)
-    {
-        return lastSong;
-    }
+//    if(lastIdx==idx)
+//    {
+//        return lastSong;
+//    }
     init();
     SBID id;
 
@@ -202,7 +222,7 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
         }
         else if(header=="#")
         {
-            id.sb_position=aim->data(idy).toInt();
+            id.sb_playlist_position=aim->data(idy).toInt();
         }
         else if(text.length()==0)
         {

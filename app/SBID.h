@@ -45,11 +45,12 @@ public:
     bool        isEditFlag;
 
     //	Secundary identifiers
+    int         sb_playlist_position;
     bool        isOriginalPerformerFlag;
     QString     albumTitle;
     int         count1;
     int         count2;
-    Duration      duration;
+    Duration    duration;
     QString     genre;
     QString     lyrics;
     QString     notes;

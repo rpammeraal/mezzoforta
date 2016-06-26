@@ -198,7 +198,7 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
                 fromID=toBeAssignedToID;
             }
 
-            qDebug() << SB_DEBUG_INFO << "fromID" << fromID << fromID.sb_album_id << fromID.sb_position;
+            qDebug() << SB_DEBUG_INFO << "fromID" << fromID << fromID.sb_album_id << fromID.sb_position << fromID.sb_playlist_position;
             qDebug() << SB_DEBUG_INFO << "to" << toID;
 
             if(fromID.sb_item_type()!=SBID::sb_type_invalid)

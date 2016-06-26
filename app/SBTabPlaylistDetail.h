@@ -3,6 +3,8 @@
 
 #include "SBTab.h"
 
+class QMenu;
+
 class SBTabPlaylistDetail : public SBTab
 {
     Q_OBJECT
@@ -24,6 +26,7 @@ private:
     QAction* _deletePlaylistItemAction;
     QAction* _playNowAction;
     QAction* _enqueueAction;
+    QMenu* _menu;
 
     void init();
     SBID getSBIDSelected(const QModelIndex& idx);
