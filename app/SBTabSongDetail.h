@@ -39,8 +39,8 @@ private:
     QAction* _enqueueAction;
     QAction* _playNowAction;
 
-    void _init();
     QTableView* _determineViewCurrentTab() const;
+    void _init();
     virtual SBID _populate(const SBID& id);
 };
 

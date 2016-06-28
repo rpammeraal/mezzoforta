@@ -297,8 +297,7 @@ void
 PlayerController::playerNext()
 {
     qDebug() << SB_DEBUG_INFO << ">|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
     ;
 
     _state=PlayerController::sb_player_state_changing_media;

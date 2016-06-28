@@ -127,6 +127,7 @@ void
 SBModelQueuedSongs::clear()
 {
     _currentPlayID=-1;
+    qDebug() << SB_DEBUG_INFO << _currentPlayID;
     QStandardItemModel::clear();
 }
 
@@ -398,6 +399,7 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
 {
     qDebug() << SB_DEBUG_INFO << "newPlaylist.count()=" << newPlaylist.count();
     int offset=0;
+    int initialCount=this->rowCount();
 
     if(!firstBatchHasLoadedFlag)
     {
@@ -415,12 +417,11 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
         if(_currentPlayID==-1)
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
-
         }
         const SBID id=newPlaylist[i];
         record=createRecord(id,i+offset+1);
         _totalDuration+=id.duration;
-        Duration newTime=_totalDuration;
+
         this->appendRow(record);
 
         QCoreApplication::processEvents();
@@ -429,10 +430,23 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
     populateHeader();
     if(!firstBatchHasLoadedFlag)
     {
+        qDebug() << SB_DEBUG_INFO;
         setCurrentSongByID(_currentPlayID);
+    }
+    else
+    {
+        //	Special processing when items are queued.
+        if(_currentPlayID>=0 && initialCount==0)
+        {
+            //	If queue gets cleared (user presses clear button) and items are enqueued,
+            //	player will start with the 2nd song. Therefore, _currentPlayID needs to be
+            //	reset.
+            _currentPlayID=-1;
+        }
     }
     qDebug() << SB_DEBUG_INFO << "newPlaylist.count()" << newPlaylist.count();
     qDebug() << SB_DEBUG_INFO << "rowCount.count()" << this->rowCount();
+    qDebug() << SB_DEBUG_INFO << "_currentPlayID" << _currentPlayID;
 }
 
 void

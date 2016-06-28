@@ -9,10 +9,26 @@ class SBTabPerformerDetail : public SBTab
 {
     Q_OBJECT
 
+    enum sb_tab
+    {
+        sb_tab_performances =0,
+        sb_tab_albums,
+        sb_tab_charts,
+        sb_tab_news,
+        sb_tab_wikipedia,
+        sb_tab_homepage
+    };
+
 public:
     SBTabPerformerDetail(QWidget* parent=0);
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
+
+public slots:
+    void enqueue();
+    void playNow(bool enqueueFlag=0);
+    void showContextMenuLabel(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
 
 private slots:
     void refreshPerformerNews();
@@ -22,10 +38,13 @@ private slots:
     void setPerformerWikipediaPage(const QString& url);
 
 private:
-    QList<NewsItem> currentNews;
-    QList<QWidget *> relatedItems;
+    QList<NewsItem> _currentNews;
+    QAction* _enqueueAction;
+    QAction* _playNowAction;
+    QList<QWidget *> _relatedItems;
 
-    void init();
+    QTableView* _determineViewCurrentTab() const;
+    void _init();
     virtual SBID _populate(const SBID& id);
 };
 

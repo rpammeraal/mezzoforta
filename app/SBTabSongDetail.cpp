@@ -89,6 +89,7 @@ SBTabSongDetail::selectSongFromAlbum(const SBID &song)
             songOnAlbum.path=selectedSong.path;
             songOnAlbum.duration=selectedSong.duration;
             songOnAlbum.albumTitle=selectedSong.albumTitle;
+            songOnAlbum.performerName=selectedSong.performerName;
         }
     }
     return songOnAlbum;
@@ -113,7 +114,6 @@ SBTabSongDetail::playNow(bool enqueueFlag)
 
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Context menu from SBLabel is clicked
         selectedID=selectSongFromAlbum(this->currentID());
     }

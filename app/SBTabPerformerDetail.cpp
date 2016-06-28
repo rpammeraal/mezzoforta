@@ -6,6 +6,7 @@
 #include "Navigator.h"
 #include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
+#include "SBTabSongDetail.h"
 
 SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
 {
@@ -41,6 +42,88 @@ SBTabPerformerDetail::tabWidget() const
     return mw->ui.tabPerformerDetailLists;
 }
 
+///	Public slots
+void
+SBTabPerformerDetail::enqueue()
+{
+    this->playNow(1);
+}
+
+void
+SBTabPerformerDetail::playNow(bool enqueueFlag)
+{
+    QTableView* tv=_determineViewCurrentTab();
+
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+    const SBID currentID=SBTab::currentID();
+
+    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    {
+        //	Context menu from SBLabel is clicked
+        selectedID=currentID;
+    }
+    else if(selectedID.sb_item_type()==SBID::sb_type_song)
+    {
+        selectedID.performerName=currentID.performerName;
+        selectedID.sb_performer_id=currentID.sb_performer_id;
+        qDebug() << SB_DEBUG_INFO << this->currentID();
+        selectedID=SBTabSongDetail::selectSongFromAlbum(selectedID);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << selectedID;
+    }
+    tqs->playItemNow(selectedID,enqueueFlag);
+}
+
+void
+SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
+{
+    const SBID currentID=SBTab::currentID();
+
+    _lastClickedIndex=QModelIndex();
+
+    _menu=new QMenu(NULL);
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
+}
+
+void
+SBTabPerformerDetail::showContextMenuView(const QPoint &p)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    QTableView* tv=_determineViewCurrentTab();
+
+    QModelIndex idx=tv->indexAt(p);
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(idx);
+
+    qDebug() << SB_DEBUG_INFO << selectedID;
+    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    {
+        _lastClickedIndex=idx;
+
+        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+
+        _menu=new QMenu(NULL);
+
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+
+        _menu->addAction(_playNowAction);
+        _menu->addAction(_enqueueAction);
+        _menu->exec(gp);
+    }
+}
+
 
 //	Private slots
 void
@@ -52,15 +135,15 @@ SBTabPerformerDetail::refreshPerformerNews()
     html="<html><table style=\"width:100%\">";
 
     //	construct html page (really?)
-    for(int i=0;i<currentNews.size();i++)
+    for(int i=0;i<_currentNews.size();i++)
     {
         html+=QString
             (
                 "<tr><td ><font size=\"+2\"><a href=\"%1\">%2</font></td></tr><tr><td>%3</td></tr><tr><td >&nbsp</td></tr>"
-            ).arg(currentNews.at(i).url).arg(currentNews.at(i).name).arg(currentNews.at(i).summary);
+            ).arg(_currentNews.at(i).url).arg(_currentNews.at(i).name).arg(_currentNews.at(i).summary);
     }
     html+="</table></html>";
-    if(currentNews.count()>0)
+    if(_currentNews.count()>0)
     {
         mw->ui.tabPerformerDetailLists->setTabEnabled(3,1);
         mw->ui.performerDetailNewsPage->setHtml(html);
@@ -86,7 +169,7 @@ SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 void
 SBTabPerformerDetail::setPerformerNews(const QList<NewsItem>& news)
 {
-    currentNews=news;
+    _currentNews=news;
     refreshPerformerNews();
 }
 
@@ -100,8 +183,35 @@ SBTabPerformerDetail::setPerformerWikipediaPage(const QString &url)
     //	CWIP: save to database
 }
 
+///	Private methods
+QTableView*
+SBTabPerformerDetail::_determineViewCurrentTab() const
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabPerformerDetail::sb_tab_performances:
+        tv=mw->ui.performerDetailPerformances;
+        break;
+
+    case SBTabPerformerDetail::sb_tab_albums:
+        tv=mw->ui.performerDetailAlbums;
+        break;
+
+    case SBTabPerformerDetail::sb_tab_charts:
+    case SBTabPerformerDetail::sb_tab_news:
+    case SBTabPerformerDetail::sb_tab_wikipedia:
+    case SBTabPerformerDetail::sb_tab_homepage:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+    }
+    SB_DEBUG_IF_NULL(tv);
+    return tv;
+}
+
 void
-SBTabPerformerDetail::init()
+SBTabPerformerDetail::_init()
 {
     SBTab::init();
     if(_initDoneFlag==0)
@@ -117,6 +227,19 @@ SBTabPerformerDetail::init()
         connect(mw->ui.tabPerformerDetailLists,SIGNAL(tabBarClicked(int)),
                 this, SLOT(tabBarClicked(int)));
 
+        //	Menu actions
+        //		1.	Play Now
+        _playNowAction = new QAction(tr("Play Now"), this);
+        _playNowAction->setStatusTip(tr("Play Now"));
+        connect(_playNowAction, SIGNAL(triggered()),
+                this, SLOT(playNow()));
+
+        //		2.	Enqueue
+        _enqueueAction = new QAction(tr("Enqueue"), this);
+        _enqueueAction->setStatusTip(tr("Enqueue"));
+        connect(_enqueueAction, SIGNAL(triggered()),
+                this, SLOT(enqueue()));
+
         //	Tableviews
         QTableView* tv=NULL;
 
@@ -126,6 +249,9 @@ SBTabPerformerDetail::init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
 
         //		2.	List of albums
         tv=mw->ui.performerDetailAlbums;
@@ -133,15 +259,24 @@ SBTabPerformerDetail::init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
+
+        //	Icon
+        qDebug() << SB_DEBUG_INFO;
+        SBLabel* l=mw->ui.labelPerformerDetailIcon;
+        connect(l, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuLabel(QPoint)));
     }
 }
 
 SBID
 SBTabPerformerDetail::_populate(const SBID &id)
 {
-    init();
-    currentNews.clear();
-    relatedItems.clear();
+    _init();
+    _currentNews.clear();
+    _relatedItems.clear();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QList<bool> dragableColumns;
 
@@ -164,6 +299,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
     mw->ui.labelPerformerDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();
@@ -195,13 +331,13 @@ SBTabPerformerDetail::_populate(const SBID &id)
     //	Clear current
     QTextBrowser* frRelated=mw->ui.frPerformerDetailDetailAll;
 
-    for(int i=0;i<relatedItems.count();i++)
+    for(int i=0;i<_relatedItems.count();i++)
     {
-        QWidget* n=relatedItems.at(i);
-        relatedItems[i]=NULL;
+        QWidget* n=_relatedItems.at(i);
+        _relatedItems[i]=NULL;
         delete n;
     }
-    relatedItems.clear();
+    _relatedItems.clear();
 
 
     //	Recreate

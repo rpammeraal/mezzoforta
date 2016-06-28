@@ -140,7 +140,7 @@ SBTabQueuedSongs::playItemNow(const SBID &toPlay,const bool enqueueFlag)
     //	Update status bar if enqueued
     if(enqueueFlag)
     {
-        Context::instance()->getController()->updateStatusBarText(QString("Queued '%1'").arg(toPlay.getText()));
+        Context::instance()->getController()->updateStatusBarText(QString("Queued %1 '%2'").arg(toPlay.getType()).arg(toPlay.getText()));
     }
 }
 
