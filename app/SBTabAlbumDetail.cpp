@@ -28,6 +28,77 @@ SBTabAlbumDetail::tabWidget() const
 
 ///	Public slots
 void
+SBTabAlbumDetail::enqueue()
+{
+    this->playNow(1);
+}
+
+void
+SBTabAlbumDetail::playNow(bool enqueueFlag)
+{
+    QTableView* tv=_determineViewCurrentTab();
+
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+
+    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        //	Context menu from SBLabel is clicked
+        selectedID=SBTab::currentID();
+    }
+    tqs->playItemNow(selectedID,enqueueFlag);
+}
+
+void
+SBTabAlbumDetail::showContextMenuLabel(const QPoint &p)
+{
+    const SBID currentID=SBTab::currentID();
+    _lastClickedIndex=QModelIndex();
+
+    _menu=new QMenu(NULL);
+
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
+}
+
+void
+SBTabAlbumDetail::showContextMenuView(const QPoint &p)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    QTableView* tv=_determineViewCurrentTab();
+
+    QModelIndex idx=tv->indexAt(p);
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(idx);
+
+    qDebug() << SB_DEBUG_INFO << selectedID;
+    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    {
+        _lastClickedIndex=idx;
+
+        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+
+        _menu=new QMenu(NULL);
+
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+
+        _menu->addAction(_playNowAction);
+        _menu->addAction(_enqueueAction);
+        _menu->exec(gp);
+    }
+}
+
+///	Private slots
+void
 SBTabAlbumDetail::refreshAlbumReviews()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -36,15 +107,15 @@ SBTabAlbumDetail::refreshAlbumReviews()
     html="<html><table style=\"width:100%\">";
 
     //	construct html page (really?)
-    for(int i=0;i<currentReviews.size();i++)
+    for(int i=0;i<_currentReviews.size();i++)
     {
         html+=QString
             (
                 "<tr><td ><font size=\"+2\"><a href=\"%1\">%2</font></td></tr><tr><td>%3</td></tr><tr><td >&nbsp</td></tr>"
-            ).arg(currentReviews.at(i)).arg(currentReviews.at(i)).arg(currentReviews.at(i));
+            ).arg(_currentReviews.at(i)).arg(_currentReviews.at(i)).arg(_currentReviews.at(i));
     }
     html+="</table></html>";
-    if(currentReviews.count()>0)
+    if(_currentReviews.count()>0)
     {
         mw->ui.tabAlbumDetailLists->setTabEnabled(1,1);
         mw->ui.albumDetailReviews->setHtml(html);
@@ -60,7 +131,7 @@ SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 void
 SBTabAlbumDetail::setAlbumReviews(const QList<QString> &reviews)
 {
-    currentReviews=reviews;
+    _currentReviews=reviews;
     refreshAlbumReviews();
 }
 
@@ -74,12 +145,33 @@ SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
     //	CWIP: save to database
 }
 
+///	Private methods
+QTableView*
+SBTabAlbumDetail::_determineViewCurrentTab() const
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabAlbumDetail::sb_tab_contents:
+        tv=mw->ui.albumDetailAlbumContents;
+        break;
+
+    case SBTabAlbumDetail::sb_tab_reviews:
+    case SBTabAlbumDetail::sb_tab_wikipedia:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+    }
+    SB_DEBUG_IF_NULL(tv);
+    return tv;
+}
+
 void
-SBTabAlbumDetail::init()
+SBTabAlbumDetail::_init()
 {
     SBTab::init();
 
-    currentReviews.clear();
+    _currentReviews.clear();
 
     if(_initDoneFlag==0)
     {
@@ -92,6 +184,19 @@ SBTabAlbumDetail::init()
         connect(mw->ui.tabAlbumDetailLists,SIGNAL(tabBarClicked(int)),
                 this, SLOT(tabBarClicked(int)));
 
+        //	Menu actions
+        //		1.	Play Now
+        _playNowAction = new QAction(tr("Play Now"), this);
+        _playNowAction->setStatusTip(tr("Play Now"));
+        connect(_playNowAction, SIGNAL(triggered()),
+                this, SLOT(playNow()));
+
+        //		2.	Enqueue
+        _enqueueAction = new QAction(tr("Enqueue"), this);
+        _enqueueAction->setStatusTip(tr("Enqueue"));
+        connect(_enqueueAction, SIGNAL(triggered()),
+                this, SLOT(enqueue()));
+
         //	Tableviews
         QTableView* tv=NULL;
 
@@ -101,13 +206,21 @@ SBTabAlbumDetail::init()
                 this, SLOT(tableViewCellClicked(QModelIndex)));
         connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
+
+        //	Icon
+        SBLabel* l=mw->ui.labelAlbumDetailIcon;
+        connect(l, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuLabel(QPoint)));
     }
 }
 
 SBID
 SBTabAlbumDetail::_populate(const SBID &id)
 {
-    init();
+    _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QList<bool> dragableColumns;
 
@@ -128,6 +241,7 @@ SBTabAlbumDetail::_populate(const SBID &id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
     mw->ui.labelAlbumDetailIcon->setSBID(result);
 
     ExternalData* ed=new ExternalData();

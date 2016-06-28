@@ -34,7 +34,7 @@ SBTabPlaylistDetail::enqueue()
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
-    init();
+    _init();
     SBID currentID=SBTab::currentID();
     SBID assignID=getSBIDSelected(_lastClickedIndex);
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
@@ -66,7 +66,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 {
     qDebug() << SB_DEBUG_INFO;
 
-    init();
+    _init();
     //	Determine current playlist
     SBID currentID=SBTab::currentID();
 
@@ -86,14 +86,21 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(_menu)
     {
         _menu->hide();
     }
-    init();
+    qDebug() << SB_DEBUG_INFO;
     const SBID currentID=SBTab::currentID();
     SBID selectedID=getSBIDSelected(_lastClickedIndex);
-    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+
+    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    {
+        //	Label clicked
+        selectedID=currentID;
+    }
+    else
     {
         DataEntityPlaylist pl;
 
@@ -102,18 +109,33 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
             selectedID.sb_playlist_id=currentID.sb_playlist_id;
             selectedID=pl.getDetailPlaylistItemSong(selectedID);	//	gets path, fills in 4 field titles
         }
-        qDebug() << SB_DEBUG_INFO << selectedID.sb_playlist_id << selectedID.sb_playlist_position;
-        qDebug() << SB_DEBUG_INFO << "selectedID=" << selectedID;
-        SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
-
-        tqs->playItemNow(selectedID,enqueueFlag);
     }
+    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+    tqs->playItemNow(selectedID,enqueueFlag);
 }
 
 void
-SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
+SBTabPlaylistDetail::showContextMenuLabel(const QPoint &p)
 {
-    init();
+    const SBID currentID=SBTab::currentID();
+    _lastClickedIndex=QModelIndex();
+
+    qDebug() << SB_DEBUG_INFO << currentID;
+
+    _menu=new QMenu(NULL);
+
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
+}
+
+void
+SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
+{
+    _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
 
@@ -144,9 +166,9 @@ SBTabPlaylistDetail::showContextMenuPlaylist(const QPoint &p)
 
 ///	Private methods
 void
-SBTabPlaylistDetail::init()
+SBTabPlaylistDetail::_init()
 {
-    _menu=NULL;
+    SBTab::init();
     if(_initDoneFlag==0)
     {
         MainWindow* mw=Context::instance()->getMainWindow();
@@ -174,6 +196,23 @@ SBTabPlaylistDetail::init()
         _deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
         connect(_deletePlaylistItemAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
+
+        //	Tableviews
+        QTableView* tv=NULL;
+
+        //		1.	List of songs
+        tv=mw->ui.playlistDetailSongList;
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(tableViewCellClicked(QModelIndex)));
+
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
+
+        //	Icon
+        SBLabel* l=mw->ui.labelPlaylistDetailIcon;
+        connect(l, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuLabel(QPoint)));
     }
 }
 
@@ -195,7 +234,7 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 //    {
 //        return lastSong;
 //    }
-    init();
+    _init();
     SBID id;
 
     qDebug() << SB_DEBUG_INFO << idx;
@@ -240,7 +279,7 @@ SBID
 SBTabPlaylistDetail::_populate(const SBID& id)
 {
     qDebug() << SB_DEBUG_INFO;
-    init();
+    _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     DataEntityPlaylist pl;
 
@@ -260,15 +299,8 @@ SBTabPlaylistDetail::_populate(const SBID& id)
     QTableView* tv=mw->ui.playlistDetailSongList;
     SBSqlQueryModel* qm=pl.getAllItemsByPlaylist(id);
     populateTableView(tv,qm,0);
-    connect(tv, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(tableViewCellClicked(QModelIndex)));
     connect(qm, SIGNAL(assign(const SBID&,int)),
             this, SLOT(movePlaylistItem(const SBID&, int)));
-
-    //	Context menu
-    tv->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
-            this, SLOT(showContextMenuPlaylist(QPoint)));
 
     //	Drag & drop mw->ui.playlistDetailSongList->setAcceptDrops(1);
     mw->ui.playlistDetailSongList->setDropIndicatorShown(1);

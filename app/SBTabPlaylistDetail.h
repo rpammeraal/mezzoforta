@@ -20,7 +20,8 @@ public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, int row);
     void playNow(bool enqueueFlag=0);
-    void showContextMenuPlaylist(const QPoint &p);
+    void showContextMenuLabel(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
 
 private:
     QAction* _deletePlaylistItemAction;
@@ -28,7 +29,7 @@ private:
     QAction* _enqueueAction;
     QMenu* _menu;
 
-    void init();
+    void _init();
     SBID getSBIDSelected(const QModelIndex& idx);
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);

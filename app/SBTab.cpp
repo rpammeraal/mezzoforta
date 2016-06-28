@@ -182,6 +182,7 @@ SBTab::init()
     _initDoneFlag=0;
     tabSortMap.clear();
     _currentSubtabID=0;
+    _menu=NULL;
 }
 
 int

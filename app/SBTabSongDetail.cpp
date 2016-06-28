@@ -121,6 +121,22 @@ SBTabSongDetail::playNow(bool enqueueFlag)
 }
 
 void
+SBTabSongDetail::showContextMenuLabel(const QPoint &p)
+{
+    const SBID currentID=SBTab::currentID();
+
+    _lastClickedIndex=QModelIndex();
+
+    _menu=new QMenu(NULL);
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
+}
+
+void
 SBTabSongDetail::showContextMenuView(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
@@ -149,25 +165,6 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
     }
 }
 
-void
-SBTabSongDetail::showContextMenuLabel(const QPoint &p)
-{
-    _lastClickedIndex=QModelIndex();
-    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
-    QTableView* tv=mw->ui.songDetailAlbums; SB_DEBUG_IF_NULL(tv);
-
-    QString itemString=mw->ui.labelSongDetailSongTitle->text();
-
-    _menu=new QMenu(NULL);
-
-    _playNowAction->setText(QString("Play '%1' Now").arg(itemString));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(itemString));
-
-    _menu->addAction(_playNowAction);
-    _menu->addAction(_enqueueAction);
-    _menu->exec(p);
-}
-
 ///	Private slots
 void
 SBTabSongDetail::setSongLyricsPage(const QString& url)
@@ -193,6 +190,31 @@ SBTabSongDetail::setSongWikipediaPage(const QString &url)
 
 
 ///	Private methods
+QTableView*
+SBTabSongDetail::_determineViewCurrentTab() const
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=NULL;
+    switch((sb_tab)currentSubtabID())
+    {
+    case SBTabSongDetail::sb_tab_albums:
+        tv=mw->ui.songDetailAlbums;
+        break;
+
+    case SBTabSongDetail::sb_tab_playlists:
+        tv=mw->ui.songDetailPlaylists;
+        break;
+
+    case SBTabSongDetail::sb_tab_charts:
+    case SBTabSongDetail::sb_tab_lyrics:
+    case SBTabSongDetail::sb_tab_wikipedia:
+    default:
+        qDebug() << SB_DEBUG_ERROR << "case not handled";
+    }
+    SB_DEBUG_IF_NULL(tv);
+    return tv;
+}
+
 void
 SBTabSongDetail::_init()
 {
@@ -241,13 +263,11 @@ SBTabSongDetail::_init()
         connect(tv, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuView(QPoint)));
 
-        //		3.	Icon
+        //	Icon
         qDebug() << SB_DEBUG_INFO;
         SBLabel* l=mw->ui.labelSongDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
-
-        _menu=NULL;
     }
 }
 
@@ -384,29 +404,4 @@ SBTabSongDetail::_populate(const SBID& id)
 
 
     return result;
-}
-
-QTableView*
-SBTabSongDetail::_determineViewCurrentTab() const
-{
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=NULL;
-    switch((sb_tab)currentSubtabID())
-    {
-    case SBTabSongDetail::sb_tab_albums:
-        tv=mw->ui.songDetailAlbums;
-        break;
-
-    case SBTabSongDetail::sb_tab_playlists:
-        tv=mw->ui.songDetailPlaylists;
-        break;
-
-    case SBTabSongDetail::sb_tab_charts:
-    case SBTabSongDetail::sb_tab_lyrics:
-    case SBTabSongDetail::sb_tab_wikipedia:
-    default:
-        qDebug() << SB_DEBUG_ERROR << "case not handled";
-    }
-    SB_DEBUG_IF_NULL(tv);
-    return tv;
 }

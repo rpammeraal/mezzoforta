@@ -7,6 +7,7 @@
 
 class QLabel;
 class QLineEdit;
+class QMenu;
 class QTableView;
 class QTabWidget;
 
@@ -45,6 +46,7 @@ public slots:
 protected:
     bool _initDoneFlag;
     QModelIndex _lastClickedIndex;
+    QMenu* _menu;
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);

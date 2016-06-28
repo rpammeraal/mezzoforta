@@ -27,22 +27,21 @@ public:
 public slots:
     void enqueue();
     void playNow(bool enqueueFlag=0);
-    void showContextMenuView(const QPoint &p);
     void showContextMenuLabel(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
 
 private slots:
     void setSongLyricsPage(const QString& url);
     void setSongWikipediaPage(const QString& url);
 
 private:
-    QMenu* _menu;
-    QAction* _playNowAction;
-    QAction* _enqueueAction;
     QList<QWidget *> _alsoPerformedBy;
+    QAction* _enqueueAction;
+    QAction* _playNowAction;
 
     void _init();
-    virtual SBID _populate(const SBID& id);
     QTableView* _determineViewCurrentTab() const;
+    virtual SBID _populate(const SBID& id);
 };
 
 #endif // SBTABSONGDETAIL_H

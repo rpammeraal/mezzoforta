@@ -7,11 +7,23 @@ class SBTabAlbumDetail : public SBTab
 {
     Q_OBJECT
 
+    enum sb_tab
+    {
+        sb_tab_contents =0,
+        sb_tab_reviews,
+        sb_tab_wikipedia
+    };
+
 public:
     SBTabAlbumDetail();
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
 
+public slots:
+    void enqueue();
+    void playNow(bool enqueueFlag=0);
+    void showContextMenuLabel(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
 
 private slots:
     void refreshAlbumReviews();
@@ -20,9 +32,12 @@ private slots:
     void setAlbumWikipediaPage(const QString& url);
 
 private:
-    QList<QString> currentReviews;
+    QList<QString> _currentReviews;
+    QAction* _enqueueAction;
+    QAction* _playNowAction;
 
-    void init();
+    void _init();
+    QTableView* _determineViewCurrentTab() const;
     virtual SBID _populate(const SBID& id);
 };
 

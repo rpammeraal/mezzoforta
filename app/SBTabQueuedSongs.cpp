@@ -137,6 +137,11 @@ SBTabQueuedSongs::playItemNow(const SBID &toPlay,const bool enqueueFlag)
     qDebug() << SB_DEBUG_INFO;
     updateDetail();
 
+    //	Update status bar if enqueued
+    if(enqueueFlag)
+    {
+        Context::instance()->getController()->updateStatusBarText(QString("Queued '%1'").arg(toPlay.getText()));
+    }
 }
 
 SBModelQueuedSongs*
