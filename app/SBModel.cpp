@@ -175,6 +175,14 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             id.sb_position=v.toInt();
         }
+        else if(header=="performer")
+        {
+            id.performerName=v.toString();
+        }
+        else if(header=="album title")
+        {
+            id.albumTitle=v.toString();
+        }
         else if(header=="album_title")
         {
             id.albumTitle=v.toString();
@@ -182,6 +190,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         else if(header=="sb_path")
         {
             id.path=v.toString();
+        }
+        else if(header=="sb_duration")
+        {
+            id.duration=v.toTime();
         }
         else if(header=="duration")
         {

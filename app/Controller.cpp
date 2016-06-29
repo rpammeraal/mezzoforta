@@ -26,6 +26,7 @@
 #include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
+#include "SBTabSongsAll.h"
 #include "ScreenStack.h"
 
 class I : public QThread
@@ -61,21 +62,6 @@ Controller::refreshModels()
 {
     //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->getMainWindow();
-
-    //	Songlist
-    SBSqlQueryModel* sm=DataEntitySong::getAllSongs();
-    QList<bool> dragableColumns;
-    dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0;
-    sm->setDragableColumns(dragableColumns);
-    qDebug() << SB_DEBUG_INFO;
-
-    slP=new QSortFilterProxyModel();
-    slP->setSourceModel(sm);
-    mw->ui.allSongsList->setModel(slP);
-    qDebug() << SB_DEBUG_INFO;
-
-    qDebug() << SB_DEBUG_INFO;
 
     //	Completers
 
@@ -263,44 +249,9 @@ Controller::setupUI()
     qDebug() << SB_DEBUG_INFO;
 
     //	Frequently used pointers
-    QHeaderView* hv;
     MainWindow* mw=Context::instance()->getMainWindow();
 
     qDebug() << "Controller:setupUI:start";
-
-    ///	SONGLIST
-
-    //	general
-    mw->ui.allSongsList->setSortingEnabled(1);
-    mw->ui.allSongsList->sortByColumn(3,Qt::AscendingOrder);
-    mw->ui.allSongsList->setSelectionMode(QAbstractItemView::SingleSelection);
-    mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
-    mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
-    mw->ui.allSongsList->selectionModel();
-
-    //	horizontal header
-    hv=mw->ui.allSongsList->horizontalHeader();
-    hv->setSortIndicator(3,Qt::AscendingOrder);
-    hv->setSortIndicatorShown(1);
-    hv->setSectionResizeMode(QHeaderView::Stretch);
-
-    //	vertical header
-    hv=mw->ui.allSongsList->verticalHeader();
-    hv->setDefaultSectionSize(18);
-    hv->hide();
-    Common::hideColumns(mw->ui.allSongsList);
-
-    //	set up signals
-    mw->ui.allSongsList->selectionModel();
-    //		capture double click to open detail page
-    connect(mw->ui.allSongsList, SIGNAL(clicked(QModelIndex)),
-            Context::instance()->getNavigator(),SLOT(openSonglistItem(QModelIndex)));
-
-    //	drag & drop revisited.
-    QTableView* allSongsList=mw->ui.allSongsList;
-
-    allSongsList->setDragEnabled(true);
-    allSongsList->setDropIndicatorShown(true);
 
     ///	Statusbar
     mw->ui.statusBar->setReadOnly(true);
@@ -334,6 +285,10 @@ Controller::setupUI()
     mw->ui.mainTab->tabBar()->hide();
     this->setFontSizes();
     mw->ui.searchEdit->setFocus();
+
+    //	Have SBTabSongsAll start populating
+    SBTabSongsAll* tsa=mw->ui.tabAllSongs;
+    tsa->preload();
 
     return;
 }

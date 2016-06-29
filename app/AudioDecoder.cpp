@@ -41,23 +41,21 @@ AudioDecoder::setPosition(qint64 position)
     {
         _index=0;
     }
-    else if(_index>0)
+
+    qint64 newPosInSec=position/1000;
+    qint64 currPosInSec=index2MS(_index)/1000;
+    if(std::abs(newPosInSec-currPosInSec)>=2)
     {
-        qint64 newPosInSec=position/1000;
-        qint64 currPosInSec=index2MS(_index)/1000;
-        if(std::abs(newPosInSec-currPosInSec)>=2)
+        //	Don't reposition unless there's more than 1 sec of difference.
+        _index=ms2Index(position);
+        if(_index%bytesPerStereoSample()!=0)
         {
-            //	Don't reposition unless there's more than 1 sec of difference.
-            _index=ms2Index(position);
-            if(_index%bytesPerStereoSample()!=0)
-            {
-                //	Align with stero sample
-                _index=(_index/4)*4;
-            }
-            if(_index>this->_maxScrollableIndex)
-            {
-                _index=_maxScrollableIndex-bytesPerStereoSample();
-            }
+            //	Align with stero sample
+            _index=(_index/4)*4;
+        }
+        if(_index>this->_maxScrollableIndex)
+        {
+            _index=_maxScrollableIndex-bytesPerStereoSample();
         }
     }
     return _index;

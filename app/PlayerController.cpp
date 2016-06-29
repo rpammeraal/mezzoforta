@@ -189,6 +189,7 @@ PlayerController::playerStop()
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;
+    _playerProgressSlider[_currentPlayerID]->setValue(0);
     _updatePlayState(PlayerController::sb_player_state_stopped);
     _playerStop();
 }

@@ -286,13 +286,15 @@ DataEntityPlaylist::createNewPlaylist() const
 }
 
 void
-DataEntityPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID) const
+DataEntityPlaylist::deletePlaylistItem(const SBID &toBeDeleted, const SBID &fromID) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(assignID.sb_item_type())
+    qDebug() << SB_DEBUG_INFO << toBeDeleted;
+
+    switch(toBeDeleted.sb_item_type())
     {
     case SBID::sb_type_song:
         q=QString
@@ -302,7 +304,7 @@ DataEntityPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID)
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
           ).arg(fromID.sb_playlist_id)
-           .arg(assignID.sb_playlist_position);
+           .arg(toBeDeleted.sb_playlist_position);
         break;
 
     case SBID::sb_type_performer:
@@ -316,7 +318,7 @@ DataEntityPlaylist::deletePlaylistItem(const SBID &assignID, const SBID &fromID)
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
           ).arg(fromID.sb_playlist_id)
-           .arg(assignID.sb_playlist_position)
+           .arg(toBeDeleted.sb_playlist_position)
         ;
         break;
 

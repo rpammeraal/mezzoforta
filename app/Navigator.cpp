@@ -439,23 +439,6 @@ Navigator::openOpener()
 }
 
 void
-Navigator::openSonglistItem(const QModelIndex& i)
-{
-
-    qDebug() << ' ';
-    qDebug() << SB_DEBUG_INFO << "######################################################################";
-    qDebug() << SB_DEBUG_INFO << "col=" << i.column();
-    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-1).data().toString();
-    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-2).data().toString();
-    qDebug() << SB_DEBUG_INFO << i.sibling(i.row(), i.column()-3).data().toString();
-
-    SBID id(static_cast<SBID::sb_type>(i.sibling(i.row(), i.column()-2).data().toInt()),i.sibling(i.row(), i.column()-1).data().toInt());
-
-    qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
-    openScreenByID(id);
-}
-
-void
 Navigator::setFocus()
 {
 
@@ -732,6 +715,7 @@ Navigator::init()
 void
 Navigator::filterSongs(const SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO;
     QString labelAllSongDetailAllSongsText="Your Songs";
     QString labelAllSongDetailNameText="All Songs";
 
@@ -739,7 +723,10 @@ Navigator::filterSongs(const SBID &id)
     QRegExp re;
     MainWindow* mw=Context::instance()->getMainWindow();
     QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
-    m->setFilterKeyColumn(0);
+    if(m!=NULL)
+    {
+        m->setFilterKeyColumn(0);
+    }
 
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
@@ -758,7 +745,10 @@ Navigator::filterSongs(const SBID &id)
     }
     mw->ui.labelAllSongDetailAllSongs->setText(labelAllSongDetailAllSongsText);
     mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);
-    m->setFilterRegExp(re);
+    if(m!=NULL)
+    {
+        m->setFilterRegExp(re);
+    }
 }
 
 void

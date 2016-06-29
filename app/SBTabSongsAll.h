@@ -12,10 +12,19 @@ public:
 
     //	Virtual
     virtual bool handleEscapeKey();
-    virtual QTableView* tableView(int subtabID=INT_MAX) const;
+    void preload();
+
+public slots:
+    void enqueue();
+    void playNow(bool enqueueFlag=0);
+    void showContextMenuLabel(const QPoint &p);
+    void showContextMenuView(const QPoint &p);
 
 private:
-    void init();
+    QAction* _enqueueAction;
+    QAction* _playNowAction;
+
+    void _init();
     virtual SBID _populate(const SBID& id);
 };
 

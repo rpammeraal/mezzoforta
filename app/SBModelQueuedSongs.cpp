@@ -435,6 +435,7 @@ SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoaded
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO << _currentPlayID << initialCount;
         //	Special processing when items are queued.
         if(_currentPlayID>=0 && initialCount==0)
         {

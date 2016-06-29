@@ -54,7 +54,6 @@ public slots:
     void openPerformer(const QString& id);
     void openPerformer(const QUrl& id);
     void openOpener();
-    void openSonglistItem(const QModelIndex& i);
     void setFocus();
     void tabBackward();
     void tabForward();

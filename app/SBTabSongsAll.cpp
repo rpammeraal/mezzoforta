@@ -1,8 +1,10 @@
 #include "SBTabSongsAll.h"
 
 #include "Context.h"
+#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "ScreenStack.h"
+#include "SBSqlQueryModel.h"
 
 SBTabSongsAll::SBTabSongsAll(QWidget* parent) : SBTab(parent,0)
 {
@@ -11,35 +13,179 @@ SBTabSongsAll::SBTabSongsAll(QWidget* parent) : SBTab(parent,0)
 bool
 SBTabSongsAll::handleEscapeKey()
 {
-    init();
     return 1;
 }
 
-QTableView*
-SBTabSongsAll::tableView(int subtabID) const
+void
+SBTabSongsAll::preload()
 {
-    Q_UNUSED(subtabID);
+    _init();
+    qDebug() << SB_DEBUG_INFO;
+    //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->getMainWindow();
-    return mw->ui.allSongsList;
+    QSortFilterProxyModel* slP;
+
+    //	Songlist
+    SBSqlQueryModel* sm=DataEntitySong::getAllSongs();
+    QList<bool> dragableColumns;
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 0;
+    sm->setDragableColumns(dragableColumns);
+    qDebug() << SB_DEBUG_INFO;
+
+    slP=new QSortFilterProxyModel();
+    slP->setSourceModel(sm);
+    mw->ui.allSongsList->setModel(slP);
+    qDebug() << SB_DEBUG_INFO;
+
+    mw->ui.allSongsList->setSortingEnabled(1);
+    mw->ui.allSongsList->sortByColumn(3,Qt::AscendingOrder);
+    mw->ui.allSongsList->setSelectionMode(QAbstractItemView::SingleSelection);
+    mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
+    mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
+    mw->ui.allSongsList->selectionModel();
+
+    QHeaderView* hv;
+
+    //	horizontal header
+    hv=mw->ui.allSongsList->horizontalHeader();
+    hv->setSortIndicator(3,Qt::AscendingOrder);
+    hv->setSortIndicatorShown(1);
+    hv->setSectionResizeMode(QHeaderView::Stretch);
+
+    //	vertical header
+    hv=mw->ui.allSongsList->verticalHeader();
+    hv->setDefaultSectionSize(18);
+    hv->hide();
+    Common::hideColumns(mw->ui.allSongsList);
+
+    //	drag & drop revisited.
+    QTableView* allSongsList=mw->ui.allSongsList;
+
+    allSongsList->setDragEnabled(true);
+    allSongsList->setDropIndicatorShown(true);
+}
+
+///	Public slots:
+void
+SBTabSongsAll::enqueue()
+{
+    this->playNow(1);
+}
+
+void
+SBTabSongsAll::playNow(bool enqueueFlag)
+{
+    MainWindow* mw=Context::instance()->getMainWindow();
+    QTableView* tv=mw->ui.allSongsList;
+
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+
+    qDebug() << SB_DEBUG_INFO << selectedID;
+
+    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    {
+        //	Context menu from SBLabel is clicked
+        //selectedID=selectSongFromAlbum(this->currentID());
+        return;
+    }
+    tqs->playItemNow(selectedID,enqueueFlag);
+}
+
+void
+SBTabSongsAll::showContextMenuLabel(const QPoint &p)
+{
+    const SBID currentID=SBTab::currentID();
+
+    _lastClickedIndex=QModelIndex();
+
+    _menu=new QMenu(NULL);
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(p);
+}
+
+void
+SBTabSongsAll::showContextMenuView(const QPoint &p)
+{
+    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    QTableView* tv=mw->ui.allSongsList;
+
+    QModelIndex idx=tv->indexAt(p);
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
+    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBID selectedID=sm->determineSBID(idx);
+
+    qDebug() << SB_DEBUG_INFO << selectedID;
+    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    {
+        _lastClickedIndex=idx;
+
+        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+
+        _menu=new QMenu(NULL);
+
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+
+        _menu->addAction(_playNowAction);
+        _menu->addAction(_enqueueAction);
+        _menu->exec(gp);
+    }
 }
 
 ///	Private methods
 void
-SBTabSongsAll::init()
+SBTabSongsAll::_init()
 {
+    qDebug() << SB_DEBUG_INFO;
     if(_initDoneFlag==0)
     {
+    qDebug() << SB_DEBUG_INFO;
         MainWindow* mw=Context::instance()->getMainWindow();
         _initDoneFlag=1;
 
-        connect(mw->ui.allSongsList->horizontalHeader(),SIGNAL(sectionClicked(int)),
+
+        //	Menu actions
+        //		1.	Play Now
+        _playNowAction = new QAction(tr("Play Now"), this);
+        _playNowAction->setStatusTip(tr("Play Now"));
+        connect(_playNowAction, SIGNAL(triggered()),
+                this, SLOT(playNow()));
+
+        //		2.	Enqueue
+        _enqueueAction = new QAction(tr("Enqueue"), this);
+        _enqueueAction->setStatusTip(tr("Enqueue"));
+        connect(_enqueueAction, SIGNAL(triggered()),
+                this, SLOT(enqueue()));
+
+        //	Tableviews
+        QTableView* tv=NULL;
+
+        //		1.	All
+        tv=mw->ui.allSongsList;
+        connect(tv->horizontalHeader(),SIGNAL(sectionClicked(int)),
                 this, SLOT(sortOrderChanged(int)));
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(tableViewCellClicked(QModelIndex)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 SBID
 SBTabSongsAll::_populate(const SBID &id)
 {
-    init();
+    MainWindow* mw=Context::instance()->getMainWindow();
+
+
     return id;
 }

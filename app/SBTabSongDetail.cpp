@@ -209,7 +209,7 @@ SBTabSongDetail::_determineViewCurrentTab() const
     case SBTabSongDetail::sb_tab_lyrics:
     case SBTabSongDetail::sb_tab_wikipedia:
     default:
-        qDebug() << SB_DEBUG_ERROR << "case not handled";
+        qDebug() << SB_DEBUG_ERROR << "case not handled" << currentSubtabID();
     }
     SB_DEBUG_IF_NULL(tv);
     return tv;

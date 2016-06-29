@@ -44,7 +44,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
         qDebug() << SB_DEBUG_INFO << assignID.sb_playlist_id << assignID.sb_playlist_position;
         qDebug() << SB_DEBUG_INFO << "assignID=" << assignID;
         qDebug() << SB_DEBUG_INFO << "currentID=" << currentID;
-        return;
 
         pl.deletePlaylistItem(assignID,currentID);
         refreshTabIfCurrent(currentID);
@@ -58,6 +57,10 @@ SBTabPlaylistDetail::deletePlaylistItem()
         Context::instance()->getController()->updateStatusBarText(updateText);
 
         _populate(currentID);
+    }
+    if(_menu)
+    {
+        _menu->hide();
     }
 }
 
