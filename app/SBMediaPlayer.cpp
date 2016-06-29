@@ -9,7 +9,6 @@
 #include "AudioDecoder.h"
 #include "AudioDecoderFactory.h"
 #include "SBMediaPlayer.h"
-#include "SBMessageBox.h"
 
 #include "Common.h"
 

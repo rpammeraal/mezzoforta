@@ -15,17 +15,14 @@ public:
     void preload();
 
 public slots:
-    void enqueue();
-    void playNow(bool enqueueFlag=0);
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
 private:
-    QAction* _enqueueAction;
-    QAction* _playNowAction;
-
     void _init();
     virtual SBID _populate(const SBID& id);
+    virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 
 #endif // SBTABSONGSALL_H

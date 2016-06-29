@@ -25,8 +25,7 @@ public:
     static SBID selectSongFromAlbum(const SBID& song);
 
 public slots:
-    void enqueue();
-    void playNow(bool enqueueFlag=0);
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
@@ -36,10 +35,8 @@ private slots:
 
 private:
     QList<QWidget *> _alsoPerformedBy;
-    QAction* _enqueueAction;
-    QAction* _playNowAction;
 
-    QTableView* _determineViewCurrentTab() const;
+    virtual QTableView* _determineViewCurrentTab() const;
     void _init();
     virtual SBID _populate(const SBID& id);
 };

@@ -28,7 +28,7 @@ public:
     void refreshTabIfCurrent(const SBID &id);
     void setSubtab(const SBID& id) const;
 
-    //	Virtual
+    //	Virtual UI
     virtual void handleDeleteKey();
     virtual void handleEnterKey();
     virtual bool handleEscapeKey();	//	return 1 when currentTab can be closed
@@ -39,6 +39,8 @@ public:
     virtual QTabWidget* tabWidget() const;
 
 public slots:
+    void enqueue();
+    virtual void playNow(bool enqueueFlag=0);
     virtual void save() const;
 
 public slots:
@@ -46,13 +48,18 @@ public slots:
 protected:
     bool _initDoneFlag;
     QModelIndex _lastClickedIndex;
+
+    //	Menu and actions
     QMenu* _menu;
+    QAction* _enqueueAction;
+    QAction* _playNowAction;
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
     bool processPerformerEdit(const QString& editPerformerName, SBID& newID, QLineEdit* field, bool saveNewPerformer=1) const;
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
 
+    virtual QTableView* _determineViewCurrentTab() const=0;
     virtual void _populatePre(const SBID& id);
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
@@ -68,6 +75,7 @@ private:
     int _currentSubtabID;
     QMap<int,int> tabSortMap;	//	last sort column by tab
 
+    void _hideContextMenu();
 };
 
 #endif // SBTAB_H

@@ -427,7 +427,7 @@ SBTabAlbumEdit::handleMergeKey()
 bool
 SBTabAlbumEdit::hasEdits() const
 {
-    const SBID& currentID=Context::instance()->getScreenStack()->currentScreen();
+    const SBID& currentID=this->currentID();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     if(currentID.sb_item_type()!=SBID::sb_type_invalid)
@@ -785,7 +785,7 @@ SBTabAlbumEdit::save() const
     QMap<int,int> fromTo;           //	<oldPosition:1,newPosition:1>
     QMap<int,int> toFrom;           //	<newPosition:1,oldPosition:1>
 
-    SBID orgAlbum=DataEntityAlbum::getDetail(Context::instance()->getScreenStack()->currentScreen());
+    SBID orgAlbum=DataEntityAlbum::getDetail(this->currentID());
     SBID newAlbum=orgAlbum;
     SBID removedAlbum;
 
@@ -1413,6 +1413,7 @@ SBTabAlbumEdit::_populate(const SBID &id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
 
     //	Attributes
     mw->ui.albumEditTitle->setText(result.albumTitle);

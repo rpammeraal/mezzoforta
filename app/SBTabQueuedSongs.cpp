@@ -200,7 +200,7 @@ void
 SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
 {
     //	Determine current playlist
-    SBID currentID=Context::instance()->getScreenStack()->currentScreen();
+    SBID currentID=this->currentID();
     qDebug() << SB_DEBUG_INFO << currentID << fromID << toID;
     return;
 
@@ -210,8 +210,9 @@ SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
 }
 
 void
-SBTabQueuedSongs::playSong()
+SBTabQueuedSongs::playNow(bool enqueueFlag)
 {
+    Q_UNUSED(enqueueFlag);
     qDebug() << SB_DEBUG_INFO << _lastClickedIndex;
     PlayerController* pc=Context::instance()->getPlayerController();
     SBSortFilterProxyQueuedSongsModel* sm=proxyModel();
@@ -219,7 +220,6 @@ SBTabQueuedSongs::playSong()
 
     pc->playerStop();
     SBModelQueuedSongs* aem=model();
-    aem->debugShow("playSong");
     aem->_populateMapPlaylistPosition2ViewPosition();
     aem->setCurrentSongByID(viewPosition1);
 
@@ -229,6 +229,7 @@ SBTabQueuedSongs::playSong()
     {
         pc->playerNext();
     }
+    SBTab::playNow(enqueueFlag);
 }
 
 void
@@ -248,8 +249,8 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
         QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
         QMenu menu(NULL);
-        menu.addAction(deletePlaylistItemAction);
-        menu.addAction(playSongNowAction);
+        menu.addAction(_deletePlaylistAction);
+        menu.addAction(_playNowAction);
         menu.exec(gp);
     }
 }
@@ -518,7 +519,6 @@ SBTabQueuedSongs::_init()
 {
     qDebug() << SB_DEBUG_INFO;
 
-    _pm=NULL;
     _playingRadioFlag=0;
     if(_initDoneFlag==0)
     {
@@ -549,16 +549,16 @@ SBTabQueuedSongs::_init()
                 this, SLOT(showContextMenuPlaylist(QPoint)));
 
         //	Delete playlist
-        deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
-        deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
-        connect(deletePlaylistItemAction, SIGNAL(triggered()),
+        _deletePlaylistAction = new QAction(tr("Delete Item From Playlist "), this);
+        _deletePlaylistAction->setStatusTip(tr("Delete Item From Playlist"));
+        connect(_deletePlaylistAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
 
         //	Play song now
-        playSongNowAction = new QAction(tr("Play Song"), this);
-        playSongNowAction->setStatusTip(tr("Play Song"));
-        connect(playSongNowAction, SIGNAL(triggered(bool)),
-                this, SLOT(playSong()));
+        _playNowAction = new QAction(tr("Play Song"), this);
+        _playNowAction->setStatusTip(tr("Play Song"));
+        connect(_playNowAction, SIGNAL(triggered(bool)),
+                this, SLOT(playNow()));
 
         //	Set up model
         QAbstractItemModel* m=tv->model();

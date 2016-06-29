@@ -68,12 +68,6 @@ SBTabSongsAll::preload()
 
 ///	Public slots:
 void
-SBTabSongsAll::enqueue()
-{
-    this->playNow(1);
-}
-
-void
 SBTabSongsAll::playNow(bool enqueueFlag)
 {
     MainWindow* mw=Context::instance()->getMainWindow();
@@ -89,10 +83,10 @@ SBTabSongsAll::playNow(bool enqueueFlag)
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
-        //selectedID=selectSongFromAlbum(this->currentID());
         return;
     }
     tqs->playItemNow(selectedID,enqueueFlag);
+    SBTab::playNow(enqueueFlag);
 }
 
 void
@@ -114,18 +108,19 @@ SBTabSongsAll::showContextMenuLabel(const QPoint &p)
 void
 SBTabSongsAll::showContextMenuView(const QPoint &p)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.allSongsList;
 
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(idx);
+    QModelIndex ids=pm->mapToSource(idx);
+    SBID selectedID=sm->determineSBID(ids);
 
     qDebug() << SB_DEBUG_INFO << selectedID;
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        _lastClickedIndex=idx;
+        _lastClickedIndex=ids;
 
         QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
@@ -184,8 +179,5 @@ SBTabSongsAll::_init()
 SBID
 SBTabSongsAll::_populate(const SBID &id)
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
-
-
     return id;
 }

@@ -45,6 +45,7 @@ private:
     void setRelatedPerformerBeingAddedFlag(bool flag);
     void setRelatedPerformerBeingDeletedFlag(bool flag);
     void addItemToRelatedPerformerList(const SBID& performer) const;
+    virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 
 #endif // SBTABPERFORMEREDIT_H

@@ -33,7 +33,7 @@ public:
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, const SBID& toID);
-    void playSong();
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuPlaylist(const QPoint &p);
     void songChanged(const SBID& song);
     void startRadio();
@@ -46,15 +46,14 @@ private slots:
     virtual void tableViewCellDoubleClicked(QModelIndex idx);
 
 private:
-    QAction* deletePlaylistItemAction;
-    QAction* playSongNowAction;
-    CurrentPlaylistModel* _pm;
+    QAction* _deletePlaylistAction;
     bool _playingRadioFlag;
 
     void _init();
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
     QMap<int,SBID> _retrievePlaylistItems(const SBID& id);
+    virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 
 };
 

@@ -42,6 +42,7 @@ private:
     void init();
     virtual SBID _populate(const SBID& id);
     void setFocusOnRow(QModelIndex idx) const;
+    virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 
 #endif // SBTABALBUMEDIT_H

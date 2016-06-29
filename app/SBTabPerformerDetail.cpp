@@ -44,12 +44,6 @@ SBTabPerformerDetail::tabWidget() const
 
 ///	Public slots
 void
-SBTabPerformerDetail::enqueue()
-{
-    this->playNow(1);
-}
-
-void
 SBTabPerformerDetail::playNow(bool enqueueFlag)
 {
     QTableView* tv=_determineViewCurrentTab();
@@ -77,6 +71,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
         qDebug() << SB_DEBUG_INFO << selectedID;
     }
     tqs->playItemNow(selectedID,enqueueFlag);
+    SBTab::playNow(enqueueFlag);
 }
 
 void
@@ -104,12 +99,13 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(idx);
+    QModelIndex ids=pm->mapToSource(idx);
+    SBID selectedID=sm->determineSBID(ids);
 
     qDebug() << SB_DEBUG_INFO << selectedID;
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        _lastClickedIndex=idx;
+        _lastClickedIndex=ids;
 
         QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
@@ -156,8 +152,6 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.performerDetailHomepage->setUrl(url);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
-    SBID id=Context::instance()->getScreenStack()->currentScreen();
-    id.url=url;
 }
 
 void

@@ -49,8 +49,7 @@ SBTab::getFirstEligibleSubtabID() const
 void
 SBTab::refreshTabIfCurrent(const SBID &id)
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
-    if(st->currentScreen()==id)
+    if(id.compareSimple(currentID())==1)
     {
         populate(id);
     }
@@ -139,9 +138,8 @@ SBTab::hasEdits() const
 SBID
 SBTab::populate(const SBID &id)
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
     _populatePre(id);
-    const SBID onStack=st->currentScreen();
+    const SBID onStack=currentID();
     SBID result=_populate(id);
     result.sortColumn=onStack.sortColumn;
     result.subtabID=onStack.subtabID;
@@ -167,6 +165,20 @@ SBTab::tabWidget() const
 }
 
 
+//	Public slots
+void
+SBTab::enqueue()
+{
+    this->playNow(1);
+}
+
+void
+SBTab::playNow(bool enqueueFlag)
+{
+    Q_UNUSED(enqueueFlag);
+    _hideContextMenu();
+}
+
 void
 SBTab::save() const
 {
@@ -174,7 +186,6 @@ SBTab::save() const
 }
 
 ///	Protected methods
-
 void
 SBTab::init()
 {
@@ -183,6 +194,8 @@ SBTab::init()
     tabSortMap.clear();
     _currentSubtabID=0;
     _menu=NULL;
+    _enqueueAction=NULL;
+    _playNowAction=NULL;
 }
 
 int
@@ -355,7 +368,7 @@ SBTab::sortOrderChanged(int column)
     st->debugShow("before sortOrderChanged");
     if(st && st->getScreenCount())
     {
-        SBID id=st->currentScreen();
+        SBID id=currentID();
         qDebug() << SB_DEBUG_INFO << id.sortColumn;
 
         if(abs(id.sortColumn)==abs(column))
@@ -391,7 +404,7 @@ SBTab::tabBarClicked(int index)
     }
 
     //	Preserve current sort order for current tab
-    SBID current=st->currentScreen();
+    SBID current=currentID();
     if(current.subtabID!=index)
     {
         tabSortMap[current.subtabID]=current.sortColumn;
@@ -408,7 +421,7 @@ SBTab::tabBarClicked(int index)
     //	Update screenstack entry with subtab clicked.
     if(st && st->getScreenCount())
     {
-        SBID id=st->currentScreen();
+        SBID id=currentID();
         if(id.subtabID!=index)
         {
             id.subtabID=index;
@@ -441,3 +454,13 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
 }
 
 //	Private methods
+void
+SBTab::_hideContextMenu()
+{
+    if(_menu)
+    {
+        _menu->clear();
+        _menu->hide();
+        //delete _menu; _menu=NULL;
+    }
+}

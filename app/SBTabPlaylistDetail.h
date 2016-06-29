@@ -16,23 +16,20 @@ public:
     virtual QTableView* subtabID2TableView(int subtabID) const;
 
 public slots:
-    void enqueue();
     void deletePlaylistItem();
     void movePlaylistItem(const SBID& fromID, int row);
-    void playNow(bool enqueueFlag=0);
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
 private:
     QAction* _deletePlaylistItemAction;
-    QAction* _playNowAction;
-    QAction* _enqueueAction;
-    QMenu* _menu;
 
     void _init();
     SBID getSBIDSelected(const QModelIndex& idx);
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
+    virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 
 #endif // SBTABPLAYLISTDETAIL_H

@@ -23,7 +23,7 @@ public:
     SBID popScreen();
     void pushScreen(const SBID& id);
 
-    SBID currentScreen();
+    SBID currentScreen() const;
     SBID nextScreen();
     SBID previousScreen();
 

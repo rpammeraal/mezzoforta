@@ -48,7 +48,7 @@ bool
 SBTabPerformerEdit::hasEdits() const
 {
     qDebug() << SB_DEBUG_INFO;
-    const SBID& currentID=Context::instance()->getScreenStack()->currentScreen();
+    const SBID& currentID=this->currentID();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     qDebug() << SB_DEBUG_INFO << currentID.performerName << mw->ui.performerEditName->text() ;
@@ -183,7 +183,7 @@ SBTabPerformerEdit::save() const
     //	2.	Rename Simple Minds -> Dire Straitz
     const MainWindow* mw=Context::instance()->getMainWindow();
     DataEntityPerformer* p=new DataEntityPerformer();
-    SBID orgPerformerID=Context::instance()->getScreenStack()->currentScreen();
+    SBID orgPerformerID=this->currentID();
     SBID newPerformerID=orgPerformerID;
     QStringList SQL;
 
@@ -461,6 +461,7 @@ SBTabPerformerEdit::_populate(const SBID& id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
 
     qDebug() << SB_DEBUG_INFO << result;
     setRelatedPerformerBeingAddedFlag(0);

@@ -96,7 +96,7 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QHBoxLayout" name="horizontalLayout_01">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -215,7 +215,7 @@
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <layout class="QHBoxLayout" name="horizontalLayout_02">
               <property name="leftMargin">
                <number>0</number>
               </property>
@@ -250,7 +250,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_03">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -612,7 +612,7 @@
            <attribute name="title">
             <string>Playlist</string>
            </attribute>
-           <layout class="QVBoxLayout" name="horizontalLayout_5">
+           <layout class="QVBoxLayout" name="horizontalLayout_04">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -1166,7 +1166,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                  <layout class="QHBoxLayout" name="horizontalLayout_05">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1245,7 +1245,7 @@
                <attribute name="title">
                 <string>Homepage</string>
                </attribute>
-               <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <layout class="QHBoxLayout" name="horizontalLayout_06">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1544,7 +1544,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <layout class="QHBoxLayout" name="horizontalLayout_07">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1811,7 +1811,7 @@
                    <property name="textInteractionFlags">
                     <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
                    </property>
-                   <layout class="QGridLayout" name="gridLayout02">
+                   <layout class="QGridLayout" name="gridLayout05">
                     <property name="leftMargin">
                      <number>0</number>
                     </property>
@@ -1868,7 +1868,7 @@
                    <property name="textInteractionFlags">
                     <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
                    </property>
-                   <layout class="QGridLayout" name="gridLayout02">
+                   <layout class="QGridLayout" name="gridLayout06">
                     <property name="leftMargin">
                      <number>0</number>
                     </property>
@@ -2112,7 +2112,7 @@
                 <height>100</height>
                </size>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <layout class="QHBoxLayout" name="horizontalLayout_08">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -2429,7 +2429,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout05">
+                <layout class="QGridLayout" name="gridLayout07">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -2701,7 +2701,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout06">
+                <layout class="QGridLayout" name="gridLayout08">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -2906,7 +2906,7 @@ Click on 'All Songs' to continue.</string>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QGridLayout" name="gridLayout07">
+                 <layout class="QGridLayout" name="gridLayout09">
                   <item row="0" column="1">
                    <widget class="QPushButton" name="pbPerformerEditRemoveRelatedPerformer">
                     <property name="enabled">
@@ -3005,7 +3005,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="frameShadow">
                  <enum>QFrame::Raised</enum>
                 </property>
-                <layout class="QGridLayout" name="gridLayout08">
+                <layout class="QGridLayout" name="gridLayout10">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -3214,7 +3214,7 @@ Click on 'All Songs' to continue.</string>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QGridLayout" name="gridLayout09">
+                 <layout class="QGridLayout" name="gridLayout11">
                   <item row="0" column="0">
                    <widget class="QPushButton" name="pbAlbumEditAddSong">
                     <property name="maximumSize">
@@ -3294,7 +3294,7 @@ Click on 'All Songs' to continue.</string>
            <attribute name="title">
             <string>Currently Playing</string>
            </attribute>
-           <layout class="QVBoxLayout" name="horizontalLayout_5">
+           <layout class="QVBoxLayout" name="horizontalLayout_09">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -3332,7 +3332,7 @@ Click on 'All Songs' to continue.</string>
                 <property name="lineWidth">
                  <number>0</number>
                 </property>
-                <layout class="QGridLayout" name="glPlaylistDetailIcon">
+                <layout class="QGridLayout" name="glCurrentPlaylistDetailIcon">
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -3425,7 +3425,7 @@ Click on 'All Songs' to continue.</string>
                   <number>0</number>
                  </property>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout">
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                    <item>
                     <widget class="QPushButton" name="pbClearPlaylist">
                      <property name="text">
@@ -3500,7 +3500,7 @@ Click on 'All Songs' to continue.</string>
                    <property name="textInteractionFlags">
                     <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
                    </property>
-                   <layout class="QGridLayout" name="gridLayout02">
+                   <layout class="QGridLayout" name="gridLayout12">
                     <property name="leftMargin">
                      <number>0</number>
                     </property>
@@ -3601,7 +3601,7 @@ Click on 'All Songs' to continue.</string>
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
            <property name="spacing">
             <number>0</number>
            </property>
@@ -3637,7 +3637,7 @@ Click on 'All Songs' to continue.</string>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <layout class="QHBoxLayout" name="horizontalLayout_12">
               <property name="spacing">
                <number>0</number>
               </property>
@@ -3678,7 +3678,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_13">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -3750,7 +3750,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_14">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -3836,7 +3836,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_15">
                    <property name="spacing">
                     <number>0</number>
                    </property>
@@ -4040,7 +4040,7 @@ Click on 'All Songs' to continue.</string>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <layout class="QHBoxLayout" name="horizontalLayout_16">
               <property name="spacing">
                <number>0</number>
               </property>
@@ -4081,7 +4081,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_17">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -4150,7 +4150,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_18">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -4233,7 +4233,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <layout class="QHBoxLayout" name="horizontalLayout_19">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>

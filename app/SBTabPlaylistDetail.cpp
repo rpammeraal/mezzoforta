@@ -24,13 +24,6 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 }
 
 ///	Public slots
-
-void
-SBTabPlaylistDetail::enqueue()
-{
-    this->playNow(1);
-}
-
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
@@ -89,12 +82,6 @@ SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
-    if(_menu)
-    {
-        _menu->hide();
-    }
-    qDebug() << SB_DEBUG_INFO;
     const SBID currentID=SBTab::currentID();
     SBID selectedID=getSBIDSelected(_lastClickedIndex);
 
@@ -115,6 +102,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     }
     SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
     tqs->playItemNow(selectedID,enqueueFlag);
+    SBTab::playNow(enqueueFlag);
 }
 
 void

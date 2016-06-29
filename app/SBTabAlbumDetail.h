@@ -20,8 +20,7 @@ public:
     virtual QTabWidget* tabWidget() const;
 
 public slots:
-    void enqueue();
-    void playNow(bool enqueueFlag=0);
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
@@ -33,11 +32,9 @@ private slots:
 
 private:
     QList<QString> _currentReviews;
-    QAction* _enqueueAction;
-    QAction* _playNowAction;
 
     void _init();
-    QTableView* _determineViewCurrentTab() const;
+    virtual QTableView* _determineViewCurrentTab() const;
     virtual SBID _populate(const SBID& id);
 };
 

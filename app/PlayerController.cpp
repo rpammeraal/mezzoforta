@@ -520,6 +520,13 @@ PlayerController::_playSong(const SBID& song)
         c->updateStatusBarText(_playerInstance[_currentPlayerID].error());
         qDebug() << SB_DEBUG_INFO << "Missing file";
         _updatePlayState(PlayerController::sb_player_state_stopped);
+        SBMessageBox::createSBMessageBox("Missing File:",
+                                                   path,
+                                                   QMessageBox::Warning,
+                                                   QMessageBox::Ok,
+                                                   QMessageBox::Ok,
+                                                   QMessageBox::Ok );
+
         return 0;
     }
 

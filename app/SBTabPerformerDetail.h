@@ -25,8 +25,7 @@ public:
     virtual QTabWidget* tabWidget() const;
 
 public slots:
-    void enqueue();
-    void playNow(bool enqueueFlag=0);
+    virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
@@ -39,11 +38,9 @@ private slots:
 
 private:
     QList<NewsItem> _currentNews;
-    QAction* _enqueueAction;
-    QAction* _playNowAction;
     QList<QWidget *> _relatedItems;
 
-    QTableView* _determineViewCurrentTab() const;
+    virtual QTableView* _determineViewCurrentTab() const;
     void _init();
     virtual SBID _populate(const SBID& id);
 };

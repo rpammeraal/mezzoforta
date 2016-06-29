@@ -77,7 +77,7 @@ ScreenStack::pushScreen(const SBID& id)
 }
 
 SBID
-ScreenStack::currentScreen()
+ScreenStack::currentScreen() const
 {
     SBID id;
 

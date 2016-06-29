@@ -27,7 +27,7 @@ SBTabSongEdit::handleEnterKey()
 bool
 SBTabSongEdit::hasEdits() const
 {
-    const SBID& currentID=Context::instance()->getScreenStack()->currentScreen();
+    const SBID& currentID=this->currentID();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     qDebug() << SB_DEBUG_INFO << currentID;
@@ -69,7 +69,7 @@ SBTabSongEdit::save() const
     //	H.	[merge song with existing song by renaming original performer] Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
 
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBID orgSongID=Context::instance()->getScreenStack()->currentScreen();
+    SBID orgSongID=this->currentID();
     SBID newSongID=orgSongID;
 
     Context::instance()->getScreenStack()->debugShow("save");
@@ -297,6 +297,7 @@ SBTabSongEdit::_populate(const SBID& id)
         //	Not found
         return result;
     }
+    SBTab::_populate(result);
     result.isEditFlag=1;
 
     qDebug() << SB_DEBUG_INFO << result;
