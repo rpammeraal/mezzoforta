@@ -17,6 +17,7 @@ public:
     static SBSqlQueryModel* getPerformedByListBySong(const SBID& id);
     static SBSqlQueryModel* getOnAlbumListBySong(const SBID& id);
     static SBSqlQueryModel* getOnChartListBySong(const SBID& id);
+    static SBSqlQueryModel* getOnlineSongs();
     static SBSqlQueryModel* getOnPlaylistListBySong(const SBID& id);
     static SBSqlQueryModel* matchSong(const SBID& newSongID);
     static SBSqlQueryModel* matchSongWithinPerformer(const SBID& newSongID, const QString& newSongTitle);

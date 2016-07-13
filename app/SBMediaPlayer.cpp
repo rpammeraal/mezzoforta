@@ -62,15 +62,13 @@ SBMediaPlayer::setMedia(const QString &fileName)
     }
     AudioDecoderFactory adf;
     _ad=adf.openFile(fn);
-    qDebug() << SB_DEBUG_INFO << fileName;
 
     if(!_ad)
     {
-        qDebug() << SB_DEBUG_INFO;
+        qDebug() << SB_DEBUG_ERROR;
         setErrorMsg(adf.error());
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO;
     if(_ad->error().length())
     {
         setErrorMsg(_ad->error());
@@ -126,7 +124,6 @@ SBMediaPlayer::paCallback
     else
     {
         memset(output, 0, sampleCount * _ad->numChannels() * (_ad->bitsPerSample()/8));
-        qDebug() << SB_DEBUG_INFO << "Done";
         resultCode=paComplete;
         setState(QMediaPlayer::StoppedState);
     }
@@ -172,12 +169,11 @@ SBMediaPlayer::position() const
 void
 SBMediaPlayer::play()
 {
-    qDebug() << SB_DEBUG_INFO << "start";
     _paError=Pa_StartStream(_stream);
     if( _paError != paNoError )
     {
         setErrorMsg(Pa_GetErrorText(_paError));
-        qDebug() << SB_DEBUG_INFO << Pa_GetErrorText(_paError);
+        qDebug() << SB_DEBUG_ERROR << Pa_GetErrorText(_paError);
         return;
     }
     setState(QMediaPlayer::PlayingState);
@@ -217,7 +213,6 @@ SBMediaPlayer::closeStream()
     }
     if(_ad)
     {
-        qDebug() << SB_DEBUG_INFO;
         delete _ad; _ad=NULL;
     }
 }
@@ -246,23 +241,21 @@ SBMediaPlayer::portAudioInit()
         _paError=Pa_Initialize();
         if(_paError != paNoError)
         {
-            qDebug() << SB_DEBUG_INFO
+            qDebug() << SB_DEBUG_ERROR
                      << Pa_GetErrorText(_paError)
             ;
             return;
         }
     }
     _portAudioInitFlag=1;
-    qDebug() << SB_DEBUG_INFO << _paError;
 }
 
 bool
 SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(_paError!=paNoError)
     {
-        qDebug() << SB_DEBUG_INFO
+        qDebug() << SB_DEBUG_ERROR
                  << Pa_GetErrorText(_paError)
         ;
         return 0;
@@ -298,7 +291,7 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
 
     if(	outputParameters.device==paNoDevice)
     {
-        qDebug() << SB_DEBUG_INFO
+        qDebug() << SB_DEBUG_ERROR
                  << "No device available"
         ;
         _paError=paNoDevice;
@@ -349,7 +342,7 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
 
     if(_paError != paNoError)
     {
-        qDebug() << SB_DEBUG_INFO
+        qDebug() << SB_DEBUG_ERROR
                  << "Pa_OpenStream:"
                  << Pa_GetErrorText(_paError)
         ;
@@ -360,7 +353,6 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
         }
         return false;
     }
-    qDebug() << SB_DEBUG_INFO << "finished:" << _paError;
     emit durationChanged(_ad->lengthInMs());
     return 1;
 }

@@ -12,7 +12,7 @@
 #include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "Navigator.h"
-#include "PlayerController.h"
+#include "PlayManager.h"
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
@@ -155,7 +155,6 @@ private:
 ///	PUBLIC
 Chooser::Chooser() : QObject()
 {
-    _init();
 }
 
 Chooser::~Chooser()
@@ -220,8 +219,8 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
                 }
                 else if(rootType==Chooser::sb_your_songs)
                 {
-                    SBTabQueuedSongs* qs=Context::instance()->getTabQueuedSongs();
-                    qs->playItemNow(fromID,1);
+                    PlayManager* pmgr=Context::instance()->getPlayManager();
+                    pmgr?pmgr->playItemNow(fromID,1):NULL;
                 }
             }
 
@@ -274,12 +273,8 @@ Chooser::enqueuePlaylist()
     SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
-        SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
-        if(cpl)
-        {
-            cpl->playItemNow(id,1);
-        }
+        PlayManager* pmgr=Context::instance()->getPlayManager();
+        pmgr?pmgr->playItemNow(id,1):NULL;
     }
 }
 
@@ -352,12 +347,8 @@ Chooser::playPlaylist()
     SBID id=_getPlaylistSelected(_lastClickedIndex);
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
-        SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
-        if(cpl)
-        {
-            cpl->playItemNow(id);
-        }
+        PlayManager* pmgr=Context::instance()->getPlayManager();
+        pmgr?pmgr->playItemNow(id):NULL;
     }
 }
 
@@ -411,6 +402,13 @@ Chooser::showContextMenu(const QPoint &p)
     default:
         break;
     }
+}
+
+///	PROTECTED METHODS
+void
+Chooser::doInit()
+{
+    _init();
 }
 
 ///	PRIVATE SLOTS
@@ -605,13 +603,10 @@ Chooser::_init()
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
 
-    PlayerController* pc=Context::instance()->getPlayerController();
-    SB_DEBUG_IF_NULL(pc);
-    if(pc)
-    {
-        connect(pc,SIGNAL(playlistChanged(const SBID&)),
-                this, SLOT(playlistChanged(SBID)));
-    }
+    qDebug() << SB_DEBUG_INFO;
+    PlayManager* pm=Context::instance()->getPlayManager();
+    connect(pm,SIGNAL(playlistChanged(const SBID&)),
+            this, SLOT(playlistChanged(SBID)));
 }
 
 void

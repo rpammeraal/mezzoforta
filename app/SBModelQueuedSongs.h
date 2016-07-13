@@ -4,6 +4,8 @@
 #include <QStandardItemModel>
 #include <QList>
 
+#include "SBIDSong.h"
+
 ///
 /// \brief The SBModelQueuedSongs class
 ///
@@ -11,6 +13,8 @@
 /// NOTE: It does NOT rely on any database table!
 class SBModelQueuedSongs : public QStandardItemModel
 {
+    Q_OBJECT
+
 public:
     enum sb_column_type
     {
@@ -43,42 +47,50 @@ public:
 
     //	Methods unrelated to drag&drop
     QModelIndex addRow();
-    virtual void clear();
     QString formatDisplayPlayID(int playID,bool isCurrent=0) const;
     SBID getSBIDSelected(const QModelIndex& idx) const;
     void paintRow(int i);
     virtual void sort(int column, Qt::SortOrder order);
 
     //	Methods related to playlists
-    int currentPlaylistIndex() const;	//	index of song in playlist
+    inline int currentPlayID() const;	//	index of song in playlist
     int playlistCount() const { return this->rowCount(); }
     QList<SBIDSong> getAllSongs();
-    SBID getNextSong(bool previousFlag=0);
-    SBID getSongFromPlaylist(int playlistIndex);
-    inline int numSongs() const { return this->rowCount(); }
-    void resetCurrentPlayID();
+    SBID getNextSong_depreciated(bool previousFlag=0);
+        inline int numSongs() const { return this->rowCount(); }
+        void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
+    void resetCurrentPlayID_depreciated();
+        SBID songAt(int playlistIndex) const;
     inline Duration totalDuration() const { return _totalDuration; }
 
-    void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
-    void populateHeader();
     void reorderItems();
     virtual bool removeRows(int row, int count, const QModelIndex &parent);
-    void repaintAll();
-
-    virtual QModelIndex setCurrentSongByID(int playID);
-    void shuffle(bool skipPlayedSongsFlag=0);
+    void repaintAll_depreciated();
 
     ///	Debugging
     void debugShow(const QString& title=QString());
-    QMap<int,int> _populateMapPlaylistPosition2ViewPosition();
+
+signals:
+    void listCleared();
+    void listChanged();
+
+protected:
+    friend class Context;
+    friend class PlayManager;
+
+        virtual void clear();
+        void doInit();
+        virtual QModelIndex setCurrentPlayID(int currentPlayID);
+        int shuffle(bool skipPlayedSongsFlag=0);
 
 private:
-    int  _currentPlayID;                    //	0-based, CWIP: should be maintained in player controller
+    int  _currentPlayID;	//	Shadow of PlayManager::PlayManager
     Duration _totalDuration;
 
     QList<QStandardItem *> createRecord(const SBID& id,int playPosition) const;
     QString _formatPlaylistPosition(int playlistPositionID) const;
-
+    void _populateHeader();
+    QMap<int,int> _populateMapPlaylistPosition2ViewPosition();
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H

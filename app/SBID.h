@@ -30,7 +30,7 @@ public:
     SBID(const SBID& c);
     SBID(SBID::sb_type type, int itemID);
     SBID(QByteArray encodedData);
-    ~SBID();
+    virtual ~SBID();
 
     //	Primary identifiers
     int         sb_performer_id;
@@ -68,9 +68,12 @@ public:
     int         sortColumn;
     int         playPosition;
     bool        isPlayingFlag;	//	CWIP: not used
+    QString     errorMsg;
 
-    void assign(const SBID::sb_type type, const int itemID);
-    void assign(const QString& itemType, const int itemID, const QString& text="");
+
+    virtual void assign(int itemID);	//	CWIP: make pure virtual
+    virtual void assign(const SBID::sb_type type, const int itemID);
+    virtual void assign(const QString& itemType, const int itemID, const QString& text="");
     bool compareSimple(const SBID& t) const;
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
@@ -79,8 +82,9 @@ public:
     QString getText() const;
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
-    int sb_item_id() const;
-    inline sb_type sb_item_type() const { return _sb_item_type; }
+    virtual int sb_item_id() const;	//	CWIP: pure virtual
+    virtual inline sb_type sb_item_type() const { return _sb_item_type; }	//	CWIP: pure virtual
+    virtual void sendToPlayQueue(bool enqueueFlag=0);	//	CWIP: pure virtual
     void setText(const QString &text);
     void showDebug(const QString& title) const;
 
@@ -88,9 +92,9 @@ public:
     bool operator!=(const SBID& i) const;	//	to use either compareSimple or compareAll
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
-private:
+protected:
     sb_type     _sb_item_type;
-    void init();
+    void _init();
 };
 
 Q_DECLARE_METATYPE(SBID);
@@ -100,37 +104,5 @@ inline uint qHash(const SBID& k, uint seed)
     const QString hash=QString("%1%2%3%4").arg(k.sb_item_id()).arg(k.sb_song_id).arg(k.sb_performer_id).arg(k.sb_album_id).arg(k.sb_position);
     return qHash(hash,seed);
 }
-
-///
-/// \brief The SBIDSong class
-///
-/// Use SBIDSong class *only* in situations in the context of song. Instances
-/// of this class will compare objects correctly by using the follwing four
-/// fields: song_id, performer_id, album_id and position_id, hence the
-/// operator==().
-///
-class SBIDSong : public SBID
-{
-public:
-    SBIDSong():SBID() { }
-    SBIDSong(const SBID& c):SBID(c) { }
-    SBIDSong(const SBIDSong& c):SBID(c) { }
-    SBIDSong(SBID::sb_type type, int itemID):SBID(type,itemID) { }
-    SBIDSong(QByteArray encodedData):SBID(encodedData) { }
-    ~SBIDSong() { }
-
-    bool operator==(const SBID& i) const
-    {
-        if(
-            i.sb_song_id==this->sb_song_id &&
-            i.sb_performer_id==this->sb_performer_id &&
-            i.sb_album_id==this->sb_album_id &&
-            i.sb_position==this->sb_position)
-        {
-            return 1;
-        }
-        return 0;
-    }
-};
 
 #endif // SBID_H

@@ -37,11 +37,13 @@ public:
 
     void debugShow(const QString& c);
 
+protected:
+    friend class Context;
+    void doInit();	//	Init done by Context::
+
 private:
     int currentScreenID;
     QList<SBID> stack;
-
-    void init();
 };
 
 #endif // SCREENSTACK_H

@@ -8,6 +8,7 @@
 #include "MainWindow.h"
 #include "DataEntityPlaylist.h"
 #include "PlayerController.h"
+#include "PlayManager.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -92,16 +93,16 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     }
     else
     {
-        DataEntityPlaylist pl;
-
         if(selectedID.sb_item_type()==SBID::sb_type_song)
         {
+            DataEntityPlaylist pl;
+
             selectedID.sb_playlist_id=currentID.sb_playlist_id;
             selectedID=pl.getDetailPlaylistItemSong(selectedID);	//	gets path, fills in 4 field titles
         }
     }
-    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
-    tqs->playItemNow(selectedID,enqueueFlag);
+    PlayManager* pmgr=Context::instance()->getPlayManager();
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -221,14 +222,8 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
     static QModelIndex lastIdx;
     static SBID lastSong;
 
-//    if(lastIdx==idx)
-//    {
-//        return lastSong;
-//    }
     _init();
     SBID id;
-
-    qDebug() << SB_DEBUG_INFO << idx;
 
     MainWindow* mw=Context::instance()->getMainWindow();
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();

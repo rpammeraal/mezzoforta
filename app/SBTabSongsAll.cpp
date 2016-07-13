@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "DataEntitySong.h"
 #include "MainWindow.h"
+#include "PlayManager.h"
 #include "ScreenStack.h"
 #include "SBSqlQueryModel.h"
 
@@ -76,7 +77,7 @@ SBTabSongsAll::playNow(bool enqueueFlag)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
-    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+    PlayManager* pmgr=Context::instance()->getPlayManager();
 
     qDebug() << SB_DEBUG_INFO << selectedID;
 
@@ -85,7 +86,7 @@ SBTabSongsAll::playNow(bool enqueueFlag)
         //	Context menu from SBLabel is clicked
         return;
     }
-    tqs->playItemNow(selectedID,enqueueFlag);
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -139,10 +140,8 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
 void
 SBTabSongsAll::_init()
 {
-    qDebug() << SB_DEBUG_INFO;
     if(_initDoneFlag==0)
     {
-    qDebug() << SB_DEBUG_INFO;
         MainWindow* mw=Context::instance()->getMainWindow();
         _initDoneFlag=1;
 
@@ -173,7 +172,6 @@ SBTabSongsAll::_init()
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
                 this, SLOT(showContextMenuView(QPoint)));
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
 SBID

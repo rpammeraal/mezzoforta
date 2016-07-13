@@ -84,8 +84,8 @@ private:
 
     QString _getSchemaName() const;
 
-    void init();
-    void init(const DataAccessLayer& c);
+    void _init();
+    void _init(const DataAccessLayer& c);
 };
 
 extern int dalCOUNT;

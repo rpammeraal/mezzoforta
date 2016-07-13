@@ -12,7 +12,7 @@
 #include "Common.h"
 
 ///	Protected methods
-AudioDecoderWave::AudioDecoderWave(const QString& fileName)
+AudioDecoderWave::AudioDecoderWave(const QString& fileName,bool headerOnlyFlag)
 {
     qDebug() << SB_DEBUG_INFO << fileName;
 

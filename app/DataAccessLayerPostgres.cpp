@@ -64,7 +64,7 @@ DataAccessLayerPostgres::initAvailableSchemas()
 
     qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:schemas=" << availableSchemas;
 
-    _setSchema("Rock");	//	common::titlecase
+    _setSchema("rock");	//	common::titlecase
 
     qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:end";
 }

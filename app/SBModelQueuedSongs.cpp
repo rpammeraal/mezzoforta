@@ -123,14 +123,6 @@ SBModelQueuedSongs::addRow()
     return this->createIndex(newRowID-1,0);
 }
 
-void
-SBModelQueuedSongs::clear()
-{
-    _currentPlayID=-1;
-    qDebug() << SB_DEBUG_INFO << _currentPlayID;
-    QStandardItemModel::clear();
-}
-
 QString
 SBModelQueuedSongs::formatDisplayPlayID(int playID,bool isCurrent) const
 {
@@ -234,7 +226,7 @@ SBModelQueuedSongs::paintRow(int i)
                     item->setBackground(QBrush(newColor));
                 }
                 QFont f=item->font();
-                f.setItalic(playlistID-1==_currentPlayID?1:0);
+                f.setItalic(playlistID-1==currentPlayID()?1:0);
                 item->setFont(f);
             }
         }
@@ -261,21 +253,17 @@ SBModelQueuedSongs::getAllSongs()
 
     for(int i=0;i<playlistCount();i++)
     {
-        SBIDSong item=getSongFromPlaylist(i);
+        SBIDSong item=songAt(i);
         list.append(item);
     }
     return list;
 }
 
 SBID
-SBModelQueuedSongs::getNextSong(bool previousFlag)
+SBModelQueuedSongs::getNextSong_depreciated(bool previousFlag)
 {
     SBID song;
-    int newPlayID=_currentPlayID+(previousFlag==1?-1:1);
-    qDebug() << SB_DEBUG_INFO
-             << "_currentPlayID=" << _currentPlayID
-             << "newPlayID=" << newPlayID
-    ;
+    int newPlayID=currentPlayID()+(previousFlag==1?-1:1);
     if(newPlayID<0)
     {
         newPlayID=0;
@@ -284,13 +272,79 @@ SBModelQueuedSongs::getNextSong(bool previousFlag)
     {
         newPlayID=this->playlistCount()-1;
     }
-    song=getSongFromPlaylist(newPlayID);
+    song=songAt(newPlayID);
     song.playPosition=newPlayID;
     return song;
 }
 
+///
+/// \brief populate
+/// \param newPlaylist
+/// \param firstBatchHasLoadedFlag: provides a way to split loading in two batches:
+/// 	-	first batch (a small set of records) is immediately loaded, displayed and music starts to play
+///		-	second batch (with the remainder) is loaded while playing music.
+void
+SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag)
+{
+    qDebug() << SB_DEBUG_INFO << "newPlaylist.count()=" << newPlaylist.count();
+    int offset=0;
+    int initialCount=this->rowCount();
+
+    if(!firstBatchHasLoadedFlag)
+    {
+        this->clear();
+        _totalDuration=Duration();
+    }
+    else
+    {
+        offset=this->rowCount();
+    }
+    QList<QStandardItem *>record;
+
+    for(int i=0;i<newPlaylist.count();i++)
+    {
+        if(currentPlayID()==-1)
+        {
+            _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
+        }
+        const SBID id=newPlaylist[i];
+        record=createRecord(id,i+offset+1);
+        _totalDuration+=id.duration;
+
+        this->appendRow(record);
+
+        QCoreApplication::processEvents();
+
+    }
+    _populateHeader();
+    if(!firstBatchHasLoadedFlag)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        setCurrentPlayID(currentPlayID());
+    }
+    else
+    {
+        //	Special processing when items are queued.
+        if(currentPlayID()>=0 && initialCount==0)
+        {
+            //	If queue gets cleared (user presses clear button) and items are enqueued,
+            //	player will start with the 2nd song. Therefore, _currentPlayID needs to be
+            //	reset.
+            _currentPlayID=-1;
+        }
+    }
+    emit listChanged();
+}
+
+void
+SBModelQueuedSongs::resetCurrentPlayID_depreciated()
+{
+    setCurrentPlayID(-1);
+    _currentPlayID=-1;
+}
+
 SBID
-SBModelQueuedSongs::getSongFromPlaylist(int playlistIndex)
+SBModelQueuedSongs::songAt(int playlistIndex) const
 {
     QStandardItem* item;
     SBID song;
@@ -298,6 +352,7 @@ SBModelQueuedSongs::getSongFromPlaylist(int playlistIndex)
 
     if(playlistIndex<0 || playlistIndex>=playlistCount())
     {
+        song.errorMsg=QString("PlaylistIndex '%1' out of bounds at %2,%3,%4").arg(playlistIndex).arg(__FILE__).arg(__FUNCTION__).arg(__LINE__);
         return song;
     }
 
@@ -367,109 +422,17 @@ SBModelQueuedSongs::getSongFromPlaylist(int playlistIndex)
                 }
 
                 //	playlistPosition
-                song.playPosition=_currentPlayID;
+                song.playPosition=currentPlayID();
             }
         }
     }
-
     return song;
 }
 
-void
-SBModelQueuedSongs::resetCurrentPlayID()
-{
-    setCurrentSongByID(-1);
-    _currentPlayID=-1;
-}
-
 int
-SBModelQueuedSongs::currentPlaylistIndex() const
+SBModelQueuedSongs::currentPlayID() const
 {
     return _currentPlayID;
-}
-
-///
-/// \brief populate
-/// \param newPlaylist
-/// \param firstBatchHasLoadedFlag: provides a way to split loading in two batches:
-/// 	-	first batch (a small set of records) is immediately loaded, displayed and music starts to play
-///		-	second batch (with the remainder) is loaded while playing music.
-void
-SBModelQueuedSongs::populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag)
-{
-    qDebug() << SB_DEBUG_INFO << "newPlaylist.count()=" << newPlaylist.count();
-    int offset=0;
-    int initialCount=this->rowCount();
-
-    if(!firstBatchHasLoadedFlag)
-    {
-        this->clear();
-        _totalDuration=Duration();
-    }
-    else
-    {
-        offset=this->rowCount();
-    }
-    QList<QStandardItem *>record;
-
-    for(int i=0;i<newPlaylist.count();i++)
-    {
-        if(_currentPlayID==-1)
-        {
-            _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
-        }
-        const SBID id=newPlaylist[i];
-        record=createRecord(id,i+offset+1);
-        _totalDuration+=id.duration;
-
-        this->appendRow(record);
-
-        QCoreApplication::processEvents();
-
-    }
-    populateHeader();
-    if(!firstBatchHasLoadedFlag)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        setCurrentSongByID(_currentPlayID);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO << _currentPlayID << initialCount;
-        //	Special processing when items are queued.
-        if(_currentPlayID>=0 && initialCount==0)
-        {
-            //	If queue gets cleared (user presses clear button) and items are enqueued,
-            //	player will start with the 2nd song. Therefore, _currentPlayID needs to be
-            //	reset.
-            _currentPlayID=-1;
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << "newPlaylist.count()" << newPlaylist.count();
-    qDebug() << SB_DEBUG_INFO << "rowCount.count()" << this->rowCount();
-    qDebug() << SB_DEBUG_INFO << "_currentPlayID" << _currentPlayID;
-}
-
-void
-SBModelQueuedSongs::populateHeader()
-{
-    QList<QStandardItem *>column;
-    QStandardItem* item;
-
-    int columnIndex=0;
-    item=new QStandardItem("DEL"); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_deleteflag
-    item=new QStandardItem(""); this->setHorizontalHeaderItem(columnIndex++,item);           // sb_column_playflag
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_albumid
-    item=new QStandardItem(""); this->setHorizontalHeaderItem(columnIndex++,item);           //	sb_column_displayplaylistpositionid
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_songid
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_performerid
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_playlistpositionid
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_position
-    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_path
-    item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
-    item=new QStandardItem("Duration"); this->setHorizontalHeaderItem(columnIndex++,item);   //	sb_column_duration
-    item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
-    item=new QStandardItem("Album"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_albumtitle
 }
 
 void
@@ -525,7 +488,7 @@ SBModelQueuedSongs::reorderItems()
     }
     _currentPlayID=toFrom[_currentPlayID];
 
-    setCurrentSongByID(_currentPlayID);
+    setCurrentPlayID(currentPlayID());
 }
 
 bool
@@ -538,7 +501,7 @@ SBModelQueuedSongs::removeRows(int row, int count, const QModelIndex &parent)
 }
 
 void
-SBModelQueuedSongs::repaintAll()
+SBModelQueuedSongs::repaintAll_depreciated()
 {
     for(int i=0;i<this->rowCount();i++)
     {
@@ -546,18 +509,60 @@ SBModelQueuedSongs::repaintAll()
     }
 }
 
+///	Debugging
+void
+SBModelQueuedSongs::debugShow(const QString& title)
+{
+    qDebug() << SB_DEBUG_INFO << title;
+    for(int i=0;i<this->rowCount();i++)
+    {
+        QString row=QString("row=%1").arg(i);
+        for(int j=0;j<this->columnCount();j++)
+        {
+            if(j!=sb_column_path)
+            {
+                QStandardItem* item=this->item(i,j);
+                row+=QString("|c[%1]=").arg(j);
+                if(item)
+                {
+                    row+="'"+item->text()+"'";
+                }
+                else
+                {
+                    row+="<NULL>";
+                }
+            }
+        }
+    }
+}
+
+///	Protected methods
+void
+SBModelQueuedSongs::clear()
+{
+    _currentPlayID=-1;
+    qDebug() << SB_DEBUG_INFO << currentPlayID();
+    QStandardItemModel::clear();
+    emit listCleared();
+}
+
+void
+SBModelQueuedSongs::doInit()
+{
+    //	No init()
+}
 
 ///
-/// \brief SBModelQueuedSongs::setCurrentSongByID
+/// \brief SBModelQueuedSongs::setCurrentPlayID
 /// \param playID
 /// \return
 ///
-///	setCurrentSongByID() returns tableView row that is current.
+///	setCurrentPlayID() returns tableView row that is current.
 /// It also sets/unsets the indicator to the current song.
 /// This is the *ONLY* function that may assign a new value
 /// to _currentPlayID.
 QModelIndex
-SBModelQueuedSongs::setCurrentSongByID(int playID)
+SBModelQueuedSongs::setCurrentPlayID(int playID)
 {
     qDebug() << SB_DEBUG_INFO << _currentPlayID << playID;
     QStandardItem* item=NULL;
@@ -631,13 +636,10 @@ SBModelQueuedSongs::setCurrentSongByID(int playID)
     return this->index(newRowID,sb_column_displayplaylistpositionid);
 }
 
-void
+int
 SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
 {
     qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
-    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
-    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
-    qDebug() << SB_DEBUG_INFO << _currentPlayID << skipPlayedSongsFlag;
     QMap<int,int> pp2vpMap=_populateMapPlaylistPosition2ViewPosition();
 
     QList<int> usedIndex;                           //	list of already used random numbers (1-based)
@@ -648,7 +650,7 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
     //	skip played songs -- used by radio mode
     if(skipPlayedSongsFlag)
     {
-        while(index<=_currentPlayID+1)
+        while(index<=currentPlayID()+1)
         {
             qDebug() << SB_DEBUG_INFO << index;
             fromTo[index]=index;
@@ -656,32 +658,16 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
             index++;
         }
     }
-    else if(_currentPlayID>=0 && _currentPlayID<this->rowCount())
+    else if(currentPlayID()>=0 && currentPlayID()<this->rowCount())
     {
         //	Assign current playing to first spot, used by non-radio mode
-        qDebug() << SB_DEBUG_INFO << "from" << index << "to" << _currentPlayID+1;
         if(fromTo.contains(index)==0)
         {
-            fromTo[index]=(_currentPlayID+1);
-            usedIndex.append(_currentPlayID+1);
+            fromTo[index]=(currentPlayID()+1);
+            usedIndex.append(currentPlayID()+1);
             index++;
         }
     }
-
-    for(int i=1;i<this->rowCount();i++)
-    {
-        if(fromTo.contains(i))
-        {
-            qDebug() << SB_DEBUG_INFO << i << fromTo[i];
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << usedIndex.count();
-
-    for(int i=0;i<usedIndex.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << usedIndex[i];
-    }
-
 
     //	Create fromTo mapping
     while(index<=this->rowCount())
@@ -696,29 +682,11 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
                 randomIndex=-1;
             }
         }
-        qDebug() << SB_DEBUG_INFO << "from" << index << "to" << randomIndex;
         fromTo[index++]=(randomIndex);
         usedIndex.append(randomIndex);
     }
 
-    for(int i=1;i<this->rowCount()+1;i++)
-    {
-        if(fromTo.contains(i))
-        {
-            qDebug() << SB_DEBUG_INFO << i << fromTo[i];
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << usedIndex.count();
-
-    for(int i=0;i<usedIndex.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << usedIndex[i];
-    }
-
-    debugShow("before shuffle");
-
     //	Assign
-    qDebug() << SB_DEBUG_INFO;
     for(int i=0;i<this->rowCount();i++)
     {
         //	Iterate using a 0-based iterator, fromTo is 1-based.
@@ -726,8 +694,6 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
         int newPosition=fromTo[orgPosition];
 
         int viewPosition=pp2vpMap[orgPosition];
-
-        qDebug() << SB_DEBUG_INFO << "from" << orgPosition << "to" << newPosition << "located in view at " << viewPosition;
 
         QStandardItem* item;
 
@@ -744,64 +710,11 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
             item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
         }
     }
-    //qDebug() << SB_DEBUG_INFO << "currentPlayID:before=" << _currentPlayID;
-    //_currentPlayID=fromTo[_currentPlayID+1]-1;
-    qDebug() << SB_DEBUG_INFO << "currentPlayID:new=" << _currentPlayID;
-    setCurrentSongByID(_currentPlayID);
-    debugShow("end of shuffle");
     _populateMapPlaylistPosition2ViewPosition();
+    return fromTo[currentPlayID()+1]-1;
 }
 
-///	Debugging
-void
-SBModelQueuedSongs::debugShow(const QString& title)
-{
-    qDebug() << SB_DEBUG_INFO << title;
-    for(int i=0;i<this->rowCount();i++)
-    {
-        QString row=QString("row=%1").arg(i);
-        for(int j=0;j<this->columnCount();j++)
-        {
-            if(j!=sb_column_path)
-            {
-                QStandardItem* item=this->item(i,j);
-                row+=QString("|c[%1]=").arg(j);
-                if(item)
-                {
-                    row+="'"+item->text()+"'";
-                }
-                else
-                {
-                    row+="<NULL>";
-                }
-            }
-        }
-        qDebug() << SB_DEBUG_INFO << row;
-    }
-}
-
-QMap<int,int>
-SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
-{
-    QMap<int,int> mapPlaylistPosition2ViewPosition; //	map from playlist position to view position
-    qDebug() << SB_DEBUG_INFO << this->rowCount();
-    for(int i=0;i<this->rowCount();i++)
-    {
-        QStandardItem* item=this->item(i,sb_column_playlistpositionid);
-        if(item)
-        {
-            mapPlaylistPosition2ViewPosition[item->text().toInt()]=i;
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << mapPlaylistPosition2ViewPosition.count();
-    //for(int i=0;i<mapPlaylistPosition2ViewPosition.count();i++)
-    for(int i=0;i< 20 && i<mapPlaylistPosition2ViewPosition.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << mapPlaylistPosition2ViewPosition[i];
-    }
-    return mapPlaylistPosition2ViewPosition;
-}
-
+/// Private methods
 QList<QStandardItem *>
 SBModelQueuedSongs::createRecord(const SBID& id,int playPosition) const
 {
@@ -832,4 +745,42 @@ QString
 SBModelQueuedSongs::_formatPlaylistPosition(int playlistPositionID) const
 {
     return QString().sprintf("%08d",playlistPositionID);
+}
+
+void
+SBModelQueuedSongs::_populateHeader()
+{
+    QList<QStandardItem *>column;
+    QStandardItem* item;
+
+    int columnIndex=0;
+    item=new QStandardItem("DEL"); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_deleteflag
+    item=new QStandardItem(""); this->setHorizontalHeaderItem(columnIndex++,item);           // sb_column_playflag
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_albumid
+    item=new QStandardItem(""); this->setHorizontalHeaderItem(columnIndex++,item);           //	sb_column_displayplaylistpositionid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_songid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_performerid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_playlistpositionid
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_position
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_path
+    item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
+    item=new QStandardItem("Duration"); this->setHorizontalHeaderItem(columnIndex++,item);   //	sb_column_duration
+    item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
+    item=new QStandardItem("Album"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_albumtitle
+}
+
+QMap<int,int>
+SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
+{
+    QMap<int,int> mapPlaylistPosition2ViewPosition; //	map from playlist position to view position
+    qDebug() << SB_DEBUG_INFO << this->rowCount();
+    for(int i=0;i<this->rowCount();i++)
+    {
+        QStandardItem* item=this->item(i,sb_column_playlistpositionid);
+        if(item)
+        {
+            mapPlaylistPosition2ViewPosition[item->text().toInt()]=i;
+        }
+    }
+    return mapPlaylistPosition2ViewPosition;
 }

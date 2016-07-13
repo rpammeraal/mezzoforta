@@ -4,7 +4,7 @@
 #include <QHash>
 #include <QObject>
 
-#include "SBID.h"
+#include "SBIDSong.h"
 
 class SBSqlQueryModel;
 
@@ -21,7 +21,7 @@ public:
     void deletePlaylistItem(const SBID& assignID, const SBID& fromID) const;
     void deletePlaylist(const SBID& id) const;
     SBID getDetail(const SBID& id) const;
-    SBID getDetailPlaylistItemSong(const SBID& id) const;
+    SBIDSong getDetailPlaylistItemSong(const SBID& id) const;
     SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id) const;
     void getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraversed, QList<SBID>& allSongs, const SBID& id) const;
     SBSqlQueryModel* getAllPlaylists() const;
@@ -30,6 +30,7 @@ public:
     void renamePlaylist(const SBID& id) const;
     void reorderItem(const SBID& playlistID, const SBID& fromID, int row) const;
     void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
+    QMap<int,SBID> retrievePlaylistItems(const SBID &id);
 
 private:
     void init();

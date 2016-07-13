@@ -7,6 +7,8 @@
 
 #include "AudioDecoder.h"
 
+#include "SBIDSong.h"
+
 #define SB_VORBIS_BUFFER_SIZE 4096
 
 class AudioDecoderOggVorbis : public AudioDecoder
@@ -19,7 +21,7 @@ public:
 protected:
     friend class AudioDecoderFactory;
 
-    AudioDecoderOggVorbis(const QString& fileName);
+    AudioDecoderOggVorbis(const QString& fileName,bool headerOnlyFlag);
 
     static bool supportFileExtension(const QString& extension);
 
@@ -30,7 +32,7 @@ private:
     int            _endianity;
     int            _ovInitialized;
 
-    void init();
+    void _init();
 };
 
 #endif // AUDIODECODEROGGVORBIS_H

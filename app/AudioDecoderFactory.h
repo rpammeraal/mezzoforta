@@ -16,7 +16,8 @@ public:
     AudioDecoderFactory();
     ~AudioDecoderFactory();
 
-    AudioDecoder* openFile(const QString& fileName);
+    AudioDecoder* openFile(const QString& fileName,bool headerOnlyFlag=0);
+    AudioDecoder* openFileHeader(const QString& fileName);
 
     QString error() const { return _error; }
 

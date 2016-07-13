@@ -53,7 +53,14 @@ HEADERS     = \
     SBTabQueuedSongs.h \
     SBModelQueuedSongs.h \
     SBSortFilterProxyQueuedSongsModel.h \
-    Duration.h
+    Duration.h \
+    PlayManager.h \
+    SBIDSong.h \
+    SBIDPerformer.h \
+    SBIDAlbum.h \
+    SBIDPlaylist.h \
+    Properties.h \
+    MusicLibrary.h
 
 SOURCES     = \
     main.cpp \
@@ -109,7 +116,14 @@ SOURCES     = \
     SBTabQueuedSongs.cpp \
     SBModelQueuedSongs.cpp \
     SBSortFilterProxyQueuedSongsModel.cpp \
-    Duration.cpp
+    Duration.cpp \
+    PlayManager.cpp \
+    SBIDSong.cpp \
+    SBIDPerformer.cpp \
+    SBIDAlbum.cpp \
+    SBIDPlaylist.cpp \
+    Properties.cpp \
+    MusicLibrary.cpp
 
 # install
 target.path = .
@@ -140,10 +154,3 @@ DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad
 
-
-@macx
-{
-	LIBS += -framework Carbon
-}@
-
-QMAKE_CXXFLAGS="-O0"

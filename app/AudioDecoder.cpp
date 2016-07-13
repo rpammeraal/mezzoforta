@@ -13,13 +13,11 @@ AudioDecoder::getSamples(void* buffer, quint64 sampleCount)
     if(_index==0)
     {
         QCoreApplication::processEvents();
-
-        qDebug() << SB_DEBUG_INFO << "started play" << &_stream;
     }
     quint64 bytesToRead=samplesToBytes(sampleCount);
     while(_index>=_maxScrollableIndex && _index<_length)
     {
-        qDebug() << SB_DEBUG_INFO << "WARNING! Reading unfilled area" << _index << _maxScrollableIndex << _length;
+        qDebug() << SB_DEBUG_ERROR << "WARNING! Reading unfilled area" << _index << _maxScrollableIndex << _length;
     }
     if(_index+bytesToRead>lengthInBytes())
     {
@@ -64,13 +62,13 @@ AudioDecoder::setPosition(qint64 position)
 ///	Protected methods
 AudioDecoder::AudioDecoder()
 {
-    init();
+    _init();
 }
 
 AudioDecoder::~AudioDecoder()
 {
-    qDebug() << SB_DEBUG_INFO << _fileName;
-    AudioDecoder::exit();
+
+    AudioDecoder::_exit();
 }
 
 bool
@@ -82,7 +80,7 @@ AudioDecoder::supportFileExtension(const QString& extension)
 
 ///	Private methods
 void
-AudioDecoder::init()
+AudioDecoder::_init()
 {
     _adr=NULL;
     _bitsPerSample=0;
@@ -97,14 +95,10 @@ AudioDecoder::init()
 }
 
 void
-AudioDecoder::exit()
+AudioDecoder::_exit()
 {
-    qDebug() << SB_DEBUG_INFO;
-    qDebug() << SB_DEBUG_INFO;
     if(_stream!=NULL)
     {
-        qDebug() << SB_DEBUG_INFO;
         free(_stream); _stream=NULL;
     }
-    qDebug() << SB_DEBUG_INFO;
 }

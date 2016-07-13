@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "DataEntityPerformer.h"
+#include "PlayManager.h"
 #include "SBSqlQueryModel.h"
 #include "SBTabSongDetail.h"
 
@@ -51,8 +52,8 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
-    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
     const SBID currentID=SBTab::currentID();
+    PlayManager* pmgr=Context::instance()->getPlayManager();
 
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
@@ -70,7 +71,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     {
         qDebug() << SB_DEBUG_INFO << selectedID;
     }
-    tqs->playItemNow(selectedID,enqueueFlag);
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
     SBTab::playNow(enqueueFlag);
 }
 

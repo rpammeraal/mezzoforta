@@ -21,14 +21,14 @@ int dalCOUNT;
 //	Public methods
 DataAccessLayer::DataAccessLayer()
 {
-    init();
+    _init();
     qDebug() << SB_DEBUG_INFO << "******************************************* EMPTY ID=" << dalID;
 }
 
 DataAccessLayer::DataAccessLayer(const QString& connectionName)
 {
     //	Retrieve database from connection name
-    init();
+    _init();
     _connectionName=connectionName;
 
     //	Modelling after sqlite
@@ -42,8 +42,8 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
 
 DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
 {
-    init();
-    init(c);
+    _init();
+    _init(c);
     qDebug() << SB_DEBUG_INFO << "******************************************* CCTOR ID" << c.dalID << " TO " << this->dalID;
 }
 
@@ -124,7 +124,7 @@ DataAccessLayer&
 DataAccessLayer::operator=(const DataAccessLayer& c)
 {
     qDebug() << SB_DEBUG_INFO << "******************************************* ASSIGN ID" << c.dalID << " TO " << this->dalID;
-    init(c);
+    _init(c);
 
     return *this;
 }
@@ -295,7 +295,7 @@ DataAccessLayer::_getSchemaName() const
 }
 
 void
-DataAccessLayer::init()
+DataAccessLayer::_init()
 {
     dalID=++dalCOUNT;
     _schemaName="";
@@ -308,7 +308,7 @@ DataAccessLayer::init()
 }
 
 void
-DataAccessLayer::init(const DataAccessLayer& copy)
+DataAccessLayer::_init(const DataAccessLayer& copy)
 {
     _schemaName=copy._schemaName;
     _connectionName=copy._connectionName;

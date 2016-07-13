@@ -13,7 +13,7 @@ class QTextBrowser;
 class SBModelQueuedSongs;
 
 #include "SBMediaPlayer.h"
-#include "SBID.h"
+#include "SBIDSong.h"
 #include "Duration.h"
 
 ///
@@ -21,7 +21,6 @@ class SBModelQueuedSongs;
 ///
 /// PlayerController holds the key to playing songs.
 /// It controls two instances of SBMediaPlayer and utilizes these.
-///	The master of to be played list should reside with PlayerController.
 ///
 class PlayerController : public QObject
 {
@@ -44,46 +43,54 @@ public:
         sb_player_state_changing_media=4
     };
 
-    explicit PlayerController(QObject *parent = 0);
+        explicit PlayerController(QObject *parent = 0);
 
-    void initialize();
-    inline SBIDSong currentSongPlaying() const { return _currentSongPlaying; }
-    void setModelCurrentPlaylist(SBModelQueuedSongs* mcp);
+        inline SBIDSong currentSongPlaying() const { return _currentSongPlaying; }
+        inline PlayerController::sb_player_state playState() const { return _state; }
+        void setModelCurrentPlaylist_depreciated(SBModelQueuedSongs* mcp);
 
 signals:
-    void songChanged(const SBID& song);
-    void playlistChanged(const SBID& playlist);
+        void songChanged(const SBID& song);
+    void playlistChanged_depreciated(const SBID& playlist);
+        void playNextSong();
 
 public slots:
-    void playerPrevious();
-    void playerRewind();
-    void playerStop();
-    bool playerPlay();
-    void playerForward();
-    void playerNext();
-    void playerDurationChanged(quint64 duration);
-    void playerPositionChanged(quint64 duration);
-    void playerSeek(int ms);
-    void playerStateChanged(QMediaPlayer::State playerState);
+    void playerPrevious_depreciated(); //
+        void playerRewind();
+        void playerForward();
+    void playerNext_depreciated(); //
+        void playerDurationChanged(quint64 duration);
+        void playerPositionChanged(quint64 duration);
+        void playerStateChanged(QMediaPlayer::State playerState);
 
     //	The following methods are used for the first song and
     //	sets whether playlist or radio. If radio, update last played date
     //	is set at the start of song.
-    bool playerPlayNonRadio(const SBID& id);
-    bool playerPlayInRadio();
+    bool playerPlayNonRadio_depreciated(const SBID& id);
+    bool playerPlayInRadio_depreciated();
 
-    inline bool radioPlayingFlag() const { return _radioPlayingFlag; }
+    inline bool radioPlayingFlag_depreciated() const { return _radioPlayingFlag_depreciated; }
 
 private slots:
-    void playerDataClicked(const QUrl& url);
+        void playerDataClicked(const QUrl& url);
+
+protected:
+    friend class PlayManager;
+    friend class Context;
+        void doInit();	//	Init done by Context::
+        bool playSong(SBID& song);
+
+protected slots:
+    friend class PlayManager;
+        bool playerPlay();
+        void playerSeek(int ms);
+        void playerStop();
 
 private:
     static const int                  _maxPlayerID=2;
-
     int                               _currentPlayerID;
     SBIDSong                          _currentSongPlaying;
     Duration                          _durationTime[_maxPlayerID];
-    bool                              _initDoneFlag;
     SBModelQueuedSongs*               _modelCurrentPlaylist;
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];
@@ -91,18 +98,17 @@ private:
     QLabel*                           _playerDurationLabel[_maxPlayerID];
     QTextBrowser*                     _playerDataLabel[_maxPlayerID];
     SBMediaPlayer                     _playerInstance[_maxPlayerID];
-    bool                              _radioPlayingFlag;
+    bool                              _radioPlayingFlag_depreciated;
     PlayerController::sb_player_state _state;
 
-    SBIDSong calculateNextSongID(bool previousFlag=0) const;
-    Duration calculateTime(quint64 ms) const;
-    void _init();
-    void makePlayerVisible(PlayerController::sb_player player);
-    bool _playSong(const SBID& song);
-    void _playerStop();
+    SBIDSong _calculateNextSongID_depreciated(bool previousFlag=0) const;
+        void _init();
+        void _makePlayerVisible(PlayerController::sb_player player);
+        Duration _ms2Duration(quint64 ms) const;
+    void _playerStop_depreciated();
 
-    void _refreshPlayingNowData() const;
-    void _updatePlayState(PlayerController::sb_player_state newState);
+        void _refreshPlayingNowData() const;
+        void _updatePlayState(PlayerController::sb_player_state newState);
 };
 
 #endif // PLAYERCONTROLLER_H

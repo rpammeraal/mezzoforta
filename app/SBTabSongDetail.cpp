@@ -8,6 +8,7 @@
 #include "MainWindow.h"
 #include "DataEntitySong.h"
 #include "Navigator.h"
+#include "PlayManager.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
 
@@ -104,14 +105,14 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
-    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+    PlayManager* pmgr=Context::instance()->getPlayManager();
 
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
         selectedID=selectSongFromAlbum(this->currentID());
     }
-    tqs->playItemNow(selectedID,enqueueFlag);
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
     SBTab::playNow(enqueueFlag);
 }
 

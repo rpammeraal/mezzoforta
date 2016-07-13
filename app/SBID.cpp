@@ -2,17 +2,21 @@
 
 #include "Common.h"
 #include "SBID.h"
+#include "SBIDAlbum.h"
+#include "SBIDSong.h"
+#include "SBIDPerformer.h"
+#include "SBIDPlaylist.h"
+#include "SBMessageBox.h"
 
 
 SBID::SBID()
 {
-    init();
+    _init();
 }
 
 SBID::SBID(const SBID &c)
 {
     this->_sb_item_type=c._sb_item_type;
-    //this->sb_item_id=c.sb_item_id;
     this->sb_mbid=c.sb_mbid;
 
     this->sb_performer_id=c.sb_performer_id;
@@ -50,13 +54,13 @@ SBID::SBID(const SBID &c)
 
 SBID::SBID(SBID::sb_type itemType, int itemID)
 {
-    init();
+    _init();
     assign(itemType,itemID);
 }
 
 SBID::SBID(QByteArray encodedData)
 {
-    init();
+    _init();
     QString s=QString(encodedData);
     if(!s.length())
     {
@@ -100,6 +104,13 @@ SBID::~SBID()
 }
 
 void
+SBID::assign(int itemID)
+{
+    Q_UNUSED(itemID);
+    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED";
+}
+
+void
 SBID::assign(const SBID::sb_type itemType, const int itemID)
 {
     _sb_item_type=itemType;
@@ -138,7 +149,7 @@ SBID::assign(const SBID::sb_type itemType, const int itemID)
 void
 SBID::assign(const QString& type, const int itemID, const QString& text)
 {
-    init();
+    _init();
     SBID::sb_type itemType;
     if(type=="SB_SONG_TYPE")
     {
@@ -179,7 +190,7 @@ SBID::compareSimple(const SBID &t) const
 {
     return
     (
-        (this->_sb_item_type==t._sb_item_type) &&
+        (this->sb_item_type()==t.sb_item_type()) &&
         (this->sb_item_id()==t.sb_item_id()) &&
         (this->isEditFlag==t.isEditFlag)	//	Need to include this, otherwise editing won't work.
     )?1:0;
@@ -196,7 +207,7 @@ SBID::encode() const
 {
     //	Put all attributes in a stringlist
     QStringList sl;
-    sl.append(QString("%1").arg(_sb_item_type));
+    sl.append(QString("%1").arg(sb_item_type()));
     sl.append(QString("%1").arg(sb_performer_id));
     sl.append(QString("%1").arg(sb_album_id));
     sl.append(QString("%1").arg(sb_position));
@@ -306,7 +317,7 @@ SBID::getGenericDescription() const
 QString
 SBID::getIconResourceLocation() const
 {
-    return getIconResourceLocation(this->_sb_item_type);
+    return getIconResourceLocation(this->sb_item_type());
 }
 
 QString
@@ -355,7 +366,7 @@ SBID::getIconResourceLocation(const SBID::sb_type i)
 QString
 SBID::getText() const
 {
-    switch(this->_sb_item_type)
+    switch(this->sb_item_type())
     {
     case SBID::sb_type_song:
         return songTitle;
@@ -392,7 +403,7 @@ QString
 SBID::getType() const
 {
     QString t;
-    switch(this->_sb_item_type)
+    switch(this->sb_item_type())
     {
     case SBID::sb_type_invalid:
         t="INVALID";
@@ -436,7 +447,7 @@ SBID::getType() const
 int
 SBID::sb_item_id() const
 {
-    switch(this->_sb_item_type)
+    switch(this->sb_item_type())
     {
     case SBID::sb_type_song:
         return sb_song_id;
@@ -464,9 +475,61 @@ SBID::sb_item_id() const
 }
 
 void
+SBID::sendToPlayQueue(bool enqueueFlag)
+{
+    Q_UNUSED(enqueueFlag);
+    qDebug() << SB_DEBUG_INFO;
+    switch(this->sb_item_type())
+    {
+    case SBID::sb_type_song:
+    {
+        qDebug() << SB_DEBUG_INFO;
+        SBIDSong song=(*this);
+        song.sendToPlayQueue(enqueueFlag);
+    }
+    break;
+
+    case SBID::sb_type_performer:
+    {
+        SBIDPerformer performer=(*this);
+        performer.sendToPlayQueue(enqueueFlag);
+    }
+    break;
+
+    case SBID::sb_type_album:
+    {
+        SBIDAlbum album=(*this);
+        album.sendToPlayQueue(enqueueFlag);
+    }
+    break;
+
+    case SBID::sb_type_playlist:
+    {
+        SBIDPlaylist playlist=(*this);
+        playlist.sendToPlayQueue(enqueueFlag);
+    }
+    break;
+
+    case SBID::sb_type_chart:
+    case SBID::sb_type_invalid:
+    case SBID::sb_type_position:
+    case SBID::sb_type_allsongs:
+    case SBID::sb_type_songsearch:
+    case SBID::sb_type_current_playlist:
+    SBMessageBox::createSBMessageBox("Error:",
+        QString("Not implemented %1 %2 %3").arg(__FILE__).arg(__FUNCTION__).arg(__LINE__),
+        QMessageBox::Warning,
+        QMessageBox::Ok,
+        QMessageBox::Ok,
+        QMessageBox::Ok);
+        break;
+    }
+}
+
+void
 SBID::setText(const QString &text)
 {
-    switch(this->_sb_item_type)
+    switch(this->sb_item_type())
     {
     case SBID::sb_type_song:
         songTitle=text;
@@ -538,13 +601,13 @@ bool
 SBID::operator ==(const SBID& i) const
 {
     if(
-        i._sb_item_type==this->_sb_item_type &&
+        i.sb_item_type()==this->sb_item_type() &&
         i.sb_item_id()==this->sb_item_id() &&
         (
-            (i._sb_item_type!=SBID::sb_type_song) ||
+            (i.sb_item_type()!=SBID::sb_type_song) ||
             (
                 //	If song, include performer in comparison
-                i._sb_item_type==SBID::sb_type_song &&
+                i.sb_item_type()==SBID::sb_type_song &&
                 i.sb_performer_id==this->sb_performer_id 	//	added to make saveSong work
             )
         ) &&
@@ -570,7 +633,7 @@ operator<<(QDebug dbg, const SBID& id)
     QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
     QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
     QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
-    switch(id._sb_item_type)
+    switch(id.sb_item_type())
     {
     case SBID::sb_type_song:
         dbg.nospace() << "SBID: " << id.getType()
@@ -637,7 +700,7 @@ operator<<(QDebug dbg, const SBID& id)
 
 ///	PRIVATE
 void
-SBID::init()
+SBID::_init()
 {
     QString e;
     _sb_item_type=sb_type_invalid;

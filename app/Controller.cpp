@@ -1,7 +1,7 @@
 #include <QDebug>
 #include <QScrollBar>
 #include <QCompleter>
-#include <QDialog>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QSplashScreen>
 #include <QSqlDatabase>
@@ -15,15 +15,17 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
+#include "DataEntitySong.h"
+#include "DataEntityPerformer.h"
+#include "DataEntityPlaylist.h"
 #include "DatabaseSelector.h"
 #include "ExternalData.h"
 #include "MainWindow.h"
+#include "MusicLibrary.h"
 #include "Navigator.h"
 #include "PlayerController.h"
-#include "DataEntitySong.h"
-#include "DataEntityPlaylist.h"
+#include "Properties.h"
 #include "SBID.h"
-#include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
@@ -39,7 +41,6 @@ Controller::Controller(int argc, char *argv[], QApplication* napp) : app(napp)
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
-
     Context::instance()->setController(this);
 
     _initSuccessFull=openMainWindow(1);
@@ -85,8 +86,7 @@ Controller::refreshModels()
 
 }
 
-//SLOTS:
-
+///	Public slots:
 void
 Controller::openDatabase()
 {
@@ -94,14 +94,27 @@ Controller::openDatabase()
 }
 
 void
+Controller::setMusicLibraryDirectory()
+{
+    Context::instance()->getProperties()->setMusicLibraryDirectory();
+}
+
+void
+Controller::rescanMusicLibrary()
+{
+    qDebug() << SB_DEBUG_INFO;
+    MusicLibrary ml;
+    ml.rescanMusicLibrary();
+}
+
+void
 Controller::changeSchema(const QString& newSchema)
 {
-    qDebug() << "Controller:changeSchema:new schema=" << newSchema;
     if(Context::instance()->getDataAccessLayer()->setSchema(newSchema))
     {
         //	refresh all views
         Context::instance()->getNavigator()->resetAllFiltersAndSelections();
-        setupModels();
+        refreshModels();
         setupUI();
     }
 }
@@ -155,15 +168,7 @@ Controller::openMainWindow(bool startup)
             splash.show();
             app->processEvents();
         }
-
-        qDebug() << SB_DEBUG_INFO << "Ignore null pointer below";
-        ScreenStack* st=Context::instance()->getScreenStack();
-        if(st!=NULL)
-        {
-            delete st;
-        }
-        st=new ScreenStack;
-        Context::instance()->setScreenStack(st);
+        qDebug() << SB_DEBUG_INFO;
 
         MainWindow* oldMW=Context::instance()->getMainWindow();
         if(oldMW)
@@ -172,15 +177,7 @@ Controller::openMainWindow(bool startup)
             oldMW->close();
             oldMW=NULL;
         }
-
-        MainWindow* mw=new MainWindow();
-        Context::instance()->setMainWindow(mw);
-
-        init();
-
-        Navigator* ssh=new Navigator();
-
-        Context::instance()->setNavigator(ssh);
+        qDebug() << SB_DEBUG_INFO;
 
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         if(dal)
@@ -188,15 +185,20 @@ Controller::openMainWindow(bool startup)
             delete dal;
             dal=NULL;
         }
-        Context::instance()->setDataAccessLayer(NULL);
-
         dal=ds->getDataAccessLayer();
-        Context::instance()->setDataAccessLayer(dal);
 
+        MainWindow* mw=new MainWindow();
+        SB_DEBUG_IF_NULL(mw);
+        qDebug() << SB_DEBUG_INFO;
+        Context::instance()->doInit(mw,dal);	//	This has to be done as soon as we have mw
+
+        init();
+
+        qDebug() << SB_DEBUG_INFO;
         Navigator* n=Context::instance()->getNavigator();
         n->resetAllFiltersAndSelections();
 
-        setupModels();
+        refreshModels();
 
         setupUI();
 
@@ -211,37 +213,16 @@ Controller::openMainWindow(bool startup)
 
         if(startup)
         {
-            I::sleep(1);
             splash.finish(mw);
         }
         mw->show();
 
-        ssh->openOpener();
+        Context::instance()->getNavigator()->openOpener();
 
     }
     qDebug() << SB_DEBUG_INFO << "openMainWindow:end";
     return 1;
 }
-
-void
-Controller::setupModels()
-{
-    qDebug() << SB_DEBUG_INFO;
-
-    refreshModels();
-
-    ///	Chooser
-    Chooser* lcc=new Chooser();
-    Context::instance()->setChooser(lcc);
-
-    //	PlayerController
-    PlayerController* pc=Context::instance()->getPlayerController();
-    if(pc)
-    {
-        pc->initialize();
-    }
-}
-
 
 void
 Controller::setupUI()
@@ -300,6 +281,7 @@ Controller::configureMenus()
 
     configureMenuItems(mw->ui.menuFile->actions());
     configureMenuItems(mw->ui.menuPlaylist->actions());
+    configureMenuItems(mw->ui.menuTools->actions());
 }
 
 void
@@ -314,7 +296,8 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         const QString& itemName=(*it)->objectName();
         if(itemName=="menuOpenDatabase")
         {
-            connect(i,SIGNAL(triggered()),this,SLOT(openDatabase()));
+            connect(i,SIGNAL(triggered()),
+                    this,SLOT(openDatabase()));
         }
         else if(itemName=="menuNewPlaylist")
         {
@@ -330,6 +313,16 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         {
             connect(i,SIGNAL(triggered()),
                     Context::instance()->getChooser(), SLOT(renamePlaylist()));
+        }
+        else if(itemName=="menuSetMusicLibrary")
+        {
+            connect(i,SIGNAL(triggered()),
+                    this, SLOT(setMusicLibraryDirectory()));
+        }
+        else if(itemName=="menuRescanMusicLibrary")
+        {
+            connect(i,SIGNAL(triggered()),
+                    this, SLOT(rescanMusicLibrary()));
         }
         else
         {
@@ -372,26 +365,18 @@ Controller::init()
             this, SLOT(_resetStatusBar()));
 
     //	Instantiate background thread
-    qDebug() << SB_DEBUG_INFO;
     bgt=new BackgroundThread;
     bgt->moveToThread(&backgroundThread);
     backgroundThread.start();
     Context::instance()->setBackgroundThread(bgt);
-
-    //	Instantiate PlayerController thread
-    qDebug() << SB_DEBUG_INFO;
-    PlayerController* pc=new PlayerController();
-    Context::instance()->setPlayerController(pc);
 
     //	Recalculate playlist duration
     updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
     statusBarResetTimer.setSingleShot(0);
     connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
             this, SLOT(_updateAllplaylistDurations()));
-    connect(this, SIGNAL(s_recalculateAllPlaylistDurations()),
+    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
             bgt, SLOT(recalculateAllPlaylistDurations()));
-
-    qDebug() << SB_DEBUG_INFO << updateAllPlaylistDurationTimer.interval();
 }
 
 ///	PRIVATE SLOTS

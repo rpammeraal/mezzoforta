@@ -1,8 +1,10 @@
 Postgres headers and libraries:
--	install fink as root
+-	Login as root and install fink.
 -	/sw/bin/fink install postgresql94-dev
+-	add /sw/bin to std path
 -	files are installed in: /sw/opt/postgresql-9.4
 -	following instructions at: http://doc.qt.io/qt-5/sql-driver.html#qpsql
+
 
 Ogg/vorbis tools -- as root, execute:
 /sw/bin/fink install libogg
@@ -26,7 +28,7 @@ osx: taken care of by fink
 
 Install flac:
 Download from xiph.org
-OSX: ./configure;make;make install
+OSX: ./configure --with-ogg-libraries=/sw/lib --with-ogg-includes=/sw/include;make;make install
 
 Install libmad:
 windows: use msvc2008 (sigh). Copy lib file in msvc++/Debug to usual place. Use mad.h from msvc++.

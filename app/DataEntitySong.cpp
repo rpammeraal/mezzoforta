@@ -281,6 +281,26 @@ DataEntitySong::getOnChartListBySong(const SBID& id)
 }
 
 SBSqlQueryModel*
+DataEntitySong::getOnlineSongs()
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "op.song_id, "
+            "op.artist_id, "
+            "op.record_id, "
+            "op.record_position, "
+            "op.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance op "
+        "ORDER BY "
+            "op.path "
+    );
+
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
 DataEntitySong::getOnPlaylistListBySong(const SBID& id)
 {
     QString q=QString

@@ -113,11 +113,7 @@ DataEntityPerformer::getDetail(const SBID& id)
     ).arg(id.sb_performer_id);
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
-
     QSqlQuery query(q,db);
-
-
     if(query.next())
     {
         result.assign(SBID::sb_type_performer,id.sb_performer_id);
@@ -330,8 +326,6 @@ DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPer
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString newSoundex=Common::soundex(newPerformerName);
 
-    qDebug() << SB_DEBUG_INFO;
-
     //	MatchRank:
     //	0	-	edited value (always one in data set).
     //	1	-	exact match (0 or 1 in data set).
@@ -384,7 +378,6 @@ DataEntityPerformer::saveNewPerformer(SBID &id)
     QString q;
     bool resultCode=1;
 
-    qDebug() << SB_DEBUG_INFO;
     if(id.sb_performer_id==-1)
     {
         //	Insert new
@@ -411,7 +404,6 @@ DataEntityPerformer::saveNewPerformer(SBID &id)
         ;
 
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery insert(q,db);
 
         //	Get id of newly added performer
@@ -428,7 +420,6 @@ DataEntityPerformer::saveNewPerformer(SBID &id)
         ;
 
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery select(q,db);
         select.next();
 
@@ -438,7 +429,6 @@ DataEntityPerformer::saveNewPerformer(SBID &id)
             id.sb_performer_id=select.value(0).toInt();
         }
         id.sb_performer_id=select.value(0).toInt();
-        qDebug() << SB_DEBUG_INFO << "id.sb_performer_id=" << id.sb_performer_id;
     }
     return resultCode;
 }
@@ -461,13 +451,6 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
     bool urlChangedFlag=0;
     bool notesChangedFlag=0;
     bool extraSQLFlag=0;
-
-    qDebug() << SB_DEBUG_INFO << "old"
-        << ":sb_performer_id=" << orgPerformerID.sb_performer_id
-    ;
-    qDebug() << SB_DEBUG_INFO << "new"
-        << ":sb_performer_id=" << newPerformerID.sb_performer_id
-    ;
 
     //	1.	Set attribute flags
     if(orgPerformerID.url!=newPerformerID.url)
@@ -500,12 +483,6 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
     {
         extraSQLFlag=1;
     }
-
-    qDebug() << SB_DEBUG_INFO << "nameRenameFlag" << nameRenameFlag;
-    qDebug() << SB_DEBUG_INFO << "mergeToExistingPerformer" << mergeToExistingPerformer;
-    qDebug() << SB_DEBUG_INFO << "urlChangedFlag" << urlChangedFlag;
-    qDebug() << SB_DEBUG_INFO << "notesChangedFlag" << notesChangedFlag;
-    qDebug() << SB_DEBUG_INFO << "extraSQLFlag" << extraSQLFlag;
 
     //	3.	Sanity check on flags
     if(nameRenameFlag==0 &&
@@ -540,7 +517,6 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
     //	4.	Collect work to be done.
     if(extraSQLFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO;
         allQueries.append(extraSQL);
     }
 
@@ -800,7 +776,6 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
         allQueries.append(q);
     }
 
-    qDebug() << SB_DEBUG_INFO << allQueries.count();
     return dal->executeBatch(allQueries,commitFlag);
 }
 
@@ -825,8 +800,6 @@ DataEntityPerformer::updateSoundexFields()
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));
 
-    qDebug() << SB_DEBUG_INFO << q <<  q1.numRowsAffected();
-
     QString title;
     QString soundex;
     while(q1.next())
@@ -848,8 +821,6 @@ DataEntityPerformer::updateSoundexFields()
         ;
         dal->customize(q);
 
-        qDebug() << SB_DEBUG_INFO << q;
-
         QSqlQuery q2(q,db);
         q2.exec();
     }
@@ -858,7 +829,6 @@ DataEntityPerformer::updateSoundexFields()
 void
 DataEntityPerformer::updateHomePage(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
@@ -876,7 +846,6 @@ DataEntityPerformer::updateHomePage(const SBID &id)
     ;
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
     query.exec();
 }
@@ -884,7 +853,6 @@ DataEntityPerformer::updateHomePage(const SBID &id)
 void
 DataEntityPerformer::updateMBID(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << id;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
@@ -899,8 +867,6 @@ DataEntityPerformer::updateMBID(const SBID &id)
     ).arg(id.sb_mbid).arg(id.sb_performer_id);
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(q,db);
     query.exec();
 }
-

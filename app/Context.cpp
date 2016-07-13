@@ -15,16 +15,16 @@ Context::setController(Controller* c)
     _c=c;
 }
 
-void
-Context::setDataAccessLayer(DataAccessLayer* dal)
-{
-    _dal=dal;
-}
+//void
+//Context::setChooser(Chooser *lcc)
+//{
+//    _lcc=lcc;
+//}
 
 void
-Context::setChooser(Chooser *lcc)
+Context::setDataAccessLayer(DataAccessLayer *dal)
 {
-    _lcc=lcc;
+    _dal=dal;
 }
 
 void
@@ -33,23 +33,11 @@ Context::setMainWindow(MainWindow* mw)
     _mw=mw;
 }
 
-void
-Context::setNavigator(Navigator* ssh)
-{
-    _ssh=ssh;
-}
-
-void
-Context::setPlayerController(PlayerController *pc)
-{
-    _pc=pc;
-}
-
-void
-Context::setScreenStack(ScreenStack* st)
-{
-    _st=st;
-}
+//void
+//Context::setNavigator(Navigator* ssh)
+//{
+//    _ssh=ssh;
+//}
 
 void
 Context::setTab(SBTab *tab)
@@ -62,6 +50,21 @@ Context::setTabQueuedSongs(SBTabQueuedSongs* tabQS)
     _tabQS=tabQS;
 }
 
+///	PROTECTED
+void
+Context::doInit(MainWindow* mw,DataAccessLayer* dal)
+{
+    setMainWindow(mw);
+    setDataAccessLayer(dal);
+
+    _pc.doInit();   //	no dep
+    _pm.doInit();   //	dependency on PlayerController
+    _lcc.doInit();  //	dependency on PlayerController
+    _mqs.doInit();  //	no dep
+    _st.doInit();   //	no dep
+    _nav.doInit();  //	no dep
+    _p.doInit();    //	no dep
+}
 
 ///	PRIVATE
 Context::Context()
@@ -79,11 +82,7 @@ Context::_init()
 {
     _bgt=NULL;
     _c=NULL;
-    _dal=NULL;
-    _lcc=NULL;
+    //_lcc=NULL;
     _mw=NULL;
-    _pc=NULL;
-    _ssh=NULL;
-    _st=NULL;
     _tab=NULL;
 }

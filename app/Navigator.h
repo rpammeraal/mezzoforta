@@ -58,16 +58,20 @@ public slots:
     void tabBackward();
     void tabForward();
 
+protected:
+    friend class Context;
+    void doInit();	//	Init done by Context::
+
 private:
     //	Private variables
     bool _threadPrioritySetFlag;
 
     //	Private methods
-    SBID activateTab(const SBID& id);
-    bool checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
-    void init();
-    void filterSongs(const SBID& id);
-    void moveTab(int direction);
+    SBID _activateTab(const SBID& id);
+    bool _checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
+    void _init();
+    void _filterSongs(const SBID& id);
+    void _moveTab(int direction);
 };
 
 #endif // SONGLISTSCREENHANDLER_H

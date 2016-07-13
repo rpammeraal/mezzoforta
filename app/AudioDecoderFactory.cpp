@@ -21,34 +21,29 @@ AudioDecoderFactory::~AudioDecoderFactory()
 }
 
 AudioDecoder*
-AudioDecoderFactory::openFile(const QString &fileName)
+AudioDecoderFactory::openFile(const QString &fileName,bool headerOnlyFlag)
 {
     //	Flensburg - Neumuenster
-    QByteArray ba;
     QFileInfo fi(fileName);
     QString extension=fi.suffix();
     AudioDecoder* ad=NULL;
 
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
-        qDebug() << SB_DEBUG_INFO;
-        ad=new AudioDecoderWave(fileName);
+        ad=new AudioDecoderWave(fileName,headerOnlyFlag);
     }
     else if(AudioDecoderOggVorbis::supportFileExtension(extension)==1)
     {
-        qDebug() << SB_DEBUG_INFO;
-        ad=new AudioDecoderOggVorbis(fileName);
+        ad=new AudioDecoderOggVorbis(fileName,headerOnlyFlag);
     }
     else if(AudioDecoderMP3::supportFileExtension(extension)==1)
     {
-        qDebug() << SB_DEBUG_INFO;
-        ad=new AudioDecoderMP3(fileName);
+        ad=new AudioDecoderMP3(fileName,headerOnlyFlag);
     }
 #ifdef Q_OS_UNIX
     else if(AudioDecoderFlac::supportFileExtension(extension)==1)
     {
-        qDebug() << SB_DEBUG_INFO;
-        ad=new AudioDecoderFlac(fileName);
+        ad=new AudioDecoderFlac(fileName,headerOnlyFlag);
     }
 #endif
 
@@ -60,8 +55,13 @@ AudioDecoderFactory::openFile(const QString &fileName)
             delete ad; ad=NULL;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return ad;
+}
+
+AudioDecoder*
+AudioDecoderFactory::openFileHeader(const QString &fileName)
+{
+    return this->openFile(fileName,1);
 }
 
 void

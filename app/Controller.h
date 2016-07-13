@@ -40,9 +40,12 @@ signals:
     void recalculateAllPlaylistDurations();
 
 public slots:
-
     //	MENU::FILE
     void openDatabase();
+    void setMusicLibraryDirectory();
+
+    //	MENU::Tools
+    void rescanMusicLibrary();
 
     //	Apply filters and selections
     void changeSchema(const QString& newSchema);
@@ -65,7 +68,6 @@ private:
 
     //	UI config
     bool openMainWindow(bool startup);
-        void setupModels();
         void setupUI();
         void configureMenus();
         void configureMenuItems(const QList<QAction *>& list);

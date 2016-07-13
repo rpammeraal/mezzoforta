@@ -7,18 +7,18 @@
 
 ScreenStack::ScreenStack()
 {
-    init();
+    clear();
 }
 
 ScreenStack::~ScreenStack()
 {
-
 }
 
 void
 ScreenStack::clear()
 {
-    init();
+    currentScreenID=-1;
+    stack.clear();
 }
 
 int
@@ -227,15 +227,6 @@ ScreenStack::updateSBIDInStack(const SBID &id)
     }
 }
 
-///	PRIVATE
-void
-ScreenStack::init()
-{
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
-    currentScreenID=-1;
-    stack.clear();
-}
-
 void
 ScreenStack::debugShow(const QString& c)
 {
@@ -268,5 +259,9 @@ ScreenStack::debugShow(const QString& c)
     qDebug() << SB_DEBUG_INFO << currentScreenID;
 }
 
-
-///	PUBLIC SLOTS
+///	PROTECTED
+void
+ScreenStack::doInit()
+{
+    clear();
+}

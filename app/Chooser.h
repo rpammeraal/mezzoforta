@@ -38,6 +38,10 @@ public slots:
     void renamePlaylist();
     void showContextMenu(const QPoint& p);
 
+protected:
+    friend class Context;
+    void doInit();
+
 private slots:
     void _renamePlaylist(const SBID& id);
     void _clicked(const QModelIndex& mi);

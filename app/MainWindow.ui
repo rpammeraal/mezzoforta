@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Songbase [Mazatlan]</string>
+   <string>Songbase [Malecon]</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -2352,7 +2352,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Puerto Vallarta</string>
+                  <string>Malecon</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -4461,7 +4461,7 @@ Click on 'All Songs' to continue.</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -4469,6 +4469,7 @@ Click on 'All Songs' to continue.</string>
      <string>File</string>
     </property>
     <addaction name="menuOpenDatabase"/>
+    <addaction name="menuSetMusicLibrary"/>
    </widget>
    <widget class="QMenu" name="menuPlaylist">
     <property name="title">
@@ -4484,9 +4485,16 @@ Click on 'All Songs' to continue.</string>
     </property>
     <addaction name="menuEditEditID"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="menuRescanMusicLibrary"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuPlaylist"/>
+   <addaction name="menuTools"/>
   </widget>
   <action name="menuOpenDatabase">
    <property name="text">
@@ -4523,6 +4531,16 @@ Click on 'All Songs' to continue.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="menuSetMusicLibrary">
+   <property name="text">
+    <string>Set Music Library</string>
+   </property>
+  </action>
+  <action name="menuRescanMusicLibrary">
+   <property name="text">
+    <string>Rescan Music Library</string>
    </property>
   </action>
  </widget>

@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow
     friend class Navigator;
     friend class Chooser;
     friend class PlayerController;
+    friend class PlayManager;
     friend class SBTab;
     friend class SBTabAlbumDetail;
     friend class SBTabAlbumEdit;
