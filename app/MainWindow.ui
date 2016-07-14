@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Songbase [Malecon]</string>
+   <string>Songbase [Malecón]</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -2352,7 +2352,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Malecon</string>
+                  <string>Malecón</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>

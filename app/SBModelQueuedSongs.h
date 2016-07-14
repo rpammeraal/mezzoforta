@@ -53,19 +53,16 @@ public:
     virtual void sort(int column, Qt::SortOrder order);
 
     //	Methods related to playlists
-    inline int currentPlayID() const;	//	index of song in playlist
+    inline int currentPlayID() const { return _currentPlayID; }	//	index of song in playlist
     int playlistCount() const { return this->rowCount(); }
     QList<SBIDSong> getAllSongs();
-    SBID getNextSong_depreciated(bool previousFlag=0);
-        inline int numSongs() const { return this->rowCount(); }
-        void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
-    void resetCurrentPlayID_depreciated();
-        SBID songAt(int playlistIndex) const;
+    inline int numSongs() const { return this->rowCount(); }
+    void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
+    SBID songAt(int playlistIndex) const;
     inline Duration totalDuration() const { return _totalDuration; }
 
     void reorderItems();
     virtual bool removeRows(int row, int count, const QModelIndex &parent);
-    void repaintAll_depreciated();
 
     ///	Debugging
     void debugShow(const QString& title=QString());
@@ -78,10 +75,10 @@ protected:
     friend class Context;
     friend class PlayManager;
 
-        virtual void clear();
-        void doInit();
-        virtual QModelIndex setCurrentPlayID(int currentPlayID);
-        int shuffle(bool skipPlayedSongsFlag=0);
+    virtual void clear();
+    void doInit();
+    virtual QModelIndex setCurrentPlayID(int currentPlayID);
+    int shuffle(bool skipPlayedSongsFlag=0);
 
 private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager

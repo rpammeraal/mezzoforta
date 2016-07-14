@@ -365,7 +365,8 @@ void
 SBTab::sortOrderChanged(int column)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
-    st->debugShow("before sortOrderChanged");
+    qDebug() << SB_DEBUG_INFO;
+    st->debugShow("sortOrderChanged:before");
     if(st && st->getScreenCount())
     {
         SBID id=currentID();
@@ -384,8 +385,11 @@ SBTab::sortOrderChanged(int column)
         {
             id.subtabID=getFirstEligibleSubtabID();
         }
+        qDebug() << SB_DEBUG_INFO << id.sortColumn;
+        qDebug() << SB_DEBUG_INFO << id;
         st->updateCurrentScreen(id);
     }
+    qDebug() << SB_DEBUG_INFO;
     st->debugShow("after sortOrderChanged");
 }
 

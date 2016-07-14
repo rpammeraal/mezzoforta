@@ -24,130 +24,6 @@ SBTabQueuedSongs::SBTabQueuedSongs(QWidget* parent) : SBTab(parent,0)
     Context::instance()->setTabQueuedSongs(this);
 }
 
-void
-SBTabQueuedSongs::playItemNow_depreciated(const SBID &toPlay,const bool enqueueFlag)
-{
-    _init();
-    PlayerController* pc=Context::instance()->getPlayerController();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    _playingRadioFlag=0;
-    QList<SBIDSong> songsInQueue;
-
-    if(enqueueFlag==0)
-    {
-        this->clearPlaylist_depreciated();
-        //pc->playerStop();
-    }
-    else
-    {
-        songsInQueue=mqs->getAllSongs(); //	Get list of all songs currently in model
-    }
-
-    QMap<int,SBID> list;
-    switch(toPlay.sb_item_type())
-    {
-    case SBID::sb_type_playlist:
-    {
-        DataEntityPlaylist dep;
-        qDebug() << SB_DEBUG_INFO;
-        list=dep.retrievePlaylistItems(toPlay);
-    }
-        break;
-
-    case SBID::sb_type_song:
-        //	toPlay *must* have path populated.
-        list[0]=toPlay;
-        break;
-
-    case SBID::sb_type_album:
-        {
-            SBSqlQueryModel* qm=DataEntityAlbum::getAllSongs(toPlay);
-            for(int i=0;i<qm->rowCount();i++)
-            {
-                SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,5)).toInt());
-                song.sb_position=qm->data(qm->index(i,1)).toInt();
-                song.songTitle=qm->data(qm->index(i,6)).toString();
-                song.duration=qm->data(qm->index(i,7)).toTime();
-                song.sb_performer_id=qm->data(qm->index(i,9)).toInt();
-                song.performerName=qm->data(qm->index(i,10)).toString();
-                song.path=qm->data(qm->index(i,13)).toString();
-                song.sb_album_id=toPlay.sb_album_id;
-                song.albumTitle=toPlay.albumTitle;
-                list[list.count()]=song;
-
-                qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
-            }
-        }
-        break;
-
-    case SBID::sb_type_performer:
-        {
-            DataEntityPerformer dep;
-            SBSqlQueryModel* qm=dep.getAllOnlineSongs(toPlay);
-            for(int i=0;i<qm->rowCount();i++)
-            {
-                SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,0)).toInt());
-                song.sb_performer_id=qm->data(qm->index(i,1)).toInt();
-                song.sb_album_id=qm->data(qm->index(i,2)).toInt();
-                song.sb_position=qm->data(qm->index(i,3)).toInt();
-                song.songTitle=qm->data(qm->index(i,4)).toString();
-                song.performerName=qm->data(qm->index(i,5)).toString();
-                song.albumTitle=qm->data(qm->index(i,6)).toString();
-                song.duration=qm->data(qm->index(i,7)).toTime();
-                song.path=qm->data(qm->index(i,8)).toString();
-                list[list.count()]=song;
-
-                qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
-            }
-        }
-        break;
-
-    default:
-        qDebug() << SB_DEBUG_ERROR << "playType" << toPlay.sb_item_type() << "not supported for " << toPlay;
-    }
-
-    qDebug() << SB_DEBUG_INFO << list.count();
-
-    //	Check for dups
-    QMap<int,SBID> toAdd;
-    int j=0;
-    for(int i=0;i<list.count();i++)
-    {
-        const SBIDSong id=SBIDSong(list[i]);
-        if(songsInQueue.contains(id)==0)
-        {
-            toAdd[j++]=(SBID)(id);
-            songsInQueue.append(id);
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << "already exists" << id;
-        }
-    }
-
-    //	Send to model
-    mqs->populate(toAdd,enqueueFlag);
-    qDebug() << SB_DEBUG_INFO;
-    this->_populatePost(toPlay);
-
-    if(enqueueFlag==0)
-    {
-        bool isPlayingFlag=pc->playerPlayNonRadio_depreciated(toPlay);
-        if(isPlayingFlag==0)
-        {
-            pc->playerNext_depreciated();
-        }
-    }
-    qDebug() << SB_DEBUG_INFO;
-    updateDetail();
-
-    //	Update status bar if enqueued
-    if(enqueueFlag)
-    {
-        Context::instance()->getController()->updateStatusBarText(QString("Queued %1 '%2'").arg(toPlay.getType()).arg(toPlay.getText()));
-    }
-}
-
 int
 SBTabQueuedSongs::numSongsInPlaylist() const
 {
@@ -174,12 +50,6 @@ SBTabQueuedSongs::subtabID2TableView(int subtabID) const
 
 ///	Public slots
 void
-SBTabQueuedSongs::clearPlaylist_depreciated()
-{
-    updateDetail();
-}
-
-void
 SBTabQueuedSongs::deletePlaylistItem()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -187,7 +57,6 @@ SBTabQueuedSongs::deletePlaylistItem()
     if(assignID.sb_item_type()!=SBID::sb_type_invalid)
     {
         mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
-        qDebug() << SB_DEBUG_INFO << _lastClickedIndex << _lastClickedIndex.row() << _lastClickedIndex.column();
 
         QString updateText=QString("Removed %4 %1%2%3 from playlist.")
             .arg(QChar(96))            //	1
@@ -197,7 +66,7 @@ SBTabQueuedSongs::deletePlaylistItem()
         ;
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
-    updateDetail();
+    _updateDetail();
 }
 
 void
@@ -211,6 +80,13 @@ SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
     DataEntityPlaylist mpl;
     mpl.reorderItem(currentID,fromID,toID);
     refreshTabIfCurrent(currentID);
+}
+
+void
+SBTabQueuedSongs::playlistChanged(const SBIDPlaylist &pl)
+{
+    Q_UNUSED(pl);
+    _updateDetail();
 }
 
 void
@@ -230,11 +106,9 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
-    qDebug() << SB_DEBUG_INFO;
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     SBID id=mqs->getSBIDSelected(idx);
-    qDebug() << SB_DEBUG_INFO << id;
     if(id.sb_item_type()!=SBID::sb_type_invalid)
     {
         _lastClickedIndex=idx;
@@ -249,7 +123,7 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
 }
 
 void
-SBTabQueuedSongs::songChanged(const SBID& song)
+SBTabQueuedSongs::songChanged(const SBIDSong& song)
 {
     MainWindow* mw=Context::instance()->getMainWindow();
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -304,213 +178,8 @@ SBTabQueuedSongs::setViewLayout()
 
 ///	Private slots
 void
-SBTabQueuedSongs::shufflePlaylist_depreciated()
-{
-    qDebug() << SB_DEBUG_INFO;
-    MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    //mqs->shuffle(pc->radioPlayingFlag());
-    tv->sortByColumn(SBModelQueuedSongs::sb_column_playlistpositionid,Qt::AscendingOrder);
-    //mqs->repaintAll();
-    _populatePost(SBID());
-}
-
-void
-SBTabQueuedSongs::startRadio_depreciated()
-{
-    _init();
-    qDebug() << SB_DEBUG_INFO;
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    PlayerController* pc=Context::instance()->getPlayerController();
-    const int firstBatchNumber=5;
-    bool firstBatchLoaded=false;
-    _playingRadioFlag=1;
-
-    this->clearPlaylist_depreciated();
-
-    QMap<int,SBID> playList;
-    QList<int> indexCovered;
-
-    int progressStep=0;
-    QProgressDialog pd("Starting Auto DJ",QString(),0,11);
-    pd.setWindowModality(Qt::WindowModal);
-    pd.show();
-    pd.raise();
-    pd.activateWindow();
-    QCoreApplication::processEvents();
-    pd.setValue(0);
-    QCoreApplication::processEvents();
-
-    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllOnlineSongs();
-    pd.setValue(++progressStep);
-    QCoreApplication::processEvents();
-
-    int numSongs=qm->rowCount();
-    if(numSongs>100)
-    {
-        //	DataEntityCurrentPlaylist::getAllOnlineSongs() may return more than 100,
-        //	limit this to a 100 to make the view not too large.
-        numSongs=100;
-    }
-    const int maxNumberAttempts=50;
-    int songInterval=numSongs/10;
-
-    qDebug() << SB_DEBUG_INFO << "randomizing " << numSongs << "songs";
-    bool found=1;
-    int nextOpenSlotIndex=0;
-    _populatePost(SBID());
-    int index=0;
-    while(index<numSongs)
-    {
-        qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex;
-        found=0;
-        int idx=-1;
-
-        for(int j=maxNumberAttempts;j && !found;j--)
-        {
-            idx=Common::randomOldestFirst(qm->rowCount());
-            if(indexCovered.contains(idx)==0)
-            {
-                found=1;
-                indexCovered.append(idx);
-                qDebug() << SB_DEBUG_INFO << "idx=" << idx << "not used yet";
-            }
-            else
-            {
-                qDebug() << SB_DEBUG_INFO << "idx=" << idx << "already used";
-            }
-        }
-
-        if(!found)
-        {
-            //	If we can't get a random index after n tries, get the first
-            //	not-used index
-            for(int i=0;i<numSongs && found==0;i++)
-            {
-                if(indexCovered.contains(i)==0)
-                {
-                    idx=i;
-                    found=1;
-                    indexCovered.append(idx);
-                    qDebug() << SB_DEBUG_INFO << "taking idx=" << idx;
-                }
-            }
-        }
-
-        qDebug() << SB_DEBUG_INFO << "random is " << idx;
-
-        SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
-
-        item.songTitle=qm->record(idx).value(1).toString();
-        item.sb_performer_id=qm->record(idx).value(2).toInt();
-        item.performerName=qm->record(idx).value(3).toString();
-        item.sb_album_id=qm->record(idx).value(4).toInt();
-        item.albumTitle=qm->record(idx).value(5).toString();
-        item.sb_position=qm->record(idx).value(6).toInt();
-        item.path=qm->record(idx).value(7).toString();
-        item.duration=qm->record(idx).value(8).toTime();
-
-        playList[nextOpenSlotIndex++]=item;
-        qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex-1 << playList[nextOpenSlotIndex-1];
-
-        if(index%songInterval==0 || index+1==numSongs)
-        {
-            //	Update progress
-            pd.setValue(++progressStep);
-            QCoreApplication::processEvents();
-        }
-
-        //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
-        if(index+1==firstBatchNumber || index+1==numSongs)
-        {
-            if(!firstBatchLoaded)
-            {
-                qDebug() << SB_DEBUG_INFO << "sending to mqs first batch:playList.count()=" << playList.count();
-                mqs->populate(playList);
-                this->_populatePost(SBID());
-
-                //pc->playerStop();
-                bool isPlayingFlag=pc->playerPlayInRadio_depreciated();
-                if(isPlayingFlag==0)
-                {
-                    pc->playerNext_depreciated();
-                }
-
-                firstBatchLoaded=true;
-
-                //	Got the first batch loaded, clear playList and reset nextOpenSlotIndex
-                playList.clear();
-                nextOpenSlotIndex=0;
-            }
-            else
-            {
-                qDebug() << SB_DEBUG_INFO << "sending to mqs 2nd batch:playList.count()=" << playList.count();
-                mqs->populate(playList,firstBatchLoaded);
-                qDebug() << SB_DEBUG_INFO << "after sending to mqs 2nd batch:playList.count()=" << playList.count();
-            }
-        }
-        index++;
-    }
-
-    QString allIDX=" ";
-    for(int i=0;i<indexCovered.count();i++)
-    {
-        if(indexCovered.contains(i))
-        {
-            allIDX+=QString("%1 ").arg(i);
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << "allIDX=" << allIDX;
-    qDebug() << SB_DEBUG_INFO << "Populated" << playList.count() << "of" << numSongs;
-    qDebug() << SB_DEBUG_INFO << "indexCovered.count" << indexCovered.count();
-
-    qDebug() << SB_DEBUG_INFO << "contents playlist";
-    for(int i=0;i<playList.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << i << playList[i];
-    }
-}
-
-void
-SBTabQueuedSongs::updateDetail()
-{
-    QString detail;
-
-    PlayManager* pm=Context::instance()->getPlayManager();
-    if(pm->radioModeFlag())
-    {
-        //	Don't update if radio is playing
-        return;
-    }
-    qDebug() << SB_DEBUG_INFO;
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    if(mqs)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        const int numSongs=mqs->numSongs();
-        if(numSongs)
-        {
-            Duration totalDuration=mqs->totalDuration();
-            qDebug() << SB_DEBUG_INFO << totalDuration.toString();
-
-            detail+=QString("%1 song%2 %3 %4")
-                    .arg(numSongs)
-                    .arg(numSongs>1?"s":"")
-                    .arg(QChar(8226))
-                    .arg(totalDuration.toString())
-            ;
-        }
-    }
-    detail="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+detail+"</BODY>";
-    qDebug() << SB_DEBUG_INFO << detail;
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.frCurrentPlaylistDetails->setText(detail);
-}
-
-void
 SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
 {
-    qDebug() << SB_DEBUG_INFO << idx.column() << idx.row();
     if((SBModelQueuedSongs::sb_column_type)idx.column()==SBModelQueuedSongs::sb_column_playlistpositionid)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -521,7 +190,6 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
         SBID item=mqs->getSBIDSelected(sourceIDX);
-        qDebug() << SB_DEBUG_INFO << item;
         Context::instance()->getNavigator()->openScreenByID(item);
     }
 }
@@ -536,8 +204,6 @@ SBTabQueuedSongs::tableViewCellDoubleClicked(QModelIndex idx)
 void
 SBTabQueuedSongs::_init()
 {
-    qDebug() << SB_DEBUG_INFO;
-
     _playingRadioFlag=0;
     if(_initDoneFlag==0)
     {
@@ -556,8 +222,12 @@ SBTabQueuedSongs::_init()
                 this, SLOT(tableViewCellDoubleClicked(QModelIndex)));
 
         //	If playerController changes song, we want to update our view.
-        connect(Context::instance()->getPlayerController(),SIGNAL(songChanged(const SBID &)),
-                this, SLOT(songChanged(const SBID &)));
+        connect(Context::instance()->getPlayerController(),SIGNAL(songChanged(const SBIDSong &)),
+                this, SLOT(songChanged(const SBIDSong &)));
+
+        //	If playManager changes playlist, we need to update the details.
+        connect(Context::instance()->getPlayManager(),SIGNAL(playlistChanged(SBIDPlaylist)),
+                this, SLOT(playlistChanged(SBIDPlaylist)));
 
         //	Context menu
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -586,7 +256,6 @@ SBTabQueuedSongs::_init()
             sm->setSourceModel(mqs);
             tv->setModel(sm);
         }
-        qDebug() << SB_DEBUG_INFO;
 
         _initDoneFlag=1;
     }
@@ -609,7 +278,7 @@ SBTabQueuedSongs::_populate(const SBID& id)
 {
     Q_UNUSED(id);
     _init();
-    updateDetail();
+    _updateDetail();
 
     return SBID(SBID::sb_type_current_playlist,-1);
 }
@@ -619,4 +288,39 @@ SBTabQueuedSongs::_populatePost(const SBID &id)
 {
     Q_UNUSED(id);
     setViewLayout();
+}
+
+void
+SBTabQueuedSongs::_updateDetail()
+{
+    QString detail;
+
+    PlayManager* pm=Context::instance()->getPlayManager();
+    if(pm->radioModeFlag())
+    {
+        //	Don't update if radio is playing
+        detail="";
+    }
+    else
+    {
+        SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+        if(mqs)
+        {
+            const int numSongs=mqs->numSongs();
+            if(numSongs)
+            {
+                Duration totalDuration=mqs->totalDuration();
+
+                detail+=QString("%1 song%2 %3 %4")
+                        .arg(numSongs)
+                        .arg(numSongs>1?"s":"")
+                        .arg(QChar(8226))
+                        .arg(totalDuration.toString())
+                ;
+            }
+        }
+    }
+    detail="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+detail+"</BODY>";
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.frCurrentPlaylistDetails->setText(detail);
 }

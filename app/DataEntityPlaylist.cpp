@@ -4,6 +4,7 @@
 #include "Controller.h"
 #include "DataAccessLayer.h"
 #include "SBIDSong.h"
+#include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "DataEntityPlaylist.h"
 
@@ -29,26 +30,22 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &toBeAssignedID, const SBID &t
     switch(toBeAssignedID.sb_item_type())
     {
     case SBID::sb_type_song:
-        if(toBeAssignedID.sb_album_id==-1 || toBeAssignedID.sb_playlist_position==-1)
+        if(toBeAssignedID.sb_album_id==-1 || toBeAssignedID.sb_position==-1)
         {
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "assignment of song without album";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
-            qDebug() << "****************************************************************************************";
+            qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
+            qDebug() << SB_DEBUG_ERROR << toBeAssignedID;
+            qDebug() << SB_DEBUG_ERROR << toBeAssignedID.sb_album_id;
+            qDebug() << SB_DEBUG_ERROR << toBeAssignedID.sb_position;
 
+            SBMessageBox::createSBMessageBox("Error: you should never see this...",
+                "Assignnebt if song without album",
+                QMessageBox::Warning,
+                QMessageBox::Ok,
+                QMessageBox::Ok,
+                QMessageBox::Ok,
+                0);
+
+            return;
         }
         q=QString
           (

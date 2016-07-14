@@ -6,6 +6,7 @@
 
 #include "Common.h"
 #include "SBIDSong.h"
+#include "SBIDPlaylist.h"
 
 ///
 /// \brief The PlayManager class
@@ -27,7 +28,7 @@ public:
     inline int radioModeFlag() const { return _radioModeFlag; }
 
 signals:
-    void playlistChanged(const SBID& playlist);
+    void playlistChanged(const SBIDPlaylist& playlist);
 
 public slots:
     //	Player related

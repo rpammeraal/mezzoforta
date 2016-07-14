@@ -21,7 +21,6 @@ void
 SBTabSongsAll::preload()
 {
     _init();
-    qDebug() << SB_DEBUG_INFO;
     //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->getMainWindow();
     QSortFilterProxyModel* slP;
@@ -32,12 +31,10 @@ SBTabSongsAll::preload()
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 0;
     sm->setDragableColumns(dragableColumns);
-    qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();
     slP->setSourceModel(sm);
     mw->ui.allSongsList->setModel(slP);
-    qDebug() << SB_DEBUG_INFO;
 
     mw->ui.allSongsList->setSortingEnabled(1);
     mw->ui.allSongsList->sortByColumn(3,Qt::AscendingOrder);
@@ -76,10 +73,8 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    SBID selectedID=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
-
-    qDebug() << SB_DEBUG_INFO << selectedID;
 
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
@@ -118,7 +113,6 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
     QModelIndex ids=pm->mapToSource(idx);
     SBID selectedID=sm->determineSBID(ids);
 
-    qDebug() << SB_DEBUG_INFO << selectedID;
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
         _lastClickedIndex=ids;
@@ -177,5 +171,8 @@ SBTabSongsAll::_init()
 SBID
 SBTabSongsAll::_populate(const SBID &id)
 {
-    return id;
+    Q_UNUSED(id);
+    SBID all=SBID(SBID::sb_type_allsongs,0);
+    SBTab::_populate(all);
+    return all;
 }

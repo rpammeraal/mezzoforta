@@ -177,8 +177,6 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
 
             SBID toID=_getPlaylistSelected(idx);
             SBID fromID;
-            qDebug() << SB_DEBUG_INFO << "assign" << toBeAssignedToID << toBeAssignedToID.sb_album_id;
-            qDebug() << SB_DEBUG_INFO << "to" << toID;
 
             if(toBeAssignedToID==toID)
             {
@@ -197,9 +195,6 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
                 fromID=toBeAssignedToID;
             }
 
-            qDebug() << SB_DEBUG_INFO << "fromID" << fromID << fromID.sb_album_id << fromID.sb_position << fromID.sb_playlist_position;
-            qDebug() << SB_DEBUG_INFO << "to" << toID;
-
             if(fromID.sb_item_type()!=SBID::sb_type_invalid)
             {
                 if(rootType==Chooser::sb_playlists)
@@ -215,7 +210,6 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
                         .arg(toBeAssignedToID.getType())   //	5
                         .arg(toID.getType());      //	6
                     Context::instance()->getController()->updateStatusBarText(updateText);
-                    qDebug() << SB_DEBUG_INFO;
                 }
                 else if(rootType==Chooser::sb_your_songs)
                 {
@@ -261,7 +255,6 @@ Chooser::deletePlaylist()
                 break;
 
             case QMessageBox::Cancel:
-                qDebug() << SB_DEBUG_INFO;
                 break;
         }
     }
@@ -281,8 +274,6 @@ Chooser::enqueuePlaylist()
 void
 Chooser::newPlaylist()
 {
-    qDebug() << SB_DEBUG_INFO;
-
     //	Create placeholder in database
     DataEntityPlaylist pl;
     SBID id=pl.createNewPlaylist();
@@ -291,10 +282,8 @@ Chooser::newPlaylist()
     this->_populate();
 
     QModelIndex newPlaylistIndex=_findItem(id.playlistName);
-    qDebug() << SB_DEBUG_INFO << newPlaylistIndex << newPlaylistIndex.isValid();
     if(newPlaylistIndex.isValid())
     {
-        qDebug() << SB_DEBUG_INFO << newPlaylistIndex;
         _setCurrentIndex(newPlaylistIndex);
 
         QString updateText=QString("Created playlist %1%2%3.")
@@ -303,11 +292,10 @@ Chooser::newPlaylist()
             .arg(QChar(180));    //	3
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
 void
-Chooser::playlistChanged(const SBID &playlistID)
+Chooser::playlistChanged(const SBIDPlaylist &playlistID)
 {
     for(int y=0;_cm && y<_cm->rowCount();y++)
     {
@@ -379,7 +367,6 @@ Chooser::showContextMenu(const QPoint &p)
         {
             SBID id=_getPlaylistSelected(idx);
 
-            qDebug() << SB_DEBUG_INFO << id;
             if(id.sb_item_type()==SBID::sb_type_playlist)
             {
                 //	Only show in the right context :)
@@ -416,11 +403,9 @@ void
 Chooser::_renamePlaylist(const SBID &id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    qDebug() << SB_DEBUG_INFO << id;
     DataEntityPlaylist pl;
     pl.renamePlaylist(id);
     this->_populate();
-    qDebug() << SB_DEBUG_INFO;
     QModelIndex in=_findItem(id);
     if(in.isValid())
     {
@@ -453,7 +438,6 @@ Chooser::_findItem(const QString& toFind)
         QStandardItem* si0=_cm->item(y,0);
         if(si0)
         {
-            qDebug() << SB_DEBUG_INFO << y << si0->text();
             if(si0->hasChildren())
             {
                 for(int i=0;i<si0->rowCount() && found==0;i++)
@@ -461,12 +445,10 @@ Chooser::_findItem(const QString& toFind)
                     QStandardItem* si1=si0->child(i,0);
                     if(si1)
                     {
-                        qDebug() << SB_DEBUG_INFO << y << i << si1->text();
                         if(si1->text()==toFind)
                         {
                             index=_cm->indexFromItem(si1);
                             found=1;
-                            qDebug() << SB_DEBUG_INFO << index;
                         }
                     }
                     si1=si0->child(i,1);
@@ -483,7 +465,6 @@ Chooser::_findItem(const QString& toFind)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << index;
     return index;
 }
 
@@ -492,14 +473,12 @@ Chooser::_findItem(const SBID& id)
 {
     QModelIndex index;
     bool found=0;
-    qDebug() << SB_DEBUG_INFO << id;
 
     for(int y=0;_cm && y<_cm->rowCount() && found==0;y++)
     {
         QStandardItem* si0=_cm->item(y,0);
         if(si0)
         {
-            qDebug() << SB_DEBUG_INFO << y << si0->text();
             if(si0->hasChildren())
             {
                 for(int i=0;i<si0->rowCount() && found==0;i++)
@@ -508,20 +487,17 @@ Chooser::_findItem(const SBID& id)
                     QStandardItem* si2=si0->child(i,2);
                     if(si1 && si2)
                     {
-                        qDebug() << SB_DEBUG_INFO << y << i << si1->text() << si2->text();
                         if(si1->text().toInt()==id.sb_item_id() &&
                             si2->text().toInt()==id.sb_item_type())
                         {
                             index=_cm->indexFromItem(si1);
                             found=1;
-                            qDebug() << SB_DEBUG_INFO << index;
                         }
                     }
                 }
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << index;
     return index;
 }
 
@@ -553,7 +529,6 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
             qDebug() << SB_DEBUG_NPTR;
         }
     }
-    qDebug() << SB_DEBUG_INFO << id;
     return id;
 }
 
@@ -603,10 +578,9 @@ Chooser::_init()
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
 
-    qDebug() << SB_DEBUG_INFO;
     PlayManager* pm=Context::instance()->getPlayManager();
-    connect(pm,SIGNAL(playlistChanged(const SBID&)),
-            this, SLOT(playlistChanged(SBID)));
+    connect(pm,SIGNAL(playlistChanged(const SBIDPlaylist&)),
+            this, SLOT(playlistChanged(SBIDPlaylist)));
 }
 
 void
@@ -639,8 +613,6 @@ Chooser::_populate()
     }
 
     tv->setModel(_cm);
-
-    qDebug() << SB_DEBUG_INFO << _cm->columnCount();
 }
 
 void

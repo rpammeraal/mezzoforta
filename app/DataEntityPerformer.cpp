@@ -124,9 +124,12 @@ DataEntityPerformer::getDetail(const SBID& id)
         result.count1          =query.value(4).toInt();
         result.count2          =query.value(5).toInt();
 
-        if(result.url.length()>0 && result.url.toLower().left(7)!="http://")
+        if(result.url.length()>0)
         {
-            result.url="http://"+result.url;
+            if(result.url.toLower().left(8)!="https://" && result.url.toLower().left(7)!="http://")
+            {
+                result.url="http://"+result.url;
+            }
         }
     }
 

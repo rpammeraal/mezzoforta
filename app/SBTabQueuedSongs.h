@@ -3,6 +3,8 @@
 
 #include <QMap>
 
+#include "SBIDPlaylist.h"
+#include "SBIDSong.h"
 #include "SBTab.h"
 
 class CurrentPlaylistModel;
@@ -26,30 +28,24 @@ class SBTabQueuedSongs : public SBTab
 public:
     SBTabQueuedSongs(QWidget* parent=0);
 
-    void playItemNow_depreciated(const SBID& id,const bool enqueueFlag=0);	//	depreciate
-        int numSongsInPlaylist() const;
-    inline bool playingRadioFlag_depreciated() const { return _playingRadioFlag; }	//	depreciate
-
+    int numSongsInPlaylist() const;
 
     //	Virtual
     virtual QTableView* subtabID2TableView(int subtabID) const;
 
 public slots:
-    void clearPlaylist_depreciated();
-        void deletePlaylistItem();
-        void movePlaylistItem(const SBID& fromID, const SBID& toID);
-        virtual void playNow(bool enqueueFlag=0);
-        void showContextMenuPlaylist(const QPoint &p);
-        void songChanged(const SBID& song);
-    void startRadio_depreciated();
-        void updateDetail();
+    void deletePlaylistItem();
+    void movePlaylistItem(const SBID& fromID, const SBID& toID);
+    void playlistChanged(const SBIDPlaylist& pl);
+    virtual void playNow(bool enqueueFlag=0);
+    void showContextMenuPlaylist(const QPoint &p);
+    void songChanged(const SBIDSong& song);
 
 protected slots:
     friend class PlayManager;
     void setViewLayout();
 
 private slots:
-    void shufflePlaylist_depreciated();
     virtual void tableViewCellClicked(QModelIndex idx);
     virtual void tableViewCellDoubleClicked(QModelIndex idx);
 
@@ -62,6 +58,7 @@ private:
     virtual SBID _populate(const SBID& id);
     virtual void _populatePost(const SBID& id);
     SBSortFilterProxyQueuedSongsModel* _proxyModel() const;
+    void _updateDetail();
 
 };
 

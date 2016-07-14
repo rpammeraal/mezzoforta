@@ -20,56 +20,7 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent)
 {
 }
 
-void
-PlayerController::setModelCurrentPlaylist_depreciated(SBModelQueuedSongs *mcp)
-{
-    _modelCurrentPlaylist=mcp;
-}
-
 ///	Public slots
-void
-PlayerController::playerPrevious_depreciated()
-{
-    qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
-    ;
-
-    //	If 1st song of playlist is playing, simply do a seek to start.
-    if(_modelCurrentPlaylist->currentPlayID()==0)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        playerSeek(0);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO;
-        _state=PlayerController::sb_player_state_changing_media;
-        _playerStop_depreciated();
-        bool isPlayingFlag=0;
-        SBIDSong previousSong;
-        SBIDSong newSong=_currentSongPlaying;
-
-        //	Get out of loop if we're stuck. Either:
-        //	-	get a song playing, or
-        //	-	the very first song does not play for whatever reason
-        while(isPlayingFlag==0 && (previousSong!=newSong))
-        {
-            previousSong=newSong;
-            newSong=_calculateNextSongID_depreciated(1);
-            qDebug() << SB_DEBUG_INFO << "Calling this->playSong()";
-            isPlayingFlag=playSong(newSong);
-        }
-        //	CWIP:PLAY
-        //	If isPlaying==0 show error
-        qDebug() << SB_DEBUG_INFO;
-        if(!isPlayingFlag)
-        {
-            playerStop();
-        }
-    }
-}
-
 void
 PlayerController::playerRewind()
 {
@@ -78,9 +29,7 @@ PlayerController::playerRewind()
              << "_state_=" << _state
     ;
     qint64 position=_playerInstance[_currentPlayerID].position();
-    qDebug() << SB_DEBUG_INFO << position;
     position=position/1000-10;
-    qDebug() << SB_DEBUG_INFO << position;
     playerSeek(position);
 }
 
@@ -91,77 +40,9 @@ PlayerController::playerForward()
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
     ;
-    if(_modelCurrentPlaylist->currentPlayID()==-1)
-    {
-        return;
-    }
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=(position/1000)+10;
-    qDebug() << SB_DEBUG_INFO;
     playerSeek(position);
-}
-
-//	CWIP: merge with playerPrevious
-void
-PlayerController::playerNext_depreciated()
-{
-    qDebug() << SB_DEBUG_INFO << ">|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|>|";
-    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
-    ;
-
-    _state=PlayerController::sb_player_state_changing_media;
-    _playerStop_depreciated();
-    bool isPlayingFlag=0;
-    //SBID previousSong=_currentSongPlaying;
-    SBIDSong newSong;
-    int maxTries=_modelCurrentPlaylist->rowCount();
-    int currentTry=0;
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    SBTabQueuedSongs* cpl=mw->ui.tabCurrentPlaylist;
-    SB_DEBUG_IF_NULL(cpl);
-
-    //	Get out of loop if we're stuck. Either:
-    //	-	get a song playing, or
-    //	-	the very first song does not play for whatever reason
-    qDebug() << SB_DEBUG_INFO;
-    while(
-        currentTry++<maxTries && //	only try as many times as there are songs, and
-        isPlayingFlag==0         //	we still don't have anything playing as of now
-    )
-    {
-        newSong=_calculateNextSongID_depreciated();
-        qDebug() << SB_DEBUG_INFO << "newSong=" << newSong ;
-        if(newSong==_currentSongPlaying)
-        {
-            //	End of the list
-            if(cpl->playingRadioFlag_depreciated())
-            {
-                qDebug() << SB_DEBUG_INFO;
-                this->playerStop();
-                Context::instance()->getPlayManager()->startRadio();
-                return;
-            }
-            else
-            {
-                this->playerStop();
-                _modelCurrentPlaylist->resetCurrentPlayID_depreciated();
-            }
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << "Calling this->playSong()";
-            isPlayingFlag=playSong(newSong);
-        }
-    }
-    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
-
-    //	CWIP:PLAY
-    //	If isPlaying==0 show error
-    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
-    if(!isPlayingFlag)
-    {
-        playerStop();
-    }
 }
 
 void
@@ -210,31 +91,6 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     }
 }
 
-bool
-PlayerController::playerPlayNonRadio_depreciated(const SBID& id)
-{
-    _radioPlayingFlag_depreciated=0;
-    if(id.sb_item_type()==SBID::sb_type_playlist)
-    {
-        emit playlistChanged_depreciated(id);
-    }
-    else
-    {
-        emit playlistChanged_depreciated(SBID());
-    }
-    return this->playerPlay();
-}
-
-bool
-PlayerController::playerPlayInRadio_depreciated()
-{
-    _radioPlayingFlag_depreciated=1;
-    qDebug() << SB_DEBUG_INFO;
-    emit playlistChanged_depreciated(SBID());
-    return this->playerPlay();
-}
-
-
 ///	Private slots
 
 ///
@@ -245,7 +101,6 @@ PlayerController::playerPlayInRadio_depreciated()
 void
 PlayerController::playerDataClicked(const QUrl &url)
 {
-    qDebug() << SB_DEBUG_INFO << url;
     QStringList l=url.toString().split('_');
     SBID item(static_cast<SBID::sb_type>(l[0].toInt()),l[1].toInt());
     Context::instance()->getNavigator()->openScreenByID(item);
@@ -270,7 +125,6 @@ PlayerController::doInit()
 bool
 PlayerController::playerPlay()
 {
-    qDebug() << SB_DEBUG_INFO;
     qDebug() << SB_DEBUG_INFO << "**************************************";
     qDebug() << SB_DEBUG_INFO
              << "_state_=" << _state
@@ -310,7 +164,6 @@ PlayerController::playerStop()
     _playerProgressSlider[_currentPlayerID]->setValue(0);
     _updatePlayState(PlayerController::sb_player_state_stopped);
     _playerInstance[_currentPlayerID].stop();
-    qDebug() << SB_DEBUG_INFO;
     playerSeek(0);
 }
 
@@ -321,14 +174,12 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBID& song)
+PlayerController::playSong(SBIDSong& song)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     Controller* c=Context::instance()->getController();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-
-    qDebug() << SB_DEBUG_INFO << dal->getSchemaName();
 
     QString path=QString("%1/%2%3%4")
                 .arg(Context::instance()->getProperties()->musicLibraryDirectory())
@@ -336,7 +187,6 @@ PlayerController::playSong(SBID& song)
                 .arg(dal->getSchemaName().length()?"/":"")
                 .arg(song.path)
     ;
-    qDebug() << SB_DEBUG_INFO << path;
 /*
 #ifdef Q_OS_UNIX
             "/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+song.path;
@@ -354,7 +204,7 @@ PlayerController::playSong(SBID& song)
     {
         QString errorMsg=_playerInstance[_currentPlayerID].error();
         c->updateStatusBarText(errorMsg);
-        qDebug() << SB_DEBUG_INFO << errorMsg;
+        qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
         song.errorMsg=errorMsg;
         return 0;
@@ -365,32 +215,15 @@ PlayerController::playSong(SBID& song)
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
-
-    //	Update timestamp in online_performance
-    //	Do this in radio mode only.
-    if(_radioPlayingFlag_depreciated)
-    {
-        DataEntitySong::updateLastPlayDate(_currentSongPlaying);
-    }
-
     return 1;
 }
 
 ///	Private methods
-SBIDSong
-PlayerController::_calculateNextSongID_depreciated(bool previousFlag) const
-{
-    SB_DEBUG_IF_NULL(_modelCurrentPlaylist);
-    return SBIDSong(_modelCurrentPlaylist->getNextSong_depreciated(previousFlag));
-}
-
 void
 PlayerController::_init()
 {
     _currentPlayerID=0;
     _currentSongPlaying=SBID();
-    _modelCurrentPlaylist=NULL;
-    _radioPlayingFlag_depreciated=0;
     _state=PlayerController::sb_player_state_stopped;
 
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -487,18 +320,6 @@ PlayerController::_ms2Duration(quint64 ms) const
     const int hours = (h) % 24;
 
     return Duration(hours,minutes,seconds);
-}
-
-///
-/// \brief PlayerController::_playerStop
-///
-/// Stops the current physical player without changing the UI.
-void
-PlayerController::_playerStop_depreciated()
-{
-    _playerInstance[_currentPlayerID].stop();
-    qDebug() << SB_DEBUG_INFO;
-    playerSeek(0);
 }
 
 void

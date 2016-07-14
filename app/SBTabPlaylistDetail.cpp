@@ -35,10 +35,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
     {
         DataEntityPlaylist pl;
 
-        qDebug() << SB_DEBUG_INFO << assignID.sb_playlist_id << assignID.sb_playlist_position;
-        qDebug() << SB_DEBUG_INFO << "assignID=" << assignID;
-        qDebug() << SB_DEBUG_INFO << "currentID=" << currentID;
-
         pl.deletePlaylistItem(assignID,currentID);
         refreshTabIfCurrent(currentID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
@@ -61,8 +57,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
 void
 SBTabPlaylistDetail::movePlaylistItem(const SBID& fromID, int row)
 {
-    qDebug() << SB_DEBUG_INFO;
-
     _init();
     //	Determine current playlist
     SBID currentID=SBTab::currentID();
@@ -112,8 +106,6 @@ SBTabPlaylistDetail::showContextMenuLabel(const QPoint &p)
     const SBID currentID=SBTab::currentID();
     _lastClickedIndex=QModelIndex();
 
-    qDebug() << SB_DEBUG_INFO << currentID;
-
     _menu=new QMenu(NULL);
 
     _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
@@ -132,7 +124,7 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
 
     SBID selectedID=getSBIDSelected(idx);
-    qDebug() << SB_DEBUG_INFO << selectedID;
+
     //	title etc not populated
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
@@ -264,7 +256,6 @@ SBTabPlaylistDetail::getSBIDSelected(const QModelIndex &idx)
 SBID
 SBTabPlaylistDetail::_populate(const SBID& id)
 {
-    qDebug() << SB_DEBUG_INFO;
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     DataEntityPlaylist pl;

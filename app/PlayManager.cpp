@@ -3,8 +3,9 @@
 #include "PlayManager.h"
 
 #include "Context.h"
-#include "DataEntityPlaylist.h"
 #include "DataEntityCurrentPlaylist.h"
+#include "DataEntityPlaylist.h"
+#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayerController.h"
@@ -65,7 +66,6 @@ PlayManager::playerPlay()
 bool
 PlayManager::playerNext(bool previousFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "start";
     PlayerController* pc=Context::instance()->getPlayerController();
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     int numSongs=mqs?mqs->numSongs():0;
@@ -92,8 +92,6 @@ PlayManager::playerNext(bool previousFlag)
     pc->playerStop();
     while(numTries>0 && isPlayingFlag==0 && exitLoopFlag==0)
     {
-        qDebug() << SB_DEBUG_INFO << numTries << numSongs << isPlayingFlag;
-
         int nextCurrentPlayID=previousFlag?currentPlayID()-1:currentPlayID()+1;
 
         //	Handle end of the list
@@ -128,7 +126,7 @@ PlayManager::playerNext(bool previousFlag)
     }
     if(exitLoopFlag)
     {
-        qDebug() << SB_DEBUG_INFO << "No files found at all";
+        qDebug() << SB_DEBUG_ERROR << "No files found at all";
         SBMessageBox::createSBMessageBox("No playable songs were found.",
             "Is your music library set up correctly?",
             QMessageBox::Warning,
@@ -155,17 +153,16 @@ PlayManager::playItemNow(SBID& toPlay, const bool enqueueFlag)
     bool isPlayingFlag=0;
     PlayerController* pc=Context::instance()->getPlayerController();
 
-    qDebug() << SB_DEBUG_INFO << toPlay;
-
     if(enqueueFlag==0)
     {
         this->clearPlaylist();
         pc->playerStop();
     }
     toPlay.sendToPlayQueue(enqueueFlag);
+    _radioModeFlag=0;
     if(toPlay.sb_item_type()==SBID::sb_type_playlist && enqueueFlag==0)
     {
-        emit playlistChanged(toPlay);
+        emit playlistChanged(SBIDPlaylist(toPlay));
     }
     else
     {
@@ -197,7 +194,8 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     bool isPlayingFlag=0;
     _setCurrentPlayID(playlistIndex);
 
-    SBID song=_songAt(currentPlayID());
+    //	CWIP: change to SBIDSong
+    SBIDSong song=_songAt(currentPlayID());
 
     if(song.sb_item_type()==SBID::sb_type_invalid)
     {
@@ -211,6 +209,10 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         if(isPlayingFlag==0)
         {
             errorMsg=song.errorMsg;
+        }
+        else if(_radioModeFlag)
+        {
+            DataEntitySong::updateLastPlayDate(song);
         }
     }
 
@@ -239,7 +241,6 @@ PlayManager::shufflePlaylist()
 void
 PlayManager::startRadio()
 {
-    qDebug() << SB_DEBUG_INFO;
     _resetCurrentPlayID();
     _radioModeFlag=1;
 
@@ -304,7 +305,6 @@ PlayManager::_init()
 void
 PlayManager::_loadRadio()
 {
-    qDebug() << SB_DEBUG_INFO;
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
     const int firstBatchNumber=5;
@@ -338,7 +338,6 @@ PlayManager::_loadRadio()
     const int maxNumberAttempts=50;
     int songInterval=numSongs/10;
 
-    qDebug() << SB_DEBUG_INFO << "randomizing " << numSongs << "songs";
     bool found=1;
     int nextOpenSlotIndex=0;
     tqs->setViewLayout();
@@ -385,7 +384,6 @@ PlayManager::_loadRadio()
         item.duration=qm->record(idx).value(8).toTime();
 
         playList[nextOpenSlotIndex++]=item;
-        qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex-1 << playList[nextOpenSlotIndex-1];
 
         if(index%songInterval==0 || index+1==numSongs)
         {
@@ -413,9 +411,7 @@ PlayManager::_loadRadio()
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO << "sending to mqs 2nd batch:playList.count()=" << playList.count();
                 mqs->populate(playList,firstBatchLoaded);
-                qDebug() << SB_DEBUG_INFO << "after sending to mqs 2nd batch:playList.count()=" << playList.count();
             }
         }
         index++;

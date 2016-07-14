@@ -4,7 +4,7 @@
 #include <QList>
 #include <QObject>
 
-#include <SBID.h>
+#include <SBIDPlaylist.h>
 
 class QAction;
 class QStandardItem;
@@ -33,7 +33,7 @@ public slots:
     void deletePlaylist();
     void enqueuePlaylist();
     void newPlaylist();
-    void playlistChanged(const SBID& playlistID);
+    void playlistChanged(const SBIDPlaylist& playlistID);
     void playPlaylist();
     void renamePlaylist();
     void showContextMenu(const QPoint& p);

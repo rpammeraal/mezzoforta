@@ -186,7 +186,8 @@ ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
 void
 ScreenStack::updateCurrentScreen(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
+    qDebug() << SB_DEBUG_INFO << currentScreenID << stack.count();
+
     if(currentScreenID>=0 && currentScreenID<stack.count())
     {
         if(id.compareSimple(currentScreen()))
@@ -203,7 +204,7 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "NO SCREENS ON STACK";
+        qDebug() << SB_DEBUG_ERROR << "NO SCREENS ON STACK";
     }
 }
 
