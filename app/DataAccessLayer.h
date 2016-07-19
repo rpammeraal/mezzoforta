@@ -46,16 +46,17 @@ public:
 
     //	Database specific
     const QString& getSchemaName() const;
-    virtual QStringList getAvailableSchemas() const;
+    virtual QStringList availableSchemas() const;
     bool setSchema(const QString& newSchema);
     QString customize(QString& sqlString) const;
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
+    QString getDriverName() const;
     const QString& getGetDate() const;
     const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
-    QString getDriverName() const;
+    virtual bool supportSchemas() const;
 
 //signals:
     //void schemaChanged();

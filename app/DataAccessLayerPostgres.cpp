@@ -4,52 +4,53 @@
 
 DataAccessLayerPostgres::DataAccessLayerPostgres()
 {
-    availableSchemas.clear();
+    _availableSchemas.clear();
 }
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const QString& connectionName) : DataAccessLayer(connectionName)
 {
-    qDebug() << SB_DEBUG_INFO;
-
-    initAvailableSchemas();
+    _initAvailableSchemas();
     setILike("ILIKE");
     setIsNull("COALESCE");
     setGetDate("NOW()");
     setGetDateTime("NOW()");
-
-    qDebug() << SB_DEBUG_INFO;
 }
 
 DataAccessLayerPostgres::DataAccessLayerPostgres(const DataAccessLayerPostgres &c) : DataAccessLayer(c)
 {
-    availableSchemas=c.availableSchemas;
+    _availableSchemas=c._availableSchemas;
 }
 
 DataAccessLayerPostgres&
 DataAccessLayerPostgres::operator =(const DataAccessLayerPostgres& c)
 {
     DataAccessLayer::operator =(c);
-    availableSchemas=c.availableSchemas;
+    _availableSchemas=c._availableSchemas;
 
     return *this;
 }
 
 DataAccessLayerPostgres::~DataAccessLayerPostgres()
 {
-    qDebug() << SB_DEBUG_INFO << "******************************************* DTOR ID=" << dalID;
 }
 
 QStringList
-DataAccessLayerPostgres::getAvailableSchemas() const
+DataAccessLayerPostgres::availableSchemas() const
 {
-    return availableSchemas;
+    return _availableSchemas;
+}
+
+bool
+DataAccessLayerPostgres::supportSchemas() const
+{
+    return 1;
 }
 
 ///	PRIVATE
 void
-DataAccessLayerPostgres::initAvailableSchemas()
+DataAccessLayerPostgres::_initAvailableSchemas()
 {
-    qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:start";
+    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:start";
     const QString q="SELECT schema FROM namespace";
     QSqlQuery query(q,QSqlDatabase::database(this->getConnectionName()));
 
@@ -57,14 +58,14 @@ DataAccessLayerPostgres::initAvailableSchemas()
     {
         QString schema=query.value(0).toString().toLower();
         Common::toTitleCase(schema);
-        availableSchemas << schema;
+        _availableSchemas << schema;
         _setSchema(schema);
         addMissingDatabaseItems();
     }
 
-    qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:schemas=" << availableSchemas;
+    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:schemas=" << _availableSchemas;
 
     _setSchema("rock");	//	common::titlecase
 
-    qDebug() << "DataAccessLayerPostgres::initAvailableSchemas:end";
+    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:end";
 }

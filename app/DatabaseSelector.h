@@ -1,103 +1,40 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//	DatabaseSelector holds all the functionality and screens to open a database.
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #ifndef DATABASESELECTOR_H
 #define DATABASESELECTOR_H
 
-#include <QtSql>
-#include <QString>
 
 #include "ui_DatabaseSelector.h"
 
-class QSqlDatabase;
+#include "DBManager.h"
 
-class DataAccessLayer;
-
-#define SB_DATABASE_TYPE              "databasetype"
-#define SB_DATABASE_NAME              "databasename"
-#define SB_DATABASE_SQLITEPATH        "sqlitepath"
-#define SB_DATABASE_PSQLDATABASENAME  "psqlname"
-#define SB_DATABASE_PSQLHOSTNAME   	  "hostname"
-#define SB_DATABASE_PSQLPORT          "port"
-#define SB_DATABASE_PSQLUSERNAME      "username"
-#define SB_DATABASE_PSQLPASSWORD	  "password"
-
-#define SB_DEFAULT_CONNECTION_NAME "songbase"
-#define SB_TEMPORARY_CONNECTION_NAME "tmp"
-
-class DatabaseSelector : public QDialog
+///
+/// \brief The DatabaseSelector class
+///
+///	DatabaseSelector lets the user select another database.
+/// Opening itself of the database is done by DBManager.
+class DatabaseSelector: public QDialog
 {
     Q_OBJECT
 
 public:
-    //	Ctor will try to open db from settings (startup=1). If this fails,
-    //	or if startup=0, it'll open up dialogbox. Consult databaseOpen() for
-    //	success.
-
-    DatabaseSelector(bool startup=0);
+    DatabaseSelector(const struct DBManager::DatabaseCredentials& dc,QWidget* parent=0);
     ~DatabaseSelector();
 
-    friend QDebug operator<<(QDebug dbg, const DatabaseSelector& ds);
-
-    enum DatabaseType
-    {
-        ExitApp = -2,
-        None = -1,
-        Sqlite = 0,
-        Postgresql = 1,
-        Sam = 2
-    };
-
-    struct DatabaseCredentials
-    {
-        DatabaseType databaseType;
-        QString      databaseName;
-
-        //	Sqlite
-        QString      sqlitePath;
-
-        //	Postgresql
-        QString		 psqlDatabaseName;
-        QString      psqlHostName;
-        int          psqlPort;
-        QString      psqlUserName;
-        QString      psqlPassword;
-    };
-
-    DatabaseType databaseType() const;
-    const QString& databaseName() const;
-    QString getConnectionName() const;
-    bool databaseOpen() const;
-    bool databaseChanged() const;
-    DataAccessLayer* getDataAccessLayer() const;
+    inline struct DBManager::DatabaseCredentials databaseCredentials() const { return _dc; }
 
 protected:
 
 private:
-    Ui::DatabaseSelector ds;
-    bool sqliteDriverAvailable;
-    bool postgresDriverAvailable;
-    bool samDriverAvailable;
-    bool _databaseOpen;
-    bool _databaseChanged;
+    Ui::DatabaseSelector* ui;
+    bool _sqliteDriverAvailable;
+    bool _postgresDriverAvailable;
+    struct DBManager::DatabaseCredentials _dc;
 
-    //	Database settings. These values are persisted in QSettings
-    DatabaseCredentials currentDC;
-
-    bool openDB(DatabaseCredentials& dc);
-    bool openSqliteDB(DatabaseCredentials& dc);
-    bool openPostgresql(DatabaseCredentials& dc);
-
-    void populateUI();
-    void determineAvailableDBTypes();
-    void updateDatabaseCredentials(const DatabaseCredentials& ndc) ;
+    void _populateUI(const struct DBManager::DatabaseCredentials& dc);
+    void _determineAvailableDBTypes();
 
 private slots:
-    void browseFile();
-    void acceptInput();
+    void _browseFile();
+    void _acceptInput();
 };
 
 #endif // DATABASESELECTOR_H

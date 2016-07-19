@@ -22,7 +22,6 @@ int dalCOUNT;
 DataAccessLayer::DataAccessLayer()
 {
     _init();
-    qDebug() << SB_DEBUG_INFO << "******************************************* EMPTY ID=" << dalID;
 }
 
 DataAccessLayer::DataAccessLayer(const QString& connectionName)
@@ -36,7 +35,6 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setIsNull("IFNULL");
     setGetDate("DATE('now')");
     setGetDateTime("DATETIME('now')");
-    qDebug() << SB_DEBUG_INFO << "******************************************* CTOR ID=" << dalID;
     addMissingDatabaseItems();	//	CWIP: already called if postgres. Need to find more elegant way to call this.
 }
 
@@ -44,13 +42,10 @@ DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
 {
     _init();
     _init(c);
-    qDebug() << SB_DEBUG_INFO << "******************************************* CCTOR ID" << c.dalID << " TO " << this->dalID;
 }
 
 DataAccessLayer::~DataAccessLayer()
 {
-
-    qDebug() << SB_DEBUG_INFO << "******************************************* DTOR ID=" << dalID;
 }
 
 bool
@@ -123,7 +118,6 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
 DataAccessLayer&
 DataAccessLayer::operator=(const DataAccessLayer& c)
 {
-    qDebug() << SB_DEBUG_INFO << "******************************************* ASSIGN ID" << c.dalID << " TO " << this->dalID;
     _init(c);
 
     return *this;
@@ -153,7 +147,7 @@ DataAccessLayer::getSchemaName() const
 }
 
 QStringList
-DataAccessLayer::getAvailableSchemas() const
+DataAccessLayer::availableSchemas() const
 {
     QStringList sl;
     sl.append(getSchemaName());
@@ -164,7 +158,7 @@ bool
 DataAccessLayer::setSchema(const QString &newSchema)
 {
     bool rc=0;
-    if(getAvailableSchemas().contains(newSchema))
+    if(availableSchemas().contains(newSchema))
     {
         _schemaName=newSchema;
         //emit schemaChanged();
@@ -227,6 +221,12 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
+bool
+DataAccessLayer::supportSchemas() const
+{
+    return 0;
+}
+
 ///	Protected
 
 ///
@@ -238,7 +238,6 @@ void
 DataAccessLayer::addMissingDatabaseItems()
 {
     QStringList allSQL;
-    qDebug() << SB_DEBUG_INFO << getSchemaName();
 
     allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN soundex VARCHAR NULL");
     allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___song ADD COLUMN soundex VARCHAR NULL");

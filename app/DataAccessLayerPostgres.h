@@ -15,14 +15,15 @@ public:
     DataAccessLayerPostgres& operator= (const DataAccessLayerPostgres& c);
     ~DataAccessLayerPostgres();
 
-    virtual QStringList getAvailableSchemas() const;
+    virtual QStringList availableSchemas() const;
+    virtual bool supportSchemas() const;
 
 protected:
 
 private:
-    QStringList availableSchemas;
+    QStringList _availableSchemas;
 
-    void initAvailableSchemas();
+    void _initAvailableSchemas();
 };
 
 #endif // DATAACCESSLAYERPOSTGRES_H

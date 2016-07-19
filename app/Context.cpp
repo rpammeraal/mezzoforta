@@ -22,12 +22,6 @@ Context::setController(Controller* c)
 //}
 
 void
-Context::setDataAccessLayer(DataAccessLayer *dal)
-{
-    _dal=dal;
-}
-
-void
 Context::setMainWindow(MainWindow* mw)
 {
     _mw=mw;
@@ -52,10 +46,9 @@ Context::setTabQueuedSongs(SBTabQueuedSongs* tabQS)
 
 ///	PROTECTED
 void
-Context::doInit(MainWindow* mw,DataAccessLayer* dal)
+Context::doInit(MainWindow* mw)
 {
     setMainWindow(mw);
-    setDataAccessLayer(dal);
 
     _pc.doInit();   //	no dep
     _pm.doInit();   //	dependency on PlayerController
@@ -64,6 +57,7 @@ Context::doInit(MainWindow* mw,DataAccessLayer* dal)
     _st.doInit();   //	no dep
     _nav.doInit();  //	no dep
     _p.doInit();    //	no dep
+    _dbm.doInit();
 }
 
 ///	PRIVATE

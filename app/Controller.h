@@ -67,7 +67,7 @@ private:
     //	Handle reset of filters and selections
 
     //	UI config
-    bool openMainWindow(bool startup);
+    bool openMainWindow(bool appStartUpFlag=1);
         void setupUI();
         void configureMenus();
         void configureMenuItems(const QList<QAction *>& list);

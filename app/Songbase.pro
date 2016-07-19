@@ -4,7 +4,6 @@ HEADERS     = \
     MainWindow.h \
     Controller.h \
     Common.h \
-    DatabaseSelector.h \
     DataAccessLayer.h \
     DataAccessLayerPostgres.h \
     SBID.h \
@@ -60,14 +59,15 @@ HEADERS     = \
     SBIDAlbum.h \
     SBIDPlaylist.h \
     Properties.h \
-    MusicLibrary.h
+    MusicLibrary.h \
+    DatabaseSelector.h \
+    DBManager.h
 
 SOURCES     = \
     main.cpp \
     MainWindow.cpp \
     Controller.cpp \
     Common.cpp \
-    DatabaseSelector.cpp \
     DataAccessLayer.cpp \
     DataAccessLayerPostgres.cpp \
     SBID.cpp \
@@ -123,7 +123,9 @@ SOURCES     = \
     SBIDAlbum.cpp \
     SBIDPlaylist.cpp \
     Properties.cpp \
-    MusicLibrary.cpp
+    MusicLibrary.cpp \
+    DatabaseSelector.cpp \
+    DBManager.cpp
 
 # install
 target.path = .

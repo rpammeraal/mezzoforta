@@ -6,6 +6,7 @@
 #include "Chooser.h"
 #include "Common.h"
 #include "DataAccessLayer.h"
+#include "DBManager.h"
 #include "Navigator.h"
 #include "PlayerController.h"
 #include "PlayManager.h"
@@ -34,10 +35,10 @@ public:
     }
 
     inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
-    //inline Chooser* getChooser() const { SB_DEBUG_IF_NULL(_lcc); return _lcc; }
     inline Chooser* getChooser() { return &_lcc; }
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
-    inline DataAccessLayer* getDataAccessLayer() const { SB_DEBUG_IF_NULL(_dal); return _dal; }
+    inline DataAccessLayer* getDataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
+    inline DBManager* getDBManager() { return &_dbm; }
     inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
     inline Navigator* getNavigator() { return &_nav; }
     inline PlayerController* getPlayerController() { return &_pc; }
@@ -50,8 +51,6 @@ public:
 
     void setBackgroundThread(BackgroundThread* bgt);
     void setController(Controller* c);
-    //void setChooser(Chooser* lcc);
-    void setDataAccessLayer(DataAccessLayer* dal);
     void setMainWindow(MainWindow* mw);
     void setTab(SBTab* tab);
     void setTabQueuedSongs(SBTabQueuedSongs* tabQS);
@@ -59,19 +58,19 @@ public:
 protected:
     friend class Controller;
 
-    void doInit(MainWindow* mw,DataAccessLayer* dal);
+    void doInit(MainWindow* mw);
 
 private:
     //	Pointers
     BackgroundThread* _bgt;
     Controller* _c;
-    DataAccessLayer* _dal;
     MainWindow* _mw;
     SBTab* _tab;
     SBTabQueuedSongs* _tabQS;
 
     //	Instantiated
     Chooser _lcc;
+    DBManager _dbm;
     Navigator _nav;
     PlayerController _pc;
     PlayManager _pm;

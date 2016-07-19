@@ -139,6 +139,12 @@ PlayManager::playerNext(bool previousFlag)
 }
 
 void
+PlayManager::playerStop()
+{
+    Context::instance()->getPlayerController()->playerStop();
+}
+
+void
 PlayManager::clearPlaylist()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();

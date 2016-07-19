@@ -18,7 +18,7 @@
 #include "DataEntitySong.h"
 #include "DataEntityPerformer.h"
 #include "DataEntityPlaylist.h"
-#include "DatabaseSelector.h"
+#include "DBManager.h"
 #include "ExternalData.h"
 #include "MainWindow.h"
 #include "MusicLibrary.h"
@@ -26,6 +26,7 @@
 #include "PlayerController.h"
 #include "Properties.h"
 #include "SBID.h"
+#include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
@@ -44,6 +45,7 @@ Controller::Controller(int argc, char *argv[], QApplication* napp) : app(napp)
     Context::instance()->setController(this);
 
     _initSuccessFull=openMainWindow(1);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 Controller::~Controller()
@@ -90,6 +92,33 @@ Controller::refreshModels()
 void
 Controller::openDatabase()
 {
+    //	If song is playing, stop player and proceed.
+    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController::sb_player_state state=pc->playState();
+
+    if(state==PlayerController::sb_player_state_play || state==PlayerController::sb_player_state_pause)
+    {
+        int action=SBMessageBox::createSBMessageBox("Song is still playing",
+                                         "Music will be stopped before selecting another database. Click OK to proceed.",
+                                         QMessageBox::Warning,
+                                         QMessageBox::Ok | QMessageBox::Cancel,
+                                         QMessageBox::Cancel,
+                                         QMessageBox::Cancel,
+                                         1);
+
+        if(action==QMessageBox::Cancel)
+        {
+            return;
+        }
+        else
+        {
+            PlayManager* pm=Context::instance()->getPlayManager();
+            pm->playerStop();
+            pm->clearPlaylist();
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO;
     openMainWindow(0);
 }
 
@@ -133,7 +162,7 @@ Controller::updateStatusBarText(const QString &s)
 
 ///
 /// \brief Controller::openMainWindow
-/// \param startup
+/// \param appStartUpFlag
 /// \return
 ///
 /// openMainWindow takes care of:
@@ -144,91 +173,85 @@ Controller::updateStatusBarText(const QString &s)
 /// -	sets up Data Access
 /// -	sets up all models
 bool
-Controller::openMainWindow(bool startup)
+Controller::openMainWindow(bool appStartUpFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "openMainWindow:start";
-
     //	Instantiate DatabaseSelector, check if database could be opened.
-    DatabaseSelector* ds=new DatabaseSelector(startup);
-
-    if(startup && ds->databaseOpen()==0)
+    DBManager* dbm=Context::instance()->getDBManager();
+    if(appStartUpFlag)
     {
-        //	no database opened upin startup.
+        dbm->openDefaultDatabase();
+    }
+    else
+    {
+        dbm->openDatabase();
+    }
+
+    if(appStartUpFlag==0 && dbm->databaseChanged()==0)
+    {
+        //	no database opened upin appStartUpFlag.
+        qDebug() << SB_DEBUG_INFO;
+        return 0;
+    }
+    if(dbm->databaseOpened()==0)
+    {
+        qDebug() << SB_DEBUG_INFO;
         return 0;
     }
 
-    if(ds->databaseChanged() || startup)
+    QPixmap pm(":/images/moose7.2.png");
+    QSplashScreen splash(pm);
+
+    if(appStartUpFlag)
     {
-        QPixmap pm(":/images/moose7.2.png");
-        qDebug() << SB_DEBUG_INFO << pm.isNull();
-        QSplashScreen splash(pm);
-
-        if(startup)
-        {
-            splash.show();
-            app->processEvents();
-        }
-        qDebug() << SB_DEBUG_INFO;
-
-        MainWindow* oldMW=Context::instance()->getMainWindow();
-        if(oldMW)
-        {
-            Context::instance()->setMainWindow(NULL);
-            oldMW->close();
-            oldMW=NULL;
-        }
-        qDebug() << SB_DEBUG_INFO;
-
-        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-        if(dal)
-        {
-            delete dal;
-            dal=NULL;
-        }
-        dal=ds->getDataAccessLayer();
-
-        MainWindow* mw=new MainWindow();
-        SB_DEBUG_IF_NULL(mw);
-        qDebug() << SB_DEBUG_INFO;
-        Context::instance()->doInit(mw,dal);	//	This has to be done as soon as we have mw
-
-        init();
-
-        qDebug() << SB_DEBUG_INFO;
-        Navigator* n=Context::instance()->getNavigator();
-        n->resetAllFiltersAndSelections();
-
-        refreshModels();
-
-        setupUI();
-
-        configureMenus();
-
-        mw->setWindowTitle(mw->windowTitle() + " - " + ds->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
-
-        DataEntitySong::updateSoundexFields();
-        DataEntityPerformer::updateSoundexFields();
-
-        _resetStatusBar();
-
-        if(startup)
-        {
-            splash.finish(mw);
-        }
-        mw->show();
-
-        Context::instance()->getNavigator()->openOpener();
-
+        splash.show();
+        app->processEvents();
     }
-    qDebug() << SB_DEBUG_INFO << "openMainWindow:end";
+
+    MainWindow* oldMW=Context::instance()->getMainWindow();
+    if(oldMW)
+    {
+        Context::instance()->setMainWindow(NULL);
+        oldMW->close();
+        oldMW=NULL;
+    }
+
+    MainWindow* mw=new MainWindow();
+    SB_DEBUG_IF_NULL(mw);
+
+    Context::instance()->doInit(mw);	//	This has to be done as soon as we have mw
+
+    init();
+
+    Navigator* n=Context::instance()->getNavigator();
+    n->resetAllFiltersAndSelections();
+
+    refreshModels();
+
+    setupUI();
+
+    configureMenus();
+
+    mw->setWindowTitle(mw->windowTitle() + " - " + dbm->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
+
+    DataEntitySong::updateSoundexFields();
+    DataEntityPerformer::updateSoundexFields();
+
+    _resetStatusBar();
+
+    if(appStartUpFlag)
+    {
+        splash.finish(mw);
+    }
+    mw->show();
+
+    Context::instance()->getNavigator()->openOpener();
+
     return 1;
 }
 
 void
 Controller::setupUI()
 {
-    qDebug() << SB_DEBUG_INFO;
-
     //	Frequently used pointers
     MainWindow* mw=Context::instance()->getMainWindow();
 
@@ -270,6 +293,24 @@ Controller::setupUI()
     //	Have SBTabSongsAll start populating
     SBTabSongsAll* tsa=mw->ui.tabAllSongs;
     tsa->preload();
+
+    //	Set up schema dropdown box
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+
+    if(dal->supportSchemas())
+    {
+        mw->ui.cbSchema->clear();
+        mw->ui.cbSchema->insertItems(0,dal->availableSchemas());
+        mw->ui.cbSchema->setVisible(1);
+        mw->ui.labelSchema->setVisible(1);
+        mw->ui.frSchema->setVisible(1);
+    }
+    else
+    {
+        mw->ui.cbSchema->setVisible(0);
+        mw->ui.labelSchema->setVisible(0);
+        mw->ui.frSchema->setVisible(0);
+    }
 
     return;
 }
@@ -335,27 +376,26 @@ void
 Controller::setFontSizes() const
 {
     qDebug() << SB_DEBUG_INFO << app->platformName();
-        if(app->platformName()=="windows")
+    if(app->platformName()=="windows")
+    {
+        QWidgetList l=app->allWidgets();
+        for(int i=0;i<l.count();i++)
         {
-            QWidgetList l=app->allWidgets();
-            for(int i=0;i<l.count();i++)
+            QWidget* w=l.at(i);
+            const QString cn=w->metaObject()->className();
+            const QString on=w->objectName();
+            if(cn=="QLabel")
             {
-                QWidget* w=l.at(i);
-                const QString cn=w->metaObject()->className();
-                const QString on=w->objectName();
-                if(cn=="QLabel")
+                QLabel* l=dynamic_cast<QLabel* >(w);
+                if(l)
                 {
-                    QLabel* l=dynamic_cast<QLabel* >(w);
-                    if(l)
-                    {
-                        QFont f=l->font();
-                        f.setPointSize( (f.pointSize()-12 > 9 ? f.pointSize()-12 : 9));
-                        l->setFont(f);
-                    }
+                    QFont f=l->font();
+                    f.setPointSize( (f.pointSize()-12 > 9 ? f.pointSize()-12 : 9));
+                    l->setFont(f);
                 }
             }
-
         }
+    }
 }
 void
 Controller::init()
@@ -383,7 +423,6 @@ Controller::init()
 void
 Controller::_resetStatusBar()
 {
-    qDebug() << SB_DEBUG_INFO;
     Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
 }
 
@@ -391,6 +430,5 @@ void
 Controller::_updateAllplaylistDurations()
 {
     updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
-    qDebug() << SB_DEBUG_INFO << updateAllPlaylistDurationTimer.interval();
     emit recalculateAllPlaylistDurations();
 }

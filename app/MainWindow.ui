@@ -183,7 +183,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_01">
+            <spacer name="spTitle">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -216,6 +216,9 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_02">
+              <property name="spacing">
+               <number>0</number>
+              </property>
               <property name="leftMargin">
                <number>0</number>
               </property>
@@ -229,9 +232,107 @@
                <number>0</number>
               </property>
               <item>
-               <layout class="QVBoxLayout" name="frSeachLayout">
+               <layout class="QVBoxLayout" name="frSchemaSearchLayout">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
                 <item>
-                 <widget class="QFrame" name="frSearchSchemaInner">
+                 <widget class="QFrame" name="frSchema">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>22</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>0</number>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_03">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <layout class="QHBoxLayout" name="hlSchema">
+                     <property name="spacing">
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <spacer name="hsSchema">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="labelSchema">
+                       <property name="font">
+                        <font>
+                         <family>Trebuchet MS</family>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>Database:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QComboBox" name="cbSchema">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <family>Trebuchet MS</family>
+                        </font>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="frSearch">
                   <property name="minimumSize">
                    <size>
                     <width>200</width>
@@ -264,7 +365,7 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <layout class="QHBoxLayout" name="hlSearchSchemaInner_2">
+                    <layout class="QHBoxLayout" name="hlSearch">
                      <item>
                       <widget class="QPushButton" name="buttonBackward">
                        <property name="minimumSize">
@@ -333,7 +434,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer01">
+                 <spacer name="vsSchemaSearch">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -413,7 +514,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>9</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -4461,7 +4562,7 @@ Click on 'All Songs' to continue.</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -4656,10 +4757,7 @@ Click on 'All Songs' to continue.</string>
   <tabstop>performerDetailNewsPage</tabstop>
   <tabstop>mainTab</tabstop>
   <tabstop>albumEditSongList</tabstop>
-  <tabstop>searchEdit</tabstop>
-  <tabstop>buttonBackward</tabstop>
   <tabstop>pbPerformerEditRemoveRelatedPerformer</tabstop>
-  <tabstop>buttonForward</tabstop>
   <tabstop>leftColumnChooser</tabstop>
   <tabstop>performerEditRelatedPerformersList</tabstop>
   <tabstop>pbPerformerEditAddRelatedPerformer</tabstop>

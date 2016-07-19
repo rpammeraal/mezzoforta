@@ -35,6 +35,7 @@ public slots:
     void playerPrevious();
     bool playerPlay();
     bool playerNext(bool previousFlag=0);
+    void playerStop();
 
     //	Playlist et al related
     void clearPlaylist();
