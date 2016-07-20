@@ -63,7 +63,6 @@ SBTab::refreshTabIfCurrent(const SBID &id)
 void
 SBTab::setSubtab(const SBID& id) const
 {
-    qDebug() << SB_DEBUG_INFO << id.subtabID;
     QTabWidget* tw=tabWidget();
     if(tw)
     {
@@ -75,7 +74,6 @@ SBTab::setSubtab(const SBID& id) const
         }
         if(subtabID!=INT_MAX)
         {
-            qDebug() << SB_DEBUG_INFO << "subtab set";
             tw->setCurrentIndex(id.subtabID);
         }
     }
@@ -83,7 +81,6 @@ SBTab::setSubtab(const SBID& id) const
     QTableView* ctv=subtabID2TableView(id.subtabID);
     if(ctv && id.sortColumn!=INT_MAX)
     {
-        qDebug() << SB_DEBUG_INFO << "sort applied" << id.sortColumn;
         ctv->sortByColumn(abs(id.sortColumn),(id.sortColumn>0?Qt::AscendingOrder:Qt::DescendingOrder));
     }
 }
@@ -120,7 +117,6 @@ SBTab::handleEscapeKey()
                                                    QMessageBox::No,
                                                    QMessageBox::No )==QMessageBox::No)?0:1;
     }
-    qDebug() << SB_DEBUG_INFO << closeTab;
     return closeTab;	//	Assuming a non-edit tab, default to close tab
 }
 
@@ -153,14 +149,12 @@ QTableView*
 SBTab::subtabID2TableView(int subtabID) const
 {
     Q_UNUSED(subtabID);
-    qDebug() << SB_DEBUG_INFO;
     return NULL;
 }
 
 QTabWidget*
 SBTab::tabWidget() const
 {
-    qDebug() << SB_DEBUG_INFO;
     return NULL;
 }
 
@@ -245,48 +239,33 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     selectedPerformerID.assign(SBID::sb_type_performer,-1);
     selectedPerformerID.performerName=editPerformerName;
 
-    qDebug() << SB_DEBUG_INFO << "saveNewPerformer:" << saveNewPerformer;
-    qDebug() << SB_DEBUG_INFO << "editPerformerName:" << editPerformerName;
-    qDebug() << SB_DEBUG_INFO << "selectedPerformerID" << selectedPerformerID;
-    qDebug() << SB_DEBUG_INFO << "newID" << newID;
-
     DataEntityPerformer* p=new DataEntityPerformer();
     SBSqlQueryModel* performerMatches=p->matchPerformer(newID, editPerformerName);
-    qDebug() << SB_DEBUG_INFO << performerMatches->rowCount();
-    qDebug() << SB_DEBUG_INFO << performerMatches->record(1).value(0).toInt();
 
     if(performerMatches->rowCount()>1)
     {
-        qDebug() << SB_DEBUG_INFO;
         if(performerMatches->rowCount()>=2 &&
             performerMatches->record(1).value(0).toInt()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            qDebug() << SB_DEBUG_INFO;
             selectedPerformerID.sb_performer_id=performerMatches->record(1).value(1).toInt();
             selectedPerformerID.performerName=performerMatches->record(1).value(2).toString();
-            qDebug() << SB_DEBUG_INFO << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
             resultCode=1;
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(newID,performerMatches);
             pu->exec();
 
-            qDebug() << SB_DEBUG_INFO << pu->hasSelectedItem();
-
             //	Go back to screen if no item has been selected
             if(pu->hasSelectedItem()==0)
             {
-                qDebug() << SB_DEBUG_INFO;
                 return false;
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO;
                 selectedPerformerID=pu->getSBID();
             }
         }
@@ -294,19 +273,13 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
         //	Update field
         if(field)
         {
-            qDebug() << SB_DEBUG_INFO;
             field->setText(selectedPerformerID.performerName);
         }
-        qDebug() << SB_DEBUG_INFO << "selected performer:" << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
     }
-
-    qDebug() << SB_DEBUG_INFO << "saveNewPerformer:" << saveNewPerformer;
-    qDebug() << SB_DEBUG_INFO << "selectedPerformerID.sb_performer_id" << selectedPerformerID.sb_performer_id;
 
     if(selectedPerformerID.sb_performer_id==-1 && saveNewPerformer==1)
     {
         //	Save new performer if new
-        qDebug() << SB_DEBUG_INFO << "save new performer:" << selectedPerformerID.sb_performer_id << selectedPerformerID.performerName;
         resultCode=p->saveNewPerformer(selectedPerformerID);
 
     }
@@ -315,8 +288,6 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
         newID.sb_performer_id=selectedPerformerID.sb_performer_id;
         newID.performerName=selectedPerformerID.performerName;
     }
-    qDebug() << SB_DEBUG_INFO << resultCode;
-    qDebug() << SB_DEBUG_INFO << "newID:" << newID.sb_performer_id << newID.performerName;
     return resultCode;
 }
 
@@ -340,7 +311,6 @@ SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
 void
 SBTab::_populatePre(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO;
     Q_UNUSED(id);
     Context::instance()->setTab(this);
 }
@@ -355,9 +325,7 @@ SBTab::_populate(const SBID &id)
 void
 SBTab::_populatePost(const SBID& id)
 {
-    qDebug() << SB_DEBUG_INFO;
     this->setSubtab(id);
-    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Protected slots
@@ -365,12 +333,9 @@ void
 SBTab::sortOrderChanged(int column)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
-    qDebug() << SB_DEBUG_INFO;
-    st->debugShow("sortOrderChanged:before");
     if(st && st->getScreenCount())
     {
         SBID id=currentID();
-        qDebug() << SB_DEBUG_INFO << id.sortColumn;
 
         if(abs(id.sortColumn)==abs(column))
         {
@@ -385,12 +350,8 @@ SBTab::sortOrderChanged(int column)
         {
             id.subtabID=getFirstEligibleSubtabID();
         }
-        qDebug() << SB_DEBUG_INFO << id.sortColumn;
-        qDebug() << SB_DEBUG_INFO << id;
         st->updateCurrentScreen(id);
     }
-    qDebug() << SB_DEBUG_INFO;
-    st->debugShow("after sortOrderChanged");
 }
 
 void
@@ -398,7 +359,6 @@ SBTab::tabBarClicked(int index)
 {
     _currentSubtabID=index;
     ScreenStack* st=Context::instance()->getScreenStack();
-    st->debugShow("before tabBarClicked");
 
     //	get sort order for clicked tab
     int prevSortColumn=INT_MAX;
@@ -417,10 +377,8 @@ SBTab::tabBarClicked(int index)
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "same tab -- no effect";
+        qDebug() << SB_DEBUG_WARNING << "same tab -- no effect";
     }
-
-    qDebug() << SB_DEBUG_INFO;
 
     //	Update screenstack entry with subtab clicked.
     if(st && st->getScreenCount())
@@ -450,9 +408,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
             id=m->determineSBID(idy);
-            qDebug() << SB_DEBUG_INFO << "call to openScreenByID" << id;
             Context::instance()->getNavigator()->openScreenByID(id);
-            qDebug() << SB_DEBUG_INFO;
         }
     }
 }

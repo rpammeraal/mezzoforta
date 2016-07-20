@@ -85,7 +85,6 @@ Controller::refreshModels()
         c, SIGNAL(activated(QString)),
         mw->ui.searchEdit, SLOT(clear()),
         Qt::QueuedConnection);	//	this will clear the search box
-
 }
 
 ///	Public slots:
@@ -216,6 +215,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     }
 
     MainWindow* mw=new MainWindow();
+    mw->hide();
     SB_DEBUG_IF_NULL(mw);
 
     Context::instance()->doInit(mw);	//	This has to be done as soon as we have mw
@@ -243,6 +243,8 @@ Controller::openMainWindow(bool appStartUpFlag)
         splash.finish(mw);
     }
     mw->show();
+
+
 
     Context::instance()->getNavigator()->openOpener();
 

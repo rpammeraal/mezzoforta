@@ -14,8 +14,6 @@
 
 SBModelQueuedSongs::SBModelQueuedSongs(QObject* parent):QStandardItemModel(parent)
 {
-    qDebug() << SB_DEBUG_INFO << "++++++++++++++++++++++++++++++++++++++";
-    qDebug() << SB_DEBUG_INFO;
     _currentPlayID=-1;
 }
 
@@ -142,7 +140,6 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
     QStandardItem* item;
     int itemID=-1;
 
-
     switch((SBModelQueuedSongs::sb_column_type)idx.column())
     {
     case SBModelQueuedSongs::sb_column_deleteflag:
@@ -171,6 +168,16 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
 
         item=this->item(idx.row(),SBModelQueuedSongs::sb_column_position);
         id.sb_position=(item!=NULL)?item->text().toInt():-1;
+
+        //	Fill in text attributes
+        item=this->item(idx.row(),SBModelQueuedSongs::sb_column_songtitle);
+        id.songTitle=(item!=NULL)?item->text():QString();
+
+        item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
+        id.performerName=(item!=NULL)?item->text():QString();
+
+        item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
+        id.albumTitle=(item!=NULL)?item->text():QString();
         break;
 
     case SBModelQueuedSongs::sb_column_performername:
@@ -178,6 +185,10 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
         item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
         itemID=(item!=NULL)?item->text().toInt():-1;
         id=SBID(itemType,itemID);
+
+        //	Fill in text attributes
+        item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
+        id.performerName=(item!=NULL)?item->text():QString();
         break;
 
     case SBModelQueuedSongs::sb_column_albumtitle:
@@ -185,6 +196,10 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
         item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
         itemID=(item!=NULL)?item->text().toInt():-1;
         id=SBID(itemType,itemID);
+
+        //	Fill in text attributes
+        item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
+        id.albumTitle=(item!=NULL)?item->text():QString();
         break;
     }
     return id;
@@ -455,7 +470,6 @@ SBModelQueuedSongs::removeRows(int row, int count, const QModelIndex &parent)
 void
 SBModelQueuedSongs::debugShow(const QString& title)
 {
-    qDebug() << SB_DEBUG_INFO << title;
     for(int i=0;i<this->rowCount();i++)
     {
         QString row=QString("row=%1").arg(i);
@@ -475,7 +489,6 @@ SBModelQueuedSongs::debugShow(const QString& title)
                 }
             }
         }
-        qDebug() << SB_DEBUG_INFO << row;
     }
 }
 
@@ -580,7 +593,6 @@ SBModelQueuedSongs::setCurrentPlayID(int playID)
 int
 SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "*********************************************************************************************";
     QMap<int,int> pp2vpMap=_populateMapPlaylistPosition2ViewPosition();
 
     QList<int> usedIndex;                           //	list of already used random numbers (1-based)

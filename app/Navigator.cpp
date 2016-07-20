@@ -80,7 +80,7 @@ Navigator::openScreenByID(SBID &id)
 
     if(st->getScreenCount() && id.compareSimple(st->currentScreen()))
     {
-        qDebug() << SB_DEBUG_INFO << "dup call to current screen" << id;
+        qDebug() << SB_DEBUG_WARNING << "dup call to current screen" << id;
         return;
     }
 
@@ -204,7 +204,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     if(closeTab==1)
     {
-        _moveTab(-1);
+        _moveFocusToTab(-1);
     }
 }
 
@@ -421,13 +421,13 @@ Navigator::setFocus()
 void
 Navigator::tabBackward()
 {
-    _moveTab(-1);
+    _moveFocusToTab(-1);
 }
 
 void
 Navigator::tabForward()
 {
-    _moveTab(1);
+    _moveFocusToTab(1);
 }
 
 ///	PROTECTED
@@ -454,13 +454,13 @@ Navigator::_activateTab(const SBID& to)
     //		1.	Check for non-initialized SBID
     if(id.sb_item_type()==SBID::sb_type_invalid)
     {
-        if(st->count()==0)
-        {
-            showSonglist();
-            return SBID();
-        }
-        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type();
-        return id;
+        //	Deliberately clear the screen stack and show the All Songs list.
+        //	This is valid if right at opener an item is searched and displayed. If then escape key is pressed, there
+        //	is nothing prior in the screen stack.
+        qDebug() << SB_DEBUG_WARNING << "Clearing screen stack and showing all songs -- sb_type_invalid encountered";
+        st->clear();
+        showSonglist();
+        return SBID();
     }
 
     //		2.	Check that current entry in screenstack corresponds with id
@@ -636,14 +636,14 @@ Navigator::_checkOutstandingEdits() const
         {
             hasOutstandingEdits=1;
         }
-        else
-        {
-            ScreenStack* st=Context::instance()->getScreenStack();
-            if(st)
-            {
-                st->removeScreen(st->currentScreen(),1);
-            }
-        }
+//        else
+//        {
+//            ScreenStack* st=Context::instance()->getScreenStack();
+//            if(st)
+//            {
+//                st->removeScreen(st->currentScreen(),1);
+//            }
+//        }
     }
     return hasOutstandingEdits;
 }
@@ -697,7 +697,7 @@ Navigator::_filterSongs(const SBID &id)
 }
 
 void
-Navigator::_moveTab(int direction)
+Navigator::_moveFocusToTab(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     SBID id;

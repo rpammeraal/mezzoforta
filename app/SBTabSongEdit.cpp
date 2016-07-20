@@ -72,8 +72,6 @@ SBTabSongEdit::save() const
     SBID orgSongID=this->currentID();
     SBID newSongID=orgSongID;
 
-    Context::instance()->getScreenStack()->debugShow("save");
-
     qDebug() << SB_DEBUG_INFO << "orgSong" << orgSongID;
     qDebug() << SB_DEBUG_INFO << "newSong" << newSongID;
 
@@ -221,8 +219,6 @@ SBTabSongEdit::save() const
     qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.sb_song_id;
     qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.sb_song_id;
 
-    Context::instance()->getScreenStack()->debugShow("save_225");
-
     if(orgSongID!=newSongID ||
         orgSongID.year!=newSongID.year ||
         orgSongID.notes!=newSongID.notes ||
@@ -263,9 +259,7 @@ SBTabSongEdit::save() const
         }
     }
     //	Close screen
-    Context::instance()->getScreenStack()->debugShow("save_264");
     Context::instance()->getNavigator()->closeCurrentTab();
-    Context::instance()->getScreenStack()->debugShow("save_266");
 }
 
 void

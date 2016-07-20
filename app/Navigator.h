@@ -71,7 +71,7 @@ private:
     bool _checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
     void _init();
     void _filterSongs(const SBID& id);
-    void _moveTab(int direction);
+    void _moveFocusToTab(int direction);
 };
 
 #endif // SONGLISTSCREENHANDLER_H

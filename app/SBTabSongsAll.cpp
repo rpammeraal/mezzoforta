@@ -172,7 +172,7 @@ SBID
 SBTabSongsAll::_populate(const SBID &id)
 {
     Q_UNUSED(id);
-    SBID all=SBID(SBID::sb_type_allsongs,0);
-    SBTab::_populate(all);
-    return all;
+    //SBID all=SBID(SBID::sb_type_allsongs,0);
+    SBTab::_populate(id);
+    return id;
 }

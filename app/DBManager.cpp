@@ -81,7 +81,6 @@ DBManager::openDefaultDatabase()
     dc.psqlUserName=    settings.value(SB_DATABASE_PSQLUSERNAME).toString();
     dc.psqlPassword=    settings.value(SB_DATABASE_PSQLPASSWORD).toString();
 
-    debugShow(dc,"openDefaultDB");
     if(dc.sqlitePath.length()==0)
     {
         dc.sqlitePath=QDir::homePath();
@@ -102,7 +101,6 @@ DBManager::openDatabase()
 
     DatabaseSelector ds(DatabaseCredentials());
     struct DatabaseCredentials newDC=ds.databaseCredentials();
-    debugShow(newDC,"after _open");
     if(_openDatabase(newDC)==0)
     {
         //	Reopen previously current database
@@ -115,8 +113,6 @@ DBManager::openDatabase()
             currentDC.psqlDatabaseName!=newDC.psqlDatabaseName ||
             currentDC.psqlHostName!=newDC.psqlHostName
         )?1:0;
-
-    debugShow(_dc,"end of open");
 }
 
 ///	Protected methods
@@ -182,7 +178,6 @@ DBManager::_openDatabase(struct DatabaseCredentials &dc)
             break;
     }
 
-    debugShow(dc,"proposed dc");
     if(rc==1)
     {
         //	Persist
@@ -192,7 +187,6 @@ DBManager::_openDatabase(struct DatabaseCredentials &dc)
         //	Create new DataAccessLayer
         _createDAL();
     }
-    debugShow(_dc,"end of _open");
     return rc;
 }
 
@@ -305,8 +299,6 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
 void
 DBManager::_updateDatabaseCredentials(const struct DatabaseCredentials &dc)
 {
-    debugShow(dc,"updateDBCredentials");
-
     QSettings settings;
     settings.setValue(SB_DATABASE_TYPE,      dc.databaseType);
     settings.setValue(SB_DATABASE_NAME,      dc.databaseName);

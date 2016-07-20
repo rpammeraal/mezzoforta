@@ -29,7 +29,7 @@ ScreenStack::count() const
 SBID
 ScreenStack::popScreen()
 {
-    debugShow("popScreen:before");
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     SBID id;
 
     if(stack.isEmpty()==0)
@@ -42,13 +42,14 @@ ScreenStack::popScreen()
             currentScreenID=getScreenCount()-1;
         }
     }
-    debugShow("popScreen:after");
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
 void
 ScreenStack::pushScreen(const SBID& id)
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     qDebug() << SB_DEBUG_INFO << id << currentScreenID;
     bool doPush=0;
 
@@ -74,6 +75,7 @@ ScreenStack::pushScreen(const SBID& id)
         stack.append(id);
         currentScreenID++;
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 SBID
@@ -91,6 +93,7 @@ ScreenStack::currentScreen() const
 SBID
 ScreenStack::nextScreen()
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
@@ -102,12 +105,14 @@ ScreenStack::nextScreen()
         }
         id=stack.at(currentScreenID);
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
 SBID
 ScreenStack::previousScreen()
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     SBID id;
 
@@ -116,6 +121,7 @@ ScreenStack::previousScreen()
         currentScreenID--;
         id=stack.at(currentScreenID);
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
@@ -135,28 +141,31 @@ ScreenStack::getScreenCount() const
 void
 ScreenStack::removeCurrentScreen()
 {
-    debugShow("removeCurrentScreen:before");
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     if(stack.count()>1)
     {
         stack.removeLast();
         currentScreenID--;
     }
-    debugShow("removeCurrentScreen:end");
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 void
 ScreenStack::removeForward()
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     qDebug() << SB_DEBUG_INFO << currentScreenID;
     while(stack.count()-1>currentScreenID)
     {
         stack.removeLast();
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 void
 ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     qDebug() << SB_DEBUG_INFO << id << editOnlyFlag << currentScreenID << stack.count();
     for(int i=stack.count()-1;i>=0;i--)
     {
@@ -180,12 +189,15 @@ ScreenStack::removeScreen(const SBID &id, bool editOnlyFlag)
             }
         }
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 //	Only update if ID's are equal.
 void
 ScreenStack::updateCurrentScreen(const SBID &id)
 {
+    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
+    qDebug() << SB_DEBUG_INFO << id;
     qDebug() << SB_DEBUG_INFO << currentScreenID << stack.count();
 
     if(currentScreenID>=0 && currentScreenID<stack.count())
@@ -206,6 +218,7 @@ ScreenStack::updateCurrentScreen(const SBID &id)
     {
         qDebug() << SB_DEBUG_ERROR << "NO SCREENS ON STACK";
     }
+    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 ///
@@ -218,7 +231,6 @@ ScreenStack::updateCurrentScreen(const SBID &id)
 void
 ScreenStack::updateSBIDInStack(const SBID &id)
 {
-    qDebug() << SB_DEBUG_INFO << currentScreenID;
     for(int i=0;i<stack.size();i++)
     {
         if(id.compareSimple(stack.at(i))==1)
