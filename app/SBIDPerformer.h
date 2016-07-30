@@ -12,21 +12,23 @@ public:
     SBIDPerformer():SBID() { }
     SBIDPerformer(const SBID& c);
     SBIDPerformer(const SBIDPerformer& c);
-    SBIDPerformer(SBID::sb_type type, int itemID);
+    SBIDPerformer(int itemID);
     SBIDPerformer(QByteArray encodedData);
     ~SBIDPerformer() { }
 
     //	Public methods
     virtual void assign(int itemID);
     virtual int getDetail(bool createIfNotExistFlag=0);
-    virtual int sb_item_id() const;
-    virtual sb_type sb_item_type() const;
+    virtual inline int sb_item_id() const { return this->sb_performer_id; }
+    virtual inline sb_type sb_item_type() const { return SBID::sb_type_performer; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
 
     //	Operators
-    bool operator==(const SBID& i) const;
+    virtual bool operator==(const SBID& i) const;
+    friend QDebug operator<<(QDebug dbg, const SBIDPerformer& id);
 
 private:
+    SBIDPerformer(SBID::sb_type type, int itemID);
     virtual void assign(const SBID::sb_type type, const int itemID);
     virtual void assign(const QString& itemType, const int itemID, const QString& text="");
 };

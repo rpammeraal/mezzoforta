@@ -67,7 +67,7 @@ public:
     QString databaseName() const { return _dc.databaseName; }
     void debugShow(const struct DatabaseCredentials& dc,const QString& title) const;
     bool openDefaultDatabase(); //	attempts to open default database
-    void openDatabase(); //	let user select different database
+    bool openDatabase(); //	let user select different database
 
 protected:
     friend class Context;

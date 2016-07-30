@@ -31,12 +31,12 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
                 "'' "
             "FROM "
                 "___SB_SCHEMA_NAME___song s "
-            "WHERE"
+            "WHERE "
                 "song_id=%2 AND "
                 "NOT EXISTS "
                 "( "
                     "SELECT "
-                        "1"
+                        "1 "
                     "FROM "
                         "___SB_SCHEMA_NAME___performance "
                     "WHERE "
@@ -87,11 +87,10 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
     return SQL;
 }
 
-SBID
+SBIDAlbum
 DataEntityAlbum::getDetail(const SBID& id)
 {
-    SBID result=id;
-    qDebug() << SB_DEBUG_INFO << "id.wiki=" << id.wiki;
+    SBIDAlbum result=id;
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -123,7 +122,6 @@ DataEntityAlbum::getDetail(const SBID& id)
         .arg(Common::escapeSingleQuotes(id.performerName))
     ;
     dal->customize(q);
-
     qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
@@ -131,8 +129,7 @@ DataEntityAlbum::getDetail(const SBID& id)
 
     if(query.next())
     {
-        qDebug() << SB_DEBUG_INFO;
-        result.assign(SBID::sb_type_album,query.value(0).toInt());
+        result.assign(query.value(0).toInt());
         result.performerName  =query.value(5).toString();
         result.albumTitle     =query.value(1).toString();
         result.year           =query.value(3).toInt();
@@ -141,9 +138,6 @@ DataEntityAlbum::getDetail(const SBID& id)
         result.sb_performer_id=query.value(6).toInt();
         result.sb_mbid        =query.value(7).toString();
     }
-
-    qDebug() << SB_DEBUG_INFO << result.sb_album_id;
-    qDebug() << SB_DEBUG_INFO << "result.wiki=" << result.wiki;
     return result;
 }
 
@@ -199,8 +193,6 @@ DataEntityAlbum::getAllSongs(const SBID& id)
 SBSqlQueryModel*
 DataEntityAlbum::matchAlbum(const SBID &newAlbum)
 {
-    qDebug() << SB_DEBUG_INFO;
-
     //	MatchRank:
     //	0	-	edited value (always one in data set).
     //	1	-	exact match with specified artist (0 or 1 in data set).
@@ -261,7 +253,6 @@ DataEntityAlbum::mergeAlbum(const SBID& from, const SBID& to)
         .arg(to.sb_album_id)
     ;
     dal->customize(q);
-
     qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
@@ -271,7 +262,6 @@ DataEntityAlbum::mergeAlbum(const SBID& from, const SBID& to)
         maxPosition=query.value(0).toInt();
         maxPosition++;
     }
-    qDebug() << SB_DEBUG_INFO << maxPosition;
 
     //	Update rock_performance.non_op fields
     SQL.append
@@ -845,4 +835,88 @@ DataEntityAlbum::updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum,
     resultFlag=dal->executeBatch(allQueries,commitFlag);
 
     return resultFlag;
+}
+
+QStringList
+DataEntityAlbum::updateSongOnAlbum(int albumID, const SBIDSong &song)
+{
+    qDebug() << SB_DEBUG_INFO
+             << song.sb_song_id
+             << song.sb_performer_id
+             << song.sb_album_id
+             << song.sb_position
+             << song.notes
+    ;
+    QStringList SQL;
+
+    //	Update notes
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "notes=E'%1' "
+            "WHERE "
+                "record_id=%2 AND "
+                "record_position=%3 "
+        )
+            .arg(Common::escapeSingleQuotes(song.notes))
+            .arg(albumID)
+            .arg(song.sb_position)
+    );
+
+    //	Update performer
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___online_performance "
+            "SET "
+                "artist_id=%1 "
+            "WHERE "
+                "record_id=%2 AND "
+                "record_position=%3 "
+        )
+            .arg(song.sb_performer_id)
+            .arg(albumID)
+            .arg(song.sb_position)
+    );
+
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "op_artist_id=%1 "
+            "WHERE "
+                "op_record_id=%2 AND "
+                "op_record_position=%3 "
+        )
+            .arg(song.sb_performer_id)
+            .arg(albumID)
+            .arg(song.sb_position)
+    );
+
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "artist_id=%1 "
+            "WHERE "
+                "record_id=%2 AND "
+                "record_position=%3 "
+        )
+            .arg(song.sb_performer_id)
+            .arg(albumID)
+            .arg(song.sb_position)
+    );
+    return SQL;
 }

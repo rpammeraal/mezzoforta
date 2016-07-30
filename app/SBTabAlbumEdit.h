@@ -38,8 +38,9 @@ private:
     QAction* mergeSongAction;
     bool _hasChanges;
 
-    void getSelectionStatus(int& numRowsSelected, int& numRowsRemoved,int& numRowsMarkedAsMerged);
-    void init();
+    int _count() const;
+    void _getSelectionStatus(int& numRowsSelected, int& numRowsRemoved,int& numRowsMarkedAsMerged);
+    void _init();
     virtual SBID _populate(const SBID& id);
     void setFocusOnRow(QModelIndex idx) const;
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }

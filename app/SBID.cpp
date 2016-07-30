@@ -179,6 +179,14 @@ SBID::assign(const QString& type, const int itemID, const QString& text)
     setText(text);
 }
 
+bool
+SBID::compare(const SBID &t) const
+{
+    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
+    Q_UNUSED(t);
+    return 0;
+}
+
 ///
 /// \brief SBID::compareSimple
 /// \param t
@@ -478,12 +486,10 @@ void
 SBID::sendToPlayQueue(bool enqueueFlag)
 {
     Q_UNUSED(enqueueFlag);
-    qDebug() << SB_DEBUG_INFO;
     switch(this->sb_item_type())
     {
     case SBID::sb_type_song:
     {
-        qDebug() << SB_DEBUG_INFO;
         SBIDSong song=(*this);
         song.sendToPlayQueue(enqueueFlag);
     }
@@ -639,7 +645,7 @@ operator<<(QDebug dbg, const SBID& id)
         dbg.nospace() << "SBID: " << id.getType()
                       << "|" << id.sb_song_id << "|st" << songTitle
                       << "|" << id.sb_performer_id << "|pn" << performerName
-                      << "|" << id.sb_album_id << "|an" << albumTitle
+                      << "|" << id.sb_album_id << "|at" << albumTitle
         ;
         break;
 
@@ -693,8 +699,6 @@ operator<<(QDebug dbg, const SBID& id)
         dbg.nospace() << "<not implemented in operator<< >";
         break;
     }
-
-
     return dbg.space();
 }
 

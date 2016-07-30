@@ -125,6 +125,20 @@ Common::removeNonAlphanumeric(const QString &s)
     return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
 }
 
+
+///
+/// \brief Common::simplified
+/// \param s
+/// \return
+///
+/// Remove accents, non alphanumeric characters, leading/trailing white space, all white space
+/// and make this all lower case.
+QString
+Common::simplified(const QString &s)
+{
+    return removeAccents(removeNonAlphanumeric(s.toLower().simplified().replace(" ","")));
+}
+
 QString
 Common::soundex(const QString& input)
 {

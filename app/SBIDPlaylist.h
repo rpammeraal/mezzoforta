@@ -10,18 +10,22 @@ public:
     SBIDPlaylist():SBID() { }
     SBIDPlaylist(const SBID& c);
     SBIDPlaylist(const SBIDPlaylist& c);
-    SBIDPlaylist(SBID::sb_type type, int itemID);
+    SBIDPlaylist(int itemID);
     SBIDPlaylist(QByteArray encodedData);
     ~SBIDPlaylist() { }
 
     //	Public methods
     virtual void assign(int itemID);
+    virtual inline int sb_item_id() const { return this->sb_playlist_id; }
+    virtual inline sb_type sb_item_type() const { return SBID::sb_type_playlist; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
 
     //	Operators
-    bool operator==(const SBID& i) const;
+    virtual bool operator==(const SBID& i) const;
+    friend QDebug operator<<(QDebug dbg, const SBIDPlaylist& id);
 
 private:
+    SBIDPlaylist(SBID::sb_type type, int itemID);
     virtual void assign(const SBID::sb_type type, const int itemID);
     virtual void assign(const QString& itemType, const int itemID, const QString& text="");
 };

@@ -86,7 +86,10 @@ DBManager::openDefaultDatabase()
         dc.sqlitePath=QDir::homePath();
     }
 
-    return _openDatabase(dc);
+    if(_openDatabase(dc)==0)
+    {
+        return openDatabase();
+    }
 }
 
 ///
@@ -94,17 +97,18 @@ DBManager::openDefaultDatabase()
 /// \return
 ///
 /// Let user interactively open another database.
-void
+bool
 DBManager::openDatabase()
 {
     struct DatabaseCredentials currentDC=_dc;	//	Preserve current;
+    int openFlag=0;
 
     DatabaseSelector ds(DatabaseCredentials());
     struct DatabaseCredentials newDC=ds.databaseCredentials();
     if(_openDatabase(newDC)==0)
     {
         //	Reopen previously current database
-        _openDatabase(currentDC);
+        openFlag=_openDatabase(currentDC);
     }
     _databaseChangedFlag=
         (
@@ -113,6 +117,7 @@ DBManager::openDatabase()
             currentDC.psqlDatabaseName!=newDC.psqlDatabaseName ||
             currentDC.psqlHostName!=newDC.psqlHostName
         )?1:0;
+    return openFlag;
 }
 
 ///	Protected methods

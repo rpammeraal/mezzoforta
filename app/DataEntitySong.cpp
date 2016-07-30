@@ -45,8 +45,8 @@ DataEntitySong::getDetail(const SBID& id)
         .arg(id.sb_performer_id)
     ;
     dal->customize(q);
-
     qDebug() << SB_DEBUG_INFO << q;
+
     QSqlQuery query(q,db);
 
     if(query.next())
@@ -179,7 +179,7 @@ DataEntitySong::getMaxSongID()
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
+
     QSqlQuery select(q,db);
     select.next();
 
@@ -359,8 +359,6 @@ DataEntitySong::getOnPlaylistListBySong(const SBID& id)
 SBSqlQueryModel*
 DataEntitySong::matchSong(const SBID &newSongID)
 {
-    qDebug() << SB_DEBUG_INFO;
-
     QString newSoundex=Common::soundex(newSongID.songTitle);
 
     //	MatchRank:
@@ -441,8 +439,6 @@ SBSqlQueryModel*
 DataEntitySong::matchSongWithinPerformer(const SBID& newSongID, const QString& newSongTitle)
 {
     //	Matches a song by artist
-    qDebug() << SB_DEBUG_INFO;
-
     QString newSoundex=Common::soundex(newSongTitle);
 
     //	MatchRank:
@@ -507,102 +503,6 @@ DataEntitySong::matchSongWithinPerformer(const SBID& newSongID, const QString& n
     return new SBSqlQueryModel(q);
 }
 
-///
-/// \brief DataEntitySong::saveNewSong
-/// \param id
-/// \return
-///
-/// Creates new entry in song and performance. Assigns new ID
-/// back to parameter. Assumption is that performer already
-/// exists.
-bool
-DataEntitySong::saveNewSong(SBID &id)
-{
-    bool resultCode=1;
-
-    qDebug() << SB_DEBUG_INFO;
-    if(id.sb_song_id==-1)
-    {
-        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-        QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-        QString newSoundex=Common::soundex(id.songTitle);
-        QString q;
-
-        //	Find out new songID
-        q=QString
-        (
-            "SELECT "
-                "%1(MAX(song_id)+1,0) AS MaxSongID "
-            "FROM "
-                "___SB_SCHEMA_NAME___song "
-        )
-            .arg(dal->getIsNull())
-        ;
-
-        dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery select(q,db);
-        select.next();
-
-        id.sb_song_id=select.value(0).toInt();
-
-        //	Insert new song
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___song "
-            "( "
-                "song_id, "
-                "title, "
-                "soundex "
-            ") "
-            "SELECT "
-                "%1, "
-                "'%2', "
-                "'%3' "
-        )
-            .arg(id.sb_song_id)
-            .arg(Common::escapeSingleQuotes(id.songTitle))
-            .arg(newSoundex)
-        ;
-
-        dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery insertSong(q,db);
-        Q_UNUSED(insertSong);
-
-        //	Insert new performance
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-            "( "
-                "song_id, "
-                "artist_id, "
-                "role_id, "
-                "year, "
-                "notes "
-            ") "
-            "SELECT "
-                "%1, "
-                "%2, "
-                "0, "	//	0: original performer, 1: non-original performer
-                "%3, "
-                "'%4' "
-        )
-            .arg(id.sb_song_id)
-            .arg(id.sb_performer_id)
-            .arg(id.year)
-            .arg(Common::escapeSingleQuotes(id.notes))
-        ;
-
-        dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery insertPerformance(q,db);
-        Q_UNUSED(insertPerformance);
-
-    }
-    return resultCode;
-}
-
 bool
 DataEntitySong::updateLastPlayDate(const SBID &id)
 {
@@ -628,8 +528,8 @@ DataEntitySong::updateLastPlayDate(const SBID &id)
         .arg(id.sb_position)
     ;
     dal->customize(q);
-
     qDebug() << SB_DEBUG_INFO << q;
+
     QSqlQuery query(q,db);
     query.exec();
 
@@ -690,14 +590,12 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
         {
             //	Different performer
             mergeToNewSongFlag=1;
-            qDebug() << SB_DEBUG_INFO << "mergeToNewSong";
         }
         else
         {
             //	Same performer
             titleRenameFlag=1;
             newSongID.sb_song_id=oldSongID.sb_song_id;
-            qDebug() << SB_DEBUG_INFO << "titleRename";
         }
     }
     else
@@ -707,13 +605,11 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
         {
             //	Songs are not the same -> merge
             mergeToExistingSongFlag=1;
-            qDebug() << SB_DEBUG_INFO << "mergeToExistingSong";
         }
         else if(oldSongID.sb_performer_id!=newSongID.sb_performer_id)
         {
             //	Songs are the same, update performer
             updatePerformerFlag=1;
-            qDebug() << SB_DEBUG_INFO << "updatePerformer";
         }
     }
 
@@ -721,12 +617,6 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
     {
         extraSQLFlag=1;
     }
-
-    qDebug() << SB_DEBUG_INFO << "titleRenameFlag" << titleRenameFlag;
-    qDebug() << SB_DEBUG_INFO << "mergeToNewSongFlag" << mergeToNewSongFlag;
-    qDebug() << SB_DEBUG_INFO << "mergeToExistingSongFlag" << mergeToExistingSongFlag;
-    qDebug() << SB_DEBUG_INFO << "updatePerformerFlag" << updatePerformerFlag;
-    qDebug() << SB_DEBUG_INFO << "lyricsChangedFlag" << lyricsChangedFlag;
 
     //	3.	Sanity check on flags
     if(
@@ -768,15 +658,12 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
     //	4.	Collect work to be done.
     if(extraSQLFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO;
         allQueries.append(extraSQL);
     }
 
     //		A.	Attribute changes
     if(lyricsChangedFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO << "Update lyrics";
-
         //	Insert record if not exists.
         q=QString
         (
@@ -818,7 +705,6 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
 
     if(notesChangedFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO << "Update notes";
         q=QString
         (
             "UPDATE ___SB_SCHEMA_NAME___song "
@@ -835,7 +721,6 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
 
     if(yearOfReleaseChangedFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO << "Update year of release";
         q=QString
         (
             "UPDATE ___SB_SCHEMA_NAME___performance "
@@ -854,7 +739,6 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
 
     if(titleRenameFlag==1 || mergeToNewSongFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO << "Update song title";
         q=QString
         (
             "UPDATE ___SB_SCHEMA_NAME___song "
@@ -1105,7 +989,6 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
     }
 
     resultFlag=dal->executeBatch(allQueries,commitFlag);
-    qDebug() << SB_DEBUG_INFO << resultFlag;
 
     return resultFlag;
 }
@@ -1130,7 +1013,6 @@ DataEntitySong::updateSoundexFields()
 
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));
-
     qDebug() << SB_DEBUG_INFO << q;
 
     QString title;

@@ -4,6 +4,7 @@
 #include "QHash"
 
 #include "SBID.h"
+#include "SBIDSong.h"
 
 class SBIDAlbum : public SBID
 {
@@ -12,18 +13,26 @@ public:
     SBIDAlbum():SBID() { }
     SBIDAlbum(const SBID& c);
     SBIDAlbum(const SBIDAlbum& c);
-    SBIDAlbum(SBID::sb_type type, int itemID);
+    SBIDAlbum(int itemID);
     SBIDAlbum(QByteArray encodedData);
     ~SBIDAlbum() { }
 
     //	Public methods
     virtual void assign(int itemID);
+    virtual bool compare(const SBID& i) const;
+    virtual inline int sb_item_id() const { return this->sb_album_id; }
+    virtual inline sb_type sb_item_type() const { return SBID::sb_type_album; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
 
+    //	Album specific methods
+    QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);
+
     //	Operators
-    bool operator==(const SBID& i) const;
+    virtual bool operator==(const SBID& i) const;
+    friend QDebug operator<<(QDebug dbg, const SBIDAlbum& id);
 
 private:
+    SBIDAlbum(SBID::sb_type type, int itemID);
     virtual void assign(const SBID::sb_type type, const int itemID);
     virtual void assign(const QString& itemType, const int itemID, const QString& text="");
 };

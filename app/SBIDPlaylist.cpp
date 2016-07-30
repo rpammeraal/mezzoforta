@@ -14,9 +14,8 @@ SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBID(c)
     _sb_item_type=SBID::sb_type_playlist;
 }
 
-SBIDPlaylist::SBIDPlaylist(SBID::sb_type type, int itemID):SBID(SBID::sb_type_playlist, itemID)
+SBIDPlaylist::SBIDPlaylist(int itemID):SBID(SBID::sb_type_playlist, itemID)
 {
-    Q_UNUSED(type);
 }
 
 SBIDPlaylist::SBIDPlaylist(QByteArray encodedData):SBID(encodedData)
@@ -35,7 +34,6 @@ SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBID> list;
     DataEntityPlaylist dep;
-    qDebug() << SB_DEBUG_INFO;
     list=dep.retrievePlaylistItems(*this);
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -56,7 +54,22 @@ SBIDPlaylist::operator ==(const SBID& i) const
     return 0;
 }
 
+QDebug
+operator<<(QDebug dbg, const SBIDPlaylist& id)
+{
+    QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
+    dbg.nospace() << "SBID: " << id.getType()
+                  << "|" << id.sb_playlist_id << "|pln" << playlistName
+    ;
+    return dbg.space();
+}
+
 ///	Private methods
+SBIDPlaylist::SBIDPlaylist(SBID::sb_type type, int itemID):SBID(SBID::sb_type_playlist, itemID)
+{
+    Q_UNUSED(type);
+}
+
 void
 SBIDPlaylist::assign(const SBID::sb_type type, const int itemID)
 {

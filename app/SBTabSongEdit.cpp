@@ -30,8 +30,6 @@ SBTabSongEdit::hasEdits() const
     const SBID& currentID=this->currentID();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    qDebug() << SB_DEBUG_INFO << currentID;
-
     if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
         if(currentID.songTitle!=mw->ui.songEditTitle->text() ||
@@ -67,6 +65,7 @@ SBTabSongEdit::save() const
     //	G.	[merge to different performer] "C" Moon Cry Like A Baby/Simple Minds -> "40"/U2
 
     //	H.	[merge song with existing song by renaming original performer] Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
+    //	I.	[simple edits]: 'Elusive Dreams ' -> 'Elusive Dreams': should just save the new title.
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBID orgSongID=this->currentID();
@@ -85,7 +84,7 @@ SBTabSongEdit::save() const
 
     if(orgSongID.isEditFlag==0)
     {
-        qDebug() << SB_DEBUG_INFO << "isEditFlag flag not set";
+        qDebug() << SB_DEBUG_WARNING << "isEditFlag flag not set";
         return;
     }
 
@@ -105,7 +104,7 @@ SBTabSongEdit::save() const
     qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.sb_song_id;
 
     //	If only case is different in songTitle, save the new title as is.
-    if((editTitle.toLower()==newSongID.songTitle.toLower()) &&
+    if((Common::simplified(editTitle)==Common::simplified(newSongID.songTitle)) &&
         (editTitle!=newSongID.songTitle) &&
         (editPerformerName==newSongID.performerName))
     {

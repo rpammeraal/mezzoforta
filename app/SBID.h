@@ -74,6 +74,7 @@ public:
     virtual void assign(int itemID);	//	CWIP: make pure virtual
     virtual void assign(const SBID::sb_type type, const int itemID);
     virtual void assign(const QString& itemType, const int itemID, const QString& text="");
+    virtual bool compare(const SBID& t) const;	//	compares on attributes. To compare on ID, use operator==().	//	CWIP: make pure virtual
     bool compareSimple(const SBID& t) const;
     QByteArray encode() const;
     bool fuzzyMatch(const SBID& i);
@@ -88,8 +89,8 @@ public:
     void setText(const QString &text);
     void showDebug(const QString& title) const;
 
-    bool operator==(const SBID& i) const;	//	maybe convert to compareAll and make this private to force other code
-    bool operator!=(const SBID& i) const;	//	to use either compareSimple or compareAll
+    virtual bool operator==(const SBID& i) const;	//	compares on ID(s)
+    virtual bool operator!=(const SBID& i) const;	//	to use either compareSimple or compareAll
     friend QDebug operator<<(QDebug dbg, const SBID& id);
 
 protected:

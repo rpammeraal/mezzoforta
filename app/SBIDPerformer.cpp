@@ -15,9 +15,8 @@ SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBID(c)
     _sb_item_type=SBID::sb_type_performer;
 }
 
-SBIDPerformer::SBIDPerformer(SBID::sb_type type, int itemID):SBID(SBID::sb_type_performer, itemID)
+SBIDPerformer::SBIDPerformer(int itemID):SBID(SBID::sb_type_performer, itemID)
 {
-    Q_UNUSED(type);
 }
 
 SBIDPerformer::SBIDPerformer(QByteArray encodedData):SBID(encodedData)
@@ -180,18 +179,6 @@ SBIDPerformer::getDetail(bool createIfNotExistFlag)
     return sb_item_id();
 }
 
-int
-SBIDPerformer::sb_item_id() const
-{
-    return this->sb_performer_id;
-}
-
-SBID::sb_type
-SBIDPerformer::sb_item_type() const
-{
-    return SBID::sb_type_performer;
-}
-
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
@@ -210,8 +197,6 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
         song.duration=qm->data(qm->index(i,7)).toTime();
         song.path=qm->data(qm->index(i,8)).toString();
         list[list.count()]=song;
-
-        qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -233,7 +218,22 @@ SBIDPerformer::operator ==(const SBID& i) const
     return 0;
 }
 
+QDebug
+operator<<(QDebug dbg, const SBIDPerformer& id)
+{
+    QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
+    dbg.nospace() << "SBID: " << id.getType()
+                  << "|" << id.sb_performer_id << "|pn" << performerName
+    ;
+    return dbg.space();
+}
+
 ///	Private methods
+SBIDPerformer::SBIDPerformer(SBID::sb_type type, int itemID):SBID(SBID::sb_type_performer, itemID)
+{
+    Q_UNUSED(type);
+}
+
 void
 SBIDPerformer::assign(const SBID::sb_type type, const int itemID)
 {

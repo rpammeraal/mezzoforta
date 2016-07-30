@@ -15,9 +15,8 @@ SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBID(c)
     _sb_item_type=SBID::sb_type_album;
 }
 
-SBIDAlbum::SBIDAlbum(SBID::sb_type type, int itemID):SBID(SBID::sb_type_album, itemID)
+SBIDAlbum::SBIDAlbum(int itemID):SBID(SBID::sb_type_album, itemID)
 {
-    Q_UNUSED(type);
 }
 
 SBIDAlbum::SBIDAlbum(QByteArray encodedData):SBID(encodedData)
@@ -29,6 +28,17 @@ void
 SBIDAlbum::assign(int itemID)
 {
     this->sb_album_id=itemID;
+}
+
+bool
+SBIDAlbum::compare(const SBID &i) const
+{
+    return
+        (
+            i.sb_item_type()==SBID::sb_type_album &&
+            i.albumTitle==this->albumTitle &&
+            i.performerName==this->performerName
+        )?1:0;
 }
 
 void
@@ -49,14 +59,85 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
                 song.sb_album_id=this->sb_album_id;
                 song.albumTitle=this->albumTitle;
                 list[list.count()]=song;
-
-                qDebug() << SB_DEBUG_INFO << song.sb_song_id << song.sb_performer_id << song.sb_album_id << song.sb_position << song.albumTitle;
             }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 }
 
+///	Album specific methods
+QStringList
+SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
+{
+    QStringList SQL;
+
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___online_performance "
+            "SET "
+                "song_id=%1, "
+                "artist_id=%2 "
+            "WHERE "
+                "record_id=%3 AND "
+                "record_position=%4 "
+        )
+            .arg(song.sb_song_id)
+            .arg(song.sb_performer_id)
+            .arg(this->sb_album_id)
+            .arg(song.sb_position)
+    );
+
+    SQL.append
+    (
+        QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "song_id=%1, "
+                "artist_id=%2 "
+            "WHERE "
+                "record_id=%3 AND "
+                "record_position=%4 "
+        )
+            .arg(song.sb_song_id)
+            .arg(song.sb_performer_id)
+            .arg(this->sb_album_id)
+            .arg(song.sb_position)
+    );
+
+    SQL.append
+    (
+        QString
+        (
+            ";WITH a AS "
+            "( "
+                "SELECT "
+                    "song_id, "
+                    "artist_id "
+                "FROM "
+                    "online_performance "
+                "WHERE  "
+                    "record_id=%1 AND  "
+                    "record_position=%2  "
+            ") "
+            "UPDATE record_performance  "
+            "SET  "
+                "op_song_id=(SELECT song_id FROM a), "
+                "op_artist_id=(SELECT artist_id FROM a) "
+            "WHERE  "
+                "record_id=%1 AND  "
+                "record_position=%2  "
+        )
+            .arg(this->sb_album_id)
+            .arg(song.sb_position)
+    );
+
+    return SQL;
+}
 
 ///	Operators
 bool
@@ -71,7 +152,24 @@ SBIDAlbum::operator ==(const SBID& i) const
     return 0;
 }
 
+QDebug
+operator<<(QDebug dbg, const SBIDAlbum& id)
+{
+    QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
+    QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
+    dbg.nospace() << "SBID: " << id.getType()
+                  << "|" << id.sb_album_id << "|at" << albumTitle
+                  << "|" << id.sb_performer_id << "|pn" << performerName
+    ;
+    return dbg.space();
+}
+
 ///	Private methods
+SBIDAlbum::SBIDAlbum(SBID::sb_type type, int itemID):SBID(SBID::sb_type_album, itemID)
+{
+    Q_UNUSED(type);
+}
+
 void
 SBIDAlbum::assign(const SBID::sb_type type, const int itemID)
 {
