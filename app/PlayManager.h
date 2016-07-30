@@ -29,6 +29,7 @@ public:
 
 signals:
     void playlistChanged(const SBIDPlaylist& playlist);
+    void setRowVisible(int playIndex);
 
 public slots:
     //	Player related

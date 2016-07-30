@@ -240,8 +240,9 @@ void
 PlayManager::shufflePlaylist()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    const int newPlayID=mqs->shuffle(radioModeFlag());
+    const int newPlayID=mqs->shuffle(1);	//	always leave played songs untouched.
     _setCurrentPlayID(newPlayID);
+    emit setRowVisible(newPlayID+1);
 }
 
 void

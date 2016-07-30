@@ -516,18 +516,24 @@ X	playlists that song belongs to can be edited
 -	Edit Elusive Dreams/U2: when changing title on spaces, don't ask if title is original.
 -	Strip leading/trailing spaces when saving new song
 
+20160730 - bug fixes:
+-	press stop and then play again. Won't play.
+-	play world playlist. Press Shuffle. Press next song, song is not visible.
+-	after shuffle, do a scrollTo current song playing
+	-	need to call SBTabQueuedSong::songChanged() w/ proper index
+	-	test with radio mode
+	-	test: play world playlist. Press Shuffle. Press next song, song is not visible.
+-	shuffle leaves played songs alone.
+-	assign Greece to Mediteranean playlist. Status shows assigning `' to ...
+-	assign Cherry Oh Baby to UB40 Originals. Nothing happens.
+- 	assign 'Omri'/Rachid Taha & Faudel to Lively World
+-	if song file is missing -> dialog box: already in place
 
 <bugs>
-*	press stop and then play again. Won't play.
-*	play world playlist. Press Shuffle. Press next song, song is not visible.
-*	assign Greece to Mediteranean playlist. Status shows assigning `' to ...
-*	assign Cherry Oh Baby to UB40 Originals. Nothing happens.
-*	after shuffle, do a scrollTo current song playing
-*	if song file is missing -> dialog box
-* 	assign 'Omri'/Rachid Taha & Faudel to Lively World
 *	if it is not possible to connect to Postgres, need to see dialog box
 
 <near future>
+*	upgrade to 5.7
 *	implement schemas for songbase
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
@@ -560,6 +566,9 @@ X	playlists that song belongs to can be edited
 	change *_performance to reflect this) or 2) if other performers perform this song. Only ask if there is only
 	one performer on this song.
 *	enable editing of notes in album
+*	wil suggestion: create getID() and compareAttributes() in SBID* classes to explicitly force the use of these instead of compare operators.
+	*	compare operators should be defined private
+*	DataEntity::getDetail(): initialization of parameter to result should NOT happen.
 
 <future>
 *	Put the loudspeaker icon in front of every view if the view has the current item playing.

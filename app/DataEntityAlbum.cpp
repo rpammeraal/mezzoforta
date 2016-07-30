@@ -90,7 +90,7 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
 SBIDAlbum
 DataEntityAlbum::getDetail(const SBID& id)
 {
-    SBIDAlbum result=id;
+    SBIDAlbum result=id;	//	CWIP: this should *NOT* be done. Assign result with query results *ONLY*
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());

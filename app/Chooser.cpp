@@ -172,11 +172,17 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
     switch(rootType)
     {
     case Chooser::sb_your_songs:
+        qDebug() << SB_DEBUG_INFO;
+
     case Chooser::sb_playlists:
+        qDebug() << SB_DEBUG_INFO;
         {
 
             SBID toID=_getPlaylistSelected(idx);
             SBID fromID;
+
+            qDebug() << SB_DEBUG_INFO << toID;
+            qDebug() << SB_DEBUG_INFO << fromID;
 
             if(toBeAssignedToID==toID)
             {

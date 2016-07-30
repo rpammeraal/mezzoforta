@@ -11,7 +11,7 @@
 SBID
 DataEntitySong::getDetail(const SBID& id)
 {
-    SBID result=id;
+    SBID result;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 

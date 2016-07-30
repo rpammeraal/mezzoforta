@@ -599,7 +599,6 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
     QMap<int,int> fromTo;                           //	map from old to new index (1-based)
     int index=1;                                    //	1-based
 
-
     //	skip played songs -- used by radio mode
     if(skipPlayedSongsFlag)
     {

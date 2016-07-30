@@ -69,6 +69,7 @@ SBID::SBID(QByteArray encodedData)
     }
     QStringList sl=s.split('_');
 
+
     _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
     sb_performer_id          =sl[1].toInt();
     sb_album_id              =sl[2].toInt();
@@ -92,7 +93,7 @@ SBID::SBID(QByteArray encodedData)
     count1                   =sl[20].toInt();
     count2                   =sl[21].toInt();
     duration.setDuration(sl[22].toInt());
-    playlistName             =sl[23];
+    searchCriteria           =sl[23];
     playPosition             =sl[24].toInt();
     isPlayingFlag            =sl[25].toInt();
     sb_playlist_position     =sl[26].toInt();
@@ -215,33 +216,34 @@ SBID::encode() const
 {
     //	Put all attributes in a stringlist
     QStringList sl;
-    sl.append(QString("%1").arg(sb_item_type()));
+    sl.append(QString("%1").arg(sb_item_type()));             //	0
     sl.append(QString("%1").arg(sb_performer_id));
     sl.append(QString("%1").arg(sb_album_id));
     sl.append(QString("%1").arg(sb_position));
     sl.append(QString("%1").arg(sb_chart_id));
-    sl.append(QString("%1").arg(sb_song_id));
+    sl.append(QString("%1").arg(sb_song_id));                 //	5
     sl.append(QString("%1").arg(sb_playlist_id));
     sl.append(sb_mbid);
     sl.append(QString("%1").arg(isOriginalPerformerFlag));
     sl.append(SB_REPLACE_UNDERSCORE(performerName));
-    sl.append(SB_REPLACE_UNDERSCORE(albumTitle));
+    sl.append(SB_REPLACE_UNDERSCORE(albumTitle));             //	10
     sl.append(SB_REPLACE_UNDERSCORE(songTitle));
     sl.append(QString("%1").arg(year));
     sl.append(SB_REPLACE_UNDERSCORE(path));
     sl.append(SB_REPLACE_UNDERSCORE(lyrics));
-    sl.append(SB_REPLACE_UNDERSCORE(notes));
+    sl.append(SB_REPLACE_UNDERSCORE(notes));                  //	15
     sl.append(SB_REPLACE_UNDERSCORE(genre));
     sl.append(SB_REPLACE_UNDERSCORE(url));
     sl.append(SB_REPLACE_UNDERSCORE(wiki));
     sl.append(SB_REPLACE_UNDERSCORE(playlistName));
-    sl.append(QString("%1").arg(count1));
+    sl.append(QString("%1").arg(count1));                     //	20
     sl.append(QString("%1").arg(count2));
     sl.append(QString("%1").arg(duration.MS()));
     sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
     sl.append(QString("%1").arg(playPosition));
-    sl.append(QString("%1").arg(isPlayingFlag));
+    sl.append(QString("%1").arg(isPlayingFlag));              //	25
     sl.append(QString("%1").arg(sb_playlist_position));
+
 
     QString combined=sl.join('_');
 

@@ -33,7 +33,6 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         QMimeData *mimeData = new QMimeData;
 
         QByteArray ba=_id.encode();
-        SBID tmp=SBID(ba);
 
         mimeData->setData("application/vnd.text.list", ba);
         drag->setMimeData(mimeData);
@@ -63,6 +62,5 @@ SBLabel::setSBID(const SBID &id)
 void
 SBLabel::contextMenuEvent(QContextMenuEvent *ev)
 {
-    qDebug() << SB_DEBUG_INFO;
     emit customContextMenuRequested(ev->globalPos());
 }

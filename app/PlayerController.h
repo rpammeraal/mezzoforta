@@ -48,8 +48,8 @@ public:
     inline PlayerController::sb_player_state playState() const { return _state; }
 
 signals:
-    void songChanged(const SBIDSong& song);
     void playNextSong();
+    void setRowVisible(int playIndex);
 
 public slots:
     void playerRewind();

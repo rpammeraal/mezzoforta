@@ -39,7 +39,7 @@ public slots:
     void playlistChanged(const SBIDPlaylist& pl);
     virtual void playNow(bool enqueueFlag=0);
     void showContextMenuPlaylist(const QPoint &p);
-    void songChanged(const SBIDSong& song);
+    void setRowVisible(int index);
 
 protected slots:
     friend class PlayManager;
@@ -52,6 +52,7 @@ private slots:
 private:
     QAction* _deletePlaylistAction;
     bool _playingRadioFlag;
+    int _rowIndexVisible;	//	keep track of which row was last set to make visible. 1-based
 
     void _init();
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }

@@ -78,7 +78,7 @@ DataEntityPerformer::deleteRelatedPerformerSQL(int performerID1, int performerID
 SBID
 DataEntityPerformer::getDetail(const SBID& id)
 {
-    SBID result=id;
+    SBID result=id;	//	CWIP: should *NOT* happen!
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());

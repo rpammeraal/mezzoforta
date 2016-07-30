@@ -25,8 +25,7 @@ void
 PlayerController::playerRewind()
 {
     qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
     ;
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=position/1000-10;
@@ -37,8 +36,7 @@ void
 PlayerController::playerForward()
 {
     qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
     ;
     qint64 position=_playerInstance[_currentPlayerID].position();
     position=(position/1000)+10;
@@ -126,22 +124,26 @@ bool
 PlayerController::playerPlay()
 {
     qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
     ;
 
     //	Handle UI stuff
     if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PlayingState)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	If playing, pause
         _playerInstance[_currentPlayerID].pause();
         _updatePlayState(PlayerController::sb_player_state_pause);
     }
     else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PausedState)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	If paused, resume play
+        _playerInstance[_currentPlayerID].play();
+        _updatePlayState(PlayerController::sb_player_state_play);
+    }
+    else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState &&
+            _currentSongPlaying.sb_item_id()>0)
+    {
+        //	If stopped and there is a valid song, play.
         _playerInstance[_currentPlayerID].play();
         _updatePlayState(PlayerController::sb_player_state_play);
     }
@@ -158,8 +160,7 @@ void
 PlayerController::playerStop()
 {
     qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO
-             << "_state_=" << _state
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
     ;
     _playerProgressSlider[_currentPlayerID]->setValue(0);
     _updatePlayState(PlayerController::sb_player_state_stopped);
@@ -187,16 +188,7 @@ PlayerController::playSong(SBIDSong& song)
                 .arg(dal->getSchemaName().length()?"/":"")
                 .arg(song.path)
     ;
-/*
-#ifdef Q_OS_UNIX
-            "/Volumes/bigtmp/Users/roy/songbase/music/files/rock/"+song.path;
-#endif
-#ifdef Q_OS_WIN
-            "D:/songbase/files/rock/"+song.path;
-#endif
-*/
-    emit songChanged(song);	//	changed to here, so we can continue in case of error of playing a song.
-    //	This used to be here after instructing player to play
+    emit setRowVisible(song.playPosition);	//	changed to here, so we can continue in case of error of playing a song.
 
     qDebug() << SB_DEBUG_INFO << path;
 

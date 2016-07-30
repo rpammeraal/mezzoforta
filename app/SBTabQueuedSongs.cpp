@@ -72,14 +72,8 @@ SBTabQueuedSongs::deletePlaylistItem()
 void
 SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
 {
-    //	Determine current playlist
-    SBID currentID=this->currentID();
-    qDebug() << SB_DEBUG_INFO << currentID << fromID << toID;
-    return;
-
-    DataEntityPlaylist mpl;
-    mpl.reorderItem(currentID,fromID,toID);
-    refreshTabIfCurrent(currentID);
+    Q_UNUSED(fromID);
+    Q_UNUSED(toID);
 }
 
 void
@@ -123,15 +117,20 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
 }
 
 void
-SBTabQueuedSongs::songChanged(const SBIDSong& song)
+SBTabQueuedSongs::setRowVisible(int index)
 {
     MainWindow* mw=Context::instance()->getMainWindow();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    QModelIndex idx=mqs->index(song.playPosition,SBModelQueuedSongs::sb_column_displayplaylistpositionid);
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
-    idx=sm->mapFromSource(idx);
+    if(index>1 && index<_rowIndexVisible)
+    {
+        //	View would miss one row when the new index is less than the current index.
+        //	Not sure if this is a bug in Qt
+        index--;
+    }
+    _rowIndexVisible=index;
+    QModelIndex idx=sm->index(index,SBModelQueuedSongs::sb_column_songtitle);
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
-    tv->scrollTo(idx);
+    tv->scrollTo(idx,QAbstractItemView::EnsureVisible);
 }
 
 ///	Protected slots
@@ -196,7 +195,7 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
 void
 SBTabQueuedSongs::tableViewCellDoubleClicked(QModelIndex idx)
 {
-    qDebug() << SB_DEBUG_INFO << idx.row();
+    Q_UNUSED(idx);
 }
 
 ///	Private methods
@@ -205,6 +204,7 @@ void
 SBTabQueuedSongs::_init()
 {
     _playingRadioFlag=0;
+    _rowIndexVisible=0;
     if(_initDoneFlag==0)
     {
         MainWindow* mw=Context::instance()->getMainWindow();
@@ -222,8 +222,10 @@ SBTabQueuedSongs::_init()
                 this, SLOT(tableViewCellDoubleClicked(QModelIndex)));
 
         //	If playerController changes song, we want to update our view.
-        connect(Context::instance()->getPlayerController(),SIGNAL(songChanged(const SBIDSong &)),
-                this, SLOT(songChanged(const SBIDSong &)));
+        connect(Context::instance()->getPlayerController(),SIGNAL(setRowVisible(int)),
+                this, SLOT(setRowVisible(int)));
+        connect(Context::instance()->getPlayManager(),SIGNAL(setRowVisible(int)),
+                this,SLOT(setRowVisible(int)));
 
         //	If playManager changes playlist, we need to update the details.
         connect(Context::instance()->getPlayManager(),SIGNAL(playlistChanged(SBIDPlaylist)),

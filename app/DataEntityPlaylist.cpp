@@ -322,7 +322,7 @@ DataEntityPlaylist::deletePlaylistItem(const SBID &toBeDeleted, const SBID &from
 SBIDSong
 DataEntityPlaylist::getDetailPlaylistItemSong(const SBID &id) const
 {
-    SBIDSong result=id;
+    SBIDSong result=id;	//	CWIP: this should *NOT* be done. Assign result with query results *ONLY*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
