@@ -80,6 +80,7 @@ private:
     QSortFilterProxyModel* slP;
 
 private slots:
+    void _disableScreenNavigationButtons();
     void _resetStatusBar();
     void _updateAllplaylistDurations();
 };

@@ -45,9 +45,8 @@ public:
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
 
     //	Database specific
-    const QString& getSchemaName() const;
+    const QString& schema() const;
     virtual QStringList availableSchemas() const;
-    bool setSchema(const QString& newSchema);
     QString customize(QString& sqlString) const;
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
@@ -56,10 +55,11 @@ public:
     const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
+    virtual bool setSchema(const QString& schema);
     virtual bool supportSchemas() const;
 
-//signals:
-    //void schemaChanged();
+signals:
+    void schemaChanged();
 
 protected:
     int dalID;
@@ -75,7 +75,7 @@ protected:
     void _setSchema(const QString& n);
 
 private:
-    QString _schemaName; //	in use for postgres
+    QString _schema; //	in use for postgres
     QString _connectionName;
     QString _convertToSecondsFromTime;
     QString _ilike;          //	returns the case insensitive version of SQL like

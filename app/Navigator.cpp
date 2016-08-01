@@ -402,6 +402,9 @@ Navigator::openOpener()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTabWidget* tw=mw->ui.mainTab;
+    QWidget* tab=mw->ui.tabOpener;
+    mw->ui.mainTab->insertTab(0,tab,QString(""));
+
     int openerTabPosition=-1;
 
     for(int i=0;openerTabPosition<0 && i<tw->count();i++)
@@ -410,6 +413,12 @@ Navigator::openOpener()
         openerTabPosition=(t==NULL)?i:openerTabPosition;
     }
     tw->setCurrentIndex(openerTabPosition);
+}
+
+void
+Navigator::schemaChanged()
+{
+    this->openOpener();
 }
 
 void
@@ -656,6 +665,10 @@ Navigator::_init()
     //	Set up menus
     connect(mw->ui.menuEditEditID, SIGNAL(triggered(bool)),
              this, SLOT(editItem()));
+
+    //	Notify when schema is changed
+    connect(Context::instance()->getDataAccessLayer(), SIGNAL(schemaChanged()),
+            this, SLOT(schemaChanged()));
 }
 
 void

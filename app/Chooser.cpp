@@ -360,6 +360,13 @@ Chooser::renamePlaylist()
 }
 
 void
+Chooser::schemaChanged()
+{
+    //	Reload playlists
+    this->_populate();
+}
+
+void
 Chooser::showContextMenu(const QPoint &p)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -406,6 +413,12 @@ Chooser::doInit()
 
 ///	PRIVATE SLOTS
 void
+Chooser::_clicked(const QModelIndex &idx)
+{
+    _lastClickedIndex=idx;
+}
+
+void
 Chooser::_renamePlaylist(const SBID &id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -424,12 +437,6 @@ Chooser::_renamePlaylist(const SBID &id)
     Context::instance()->getController()->updateStatusBarText(updateText);
 
     mw->ui.tabPlaylistDetail->refreshTabIfCurrent(id);
-}
-
-void
-Chooser::_clicked(const QModelIndex &idx)
-{
-    _lastClickedIndex=idx;
 }
 
 ///	PRIVATE
@@ -587,6 +594,9 @@ Chooser::_init()
     PlayManager* pm=Context::instance()->getPlayManager();
     connect(pm,SIGNAL(playlistChanged(const SBIDPlaylist&)),
             this, SLOT(playlistChanged(SBIDPlaylist)));
+
+    connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+            this, SLOT(schemaChanged()));
 }
 
 void

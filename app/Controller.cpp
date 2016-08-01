@@ -45,7 +45,6 @@ Controller::Controller(int argc, char *argv[], QApplication* napp) : app(napp)
     Context::instance()->setController(this);
 
     _initSuccessFull=openMainWindow(1);
-    qDebug() << SB_DEBUG_INFO;
 }
 
 Controller::~Controller()
@@ -65,6 +64,9 @@ Controller::refreshModels()
 {
     //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->getMainWindow();
+
+    Navigator* n=Context::instance()->getNavigator();
+    n->resetAllFiltersAndSelections();
 
     //	Completers
 
@@ -116,8 +118,6 @@ Controller::openDatabase()
             pm->clearPlaylist();
         }
     }
-
-    qDebug() << SB_DEBUG_INFO;
     openMainWindow(0);
 }
 
@@ -130,7 +130,6 @@ Controller::setMusicLibraryDirectory()
 void
 Controller::rescanMusicLibrary()
 {
-    qDebug() << SB_DEBUG_INFO;
     MusicLibrary ml;
     ml.rescanMusicLibrary();
 }
@@ -138,13 +137,18 @@ Controller::rescanMusicLibrary()
 void
 Controller::changeSchema(const QString& newSchema)
 {
-    if(Context::instance()->getDataAccessLayer()->setSchema(newSchema))
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+
+    if(dal->schema()!=newSchema)
     {
-        //	refresh all views
-        Context::instance()->getNavigator()->resetAllFiltersAndSelections();
-        refreshModels();
-        setupUI();
+        if(dal->setSchema(newSchema))
+        {
+            //	refresh all views
+            Context::instance()->getNavigator()->resetAllFiltersAndSelections();
+            refreshModels();
+        }
     }
+    this->_disableScreenNavigationButtons();
 }
 
 void
@@ -222,9 +226,6 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     init();
 
-    Navigator* n=Context::instance()->getNavigator();
-    n->resetAllFiltersAndSelections();
-
     refreshModels();
 
     setupUI();
@@ -263,8 +264,7 @@ Controller::setupUI()
     mw->ui.statusBar->setReadOnly(true);
 
     ///	BUTTONS
-    mw->ui.buttonBackward->setEnabled(0);
-    mw->ui.buttonForward->setEnabled(0);
+    this->_disableScreenNavigationButtons();
 
     Navigator* ssh=Context::instance()->getNavigator();
     connect(mw->ui.buttonBackward, SIGNAL(clicked()),
@@ -306,6 +306,19 @@ Controller::setupUI()
         mw->ui.cbSchema->setVisible(1);
         mw->ui.labelSchema->setVisible(1);
         mw->ui.frSchema->setVisible(1);
+
+        connect(mw->ui.cbSchema,SIGNAL(currentIndexChanged(QString)),
+                this,SLOT(changeSchema(QString)));
+
+        //	Set current schema properly in schema drop down box
+        QString currentSchema=dal->schema();
+        for(int i=0;i<mw->ui.cbSchema->count();i++)
+        {
+            if(mw->ui.cbSchema->itemText(i)==currentSchema)
+            {
+                mw->ui.cbSchema->setCurrentIndex(i);
+            }
+        }
     }
     else
     {
@@ -422,6 +435,14 @@ Controller::init()
 }
 
 ///	PRIVATE SLOTS
+void
+Controller::_disableScreenNavigationButtons()
+{
+    MainWindow* mw=Context::instance()->getMainWindow();
+    mw->ui.buttonBackward->setEnabled(0);
+    mw->ui.buttonForward->setEnabled(0);
+}
+
 void
 Controller::_resetStatusBar()
 {

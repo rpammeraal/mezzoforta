@@ -54,6 +54,7 @@ public slots:
     void openPerformer(const QString& id);
     void openPerformer(const QUrl& id);
     void openOpener();
+    void schemaChanged();
     void setFocus();
     void tabBackward();
     void tabForward();

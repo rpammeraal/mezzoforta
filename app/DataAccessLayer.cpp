@@ -131,7 +131,7 @@ operator<<(QDebug dbg, const DataAccessLayer& dal)
     dbg.nospace() << "DAL"
         << ":dalID=" << dal.dalID
         << ":connectionName=" << dal._connectionName
-        << ":schemaName=" << dal._schemaName
+        << ":schema=" << dal._schema
         << ":ilike=" << dal._ilike
         << ":driver=" << dal.getDriverName()
         << ":db open=" << db.open()
@@ -141,31 +141,17 @@ operator<<(QDebug dbg, const DataAccessLayer& dal)
 
 
 const QString&
-DataAccessLayer::getSchemaName() const
+DataAccessLayer::schema() const
 {
-    return _schemaName;
+    return _schema;
 }
 
 QStringList
 DataAccessLayer::availableSchemas() const
 {
     QStringList sl;
-    sl.append(getSchemaName());
+    sl.append(_schema);
     return sl;
-}
-
-bool
-DataAccessLayer::setSchema(const QString &newSchema)
-{
-    bool rc=0;
-    if(availableSchemas().contains(newSchema))
-    {
-        _schemaName=newSchema;
-        //emit schemaChanged();
-        rc=1;
-
-    }
-    return rc;
 }
 
 QString
@@ -219,6 +205,19 @@ const QString&
 DataAccessLayer::getIsNull() const
 {
     return _isnull;
+}
+
+bool
+DataAccessLayer::setSchema(const QString &schema)
+{
+    bool rc=0;
+    if(availableSchemas().contains(schema))
+    {
+        _schema=schema;
+        emit schemaChanged();
+        rc=1;
+    }
+    return rc;
 }
 
 bool
@@ -283,21 +282,21 @@ DataAccessLayer::setIsNull(const QString& n)
 void
 DataAccessLayer::_setSchema(const QString &n)
 {
-    _schemaName=n;
+    _schema=n;
 }
 
 ///	Private
 QString
 DataAccessLayer::_getSchemaName() const
 {
-    return (_schemaName.length()>0) ? _schemaName+'.' : "";
+    return (_schema.length()>0) ? _schema+'.' : "";
 }
 
 void
 DataAccessLayer::_init()
 {
     dalID=++dalCOUNT;
-    _schemaName="";
+    _schema="";
     _connectionName="";
     _convertToSecondsFromTime="";
     _ilike="";
@@ -309,7 +308,7 @@ DataAccessLayer::_init()
 void
 DataAccessLayer::_init(const DataAccessLayer& copy)
 {
-    _schemaName=copy._schemaName;
+    _schema=copy._schema;
     _connectionName=copy._connectionName;
     _convertToSecondsFromTime=copy._convertToSecondsFromTime;
     _ilike=copy._ilike;

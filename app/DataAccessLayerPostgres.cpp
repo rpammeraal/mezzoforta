@@ -41,6 +41,30 @@ DataAccessLayerPostgres::availableSchemas() const
 }
 
 bool
+DataAccessLayerPostgres::setSchema(const QString &schema)
+{
+    if(DataAccessLayer::setSchema(schema))
+    {
+        QString q=QString(
+            "UPDATE "
+                "configuration "
+            "SET "
+                "value=E'%1' "
+            "WHERE "
+                "keyword=E'default_schema' "
+        )
+            .arg(schema)
+        ;
+
+        QSqlQuery query(q,QSqlDatabase::database(this->getConnectionName()));
+        query.exec();
+
+        return 1;
+    }
+    return 0;
+}
+
+bool
 DataAccessLayerPostgres::supportSchemas() const
 {
     return 1;
@@ -50,22 +74,29 @@ DataAccessLayerPostgres::supportSchemas() const
 void
 DataAccessLayerPostgres::_initAvailableSchemas()
 {
-    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:start";
-    const QString q="SELECT schema FROM namespace";
-    QSqlQuery query(q,QSqlDatabase::database(this->getConnectionName()));
+    const QString q=
+            "SELECT "
+                "schema, "
+                "CASE WHEN c.value=ns.schema THEN 1 ELSE 0 END AS default_schema "
+            "FROM "
+                "namespace ns "
+                    "LEFT JOIN configuration c ON "
+                        "keyword='default_schema'";
+    QSqlQuery qAllSchemas(q,QSqlDatabase::database(this->getConnectionName()));
 
-    while(query.next())
+    QString currentSchema;
+    while(qAllSchemas.next())
     {
-        QString schema=query.value(0).toString().toLower();
+        QString schema=qAllSchemas.value(0).toString().toLower();
+        bool isDefaultSchema=qAllSchemas.value(1).toBool();
         Common::toTitleCase(schema);
+        if(currentSchema.length()==0 || isDefaultSchema)
+        {
+            //	Pick the first schema (if not populated) so that there is a schema selected.
+            currentSchema=schema;
+        }
         _availableSchemas << schema;
-        _setSchema(schema);
         addMissingDatabaseItems();
     }
-
-    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:schemas=" << _availableSchemas;
-
-    _setSchema("rock");	//	common::titlecase
-
-    qDebug() << "DataAccessLayerPostgres::_initAvailableSchemas:end";
+    _setSchema(currentSchema);
 }

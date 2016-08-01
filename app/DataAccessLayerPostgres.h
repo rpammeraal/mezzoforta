@@ -16,6 +16,7 @@ public:
     ~DataAccessLayerPostgres();
 
     virtual QStringList availableSchemas() const;
+    virtual bool setSchema(const QString& schema);
     virtual bool supportSchemas() const;
 
 protected:

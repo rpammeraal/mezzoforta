@@ -11,8 +11,9 @@
 /// Maintains a traversible stack of screens that has been visited,
 /// until home() is being called, which resets the screen stack.
 ///
-class ScreenStack
+class ScreenStack : public QObject
 {
+    Q_OBJECT
 
 public:
     ScreenStack();
@@ -37,6 +38,9 @@ public:
 
     void debugShow(const QString& c);
 
+public slots:
+    void schemaChanged();
+
 protected:
     friend class Context;
     void doInit();	//	Init done by Context::
@@ -44,6 +48,9 @@ protected:
 private:
     int currentScreenID;
     QList<SBID> stack;
+    bool _initDoneFlag;
+
+    void _init();
 };
 
 #endif // SCREENSTACK_H

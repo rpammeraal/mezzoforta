@@ -36,6 +36,7 @@ public slots:
     void playlistChanged(const SBIDPlaylist& playlistID);
     void playPlaylist();
     void renamePlaylist();
+    void schemaChanged();
     void showContextMenu(const QPoint& p);
 
 protected:
@@ -43,8 +44,8 @@ protected:
     void doInit();
 
 private slots:
-    void _renamePlaylist(const SBID& id);
     void _clicked(const QModelIndex& mi);
+    void _renamePlaylist(const SBID& id);
 
 private:
     //	Context menu actions

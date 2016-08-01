@@ -86,6 +86,12 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 }
 
 void
+SBTabSongsAll::schemaChanged()
+{
+    this->preload();
+}
+
+void
 SBTabSongsAll::showContextMenuLabel(const QPoint &p)
 {
     const SBID currentID=SBTab::currentID();
@@ -165,6 +171,10 @@ SBTabSongsAll::_init()
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
                 this, SLOT(showContextMenuView(QPoint)));
+
+        //	Schema changes
+        connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+                this, SLOT(schemaChanged()));
     }
 }
 

@@ -43,7 +43,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool header
 #endif
     if(resultCode!=0)
     {
-        _error=QString("Could not open as an OGG file");
+        _error=QString("Could not open as an OGG file '%1'").arg(fileName);
         qDebug() << SB_DEBUG_ERROR << _error << resultCode;
         return;
     }

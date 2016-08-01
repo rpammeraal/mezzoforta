@@ -1,13 +1,14 @@
 #include <QDebug>
 
 #include "Common.h"
+#include "Context.h"
 #include "ScreenStack.h"
 
 #include <QMessageBox>
 
 ScreenStack::ScreenStack()
 {
-    clear();
+    _initDoneFlag=0;
 }
 
 ScreenStack::~ScreenStack()
@@ -272,9 +273,30 @@ ScreenStack::debugShow(const QString& c)
     qDebug() << SB_DEBUG_INFO << currentScreenID;
 }
 
+///	PUBLIC SLOTS
+void
+ScreenStack::schemaChanged()
+{
+    this->clear();
+}
+
 ///	PROTECTED
 void
 ScreenStack::doInit()
 {
+    _init();
+}
+
+///	PRIVATE
+void
+ScreenStack::_init()
+{
     clear();
+
+    if(_initDoneFlag==0)
+    {
+        connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+                this, SLOT(schemaChanged()));
+        _initDoneFlag=1;
+    }
 }

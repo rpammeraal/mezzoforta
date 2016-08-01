@@ -529,16 +529,20 @@ X	playlists that song belongs to can be edited
 - 	assign 'Omri'/Rachid Taha & Faudel to Lively World
 -	if song file is missing -> dialog box: already in place
 
+20160731
+-	implement schemas for songbase
+	-	need to open opener upon schema changes.
+	-	prev/next screen buttons to be disabled.
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 
 <near future>
 *	upgrade to 5.7
-*	implement schemas for songbase
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.
-	*	trim at end and start, dedupe white space.
+	*	trim at end and start, dedupe white space. Use Common::simplified().
 *	Consider caching of entire database:
 	*	Subclasses of SBID, pretty much all of DataEntity classes can go in subclasses of SBID
 	*	At that point, we can tell to a SBID instance: throw yourself in the queue, play yourself, etc.
@@ -569,6 +573,7 @@ X	playlists that song belongs to can be edited
 *	wil suggestion: create getID() and compareAttributes() in SBID* classes to explicitly force the use of these instead of compare operators.
 	*	compare operators should be defined private
 *	DataEntity::getDetail(): initialization of parameter to result should NOT happen.
+*	Add option to playlist to always play in order or randomly.
 
 <future>
 *	Put the loudspeaker icon in front of every view if the view has the current item playing.

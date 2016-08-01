@@ -184,8 +184,8 @@ PlayerController::playSong(SBIDSong& song)
 
     QString path=QString("%1/%2%3%4")
                 .arg(Context::instance()->getProperties()->musicLibraryDirectory())
-                .arg(dal->getSchemaName())
-                .arg(dal->getSchemaName().length()?"/":"")
+                .arg(dal->schema())
+                .arg(dal->schema().length()?"/":"")
                 .arg(song.path)
     ;
     emit setRowVisible(song.playPosition);	//	changed to here, so we can continue in case of error of playing a song.

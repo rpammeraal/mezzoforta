@@ -90,6 +90,7 @@ DBManager::openDefaultDatabase()
     {
         return openDatabase();
     }
+    return 0;
 }
 
 ///
