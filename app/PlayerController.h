@@ -68,7 +68,6 @@ protected:
     bool playSong(SBIDSong& song);
 
 protected slots:
-    friend class PlayManager;
     bool playerPlay();
     void playerSeek(int ms);
     void playerStop();

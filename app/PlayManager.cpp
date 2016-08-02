@@ -36,7 +36,7 @@ bool
 PlayManager::playerPlay()
 {
     PlayerController* pc=Context::instance()->getPlayerController();
-    PlayerController::sb_player_state currentPlayState=currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
+    PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
 
     switch(currentPlayState)
     {

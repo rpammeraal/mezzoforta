@@ -71,7 +71,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     {
         qDebug() << SB_DEBUG_INFO << selectedID;
     }
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 

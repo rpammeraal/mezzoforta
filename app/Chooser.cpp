@@ -220,7 +220,7 @@ Chooser::assignItem(const QModelIndex &idx, const SBID &toBeAssignedToID)
                 else if(rootType==Chooser::sb_your_songs)
                 {
                     PlayManager* pmgr=Context::instance()->getPlayManager();
-                    pmgr?pmgr->playItemNow(fromID,1):NULL;
+                    pmgr?pmgr->playItemNow(fromID,1):0;
                 }
             }
 
@@ -273,7 +273,7 @@ Chooser::enqueuePlaylist()
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(id,1):NULL;
+        pmgr?pmgr->playItemNow(id,1):0;
     }
 }
 
@@ -342,7 +342,7 @@ Chooser::playPlaylist()
     if(id.sb_item_type()==SBID::sb_type_playlist)
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(id):NULL;
+        pmgr?pmgr->playItemNow(id):0;
     }
 }
 

@@ -45,7 +45,7 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
         selectedID=SBTab::currentID();
     }
 
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 

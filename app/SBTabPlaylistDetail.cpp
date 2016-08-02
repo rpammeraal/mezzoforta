@@ -96,7 +96,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
         }
     }
     PlayManager* pmgr=Context::instance()->getPlayManager();
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 

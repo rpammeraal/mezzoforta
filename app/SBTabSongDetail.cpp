@@ -112,7 +112,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
         //	Context menu from SBLabel is clicked
         selectedID=selectSongFromAlbum(this->currentID());
     }
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):NULL;
+    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
