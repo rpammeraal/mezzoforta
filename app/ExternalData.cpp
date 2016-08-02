@@ -7,7 +7,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QPixmap>
-#include <QWebView>
+#include <QWebEngineView>
 
 #include "Common.h"
 #include "ExternalData.h"

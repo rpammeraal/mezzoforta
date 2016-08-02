@@ -351,7 +351,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_03">
+                  <layout class="QHBoxLayout" name="horizontalLayout_04">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -514,7 +514,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>9</number>
+           <number>4</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -713,7 +713,7 @@
            <attribute name="title">
             <string>Playlist</string>
            </attribute>
-           <layout class="QVBoxLayout" name="horizontalLayout_04">
+           <layout class="QVBoxLayout" name="horizontalLayout_05">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -1267,7 +1267,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_05">
+                  <layout class="QHBoxLayout" name="horizontalLayout_06">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1316,8 +1316,8 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QWebView" name="performerDetailNewsPage">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="performerDetailNewsPage" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -1338,7 +1338,7 @@
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_08">
                 <item>
-                 <widget class="QWebView" name="performerDetailWikipediaPage"/>
+                 <widget class="QWebEngineView" name="performerDetailWikipediaPage" native="true"/>
                 </item>
                </layout>
               </widget>
@@ -1346,7 +1346,7 @@
                <attribute name="title">
                 <string>Homepage</string>
                </attribute>
-               <layout class="QHBoxLayout" name="horizontalLayout_06">
+               <layout class="QHBoxLayout" name="horizontalLayout_07">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1360,8 +1360,8 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QWebView" name="performerDetailHomepage">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="performerDetailHomepage" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -1645,7 +1645,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_07">
+                  <layout class="QHBoxLayout" name="horizontalLayout_08">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1694,8 +1694,8 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QWebView" name="albumDetailReviews">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="albumDetailReviews" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -1722,8 +1722,8 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QWebView" name="albumDetailsWikipediaPage">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="albumDetailsWikipediaPage" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -2009,7 +2009,7 @@
             <item>
              <widget class="QTabWidget" name="tabSongDetailLists">
               <property name="currentIndex">
-               <number>0</number>
+               <number>4</number>
               </property>
               <widget class="QWidget" name="tabSongDetailAlbums">
                <attribute name="title">
@@ -2125,8 +2125,8 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QWebView" name="songDetailLyrics">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="songDetailLyrics" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -2153,8 +2153,8 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QWebView" name="songDetailWikipediaPage">
-                  <property name="url">
+                 <widget class="QWebEngineView" name="songDetailWikipediaPage" native="true">
+                  <property name="url" stdset="0">
                    <url>
                     <string>about:blank</string>
                    </url>
@@ -2213,7 +2213,7 @@
                 <height>100</height>
                </size>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_08">
+              <layout class="QHBoxLayout" name="horizontalLayout_09">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -3395,7 +3395,7 @@ Click on 'All Songs' to continue.</string>
            <attribute name="title">
             <string>Currently Playing</string>
            </attribute>
-           <layout class="QVBoxLayout" name="horizontalLayout_09">
+           <layout class="QVBoxLayout" name="horizontalLayout_10">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -3526,7 +3526,7 @@ Click on 'All Songs' to continue.</string>
                   <number>0</number>
                  </property>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                    <item>
                     <widget class="QPushButton" name="pbClearPlaylist">
                      <property name="text">
@@ -3702,7 +3702,7 @@ Click on 'All Songs' to continue.</string>
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <layout class="QHBoxLayout" name="horizontalLayout_12">
            <property name="spacing">
             <number>0</number>
            </property>
@@ -3738,7 +3738,7 @@ Click on 'All Songs' to continue.</string>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <layout class="QHBoxLayout" name="horizontalLayout_13">
               <property name="spacing">
                <number>0</number>
               </property>
@@ -3779,7 +3779,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_13">
+                  <layout class="QHBoxLayout" name="horizontalLayout_14">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -3851,7 +3851,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_14">
+                  <layout class="QHBoxLayout" name="horizontalLayout_15">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -3937,7 +3937,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_15">
+                  <layout class="QHBoxLayout" name="horizontalLayout_16">
                    <property name="spacing">
                     <number>0</number>
                    </property>
@@ -4141,7 +4141,7 @@ Click on 'All Songs' to continue.</string>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_16">
+             <layout class="QHBoxLayout" name="horizontalLayout_17">
               <property name="spacing">
                <number>0</number>
               </property>
@@ -4182,7 +4182,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_17">
+                  <layout class="QHBoxLayout" name="horizontalLayout_18">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -4251,7 +4251,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_18">
+                  <layout class="QHBoxLayout" name="horizontalLayout_19">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -4334,7 +4334,7 @@ Click on 'All Songs' to continue.</string>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_19">
+                  <layout class="QHBoxLayout" name="horizontalLayout_20">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -4562,7 +4562,7 @@ Click on 'All Songs' to continue.</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -4647,11 +4647,6 @@ Click on 'All Songs' to continue.</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebView</class>
-   <extends>QWidget</extends>
-   <header>QtWebKitWidgets/QWebView</header>
-  </customwidget>
-  <customwidget>
    <class>SBLabel</class>
    <extends>QLabel</extends>
    <header>SBLabel.h</header>
@@ -4708,6 +4703,11 @@ Click on 'All Songs' to continue.</string>
    <class>SBTabQueuedSongs</class>
    <extends>QWidget</extends>
    <header>SBTabQueuedSongs.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header>QtWebEngineWidgets/QWebEngineView</header>
   </customwidget>
  </customwidgets>
  <tabstops>

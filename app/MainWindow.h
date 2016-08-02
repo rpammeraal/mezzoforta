@@ -36,7 +36,7 @@ public:
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-    virtual void keyPressEvent(QKeyEvent * event);
+    virtual void keyPressEvent(QKeyEvent * event) Q_DECL_OVERRIDE;
 
 private slots:
     void newFile();

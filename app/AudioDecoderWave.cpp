@@ -14,6 +14,7 @@
 ///	Protected methods
 AudioDecoderWave::AudioDecoderWave(const QString& fileName,bool headerOnlyFlag)
 {
+    Q_UNUSED(headerOnlyFlag);
     qDebug() << SB_DEBUG_INFO << fileName;
 
     //	Open file

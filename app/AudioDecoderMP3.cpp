@@ -13,6 +13,7 @@
 AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
 {
     init();
+    Q_UNUSED(headerOnlyFlag);	//	CWIP: remove
 
     qDebug() << SB_DEBUG_INFO << fileName;
     _file=new QFile(fileName);

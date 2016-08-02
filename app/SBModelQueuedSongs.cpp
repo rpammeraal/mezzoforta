@@ -470,6 +470,7 @@ SBModelQueuedSongs::removeRows(int row, int count, const QModelIndex &parent)
 void
 SBModelQueuedSongs::debugShow(const QString& title)
 {
+    qDebug() << SB_DEBUG_INFO << title;
     for(int i=0;i<this->rowCount();i++)
     {
         QString row=QString("row=%1").arg(i);
@@ -489,6 +490,7 @@ SBModelQueuedSongs::debugShow(const QString& title)
                 }
             }
         }
+        qDebug() << SB_DEBUG_INFO << row;
     }
 }
 

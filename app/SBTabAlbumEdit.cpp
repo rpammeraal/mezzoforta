@@ -70,6 +70,7 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
     {
         Q_UNUSED(action);
+        Q_UNUSED(parent);
         if(row==-1 && column==-1)
         {
             qDebug() << SB_DEBUG_WARNING << "ABORTED DROP";
@@ -277,6 +278,7 @@ public:
 
     void debugShow(const QString& title=QString())
     {
+        qDebug() << SB_DEBUG_INFO << title;
         for(int i=0;i<this->rowCount();i++)
         {
             QString row=QString("row=%1").arg(i);
@@ -292,6 +294,7 @@ public:
                     row+="|<NULL>";
                 }
             }
+            qDebug() << SB_DEBUG_INFO << row;
         }
     }
 

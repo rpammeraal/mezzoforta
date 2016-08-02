@@ -1,0 +1,15 @@
+After fresh install:
+apt-get install g++
+apt-get install build-essential
+apt-get install apt-file
+apt-get install mesa-common-dev
+apt-get install libglu1-mesa-dev -y
+apt-get install git
+apt-get install portaudio19-dev
+apt-get install ttf-mscorefonts-installer
+apt-get install libflac-dev
+apt-get install libmad0-dev
+apt-get install libvorbis-dev
+apt-get install libid3tag0-dev
+apt-get install postgresql postgresql-contrib
+apt-get install nfs-common
