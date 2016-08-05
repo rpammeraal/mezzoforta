@@ -534,16 +534,19 @@ X	playlists that song belongs to can be edited
 	-	need to open opener upon schema changes.
 	-	prev/next screen buttons to be disabled.
 
-20170801:
+20160801:
 -	Upgraded to Qt5.7
 -	Removed all warnings on OS X.
 -	Added install documentation for Ubuntu.
+
+20160804
+-	after schema switch, clear Songs in Queue.
+    -	ask for current song to be stopped: not
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 
 <near future>
-*	upgrade to 5.7
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.
@@ -563,6 +566,7 @@ X	playlists that song belongs to can be edited
 *	 radio mode: at end of 100th song, refill radio list (whether running to the end or skip to next song)
 *	clear out 'shuffle' when less than 3 songs in queue.
 *	when edit song, call SBIDSong::deleteIfOrphanized() for every performer performing that song.
+*	add duration to album tab
 
 *	addMissingDatabase objects: need a cleaner way (database dependent) to do this.
 	*	DataAccessLayer::addMissingDatabaseItems() does not work on postgres.

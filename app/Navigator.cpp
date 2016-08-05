@@ -418,6 +418,7 @@ Navigator::openOpener()
 void
 Navigator::schemaChanged()
 {
+    this->resetAllFiltersAndSelections();
     this->openOpener();
 }
 
@@ -669,6 +670,7 @@ Navigator::_init()
     //	Notify when schema is changed
     connect(Context::instance()->getDataAccessLayer(), SIGNAL(schemaChanged()),
             this, SLOT(schemaChanged()));
+
 }
 
 void

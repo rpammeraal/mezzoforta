@@ -69,7 +69,6 @@ Controller::refreshModels()
     n->resetAllFiltersAndSelections();
 
     //	Completers
-
     mw->ui.searchEdit->setCompleter(CompleterFactory::getCompleterAll());
     mw->ui.songEditTitle->setCompleter(CompleterFactory::getCompleterSong());
     mw->ui.songEditPerformerName->setCompleter(CompleterFactory::getCompleterPerformer());
@@ -144,8 +143,8 @@ Controller::changeSchema(const QString& newSchema)
         if(dal->setSchema(newSchema))
         {
             //	refresh all views
-            Context::instance()->getNavigator()->resetAllFiltersAndSelections();
             refreshModels();
+            emit schemaChanged();
         }
     }
     this->_disableScreenNavigationButtons();

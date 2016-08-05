@@ -3,6 +3,7 @@
 
 #include "QHash"
 
+#include "Common.h"
 #include "SBID.h"
 #include "SBIDSong.h"
 
@@ -31,6 +32,7 @@ public:
     virtual bool operator==(const SBID& i) const;
     friend QDebug operator<<(QDebug dbg, const SBIDAlbum& id);
 
+
 private:
     SBIDAlbum(SBID::sb_type type, int itemID);
     virtual void assign(const SBID::sb_type type, const int itemID);
@@ -42,5 +44,19 @@ inline uint qHash(const SBIDAlbum& p,uint seed=0)
     return p.sb_album_id>=0?qHash(p.sb_album_id,seed):qHash(p.albumTitle,seed);
 }
 
+//	Use case: import of new songs. This way we can create a hash function based
+class SBIDAlbumSimpleCompare : public SBIDAlbum
+{
+public:
+    SBIDAlbumSimpleCompare(const SBID& c) : SBIDAlbum(c),_simplifiedAlbumTitle(Common::simplified(c.albumTitle)) { }
+
+    QString _simplifiedAlbumTitle;
+
+};
+
+inline uint qHash(const SBIDAlbumSimpleCompare& p,uint seed=0)
+{
+    return qHash(p._simplifiedAlbumTitle,seed);
+}
 
 #endif // SBIDALBUM_H

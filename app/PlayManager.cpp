@@ -3,6 +3,7 @@
 #include "PlayManager.h"
 
 #include "Context.h"
+#include "Controller.h"
 #include "DataEntityCurrentPlaylist.h"
 #include "DataEntityPlaylist.h"
 #include "DataEntitySong.h"
@@ -142,6 +143,12 @@ void
 PlayManager::playerStop()
 {
     Context::instance()->getPlayerController()->playerStop();
+}
+
+void
+PlayManager::changeSchema()
+{
+    this->clearPlaylist();
 }
 
 void
@@ -307,6 +314,10 @@ PlayManager::_init()
             this, SLOT(playerPlay()));
     connect(mw->ui.pbMusicPlayerControlRightNEXT, SIGNAL(clicked(bool)),
             this, SLOT(playerNext()));
+
+    //	Schema changed
+    connect(Context::instance()->getController(), SIGNAL(schemaChanged()),
+            this, SLOT(changeSchema()));
 }
 
 void

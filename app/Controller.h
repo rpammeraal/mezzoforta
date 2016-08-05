@@ -38,6 +38,7 @@ public:
 
 signals:
     void recalculateAllPlaylistDurations();
+    void schemaChanged();
 
 public slots:
     //	MENU::FILE

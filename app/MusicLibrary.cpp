@@ -23,14 +23,40 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 void
 MusicLibrary::rescanMusicLibrary()
 {
-    const QString root=Context::instance()->getProperties()->musicLibraryDirectory();
-    const QString rootSlash=root+"/";
+    QStringList l=Context::instance()->getDataAccessLayer()->availableSchemas();
+    if(l.count()==0)
+    {
+        //	Add an empty schema in case there are no schema.
+        l.append(QString());
+    }
+
+    l.clear();
+    l.append("rock");
+
+    for(int i=0;i<l.count();i++)
+    {
+        _rescanMusicLibrary(l.at(i));
+    }
+}
+
+///	Private methods
+void
+MusicLibrary::_rescanMusicLibrary(const QString& schema)
+{
+    qDebug() << SB_DEBUG_INFO << schema;
+
+    const QString schemaRoot=
+        Context::instance()->getProperties()->musicLibraryDirectory()
+        +"/"
+        +schema.toLower()
+        +(schema.length()?"/":"");
+    qDebug() << SB_DEBUG_INFO << schemaRoot;
 
     //	1.	Get list of entries
     QStringList entries;
     Controller* c=Context::instance()->getController();
     int numFiles=0;
-    QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(schemaRoot, QDir::Files, QDirIterator::Subdirectories);
     c->updateStatusBarText(QString("Found %1 files").arg(numFiles));
     QCoreApplication::processEvents();
     while (it.hasNext())
@@ -47,6 +73,10 @@ MusicLibrary::rescanMusicLibrary()
         {
             entries.append(path);
             numFiles++;
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_WARNING << "File size too short:" << path;
         }
     }
     c->updateStatusBarText(QString("Found %1 files").arg(numFiles));
@@ -77,7 +107,7 @@ MusicLibrary::rescanMusicLibrary()
         song.sb_performer_id=sqm->data(sqm->index(i,1)).toInt();
         song.sb_album_id=sqm->data(sqm->index(i,2)).toInt();
         song.sb_position=sqm->data(sqm->index(i,3)).toInt();
-        QString path=rootSlash+sqm->data(sqm->index(i,4)).toString().replace("\\","");
+        QString path=schemaRoot+sqm->data(sqm->index(i,4)).toString().replace("\\","");
 
         pathToSong[path]=song;
         existingPath[path]=0;
@@ -87,13 +117,17 @@ MusicLibrary::rescanMusicLibrary()
             pd.setValue(i);
             QCoreApplication::processEvents();
         }
+        if(path.contains("Visitors"))
+        {
+            qDebug() << SB_DEBUG_INFO << path;
+        }
     }
 
     //	2.	Process entries, collect performers
     QHash<SBIDPerformer,int> performerToID;
     AudioDecoderFactory adf;
     QList<SBIDSong> newEntries;
-    QHash<SBIDAlbum,int> albumToID;
+    QHash<SBIDAlbumSimpleCompare,int> albumToID;
     QMap<QString,QString> errors;
 
     performerToID.reserve(entries.count());
@@ -105,6 +139,9 @@ MusicLibrary::rescanMusicLibrary()
     pd.setLabelText("Processing new music");
     QCoreApplication::processEvents();
 
+    QHashIterator<QString,bool> hi(existingPath);
+    int cnt=0;
+
     for(int i=0;i<entries.count();i++)
     {
         if(pathToSong.contains(entries.at(i)))
@@ -113,9 +150,9 @@ MusicLibrary::rescanMusicLibrary()
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << entries.at(i);
+            qDebug() << SB_DEBUG_INFO << cnt++ << entries.at(i);
+            return;
 
-            /*
             //	Determine any attributes from each file.
             AudioDecoder* ad=adf.openFileHeader(entries.at(i));
             if(ad)
@@ -129,7 +166,7 @@ MusicLibrary::rescanMusicLibrary()
                     performerToID[p]=-1;
                 }
 
-                SBIDAlbum a=item;
+                SBIDAlbumSimpleCompare a=item;
                 if(albumToID.contains(a)==0)
                 {
                     albumToID[a]=-1;
@@ -142,12 +179,12 @@ MusicLibrary::rescanMusicLibrary()
             {
                 errors[entries.at(i)]=adf.error();
             }
-            */
         }
         if((i%100)==0)
         {
             pd.setValue(i);
             QCoreApplication::processEvents();
+            qDebug() << i << entries.count() << performerToID.count() << albumToID.count();
         }
     }
     return;

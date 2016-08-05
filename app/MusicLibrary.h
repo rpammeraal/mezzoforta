@@ -16,6 +16,7 @@ signals:
 public slots:
 
 private:
+    void _rescanMusicLibrary(const QString& schema);
 };
 
 #endif // MUSICLIBRARY_H
