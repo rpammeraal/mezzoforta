@@ -41,7 +41,7 @@ HEADERS     = \
     DataEntityAlbum.h \
     DataEntityCurrentPlaylist.h \
     DataEntityGenrelist.h \
-    DataEntityPerformer.h \
+    dataentityperformer.h \
     DataEntityPlaylist.h \
     DataEntitySong.h \
     AudioDecoderOggVorbisReader.h \
@@ -61,7 +61,9 @@ HEADERS     = \
     Properties.h \
     MusicLibrary.h \
     DatabaseSelector.h \
-    DBManager.h
+    DBManager.h \
+    KeyboardEventCatcher.h \
+    OSXNSEventFunctions.h
 
 SOURCES     = \
     main.cpp \
@@ -125,7 +127,11 @@ SOURCES     = \
     Properties.cpp \
     MusicLibrary.cpp \
     DatabaseSelector.cpp \
-    DBManager.cpp
+    DBManager.cpp \
+    KeyboardEventCatcher.cpp
+
+OBJECTIVE_SOURCES += \
+    OSXNSEventFunctions.mm
 
 # install
 target.path = .
@@ -149,11 +155,12 @@ DISTFILES += \
     resources/moose7.2.bmp
 
 unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation
 macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a /sw/lib/libmad.a /sw/lib/libid3tag.a
 
 INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
 DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad
+
 

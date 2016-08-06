@@ -38,7 +38,7 @@ public:
     static void sleep(unsigned long secs) { QThread::sleep(secs); }
 };
 
-Controller::Controller(int argc, char *argv[], QApplication* napp) : app(napp)
+Controller::Controller(int argc, char *argv[], QApplication* app) : _app(app)
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
@@ -206,7 +206,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     if(appStartUpFlag)
     {
         splash.show();
-        app->processEvents();
+        _app->processEvents();
     }
 
     MainWindow* oldMW=Context::instance()->getMainWindow();
@@ -218,8 +218,11 @@ Controller::openMainWindow(bool appStartUpFlag)
     }
 
     MainWindow* mw=new MainWindow();
-    mw->hide();
     SB_DEBUG_IF_NULL(mw);
+    mw->hide();
+
+    //	Install event handler
+    _app->installNativeEventFilter(Context::instance()->keyboardEventCatcher());
 
     Context::instance()->doInit(mw);	//	This has to be done as soon as we have mw
 
@@ -389,10 +392,10 @@ Controller::configureMenuItems(const QList<QAction *>& list)
 void
 Controller::setFontSizes() const
 {
-    qDebug() << SB_DEBUG_INFO << app->platformName();
-    if(app->platformName()=="windows")
+    qDebug() << SB_DEBUG_INFO << _app->platformName();
+    if(_app->platformName()=="windows")
     {
-        QWidgetList l=app->allWidgets();
+        QWidgetList l=_app->allWidgets();
         for(int i=0;i<l.count();i++)
         {
             QWidget* w=l.at(i);

@@ -57,7 +57,8 @@ Context::doInit(MainWindow* mw)
     _st.doInit();   //	no dep
     _nav.doInit();  //	no dep
     _p.doInit();    //	no dep
-    _dbm.doInit();
+    _dbm.doInit();	//	no dep
+    _kec.doInit();	//	no dep
 }
 
 ///	PRIVATE

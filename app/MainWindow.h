@@ -6,6 +6,7 @@
 
 #include "ui_MainWindow.h"
 #include "DataAccessLayer.h"
+#include "KeyboardEventCatcher.h"
 
 class QLabel;
 class Controller;

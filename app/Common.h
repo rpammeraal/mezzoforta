@@ -52,6 +52,14 @@ class QTableView;
 #define SB_VIEW_BG_HIGHLIGHT_COLOR "#A4A4A4"
 #endif
 
+//	Media keys on Apple keyboard as defined by OS X
+#define SB_OSX_KEY_FORWARD     19
+#define SB_OSX_KEY_PLAYPAUSE   16
+#define SB_OSX_KEY_PREVIOUS    20
+#define SB_OSX_KEY_SOUND_MUTE   7
+#define SB_OSX_KEY_SOUND_LOWER  1
+#define SB_OSX_KEY_SOUND_HIGHER 0
+
 class Common
 {
 public:

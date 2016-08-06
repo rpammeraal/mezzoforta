@@ -543,6 +543,10 @@ X	playlists that song belongs to can be edited
 -	after schema switch, clear Songs in Queue.
     -	ask for current song to be stopped: not
 
+20160805
+-	mac keyboard forward, play, previous to be supported.
+    And what a pain that was. But, objective C and C++ -- cool!
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 
@@ -573,7 +577,6 @@ X	playlists that song belongs to can be edited
 	*	Progress box not be shown during this method.
 *	(dis)appearing playbutton in front of any item in songlist
 *	(dis)appearing playbutton in front of any item in playlist
-*	mac keyboard forward, play, previous to be supported.
 *	Superclass SBTabAlbumEdit.AlbumEditModel and SBTabCurrentPlaylist.CurrentPlaylistModel
 *	When changing performer on a song, ask if 1) if this is the only performer on the song (if this is the case,
 	change *_performance to reflect this) or 2) if other performers perform this song. Only ask if there is only

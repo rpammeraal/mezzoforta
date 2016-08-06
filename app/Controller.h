@@ -63,7 +63,7 @@ private:
     QThread backgroundThread;
     QTimer statusBarResetTimer;
     QTimer updateAllPlaylistDurationTimer;
-    QApplication* app;
+    QApplication* _app;
 
     //	Handle reset of filters and selections
 

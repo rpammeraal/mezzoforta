@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "DataAccessLayer.h"
 #include "DBManager.h"
+#include "KeyboardEventCatcher.h"
 #include "Navigator.h"
 #include "PlayerController.h"
 #include "PlayManager.h"
@@ -39,6 +40,7 @@ public:
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
     inline DataAccessLayer* getDataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
     inline DBManager* getDBManager() { return &_dbm; }
+    inline KeyboardEventCatcher* keyboardEventCatcher() { return &_kec; }
     inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
     inline Navigator* getNavigator() { return &_nav; }
     inline PlayerController* getPlayerController() { return &_pc; }
@@ -71,6 +73,7 @@ private:
     //	Instantiated
     Chooser _lcc;
     DBManager _dbm;
+    KeyboardEventCatcher _kec;
     Navigator _nav;
     PlayerController _pc;
     PlayManager _pm;
