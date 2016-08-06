@@ -1,3 +1,5 @@
+#include <QtGlobal>
+
 #include "KeyboardEventCatcher.h"
 #include "OSXNSEventFunctions.h"
 
@@ -16,10 +18,12 @@ KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *messa
     Q_UNUSED(eventType);
     Q_UNUSED(message);
     Q_UNUSED(result);
+
+#ifdef Q_OS_OSX
     if(eventType=="mac_generic_NSEvent")
     {
         int key;
-        if(retrieveKeyPressed(message,key))
+        if(OSXretrieveKeyPressed(message,key))
         {
             switch(key)
             {
@@ -43,6 +47,7 @@ KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *messa
             }
         }
     }
+#endif //	Q_OS_OSX
     return returnCode;
 }
 
@@ -64,6 +69,4 @@ KeyboardEventCatcher::_init()
             Context::instance()->getPlayManager(), SLOT(playerPlay()));
     connect(this, SIGNAL(songPrevious()),
             Context::instance()->getPlayManager(), SLOT(playerPrevious()));
-
-
 }

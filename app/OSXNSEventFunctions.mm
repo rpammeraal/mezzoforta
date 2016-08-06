@@ -1,10 +1,14 @@
+#include <QtGlobal>
+
+#ifdef Q_OS_OSX
+
 #import <iostream>
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitKeys.h>
 
 #include "OSXNSEventFunctions.h"
 
-bool retrieveKeyPressed(void* event,int& key)
+bool OSXretrieveKeyPressed(void* event,int& key)
 {
     bool keyPressed=0;
     NSEvent* nsevent=reinterpret_cast<NSEvent *>(event);
@@ -24,3 +28,5 @@ bool retrieveKeyPressed(void* event,int& key)
     }
     return keyPressed;
 }
+
+#endif //	Q_OS_OSX
