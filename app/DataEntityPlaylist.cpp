@@ -931,7 +931,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBID &id) const
         "WHERE "
             "playlist_id=%2 "
     )
-        .arg(duration.toString(Duration::sb_hhmmss_format))
+        .arg(duration.toString(Duration::sb_full_hhmmss_format))
         .arg(id.sb_playlist_id)
     ;
     dal->customize(q);

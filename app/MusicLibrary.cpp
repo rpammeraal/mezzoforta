@@ -46,17 +46,20 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     qDebug() << SB_DEBUG_INFO << schema;
 
     const QString schemaRoot=
-        Context::instance()->getProperties()->musicLibraryDirectory()
+        Context::instance()->getProperties()->musicLibraryDirectory().toLower()
         +"/"
         +schema.toLower()
         +(schema.length()?"/":"");
     qDebug() << SB_DEBUG_INFO << schemaRoot;
+    //schemaRoot="/Volumes/Home/roy/Music/songbase/music/files/rock/V/VARIOUS ARTISTS/100 Chillout Classics 4of5/";
 
     //	1.	Get list of entries
     QStringList entries;
     Controller* c=Context::instance()->getController();
     int numFiles=0;
-    QDirIterator it(schemaRoot, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(schemaRoot,
+                    QDir::AllDirs | QDir::AllEntries | QDir::Files | QDir::NoSymLinks | QDir::Readable,
+                    QDirIterator::Subdirectories);
     c->updateStatusBarText(QString("Found %1 files").arg(numFiles));
     QCoreApplication::processEvents();
     while (it.hasNext())
@@ -68,15 +71,19 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
             QCoreApplication::processEvents();
         }
         QFileInfo fi=it.fileInfo();
-        QString path=it.filePath();
-        if(fi.size()>10*1024)
+        QString path=it.filePath().toLower();
+        if(fi.isFile())
         {
-            entries.append(path);
-            numFiles++;
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_WARNING << "File size too short:" << path;
+            if(fi.size()>10*1024)
+            {
+                entries.append(path);
+                numFiles++;
+
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_WARNING << "File size too short:" << path;
+            }
         }
     }
     c->updateStatusBarText(QString("Found %1 files").arg(numFiles));
@@ -107,7 +114,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         song.sb_performer_id=sqm->data(sqm->index(i,1)).toInt();
         song.sb_album_id=sqm->data(sqm->index(i,2)).toInt();
         song.sb_position=sqm->data(sqm->index(i,3)).toInt();
-        QString path=schemaRoot+sqm->data(sqm->index(i,4)).toString().replace("\\","");
+        QString path=schemaRoot+sqm->data(sqm->index(i,4)).toString().replace("\\","").toLower();
 
         pathToSong[path]=song;
         existingPath[path]=0;
@@ -116,10 +123,6 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         {
             pd.setValue(i);
             QCoreApplication::processEvents();
-        }
-        if(path.contains("Visitors"))
-        {
-            qDebug() << SB_DEBUG_INFO << path;
         }
     }
 
@@ -150,13 +153,13 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << cnt++ << entries.at(i);
-            return;
+            qDebug() << SB_DEBUG_INFO << entries.at(i);
 
             //	Determine any attributes from each file.
             AudioDecoder* ad=adf.openFileHeader(entries.at(i));
             if(ad)
             {
+                qDebug() << SB_DEBUG_INFO;
                 //	For each song, determine all unique performers and albums
                 SBIDSong item=ad->header();
 
@@ -177,6 +180,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
             }
             else
             {
+                qDebug() << SB_DEBUG_INFO;
                 errors[entries.at(i)]=adf.error();
             }
         }
@@ -184,10 +188,10 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         {
             pd.setValue(i);
             QCoreApplication::processEvents();
-            qDebug() << i << entries.count() << performerToID.count() << albumToID.count();
+            //qDebug() << i << entries.count() << performerToID.count() << albumToID.count();
         }
     }
-    return;
+
     qDebug() << SB_DEBUG_INFO << "L7";
     QMapIterator<QString,QString> shit(errors);
     while(shit.hasNext())
@@ -197,14 +201,31 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     }
     qDebug() << SB_DEBUG_INFO << "total files found" << entries.count();
     qDebug() << SB_DEBUG_INFO << "new files" << newEntries.count();
+
+    //	Deal with missing files
     int missingFiles=0;
     QHashIterator<QString,bool> pe_i(existingPath);
+    QMap<QString,int> missingFilesMap;	//	QMap provides sorting, the value is not used.
+
     while(pe_i.hasNext())
     {
         pe_i.next();
+        if(pe_i.value()==0)
+        {
+            missingFilesMap[pe_i.key()]=1;
+        }
         missingFiles+=(pe_i.value()==0?1:0);
     }
     qDebug() << SB_DEBUG_INFO << "missing files" << missingFiles;
+
+    //	Now list missing files alphabetically
+    QMapIterator<QString,int> mfi(missingFilesMap);
+    while(mfi.hasNext())
+    {
+        mfi.next();
+        qDebug() << SB_DEBUG_INFO << mfi.key();
+    }
+    return;
 
     //	Lookup performers, create if not exists
     QHashIterator<SBIDPerformer,int> pit(performerToID);

@@ -18,8 +18,9 @@ public:
     enum sb_displayformat
     {
         sb_default_format=0,
-        sb_playlist_format=0,   // x day(s) y hour(s) z min: min rounded, omitting attributes if 0
-        sb_hhmmss_format=1      //	hh:mm:ss
+        sb_playlist_format=0,   //	x day(s) y hour(s) z min: min rounded, omitting attributes if 0
+        sb_hhmmss_format=1,     //	hh:mm:ss, or mm:ss, omitting hour if 0
+        sb_full_hhmmss_format=2 //	hh:mm:ss, with hours could be greater than 24.
     };
 
     Duration();

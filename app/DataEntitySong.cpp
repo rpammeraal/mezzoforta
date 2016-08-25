@@ -93,7 +93,7 @@ DataEntitySong::findSong(const SBID& id)
              "a.name='%3' "
     )
         .arg(id.sb_song_id)
-        .arg(id.songTitle)
+        .arg(Common::escapeSingleQuotes(id.songTitle))
         .arg(Common::escapeSingleQuotes(id.performerName))
     ;
 

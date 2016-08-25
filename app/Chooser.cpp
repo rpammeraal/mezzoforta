@@ -392,6 +392,7 @@ Chooser::showContextMenu(const QPoint &p)
                 menu.addAction(_newAction);
                 menu.addAction(_deleteAction);
                 menu.addAction(_renameAction);
+                menu.addAction(_recalculateDurationAction);
                 menu.exec(gp);
             }
         }
@@ -402,6 +403,14 @@ Chooser::showContextMenu(const QPoint &p)
     default:
         break;
     }
+}
+
+void
+Chooser::recalculateDuration()
+{
+    DataEntityPlaylist dep;
+    SBID id=_getPlaylistSelected(_lastClickedIndex);
+    dep.recalculatePlaylistDuration(id);
 }
 
 ///	PROTECTED METHODS
@@ -555,7 +564,6 @@ Chooser::_init()
 
     //	Play playlist
     _playPlaylistAction = new QAction(tr("&Play Playlist"), this);
-    _playPlaylistAction->setShortcuts(QKeySequence::New);
     _playPlaylistAction->setStatusTip(tr("Play Playlist"));
     connect(_playPlaylistAction, SIGNAL(triggered()),
             this, SLOT(playPlaylist()));
@@ -586,6 +594,12 @@ Chooser::_init()
     _renameAction->setStatusTip(tr("Rename Playlist"));
     connect(_renameAction, SIGNAL(triggered()),
             this, SLOT(renamePlaylist()));
+
+    //	Recalculate playlist duration: TEMP
+    _recalculateDurationAction = new QAction(tr("&Recalculate playlist"), this);
+    _recalculateDurationAction->setStatusTip(tr("Recalculate Playlist"));
+    connect(_recalculateDurationAction, SIGNAL(triggered()),
+            this, SLOT(recalculateDuration()));
 
     //	Connections
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),

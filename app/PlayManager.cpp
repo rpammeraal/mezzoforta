@@ -219,6 +219,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         //	Song is valid, go and play
         song.playPosition=this->currentPlayID();
         isPlayingFlag=pc->playSong(song);
+        qDebug() << SB_DEBUG_INFO << isPlayingFlag;
         if(isPlayingFlag==0)
         {
             errorMsg=song.errorMsg;

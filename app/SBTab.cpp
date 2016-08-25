@@ -106,7 +106,6 @@ SBTab::handleEnterKey()
 bool
 SBTab::handleEscapeKey()
 {
-    qDebug() << SB_DEBUG_INFO;
     bool closeTab=1;
     if(isEditTab()==1 && hasEdits()==1)
     {

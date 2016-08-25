@@ -84,7 +84,7 @@ SBTabSongEdit::save() const
 
     if(orgSongID.isEditFlag==0)
     {
-        qDebug() << SB_DEBUG_WARNING << "isEditFlag flag not set";
+        qDebug() << SB_DEBUG_WARNING << "isEditFlag flag not set -- not continuing";
         return;
     }
 
@@ -199,10 +199,7 @@ SBTabSongEdit::save() const
 
     //	H.	Check if there is another song with exactly the same title and performer but with different song_id.
     //		Goal is to detect another way of merging songs.
-    qDebug() << SB_DEBUG_INFO << orgSongID;
-    qDebug() << SB_DEBUG_INFO << newSongID;
     SBSqlQueryModel* existingSongs=DataEntitySong::findSong(newSongID);
-    qDebug() << SB_DEBUG_INFO << existingSongs->rowCount();
     if(existingSongs!=0 && existingSongs->rowCount()==1)
     {
         qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongID;
@@ -290,8 +287,8 @@ SBTabSongEdit::_populate(const SBID& id)
         //	Not found
         return result;
     }
-    SBTab::_populate(result);
     result.isEditFlag=1;
+    SBTab::_populate(result);
 
     qDebug() << SB_DEBUG_INFO << result;
     mw->ui.songEditTitle->setText(result.songTitle);

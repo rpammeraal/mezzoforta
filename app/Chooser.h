@@ -39,6 +39,8 @@ public slots:
     void schemaChanged();
     void showContextMenu(const QPoint& p);
 
+    void recalculateDuration();
+
 protected:
     friend class Context;
     void doInit();
@@ -54,6 +56,7 @@ private:
     QAction* _renameAction;
     QAction* _playPlaylistAction;
     QAction* _enqueuePlaylistAction;
+    QAction* _recalculateDurationAction;
 
     //SBStandardItemModel* model;
     QModelIndex _lastClickedIndex;

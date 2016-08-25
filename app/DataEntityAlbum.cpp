@@ -21,13 +21,13 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
                 "artist_id, "
                 "role_id, "
                 "year, "
-                "comments "
+                "notes "
             ") "
             "SELECT "
                 "song_id, "
                 "%1, "	//	artist_id
                 "1, "	//	role_id,
-                "year, "
+                "%3, "
                 "'' "
             "FROM "
                 "___SB_SCHEMA_NAME___song s "
@@ -46,6 +46,7 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
         )
             .arg(song.sb_performer_id)
             .arg(song.sb_song_id)
+            .arg(song.year)
     );
 
     //	Insert record performance
@@ -59,10 +60,10 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
                 "artist_id, "
                 "record_id, "
                 "record_position, "
-                "op_song_id, "
-                "op_artist_id, "
-                "op_record_id, "
-                "op_record_position, "
+//                "op_song_id, "
+//                "op_artist_id, "
+//                "op_record_id, "
+//                "op_record_position, "
                 "duration "
             ") "
 
@@ -72,10 +73,10 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
                 "%2, "
                 "%3, "
                 "%4, "
-                "%1, "
-                "%2, "
-                "%3, "
-                "%4, "
+//                "%1, "
+//                "%2, "
+//                "%3, "
+//                "%4, "
                 "'00:00:00' "
              ") "
         )

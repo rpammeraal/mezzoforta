@@ -76,7 +76,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             q=allQueries.at(i);
             this->customize(q);
 
-            qDebug() << SB_DEBUG_INFO << q;
+            qDebug() << q;
 
             QSqlQuery runQuery(q,db);
             //successFlag=runQuery.exec();

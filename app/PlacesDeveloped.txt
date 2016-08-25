@@ -547,14 +547,25 @@ X	playlists that song belongs to can be edited
 -	mac keyboard forward, play, previous to be supported.
     And what a pain that was. But, objective C and C++ -- cool!
 
+20160823
+-	Can't save lyrics
+-	Can't edit Ain't Talkin' 'bout Love
+-	Unable to add song to Zooropa
+-	music directory cleaned up. Rescan Music Library shows 0 discrepancies.
+
+<CURRENT>
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
+*	if it is not possible to connect to Postgres, all credentials get wiped
+
 
 <near future>
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.
 	*	trim at end and start, dedupe white space. Use Common::simplified().
+	*	remove dots at start of any item (song, album, performer) when creating path
 *	Consider caching of entire database:
 	*	Subclasses of SBID, pretty much all of DataEntity classes can go in subclasses of SBID
 	*	At that point, we can tell to a SBID instance: throw yourself in the queue, play yourself, etc.
@@ -620,6 +631,8 @@ X	playlists that song belongs to can be edited
 -	incorporate artist.sort_name in sorting -- not possible
 -	LeftTreeView to be closable
 * 	check: start playing right away (flac, windows). prevent scrolling beyond loaded area.
+*	volume control
+*	song detail should indicate which versions of which albums are available
 
 Installing ogg/vorbis:
 https://www.xiph.org/

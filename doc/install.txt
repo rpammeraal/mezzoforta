@@ -17,6 +17,7 @@ Ogg/vorbis tools -- as root, execute:
 #/sw/bin/fink install portaudio	--	don't install, unless its V19
 /sw/bin/fink install libmad
 /sw/bin/fink install libid3tag
+/sw/bin/fink install taglib
 
 Install portaudio:
 - remove Werror from ./configure

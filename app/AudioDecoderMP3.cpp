@@ -13,7 +13,6 @@
 AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
 {
     init();
-    Q_UNUSED(headerOnlyFlag);	//	CWIP: remove
 
     qDebug() << SB_DEBUG_INFO << fileName;
     _file=new QFile(fileName);
@@ -61,7 +60,6 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
 #endif
                 if (tagsize>0)
                 {
-                    //qDebug() << "SSMP3::SSMP3() : skipping ID3 tag size " << tagsize;
                     mad_stream_skip (&madStream, tagsize);
                     continue;
                 }
@@ -93,12 +91,6 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
         numChannels=MAD_NCHANNELS(&madHeader);
         mad_timer_add(&_fileLength,madHeader.duration);
 
-        // Add frame to list of frames
-        //	Not sure if this is needed
-        //MadSeekFrameType* p=new MadSeekFrameType;
-        //p->m_pStreamPos=(unsigned char *)madStream.this_frame;
-        //p->pos = length();
-        //m_qSeekList.append(p);
         _frameCount++;
     }
     mad_header_finish (&madHeader);

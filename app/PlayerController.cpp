@@ -199,6 +199,7 @@ PlayerController::playSong(SBIDSong& song)
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
         song.errorMsg=errorMsg;
+        qDebug() << SB_DEBUG_INFO << "returning 0";
         return 0;
     }
 
@@ -207,6 +208,7 @@ PlayerController::playSong(SBIDSong& song)
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
+    qDebug() << SB_DEBUG_INFO << "returning success";
     return 1;
 }
 

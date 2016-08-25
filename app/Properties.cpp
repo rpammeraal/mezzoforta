@@ -71,7 +71,6 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
             }
             Properties::setMusicLibraryDirectory();
         }
-        qDebug() << SB_DEBUG_INFO << musicLibraryDirectory.length() << interactiveFlag;
     }
     while(musicLibraryDirectory.length()==0 && interactiveFlag==1);
     return musicLibraryDirectory;
