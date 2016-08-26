@@ -10,7 +10,7 @@
 
 #include <QFile>
 
-AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
+AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
 {
     init();
 
@@ -83,7 +83,7 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool headerOnlyFlag)
         }
         else if(sampleRate!=madHeader.samplerate)
         {
-            qDebug() << "SSMP3: file has differing samplerate in some headers:"
+            qDebug() << "MP3: file has differing samplerate in some headers:"
                      << fileName
                      << sampleRate << "vs" << madHeader.samplerate;
         }

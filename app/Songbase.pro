@@ -41,7 +41,7 @@ HEADERS     = \
     DataEntityAlbum.h \
     DataEntityCurrentPlaylist.h \
     DataEntityGenrelist.h \
-    dataentityperformer.h \
+    DataentityPerformer.h \
     DataEntityPlaylist.h \
     DataEntitySong.h \
     AudioDecoderOggVorbisReader.h \
@@ -63,7 +63,8 @@ HEADERS     = \
     DatabaseSelector.h \
     DBManager.h \
     KeyboardEventCatcher.h \
-    OSXNSEventFunctions.h
+    OSXNSEventFunctions.h \
+    MetaData.h
 
 SOURCES     = \
     main.cpp \
@@ -128,7 +129,8 @@ SOURCES     = \
     MusicLibrary.cpp \
     DatabaseSelector.cpp \
     DBManager.cpp \
-    KeyboardEventCatcher.cpp
+    KeyboardEventCatcher.cpp \
+    MetaData.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
@@ -154,7 +156,7 @@ DISTFILES += \
     PlacesDeveloped.txt \
     resources/moose7.2.bmp
 
-unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltaglib
+unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
 macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation
 macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a /sw/lib/libmad.a /sw/lib/libid3tag.a
 

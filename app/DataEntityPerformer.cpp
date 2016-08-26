@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBID.h"
+#include "SBIDPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "DataEntityPerformer.h"
 
@@ -322,9 +323,14 @@ DataEntityPerformer::getRelatedPerformers(const SBID& id)
     return new SBSqlQueryModel(q);
 }
 
+///	DEPRECIATED!!! USE SBIDPerformer::match()
 SBSqlQueryModel*
 DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPerformerName)
 {
+    SBIDPerformer p=currentID;
+    return currentID.findMatches(newPerformerName);
+
+    /*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString newSoundex=Common::soundex(newPerformerName);
@@ -370,6 +376,7 @@ DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPer
     ;
 
     return new SBSqlQueryModel(q);
+    */
 }
 
 bool

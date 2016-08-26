@@ -7,6 +7,7 @@
 #include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
 #include "SBMessageBox.h"
+#include "SBSqlQueryModel.h"
 
 
 SBID::SBID()
@@ -452,6 +453,13 @@ SBID::getType() const
         break;
     }
     return t;
+}
+
+SBSqlQueryModel*
+SBID::findMatches(const QString& name) const
+{
+    Q_UNUSED(name);
+    return new SBSqlQueryModel();
 }
 
 int

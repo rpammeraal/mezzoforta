@@ -5,6 +5,8 @@
 
 #include "SBID.h"
 
+class SBSqlQueryModel;
+
 class SBIDPerformer : public SBID
 {
 public:
@@ -19,6 +21,7 @@ public:
     //	Public methods
     virtual void assign(int itemID);
     virtual int getDetail(bool createIfNotExistFlag=0);
+    virtual SBSqlQueryModel* findMatches(const QString& newPerformerName) const;
     virtual inline int sb_item_id() const { return this->sb_performer_id; }
     virtual inline sb_type sb_item_type() const { return SBID::sb_type_performer; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);

@@ -80,6 +80,7 @@ public:
     static QString removeAccents(const QString& s);
     static QString removeArticles(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);
+    static QString sanitize(const QString& s);
     static QString simplified(const QString& s);
     static QString soundex(const QString& s);
     static void toTitleCase(QString &);

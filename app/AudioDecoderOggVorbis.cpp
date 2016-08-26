@@ -6,7 +6,7 @@
 #include "Common.h"
 
 ///	Protected methods
-AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool headerOnlyFlag)
+AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 {
     _fileName=fileName;	//	CWIP
 
@@ -57,99 +57,53 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool header
         return;
     }
 
-    if(headerOnlyFlag==1)
+    if(vi->channels!=2)
     {
-        //	Populate _header
-        char **ptr=ov_comment(&_ovf,-1)->user_comments;
-        while(*ptr)
-        {
-            QString i=QString(*ptr);
-            QStringList j=i.split("=");
-            QString key=j[0].toLower();
-            QString value=j[1];
-
-            if(key=="title")
-            {
-                _header.songTitle=value;
-            }
-            else if(key=="artist" || key=="performer")
-            {
-                _header.performerName=value;
-            }
-            else if(key=="album")
-            {
-                _header.albumTitle=value;
-            }
-            else if(key=="tracknumber")
-            {
-                _header.sb_position=value.toInt();
-            }
-            else if(key=="genre")
-            {
-                _header.genre=value;
-            }
-            else if(key=="year")
-            {
-                _header.year=value.toInt();
-            }
-            else if(key=="description")
-            {
-                _header.notes=value;
-            }
-            ++ptr;
-        }
-        _header.path=fileName;
+        _error=QString("Only 2 ogg/vorbis channels supported '%1'").arg(fileName);
+        qDebug() << SB_DEBUG_ERROR << _error;
+        return;
     }
-    else
+
+    quint64 numFrames=ov_pcm_total(&_ovf,-1);
+    if(!numFrames)
     {
-        if(vi->channels!=2)
-        {
-            _error=QString("Only 2 ogg/vorbis channels supported '%1'").arg(fileName);
-            qDebug() << SB_DEBUG_ERROR << _error;
-            return;
-        }
-
-        quint64 numFrames=ov_pcm_total(&_ovf,-1);
-        if(!numFrames)
-        {
-            _error=QString("Zero frames in '%1'").arg(fileName);
-            qDebug() << SB_DEBUG_ERROR << _error;
-            return;
-        }
-
-        //	Set stream parameters
-        //	1.	_bitsPerSample
-        _bitsPerSample=16;	//	CWIP: to be derived from meta data at some point
-
-        //	2.	_length
-        _length=numFrames*vi->channels*(_bitsPerSample/8);
-
-        //	3.	_numChannels
-        _numChannels=vi->channels;
-
-        //	4.	_sampleRate
-        _sampleRate=vi->rate;
-
-        //	5.	_sampleFormat
-        _sampleFormat=paInt16;	//	2 bytes per sample per channel. CWIP: to be derived from meta data
-
-        //	Set file up for reading
-        _file->reset();
-        _file->seek(0);
-        ov_time_seek(&_ovf,0);
-
-        //	Allocate buffer to store stream in
-        _stream=(char *)malloc(this->lengthInBytes());
-
-        //	Put reader to work.
-        _adr=new AudioDecoderOggVorbisReader(this);
-        _adr->moveToThread(&_workerThread);
-        _adr->_fileName=this->_fileName;
-        connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
-        connect(this, &AudioDecoderOggVorbis::startBackfill, _adr, &AudioDecoderReader::backFill);
-        _workerThread.start();
-        emit startBackfill();
+        _error=QString("Zero frames in '%1'").arg(fileName);
+        qDebug() << SB_DEBUG_ERROR << _error;
+        return;
     }
+
+    //	Set stream parameters
+    //	1.	_bitsPerSample
+    _bitsPerSample=16;	//	CWIP: to be derived from meta data at some point
+
+    //	2.	_length
+    _length=numFrames*vi->channels*(_bitsPerSample/8);
+
+    //	3.	_numChannels
+    _numChannels=vi->channels;
+
+    //	4.	_sampleRate
+    _sampleRate=vi->rate;
+
+    //	5.	_sampleFormat
+    _sampleFormat=paInt16;	//	2 bytes per sample per channel. CWIP: to be derived from meta data
+
+    //	Set file up for reading
+    _file->reset();
+    _file->seek(0);
+    ov_time_seek(&_ovf,0);
+
+    //	Allocate buffer to store stream in
+    _stream=(char *)malloc(this->lengthInBytes());
+
+    //	Put reader to work.
+    _adr=new AudioDecoderOggVorbisReader(this);
+    _adr->moveToThread(&_workerThread);
+    _adr->_fileName=this->_fileName;
+    connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
+    connect(this, &AudioDecoderOggVorbis::startBackfill, _adr, &AudioDecoderReader::backFill);
+    _workerThread.start();
+    emit startBackfill();
 }
 
 AudioDecoderOggVorbis::~AudioDecoderOggVorbis()

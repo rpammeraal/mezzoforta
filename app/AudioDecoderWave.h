@@ -13,7 +13,7 @@ public:
 protected:
     friend class AudioDecoderFactory;
 
-    AudioDecoderWave(const QString& fileName,bool headerOnlyFlag);
+    AudioDecoderWave(const QString& fileName);
 
     static bool supportFileExtension(const QString& extension);
 

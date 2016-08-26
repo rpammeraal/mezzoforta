@@ -125,6 +125,20 @@ Common::removeNonAlphanumeric(const QString &s)
     return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
 }
 
+///
+/// \brief Common::sanitize
+/// \param s
+/// \return
+///
+/// -	Get rids of whitespace before and after
+/// -	Title case
+QString
+Common::sanitize(const QString &s)
+{
+    QString t=s.trimmed();
+    Common::toTitleCase(t);
+    return t;
+}
 
 ///
 /// \brief Common::simplified

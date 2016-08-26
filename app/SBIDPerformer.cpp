@@ -179,6 +179,57 @@ SBIDPerformer::getDetail(bool createIfNotExistFlag)
     return sb_item_id();
 }
 
+SBSqlQueryModel*
+SBIDPerformer::findMatches(const QString &newPerformerName) const
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString newSoundex=Common::soundex(newPerformerName);
+
+    //	MatchRank:
+    //	0	-	edited value (always one in data set).
+    //	1	-	exact match (0 or 1 in data set).
+    //	2	-	soundex match (0 or more in data set).
+    const QString q=QString
+    (
+        "SELECT "
+            "0 AS matchRank, "
+            "-1 AS artist_id, "
+            "'%1' AS name "
+        "UNION "
+        "SELECT "
+            "1 AS matchRank, "
+            "s.artist_id, "
+            "s.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist s "
+        "WHERE "
+            "REPLACE(LOWER(s.name),' ','') = REPLACE(LOWER('%1'),' ','') "
+        "UNION "
+        "SELECT DISTINCT "
+            "2 AS matchRank, "
+            "s.artist_id, "
+            "s.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___artist s "
+        "WHERE "
+            "s.artist_id!=(%2) AND "
+            "( "
+                "substr(s.soundex,1,length('%3'))='%3' OR "
+                "substr('%3',1,length(s.soundex))=s.soundex "
+            ") "
+        "ORDER BY "
+            "1, 3"
+    )
+        .arg(Common::escapeSingleQuotes(newPerformerName))
+        .arg(this->sb_performer_id)
+        .arg(newSoundex)
+    ;
+
+    return new SBSqlQueryModel(q);
+
+}
+
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {

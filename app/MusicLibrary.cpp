@@ -10,6 +10,7 @@
 #include "Controller.h"
 #include "DataEntityPerformer.h"
 #include "DataEntitySong.h"
+#include "MetaData.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
@@ -156,33 +157,26 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
             qDebug() << SB_DEBUG_INFO << entries.at(i);
 
             //	Determine any attributes from each file.
-            AudioDecoder* ad=adf.openFileHeader(entries.at(i));
-            if(ad)
+            MetaData md(entries.at(i));
+
+            //	For each song, determine all unique performers and albums
+            SBIDSong item=md.parse();
+            qDebug() << SB_DEBUG_INFO << item;
+
+            SBIDPerformer p=item;
+            if(performerToID.contains(p)==0)
             {
-                qDebug() << SB_DEBUG_INFO;
-                //	For each song, determine all unique performers and albums
-                SBIDSong item=ad->header();
-
-                SBIDPerformer p=item;
-                if(performerToID.contains(p)==0)
-                {
-                    performerToID[p]=-1;
-                }
-
-                SBIDAlbumSimpleCompare a=item;
-                if(albumToID.contains(a)==0)
-                {
-                    albumToID[a]=-1;
-                }
-                newEntries.append(item);
-
-                delete ad;
+                performerToID[p]=-1;
             }
-            else
+
+            SBIDAlbumSimpleCompare a=item;
+            if(albumToID.contains(a)==0)
             {
-                qDebug() << SB_DEBUG_INFO;
-                errors[entries.at(i)]=adf.error();
+                albumToID[a]=-1;
             }
+            newEntries.append(item);
+
+            //	Figure out entries with no data
         }
         if((i%100)==0)
         {
@@ -216,18 +210,17 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         }
         missingFiles+=(pe_i.value()==0?1:0);
     }
-    qDebug() << SB_DEBUG_INFO << "missing files" << missingFiles;
+    qDebug() << SB_DEBUG_INFO << "#missing files" << missingFiles;
 
     //	Now list missing files alphabetically
     QMapIterator<QString,int> mfi(missingFilesMap);
     while(mfi.hasNext())
     {
         mfi.next();
-        qDebug() << SB_DEBUG_INFO << mfi.key();
+        qDebug() << SB_DEBUG_INFO << "missing" << mfi.key();
     }
-    return;
 
-    //	Lookup performers, create if not exists
+    //	Lookup performers based on performer name
     QHashIterator<SBIDPerformer,int> pit(performerToID);
     DataEntityPerformer dep;
     while(pit.hasNext())
@@ -239,25 +232,21 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     }
     pit.toFront();
 
-    //	next section to be thrown away
+    //	Find alternatives to performers
     SBIDPerformer lookup;
     while(pit.hasNext())
     {
         pit.next();
         if(pit.value()==-1)
         {
+            lookup=pit.key();
+
+            SBSqlQueryModel* sm=lookup.findMatches(lookup.performerName);
             qDebug() << SB_DEBUG_INFO << "Unknown artist" << pit.key();
-            for(int i=0;i<=newEntries.count();i++)
-            {
-                lookup.performerName=newEntries.at(i).performerName;
-                if(performerToID[lookup]==-1)
-                {
-                    qDebug() << SB_DEBUG_INFO << newEntries[i];
-                }
-            }
+
+            delete sm; sm=NULL;
         }
     }
-    //	end next section to be thrown away
 
     return;
     /*

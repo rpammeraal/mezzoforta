@@ -554,6 +554,9 @@ X	playlists that song belongs to can be edited
 -	music directory cleaned up. Rescan Music Library shows 0 discrepancies.
 
 <CURRENT>
+-	MetaData class to read/write metadata on songs.
+-	Adjusted AudioDecoder classes to not include reading meta data.
+-	Common::sanitize(QString) to do what it supposed to do.
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box

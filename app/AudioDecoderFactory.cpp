@@ -21,7 +21,7 @@ AudioDecoderFactory::~AudioDecoderFactory()
 }
 
 AudioDecoder*
-AudioDecoderFactory::openFile(const QString &fileName,bool headerOnlyFlag)
+AudioDecoderFactory::openFile(const QString &fileName)
 {
     //	Flensburg - Neumuenster
     QFileInfo fi(fileName);
@@ -30,20 +30,20 @@ AudioDecoderFactory::openFile(const QString &fileName,bool headerOnlyFlag)
 
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderWave(fileName,headerOnlyFlag);
+        ad=new AudioDecoderWave(fileName);
     }
     else if(AudioDecoderOggVorbis::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderOggVorbis(fileName,headerOnlyFlag);
+        ad=new AudioDecoderOggVorbis(fileName);
     }
     else if(AudioDecoderMP3::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderMP3(fileName,headerOnlyFlag);
+        ad=new AudioDecoderMP3(fileName);
     }
 #ifdef Q_OS_UNIX
     else if(AudioDecoderFlac::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderFlac(fileName,headerOnlyFlag);
+        ad=new AudioDecoderFlac(fileName);
     }
 #endif
 
@@ -56,12 +56,6 @@ AudioDecoderFactory::openFile(const QString &fileName,bool headerOnlyFlag)
         }
     }
     return ad;
-}
-
-AudioDecoder*
-AudioDecoderFactory::openFileHeader(const QString &fileName)
-{
-    return this->openFile(fileName,1);
 }
 
 void

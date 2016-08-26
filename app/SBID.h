@@ -8,6 +8,8 @@
 
 #include "Duration.h"
 
+class SBSqlQueryModel;
+
 class SBID
 {
 public:
@@ -83,6 +85,7 @@ public:
     QString getText() const;
     static QString getIconResourceLocation(const SBID::sb_type t);
     QString getType() const;
+    virtual SBSqlQueryModel* findMatches(const QString& name) const;	//	CWIP: pure virtual
     virtual int sb_item_id() const;	//	CWIP: pure virtual
     virtual inline sb_type sb_item_type() const { return _sb_item_type; }	//	CWIP: pure virtual
     virtual void sendToPlayQueue(bool enqueueFlag=0);	//	CWIP: pure virtual
