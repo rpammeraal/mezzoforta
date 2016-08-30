@@ -76,6 +76,14 @@ PlayerController::playerPositionChanged(quint64 durationMS)
 void
 PlayerController::playerStateChanged(QMediaPlayer::State playerState)
 {
+#ifdef Q_OS_WIN
+    //	DO NOT REMOVE THIS!
+    //	QT 5.7 in Windows will complain about QMediaPlayer::State
+    //	not being registered and won't emit playNextSong() below.
+    //	Of course, this is not a problem with OS X.
+    qRegisterMetaType<QMediaPlayer::State>("whatever");
+#endif
+
     if((_state==PlayerController::sb_player_state_changing_media) ||
             playerState==QMediaPlayer::PausedState ||
             playerState==QMediaPlayer::PlayingState)
@@ -225,6 +233,7 @@ PlayerController::_init()
     //	Left player
     connect(mw->ui.pbMusicPlayerControlLeftREW, SIGNAL(clicked(bool)),
             this, SLOT(playerRewind()));
+    qDebug() << SB_DEBUG_INFO;
     connect(mw->ui.pbMusicPlayerControlLeftSTOP, SIGNAL(clicked(bool)),
             this, SLOT(playerStop()));
     connect(mw->ui.pbMusicPlayerControlLeftFWD, SIGNAL(clicked(bool)),
@@ -234,6 +243,7 @@ PlayerController::_init()
 
     connect(mw->ui.pbMusicPlayerControlRightREW, SIGNAL(clicked(bool)),
             this, SLOT(playerRewind()));
+    qDebug() << SB_DEBUG_INFO;
     connect(mw->ui.pbMusicPlayerControlRightSTOP, SIGNAL(clicked(bool)),
             this, SLOT(playerStop()));
     connect(mw->ui.pbMusicPlayerControlRightFWD, SIGNAL(clicked(bool)),

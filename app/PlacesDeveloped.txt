@@ -602,6 +602,7 @@ X	playlists that song belongs to can be edited
 *	Add option to playlist to always play in order or randomly.
 
 <future>
+*	Support aac format
 *	Put the loudspeaker icon in front of every view if the view has the current item playing.
 *	Songs in Queue:
 	*	reordering in Songs In Queue does not work: disabled for now (20160612)

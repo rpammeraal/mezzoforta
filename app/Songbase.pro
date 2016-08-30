@@ -163,6 +163,6 @@ macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/l
 INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
 DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
-win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad
+win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad -lzlibstatic -ltag
 
 
