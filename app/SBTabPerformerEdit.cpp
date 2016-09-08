@@ -8,6 +8,7 @@
 #include "CompleterFactory.h"
 #include "MainWindow.h"
 #include "SBID.h"
+#include "SBIDPerformer.h"
 #include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
@@ -51,7 +52,7 @@ SBTabPerformerEdit::hasEdits() const
 
     if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
-        if(currentID.performerName!=mw->ui.performerEditName->text() ||
+        if(currentID.songPerformerName!=mw->ui.performerEditName->text() ||
             currentID.notes!=mw->ui.performerEditNotes->text() ||
             currentID.url!=mw->ui.performerEditWebSite->text() ||
             relatedPerformerHasChanged==1
@@ -168,10 +169,10 @@ SBTabPerformerEdit::save() const
     const MainWindow* mw=Context::instance()->getMainWindow();
     DataEntityPerformer* p=new DataEntityPerformer();
     SBID orgPerformerID=this->currentID();
-    SBID newPerformerID=orgPerformerID;
+    SBIDPerformer newPerformerID=orgPerformerID;
     QStringList SQL;
 
-    if(orgPerformerID.sb_performer_id==-1 || newPerformerID.sb_performer_id==-1)
+    if(orgPerformerID.sb_song_performer_id==-1 || newPerformerID.sb_song_performer_id==-1)
     {
         QMessageBox msgBox;
         msgBox.setText("Navigator::save:old or new performer undefined");
@@ -200,11 +201,11 @@ SBTabPerformerEdit::save() const
     bool hasCaseChange=0;
 
     //	If only case is different in performerName, save the new name as is.
-    if((editPerformerName.toLower()==newPerformerID.performerName.toLower()) &&
-        (editPerformerName==newPerformerID.performerName))
+    if((editPerformerName.toLower()==newPerformerID.songPerformerName.toLower()) &&
+        (editPerformerName==newPerformerID.songPerformerName))
     {
-        newPerformerID.sb_performer_id=-1;
-        newPerformerID.performerName=editPerformerName;
+        newPerformerID.sb_song_performer_id=-1;
+        newPerformerID.songPerformerName=editPerformerName;
         hasCaseChange=1;	//	Identify to saveSong that title has changed.
     }
     else
@@ -214,10 +215,10 @@ SBTabPerformerEdit::save() const
     }
 
     //	Different performer name
-    if(hasCaseChange==0 && editPerformerName!=orgPerformerID.performerName)
+    if(hasCaseChange==0 && editPerformerName!=orgPerformerID.songPerformerName)
     {
         //	Save entry alltogether as a complete new record in artist table
-        if(processPerformerEdit(editPerformerName,newPerformerID,mw->ui.performerEditName,0)==0)
+        if(SBIDPerformer::selectSavePerformer(editPerformerName,newPerformerID,newPerformerID,mw->ui.performerEditName,0)==0)
         {
             return;
         }
@@ -225,7 +226,7 @@ SBTabPerformerEdit::save() const
     else
     {
         //	No changes, copy the original ID
-        newPerformerID.sb_performer_id=orgPerformerID.sb_performer_id;
+        newPerformerID.sb_song_performer_id=orgPerformerID.sb_song_performer_id;
     }
 
     newPerformerID.url=editURL;
@@ -243,7 +244,7 @@ SBTabPerformerEdit::save() const
             int ID=it->data(Qt::DisplayRole).toInt();
             if(allRelatedPerformers.contains(ID)==0)
             {
-                SQL.append(p->addRelatedPerformerSQL(newPerformerID.sb_performer_id,ID));
+                SQL.append(p->addRelatedPerformerSQL(newPerformerID.sb_song_performer_id,ID));
             }
             else
             {
@@ -261,7 +262,7 @@ SBTabPerformerEdit::save() const
         int ID=allRelatedPerformers.at(i);
         if(remainingRelatedPerformerIDList.contains(ID)==0)
         {
-            SQL.append(p->deleteRelatedPerformerSQL(newPerformerID.sb_performer_id,ID));
+            SQL.append(p->deleteRelatedPerformerSQL(newPerformerID.sb_song_performer_id,ID));
         }
     }
 
@@ -277,11 +278,11 @@ SBTabPerformerEdit::save() const
         {
             QString updateText=QString("Saved performer %1%2%3.")
                 .arg(QChar(96))      //	1
-                .arg(newPerformerID.performerName)	//	2
+                .arg(newPerformerID.songPerformerName)	//	2
                 .arg(QChar(180));    //	3
             Context::instance()->getController()->updateStatusBarText(updateText);
 
-            if(orgPerformerID.sb_performer_id!=newPerformerID.sb_performer_id)
+            if(orgPerformerID.sb_song_performer_id!=newPerformerID.sb_song_performer_id)
             {
                 //	Update models!
                 Context::instance()->getController()->refreshModels();
@@ -329,7 +330,7 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
         if(m!=NULL)
         {
             performer.assign(SBID::sb_type_performer,idx.sibling(idx.row(),idx.column()+1).data().toInt());
-            performer.performerName=idx.sibling(idx.row(),idx.column()).data().toString();
+            performer.songPerformerName=idx.sibling(idx.row(),idx.column()).data().toString();
         }
             else
         {
@@ -341,7 +342,7 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
         qDebug() << SB_DEBUG_NPTR << "addNewRelatedPerformerCompleter";
     }
 
-    if(performer.performerName.length()==0)
+    if(performer.songPerformerName.length()==0)
     {
         QMessageBox msgBox;
         msgBox.setText("Unknown Performer!");
@@ -365,12 +366,12 @@ SBTabPerformerEdit::addItemToRelatedPerformerList(const SBID &performer) const
     QTableWidgetItem *newItem=NULL;
 
     newItem=new QTableWidgetItem;	//	Performer name
-    newItem->setText(performer.performerName);
+    newItem->setText(performer.songPerformerName);
     newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
     rpt->setItem(currentRowCount,0,newItem);
 
     newItem=new QTableWidgetItem;	//	Performer ID
-    newItem->setText(QString("%1").arg(performer.sb_performer_id));
+    newItem->setText(QString("%1").arg(performer.sb_song_performer_id));
     rpt->setItem(currentRowCount,1,newItem);
 
     //	Make item visible
@@ -429,7 +430,7 @@ SBTabPerformerEdit::_populate(const SBID& id)
     DataEntityPerformer* p=new DataEntityPerformer();
     SBID result=p->getDetail(id);
     result.isEditFlag=1;
-    if(result.sb_performer_id==-1)
+    if(result.sb_song_performer_id==-1)
     {
         //	Not found
         return result;
@@ -442,7 +443,7 @@ SBTabPerformerEdit::_populate(const SBID& id)
     mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
 
     //	Attributes
-    mw->ui.performerEditName->setText(result.performerName);
+    mw->ui.performerEditName->setText(result.songPerformerName);
     mw->ui.performerEditNotes->setText(result.notes);
     mw->ui.performerEditWebSite->setText(result.url);
 

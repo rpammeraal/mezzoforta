@@ -185,15 +185,13 @@ PlayerController::playerStop()
 bool
 PlayerController::playSong(SBIDSong& song)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    Properties* p=Context::instance()->getProperties();
     Controller* c=Context::instance()->getController();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
 
-    QString path=QString("%1/%2%3%4")
-                .arg(Context::instance()->getProperties()->musicLibraryDirectory())
-                .arg(dal->schema())
-                .arg(dal->schema().length()?"/":"")
+    QString path=QString("%1/%2")
+                .arg(p->musicLibraryDirectorySchema())
                 .arg(song.path)
     ;
     emit setRowVisible(song.playPosition);	//	changed to here, so we can continue in case of error of playing a song.
@@ -365,8 +363,8 @@ PlayerController::_refreshPlayingNowData() const
             .arg(_currentSongPlaying.songTitle)
 
             .arg(SBID::sb_type_performer)
-            .arg(_currentSongPlaying.sb_performer_id)
-            .arg(_currentSongPlaying.performerName)
+            .arg(_currentSongPlaying.sb_song_performer_id)
+            .arg(_currentSongPlaying.songPerformerName)
 
             .arg(SBID::sb_type_album)
             .arg(_currentSongPlaying.sb_album_id)

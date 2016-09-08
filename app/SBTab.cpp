@@ -14,6 +14,7 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "SBDialogSelectItem.h"
+#include "SBIDPerformer.h"
 #include "SBMessageBox.h"
 #include "DataEntityPerformer.h"
 #include "DataEntitySong.h"
@@ -230,10 +231,20 @@ SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortC
 }
 
 //	Return true if selected. Automatically saves new performer.
+//	CWIP: see if SBIDPerformer::selectSavePerformer() can be used.
+/*
 bool
 SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLineEdit* field, bool saveNewPerformer) const
 {
     bool resultCode=1;
+    SBIDPerformer selected=SBIDPerformer::selectSavePerformer(editPerformerName,newID,field,saveNewPerformer);
+    newID=selected;
+    if(saveNewPerformer && selected.sb_performer_id==-1)
+    {
+        resultCode=0;
+    }
+    return resultCode;
+
     SBID selectedPerformerID=newID;
     selectedPerformerID.assign(SBID::sb_type_performer,-1);
     selectedPerformerID.performerName=editPerformerName;
@@ -289,6 +300,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     }
     return resultCode;
 }
+*/
 
 void
 SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const

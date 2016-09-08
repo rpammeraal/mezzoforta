@@ -21,11 +21,14 @@ public:
     //	Public methods
     virtual void assign(int itemID);
     virtual bool compare(const SBID& i) const;
+    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual
+    virtual bool save();
     virtual inline int sb_item_id() const { return this->sb_album_id; }
     virtual inline sb_type sb_item_type() const { return SBID::sb_type_album; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
 
     //	Album specific methods
+    bool saveSongToAlbum(const SBIDSong& song);
     QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);
 
     //	Operators

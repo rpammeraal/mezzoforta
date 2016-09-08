@@ -24,13 +24,14 @@ public:
 
     //	Public methods
     virtual void assign(int itemID);
+    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual
+    bool save();
     virtual inline int sb_item_id() const { return this->sb_song_id; }
     virtual inline sb_type sb_item_type() const { return SBID::sb_type_song; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
 
     //	Song specific operators
     void deleteIfOrphanized();
-    bool saveNewSong();	//	CWIP: to be renamed to save asa updateExistingSong is moved over from DataEntitySong
 
     //	Operators
     virtual bool operator==(const SBID& i) const;

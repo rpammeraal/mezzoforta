@@ -67,8 +67,8 @@ SBTabSongDetail::selectSongFromAlbum(const SBID &song)
         songOnAlbum.albumTitle=m->data(m->index(0,2)).toString();
         songOnAlbum.duration=m->data(m->index(0,3)).toTime();
         songOnAlbum.year=m->data(m->index(0,4)).toInt();
-        songOnAlbum.sb_performer_id=m->data(m->index(0,6)).toInt();
-        songOnAlbum.performerName=m->data(m->index(0,7)).toString();
+        songOnAlbum.sb_song_performer_id=m->data(m->index(0,6)).toInt();
+        songOnAlbum.songPerformerName=m->data(m->index(0,7)).toString();
         songOnAlbum.sb_position=m->data(m->index(0,9)).toInt();
         songOnAlbum.path=m->data(m->index(0,10)).toString();
     }
@@ -86,11 +86,11 @@ SBTabSongDetail::selectSongFromAlbum(const SBID &song)
             songOnAlbum=song;	//	now also assign album attributes
             songOnAlbum.sb_album_id=selectedSong.sb_album_id;
             songOnAlbum.sb_position=selectedSong.sb_position;
-            songOnAlbum.sb_performer_id=selectedSong.sb_performer_id;
+            songOnAlbum.sb_song_performer_id=selectedSong.sb_song_performer_id;
             songOnAlbum.path=selectedSong.path;
             songOnAlbum.duration=selectedSong.duration;
             songOnAlbum.albumTitle=selectedSong.albumTitle;
-            songOnAlbum.performerName=selectedSong.performerName;
+            songOnAlbum.songPerformerName=selectedSong.songPerformerName;
         }
     }
     return songOnAlbum;
@@ -323,8 +323,8 @@ SBTabSongDetail::_populate(const SBID& id)
         {
         case -1:
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
-                .arg(result.sb_performer_id)
-                .arg(result.performerName);
+                .arg(result.sb_song_performer_id)
+                .arg(result.songPerformerName);
             break;
 
         default:

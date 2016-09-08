@@ -151,7 +151,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         }
         else if(header=="sb_performer_id")
         {
-            id.sb_performer_id=v.toInt();
+            id.sb_song_performer_id=v.toInt();
         }
         else if(header=="sb_album_id")
         {
@@ -167,7 +167,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         }
         else if(header=="performer")
         {
-            id.performerName=v.toString();
+            id.songPerformerName=v.toString();
         }
         else if(header=="album title")
         {

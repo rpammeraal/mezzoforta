@@ -8,6 +8,7 @@ class Properties
 public:
     QString localHostName() const;
     QString musicLibraryDirectory(bool interactiveFlag=1);
+    QString musicLibraryDirectorySchema();
     void setMusicLibraryDirectory();
 
 protected:

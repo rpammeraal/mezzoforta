@@ -42,7 +42,7 @@ DataEntitySong::getDetail(const SBID& id)
              ") "
     )
         .arg(id.sb_song_id)
-        .arg(id.sb_performer_id)
+        .arg(id.sb_song_performer_id)
     ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
@@ -52,8 +52,8 @@ DataEntitySong::getDetail(const SBID& id)
     if(query.next())
     {
         result.assign(SBID::sb_type_song,id.sb_song_id);
-        result.sb_performer_id        =query.value(2).toInt();
-        result.performerName          =query.value(3).toString();
+        result.sb_song_performer_id   =query.value(2).toInt();
+        result.songPerformerName      =query.value(3).toString();
         result.songTitle              =query.value(0).toString();
         result.year                   =query.value(4).toInt();
         result.lyrics                 =query.value(5).toString();
@@ -94,7 +94,7 @@ DataEntitySong::findSong(const SBID& id)
     )
         .arg(id.sb_song_id)
         .arg(Common::escapeSingleQuotes(id.songTitle))
-        .arg(Common::escapeSingleQuotes(id.performerName))
+        .arg(Common::escapeSingleQuotes(id.songPerformerName))
     ;
 
     return new SBSqlQueryModel(q);
@@ -413,8 +413,8 @@ DataEntitySong::matchSong(const SBID &newSongID)
 
     )
         .arg(Common::escapeSingleQuotes(newSongID.songTitle))
-        .arg(Common::escapeSingleQuotes(newSongID.performerName))
-        .arg(newSongID.sb_performer_id)
+        .arg(Common::escapeSingleQuotes(newSongID.songPerformerName))
+        .arg(newSongID.sb_song_performer_id)
         .arg(newSoundex)
     ;
 
@@ -494,8 +494,8 @@ DataEntitySong::matchSongWithinPerformer(const SBID& newSongID, const QString& n
             "1,3 "
     )
         .arg(Common::escapeSingleQuotes(newSongTitle))
-        .arg(Common::escapeSingleQuotes(newSongID.performerName))
-        .arg(newSongID.sb_performer_id)
+        .arg(Common::escapeSingleQuotes(newSongID.songPerformerName))
+        .arg(newSongID.sb_song_performer_id)
         .arg(newSongID.sb_song_id)
         .arg(newSoundex)
     ;
@@ -523,7 +523,7 @@ DataEntitySong::updateLastPlayDate(const SBID &id)
     )
         .arg(dal->getGetDateTime())
         .arg(id.sb_song_id)
-        .arg(id.sb_performer_id)
+        .arg(id.sb_song_performer_id)
         .arg(id.sb_album_id)
         .arg(id.sb_position)
     ;
@@ -559,12 +559,12 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
 
     qDebug() << SB_DEBUG_INFO << "old"
         << ":sb_song_id=" << oldSongID.sb_song_id
-        << ":sb_performer_id=" << oldSongID.sb_performer_id
+        << ":sb_song_performer_id=" << oldSongID.sb_song_performer_id
         << ":isOriginalPerformerFlag=" << oldSongID.isOriginalPerformerFlag
     ;
     qDebug() << SB_DEBUG_INFO << "new"
         << ":sb_song_id=" << newSongID.sb_song_id
-        << ":sb_performer_id=" << newSongID.sb_performer_id
+        << ":sb_song_performer_id=" << newSongID.sb_song_performer_id
         << ":isOriginalPerformerFlag=" << newSongID.isOriginalPerformerFlag
     ;
 
@@ -586,7 +586,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
     if(newSongID.sb_song_id==-1)
     {
         //	New song does NOT exists
-        if(oldSongID.sb_performer_id!=newSongID.sb_performer_id)
+        if(oldSongID.sb_song_performer_id!=newSongID.sb_song_performer_id)
         {
             //	Different performer
             mergeToNewSongFlag=1;
@@ -606,7 +606,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
             //	Songs are not the same -> merge
             mergeToExistingSongFlag=1;
         }
-        else if(oldSongID.sb_performer_id!=newSongID.sb_performer_id)
+        else if(oldSongID.sb_song_performer_id!=newSongID.sb_song_performer_id)
         {
             //	Songs are the same, update performer
             updatePerformerFlag=1;
@@ -732,7 +732,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
         )
             .arg(newSongID.year)
             .arg(newSongID.sb_song_id)
-            .arg(newSongID.sb_performer_id)
+            .arg(newSongID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -792,7 +792,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
                 ") "
         )
             .arg(newSongID.sb_song_id)
-            .arg(newSongID.sb_performer_id)
+            .arg(newSongID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -825,7 +825,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
             "WHERE "
                 "song_id=%2 "
         )
-            .arg(newSongID.sb_performer_id)
+            .arg(newSongID.sb_song_performer_id)
             .arg(newSongID.sb_song_id)
         ;
         allQueries.append(q);
@@ -856,9 +856,9 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
              )
                 .arg(performanceTable.at(i))
                 .arg(newSongID.sb_song_id)
-                .arg(newSongID.sb_performer_id)
+                .arg(newSongID.sb_song_performer_id)
                 .arg(oldSongID.sb_song_id)
-                .arg(oldSongID.sb_performer_id)
+                .arg(oldSongID.sb_song_performer_id)
             ;
             allQueries.append(q);
         }
@@ -875,9 +875,9 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
                 "song_id=%3 "
          )
             .arg(newSongID.sb_song_id)
-            .arg(newSongID.sb_performer_id)
+            .arg(newSongID.sb_song_performer_id)
             .arg(oldSongID.sb_song_id)
-            .arg(oldSongID.sb_performer_id)
+            .arg(oldSongID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -893,9 +893,9 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
                 "op_song_id=%3 "
          )
             .arg(newSongID.sb_song_id)
-            .arg(newSongID.sb_performer_id)
+            .arg(newSongID.sb_song_performer_id)
             .arg(oldSongID.sb_song_id)
-            .arg(oldSongID.sb_performer_id)
+            .arg(oldSongID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -970,7 +970,7 @@ DataEntitySong::updateExistingSong(const SBID &oldSongID, SBID &newSongID, const
                 //"artist_id=%2 "
         )
             .arg(oldSongID.sb_song_id)
-            //.arg(oldSongID.sb_performer_id)
+            //.arg(oldSongID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }

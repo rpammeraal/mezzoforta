@@ -25,7 +25,6 @@ public:
     SBSqlQueryModel* getAllOnlineSongs(const SBID& id);
     SBSqlQueryModel* getRelatedPerformers(const SBID& id);
 	SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);	//	DEPRECIATED: USE SBIDPerformer::match()
-    bool saveNewPerformer(SBID& newPerformerID);
     bool updateExistingPerformer(const SBID& orgPerformerID, SBID& newPerformerID, const QStringList& extraSQL=QStringList(),bool commitFlag=1);
 
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented

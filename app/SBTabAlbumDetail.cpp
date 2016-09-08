@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "DataEntityAlbum.h"
 #include "PlayManager.h"
+#include "SBIDAlbum.h"
 #include "SBSqlQueryModel.h"
 #include "Navigator.h"
 
@@ -35,12 +36,11 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    SBID selectedID=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
     if(selectedID.sb_item_type()==SBID::sb_type_invalid)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Context menu from SBLabel is clicked
         selectedID=SBTab::currentID();
     }
@@ -77,7 +77,6 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
     QModelIndex ids=pm->mapToSource(idx);
     SBID selectedID=sm->determineSBID(ids);
 
-    qDebug() << SB_DEBUG_INFO << selectedID;
     if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
     {
         _lastClickedIndex=ids;
@@ -277,8 +276,8 @@ SBTabAlbumDetail::_populate(const SBID &id)
     mw->ui.labelAlbumDetailAlbumNotes->setText(result.notes);
 
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-        .arg(result.sb_performer_id)
-        .arg(result.performerName);
+        .arg(result.sb_album_performer_id)
+        .arg(result.albumPerformerName);
     mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
     mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
     connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),

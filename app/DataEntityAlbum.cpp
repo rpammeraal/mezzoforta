@@ -5,6 +5,9 @@
 #include "DataEntityAlbum.h"
 #include "SBSqlQueryModel.h"
 
+//	CWIP: move to SBIDAlbum:
+//	either add to a list of songs in SBIDAlbum (preferred)
+//	or as saveSongToAlbum().
 QStringList
 DataEntityAlbum::addSongToAlbum(const SBID &song)
 {
@@ -44,7 +47,7 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
                         "artist_id=%1 "
                 ") "
         )
-            .arg(song.sb_performer_id)
+            .arg(song.sb_song_performer_id)
             .arg(song.sb_song_id)
             .arg(song.year)
     );
@@ -81,67 +84,21 @@ DataEntityAlbum::addSongToAlbum(const SBID &song)
              ") "
         )
             .arg(song.sb_song_id)
-            .arg(song.sb_performer_id)
+            .arg(song.sb_song_performer_id)
             .arg(song.sb_album_id)
             .arg(song.sb_position)
     );
     return SQL;
 }
 
+//	CWIP: move to SBIDAlbum
 SBIDAlbum
 DataEntityAlbum::getDetail(const SBID& id)
 {
     SBIDAlbum result=id;	//	CWIP: this should *NOT* be done. Assign result with query results *ONLY*
-
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "r.record_id, "
-            "r.title , "
-            "r.genre, "
-            "r.year, "
-            "r.notes, "
-            "a.name, "
-            "a.artist_id, "
-            "a.mbid "
-        "FROM "
-            "___SB_SCHEMA_NAME___record r "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "a.artist_id=r.artist_id "
-        "WHERE "
-            "r.record_id=%1 OR "
-            "( "
-                "r.title='%2' AND "
-                "a.name='%3' "
-            ") "
-    )
-        .arg(id.sb_album_id)
-        .arg(Common::escapeSingleQuotes(id.albumTitle))
-        .arg(Common::escapeSingleQuotes(id.performerName))
-    ;
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-
-
-    if(query.next())
-    {
-        result.assign(query.value(0).toInt());
-        result.performerName  =query.value(5).toString();
-        result.albumTitle     =query.value(1).toString();
-        result.year           =query.value(3).toInt();
-        result.genre          =query.value(2).toString();
-        result.notes          =query.value(4).toString();
-        result.sb_performer_id=query.value(6).toInt();
-        result.sb_mbid        =query.value(7).toString();
-    }
+    result.getDetail(0);
     return result;
 }
-
 
 SBSqlQueryModel*
 DataEntityAlbum::getAllSongs(const SBID& id)
@@ -224,8 +181,8 @@ DataEntityAlbum::matchAlbum(const SBID &newAlbum)
             "1 "
     )
         .arg(Common::escapeSingleQuotes(newAlbum.albumTitle))
-        .arg(Common::escapeSingleQuotes(newAlbum.performerName))
-        .arg(newAlbum.sb_performer_id)
+        .arg(Common::escapeSingleQuotes(newAlbum.albumPerformerName))
+        .arg(newAlbum.sb_album_performer_id)
         .arg(newAlbum.sb_album_id)
     ;
 
@@ -781,7 +738,7 @@ DataEntityAlbum::updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum,
     bool resultFlag=1;
 
     //	artist
-    if(orgAlbum.sb_performer_id!=newAlbum.sb_performer_id)
+    if(orgAlbum.sb_album_performer_id!=newAlbum.sb_album_performer_id)
     {
         q=QString
         (
@@ -791,7 +748,7 @@ DataEntityAlbum::updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum,
             "WHERE "
                 "record_id=%2 "
         )
-            .arg(newAlbum.sb_performer_id)
+            .arg(newAlbum.sb_album_performer_id)
             .arg(newAlbum.sb_album_id)
         ;
         allQueries.append(q);
@@ -843,7 +800,7 @@ DataEntityAlbum::updateSongOnAlbum(int albumID, const SBIDSong &song)
 {
     qDebug() << SB_DEBUG_INFO
              << song.sb_song_id
-             << song.sb_performer_id
+             << song.sb_song_performer_id
              << song.sb_album_id
              << song.sb_position
              << song.notes
@@ -881,7 +838,7 @@ DataEntityAlbum::updateSongOnAlbum(int albumID, const SBIDSong &song)
                 "record_id=%2 AND "
                 "record_position=%3 "
         )
-            .arg(song.sb_performer_id)
+            .arg(song.sb_song_performer_id)
             .arg(albumID)
             .arg(song.sb_position)
     );
@@ -898,7 +855,7 @@ DataEntityAlbum::updateSongOnAlbum(int albumID, const SBIDSong &song)
                 "op_record_id=%2 AND "
                 "op_record_position=%3 "
         )
-            .arg(song.sb_performer_id)
+            .arg(song.sb_song_performer_id)
             .arg(albumID)
             .arg(song.sb_position)
     );
@@ -915,7 +872,7 @@ DataEntityAlbum::updateSongOnAlbum(int albumID, const SBIDSong &song)
                 "record_id=%2 AND "
                 "record_position=%3 "
         )
-            .arg(song.sb_performer_id)
+            .arg(song.sb_song_performer_id)
             .arg(albumID)
             .arg(song.sb_position)
     );

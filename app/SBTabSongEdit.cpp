@@ -8,11 +8,12 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "MainWindow.h"
-#include "SBDialogSelectItem.h"
 #include "DataEntitySong.h"
-#include "SBSqlQueryModel.h"
+#include "MainWindow.h"
 #include "Navigator.h"
+#include "SBDialogSelectItem.h"
+#include "SBIDPerformer.h"
+#include "SBSqlQueryModel.h"
 
 SBTabSongEdit::SBTabSongEdit(QWidget* parent) : SBTab(parent,1)
 {
@@ -33,7 +34,7 @@ SBTabSongEdit::hasEdits() const
     if(currentID.sb_item_type()!=SBID::sb_type_invalid)
     {
         if(currentID.songTitle!=mw->ui.songEditTitle->text() ||
-            currentID.performerName!=mw->ui.songEditPerformerName->text() ||
+            currentID.songPerformerName!=mw->ui.songEditPerformerName->text() ||
             currentID.year!=mw->ui.songEditYearOfRelease->text().toInt() ||
             currentID.notes!=mw->ui.songEditNotes->text() ||
             currentID.lyrics!=mw->ui.songEditLyrics->toPlainText()
@@ -96,17 +97,17 @@ SBTabSongEdit::save() const
     bool hasCaseChange=0;
 
     qDebug() << SB_DEBUG_INFO << editTitle << editPerformerName;
-    qDebug() << SB_DEBUG_INFO << orgSongID.songTitle << newSongID.performerName;
+    qDebug() << SB_DEBUG_INFO << orgSongID.songTitle << newSongID.songPerformerName;
     qDebug() << SB_DEBUG_INFO << newSongID;
-    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_performer_id" << orgSongID.sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.sb_song_performer_id;
     qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.sb_song_id;
-    qDebug() << SB_DEBUG_INFO << "newSongID:sb_performer_id" << newSongID.sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.sb_song_performer_id;
     qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.sb_song_id;
 
     //	If only case is different in songTitle, save the new title as is.
     if((Common::simplified(editTitle)==Common::simplified(newSongID.songTitle)) &&
         (editTitle!=newSongID.songTitle) &&
-        (editPerformerName==newSongID.performerName))
+        (editPerformerName==newSongID.songPerformerName))
     {
         qDebug() << SB_DEBUG_INFO;
         newSongID.sb_song_id=-1;
@@ -121,29 +122,29 @@ SBTabSongEdit::save() const
         hasCaseChange=0;
     }
     qDebug() << SB_DEBUG_INFO << hasCaseChange;
-    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_performer_id" << orgSongID.sb_performer_id;
-    qDebug() << SB_DEBUG_INFO << "newSongID:sb_performer_id" << newSongID.sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.sb_song_performer_id;
+    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.sb_song_performer_id;
 
     //	Handle performer name edits
-    if(hasCaseChange==0 && editPerformerName!=newSongID.performerName)
+    if(hasCaseChange==0 && editPerformerName!=newSongID.songPerformerName)
     {
-        SBID selectedPerformer=newSongID;
-        if(processPerformerEdit(editPerformerName,selectedPerformer,mw->ui.songEditPerformerName)==0)
+        SBIDPerformer selectedPerformer=newSongID;
+        if(SBIDPerformer::selectSavePerformer(editPerformerName,selectedPerformer,selectedPerformer,mw->ui.songEditPerformerName)==0)
         {
             return;
         }
-        newSongID.sb_performer_id=selectedPerformer.sb_performer_id;
-        newSongID.performerName=selectedPerformer.performerName;
+        newSongID.sb_song_performer_id=selectedPerformer.sb_song_performer_id;
+        newSongID.songPerformerName=selectedPerformer.songPerformerName;
     }
 
-    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_performer_id" << orgSongID.sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.sb_song_performer_id;
     qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.sb_song_id;
-    qDebug() << SB_DEBUG_INFO << "orgSongID:performerName" << orgSongID.performerName;
-    qDebug() << SB_DEBUG_INFO << "orgSongID:performerName" << orgSongID.songTitle;
-    qDebug() << SB_DEBUG_INFO << "newSongID:sb_performer_id" << newSongID.sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "orgSongID:songPerformerName" << orgSongID.songPerformerName;
+    qDebug() << SB_DEBUG_INFO << "orgSongID:songTitle" << orgSongID.songTitle;
+    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.sb_song_performer_id;
     qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.sb_song_id;
-    qDebug() << SB_DEBUG_INFO << "newSongID:performerName" << newSongID.performerName;
-    qDebug() << SB_DEBUG_INFO << "newSongID:performerName" << newSongID.songTitle;
+    qDebug() << SB_DEBUG_INFO << "newSongID:songPerformerName" << newSongID.songPerformerName;
+    qDebug() << SB_DEBUG_INFO << "newSongID:songTitle" << newSongID.songTitle;
 
     //	Handle song title edits
     if(editTitle.toLower()!=newSongID.songTitle.toLower() &&
@@ -205,7 +206,7 @@ SBTabSongEdit::save() const
         qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongID;
         newSongID.sb_song_id=existingSongs->record(0).value(0).toInt();
         newSongID.notes=existingSongs->record(0).value(2).toString();
-        newSongID.sb_performer_id=existingSongs->record(0).value(3).toInt();
+        newSongID.sb_song_performer_id=existingSongs->record(0).value(3).toInt();
         newSongID.year=existingSongs->record(0).value(5).toInt();
         newSongID.lyrics=existingSongs->record(0).value(6).toInt();
 
@@ -292,12 +293,12 @@ SBTabSongEdit::_populate(const SBID& id)
 
     qDebug() << SB_DEBUG_INFO << result;
     mw->ui.songEditTitle->setText(result.songTitle);
-    mw->ui.songEditPerformerName->setText(result.performerName);
+    mw->ui.songEditPerformerName->setText(result.songPerformerName);
     mw->ui.songEditYearOfRelease->setText(QString("%1").arg(result.year));
     mw->ui.songEditNotes->setText(result.notes);
     mw->ui.songEditLyrics->setText(result.lyrics);
 
-    qDebug() << SB_DEBUG_INFO << result.performerName;
+    qDebug() << SB_DEBUG_INFO << result.songPerformerName;
     qDebug() << SB_DEBUG_INFO << mw->ui.songEditPerformerName->text();
 
     //	Disable tmpButtons

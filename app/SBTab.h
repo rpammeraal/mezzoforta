@@ -56,7 +56,6 @@ protected:
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
-    bool processPerformerEdit(const QString& editPerformerName, SBID& newID, QLineEdit* field, bool saveNewPerformer=1) const;
     void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
 
     virtual QTableView* _determineViewCurrentTab() const=0;

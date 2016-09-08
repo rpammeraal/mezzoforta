@@ -431,7 +431,7 @@ SBTabAlbumEdit::hasEdits() const
     {
         if(_hasChanges ||
             currentID.albumTitle!=mw->ui.albumEditTitle->text() ||
-            currentID.performerName!=mw->ui.albumEditPerformer->text() ||
+            currentID.albumPerformerName!=mw->ui.albumEditPerformer->text() ||
             currentID.year!=mw->ui.albumEditYear->text().toInt()
         )
         {
@@ -786,7 +786,7 @@ SBTabAlbumEdit::save() const
     SBIDAlbum removedAlbum;
 
     newAlbum.albumTitle=mw->ui.albumEditTitle->text();
-    newAlbum.performerName=mw->ui.albumEditPerformer->text();
+    newAlbum.albumPerformerName=mw->ui.albumEditPerformer->text();
     newAlbum.year=mw->ui.albumEditYear->text().toInt();
 
     //	B.	Validate album
@@ -801,8 +801,8 @@ SBTabAlbumEdit::save() const
         {
             selectedAlbum.sb_album_id=albumMatches->record(1).value(1).toInt();
             selectedAlbum.albumTitle=albumMatches->record(1).value(2).toString();
-            selectedAlbum.sb_performer_id=albumMatches->record(1).value(3).toInt();
-            selectedAlbum.performerName=albumMatches->record(1).value(4).toString();
+            selectedAlbum.sb_song_performer_id=albumMatches->record(1).value(3).toInt();
+            selectedAlbum.albumPerformerName=albumMatches->record(1).value(4).toString();
             newAlbum=selectedAlbum;
         }
         else if(albumMatches->rowCount()>2)
@@ -817,7 +817,7 @@ SBTabAlbumEdit::save() const
             }
 
             mw->ui.albumEditTitle->setText(selectedAlbum.albumTitle);
-            mw->ui.albumEditPerformer->setText(selectedAlbum.performerName);
+            mw->ui.albumEditPerformer->setText(selectedAlbum.albumPerformerName);
 
             newAlbum=selectedAlbum;
         }
@@ -884,14 +884,14 @@ SBTabAlbumEdit::save() const
         item=aem->item(i,AlbumEditModel::sb_column_performername);
         if(item)
         {
-            song.performerName=item->text();
-            if(song.performerName.length()>0 &&
-                performerList.contains(song.performerName)==0 &&
+            song.songPerformerName=item->text();
+            if(song.songPerformerName.length()>0 &&
+                performerList.contains(song.songPerformerName)==0 &&
                 isRemovedFlag==0 &&
                 mergedToIndex==0
             )
             {
-                performerList.append(song.performerName);
+                performerList.append(song.songPerformerName);
             }
         }
 
@@ -927,7 +927,7 @@ SBTabAlbumEdit::save() const
             item=aem->item(i,AlbumEditModel::sb_column_orgperformerid);
             if(item)
             {
-                orgSong.sb_performer_id=item->text().toInt();
+                orgSong.sb_song_performer_id=item->text().toInt();
             }
             orgSongList[orgPosition]=orgSong;
         }
@@ -980,11 +980,11 @@ SBTabAlbumEdit::save() const
         SBIDPerformer selectedPerformerID;
 
         //	Performers are saved in processPerformerEdit
-        if(processPerformerEdit(performerList.at(i),selectedPerformerID, NULL, 1))
+        if(SBIDPerformer::selectSavePerformer(performerList.at(i),selectedPerformerID,selectedPerformerID,NULL,1))
         {
-            qDebug() << SB_DEBUG_INFO << "selected performer" << selectedPerformerID << selectedPerformerID.sb_performer_id;
+            qDebug() << SB_DEBUG_INFO << "selected performer" << selectedPerformerID << selectedPerformerID.sb_song_performer_id;
 
-            //	Go thru each song and update sb_performer_id
+            //	Go thru each song and update sb_song_performer_id
             QMutableMapIterator<int,SBIDSong> it(songList);
             while(it.hasNext())
             {
@@ -995,9 +995,9 @@ SBTabAlbumEdit::save() const
                 {
                     SBIDSong currentSong=it.value();
 
-                    if(currentSong.performerName==performerList.at(i))
+                    if(currentSong.songPerformerName==performerList.at(i))
                     {
-                        currentSong.sb_performer_id=selectedPerformerID.sb_performer_id;
+                        currentSong.sb_song_performer_id=selectedPerformerID.sb_song_performer_id;
                         it.setValue(currentSong);
 
                         //	Reset performer name by taking the 1-based index and
@@ -1005,7 +1005,7 @@ SBTabAlbumEdit::save() const
                         QStandardItem* si=aem->takeItem(index-1,AlbumEditModel::sb_column_performername);
                         if(si)
                         {
-                            si->setText(selectedPerformerID.performerName);
+                            si->setText(selectedPerformerID.songPerformerName);
                             aem->setItem(index-1,AlbumEditModel::sb_column_performername,si);
                         }
                     }
@@ -1015,9 +1015,9 @@ SBTabAlbumEdit::save() const
             //	Check album performer
             if(mw->ui.albumEditPerformer->text()==performerList.at(i))
             {
-                newAlbum.performerName=selectedPerformerID.performerName;
-                newAlbum.sb_performer_id=selectedPerformerID.sb_performer_id;
-                mw->ui.albumEditPerformer->setText(selectedPerformerID.performerName);
+                newAlbum.albumPerformerName=selectedPerformerID.songPerformerName;
+                newAlbum.sb_album_performer_id=selectedPerformerID.sb_album_performer_id;
+                mw->ui.albumEditPerformer->setText(selectedPerformerID.albumPerformerName);
             }
         }
         else
@@ -1079,7 +1079,7 @@ SBTabAlbumEdit::save() const
                     }
                     if(selectedSong.sb_song_id==-1)
                     {
-                        selectedSong.saveNewSong();
+                        selectedSong.save();
                         if(isNewMap[index]==0)
                         {
                             changedSongIsNewOriginalMap[index]=1;
@@ -1132,7 +1132,7 @@ SBTabAlbumEdit::save() const
         SBIDSong org=orgSongList[toFrom[songListIt.key()]];
         if(
                 org.sb_song_id!=current.sb_song_id ||
-                org.sb_performer_id!=current.sb_performer_id ||
+                org.sb_song_performer_id!=current.sb_song_performer_id ||
                 org.notes!=current.notes
           )
         {
@@ -1304,7 +1304,7 @@ SBTabAlbumEdit::save() const
         (
             orgAlbum.sb_album_id!=newAlbum.sb_album_id ||
             orgAlbum.albumTitle!=newAlbum.albumTitle ||
-            orgAlbum.sb_performer_id!=newAlbum.sb_performer_id ||
+            orgAlbum.sb_song_performer_id!=newAlbum.sb_song_performer_id ||
             orgAlbum.year!=newAlbum.year ||
             SQL.count()>0
         ) &&
@@ -1470,7 +1470,7 @@ SBTabAlbumEdit::_populate(const SBID &id)
 
     //	Attributes
     mw->ui.albumEditTitle->setText(result.albumTitle);
-    mw->ui.albumEditPerformer->setText(result.performerName);
+    mw->ui.albumEditPerformer->setText(result.albumPerformerName);
     mw->ui.albumEditYear->setText(QString("%1").arg(result.year));
 
     //	Songs

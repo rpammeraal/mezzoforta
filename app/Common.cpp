@@ -1,10 +1,14 @@
 #include <QString>
 #include <QDebug>
 #include <QHeaderView>
+#include <QSqlQuery>
+#include <QStringListIterator>
 #include <QTableView>
 #include <sstream>
 
 #include "Common.h"
+#include "Context.h"
+#include "DataAccessLayer.h"
 
 QString diacriticLetters_;
 QStringList noDiacriticLetters_;
@@ -80,8 +84,8 @@ Common::removeAccents(const QString &s)
 {
     if (diacriticLetters_.isEmpty())
     {
-        diacriticLetters_ = QString::fromUtf8("ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ");
-        noDiacriticLetters_ << "S"<<"OE"<<"Z"<<"s"<<"oe"<<"z"<<"Y"<<"Y"<<"u"<<"A"<<"A"<<"A"<<"A"<<"A"<<"A"<<"AE"<<"C"<<"E"<<"E"<<"E"<<"E"<<"I"<<"I"<<"I"<<"I"<<"D"<<"N"<<"O"<<"O"<<"O"<<"O"<<"O"<<"O"<<"U"<<"U"<<"U"<<"U"<<"Y"<<"s"<<"a"<<"a"<<"a"<<"a"<<"a"<<"a"<<"ae"<<"c"<<"e"<<"e"<<"e"<<"e"<<"i"<<"i"<<"i"<<"i"<<"o"<<"n"<<"o"<<"o"<<"o"<<"o"<<"o"<<"o"<<"u"<<"u"<<"u"<<"u"<<"y"<<"y";
+        diacriticLetters_ = QString::fromUtf8("İşŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ");
+        noDiacriticLetters_ <<"I"<<"s"<<"S"<<"OE"<<"Z"<<"s"<<"oe"<<"z"<<"Y"<<"Y"<<"u"<<"A"<<"A"<<"A"<<"A"<<"A"<<"A"<<"AE"<<"C"<<"E"<<"E"<<"E"<<"E"<<"I"<<"I"<<"I"<<"I"<<"D"<<"N"<<"O"<<"O"<<"O"<<"O"<<"O"<<"O"<<"U"<<"U"<<"U"<<"U"<<"Y"<<"s"<<"a"<<"a"<<"a"<<"a"<<"a"<<"a"<<"ae"<<"c"<<"e"<<"e"<<"e"<<"e"<<"i"<<"i"<<"i"<<"i"<<"o"<<"n"<<"o"<<"o"<<"o"<<"o"<<"o"<<"o"<<"u"<<"u"<<"u"<<"u"<<"y"<<"y";
     }
 
     QString output = "";
@@ -106,16 +110,60 @@ Common::removeAccents(const QString &s)
 QString
 Common::removeArticles(const QString &s)
 {
-    QString t=s;
-    if(t.indexOf("The")==0 || t.indexOf("Een")==0)
+    static QStringList _articles;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    if(_articles.count()==0)
     {
-        t.remove(0,4);
+        const QString q=
+            "SELECT "
+                "word "
+            "FROM "
+                "article ";
+        QSqlQuery qWords(q,QSqlDatabase::database(dal->getConnectionName()));
+
+        while(qWords.next())
+        {
+            const QString word=qWords.value(0).toString().toLower().trimmed();
+            _articles.append(word);
+        }
     }
-    if(t.indexOf("De")==0)
+
+    QStringListIterator it(_articles);
+    QString t=s.toLower().trimmed();
+    while(it.hasNext())
     {
-        t.remove(0,3);
+        QString a=it.next();
+        QString as;
+
+        //	Match on beginning
+        as=a+' ';
+        if(t.indexOf(as)==0)
+        {
+            t.remove(0,as.length());
+        }
+
+        //	Match on end with ,<space>
+        as=", "+a;
+        if(t.indexOf(as)==t.length()-as.length())
+        {
+            t.remove(t.length()-as.length(),as.length());
+        }
+
+        //	Match on end with ,<nospace>
+        as=","+a;
+        if(t.indexOf(as)==t.length()-as.length())
+        {
+            t.remove(t.length()-as.length(),as.length());
+        }
+
+        //	Match on end with <word><space><article>
+        as=a;
+        if(t.indexOf(as)==t.length()-as.length())
+        {
+            t.remove(t.length()-as.length(),as.length());
+        }
     }
-    return t;
+    return sanitize(t);
 }
 
 QString

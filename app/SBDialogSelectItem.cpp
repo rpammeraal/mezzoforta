@@ -44,8 +44,8 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
 
         currentAlbum.assign(SBID::sb_type_album,m->data(m->index(i,1)).toInt());
         currentAlbum.albumTitle=m->data(m->index(i,2)).toString();
-        currentAlbum.sb_performer_id=m->data(m->index(i,3)).toInt();
-        currentAlbum.performerName=m->data(m->index(i,4)).toString();
+        currentAlbum.sb_album_performer_id=m->data(m->index(i,3)).toInt();
+        currentAlbum.albumPerformerName=m->data(m->index(i,4)).toString();
 
         if(albumIDPopulated.contains(currentAlbum)==0)
         {
@@ -67,7 +67,7 @@ SBDialogSelectItem::selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget
                                "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
                        .arg(i)
                        .arg(currentAlbum.albumTitle)
-                       .arg(currentAlbum.performerName)
+                       .arg(currentAlbum.albumPerformerName)
             );
 
             l->setStyleSheet( ":hover{ background-color: darkgrey; }");
@@ -103,8 +103,8 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
         songChoice.albumTitle=m->data(m->index(i,2)).toString();
         songChoice.duration=m->data(m->index(i,3)).toTime();
         songChoice.year=m->data(m->index(i,4)).toInt();
-        songChoice.sb_performer_id=m->data(m->index(i,6)).toInt();
-        songChoice.performerName=m->data(m->index(i,7)).toString();
+        songChoice.sb_song_performer_id=m->data(m->index(i,6)).toInt();
+        songChoice.songPerformerName=m->data(m->index(i,7)).toString();
         songChoice.sb_position=m->data(m->index(i,9)).toInt();
         songChoice.path=m->data(m->index(i,10)).toString();
 
@@ -126,7 +126,7 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
                    .arg(imagePath)
                    .arg(i)
                    .arg(songChoice.albumTitle)
-                   .arg(songChoice.performerName)
+                   .arg(songChoice.songPerformerName)
                    .arg(songChoice.duration.toString(Duration::sb_hhmmss_format)));
 
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
@@ -142,21 +142,23 @@ SBDialogSelectItem::selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWi
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectPerformer(const SBID& item, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectItem* d=new SBDialogSelectItem(orgSong,parent,SBDialogSelectItem::sb_performer);
+    //	Used by MusicLibrary to import songs
+
+    SBDialogSelectItem* d=new SBDialogSelectItem(item,parent,SBDialogSelectItem::sb_performer);
     d->ui->setupUi(d);
 
     //	Populate choices
     QList<SBID> songIDPopulated;
-    QString title=QString("Choose Performer");
+    QString title=QString("Choose Performer ");
     d->setTitle(title);
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
     for(int i=0;i<m->rowCount(); i++)
     {
         SBID songID(SBID::sb_type_performer,m->data(m->index(i,1)).toInt());
-        songID.performerName=m->data(m->index(i,2)).toString();
+        songID.songPerformerName=m->data(m->index(i,2)).toString();
 
         if(songIDPopulated.contains(songID)==0)
         {
@@ -177,7 +179,7 @@ SBDialogSelectItem::selectPerformer(const SBID& orgSong, const QSqlQueryModel* m
                                "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
                        .arg(imagePath)
                        .arg(i)
-                       .arg(songID.performerName)
+                       .arg(songID.songPerformerName)
             );
 
             l->setStyleSheet( ":hover{ background-color: darkgrey; }");
@@ -216,8 +218,8 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
         currentRank=m->data(m->index(i,0)).toInt();
         songID.assign(SBID::sb_type_song,m->data(m->index(i,1)).toInt());
         songID.songTitle=m->data(m->index(i,2)).toString();
-        songID.sb_performer_id=m->data(m->index(i,3)).toInt();
-        songID.performerName=m->data(m->index(i,4)).toString();
+        songID.sb_song_performer_id=m->data(m->index(i,3)).toInt();
+        songID.songPerformerName=m->data(m->index(i,4)).toString();
 
         if(songIDPopulated.contains(songID)==0)
         {
@@ -244,7 +246,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     Is <I>%2</I> a <B>%3</B> original, or </a></font></body></html>")
                            .arg(i)
                            .arg(songID.songTitle)
-                           .arg(songID.performerName)
+                           .arg(songID.songPerformerName)
                 );
                 break;
             case 1:
@@ -253,8 +255,8 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     Is this a <B>%4</B> cover of the <B>%3</B> song <I>%2</I>?</a></font></body></html>")
                            .arg(i)
                            .arg(songID.songTitle)
-                           .arg(songID.performerName)
-                           .arg(orgSong.performerName)
+                           .arg(songID.songPerformerName)
+                           .arg(orgSong.songPerformerName)
                 );
                 break;
 
@@ -264,8 +266,8 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     Is this a <B>%4</B> cover of the <B>%3</B> song <I>%2</I>?</a></font></body></html>")
                            .arg(i)
                            .arg(songID.songTitle)
-                           .arg(songID.performerName)
-                           .arg(orgSong.performerName)
+                           .arg(songID.songPerformerName)
+                           .arg(orgSong.songPerformerName)
                 );
                 break;
 
@@ -275,7 +277,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBID& orgSong, const QSqlQueryMo
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I>(3) by <B>%3</B></a></font></body></html>")
                            .arg(i)
                            .arg(songID.songTitle)
-                           .arg(songID.performerName)
+                           .arg(songID.songPerformerName)
                 );
             default:
                 break;
@@ -318,7 +320,7 @@ SBDialogSelectItem::OK(const QString& i)
     while(it.hasNext())
     {
         it.next();
-        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().performerName << it.value().sb_performer_id;
+        qDebug() << SB_DEBUG_INFO << it.value().sb_item_id() << it.value().songPerformerName << it.value().sb_song_performer_id;
     }
 
     _songID=_itemsDisplayed[i.toInt()];

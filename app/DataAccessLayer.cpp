@@ -79,13 +79,13 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             qDebug() << q;
 
             QSqlQuery runQuery(q,db);
-            //successFlag=runQuery.exec();
-            //if(successFlag==0)
-            //{
-                //r=runQuery.lastError();
-                //errorMsg=q;
-                //qDebug() << SB_DEBUG_INFO << r;
-            //}
+            QSqlError e=runQuery.lastError();
+            if(e.isValid() && ignoreErrorsFlag==0)
+            {
+                errorMsg=e.text();
+                successFlag=0;
+                qDebug() << SB_DEBUG_INFO << errorMsg;
+            }
             pd.setValue(++currentValue);
             QCoreApplication::processEvents();
 

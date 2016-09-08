@@ -189,7 +189,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
                         }
                         else if(key=="artist")
                         {
-                            pm.performerName=value;
+                            pm.songPerformerName=value;
                         }
                         else if(key=="image")
                         {
@@ -333,7 +333,7 @@ void
 ExternalData::handleMBIDNetwork(QNetworkReply *r)
 {
     bool matchFound=0;
-    QString title=Common::removeNonAlphanumeric(currentID.performerName.toLower());
+    QString title=Common::removeNonAlphanumeric(currentID.songPerformerName.toLower());
     performerMBIDRetrieved=1;
 
     if(r->error()==QNetworkReply::NoError)
@@ -817,7 +817,7 @@ ExternalData::getMBIDAndMore()
                 this, SLOT(handleMBIDNetwork(QNetworkReply*)));
 
         QString urlString=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1")
-            .arg(currentID.performerName)
+            .arg(currentID.songPerformerName)
         ;
         qDebug() << SB_DEBUG_INFO << urlString;
         m->get(QNetworkRequest(QUrl(urlString)));

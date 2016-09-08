@@ -76,6 +76,15 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
     return musicLibraryDirectory;
 }
 
+QString
+Properties::musicLibraryDirectorySchema()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    return QString("%1/%2")
+                .arg(Context::instance()->getProperties()->musicLibraryDirectory())
+                .arg(dal->schema());
+}
+
 void
 Properties::setMusicLibraryDirectory()
 {

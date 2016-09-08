@@ -80,7 +80,7 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &toBeAssignedID, const SBID &t
                 ") "
           ).arg(toPlaylistID.sb_playlist_id)
            .arg(toBeAssignedID.sb_song_id)
-           .arg(toBeAssignedID.sb_performer_id)
+           .arg(toBeAssignedID.sb_song_performer_id)
            .arg(toBeAssignedID.sb_album_id)
            .arg(toBeAssignedID.sb_position)
            .arg(dal->getGetDate())
@@ -119,7 +119,7 @@ DataEntityPlaylist::assignPlaylistItem(const SBID &toBeAssignedID, const SBID &t
           ).arg(toPlaylistID.sb_playlist_id)
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(toBeAssignedID.sb_performer_id)
+           .arg(toBeAssignedID.sb_song_performer_id)
         ;
         break;
 
@@ -371,14 +371,14 @@ DataEntityPlaylist::getDetailPlaylistItemSong(const SBID &id) const
     if(query.next())
     {
         result.assign(query.value(0).toInt());
-        result.sb_performer_id=query.value(1).toInt();
-        result.sb_album_id    =query.value(2).toInt();
-        result.sb_position    =query.value(3).toInt();
-        result.duration       =query.value(4).toTime();
-        result.songTitle      =query.value(5).toString();
-        result.performerName  =query.value(6).toString();
-        result.albumTitle     =query.value(7).toString();
-        result.path           =query.value(8).toString();
+        result.sb_song_performer_id=query.value(1).toInt();
+        result.sb_album_id         =query.value(2).toInt();
+        result.sb_position         =query.value(3).toInt();
+        result.duration            =query.value(4).toTime();
+        result.songTitle           =query.value(5).toString();
+        result.songPerformerName   =query.value(6).toString();
+        result.albumTitle          =query.value(7).toString();
+        result.path                =query.value(8).toString();
     }
     return result;
 }
@@ -672,11 +672,11 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
                 int songID=allItems.value(6).toInt();
                     SBID song=SBID(SBID::sb_type_song,songID);
                     song.sb_album_id=albumID;
-                    song.sb_performer_id=performerID;
+                    song.sb_song_performer_id=performerID;
                     song.sb_position=allItems.value(7).toInt();
                     song.path=allItems.value(8).toString();
                     song.songTitle=allItems.value(9).toString();
-                    song.performerName=allItems.value(10).toString();
+                    song.songPerformerName=allItems.value(10).toString();
                     song.albumTitle=allItems.value(11).toString();
                     song.playPosition=allSongs.count()+1;
                     song.duration=allItems.value(12).toTime();
@@ -800,7 +800,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
                 "WHERE "
                     "rp.artist_id=%2"
             )
-                .arg(rootID.sb_performer_id)
+                .arg(rootID.sb_song_performer_id)
             ;
         break;
 
@@ -820,12 +820,12 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraver
         while(querySong.next())
         {
             SBID song(SBID::sb_type_song,querySong.value(1).toInt());
-            song.sb_performer_id=querySong.value(0).toInt();
+            song.sb_song_performer_id=querySong.value(0).toInt();
             song.sb_album_id=querySong.value(2).toInt();
             song.sb_position=querySong.value(3).toInt();
             song.duration=querySong.value(4).toTime();
             song.songTitle=querySong.value(5).toString();
-            song.performerName=querySong.value(6).toString();
+            song.songPerformerName=querySong.value(6).toString();
             song.albumTitle=querySong.value(7).toString();
             song.path=querySong.value(8).toString();
             song.playPosition=allSongs.count()+1;
@@ -1032,7 +1032,7 @@ DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, int row
     )
         .arg(tmpPosition)
         .arg(playlistID.sb_playlist_id)
-        .arg(fromID.sb_performer_id)
+        .arg(fromID.sb_song_performer_id)
         .arg(fromID.sb_song_id)
         .arg(fromID.sb_album_id)
         .arg(fromID.sb_position)
@@ -1165,7 +1165,7 @@ DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const S
     qDebug() << SB_DEBUG_INFO << "from"
         << "itm" << fromID.sb_item_id()
         << "typ" << fromID.sb_item_type()
-        << "pfr" << fromID.sb_performer_id
+        << "pfr" << fromID.sb_song_performer_id
         << "sng" << fromID.sb_song_id
         << "alb" << fromID.sb_album_id
         << "pos" << fromID.sb_position
@@ -1175,7 +1175,7 @@ DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const S
     qDebug() << SB_DEBUG_INFO << "to"
         << "itm" << toID.sb_item_id()
         << "typ" << toID.sb_item_type()
-        << "pfr" << toID.sb_performer_id
+        << "pfr" << toID.sb_song_performer_id
         << "sng" << toID.sb_song_id
         << "alb" << toID.sb_album_id
         << "pos" << toID.sb_position
@@ -1243,7 +1243,7 @@ DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const S
     )
         .arg(tmpPosition)
         .arg(playlistID.sb_playlist_id)
-        .arg(fromID.sb_performer_id)
+        .arg(fromID.sb_song_performer_id)
         .arg(fromID.sb_song_id)
         .arg(fromID.sb_album_id)
         .arg(fromID.sb_position)
@@ -1314,7 +1314,7 @@ DataEntityPlaylist::reorderItem(const SBID &playlistID, const SBID &fID, const S
         ") b "
     )
         .arg(playlistID.sb_playlist_id)
-        .arg(toID.sb_performer_id)
+        .arg(toID.sb_song_performer_id)
         .arg(toID.sb_song_id)
         .arg(toID.sb_album_id)
         .arg(toID.sb_position)

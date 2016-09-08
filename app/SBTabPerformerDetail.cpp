@@ -62,8 +62,8 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     }
     else if(selectedID.sb_item_type()==SBID::sb_type_song)
     {
-        selectedID.performerName=currentID.performerName;
-        selectedID.sb_performer_id=currentID.sb_performer_id;
+        selectedID.songPerformerName=currentID.songPerformerName;
+        selectedID.sb_song_performer_id=currentID.sb_song_performer_id;
         qDebug() << SB_DEBUG_INFO << this->currentID();
         selectedID=SBTabSongDetail::selectSongFromAlbum(selectedID);
     }
@@ -289,7 +289,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
 
     //	Get detail
     SBID result=mp->getDetail(id);
-    if(result.sb_performer_id==-1)
+    if(result.sb_song_performer_id==-1)
     {
         //	Not found
         return result;
@@ -314,7 +314,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
     ed->loadPerformerData(result);
 
     //	Populate performer detail tab
-    mw->ui.labelPerformerDetailPerformerName->setText(result.performerName);
+    mw->ui.labelPerformerDetailPerformerName->setText(result.songPerformerName);
 
     QString details=QString("%1 albums %2 %3 songs")
         .arg(result.count1)

@@ -19,7 +19,8 @@ AudioDecoder::getSamples(void* buffer, quint64 sampleCount)
     quint64 bytesToRead=samplesToBytes(sampleCount);
     while(_index>=_maxScrollableIndex && _index<_length)
     {
-        qDebug() << SB_DEBUG_ERROR << "WARNING! Reading unfilled area" << _index << _maxScrollableIndex << _length;
+        qDebug() << SB_DEBUG_ERROR << "Reading unfilled area" << _index << _maxScrollableIndex << _length;
+        return 0;
     }
     if(_index+bytesToRead>lengthInBytes())
     {

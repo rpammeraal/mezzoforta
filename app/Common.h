@@ -85,6 +85,8 @@ public:
     static QString soundex(const QString& s);
     static void toTitleCase(QString &);
     static char ParseChar(QChar c);
+
+private:
 };
 
 QString convertByteArray2String(const QByteArray& a);

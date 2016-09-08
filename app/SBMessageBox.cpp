@@ -33,6 +33,33 @@ SBMessageBox::createSBMessageBox(const QString& text,
     return mb->exec();
 }
 
+void
+SBMessageBox::databaseErrorMessageBox(const QString& sql,const QSqlError& e)
+{
+    if(e.isValid())
+    {
+        createSBMessageBox(sql,
+                           e.text(),
+                           QMessageBox::Critical,
+                           QMessageBox::Abort,
+                           QMessageBox::Abort,
+                           QMessageBox::Abort,
+                           1);
+    }
+}
+
+void
+SBMessageBox::standardWarningBox(const QString &text)
+{
+    createSBMessageBox("Warning!",
+                       text,
+                       QMessageBox::Critical,
+                       QMessageBox::Abort,
+                       QMessageBox::Abort,
+                       QMessageBox::Abort,
+                       1);
+}
+
 ///	Private
 SBMessageBox::SBMessageBox() : QMessageBox()
 {

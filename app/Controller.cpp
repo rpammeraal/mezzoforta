@@ -393,6 +393,7 @@ void
 Controller::setFontSizes() const
 {
     qDebug() << SB_DEBUG_INFO << _app->platformName();
+
     if(_app->platformName()=="windows")
     {
         QWidgetList l=_app->allWidgets();

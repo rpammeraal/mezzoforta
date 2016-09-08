@@ -20,8 +20,9 @@ SBID::SBID(const SBID &c)
     this->_sb_item_type=c._sb_item_type;
     this->sb_mbid=c.sb_mbid;
 
-    this->sb_performer_id=c.sb_performer_id;
+    this->sb_song_performer_id=c.sb_song_performer_id;
     this->sb_album_id=c.sb_album_id;
+    this->sb_album_performer_id=c.sb_album_performer_id;
     this->sb_position=c.sb_position;
     this->sb_chart_id=c.sb_chart_id;
     this->sb_song_id=c.sb_song_id;
@@ -36,7 +37,8 @@ SBID::SBID(const SBID &c)
     this->genre=c.genre;
     this->lyrics=c.lyrics;
     this->notes=c.notes;
-    this->performerName=c.performerName;
+    this->songPerformerName=c.songPerformerName;
+    this->albumPerformerName=c.albumPerformerName;
     this->playlistName=c.playlistName;
     this->searchCriteria=c.searchCriteria;
     this->songTitle=c.songTitle;
@@ -49,6 +51,11 @@ SBID::SBID(const SBID &c)
     this->sortColumn=c.sortColumn;
     this->playPosition=c.playPosition;
     this->isPlayingFlag=c.isPlayingFlag;
+
+    this->sb_unique_item_id=c.sb_unique_item_id;
+    this->sb_unique_song_id=c.sb_unique_song_id;
+    this->sb_unique_album_id=c.sb_unique_album_id;
+    this->sb_unique_performer_id=c.sb_unique_performer_id;
 
     isEditFlag=c.isEditFlag;
 }
@@ -72,32 +79,34 @@ SBID::SBID(QByteArray encodedData)
 
 
     _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
-    sb_performer_id          =sl[1].toInt();
+    sb_song_performer_id     =sl[1].toInt();
     sb_album_id              =sl[2].toInt();
-    sb_position              =sl[3].toInt();
-    sb_chart_id              =sl[4].toInt();
-    sb_song_id               =sl[5].toInt();
-    sb_playlist_id           =sl[6].toInt();
-    sb_mbid                  =sl[7].replace("___SB_UNDERSCORE_123___","_");
-    isOriginalPerformerFlag  =sl[8].toInt();
-    performerName            =sl[9];
-    albumTitle               =sl[10];
-    songTitle                =sl[11];
-    year                     =sl[12].toInt();
-    path                     =sl[13];
-    lyrics                   =sl[14];
-    notes                    =sl[15];
-    genre                    =sl[16];
-    url                      =sl[17];
-    wiki                     =sl[18];
-    playlistName             =sl[19];
-    count1                   =sl[20].toInt();
-    count2                   =sl[21].toInt();
-    duration.setDuration(sl[22].toInt());
-    searchCriteria           =sl[23];
-    playPosition             =sl[24].toInt();
-    isPlayingFlag            =sl[25].toInt();
-    sb_playlist_position     =sl[26].toInt();
+    sb_album_performer_id    =sl[3].toInt();
+    sb_position              =sl[4].toInt();
+    sb_chart_id              =sl[5].toInt();
+    sb_song_id               =sl[6].toInt();
+    sb_playlist_id           =sl[7].toInt();
+    sb_mbid                  =sl[8].replace("___SB_UNDERSCORE_123___","_");
+    isOriginalPerformerFlag  =sl[9].toInt();
+    songPerformerName        =sl[10];
+    albumPerformerName       =sl[11];
+    albumTitle               =sl[12];
+    songTitle                =sl[13];
+    year                     =sl[14].toInt();
+    path                     =sl[15];
+    lyrics                   =sl[16];
+    notes                    =sl[17];
+    genre                    =sl[18];
+    url                      =sl[19];
+    wiki                     =sl[20];
+    playlistName             =sl[21];
+    count1                   =sl[22].toInt();
+    count2                   =sl[23].toInt();
+    duration.setDuration(sl[24].toInt());
+    searchCriteria           =sl[25];
+    playPosition             =sl[26].toInt();
+    isPlayingFlag            =sl[27].toInt();
+    sb_playlist_position     =sl[28].toInt();
     return;
 }
 
@@ -124,7 +133,7 @@ SBID::assign(const SBID::sb_type itemType, const int itemID)
         break;
 
     case SBID::sb_type_performer:
-        sb_performer_id=itemID;
+        sb_song_performer_id=itemID;
         break;
 
     case SBID::sb_type_album:
@@ -218,31 +227,33 @@ SBID::encode() const
     //	Put all attributes in a stringlist
     QStringList sl;
     sl.append(QString("%1").arg(sb_item_type()));             //	0
-    sl.append(QString("%1").arg(sb_performer_id));
+    sl.append(QString("%1").arg(sb_song_performer_id));
     sl.append(QString("%1").arg(sb_album_id));
+    sl.append(QString("%1").arg(sb_album_performer_id));
     sl.append(QString("%1").arg(sb_position));
-    sl.append(QString("%1").arg(sb_chart_id));
-    sl.append(QString("%1").arg(sb_song_id));                 //	5
+    sl.append(QString("%1").arg(sb_chart_id));                //	5
+    sl.append(QString("%1").arg(sb_song_id));
     sl.append(QString("%1").arg(sb_playlist_id));
     sl.append(sb_mbid);
     sl.append(QString("%1").arg(isOriginalPerformerFlag));
-    sl.append(SB_REPLACE_UNDERSCORE(performerName));
-    sl.append(SB_REPLACE_UNDERSCORE(albumTitle));             //	10
+    sl.append(SB_REPLACE_UNDERSCORE(songPerformerName));      //	10
+    sl.append(SB_REPLACE_UNDERSCORE(albumPerformerName));
+    sl.append(SB_REPLACE_UNDERSCORE(albumTitle));
     sl.append(SB_REPLACE_UNDERSCORE(songTitle));
     sl.append(QString("%1").arg(year));
-    sl.append(SB_REPLACE_UNDERSCORE(path));
+    sl.append(SB_REPLACE_UNDERSCORE(path));                   //	15
     sl.append(SB_REPLACE_UNDERSCORE(lyrics));
-    sl.append(SB_REPLACE_UNDERSCORE(notes));                  //	15
+    sl.append(SB_REPLACE_UNDERSCORE(notes));
     sl.append(SB_REPLACE_UNDERSCORE(genre));
     sl.append(SB_REPLACE_UNDERSCORE(url));
-    sl.append(SB_REPLACE_UNDERSCORE(wiki));
+    sl.append(SB_REPLACE_UNDERSCORE(wiki));                   //	20
     sl.append(SB_REPLACE_UNDERSCORE(playlistName));
-    sl.append(QString("%1").arg(count1));                     //	20
+    sl.append(QString("%1").arg(count1));
     sl.append(QString("%1").arg(count2));
     sl.append(QString("%1").arg(duration.MS()));
-    sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));
+    sl.append(SB_REPLACE_UNDERSCORE(searchCriteria));         //	26
     sl.append(QString("%1").arg(playPosition));
-    sl.append(QString("%1").arg(isPlayingFlag));              //	25
+    sl.append(QString("%1").arg(isPlayingFlag));
     sl.append(QString("%1").arg(sb_playlist_position));
 
 
@@ -262,12 +273,19 @@ SBID::fuzzyMatch(const SBID &i)
     {
         match=0;
     }
-    if(this->performerName.count()!=i.performerName.count() || this->performerName.toLower()!=i.performerName.toLower())
+    if(this->songPerformerName.count()!=i.songPerformerName.count() || this->songPerformerName.toLower()!=i.songPerformerName.toLower())
     {
         match=0;
     }
 
     return match;
+}
+
+int
+SBID::getDetail(bool createIfNotExistFlag)
+{
+    Q_UNUSED(createIfNotExistFlag);
+    return 0;
 }
 
 QString
@@ -307,14 +325,14 @@ SBID::getGenericDescription() const
     {
     case sb_type_song:
         description+=QString(" [%3] / %1 - %2").
-            arg(this->performerName).
+            arg(this->songPerformerName).
             arg(this->albumTitle.length()?QString("on '%1'").arg(albumTitle):QString()).
             arg(this->duration.toString())
         ;
         break;
 
     case sb_type_album:
-        description+=" by "+this->performerName;
+        description+=" by "+this->albumPerformerName;
         break;
 
     default:
@@ -384,7 +402,7 @@ SBID::getText() const
         break;
 
     case SBID::sb_type_performer:
-        return performerName;
+        return songPerformerName;
         break;
 
     case SBID::sb_type_album:
@@ -462,6 +480,12 @@ SBID::findMatches(const QString& name) const
     return new SBSqlQueryModel();
 }
 
+void
+SBID::resetSequence() const
+{
+    _sequence.clear();
+}
+
 int
 SBID::sb_item_id() const
 {
@@ -471,7 +495,7 @@ SBID::sb_item_id() const
         return sb_song_id;
 
     case SBID::sb_type_performer:
-        return sb_performer_id;
+        return sb_song_performer_id;
 
     case SBID::sb_type_album:
         return sb_album_id;
@@ -552,7 +576,7 @@ SBID::setText(const QString &text)
         break;
 
     case SBID::sb_type_performer:
-        performerName=text;
+        songPerformerName=text;
         break;
 
     case SBID::sb_type_album:
@@ -584,8 +608,9 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "sb_item_type" << getType();
     qDebug() << SB_DEBUG_INFO << "sb_mbid" << sb_mbid;
     qDebug() << SB_DEBUG_INFO << "isEditFlag" << isEditFlag;
-    qDebug() << SB_DEBUG_INFO << "sb_performer_id" << sb_performer_id;
+    qDebug() << SB_DEBUG_INFO << "sb_song_performer_id" << sb_song_performer_id;
     qDebug() << SB_DEBUG_INFO << "sb_album_id" << sb_album_id;
+    qDebug() << SB_DEBUG_INFO << "sb_album_performer_id" << sb_album_performer_id;
     qDebug() << SB_DEBUG_INFO << "sb_position" << sb_position;
     qDebug() << SB_DEBUG_INFO << "sb_chart_id" << sb_chart_id;
     qDebug() << SB_DEBUG_INFO << "sb_song_id" << sb_song_id;
@@ -599,7 +624,8 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "genre" << genre;
     //qDebug() << SB_DEBUG_INFO << "lyrics" << lyrics;
     qDebug() << SB_DEBUG_INFO << "notes" << notes;
-    qDebug() << SB_DEBUG_INFO << "performerName" << performerName;
+    qDebug() << SB_DEBUG_INFO << "songPerformerName" << songPerformerName;
+    qDebug() << SB_DEBUG_INFO << "albumPerformerName" << albumPerformerName;
     qDebug() << SB_DEBUG_INFO << "playlistName" << playlistName;
     qDebug() << SB_DEBUG_INFO << "searchCriteria" << searchCriteria;
     qDebug() << SB_DEBUG_INFO << "songTitle" << songTitle;
@@ -613,6 +639,29 @@ SBID::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "isPlayingFlag" << isPlayingFlag;
 }
 
+int
+SBID::assignUniqueItemID()
+{
+    this->sb_unique_item_id=-(_sequence.length()+1);
+    _sequence.append(this->sb_unique_item_id);
+    _sequenceMap[this->sb_unique_item_id]=(*this);
+    return this->sb_unique_item_id;
+}
+
+void
+SBID::listUniqueIDItems()
+{
+    QMapIterator<int,SBID> it(_sequenceMap);
+
+    qDebug() << SB_DEBUG_INFO;
+    while(it.hasNext())
+    {
+        it.next();
+        qDebug() << SB_DEBUG_INFO << it.key() << it.value();
+    }
+}
+
+
 bool
 SBID::operator ==(const SBID& i) const
 {
@@ -624,7 +673,7 @@ SBID::operator ==(const SBID& i) const
             (
                 //	If song, include performer in comparison
                 i.sb_item_type()==SBID::sb_type_song &&
-                i.sb_performer_id==this->sb_performer_id 	//	added to make saveSong work
+                i.sb_song_performer_id==this->sb_song_performer_id 	//	added to make saveSong work
             )
         ) &&
         i.isEditFlag==this->isEditFlag &&
@@ -646,41 +695,42 @@ operator<<(QDebug dbg, const SBID& id)
 {
 
     QString songTitle=id.songTitle.length() ? id.songTitle : "<N/A>";
-    QString performerName=id.performerName.length() ? id.performerName : "<N/A>";
+    QString songPerformerName=id.songPerformerName.length() ? id.songPerformerName : "<N/A>";
     QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
+    QString albumPerformerName=id.albumPerformerName.length() ? id.albumPerformerName : "<N/A>";
     QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
     switch(id.sb_item_type())
     {
     case SBID::sb_type_song:
-        dbg.nospace() << "SBID: " << id.getType()
+        dbg.nospace() << "SBID: " << id.getType() << "[" << id.sb_unique_item_id << "]"
                       << "|" << id.sb_song_id << "|st" << songTitle
-                      << "|" << id.sb_performer_id << "|pn" << performerName
+                      << "|" << id.sb_song_performer_id << "|pn" << songPerformerName
                       << "|" << id.sb_album_id << "|at" << albumTitle
         ;
         break;
 
     case SBID::sb_type_performer:
-        dbg.nospace() << "SBID: " << id.getType()
-                      << "|" << id.sb_performer_id << "|pn" << performerName
+        dbg.nospace() << "SBID: " << id.getType()<< "[" << id.sb_unique_item_id << "]"
+                      << "|" << id.sb_song_performer_id << "|pn" << songPerformerName
         ;
         break;
 
     case SBID::sb_type_album:
-        dbg.nospace() << "SBID: " << id.getType()
+        dbg.nospace() << "SBID3: " << id.getType()<< "[" << id.sb_unique_item_id << "]"
                       << "|" << id.sb_album_id << "|at" << albumTitle
-                      << "|" << id.sb_performer_id << "|pn" << performerName
+                      << "|" << id.sb_album_performer_id << "|pn" << albumPerformerName
         ;
         break;
 
     case SBID::sb_type_chart:
-        dbg.nospace() << "SBID  " << id.getType()
+        dbg.nospace() << "SBID  " << id.getType()<< "[" << id.sb_unique_item_id << "]"
                       << "|" << id.sb_chart_id
                       << "|" << "<name not implemented for charts>"
         ;
         break;
 
     case SBID::sb_type_playlist:
-        dbg.nospace() << "SBID: " << id.getType()
+        dbg.nospace() << "SBID: " << id.getType()<< "[" << id.sb_unique_item_id << "]"
                       << "|" << id.sb_playlist_id << "|pln" << playlistName
         ;
         break;
@@ -720,8 +770,9 @@ SBID::_init()
     _sb_item_type=sb_type_invalid;
     sb_mbid=e;
 
-    sb_performer_id=-1;
+    sb_song_performer_id=-1;
     sb_album_id=-1;
+    sb_album_performer_id=-1;
     sb_position=-1;
     sb_chart_id=-1;
     sb_song_id=-1;
@@ -736,7 +787,8 @@ SBID::_init()
     genre=e;
     lyrics=e;
     notes=e;
-    performerName=e;
+    songPerformerName=e;
+    albumPerformerName=e;
     playlistName=e;
     searchCriteria=e;
     songTitle=e;
@@ -750,4 +802,9 @@ SBID::_init()
     sortColumn=INT_MAX;
     playPosition=-1;
     isPlayingFlag=0;
+
+    this->sb_unique_item_id=0;
+    this->sb_unique_song_id=0;
+    this->sb_unique_album_id=0;
+    this->sb_unique_performer_id=0;
 }

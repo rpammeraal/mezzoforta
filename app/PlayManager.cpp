@@ -394,8 +394,8 @@ PlayManager::_loadRadio()
         SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
 
         item.songTitle=qm->record(idx).value(1).toString();
-        item.sb_performer_id=qm->record(idx).value(2).toInt();
-        item.performerName=qm->record(idx).value(3).toString();
+        item.sb_song_performer_id=qm->record(idx).value(2).toInt();
+        item.songPerformerName=qm->record(idx).value(3).toString();
         item.sb_album_id=qm->record(idx).value(4).toInt();
         item.albumTitle=qm->record(idx).value(5).toString();
         item.sb_position=qm->record(idx).value(6).toInt();

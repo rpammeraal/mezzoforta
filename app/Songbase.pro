@@ -64,7 +64,8 @@ HEADERS     = \
     DBManager.h \
     KeyboardEventCatcher.h \
     OSXNSEventFunctions.h \
-    MetaData.h
+    MetaData.h \
+    SBCaseInsensitiveString.h
 
 SOURCES     = \
     main.cpp \
@@ -130,7 +131,8 @@ SOURCES     = \
     DatabaseSelector.cpp \
     DBManager.cpp \
     KeyboardEventCatcher.cpp \
-    MetaData.cpp
+    MetaData.cpp \
+    SBCaseInsensitiveString.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

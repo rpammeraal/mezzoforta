@@ -111,19 +111,19 @@ DataEntityPerformer::getDetail(const SBID& id)
                     ") s ON a.artist_id=s.artist_id "
         "WHERE "
             "a.artist_id=%1"
-    ).arg(id.sb_performer_id);
+    ).arg(id.sb_song_performer_id);
     dal->customize(q);
 
     QSqlQuery query(q,db);
     if(query.next())
     {
-        result.assign(SBID::sb_type_performer,id.sb_performer_id);
-        result.sb_mbid         =query.value(3).toString();
-        result.performerName   =query.value(0).toString();
-        result.url             =query.value(1).toString();
-        result.notes           =query.value(2).toString();
-        result.count1          =query.value(4).toInt();
-        result.count2          =query.value(5).toInt();
+        result.assign(SBID::sb_type_performer,id.sb_song_performer_id);
+        result.sb_mbid          =query.value(3).toString();
+        result.songPerformerName=query.value(0).toString();
+        result.url              =query.value(1).toString();
+        result.notes            =query.value(2).toString();
+        result.count1           =query.value(4).toInt();
+        result.count2           =query.value(5).toInt();
 
         if(result.url.length()>0)
         {
@@ -180,7 +180,7 @@ DataEntityPerformer::getAllAlbums(const SBID& id)
     )
         .arg(SBID::sb_type_album)
         .arg(SBID::sb_type_performer)
-        .arg(id.sb_performer_id);
+        .arg(id.sb_song_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -205,7 +205,7 @@ DataEntityPerformer::getAllCharts(const SBID& id)
         "WHERE "
             "cp.artist_id=%1 "
         "ORDER BY 1"
-    ).arg(id.sb_performer_id);
+    ).arg(id.sb_song_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -249,7 +249,7 @@ DataEntityPerformer::getAllSongs(const SBID& id)
         "ORDER BY "
             "s.title "
     )
-        .arg(id.sb_performer_id)
+        .arg(id.sb_song_performer_id)
         .arg(SBID::sb_type_song);
 
     return new SBSqlQueryModel(q);
@@ -288,7 +288,7 @@ DataEntityPerformer::getAllOnlineSongs(const SBID& id)
         "ORDER BY "
             "r.year, "
             "rp.record_position "
-    ).arg(id.sb_performer_id);
+    ).arg(id.sb_song_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -318,7 +318,7 @@ DataEntityPerformer::getRelatedPerformers(const SBID& id)
         "WHERE "
             "ar2.artist1_id=%1 "
         "ORDER BY 2 "
-    ).arg(id.sb_performer_id);
+    ).arg(id.sb_song_performer_id);
 
     return new SBSqlQueryModel(q);
 }
@@ -379,70 +379,7 @@ DataEntityPerformer::matchPerformer(const SBID &currentID, const QString& newPer
     */
 }
 
-bool
-DataEntityPerformer::saveNewPerformer(SBID &id)
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString newSoundex=Common::soundex(id.performerName);
-    QString q;
-    bool resultCode=1;
-
-    if(id.sb_performer_id==-1)
-    {
-        //	Insert new
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___artist "
-            "( "
-                "artist_id, "
-                "name, "
-                "sort_name, "
-                "soundex "
-            ") "
-            "SELECT "
-                "MAX(artist_id)+1, "
-                "'%1', "
-                "'%2', "
-                "'%3' "
-            "FROM "
-                "___SB_SCHEMA_NAME___artist "
-        )
-            .arg(Common::escapeSingleQuotes(id.performerName))
-            .arg(Common::escapeSingleQuotes(Common::removeArticles(id.performerName)))
-            .arg(newSoundex)
-        ;
-
-        dal->customize(q);
-        QSqlQuery insert(q,db);
-
-        //	Get id of newly added performer
-        q=QString
-        (
-            "SELECT "
-                "artist_id "
-            "FROM "
-                "___SB_SCHEMA_NAME___artist "
-            "WHERE "
-                "name='%1' "
-        )
-            .arg(Common::escapeSingleQuotes(id.performerName))
-        ;
-
-        dal->customize(q);
-        QSqlQuery select(q,db);
-        select.next();
-
-        if(id.sb_item_type()==SBID::sb_type_performer)
-        {
-            //	Only set if type equals performer
-            id.sb_performer_id=select.value(0).toInt();
-        }
-        id.sb_performer_id=select.value(0).toInt();
-    }
-    return resultCode;
-}
-
+//	CWIP: to be merged with SBIDPerformer::savePerformer
 bool
 DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &newPerformerID, const QStringList& extraSQL,bool commitFlag)
 {
@@ -450,7 +387,7 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QStringList allQueries;
     QString q;
-    QString newSoundex=Common::soundex(newPerformerID.performerName);
+    QString newSoundex=Common::soundex(newPerformerID.songPerformerName);
 
     //	The following flags should be mutually exclusive
     bool nameRenameFlag=0;
@@ -473,18 +410,18 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
     }
 
     //	2.	Determine what need to be done
-    if(newPerformerID.sb_performer_id==-1)
+    if(newPerformerID.sb_song_performer_id==-1)
     {
         nameRenameFlag=1;
-        newPerformerID.sb_performer_id=orgPerformerID.sb_performer_id;
+        newPerformerID.sb_song_performer_id=orgPerformerID.sb_song_performer_id;
         if(newPerformerID.sb_item_type()==SBID::sb_type_performer)
         {
-            newPerformerID.sb_performer_id=newPerformerID.sb_performer_id;
+            newPerformerID.sb_song_performer_id=newPerformerID.sb_song_performer_id;
         }
     }
 
-    if(orgPerformerID.sb_performer_id!=newPerformerID.sb_performer_id &&
-        newPerformerID.sb_performer_id!=-1)
+    if(orgPerformerID.sb_song_performer_id!=newPerformerID.sb_song_performer_id &&
+        newPerformerID.sb_song_performer_id!=-1)
     {
         mergeToExistingPerformer=1;
     }
@@ -543,8 +480,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist_id=%2 "
          )
-            .arg(Common::escapeSingleQuotes(newPerformerID.performerName))
-            .arg(newPerformerID.sb_performer_id)
+            .arg(Common::escapeSingleQuotes(newPerformerID.songPerformerName))
+            .arg(newPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -562,7 +499,7 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
                 "artist_id=%2 "
          )
             .arg(Common::escapeSingleQuotes(newPerformerID.notes))
-            .arg(newPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -580,7 +517,7 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
                 "artist_id=%2 "
          )
             .arg(Common::escapeSingleQuotes(newPerformerID.url))
-            .arg(newPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -601,8 +538,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist1_id=%2 "
         )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -615,8 +552,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist2_id=%2 "
         )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -655,8 +592,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
                         "q.artist_id=%1 "
                 ") "
         )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -670,8 +607,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist_id=%2 "
         )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -695,8 +632,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
                     "artist_id=%3 "
              )
                 .arg(performanceTable.at(i))
-                .arg(newPerformerID.sb_performer_id)
-                .arg(orgPerformerID.sb_performer_id)
+                .arg(newPerformerID.sb_song_performer_id)
+                .arg(orgPerformerID.sb_song_performer_id)
             ;
             allQueries.append(q);
         }
@@ -711,8 +648,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "op_artist_id=%2 "
          )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -726,8 +663,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist_id=%2 "
          )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -741,8 +678,8 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "playlist_artist_id=%2 "
          )
-            .arg(newPerformerID.sb_performer_id)
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(newPerformerID.sb_song_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -758,7 +695,7 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist_id=%1 "
         )
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
 
@@ -781,7 +718,7 @@ DataEntityPerformer::updateExistingPerformer(const SBID& orgPerformerID, SBID &n
             "WHERE "
                 "artist_id=%1 "
         )
-            .arg(orgPerformerID.sb_performer_id)
+            .arg(orgPerformerID.sb_song_performer_id)
         ;
         allQueries.append(q);
     }
@@ -852,7 +789,7 @@ DataEntityPerformer::updateHomePage(const SBID &id)
             "artist_id=%2"
     )
         .arg(Common::escapeSingleQuotes(id.url))
-        .arg(id.sb_performer_id)
+        .arg(id.sb_song_performer_id)
     ;
     dal->customize(q);
 
@@ -874,7 +811,7 @@ DataEntityPerformer::updateMBID(const SBID &id)
             "mbid='%1' "
         "WHERE "
             "artist_id=%2"
-    ).arg(id.sb_mbid).arg(id.sb_performer_id);
+    ).arg(id.sb_mbid).arg(id.sb_song_performer_id);
     dal->customize(q);
 
     QSqlQuery query(q,db);

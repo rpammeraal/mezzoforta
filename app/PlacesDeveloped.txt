@@ -557,10 +557,15 @@ X	playlists that song belongs to can be edited
 -	MetaData class to read/write metadata on songs.
 -	Adjusted AudioDecoder classes to not include reading meta data.
 -	Common::sanitize(QString) to do what it supposed to do.
+-	Common::removeArticles() is now data driven and removes articles from either front, back or both
+-	Import of simple albums (new or existing performers with new or existing titles) work. No matching yet.
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
+*	Play 'World Relaxed'. Enqueue 'Tranquiillent World'. Song 'Saraab' is twice in queue.
+*	Radio mode: sometimes song appears in list twice
+*	Search From Nubia To Cairo: haywire
 
 
 <near future>
@@ -585,6 +590,8 @@ X	playlists that song belongs to can be edited
 *	clear out 'shuffle' when less than 3 songs in queue.
 *	when edit song, call SBIDSong::deleteIfOrphanized() for every performer performing that song.
 *	add duration to album tab
+*	Album: edit notes
+*	Playlist: set sort order
 
 *	addMissingDatabase objects: need a cleaner way (database dependent) to do this.
 	*	DataAccessLayer::addMissingDatabaseItems() does not work on postgres.
@@ -600,9 +607,10 @@ X	playlists that song belongs to can be edited
 	*	compare operators should be defined private
 *	DataEntity::getDetail(): initialization of parameter to result should NOT happen.
 *	Add option to playlist to always play in order or randomly.
+*	SBID* classes: check on all executed database queries need to exists. SBAlbum::save() is example (calling SBMessageBox::databaseErrorMessageBox)
 
 <future>
-*	Support aac format
+*	Support aac format (look at libav.org)
 *	Put the loudspeaker icon in front of every view if the view has the current item playing.
 *	Songs in Queue:
 	*	reordering in Songs In Queue does not work: disabled for now (20160612)
