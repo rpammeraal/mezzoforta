@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 class QSemaphore;
 

@@ -34,7 +34,7 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
     return true;
 }
 
-SBID
+SBIDBase
 SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) const
 {
     //	Two types of how data can be dragged and dropped.
@@ -45,10 +45,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     //	See also SBTabPlaylistDetail::getSBIDSelected()
     QVariant v;
     QString header;
-    SBID id;
+    SBIDBase baseItem;
     QString text;
     QModelIndex n;
-    SBID::sb_type itemType=SBID::sb_type_invalid;
+    SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
     int itemID=-1;
     bool dragableColumnFlag=0;
 
@@ -72,7 +72,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if(header=="sb_item_type" || header=="sb_main_item")
             {
-                itemType=static_cast<SBID::sb_type>(v.toInt());
+                itemType=static_cast<SBIDBase::sb_type>(v.toInt());
             }
             else if(header=="sb_item_id")
             {
@@ -80,14 +80,14 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             }
             else if(header=="#")
             {
-                id.sb_position=v.toInt();
+                baseItem._sb_album_position=v.toInt();
             }
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
-                if(itemType==SBID::sb_type_invalid)
+                if(itemType==SBIDBase::sb_type_invalid)
                 {
-                    itemType=static_cast<SBID::sb_type>(v.toInt());
+                    itemType=static_cast<SBIDBase::sb_type>(v.toInt());
                 }
 
                 //	Move 'cursor'
@@ -96,6 +96,13 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 n=aim->index(idx.row(),i);
                 v=aim->data(n, Qt::DisplayRole);
                 itemID=v.toInt();
+            }
+
+            if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+            {
+                baseItem=SBIDBase::createSBID(itemType,itemID);
+                //	reset index to go through all fields again
+                i=0;
             }
         }
     }
@@ -113,11 +120,16 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         //	sb_item_type
         n=aim->index(idx.row(),idx.column()-2);
-        itemType=static_cast<SBID::sb_type>(aim->data(n, Qt::DisplayRole).toInt());
+        itemType=static_cast<SBIDBase::sb_type>(aim->data(n, Qt::DisplayRole).toInt());
 
         //	text
         n=aim->index(idx.row(),idx.column());
         text=aim->data(n, Qt::DisplayRole).toString();
+
+        if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+        {
+            baseItem=SBIDBase::createSBID(itemType,itemID);
+        }
     }
     else if( idx.column()+1 >= _dragableColumnList.count())
     {
@@ -135,9 +147,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if(header=="sb_item_type")
         {
-            if(itemType==SBID::sb_type_invalid)
+            if(itemType==SBIDBase::sb_type_invalid)
             {
-                itemType=static_cast<SBID::sb_type>(v.toInt());
+                itemType=static_cast<SBIDBase::sb_type>(v.toInt());
                 qDebug() << SB_DEBUG_INFO << "set itemType=" << itemType;
             }
         }
@@ -147,61 +159,66 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         }
         else if(header=="sb_song_id")
         {
-            id.sb_song_id=v.toInt();
+            baseItem._sb_song_id=v.toInt();
         }
         else if(header=="sb_performer_id")
         {
-            id.sb_song_performer_id=v.toInt();
+            baseItem._sb_song_performer_id=v.toInt();
         }
         else if(header=="sb_album_id")
         {
-            id.sb_album_id=v.toInt();
+            baseItem._sb_album_id=v.toInt();
         }
         else if(header=="sb_album_position")
         {
-            id.sb_position=v.toInt();
+            baseItem._sb_album_position=v.toInt();
         }
         else if(header=="sb_position_id")
         {
-            id.sb_position=v.toInt();
+            baseItem._sb_album_position=v.toInt();
         }
         else if(header=="performer")
         {
-            id.songPerformerName=v.toString();
+            baseItem._songPerformerName=v.toString();
         }
         else if(header=="album title")
         {
-            id.albumTitle=v.toString();
+            baseItem._albumTitle=v.toString();
         }
         else if(header=="album_title")
         {
-            id.albumTitle=v.toString();
+            baseItem._albumTitle=v.toString();
         }
         else if(header=="sb_path")
         {
-            id.path=v.toString();
+            baseItem._path=v.toString();
         }
         else if(header=="sb_duration")
         {
-            id.duration=v.toTime();
+            baseItem._duration=v.toTime();
         }
         else if(header=="duration")
         {
-            id.duration=v.toTime();
+            baseItem._duration=v.toTime();
         }
         else if(header=="#")
         {
-            id.playPosition=v.toInt();
+            baseItem._sb_play_position=v.toInt();
         }
         else if(header.left(3)!="sb_" && text.length()==0)
         {
             text=v.toString();
         }
+
+        if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+        {
+            baseItem=SBIDBase::createSBID(itemType,itemID);
+            //	reset index to go through all fields again
+            i=0;
+        }
     }
     qDebug() << SB_DEBUG_INFO << itemType << itemID;
-    id.assign(itemType,itemID);
-    id.setText(text);
-    return id;
+    return baseItem;
 }
 
 Qt::ItemFlags
@@ -249,8 +266,8 @@ SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexe
         if (i.isValid())
         {
             QMimeData* mimeData = new QMimeData();
-            SBID id=_determineSBID(aim, i);
-            qDebug() << SB_DEBUG_INFO << id << id.playPosition;
+            SBIDBase id=_determineSBID(aim, i);
+            qDebug() << SB_DEBUG_INFO << id << id.playPosition();
             QByteArray ba=id.encode();
             mimeData->setData("application/vnd.text.list", ba);
             qDebug() << SB_DEBUG_INFO << "Dragging " << id;

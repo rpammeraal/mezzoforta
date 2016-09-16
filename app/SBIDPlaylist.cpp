@@ -4,35 +4,88 @@
 #include "DataEntityPlaylist.h"
 #include "SBModelQueuedSongs.h"
 
-SBIDPlaylist::SBIDPlaylist(const SBID &c):SBID(c)
+SBIDPlaylist::SBIDPlaylist():SBIDBase()
 {
-    _sb_item_type=SBID::sb_type_playlist;
+    _init();
 }
 
-SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBID(c)
-{
-    _sb_item_type=SBID::sb_type_playlist;
-}
-
-SBIDPlaylist::SBIDPlaylist(int itemID):SBID(SBID::sb_type_playlist, itemID)
+SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
 {
 }
 
-SBIDPlaylist::SBIDPlaylist(QByteArray encodedData):SBID(encodedData)
+SBIDPlaylist::SBIDPlaylist(const SBIDBase &c):SBIDBase(c)
 {
-    _sb_item_type=SBID::sb_type_playlist;
+    _sb_item_type=SBIDBase::sb_type_playlist;
 }
 
-void
-SBIDPlaylist::assign(int itemID)
+SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
 {
-    this->sb_playlist_id=itemID;
+    _init();
+    _sb_playlist_id=itemID;
+}
+
+SBIDPlaylist::~SBIDPlaylist()
+{
+}
+
+///	Public methods
+SBSqlQueryModel*
+SBIDPlaylist::findMatches(const QString& name) const
+{
+    Q_UNUSED(name);
+    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
+    return NULL;
+}
+
+int
+SBIDPlaylist::getDetail(bool createIfNotExistFlag)
+{
+    Q_UNUSED(createIfNotExistFlag);
+    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
+    return 0;
+}
+
+QString
+SBIDPlaylist::genericDescription() const
+{
+    return "Playlist - " + this->text();
+}
+
+QString
+SBIDPlaylist::hash() const
+{
+    return QString("%1:%2").arg(itemType()).arg(this->playlistID());
+}
+
+QString
+SBIDPlaylist::iconResourceLocation() const
+{
+    return ":/images/PlaylistIcon.png";
+}
+
+int
+SBIDPlaylist::itemID() const
+{
+    return _sb_playlist_id;
+}
+
+SBIDBase::sb_type
+SBIDPlaylist::itemType() const
+{
+    return SBIDBase::sb_type_playlist;
+}
+
+bool
+SBIDPlaylist::save()
+{
+    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
+    return 0;
 }
 
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBID> list;
+    QMap<int,SBIDBase> list;
     DataEntityPlaylist dep;
     list=dep.retrievePlaylistItems(*this);
 
@@ -40,13 +93,30 @@ SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
     mqs->populate(list,enqueueFlag);
 }
 
+void
+SBIDPlaylist::setText(const QString &text)
+{
+    _playlistName=text;
+}
+
+QString
+SBIDPlaylist::text() const
+{
+    return this->_playlistName;
+}
+
+QString
+SBIDPlaylist::type() const
+{
+    return "playlist";
+}
 
 ///	Operators
 bool
-SBIDPlaylist::operator ==(const SBID& i) const
+SBIDPlaylist::operator ==(const SBIDBase& i) const
 {
     if(
-        i.sb_playlist_id==this->sb_playlist_id
+        i._sb_playlist_id==this->_sb_playlist_id
     )
     {
         return 1;
@@ -57,30 +127,18 @@ SBIDPlaylist::operator ==(const SBID& i) const
 QDebug
 operator<<(QDebug dbg, const SBIDPlaylist& id)
 {
-    QString playlistName=id.playlistName.length() ? id.playlistName : "<N/A>";
-    dbg.nospace() << "SBID: " << id.getType()
-                  << "|" << id.sb_playlist_id << "|pln" << playlistName
+    QString playlistName=id._playlistName.length() ? id._playlistName : "<N/A>";
+    dbg.nospace() << "SBIDPlaylist:"
+                  << "|" << id._sb_playlist_id << "|pln" << playlistName
     ;
     return dbg.space();
 }
 
 ///	Private methods
-SBIDPlaylist::SBIDPlaylist(SBID::sb_type type, int itemID):SBID(SBID::sb_type_playlist, itemID)
-{
-    Q_UNUSED(type);
-}
 
 void
-SBIDPlaylist::assign(const SBID::sb_type type, const int itemID)
+SBIDPlaylist::_init()
 {
-    Q_UNUSED(type);
-    Q_UNUSED(itemID);
-}
-
-void
-SBIDPlaylist::assign(const QString &itemType, const int itemID, const QString &text)
-{
-    Q_UNUSED(itemType);
-    Q_UNUSED(itemID);
-    Q_UNUSED(text);
+    _sb_item_type=SBIDBase::sb_type_playlist;
+    _sb_playlist_id=-1;
 }

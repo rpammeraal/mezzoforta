@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "SBID.h"
+#include "SBIDPlaylist.h"
 
 namespace Ui
 {
@@ -15,14 +15,14 @@ class SBDialogRenamePlaylist : public QDialog
     Q_OBJECT
 
 public:
-    explicit SBDialogRenamePlaylist(const SBID& nid, QWidget *parent = 0);
+    explicit SBDialogRenamePlaylist(const SBIDPlaylist& nid, QWidget *parent = 0);
     ~SBDialogRenamePlaylist();
 
 signals:
-    void playlistNameChanged(const SBID& id);
+    void playlistNameChanged(const SBIDPlaylist& id);
 
 private:
-    SBID id;
+    SBIDPlaylist id;
     Ui::SBDialogRenamePlaylist *ui;
 
 private slots:

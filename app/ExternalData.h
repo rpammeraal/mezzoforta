@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QPixmap>
 
-#include "SBID.h"
+#include "SBIDPerformer.h"
 
 class QNetworkReply;
 
@@ -25,13 +25,13 @@ public:
     ~ExternalData();
 
     //	Main interface
-    void loadAlbumData(const SBID& id);
-    void loadPerformerData(const SBID id);
-    void loadSongData(const SBID& id);
+    void loadAlbumData(const SBIDBase& id);
+    void loadPerformerData(const SBIDBase id);
+    void loadSongData(const SBIDBase& id);
 
     //	Static methods
-    QString static getCachePath(const SBID& id);
-    static bool loadImageFromCache(QPixmap& p,const SBID& id);
+    QString static getCachePath(const SBIDBase& id);
+    static bool loadImageFromCache(QPixmap& p,const SBIDBase& id);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);
@@ -42,8 +42,8 @@ signals:
     void performerWikipediaPageAvailable(const QString& url);
     void songLyricsURLAvailable(const QString& url);
     void songWikipediaPageAvailable(const QString& url);
-    void updatePerformerMBID(const SBID& id);
-    void updatePerformerHomePage(const SBID& id);
+    void updatePerformerMBID(const SBIDPerformer& id);
+    void updatePerformerHomePage(const SBIDPerformer& id);
 
 public slots:
     void handleAlbumImageURLFromAS(QNetworkReply *r);
@@ -57,22 +57,23 @@ public slots:
     void handleSongURLFromMB(QNetworkReply* r);
 
 private:
-    bool artworkRetrieved;          	//	album performer
-    bool performerHomepageRetrieved;	//	      performer
-    bool songLyricsURLRetrieved;        //	                song (always retrieved, not stored)
-    bool wikipediaURLRetrieved;         // 	album performer song
+    bool _artworkRetrievedFlag;             //	album performer
+    bool _performerHomepageRetrievedFlag;   //	performer
+    bool _songLyricsURLRetrievedFlag;       //	song (always retrieved, not stored)
+    bool _wikipediaURLRetrievedFlag;        // 	album performer song
 
-    int currentOffset;
-    SBID currentID;
-    bool performerMBIDRetrieved;	//	set if call to retrieve MBID already has been made.
+    int _currentOffset;
+    SBIDBase _currentID;
+    bool _performerMBIDRetrievedFlag;       //	set if call to retrieve MBID already has been made.
 
-    QList<NewsItem> allNewsItems;
-    QList<QString> allReviews;
+    QList<NewsItem> _allNewsItems;
+    QList<QString> _allReviews;
 
-    void init();
-    void loadAlbumCoverAS();
-    void getMBIDAndMore();
-    void storeInCache(QByteArray* a) const;
+    void _init();
+    bool _fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const;
+    void _loadAlbumCoverAS();
+    void _getMBIDAndMore();
+    void _storeInCache(QByteArray* a) const;
 };
 
 #endif // EXTERNALDATA_H

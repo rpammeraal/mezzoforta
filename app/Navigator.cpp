@@ -20,7 +20,7 @@
 #include "MainWindow.h"
 #include "PlayerController.h"
 #include "DataEntityPerformer.h"
-#include "SBID.h"
+#include "SBIDBase.h"
 #include "DataEntityAlbum.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
@@ -54,14 +54,20 @@ Navigator::clearSearchFilter()
 }
 
 ///
-/// \brief Navigator::openScreenByID
+/// \brief Navigator::openScreen
 /// \param id
 ///
 /// openScreenByID() populates the appropriate screen and pushes
 /// this screen on stack.
 ///
 void
-Navigator::openScreenByID(SBID &id)
+Navigator::openScreen(const SBIDBase &id)
+{
+    openScreen(ScreenItem(id));
+}
+
+void
+Navigator::openScreen(const ScreenItem &si)
 {
     if(!_threadPrioritySetFlag)
     {
@@ -70,17 +76,29 @@ Navigator::openScreenByID(SBID &id)
     }
 
     ScreenStack* st=Context::instance()->getScreenStack();
-    SBID result;
+    st->debugShow("openScreen:81");
+    SBIDBase base;
 
-    if(id.sb_item_type()==SBID::sb_type_invalid)
+    //	Check for valid parameter
+    if(si.screenType()==ScreenItem::screen_type_invalid)
     {
-        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED TYPE: " << id.sb_item_type();
+        qDebug() << SB_DEBUG_ERROR << "UNHANDLED SCREENITEM TYPE: " << si.screenType();
         return;
     }
-
-    if(st->getScreenCount() && id.compareSimple(st->currentScreen()))
+    else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
-        qDebug() << SB_DEBUG_WARNING << "dup call to current screen" << id;
+        base=si.base();
+        if(base.itemType()==SBIDBase::sb_type_invalid)
+        {
+            qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << base.itemType();
+            return;
+        }
+    }
+
+    //	Check for duplicate calls
+    if(st->getScreenCount() && st->currentScreen()==si)
+    {
+        qDebug() << SB_DEBUG_WARNING << "dup call to current screen" << si;
         return;
     }
 
@@ -90,15 +108,15 @@ Navigator::openScreenByID(SBID &id)
     }
 
     //	Add screen to stack first.
-    if(result.sb_item_type()!=SBID::sb_type_songsearch || result.searchCriteria.length()>0)
+    //	CWIP: investigate logic of this
+    if(si.screenType()!=ScreenItem::screen_type_songsearch || base.searchCriteria().length()>0)
     {
-        st->pushScreen(id);
+        st->pushScreen(si);
     }
-    result=_activateTab(id);
-
-    if(result==SBID())
+    st->debugShow("openScreen:118");
+    if(_activateTab()==0)
     {
-        st->removeScreen(id);
+        st->removeScreen(si);
     }
 }
 
@@ -254,17 +272,17 @@ Navigator::navigateDetailTab(int direction)
 }
 
 void
-Navigator::removeFromScreenStack(const SBID &id)
+Navigator::removeFromScreenStack(const SBIDBase &id)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeForward();
-    SBID currentScreenID=st->currentScreen();
+    ScreenItem si=st->currentScreen();
 
     //	Move currentScreen one back, until it is on that is not current
-    while(currentScreenID==id)
+    while(si==id)
     {
         tabBackward();	//	move display one back
-        currentScreenID=st->currentScreen();	//	find out what new current screen is.
+        si=st->currentScreen();	//	find out what new current screen is.
         st->popScreen();	//	remove top screen
     }
 
@@ -272,7 +290,7 @@ Navigator::removeFromScreenStack(const SBID &id)
     st->removeScreen(id);
 
     //	Activate the current screen
-    _activateTab(currentScreenID);
+    _activateTab();
 }
 
 void
@@ -284,22 +302,13 @@ Navigator::resetAllFiltersAndSelections()
 void
 Navigator::showCurrentPlaylist()
 {
-    SBID id(SBID::sb_type_current_playlist,-1);
-    openScreenByID(id);
-}
-
-void
-Navigator::showPlaylist(SBID id)
-{
-    openScreenByID(id);
+    openScreen(ScreenItem(ScreenItem::screen_type_current_playlist));
 }
 
 void
 Navigator::showSonglist()
 {
-    SBID id(SBID::sb_type_allsongs,-1);
-
-    openScreenByID(id);
+    openScreen(ScreenItem(ScreenItem::screen_type_allsongs));
 }
 
 ///	SLOTS
@@ -338,10 +347,7 @@ Navigator::applySonglistFilter()
         return;
     }
 
-
-    SBID id(SBID::sb_type_songsearch,-1);
-    id.searchCriteria=filter;
-    openScreenByID(id);
+    openScreen(ScreenItem(filter));
 
     mw->ui.searchEdit->setFocus();
     mw->ui.searchEdit->selectAll();
@@ -352,8 +358,8 @@ Navigator::closeCurrentTab()
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeCurrentScreen();
-    SBID id=st->currentScreen();
-    _activateTab(id);
+    ScreenItem si=st->currentScreen();
+    _activateTab();
 }
 
 void
@@ -362,33 +368,48 @@ Navigator::editItem()
     //	Nothing to do here. To add new edit screen, go to _activateTab.
     //	All steps prior to this are not relevant.
     ScreenStack* st=Context::instance()->getScreenStack();
-    SBID id=st->currentScreen();
-    id.isEditFlag=1;
-    openScreenByID(id);
+    ScreenItem si=st->currentScreen();
+    si.setEditFlag(1);
+    openScreen(si);
 }
 
 void
 Navigator::openItemFromCompleter(const QModelIndex& i)
 {
     //	Retrieve SB_ITEM_TYPE and SB_ITEM_ID from index.
-    SBID id;
-    id.assign(i.sibling(i.row(), i.column()+2).data().toString(), i.sibling(i.row(), i.column()+1).data().toInt());
+    SBIDBase id;
+    //	CWIP SBIDBase: Need to find a way to get to SBIDBase::sb_type
+    //id.assign(i.sibling(i.row(), i.column()+2).data().toString(), i.sibling(i.row(), i.column()+1).data().toInt());
 
-    openScreenByID(id);
+    openScreen(id);
 }
 
 void
 Navigator::openChooserItem(const QModelIndex &i)
 {
-    SBID id=SBID((SBID::sb_type)i.sibling(i.row(), i.column()+2).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
-    openScreenByID(id);
+    ScreenItem::screen_type screenType=static_cast<ScreenItem::screen_type>(i.sibling(i.row(), i.column()+2).data().toInt());
+    SBIDBase base;
+    ScreenItem screenItem;
+    if(screenType==ScreenItem::screen_type_sbidbase)
+    {
+        base=SBIDBase::createSBID((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+
+        screenItem=ScreenItem(base);
+
+    }
+    else
+    {
+        screenItem=ScreenItem(screenType);
+    }
+
+    openScreen(screenItem);
 }
 
 void
 Navigator::openPerformer(const QString &itemID)
 {
-    SBID id(SBID::sb_type_performer,itemID.toInt());
-    openScreenByID(id);
+    SBIDBase id=SBIDBase::createSBID(SBIDBase::sb_type_performer,itemID.toInt());
+    openScreen(id);
 }
 
 void
@@ -447,22 +468,22 @@ Navigator::doInit()
     _init();
 }
 
-///	PRIVATE
+///	Private methods()
 
 ///
-/// _ActivateTab populates the appropriate tab and
-/// returns a fully populated SBID.
+/// _activateTab populates the appropriate tab and
+/// returns a fully populated SBIDBase.
 /// It expects the screenstack to be in sync with the parameter
-SBID
-Navigator::_activateTab(const SBID& to)
+bool
+Navigator::_activateTab()
 {
-    SBID id=to;
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenItem si=st->currentScreen();
 
     //	Check parameters
     //		1.	Check for non-initialized SBID
-    if(id.sb_item_type()==SBID::sb_type_invalid)
+    if(si.screenType()==ScreenItem::screen_type_invalid)
     {
         //	Deliberately clear the screen stack and show the All Songs list.
         //	This is valid if right at opener an item is searched and displayed. If then escape key is pressed, there
@@ -470,121 +491,118 @@ Navigator::_activateTab(const SBID& to)
         qDebug() << SB_DEBUG_WARNING << "Clearing screen stack and showing all songs -- sb_type_invalid encountered";
         st->clear();
         showSonglist();
-        return SBID();
-    }
-
-    //		2.	Check that current entry in screenstack corresponds with id
-    if(!id.compareSimple(st->currentScreen()))	//	this needs to be compareSimple.
-    {
-        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! currentID" << id << "does not equal screenstackID" << st->currentScreen();
-        return SBID();
+        return 0;
     }
 
     //	Disable all edit/edit menus
     QAction* editAction=mw->ui.menuEditEditID;
     editAction->setEnabled(0);
 
-    //	Clear
+    //	Clear all tabs
     while(mw->ui.mainTab->currentIndex()!=-1)
     {
         mw->ui.mainTab->removeTab(0);
     }
 
-
     SBTab* tab=NULL;
-    SBID result;
-    bool isEditFlag=id.isEditFlag;
+    SBIDBase result;
+    bool editFlag=si.editFlag();
     bool canBeEditedFlag=1;
+    SBIDBase base;
 
-    //	copy screenstack attributes to id
-    id.sortColumn=st->currentScreen().sortColumn;
-    id.subtabID=st->currentScreen().subtabID;
-
-    switch(id.sb_item_type())
+    switch(si.screenType())
     {
-    case SBID::sb_type_song:
-        if(isEditFlag)
-        {
-            tab=mw->ui.tabSongEdit;
-        }
-        else
-        {
-            tab=mw->ui.tabSongDetail;
-        }
+        case ScreenItem::screen_type_sbidbase:
+            base=si.base();
+            switch(base.itemType())
+            {
+            case SBIDBase::sb_type_song:
+                if(editFlag)
+                {
+                    tab=mw->ui.tabSongEdit;
+                }
+                else
+                {
+                    tab=mw->ui.tabSongDetail;
+                }
+                break;
+
+            case SBIDBase::sb_type_performer:
+                if(editFlag)
+                {
+                    tab=mw->ui.tabPerformerEdit;
+                }
+                else
+                {
+                    tab=mw->ui.tabPerformerDetail;
+                }
+                break;
+
+            case SBIDBase::sb_type_album:
+                if(editFlag)
+                {
+                    tab=mw->ui.tabAlbumEdit;
+                }
+                else
+                {
+                    tab=mw->ui.tabAlbumDetail;
+                }
+                break;
+
+            case SBIDBase::sb_type_playlist:
+                tab=mw->ui.tabPlaylistDetail;
+                canBeEditedFlag=0;
+                break;
+
+            case SBIDBase::sb_type_invalid:
+            case SBIDBase::sb_type_chart:
+                break;
+            }
         break;
 
-    case SBID::sb_type_performer:
-        if(isEditFlag)
-        {
-            tab=mw->ui.tabPerformerEdit;
-        }
-        else
-        {
-            tab=mw->ui.tabPerformerDetail;
-        }
+        case ScreenItem::screen_type_songsearch:
+        case ScreenItem::screen_type_allsongs:
+            result=base;
+            tab=mw->ui.tabAllSongs;
+            _filterSongs(base);
+            canBeEditedFlag=0;
         break;
 
-    case SBID::sb_type_album:
-        if(isEditFlag)
-        {
-            tab=mw->ui.tabAlbumEdit;
-        }
-        else
-        {
-            tab=mw->ui.tabAlbumDetail;
-        }
+        case ScreenItem::screen_type_current_playlist:
+            result=base;
+            tab=mw->ui.tabCurrentPlaylist;
+            canBeEditedFlag=0;
         break;
 
-    case SBID::sb_type_playlist:
-        tab=mw->ui.tabPlaylistDetail;
-        canBeEditedFlag=0;
-        break;
 
-    case SBID::sb_type_songsearch:
-    case SBID::sb_type_allsongs:
-        result=id;
-        tab=mw->ui.tabAllSongs;
-        _filterSongs(id);
-        canBeEditedFlag=0;
-        break;
-
-    case SBID::sb_type_current_playlist:
-        result=id;
-        tab=mw->ui.tabCurrentPlaylist;
-        canBeEditedFlag=0;
-        break;
-
-    default:
-        qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << id.sb_item_type();
+        default:
+            qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << si.screenType();
     }
 
     if(tab)
     {
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
-        result=tab->populate(id);
+        result=tab->populate(si).base();
     }
 
-    if(result.sb_item_id()==-1 &&
-        result.sb_item_type()!=SBID::sb_type_allsongs &&
-        result.sb_item_type()!=SBID::sb_type_current_playlist &&
-        result.sb_item_type()!=SBID::sb_type_songsearch)
+    if(si.screenType()==ScreenItem::screen_type_sbidbase && result.validFlag()==0)
     {
         //	Go to previous screen first
         this->tabBackward();
 
         //	Remove all from screenStack with requested ID.
-        this->removeFromScreenStack(id);
+        this->removeFromScreenStack(result);
 
-        return result;
+        return 1;
     }
 
     //	Enable/disable search functionality
-    if(isEditFlag==0)
+    if(editFlag==0)
     {
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
-        mw->ui.searchEdit->setText(id.searchCriteria);
+        mw->ui.searchEdit->setText(base.searchCriteria());
         mw->ui.leftColumnChooser->setEnabled(1);
         if(canBeEditedFlag)
         {
@@ -624,7 +642,7 @@ Navigator::_activateTab(const SBID& to)
     mw->ui.buttonBackward->setEnabled(activateBackButton);
     mw->ui.buttonForward->setEnabled(activateForwardButton);
 
-    return result;
+    return 1;
 }
 
 ///
@@ -674,7 +692,7 @@ Navigator::_init()
 }
 
 void
-Navigator::_filterSongs(const SBID &id)
+Navigator::_filterSongs(const SBIDBase &id)
 {
     QString labelAllSongDetailAllSongsText="Your Songs";
     QString labelAllSongDetailNameText="All Songs";
@@ -690,7 +708,7 @@ Navigator::_filterSongs(const SBID &id)
 
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
-    QString filter=id.searchCriteria;
+    QString filter=id.searchCriteria();
     re=QRegExp();
     if(filter.length()>0)
     {
@@ -701,7 +719,7 @@ Navigator::_filterSongs(const SBID &id)
         //	Apply filter
         re=QRegExp(filter,Qt::CaseInsensitive);
         labelAllSongDetailAllSongsText="Search Results for:";
-        labelAllSongDetailNameText=id.searchCriteria;
+        labelAllSongDetailNameText=id.searchCriteria();
     }
     mw->ui.labelAllSongDetailAllSongs->setText(labelAllSongDetailAllSongsText);
     mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);
@@ -715,21 +733,22 @@ void
 Navigator::_moveFocusToTab(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
-    SBID id;
+    ScreenItem si;
+    SBIDBase id;
     if(_checkOutstandingEdits()==1)
     {
         return;
     }
     if(direction>0)
     {
-        id=st->nextScreen();
+        si=st->nextScreen();
     }
     else
     {
-        id=st->previousScreen();
+        si=st->previousScreen();
     }
 
-    _activateTab(id);
+    _activateTab();
 }
 
 ///	PRIVATE SLOTS

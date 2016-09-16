@@ -3,6 +3,9 @@
 
 #include "SBTab.h"
 
+#include "SBIDAlbum.h"
+#include "SBIDSong.h"
+
 class QMenu;
 
 class SBTabSongDetail : public SBTab
@@ -20,9 +23,10 @@ class SBTabSongDetail : public SBTab
 
 public:
     SBTabSongDetail(QWidget* parent=0);
+
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
-    static SBID selectSongFromAlbum(const SBID& song);
+    static SBIDSong selectSongFromAlbum(SBIDSong& songOnUnknownAlbum);
 
 public slots:
     virtual void playNow(bool enqueueFlag=0);
@@ -38,7 +42,7 @@ private:
 
     virtual QTableView* _determineViewCurrentTab() const;
     void _init();
-    virtual SBID _populate(const SBID& id);
+    virtual ScreenItem _populate(const ScreenItem& id);
 };
 
 #endif // SBTABSONGDETAIL_H

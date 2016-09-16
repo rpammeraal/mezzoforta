@@ -117,11 +117,10 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     QHash<QString,bool> existingPath;
     for(int i=0;i<sqm->rowCount();i++)
     {
-        SBIDSong song;
-        song.assign(sqm->data(sqm->index(i,0)).toInt());
-        song.sb_song_performer_id=sqm->data(sqm->index(i,1)).toInt();
-        song.sb_album_id=sqm->data(sqm->index(i,2)).toInt();
-        song.sb_position=sqm->data(sqm->index(i,3)).toInt();
+        SBIDSong song(sqm->data(sqm->index(i,0)).toInt());
+        song.setSongPerformerID(sqm->data(sqm->index(i,1)).toInt());
+        song.setAlbumID(sqm->data(sqm->index(i,2)).toInt());
+        song.setAlbumPosition(sqm->data(sqm->index(i,3)).toInt());
         QString path=schemaRoot.toLower()+sqm->data(sqm->index(i,4)).toString().replace("\\","").toLower();
 
 
@@ -144,13 +143,13 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     ///	Creating data structures
     ///////////////////////////////////////////////////////////////////////////////////
 
-    QHash<SBIDPerformer,int> performerToUniqueID;
-    QHash<SBIDAlbumSimpleCompare,int> albumToUniqueID;
+    QHash<SBIDPerformer,int> performerToTmpID;
+    QHash<SBIDAlbumSimpleCompare,int> albumToTmpID;
     QList<SBIDSong> newEntries;
     QMap<QString,QString> errors;
 
-    performerToUniqueID.reserve(entries.count());
-    albumToUniqueID.reserve(entries.count());
+    performerToTmpID.reserve(entries.count());
+    albumToTmpID.reserve(entries.count());
     newEntries.reserve(entries.count());
 
     pd.setMaximum(sqm->rowCount());
@@ -173,43 +172,43 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
             //	Determine any attributes from each file.
             MetaData md(lower2Upper[entries.at(i)]);
 
-            //	For each song, determine all unique performers and albums
+            //	For each song, determine all tmp performers and albums
             SBIDSong song=md.parse();
-            song.path=lower2Upper[entries.at(i)];
-            song.assignUniqueItemID();
-            qDebug() << SB_DEBUG_INFO << song << song.path;
+            song.setPath(lower2Upper[entries.at(i)]);
+            song.assignTmpItemID();
+            qDebug() << SB_DEBUG_INFO << song << song.path();
 
             SBIDPerformer performer=song;
-            performer.sb_unique_song_id=song.sb_unique_item_id;
-            if(performerToUniqueID.contains(performer)==0)
+            performer.setTmpSongID(song.tmpItemID());
+            if(performerToTmpID.contains(performer)==0)
             {
-                performer.assignUniqueItemID();
-                performerToUniqueID[performer]=performer.sb_unique_item_id;
+                performer.assignTmpItemID();
+                performerToTmpID[performer]=performer.tmpItemID();
             }
             else
             {
-                performer.sb_unique_item_id=performerToUniqueID[performer];
+                performer.setTmpItemID(performerToTmpID[performer]);
             }
-            song.sb_unique_performer_id=performer.sb_unique_item_id;
+            song.setTmpPerformerID(performer.tmpItemID());
 
             SBIDAlbumSimpleCompare album=song;
             ///	CWIP
             ///	NEED TO THINK ABOUT
             /// -	missing album performer name
             /// -	mixed album names in one directory
-            album.albumPerformerName=song.songPerformerName;
+            album.setAlbumPerformerName(song.songPerformerName());
 
-            album.sb_unique_song_id=song.sb_unique_item_id;
-            if(albumToUniqueID.contains(album)==0)
+            album.setTmpSongID(song.tmpItemID());
+            if(albumToTmpID.contains(album)==0)
             {
-                album.assignUniqueItemID();
-                albumToUniqueID[album]=album.sb_unique_item_id;
+                album.assignTmpItemID();
+                albumToTmpID[album]=album.tmpItemID();
             }
             else
             {
-                album.sb_unique_item_id=albumToUniqueID[album];
+                album.setTmpItemID(albumToTmpID[album]);
             }
-            song.sb_unique_album_id=album.sb_unique_item_id;
+            song.setTmpAlbumID(album.tmpItemID());
 
             newEntries.append(song);
         }
@@ -217,10 +216,10 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         {
             pd.setValue(i);
             QCoreApplication::processEvents();
-            //qDebug() << i << entries.count() << performerToUniqueID.count() << albumToUniqueID.count();
+            //qDebug() << i << entries.count() << performerToTmpID.count() << albumToTmpID.count();
         }
     }
-    SBID::listUniqueIDItems();
+    SBIDBase::listTmpIDItems();
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Validation
@@ -271,26 +270,26 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     ///////////////////////////////////////////////////////////////////////////////////
     /// Lookup phase
     ///
-    /// It would be great if the various SBID* objects are somehow connected with
-    /// signals that if the actual sb_item_id changes, all dependent SBID objects
+    /// It would be great if the various SBIDBase* objects are somehow connected with
+    /// signals that if the actual sb_item_id changes, all dependent SBIDBase objects
     /// are changed as well.
     ///////////////////////////////////////////////////////////////////////////////////
-    QMap<int,int> uniquePerformerID2realPerformerID;
-    QMap<int,int> uniqueAlbumID2realAlbumID;
+    QMap<int,int> tmpPerformerID2realPerformerID;
+    QMap<int,int> tmpAlbumID2realAlbumID;
 
     //	Lookup performers based on performer name, create if not exist.
-    qDebug() << SB_DEBUG_INFO << performerToUniqueID.count();
-    QHashIterator<SBIDPerformer,int> performerToUniqueIDIT(performerToUniqueID);
-    performerToUniqueIDIT.toFront();
-    while(performerToUniqueIDIT.hasNext())
+    qDebug() << SB_DEBUG_INFO << performerToTmpID.count();
+    QHashIterator<SBIDPerformer,int> performerToTmpIDIT(performerToTmpID);
+    performerToTmpIDIT.toFront();
+    while(performerToTmpIDIT.hasNext())
     {
-        performerToUniqueIDIT.next();
-        SBIDPerformer performer=performerToUniqueIDIT.key();
-        uniquePerformerID2realPerformerID[performer.sb_unique_item_id]=performer.getDetail(true);
+        performerToTmpIDIT.next();
+        SBIDPerformer performer=performerToTmpIDIT.key();
+        tmpPerformerID2realPerformerID[performer.tmpItemID()]=performer.getDetail(true);
         qDebug() << SB_DEBUG_INFO << performer;
     }
 
-    QMapIterator<int,int> unP2ID(uniquePerformerID2realPerformerID);
+    QMapIterator<int,int> unP2ID(tmpPerformerID2realPerformerID);
     while(unP2ID.hasNext())
     {
         unP2ID.next();
@@ -298,25 +297,25 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     }
 
     //	Lookup albums
-    QHashIterator<SBIDAlbumSimpleCompare,int> albumToUniqueIDIT(albumToUniqueID);
-    albumToUniqueIDIT.toFront();
+    QHashIterator<SBIDAlbumSimpleCompare,int> albumToTmpIDIT(albumToTmpID);
+    albumToTmpIDIT.toFront();
     QMap<int,SBIDAlbum> savedAlbums;
-    while(albumToUniqueIDIT.hasNext())
+    while(albumToTmpIDIT.hasNext())
     {
-        albumToUniqueIDIT.next();
-        SBIDAlbum album=albumToUniqueIDIT.key();
+        albumToTmpIDIT.next();
+        SBIDAlbum album=albumToTmpIDIT.key();
 
         //	Now put in actual sb_album_performer_id
-        album.sb_album_performer_id=uniquePerformerID2realPerformerID[album.sb_unique_performer_id];
+        album.setAlbumPerformerID(tmpPerformerID2realPerformerID[album.tmpPerformerID()]);
 
         //	Look up
-        uniqueAlbumID2realAlbumID[album.sb_unique_item_id]=album.getDetail(true);
+        tmpAlbumID2realAlbumID[album.tmpItemID()]=album.getDetail(true);
         qDebug() << SB_DEBUG_INFO << album;
 
-        savedAlbums[album.sb_album_id]=album;
+        savedAlbums[album.albumID()]=album;
     }
 
-    QMapIterator<int,int> unA2ID(uniqueAlbumID2realAlbumID);
+    QMapIterator<int,int> unA2ID(tmpAlbumID2realAlbumID);
     while(unA2ID.hasNext())
     {
         unA2ID.next();
@@ -331,8 +330,8 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         SBIDSong song=newEntriesIT.next();
 
         //	Put in actual sb_album_id, sb_song_performer_id
-        song.sb_album_id=uniqueAlbumID2realAlbumID[song.sb_unique_album_id];
-        song.sb_song_performer_id=uniquePerformerID2realPerformerID[song.sb_unique_performer_id];
+        song.setAlbumID(tmpAlbumID2realAlbumID[song.tmpAlbumID()]);
+        song.setSongPerformerID(tmpPerformerID2realPerformerID[song.tmpPerformerID()]);
 
         int sb_song_id=song.getDetail(true);
         if(sb_song_id<0)
@@ -341,10 +340,10 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
             return;
         }
         SBIDAlbum album;
-        album=savedAlbums[song.sb_album_id];
-        if(album.sb_album_id<0)
+        album=savedAlbums[song.albumID()];
+        if(album.albumID()<0)
         {
-            album=SBIDAlbum(song.sb_album_id);
+            album=SBIDAlbum(song.albumID());
             album.getDetail();
         }
         if(album.saveSongToAlbum(song)==0)

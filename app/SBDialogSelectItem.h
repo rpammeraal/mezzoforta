@@ -1,10 +1,10 @@
-#ifndef SELECTSONGALBUM_H
-#define SELECTSONGALBUM_H
+#ifndef SBDIALOGSELECTITEM_H
+#define SBDIALOGSELECTITEM_H
 
 #include <QMap>
 #include <QDialog>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 
 class QAbstractButton;
@@ -30,23 +30,24 @@ class SBDialogSelectItem : public QDialog
     };
 
 public:
-    SBDialogSelectItem(const SBID& id, QWidget *parent = 0, SBDialogSelectItem::SB_DialogType newDialogType=SBDialogSelectItem::sb_invalid);
+    SBDialogSelectItem(const SBIDBase& id, QWidget *parent = 0, SBDialogSelectItem::SB_DialogType newDialogType=SBDialogSelectItem::sb_invalid);
     ~SBDialogSelectItem();
-    SBID getSBID() const;
+    SBIDBase getSBID() const;
     inline bool hasSelectedItem() const { return _hasSelectedItemFlag; }
     void setTitle(const QString& title);
 
-    static SBDialogSelectItem* selectAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectSongAlbum(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectSongByPerformer(const SBID& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    //	CWIP: remove m parameter if possible
+    static SBDialogSelectItem* selectAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectSongAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectPerformer(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectSongByPerformer(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
 
 
 private:
     Ui::SBDialogSelectItem *ui;
-    SBID _songID;
+    SBIDBase _currentID;
     SB_DialogType _dialogType;
-    QMap<int,SBID> _itemsDisplayed;
+    QMap<int,SBIDBase> _itemsDisplayed;
     bool _hasSelectedItemFlag;
 
     void init();
@@ -55,4 +56,4 @@ private slots:
     void OK(const QString& i);
 };
 
-#endif // SELECTSONGALBUM_H
+#endif // SBDIALOGSELECTITEM_H

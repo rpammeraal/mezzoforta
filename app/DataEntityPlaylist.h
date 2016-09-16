@@ -5,6 +5,7 @@
 #include <QObject>
 
 #include "SBIDSong.h"
+#include "SBIDPlaylist.h"
 
 class SBSqlQueryModel;
 
@@ -16,25 +17,25 @@ public:
     DataEntityPlaylist();
     ~DataEntityPlaylist();
 
-    void assignPlaylistItem(const SBID& assignID, const SBID& toID) const;
-    SBID createNewPlaylist() const;
-    void deletePlaylistItem(const SBID& assignID, const SBID& fromID) const;
-    void deletePlaylist(const SBID& id) const;
-    SBID getDetail(const SBID& id) const;
-    SBIDSong getDetailPlaylistItemSong(const SBID& id) const;
-    SBSqlQueryModel* getAllItemsByPlaylist(const SBID& id) const;
-    void getAllItemsByPlaylistRecursive(QList<SBID>& compositesTraversed, QList<SBID>& allSongs, const SBID& id) const;
+    void assignPlaylistItem(const SBIDBase& assignID, const SBIDBase& toID) const;
+    SBIDPlaylist createNewPlaylist() const;
+    void deletePlaylistItem(const SBIDBase& assignID, const SBIDBase& fromID) const;
+    void deletePlaylist(const SBIDBase& id) const;
+    SBIDBase getDetail(const SBIDBase& id) const;
+    SBIDSong getDetailPlaylistItemSong(const SBIDBase& id) const;
+    SBSqlQueryModel* getAllItemsByPlaylist(const SBIDBase& id) const;
+    void getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDBase& id) const;
     SBSqlQueryModel* getAllPlaylists() const;
     void recalculateAllPlaylistDurations() const;
-    void recalculatePlaylistDuration(const SBID& id) const;
-    void renamePlaylist(const SBID& id) const;
-    void reorderItem(const SBID& playlistID, const SBID& fromID, int row) const;
-    void reorderItem(const SBID& playlistID, const SBID& fromID, const SBID& toID) const;
-    QMap<int,SBID> retrievePlaylistItems(const SBID &id);
+    void recalculatePlaylistDuration(const SBIDBase& id) const;
+    void renamePlaylist(const SBIDBase& id) const;
+    void reorderItem(const SBIDBase& playlistID, const SBIDBase& fromID, int row) const;
+    void reorderItem(const SBIDBase& playlistID, const SBIDBase& fromID, const SBIDBase& toID) const;
+    QMap<int,SBIDBase> retrievePlaylistItems(const SBIDBase& id);
 
 private:
     void init();
-    void reorderPlaylistPositions(const SBID& id,int maxPosition=INT_MAX) const;
+    void reorderPlaylistPositions(const SBIDBase& id,int maxPosition=INT_MAX) const;
 };
 
 #endif // DATAENTITYPLAYLIST_H

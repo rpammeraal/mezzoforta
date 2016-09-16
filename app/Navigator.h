@@ -17,7 +17,7 @@ class QPushButton;
 class QTableView;
 class QTabWidget;
 
-class SBID;
+class SBIDBase;
 class SBSqlQueryModel;
 struct NewsItem;
 
@@ -36,13 +36,13 @@ public:
     ~Navigator();
 
     void clearSearchFilter();
-    void openScreenByID(SBID& id);
+    void openScreen(const SBIDBase& id);	//	CWIP: remove!
+    void openScreen(const ScreenItem& si);
     void keyPressEvent(QKeyEvent * event);
     void navigateDetailTab(int direction=1);
-    void removeFromScreenStack(const SBID& id);
+    void removeFromScreenStack(const SBIDBase& id);
     void resetAllFiltersAndSelections();
     void showCurrentPlaylist();
-    void showPlaylist(SBID id);
     void showSonglist();
 
 public slots:
@@ -68,10 +68,10 @@ private:
     bool _threadPrioritySetFlag;
 
     //	Private methods
-    SBID _activateTab(const SBID& id);
+    bool _activateTab();
     bool _checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
     void _init();
-    void _filterSongs(const SBID& id);
+    void _filterSongs(const SBIDBase& id);
     void _moveFocusToTab(int direction);
 };
 

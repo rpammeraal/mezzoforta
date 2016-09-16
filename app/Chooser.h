@@ -4,7 +4,7 @@
 #include <QList>
 #include <QObject>
 
-#include <SBIDPlaylist.h>
+#include "SBIDPlaylist.h"
 
 class QAction;
 class QStandardItem;
@@ -29,7 +29,7 @@ public:
     QStandardItemModel* getModel() const;
 
 public slots:
-    void assignItem(const QModelIndex& idx, const SBID& assignID);
+    void assignItem(const QModelIndex& idx, const SBIDBase& assignID);
     void deletePlaylist();
     void enqueuePlaylist();
     void newPlaylist();
@@ -47,7 +47,7 @@ protected:
 
 private slots:
     void _clicked(const QModelIndex& mi);
-    void _renamePlaylist(const SBID& id);
+    void _renamePlaylist(const SBIDBase& id);
 
 private:
     //	Context menu actions
@@ -63,8 +63,8 @@ private:
     ChooserModel* _cm;
 
     QModelIndex _findItem(const QString& toFind);
-    QModelIndex _findItem(const SBID& id);
-    SBID _getPlaylistSelected(const QModelIndex& i);
+    QModelIndex _findItem(const SBIDBase& id);
+    SBIDPlaylist _getPlaylistSelected(const QModelIndex& i);
     void _init();
     void _populate();
     void _setCurrentIndex(const QModelIndex& i);

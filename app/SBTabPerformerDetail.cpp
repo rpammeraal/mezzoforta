@@ -1,13 +1,10 @@
 #include "SBTabPerformerDetail.h"
 
 #include "Context.h"
-#include "ExternalData.h"
 #include "MainWindow.h"
-#include "Navigator.h"
 #include "DataEntityPerformer.h"
-#include "PlayManager.h"
+#include "SBIDAlbum.h"
 #include "SBSqlQueryModel.h"
-#include "SBTabSongDetail.h"
 
 SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
 {
@@ -51,21 +48,21 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
-    const SBID currentID=SBTab::currentID();
+    SBIDBase selectedID=sm->determineSBID(_lastClickedIndex); qDebug() << SB_DEBUG_INFO << selectedID;
+    const SBIDBase currentID=this->currentScreenItem().base();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    if(selectedID.itemType()==SBIDBase::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
         selectedID=currentID;
     }
-    else if(selectedID.sb_item_type()==SBID::sb_type_song)
+    else if(selectedID.itemType()==SBIDBase::sb_type_song)
     {
-        selectedID.songPerformerName=currentID.songPerformerName;
-        selectedID.sb_song_performer_id=currentID.sb_song_performer_id;
-        qDebug() << SB_DEBUG_INFO << this->currentID();
-        selectedID=SBTabSongDetail::selectSongFromAlbum(selectedID);
+        SBIDSong song(selectedID);
+        song.setSongPerformerName(currentID.songPerformerName());
+        song.setSongPerformerID(currentID.songPerformerID());
+        selectedID=SBTabSongDetail::selectSongFromAlbum(song);
     }
     else
     {
@@ -78,13 +75,13 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 void
 SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBID currentID=SBTab::currentID();
+    const SBIDBase currentID=this->currentScreenItem().base();
 
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
@@ -101,10 +98,9 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBID selectedID=sm->determineSBID(ids);
+    SBIDBase selectedID=sm->determineSBID(ids);
 
-    qDebug() << SB_DEBUG_INFO << selectedID;
-    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    if(selectedID.itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=ids;
 
@@ -112,8 +108,8 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
 
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.text()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.text()));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
@@ -158,7 +154,7 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, SBID::sb_type_performer);
+    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().base());
 }
 
 void
@@ -259,15 +255,14 @@ SBTabPerformerDetail::_init()
                 this, SLOT(showContextMenuView(QPoint)));
 
         //	Icon
-        qDebug() << SB_DEBUG_INFO;
         SBLabel* l=mw->ui.labelPerformerDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
     }
 }
 
-SBID
-SBTabPerformerDetail::_populate(const SBID &id)
+ScreenItem
+SBTabPerformerDetail::_populate(const ScreenItem &si)
 {
     _init();
     _currentNews.clear();
@@ -275,8 +270,6 @@ SBTabPerformerDetail::_populate(const SBID &id)
     const MainWindow* mw=Context::instance()->getMainWindow();
     QList<bool> dragableColumns;
 
-    //	Clear image
-    setPerformerImage(QPixmap());
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
@@ -288,38 +281,44 @@ SBTabPerformerDetail::_populate(const SBID &id)
     DataEntityPerformer* mp=new DataEntityPerformer();
 
     //	Get detail
-    SBID result=mp->getDetail(id);
-    if(result.sb_song_performer_id==-1)
+    SBIDPerformer performer=mp->getDetail(si.base());
+    if(performer.validFlag()==0)
     {
         //	Not found
-        return result;
+        return ScreenItem();
     }
-    SBTab::_populate(result);
-    mw->ui.labelPerformerDetailIcon->setSBID(result);
+    mw->ui.labelPerformerDetailIcon->setSBID(performer);
+    ScreenItem currentScreenItem(performer);
+    //SBTab::_setCurrentScreenItem(currentScreenItem);
 
+    //	Clear image
+    setPerformerImage(QPixmap());
+
+    //	Get external data
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(performerHomePageAvailable(QString)),
             this, SLOT(setPerformerHomePage(QString)));
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(SBID)),
-            mp, SLOT(updateMBID(SBID)));
-    connect(ed, SIGNAL(updatePerformerHomePage(SBID)),
-            mp, SLOT(updateHomePage(SBID)));
+    connect(ed, SIGNAL(updatePerformerMBID(SBIDPerformer)),
+            mp, SLOT(updateMBID(SBIDPerformer)));
+    connect(ed, SIGNAL(updatePerformerHomePage(SBIDPerformer)),
+            mp, SLOT(updateHomePage(SBIDPerformer)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setPerformerImage(QPixmap)));
     connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),
             this, SLOT(setPerformerNews(QList<NewsItem>)));
 
-    ed->loadPerformerData(result);
+    //	Performer cover image
+    ed->loadPerformerData(performer);
 
     //	Populate performer detail tab
-    mw->ui.labelPerformerDetailPerformerName->setText(result.songPerformerName);
+    mw->ui.labelPerformerDetailPerformerName->setText(performer.performerName());
 
     QString details=QString("%1 albums %2 %3 songs")
-        .arg(result.count1)
+        .arg(performer.count1())
         .arg(QChar(8226))
-        .arg(result.count2);
+        .arg(performer.count2());
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers
@@ -334,9 +333,8 @@ SBTabPerformerDetail::_populate(const SBID &id)
     }
     _relatedItems.clear();
 
-
     //	Recreate
-    SBSqlQueryModel* rm=mp->getRelatedPerformers(id);
+    SBSqlQueryModel* rm=mp->getRelatedPerformers(performer);
 
     QString cs;
 
@@ -346,9 +344,9 @@ SBTabPerformerDetail::_populate(const SBID &id)
         switch(i)
         {
         case -2:
-            if(result.notes.length()>0)
+            if(performer.notes().length()>0)
             {
-                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(result.notes);
+                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(performer.notes());
             }
             break;
 
@@ -382,8 +380,6 @@ SBTabPerformerDetail::_populate(const SBID &id)
         frRelated->setText(cs);
     }
 
-    qDebug() << SB_DEBUG_INFO << cs;
-
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
@@ -393,13 +389,13 @@ SBTabPerformerDetail::_populate(const SBID &id)
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    qm=mp->getAllSongs(id);
+    qm=mp->getAllSongs(performer);
     rowCount=populateTableView(tv,qm,3);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    qm=mp->getAllAlbums(id);
+    qm=mp->getAllAlbums(performer);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);
@@ -414,7 +410,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
     //connect(tv, SIGNAL(clicked(QModelIndex)),
             //this, SLOT(performerDetailChartlistSelected(QModelIndex)));
 
-    //QUrl url(result.url);
+    //QUrl url(performer.url);
     //if(url.isValid()==1)
     //{
         //mw->ui.performerDetailHomepage->load(url);
@@ -423,7 +419,7 @@ SBTabPerformerDetail::_populate(const SBID &id)
     //mw->ui.tabPerformerDetailLists->setTabEnabled(3,url.isValid());
 
     //	Update current eligible tabID
-    result.subtabID=mw->ui.tabPerformerDetailLists->currentIndex();
+    currentScreenItem.setSubtabID(mw->ui.tabPerformerDetailLists->currentIndex());
 
-    return result;
+    return currentScreenItem;
 }

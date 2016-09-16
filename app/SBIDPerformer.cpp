@@ -9,151 +9,39 @@
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
 
-SBIDPerformer::SBIDPerformer(const SBID &c):SBID(c)
+#include <SBIDAlbum.h>
+
+SBIDPerformer::SBIDPerformer():SBIDBase()
 {
-    _sb_item_type=SBID::sb_type_performer;
+    _init();
 }
 
-SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBID(c)
+SBIDPerformer::SBIDPerformer(const SBIDBase &c):SBIDBase(c)
 {
-    _sb_item_type=SBID::sb_type_performer;
+    _sb_item_type=SBIDBase::sb_type_performer;
 }
 
-SBIDPerformer::SBIDPerformer(int itemID):SBID(SBID::sb_type_performer, itemID)
+SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
 }
 
-SBIDPerformer::SBIDPerformer(QByteArray encodedData):SBID(encodedData)
+SBIDPerformer::SBIDPerformer(int itemID)
 {
-    _sb_item_type=SBID::sb_type_performer;
+    _init();
+    this->_sb_performer_id=itemID;
 }
 
-SBIDPerformer::SBIDPerformer(const QString &songPerformerName)
+SBIDPerformer::SBIDPerformer(const QString &performerName)
 {
-    _sb_item_type=SBID::sb_type_performer;
-    this->songPerformerName=songPerformerName;
+    _init();
+    this->_performerName=performerName;
 }
 
-void
-SBIDPerformer::assign(int itemID)
+SBIDPerformer::~SBIDPerformer()
 {
-    this->sb_song_performer_id=itemID;
 }
 
-///
-/// \brief SBIDPerformer::getDetail
-/// \param createIfNotExistFlag
-/// \return
-///
-/// Retrieve and update detail based on sb_item_id if it exists, otherwise on performer name.
-/// Returns sb_item_id().
-int
-SBIDPerformer::getDetail(bool createIfNotExistFlag)
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    bool existsFlag=0;
-
-    do
-    {
-        QString q=QString
-        (
-            "SELECT DISTINCT "
-                "CASE WHEN a.artist_id=%1 THEN 0 ELSE 1 END, "
-                "a.artist_id, "
-                "a.name, "
-                "a.www, "
-                "a.notes, "
-                "a.mbid, "
-                "COALESCE(r.record_count,0) AS record_count, "
-                "COALESCE(s.song_count,0) AS song_count "
-            "FROM "
-                    "___SB_SCHEMA_NAME___artist a "
-                    "LEFT JOIN "
-                        "( "
-                            "SELECT r.artist_id,COUNT(*) as record_count "
-                            "FROM ___SB_SCHEMA_NAME___record r  "
-                            "WHERE r.artist_id=%1 "
-                            "GROUP BY r.artist_id "
-                        ") r ON a.artist_id=r.artist_id "
-                    "LEFT JOIN "
-                        "( "
-                            "SELECT rp.artist_id,COUNT(DISTINCT song_id) as song_count "
-                            "FROM ___SB_SCHEMA_NAME___record_performance rp  "
-                            "WHERE rp.artist_id=%1 "
-                            "GROUP BY rp.artist_id "
-                        ") s ON a.artist_id=s.artist_id "
-            "WHERE "
-                "a.artist_id=%1 OR "
-                "REPLACE(LOWER(a.name),' ','') = REPLACE(LOWER('%2'),' ','') "
-            "ORDER BY "
-                "CASE WHEN a.artist_id=%1 THEN 0 ELSE 1 END "
-            "LIMIT 1 "
-        )
-            .arg(this->sb_song_performer_id)
-            .arg(Common::escapeSingleQuotes(
-                 Common::removeAccents(this->songPerformerName)));
-        ;
-        dal->customize(q);
-
-        QSqlQuery query(q,db);
-        if(query.next())
-        {
-            existsFlag=1;
-            this->sb_song_performer_id=query.value(1).toInt();
-            this->songPerformerName   =query.value(2).toString();
-            this->url                 =query.value(3).toString();
-            this->notes               =query.value(4).toString();
-            this->sb_mbid             =query.value(5).toString();
-            this->count1              =query.value(6).toInt();
-            this->count2              =query.value(7).toInt();
-
-            if(this->url.length()>0 && this->url.toLower().left(7)!="http://")
-            {
-                this->url="http://"+this->url;
-            }
-        }
-        else
-        {
-            //	Need to match an performer name with accents in database with
-            //	performer name without accents to get the performer_id. Then retry.
-            QString q=QString
-            (
-                "SELECT "
-                    "a.artist_id, "
-                    "a.name "
-                "FROM "
-                        "___SB_SCHEMA_NAME___artist a "
-            );
-            dal->customize(q);
-
-            QSqlQuery query(q,db);
-            QString foundPerformerName;
-            QString searchPerformerName=Common::removeArticles(Common::removeAccents(this->songPerformerName));
-            bool foundFlag=0;
-            while(query.next() && foundFlag==0)
-            {
-                foundPerformerName=Common::removeArticles(Common::removeAccents(query.value(1).toString()));
-                if(foundPerformerName==searchPerformerName)
-                {
-                    foundFlag=1;
-                    this->sb_song_performer_id =query.value(0).toInt();
-                }
-            }
-            if(foundFlag)
-            {
-                continue;
-            }
-        }
-
-        if(existsFlag==0 && createIfNotExistFlag==1)
-        {
-            this->save();
-        }
-    } while(existsFlag==0 && createIfNotExistFlag==1);
-    return sb_item_id();
-}
-
+///	Public methods
 SBSqlQueryModel*
 SBIDPerformer::findMatches(const QString &newPerformerName) const
 {
@@ -218,13 +106,156 @@ SBIDPerformer::findMatches(const QString &newPerformerName) const
             "1, 3"
     )
         .arg(Common::escapeSingleQuotes(newPerformerName))
-        .arg(this->sb_song_performer_id)
+        .arg(this->_sb_performer_id)
         .arg(newSoundex)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(newPerformerName)))
     ;
 
     return new SBSqlQueryModel(q);
+}
 
+///
+/// \brief SBIDPerformer::getDetail
+/// \param createIfNotExistFlag
+/// \return
+///
+/// Retrieve and update detail based on sb_item_id if it exists, otherwise on performer name.
+/// Returns sb_item_id().
+int
+SBIDPerformer::getDetail(bool createIfNotExistFlag)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    bool existsFlag=0;
+
+    do
+    {
+        QString q=QString
+        (
+            "SELECT DISTINCT "
+                "CASE WHEN a.artist_id=%1 THEN 0 ELSE 1 END, "
+                "a.artist_id, "
+                "a.name, "
+                "a.www, "
+                "a.notes, "
+                "a.mbid, "
+                "COALESCE(r.record_count,0) AS record_count, "
+                "COALESCE(s.song_count,0) AS song_count "
+            "FROM "
+                    "___SB_SCHEMA_NAME___artist a "
+                    "LEFT JOIN "
+                        "( "
+                            "SELECT r.artist_id,COUNT(*) as record_count "
+                            "FROM ___SB_SCHEMA_NAME___record r  "
+                            "WHERE r.artist_id=%1 "
+                            "GROUP BY r.artist_id "
+                        ") r ON a.artist_id=r.artist_id "
+                    "LEFT JOIN "
+                        "( "
+                            "SELECT rp.artist_id,COUNT(DISTINCT song_id) as song_count "
+                            "FROM ___SB_SCHEMA_NAME___record_performance rp  "
+                            "WHERE rp.artist_id=%1 "
+                            "GROUP BY rp.artist_id "
+                        ") s ON a.artist_id=s.artist_id "
+            "WHERE "
+                "a.artist_id=%1 OR "
+                "REPLACE(LOWER(a.name),' ','') = REPLACE(LOWER('%2'),' ','') "
+            "ORDER BY "
+                "CASE WHEN a.artist_id=%1 THEN 0 ELSE 1 END "
+            "LIMIT 1 "
+        )
+            .arg(this->_sb_performer_id)
+            .arg(Common::escapeSingleQuotes(
+                 Common::removeAccents(this->_performerName)));
+        ;
+        dal->customize(q);
+
+        QSqlQuery query(q,db);
+        if(query.next())
+        {
+            existsFlag=1;
+            this->_sb_performer_id=query.value(1).toInt();
+            this->_performerName  =query.value(2).toString();
+            this->_url            =query.value(3).toString();
+            this->_notes          =query.value(4).toString();
+            this->_sb_mbid        =query.value(5).toString();
+            this->_count1         =query.value(6).toInt();
+            this->_count2         =query.value(7).toInt();
+
+            if(this->_url.length()>0 && this->_url.toLower().left(7)!="http://")
+            {
+                this->_url="http://"+this->_url;
+            }
+        }
+        else
+        {
+            //	Need to match an performer name with accents in database with
+            //	performer name without accents to get the performer_id. Then retry.
+            QString q=QString
+            (
+                "SELECT "
+                    "a.artist_id, "
+                    "a.name "
+                "FROM "
+                        "___SB_SCHEMA_NAME___artist a "
+            );
+            dal->customize(q);
+
+            QSqlQuery query(q,db);
+            QString foundPerformerName;
+            QString searchPerformerName=Common::removeArticles(Common::removeAccents(this->_performerName));
+            bool foundFlag=0;
+            while(query.next() && foundFlag==0)
+            {
+                foundPerformerName=Common::removeArticles(Common::removeAccents(query.value(1).toString()));
+                if(foundPerformerName==searchPerformerName)
+                {
+                    foundFlag=1;
+                    this->_sb_performer_id =query.value(0).toInt();
+                }
+            }
+            if(foundFlag)
+            {
+                continue;
+            }
+        }
+
+        if(existsFlag==0 && createIfNotExistFlag==1)
+        {
+            this->save();
+        }
+    } while(existsFlag==0 && createIfNotExistFlag==1);
+    return itemID();
+}
+
+QString
+SBIDPerformer::hash() const
+{
+    return QString("%1:%2").arg(itemType()).arg(this->performerID());
+}
+
+QString
+SBIDPerformer::genericDescription() const
+{
+    return "Performer - "+this->text();
+}
+
+QString
+SBIDPerformer::iconResourceLocation() const
+{
+    return QString(":/images/NoBandPhoto.png");
+}
+
+int
+SBIDPerformer::itemID() const
+{
+    return _sb_performer_id;
+}
+
+SBIDBase::sb_type
+SBIDPerformer::itemType() const
+{
+    return SBIDBase::sb_type_performer;
 }
 
 ///
@@ -238,12 +269,12 @@ SBIDPerformer::save()
 {
     bool resultCode=1;
 
-    if(this->sb_song_performer_id==-1)
+    if(this->_sb_performer_id==-1)
     {
         //	Insert new
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-        QString newSoundex=Common::soundex(this->songPerformerName);
+        QString newSoundex=Common::soundex(this->_performerName);
         QString q;
 
         q=QString
@@ -263,8 +294,8 @@ SBIDPerformer::save()
             "FROM "
                 "___SB_SCHEMA_NAME___artist "
         )
-            .arg(Common::escapeSingleQuotes(this->songPerformerName))
-            .arg(Common::escapeSingleQuotes(Common::removeArticles(Common::removeAccents(this->songPerformerName))))
+            .arg(Common::escapeSingleQuotes(this->_performerName))
+            .arg(Common::escapeSingleQuotes(Common::removeArticles(Common::removeAccents(this->_performerName))))
             .arg(newSoundex)
         ;
 
@@ -287,13 +318,13 @@ SBIDPerformer::save()
             "WHERE "
                 "name='%1' "
         )
-            .arg(Common::escapeSingleQuotes(this->songPerformerName))
+            .arg(Common::escapeSingleQuotes(this->_performerName))
         ;
 
         dal->customize(q);
         QSqlQuery select(q,db);
         select.next();
-        this->sb_song_performer_id=select.value(0).toInt();
+        this->_sb_performer_id=select.value(0).toInt();
     }
     else
     {
@@ -306,26 +337,44 @@ SBIDPerformer::save()
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBID> list;
+    QMap<int,SBIDBase> list;
     DataEntityPerformer dep;
     SBSqlQueryModel* qm=dep.getAllOnlineSongs(*this);
     for(int i=0;i<qm->rowCount();i++)
     {
-        SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,0)).toInt());
-        song.sb_song_performer_id=qm->data(qm->index(i,1)).toInt();
-        song.sb_album_id=qm->data(qm->index(i,2)).toInt();
-        song.sb_position=qm->data(qm->index(i,3)).toInt();
-        song.songTitle=qm->data(qm->index(i,4)).toString();
-        song.songPerformerName=qm->data(qm->index(i,5)).toString();
-        song.albumTitle=qm->data(qm->index(i,6)).toString();
-        song.duration=qm->data(qm->index(i,7)).toTime();
-        song.path=qm->data(qm->index(i,8)).toString();
+        SBIDSong song=SBIDSong(qm->data(qm->index(i,0)).toInt());
+        song.setSongPerformerID(qm->data(qm->index(i,1)).toInt());
+        song.setAlbumID(qm->data(qm->index(i,2)).toInt());
+        song.setAlbumPosition(qm->data(qm->index(i,3)).toInt());
+        song.setSongTitle(qm->data(qm->index(i,4)).toString());
+        song.setSongPerformerName(qm->data(qm->index(i,5)).toString());
+        song.setAlbumTitle(qm->data(qm->index(i,6)).toString());
+        song.setDuration(qm->data(qm->index(i,7)).toTime());
+        song.setPath(qm->data(qm->index(i,8)).toString());
         list[list.count()]=song;
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     SB_DEBUG_IF_NULL(mqs);
     mqs->populate(list,enqueueFlag);
+}
+
+void
+SBIDPerformer::setText(const QString &text)
+{
+    _performerName=text;
+}
+
+QString
+SBIDPerformer::text() const
+{
+    return _performerName;
+}
+
+QString
+SBIDPerformer::type() const
+{
+    return "performer";
 }
 
 ///	Methods unique to SBIDPerformer
@@ -358,8 +407,8 @@ SBIDPerformer::selectSavePerformer(
         if(performerMatches->record(1).value(0).toInt()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            selectedPerformer.sb_song_performer_id=performerMatches->record(1).value(1).toInt();
-            selectedPerformer.songPerformerName=performerMatches->record(1).value(2).toString();
+            selectedPerformer._sb_performer_id=performerMatches->record(1).value(1).toInt();
+            selectedPerformer._performerName=performerMatches->record(1).value(2).toString();
             resultCode=1;
         }
         else
@@ -372,23 +421,23 @@ SBIDPerformer::selectSavePerformer(
             //	Go back to screen if no item has been selected
             if(pu->hasSelectedItem()==0)
             {
-                selectedPerformer=SBIDPerformer();
+                selectedPerformer._init();
                 return false;
             }
             else
             {
-                selectedPerformer=pu->getSBID();
+                selectedPerformer=static_cast<SBIDPerformer>(pu->getSBID());
             }
         }
 
         //	Update field
         if(field)
         {
-            field->setText(selectedPerformer.songPerformerName);
+            field->setText(selectedPerformer._performerName);
         }
     }
 
-    if(selectedPerformer.sb_song_performer_id==-1 && saveNewPerformer==1)
+    if(selectedPerformer._sb_performer_id==-1 && saveNewPerformer==1)
     {
         //	Save new performer if new
         resultCode=selectedPerformer.save();
@@ -398,10 +447,10 @@ SBIDPerformer::selectSavePerformer(
 
 ///	Operators
 bool
-SBIDPerformer::operator ==(const SBID& i) const
+SBIDPerformer::operator ==(const SBIDBase& i) const
 {
     if(
-        i.sb_song_performer_id==this->sb_song_performer_id
+        i._sb_performer_id==this->_sb_performer_id
     )
     {
         return 1;
@@ -412,30 +461,17 @@ SBIDPerformer::operator ==(const SBID& i) const
 QDebug
 operator<<(QDebug dbg, const SBIDPerformer& id)
 {
-    QString songPerformerName=id.songPerformerName.length() ? id.songPerformerName : "<N/A>";
-    dbg.nospace() << "SBID: " << id.getType() << id.sb_song_performer_id << "[" << id.sb_unique_item_id << "]"
+    QString songPerformerName=id._performerName.length() ? id._performerName : "<N/A>";
+    dbg.nospace() << "SBIDPerformer:" << id._sb_performer_id << "[" << id._sb_tmp_item_id << "]"
                   << "|n" << songPerformerName
     ;
     return dbg.space();
 }
 
 ///	Private methods
-SBIDPerformer::SBIDPerformer(SBID::sb_type type, int itemID):SBID(SBID::sb_type_performer, itemID)
-{
-    Q_UNUSED(type);
-}
-
 void
-SBIDPerformer::assign(const SBID::sb_type type, const int itemID)
+SBIDPerformer::_init()
 {
-    Q_UNUSED(type);
-    Q_UNUSED(itemID);
-}
-
-void
-SBIDPerformer::assign(const QString &itemType, const int itemID, const QString &text)
-{
-    Q_UNUSED(itemType);
-    Q_UNUSED(itemID);
-    Q_UNUSED(text);
+    _sb_item_type=SBIDBase::sb_type_performer;
+    _sb_performer_id=-1;
 }

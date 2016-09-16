@@ -1,13 +1,9 @@
 #include "SBTabAlbumDetail.h"
 
 #include "Context.h"
-#include "ExternalData.h"
 #include "MainWindow.h"
 #include "DataEntityAlbum.h"
-#include "PlayManager.h"
-#include "SBIDAlbum.h"
 #include "SBSqlQueryModel.h"
-#include "Navigator.h"
 
 ///	Public methods
 SBTabAlbumDetail::SBTabAlbumDetail(): SBTab()
@@ -36,13 +32,13 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(_lastClickedIndex);
+    SBIDBase selectedID=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    if(selectedID.itemType()==SBIDBase::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
-        selectedID=SBTab::currentID();
+        selectedID=this->currentScreenItem().base();
     }
 
     pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
@@ -52,13 +48,13 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
 void
 SBTabAlbumDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBID currentID=SBTab::currentID();
+    const SBIDBase currentID=this->currentScreenItem().base();
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
 
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
@@ -75,9 +71,9 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBID selectedID=sm->determineSBID(ids);
+    SBIDBase selectedID=sm->determineSBID(ids);
 
-    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    if(selectedID.itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=ids;
 
@@ -85,8 +81,8 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.text()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.text()));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
@@ -122,7 +118,7 @@ SBTabAlbumDetail::refreshAlbumReviews()
 void
 SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, SBID::sb_type_album);
+    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().base());
 }
 
 void
@@ -214,8 +210,8 @@ SBTabAlbumDetail::_init()
     }
 }
 
-SBID
-SBTabAlbumDetail::_populate(const SBID &id)
+ScreenItem
+SBTabAlbumDetail::_populate(const ScreenItem &si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -223,24 +219,26 @@ SBTabAlbumDetail::_populate(const SBID &id)
 
     //	set constant connections
 
-    //	Clear image
-    setAlbumImage(QPixmap());
-
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabAlbumDetailLists->setTabEnabled(1,0);
     mw->ui.tabAlbumDetailLists->setTabEnabled(2,0);
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBID result=DataEntityAlbum::getDetail(id);
-    if(result.sb_album_id==-1)
+    SBIDAlbum album=DataEntityAlbum::getDetail(si.base());
+    if(album.validFlag()==0)
     {
         //	Not found
-        return result;
+        return ScreenItem();
     }
-    SBTab::_populate(result);
-    mw->ui.labelAlbumDetailIcon->setSBID(result);
+    ScreenItem currentScreenItem=si;
+    //SBTab::_setCurrentScreenItem(currentScreenItem);
+    mw->ui.labelAlbumDetailIcon->setSBID(album);
 
+    //	Clear image
+    setAlbumImage(QPixmap());
+
+    //	Get external data
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setAlbumImage(QPixmap)));
@@ -250,16 +248,16 @@ SBTabAlbumDetail::_populate(const SBID &id)
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
-    ed->loadAlbumData(result);
+    ed->loadAlbumData(album);
 
     //	Populate record detail tab
-    mw->ui.labelAlbumDetailAlbumTitle->setText(result.albumTitle);
-    QString genre=result.genre;
+    mw->ui.labelAlbumDetailAlbumTitle->setText(album.albumTitle());
+    QString genre=album.genre();
     genre.replace("|",",");
     QString details;
-    if(result.year>0)
+    if(album.year()>0)
     {
-        details=QString("Released %1").arg(result.year);
+        details=QString("Released %1").arg(album.year());
     }
     if(details.length()>0 && genre.length()>0)
     {
@@ -273,11 +271,11 @@ SBTabAlbumDetail::_populate(const SBID &id)
     }
 
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
-    mw->ui.labelAlbumDetailAlbumNotes->setText(result.notes);
+    mw->ui.labelAlbumDetailAlbumNotes->setText(album.notes());
 
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-        .arg(result.sb_album_performer_id)
-        .arg(result.albumPerformerName);
+        .arg(album.albumPerformerID())
+        .arg(album.albumPerformerName());
     mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
     mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
     connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
@@ -289,13 +287,12 @@ SBTabAlbumDetail::_populate(const SBID &id)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=DataEntityAlbum::getAllSongs(id);
+    qm=DataEntityAlbum::getAllSongs(album);
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
     populateTableView(tv,qm,1);
 
-    result.subtabID=mw->ui.tabAlbumDetailLists->currentIndex();
-
-    return result;
+    currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
+    return currentScreenItem;
 }

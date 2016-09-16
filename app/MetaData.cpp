@@ -18,14 +18,14 @@ SBIDSong
 MetaData::parse()
 {
     SBIDSong s;
-    s.albumTitle=Common::sanitize(TStringToQString(_f.tag()->album()));
-    s.genre=Common::sanitize(TStringToQString(_f.tag()->genre()));
-    s.notes=Common::sanitize(TStringToQString(_f.tag()->comment()));
-    s.songPerformerName=Common::sanitize(TStringToQString(_f.tag()->artist()));
-    s.songTitle=Common::sanitize(TStringToQString(_f.tag()->title()));
-    s.sb_position=_f.tag()->track();
-    s.year=_f.tag()->year();
-    s.duration=Duration(0,0,_f.audioProperties()->length());
+    s.setAlbumTitle(Common::sanitize(TStringToQString(_f.tag()->album())));
+    s.setGenre(Common::sanitize(TStringToQString(_f.tag()->genre())));
+    s.setNotes(Common::sanitize(TStringToQString(_f.tag()->comment())));
+    s.setSongPerformerName(Common::sanitize(TStringToQString(_f.tag()->artist())));
+    s.setSongTitle(Common::sanitize(TStringToQString(_f.tag()->title())));
+    s.setAlbumPosition(_f.tag()->track());
+    s.setYear(_f.tag()->year());
+    s.setDuration(Duration(0,0,_f.audioProperties()->length()));
 
     return s;
 }

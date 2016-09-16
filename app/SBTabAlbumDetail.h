@@ -3,6 +3,8 @@
 
 #include "SBTab.h"
 
+#include "SBIDAlbum.h"
+
 class SBTabAlbumDetail : public SBTab
 {
     Q_OBJECT
@@ -16,6 +18,7 @@ class SBTabAlbumDetail : public SBTab
 
 public:
     SBTabAlbumDetail();
+
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
 
@@ -35,7 +38,7 @@ private:
 
     void _init();
     virtual QTableView* _determineViewCurrentTab() const;
-    virtual SBID _populate(const SBID& id);
+    virtual ScreenItem _populate(const ScreenItem& id);
 };
 
 #endif // SBTABALBUMDETAIL_H

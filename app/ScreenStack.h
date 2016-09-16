@@ -3,7 +3,7 @@
 
 #include <QList>
 
-#include <SBID.h>
+#include <ScreenItem.h>
 
 ///
 /// \brief The ScreenStack class
@@ -21,20 +21,20 @@ public:
 
     void clear();
     int count() const;
-    SBID popScreen();
-    void pushScreen(const SBID& id);
+    ScreenItem popScreen();
+    void pushScreen(const ScreenItem& id);
 
-    SBID currentScreen() const;
-    SBID nextScreen();
-    SBID previousScreen();
+    ScreenItem currentScreen() const;
+    ScreenItem nextScreen();
+    ScreenItem previousScreen();
 
     int getCurrentScreenID() const;
     int getScreenCount() const;
     void removeCurrentScreen();
     void removeForward();
-    void removeScreen(const SBID& id,bool editOnlyFlag=0);
-    void updateCurrentScreen(const SBID& id);
-    void updateSBIDInStack(const SBID& id);
+    void removeScreen(const ScreenItem& id,bool editOnlyFlag=0);
+    void updateCurrentScreen(const ScreenItem& id);
+    void updateSBIDInStack(const ScreenItem& id);
 
     void debugShow(const QString& c);
 
@@ -46,8 +46,8 @@ protected:
     void doInit();	//	Init done by Context::
 
 private:
-    int currentScreenID;
-    QList<SBID> stack;
+    int _currentScreenID;
+    QList<ScreenItem> _stack;
     bool _initDoneFlag;
 
     void _init();

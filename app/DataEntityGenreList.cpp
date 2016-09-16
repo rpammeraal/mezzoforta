@@ -97,7 +97,7 @@ DataEntityGenrelist::applyFilter(const QString &filter, const bool doExactSearch
 }
 
 bool
-DataEntityGenrelist::assign(const QString& dstID, const SBID& id)
+DataEntityGenrelist::assign(const QString& dstID, const SBIDBase& id)
 {
     if(dstID.length()>0)
     {
@@ -107,7 +107,7 @@ DataEntityGenrelist::assign(const QString& dstID, const SBID& id)
             "UPDATE ___SB_SCHEMA_NAME___record "
             "SET genre=genre || '|%1' "
             "WHERE record_id= %2 AND genre NOT "+dal->_ilike+" '\%"+"%1"+"\%'"
-        ).arg(dstID).arg(id.sb_album_id);
+        ).arg(dstID).arg(id.albumID());
         qDebug() << SB_DEBUG_INFO << q;
 
         QSqlQuery c1(QSqlDatabase::database(dal->getConnectionName()));
@@ -119,11 +119,11 @@ DataEntityGenrelist::assign(const QString& dstID, const SBID& id)
     return 0;
 }
 
-SBID::sb_type
+SBIDBase::sb_type
 DataEntityGenrelist::getSBType(int column) const
 {
     Q_UNUSED(column);
-    return SBID::sb_type_invalid;
+    return SBIDBase::sb_type_invalid;
 }
 
 void
@@ -139,12 +139,12 @@ DataEntityGenrelist::whoami() const
 }
 
 ///	PROTECTED
-SBID
+SBIDBase
 DataEntityGenrelist::getSBID(const QModelIndex &i) const
 {
     Q_UNUSED(i);
     qDebug() << SB_DEBUG_INFO;
-    SBID id;
+    SBIDBase id;
     return id;
 
 //    QByteArray encodedData;

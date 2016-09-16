@@ -3,7 +3,8 @@
 
 #include <QWidget>
 
-#include "SBID.h"
+#include "SBIDBase.h"
+#include "ScreenItem.h"
 
 class QLabel;
 class QLineEdit;
@@ -21,12 +22,11 @@ class SBTab : public QWidget
 public:
     explicit SBTab(QWidget *parent = 0, bool isEditTabFlag=0);
 
-    inline SBID currentID() const { return _currentID; }
+    ScreenItem currentScreenItem() const;
     int getFirstEligibleSubtabID() const;
     inline int currentSubtabID() const { return _currentSubtabID; }
     inline bool isEditTab() const { return _isEditTabFlag; }
-    void refreshTabIfCurrent(const SBID &id);
-    void setSubtab(const SBID& id) const;
+    void refreshTabIfCurrent(const SBIDBase &id);
 
     //	Virtual UI
     virtual void handleDeleteKey();
@@ -34,7 +34,7 @@ public:
     virtual bool handleEscapeKey();	//	return 1 when currentTab can be closed
     virtual void handleMergeKey();	//	defined as a '*'
     virtual bool hasEdits() const;
-    virtual SBID populate(const SBID& id);
+    virtual ScreenItem populate(const ScreenItem& si);
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
 
@@ -46,6 +46,7 @@ public slots:
 public slots:
 
 protected:
+    //	ScreenItem _currentScreenItem;	CWIP: superseded by getting current screen from screenstack
     bool _initDoneFlag;
     QModelIndex _lastClickedIndex;
 
@@ -56,12 +57,13 @@ protected:
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
-    void setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const;
+    void setImage(const QPixmap& p, QLabel* l, const SBIDBase& id) const;
 
     virtual QTableView* _determineViewCurrentTab() const=0;
-    virtual void _populatePre(const SBID& id);
-    virtual SBID _populate(const SBID& id);
-    virtual void _populatePost(const SBID& id);
+    virtual void _populatePre(const ScreenItem& si);
+    virtual ScreenItem _populate(const ScreenItem& si)=0;
+    virtual void _populatePost(const ScreenItem& id);
+    //void _setCurrentScreenItem(const ScreenItem& currentScreenItem);
 
 protected slots:
     virtual void sortOrderChanged(int column);
@@ -69,12 +71,12 @@ protected slots:
     void tableViewCellClicked(const QModelIndex& i);
 
 private:
-    bool _isEditTabFlag;
-    SBID _currentID;
-    int _currentSubtabID;
-    QMap<int,int> tabSortMap;	//	last sort column by tab
+    bool          _isEditTabFlag;
+    int           _currentSubtabID;
+    QMap<int,int> _tabSortMap;	//	last sort column by tab
 
     void _hideContextMenu();
+    void _setSubtab(const ScreenItem& si) const;
 };
 
 #endif // SBTAB_H

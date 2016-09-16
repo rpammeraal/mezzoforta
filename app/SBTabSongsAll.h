@@ -3,6 +3,8 @@
 
 #include "SBTab.h"
 
+#include "SBIDBase.h"
+
 class SBTabSongsAll : public SBTab
 {
     Q_OBJECT
@@ -21,8 +23,9 @@ public slots:
     void showContextMenuView(const QPoint &p);
 
 private:
+
     void _init();
-    virtual SBID _populate(const SBID& id);
+    virtual ScreenItem _populate(const ScreenItem& id);
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 

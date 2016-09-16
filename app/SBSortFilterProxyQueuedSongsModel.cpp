@@ -3,7 +3,7 @@
 #include <QDebug>
 
 #include "Common.h"
-#include "SBID.h"
+#include "SBIDBase.h"
 #include "SBModelQueuedSongs.h"
 
 SBSortFilterProxyQueuedSongsModel::SBSortFilterProxyQueuedSongsModel(QObject* parent):QSortFilterProxyModel(parent)

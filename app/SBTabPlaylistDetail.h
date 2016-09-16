@@ -3,6 +3,8 @@
 
 #include "SBTab.h"
 
+#include "SBIDPlaylist.h"
+
 class QMenu;
 
 class SBTabPlaylistDetail : public SBTab
@@ -17,18 +19,17 @@ public:
 
 public slots:
     void deletePlaylistItem();
-    void movePlaylistItem(const SBID& fromID, int row);
+    void movePlaylistItem(const SBIDBase& fromID, int row);
     virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 
 private:
-    QAction* _deletePlaylistItemAction;
+    QAction*     _deletePlaylistItemAction;
 
     void _init();
-    SBID getSBIDSelected(const QModelIndex& idx);
-    virtual SBID _populate(const SBID& id);
-    virtual void _populatePost(const SBID& id);
+    SBIDBase _getSBIDSelected(const QModelIndex& idx);
+    virtual ScreenItem _populate(const ScreenItem& id);
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 

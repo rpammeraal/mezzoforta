@@ -1,6 +1,7 @@
 #ifndef SBTABSONGEDIT_H
 #define SBTABSONGEDIT_H
 
+#include "SBIDSong.h"
 #include "SBTab.h"
 
 class QCompleter;
@@ -20,8 +21,8 @@ public slots:
     virtual void save() const;
 
 private:
-    void init();
-    virtual SBID _populate(const SBID& id);
+    void _init();
+    virtual ScreenItem _populate(const ScreenItem& id);
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 

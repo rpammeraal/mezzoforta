@@ -4,6 +4,7 @@
 #include "SBTab.h"
 
 #include "ExternalData.h"
+#include "SBIDPerformer.h"
 
 class SBTabPerformerDetail : public SBTab
 {
@@ -21,6 +22,7 @@ class SBTabPerformerDetail : public SBTab
 
 public:
     SBTabPerformerDetail(QWidget* parent=0);
+
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
 
@@ -37,12 +39,12 @@ private slots:
     void setPerformerWikipediaPage(const QString& url);
 
 private:
-    QList<NewsItem> _currentNews;
+    QList<NewsItem>  _currentNews;
     QList<QWidget *> _relatedItems;
 
     virtual QTableView* _determineViewCurrentTab() const;
     void _init();
-    virtual SBID _populate(const SBID& id);
+    virtual ScreenItem _populate(const ScreenItem& id);
 };
 
 #endif // SBTABPERFORMERDETAIL_H

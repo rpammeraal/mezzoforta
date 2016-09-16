@@ -70,14 +70,14 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBID id=SBID(encodedData);
+    SBIDBase id=SBIDBase(encodedData);
     qDebug() << SB_DEBUG_INFO << "Dropping " << id;
 
     //const QModelIndex n=this->index(parent.row(),parent.column());
     qDebug() << SB_DEBUG_INFO << "Dropping on " << row;
 
-    this->beginRemoveRows(parent,id.sb_position,id.sb_position);
-    this->removeRow(id.sb_position);
+    this->beginRemoveRows(parent,id.modelPosition(),id.modelPosition());
+    this->removeRow(id.modelPosition());
     this->endRemoveRows();
 
 
@@ -139,7 +139,7 @@ SBStandardItemModel::supportedDropActions() const
 }
 
 ///	NATIVE METHODS
-SBID
+SBIDBase
 SBStandardItemModel::determineSBID(const QModelIndex &idx) const
 {
     return SBModel::_determineSBID(this,idx);

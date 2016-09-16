@@ -48,7 +48,7 @@ public:
     //	Methods unrelated to drag&drop
     QModelIndex addRow();
     QString formatDisplayPlayID(int playID,bool isCurrent=0) const;
-    SBID getSBIDSelected(const QModelIndex& idx) const;
+    SBIDBase getSBIDSelected(const QModelIndex& idx) const;
     void paintRow(int i);
     virtual void sort(int column, Qt::SortOrder order);
 
@@ -57,8 +57,8 @@ public:
     int playlistCount() const { return this->rowCount(); }
     QList<SBIDSong> getAllSongs();
     inline int numSongs() const { return this->rowCount(); }
-    void populate(QMap<int,SBID> newPlaylist,bool firstBatchHasLoadedFlag=0);
-    SBID songAt(int playlistIndex) const;
+    void populate(QMap<int,SBIDBase> newPlaylist,bool firstBatchHasLoadedFlag=0);
+    SBIDSong songAt(int playlistIndex) const;
     inline Duration totalDuration() const { return _totalDuration; }
 
     void reorderItems();
@@ -84,7 +84,7 @@ private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager
     Duration _totalDuration;
 
-    QList<QStandardItem *> createRecord(const SBID& id,int playPosition) const;
+    QList<QStandardItem *> createRecord(const SBIDBase& id,int playPosition) const;
     QString _formatPlaylistPosition(int playlistPositionID) const;
     void _populateHeader();
     QMap<int,int> _populateMapPlaylistPosition2ViewPosition();

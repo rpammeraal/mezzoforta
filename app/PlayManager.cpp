@@ -157,11 +157,11 @@ PlayManager::clearPlaylist()
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->clear();
     _resetCurrentPlayID();
-    emit playlistChanged(SBID());
+    emit playlistChanged(SBIDBase());
 }
 
 bool
-PlayManager::playItemNow(SBID& toPlay, const bool enqueueFlag)
+PlayManager::playItemNow(SBIDBase& toPlay, const bool enqueueFlag)
 {
     bool isPlayingFlag=0;
     PlayerController* pc=Context::instance()->getPlayerController();
@@ -173,13 +173,13 @@ PlayManager::playItemNow(SBID& toPlay, const bool enqueueFlag)
     }
     toPlay.sendToPlayQueue(enqueueFlag);
     _radioModeFlag=0;
-    if(toPlay.sb_item_type()==SBID::sb_type_playlist && enqueueFlag==0)
+    if(toPlay.itemType()==SBIDBase::sb_type_playlist && enqueueFlag==0)
     {
         emit playlistChanged(SBIDPlaylist(toPlay));
     }
     else
     {
-        emit playlistChanged(SBID());
+        emit playlistChanged(SBIDBase());
     }
 
     if(enqueueFlag==0)
@@ -210,19 +210,19 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     //	CWIP: change to SBIDSong
     SBIDSong song=_songAt(currentPlayID());
 
-    if(song.sb_item_type()==SBID::sb_type_invalid)
+    if(song.itemType()==SBIDBase::sb_type_invalid)
     {
-        errorMsg=song.errorMsg;
+        errorMsg=song.errorMessage();
     }
     else
     {
         //	Song is valid, go and play
-        song.playPosition=this->currentPlayID();
+        song.setPlayPosition(this->currentPlayID());
         isPlayingFlag=pc->playSong(song);
         qDebug() << SB_DEBUG_INFO << isPlayingFlag;
         if(isPlayingFlag==0)
         {
-            errorMsg=song.errorMsg;
+            errorMsg=song.errorMessage();
         }
         else if(_radioModeFlag)
         {
@@ -266,7 +266,7 @@ PlayManager::startRadio()
 
     //	load queue
     _loadRadio();
-    emit playlistChanged(SBID());
+    emit playlistChanged(SBIDBase());
 
     //	show Songs in Queue tab
     Context::instance()->getNavigator()->showCurrentPlaylist();
@@ -330,7 +330,7 @@ PlayManager::_loadRadio()
     bool firstBatchLoaded=false;
     _radioModeFlag=1;
 
-    QMap<int,SBID> playList;
+    QMap<int,SBIDBase> playList;
     QList<int> indexCovered;
 
     int progressStep=0;
@@ -391,18 +391,18 @@ PlayManager::_loadRadio()
             }
         }
 
-        SBID item=SBID(SBID::sb_type_song,qm->record(idx).value(0).toInt());
+        SBIDSong song=SBIDSong(qm->record(idx).value(0).toInt());
 
-        item.songTitle=qm->record(idx).value(1).toString();
-        item.sb_song_performer_id=qm->record(idx).value(2).toInt();
-        item.songPerformerName=qm->record(idx).value(3).toString();
-        item.sb_album_id=qm->record(idx).value(4).toInt();
-        item.albumTitle=qm->record(idx).value(5).toString();
-        item.sb_position=qm->record(idx).value(6).toInt();
-        item.path=qm->record(idx).value(7).toString();
-        item.duration=qm->record(idx).value(8).toTime();
+        song.setSongTitle(qm->record(idx).value(1).toString());
+        song.setSongPerformerID(qm->record(idx).value(2).toInt());
+        song.setSongPerformerName(qm->record(idx).value(3).toString());
+        song.setAlbumID(qm->record(idx).value(4).toInt());
+        song.setAlbumTitle(qm->record(idx).value(5).toString());
+        song.setAlbumPosition(qm->record(idx).value(6).toInt());
+        song.setPath(qm->record(idx).value(7).toString());
+        song.setDuration(qm->record(idx).value(8).toTime());
 
-        playList[nextOpenSlotIndex++]=item;
+        playList[nextOpenSlotIndex++]=song;
 
         if(index%songInterval==0 || index+1==numSongs)
         {
@@ -420,7 +420,7 @@ PlayManager::_loadRadio()
                 tqs->setViewLayout();
 
                 this->playerNext();
-                emit playlistChanged(SBID());
+                emit playlistChanged(SBIDBase());
 
                 firstBatchLoaded=true;
 
@@ -456,7 +456,7 @@ SBIDSong
 PlayManager::_songAt(int index) const
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    return mqs?mqs->songAt(index):SBID();
+    return mqs?mqs->songAt(index):SBIDBase();
 }
 
 void

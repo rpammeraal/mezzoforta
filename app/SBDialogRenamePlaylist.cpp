@@ -1,13 +1,13 @@
 #include "ui_SBDialogRenamePlaylist.h"
 #include "SBDialogRenamePlaylist.h"
 
-SBDialogRenamePlaylist::SBDialogRenamePlaylist(const SBID& nid,QWidget *parent) :
+SBDialogRenamePlaylist::SBDialogRenamePlaylist(const SBIDPlaylist& nid,QWidget *parent) :
     QDialog(parent),
     id(nid),
     ui(new Ui::SBDialogRenamePlaylist)
 {
     ui->setupUi(this);
-    ui->playlistName->setText(id.playlistName);
+    ui->playlistName->setText(id.playlistName());
     ui->playlistName->setFocus();
     ui->playlistName->selectAll();
     connect(ui->buttonBox, SIGNAL(accepted()),
@@ -23,6 +23,6 @@ SBDialogRenamePlaylist::~SBDialogRenamePlaylist()
 void
 SBDialogRenamePlaylist::accepted()
 {
-    id.playlistName=ui->playlistName->text();
+    id.setPlaylistName(ui->playlistName->text());
     emit playlistNameChanged(id);
 }

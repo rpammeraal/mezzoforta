@@ -6,7 +6,6 @@ HEADERS     = \
     Common.h \
     DataAccessLayer.h \
     DataAccessLayerPostgres.h \
-    SBID.h \
     Context.h \
     ScreenStack.h \
     ExternalData.h \
@@ -65,7 +64,9 @@ HEADERS     = \
     KeyboardEventCatcher.h \
     OSXNSEventFunctions.h \
     MetaData.h \
-    SBCaseInsensitiveString.h
+    SBCaseInsensitiveString.h \
+    SBIDBase.h \
+    ScreenItem.h
 
 SOURCES     = \
     main.cpp \
@@ -74,7 +75,6 @@ SOURCES     = \
     Common.cpp \
     DataAccessLayer.cpp \
     DataAccessLayerPostgres.cpp \
-    SBID.cpp \
     Context.cpp \
     ScreenStack.cpp \
     ExternalData.cpp \
@@ -132,7 +132,9 @@ SOURCES     = \
     DBManager.cpp \
     KeyboardEventCatcher.cpp \
     MetaData.cpp \
-    SBCaseInsensitiveString.cpp
+    SBCaseInsensitiveString.cpp \
+    SBIDBase.cpp \
+    ScreenItem.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

@@ -3,6 +3,8 @@
 
 #include "SBTab.h"
 
+#include "SBIDAlbum.h"
+
 class QAction;
 class QItemSelection;
 
@@ -33,16 +35,16 @@ private slots:
 
 
 private:
-    QAction* clearAllAction;
-    QAction* deleteSongAction;
-    QAction* mergeSongAction;
-    bool _hasChanges;
+    QAction*  _clearAllAction;
+    QAction*  _deleteSongAction;
+    QAction*  _mergeSongAction;
+    bool      _hasChanges;
 
     int _count() const;
     void _getSelectionStatus(int& numRowsSelected, int& numRowsRemoved,int& numRowsMarkedAsMerged);
     void _init();
-    virtual SBID _populate(const SBID& id);
-    void setFocusOnRow(QModelIndex idx) const;
+    virtual ScreenItem _populate(const ScreenItem& id);
+    void _setFocusOnRow(QModelIndex idx) const;
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };
 

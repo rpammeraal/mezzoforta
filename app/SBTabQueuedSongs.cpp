@@ -1,22 +1,9 @@
 #include "SBTabQueuedSongs.h"
 
-#include <QProgressDialog>
-
-#include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataEntityAlbum.h"
-#include "DataEntityCurrentPlaylist.h"
-#include "DataEntityPerformer.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
 #include "MainWindow.h"
-#include "Navigator.h"
-#include "PlayManager.h"
-#include "PlayerController.h"
-#include "SBModelQueuedSongs.h"
 #include "SBSortFilterProxyQueuedSongsModel.h"
-#include "SBSqlQueryModel.h"
 
 
 SBTabQueuedSongs::SBTabQueuedSongs(QWidget* parent) : SBTab(parent,0)
@@ -53,16 +40,16 @@ void
 SBTabQueuedSongs::deletePlaylistItem()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBID assignID=mqs->getSBIDSelected(_lastClickedIndex);
-    if(assignID.sb_item_type()!=SBID::sb_type_invalid)
+    SBIDBase assignID=mqs->getSBIDSelected(_lastClickedIndex);
+    if(assignID.itemType()!=SBIDBase::sb_type_invalid)
     {
         mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
 
         QString updateText=QString("Removed %4 %1%2%3 from playlist.")
-            .arg(QChar(96))            //	1
-            .arg(assignID.getText())   //	2
-            .arg(QChar(180))           //	3
-            .arg(assignID.getType())   //	4
+            .arg(QChar(96))         //	1
+            .arg(assignID.text())   //	2
+            .arg(QChar(180))        //	3
+            .arg(assignID.type())   //	4
         ;
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
@@ -70,7 +57,7 @@ SBTabQueuedSongs::deletePlaylistItem()
 }
 
 void
-SBTabQueuedSongs::movePlaylistItem(const SBID& fromID, const SBID &toID)
+SBTabQueuedSongs::movePlaylistItem(const SBIDBase& fromID, const SBIDBase& toID)
 {
     Q_UNUSED(fromID);
     Q_UNUSED(toID);
@@ -102,8 +89,8 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBID id=mqs->getSBIDSelected(idx);
-    if(id.sb_item_type()!=SBID::sb_type_invalid)
+    SBIDBase id=mqs->getSBIDSelected(idx);
+    if(id.itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=idx;
 
@@ -188,8 +175,8 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-        SBID item=mqs->getSBIDSelected(sourceIDX);
-        Context::instance()->getNavigator()->openScreenByID(item);
+        SBIDBase item=mqs->getSBIDSelected(sourceIDX);
+        Context::instance()->getNavigator()->openScreen(item);
     }
 }
 void
@@ -275,20 +262,20 @@ SBTabQueuedSongs::_init()
 /// pre-populated in the database. Population happens at a different time from when
 /// the current playlist (aka Songs in Queue) is opened.
 ///
-SBID
-SBTabQueuedSongs::_populate(const SBID& id)
+ScreenItem
+SBTabQueuedSongs::_populate(const ScreenItem& si)
 {
-    Q_UNUSED(id);
+    Q_UNUSED(si);
     _init();
     _updateDetail();
-
-    return SBID(SBID::sb_type_current_playlist,-1);
+    //SBTab::_setCurrentScreenItem(si);
+    return si;
 }
 
 void
-SBTabQueuedSongs::_populatePost(const SBID &id)
+SBTabQueuedSongs::_populatePost(const ScreenItem &si)
 {
-    Q_UNUSED(id);
+    Q_UNUSED(si);
     setViewLayout();
 }
 

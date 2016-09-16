@@ -1,33 +1,44 @@
 #ifndef SBIDPLAYLIST_H
 #define SBIDPLAYLIST_H
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
-class SBIDPlaylist : public SBID
+class SBIDPlaylist : public SBIDBase
 {
 public:
     //	Ctors, dtors
-    SBIDPlaylist():SBID() { }
-    SBIDPlaylist(const SBID& c);
+    SBIDPlaylist();
+    SBIDPlaylist(const SBIDBase& c);
     SBIDPlaylist(const SBIDPlaylist& c);
     SBIDPlaylist(int itemID);
-    SBIDPlaylist(QByteArray encodedData);
-    ~SBIDPlaylist() { }
+    ~SBIDPlaylist();
 
     //	Public methods
-    virtual void assign(int itemID);
-    virtual inline int sb_item_id() const { return this->sb_playlist_id; }
-    virtual inline sb_type sb_item_type() const { return SBID::sb_type_playlist; }
+    virtual SBSqlQueryModel* findMatches(const QString& name) const;
+    virtual QString genericDescription() const;
+    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual -- possible rename to retrieveDetail()
+    virtual QString hash() const;
+    virtual QString iconResourceLocation() const;
+    virtual bool save();
+    virtual int itemID() const;
+    virtual sb_type itemType() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
+    virtual void setText(const QString &text);
+    virtual QString text() const;
+    virtual QString type() const;
+
+    //	Methods specific to SBIDPlaylist
+    void setCount1(const int count1) { _count1=count1; }
+    void setDuration(const Duration& duration) { _duration=duration; }
+    void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
+    void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; }
 
     //	Operators
-    virtual bool operator==(const SBID& i) const;
+    virtual bool operator==(const SBIDBase& i) const;
     friend QDebug operator<<(QDebug dbg, const SBIDPlaylist& id);
 
 private:
-    SBIDPlaylist(SBID::sb_type type, int itemID);
-    virtual void assign(const SBID::sb_type type, const int itemID);
-    virtual void assign(const QString& itemType, const int itemID, const QString& text="");
+    void _init();
 };
 
 #endif // SBIDPLAYLIST_H

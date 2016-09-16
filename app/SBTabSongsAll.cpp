@@ -3,8 +3,6 @@
 #include "Context.h"
 #include "DataEntitySong.h"
 #include "MainWindow.h"
-#include "PlayManager.h"
-#include "ScreenStack.h"
 #include "SBSqlQueryModel.h"
 
 SBTabSongsAll::SBTabSongsAll(QWidget* parent) : SBTab(parent,0)
@@ -73,10 +71,10 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBID selectedID=sm->determineSBID(_lastClickedIndex);
+    SBIDBase selectedID=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selectedID.sb_item_type()==SBID::sb_type_invalid)
+    if(selectedID.itemType()==SBIDBase::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
         return;
@@ -94,13 +92,13 @@ SBTabSongsAll::schemaChanged()
 void
 SBTabSongsAll::showContextMenuLabel(const QPoint &p)
 {
-    const SBID currentID=SBTab::currentID();
+    const SBIDBase currentID=this->currentScreenItem().base();
 
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.getText()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.getText()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
@@ -117,9 +115,9 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBID selectedID=sm->determineSBID(ids);
+    SBIDBase selectedID=sm->determineSBID(ids);
 
-    if(selectedID.sb_item_type()!=SBID::sb_type_invalid)
+    if(selectedID.itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=ids;
 
@@ -127,8 +125,8 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
 
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.getText()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.getText()));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.text()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.text()));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
@@ -178,11 +176,9 @@ SBTabSongsAll::_init()
     }
 }
 
-SBID
-SBTabSongsAll::_populate(const SBID &id)
+ScreenItem
+SBTabSongsAll::_populate(const ScreenItem& si)
 {
-    Q_UNUSED(id);
-    //SBID all=SBID(SBID::sb_type_allsongs,0);
-    SBTab::_populate(id);
-    return id;
+    //SBTab::_setCurrentScreenItem(si);
+    return si;
 }

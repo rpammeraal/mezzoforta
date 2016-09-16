@@ -1,25 +1,14 @@
-#include <QAbstractItemModel>
 #include <QHeaderView>
 #include <QLabel>
-#include <QLineEdit>
-#include <QListView>
-#include <QSortFilterProxyModel>
-#include <QSqlRecord>
+#include <QMenu>
 #include <QTableView>
+#include <QTabWidget>
 
 #include "SBTab.h"
 
-#include "Common.h"
 #include "Context.h"
-#include "MainWindow.h"
-#include "Navigator.h"
-#include "SBDialogSelectItem.h"
-#include "SBIDPerformer.h"
 #include "SBMessageBox.h"
-#include "DataEntityPerformer.h"
-#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
-#include "ScreenStack.h"
 
 
 ///	Public methods
@@ -27,6 +16,12 @@ SBTab::SBTab(QWidget *parent, bool isEditTabFlag) : QWidget(parent)
 {
     init();
     _isEditTabFlag=isEditTabFlag;
+}
+
+ScreenItem
+SBTab::currentScreenItem() const
+{
+    return Context::instance()->getScreenStack()->currentScreen();
 }
 
 int
@@ -48,41 +43,13 @@ SBTab::getFirstEligibleSubtabID() const
 }
 
 void
-SBTab::refreshTabIfCurrent(const SBID &id)
+SBTab::refreshTabIfCurrent(const SBIDBase& id)
 {
-    if(id.compareSimple(currentID())==1)
-    {
-        populate(id);
-    }
-}
+    ScreenItem si=currentScreenItem();
 
-///
-/// \brief SBTab::setSubtab
-/// \param subtabID
-///
-/// Set the subTab and sorted as found in screenstack.
-void
-SBTab::setSubtab(const SBID& id) const
-{
-    QTabWidget* tw=tabWidget();
-    if(tw)
+    if(si.base()==id)
     {
-        int subtabID=id.subtabID;
-
-        if(subtabID==INT_MAX)
-        {
-            subtabID=getFirstEligibleSubtabID();
-        }
-        if(subtabID!=INT_MAX)
-        {
-            tw->setCurrentIndex(id.subtabID);
-        }
-    }
-
-    QTableView* ctv=subtabID2TableView(id.subtabID);
-    if(ctv && id.sortColumn!=INT_MAX)
-    {
-        ctv->sortByColumn(abs(id.sortColumn),(id.sortColumn>0?Qt::AscendingOrder:Qt::DescendingOrder));
+        populate(si);
     }
 }
 
@@ -131,14 +98,15 @@ SBTab::hasEdits() const
     return 0;
 }
 
-SBID
-SBTab::populate(const SBID &id)
+ScreenItem
+SBTab::populate(const ScreenItem& si)
 {
-    _populatePre(id);
-    const SBID onStack=currentID();
-    SBID result=_populate(id);
-    result.sortColumn=onStack.sortColumn;
-    result.subtabID=onStack.subtabID;
+    _populatePre(si);
+    const ScreenItem& onStack=currentScreenItem(); //Context::instance()->getScreenStack()->currentScreen();
+
+    ScreenItem result=_populate(si);
+    result.setSortColumn(onStack.sortColumn());
+    result.setSubtabID(onStack.subtabID());
     Context::instance()->getScreenStack()->updateCurrentScreen(result);
     _populatePost(result);
 
@@ -185,7 +153,7 @@ SBTab::init()
 {
     _isEditTabFlag=0;
     _initDoneFlag=0;
-    tabSortMap.clear();
+    _tabSortMap.clear();
     _currentSubtabID=0;
     _menu=NULL;
     _enqueueAction=NULL;
@@ -234,7 +202,7 @@ SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortC
 //	CWIP: see if SBIDPerformer::selectSavePerformer() can be used.
 /*
 bool
-SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLineEdit* field, bool saveNewPerformer) const
+SBTab::processPerformerEdit(const QString &editPerformerName, SBIDBase &newID, QLineEdit* field, bool saveNewPerformer) const
 {
     bool resultCode=1;
     SBIDPerformer selected=SBIDPerformer::selectSavePerformer(editPerformerName,newID,field,saveNewPerformer);
@@ -245,7 +213,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
     }
     return resultCode;
 
-    SBID selectedPerformerID=newID;
+    SBIDBase selectedPerformerID=newID;
     selectedPerformerID.assign(SBID::sb_type_performer,-1);
     selectedPerformerID.performerName=editPerformerName;
 
@@ -303,11 +271,12 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBID &newID, QLine
 */
 
 void
-SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
+SBTab::setImage(const QPixmap& p, QLabel* l, const SBIDBase& id) const
 {
+    SB_DEBUG_IF_NULL(l);
     if(p.isNull())
     {
-        QPixmap q=QPixmap(SBID::getIconResourceLocation(type));
+        QPixmap q=QPixmap(id.iconResourceLocation());
         l->setPixmap(q);
     }
     else
@@ -320,24 +289,23 @@ SBTab::setImage(const QPixmap& p, QLabel* l, const SBID::sb_type type) const
 }
 
 void
-SBTab::_populatePre(const SBID &id)
+SBTab::_populatePre(const ScreenItem &si)
 {
-    Q_UNUSED(id);
+    Q_UNUSED(si);
     Context::instance()->setTab(this);
 }
 
-SBID
-SBTab::_populate(const SBID &id)
+void
+SBTab::_populatePost(const ScreenItem& si)
 {
-    _currentID=id;
-    return SBID();
+    this->_setSubtab(si);
 }
 
-void
-SBTab::_populatePost(const SBID& id)
-{
-    this->setSubtab(id);
-}
+//void
+//SBTab::_setCurrentScreenItem(const ScreenItem& currentScreenItem)
+//{
+//    _currentScreenItem=currentScreenItem;
+//}
 
 ///	Protected slots
 void
@@ -346,20 +314,20 @@ SBTab::sortOrderChanged(int column)
     ScreenStack* st=Context::instance()->getScreenStack();
     if(st && st->getScreenCount())
     {
-        SBID id=currentID();
+        ScreenItem id=currentScreenItem();
 
-        if(abs(id.sortColumn)==abs(column))
+        if(abs(id.sortColumn())==abs(column))
         {
-            id.sortColumn*=-1;
+            id.setSortColumn(id.sortColumn()*-1);
         }
         else
         {
-            id.sortColumn=column;
+            id.setSortColumn(column);
         }
 
-        if(id.subtabID==INT_MAX)
+        if(id.subtabID()==INT_MAX)
         {
-            id.subtabID=getFirstEligibleSubtabID();
+            id.setSubtabID(getFirstEligibleSubtabID());
         }
         st->updateCurrentScreen(id);
     }
@@ -373,18 +341,18 @@ SBTab::tabBarClicked(int index)
 
     //	get sort order for clicked tab
     int prevSortColumn=INT_MAX;
-    if(tabSortMap.contains(index))
+    if(_tabSortMap.contains(index))
     {
-        prevSortColumn=tabSortMap[index];
+        prevSortColumn=_tabSortMap[index];
     }
 
     //	Preserve current sort order for current tab
-    SBID current=currentID();
-    if(current.subtabID!=index)
+    ScreenItem si=currentScreenItem();
+    if(si.subtabID()!=index)
     {
-        tabSortMap[current.subtabID]=current.sortColumn;
-        current.sortColumn=prevSortColumn;
-        st->updateCurrentScreen(current);
+        _tabSortMap[si.subtabID()]=si.sortColumn();
+        si.setSortColumn(prevSortColumn);
+        st->updateCurrentScreen(si);
     }
     else
     {
@@ -394,19 +362,21 @@ SBTab::tabBarClicked(int index)
     //	Update screenstack entry with subtab clicked.
     if(st && st->getScreenCount())
     {
-        SBID id=currentID();
-        if(id.subtabID!=index)
+        ScreenItem si=currentScreenItem();
+        if(si.subtabID()!=index)
         {
-            id.subtabID=index;
-            st->updateCurrentScreen(id);
+            si.setSubtabID(index);
+            st->updateCurrentScreen(si);
         }
     }
+    //_setCurrentScreenItem(si);
+    st->debugShow("end of tabBarClicked");
 }
 
 void
 SBTab::tableViewCellClicked(const QModelIndex& idx)
 {
-    SBID id;
+    SBIDBase id;
     const QSortFilterProxyModel* sfpm=dynamic_cast<const QSortFilterProxyModel *>(idx.model());
 
     if(sfpm)
@@ -419,7 +389,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
             id=m->determineSBID(idy);
-            Context::instance()->getNavigator()->openScreenByID(id);
+            Context::instance()->getNavigator()->openScreen(id);
         }
     }
 }
@@ -433,5 +403,35 @@ SBTab::_hideContextMenu()
         _menu->clear();
         _menu->hide();
         //delete _menu; _menu=NULL;
+    }
+}
+
+///
+/// \brief SBTab::_setSubtab
+/// \param subtabID
+///
+/// Set the subTab and sorted as found in screenstack.
+void
+SBTab::_setSubtab(const ScreenItem& si) const
+{
+    QTabWidget* tw=tabWidget();
+    if(tw)
+    {
+        int subtabID=si.subtabID();
+
+        if(subtabID==INT_MAX)
+        {
+            subtabID=getFirstEligibleSubtabID();
+        }
+        if(subtabID!=INT_MAX)
+        {
+            tw->setCurrentIndex(si.subtabID());
+        }
+    }
+
+    QTableView* ctv=subtabID2TableView(si.subtabID());
+    if(ctv && si.sortColumn()!=INT_MAX)
+    {
+        ctv->sortByColumn(abs(si.sortColumn()),(si.sortColumn()>0?Qt::AscendingOrder:Qt::DescendingOrder));
     }
 }

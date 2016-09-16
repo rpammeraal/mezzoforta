@@ -1,13 +1,11 @@
 #ifndef SBTABPERFORMEREDIT_H
 #define SBTABPERFORMEREDIT_H
 
-#include "Common.h"
 #include "SBTab.h"
 
+#include "SBIDPerformer.h"
 
 class QCompleter;
-
-class SBID;
 
 class SBTabPerformerEdit : public SBTab
 {
@@ -32,20 +30,20 @@ private slots:
     void relatedPerformerSelected(const QModelIndex& i);
 
 private:
-    QLineEdit* _relatedPerformerLineEdit;
-    QCompleter* addNewRelatedPerformerCompleter;
-    bool _removeRelatedPerformerButtonMaybeEnabledFlag;
-    bool _relatedPerformerBeingAddedFlag;
-    bool _relatedPerformerBeingDeletedFlag;
-    QList<int> allRelatedPerformers;
-    bool relatedPerformerHasChanged;
+    QCompleter*   _addNewRelatedPerformerCompleter;
+    QList<int>    _allRelatedPerformers;
+    bool          _relatedPerformerBeingAddedFlag;
+    bool          _relatedPerformerBeingDeletedFlag;
+    bool          _relatedPerformerHasChanged;
+    QLineEdit*    _relatedPerformerLineEdit;
+    bool          _removeRelatedPerformerButtonMaybeEnabledFlag;
 
-    void init();
-    virtual SBID _populate(const SBID& id);
-    void setRelatedPerformerBeingAddedFlag(bool flag);
-    void setRelatedPerformerBeingDeletedFlag(bool flag);
-    void addItemToRelatedPerformerList(const SBID& performer) const;
+    void _addItemToRelatedPerformerList(const SBIDPerformer& performer) const;
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
+    void _init();
+    virtual ScreenItem _populate(const ScreenItem& id);
+    void _setRelatedPerformerBeingAddedFlag(bool flag);
+    void _setRelatedPerformerBeingDeletedFlag(bool flag);
 };
 
 #endif // SBTABPERFORMEREDIT_H

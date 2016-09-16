@@ -6,7 +6,7 @@
 #include "SBLabel.h"
 
 #include "Common.h"
-#include "SBID.h"
+#include "SBIDBase.h"
 
 SBLabel::SBLabel()
 {
@@ -43,7 +43,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         }
         else
         {
-            QString l=_id.getIconResourceLocation();
+            QString l=_id.iconResourceLocation();
             QPixmap pb(l);
             pb.load(l);
             drag->setPixmap(pb.scaledToWidth(50));
@@ -53,7 +53,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
 }
 
 void
-SBLabel::setSBID(const SBID &id)
+SBLabel::setSBID(const SBIDBase &id)
 {
     _id=id;
 }

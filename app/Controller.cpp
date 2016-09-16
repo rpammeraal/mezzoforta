@@ -25,7 +25,7 @@
 #include "Navigator.h"
 #include "PlayerController.h"
 #include "Properties.h"
-#include "SBID.h"
+#include "SBIDBase.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"

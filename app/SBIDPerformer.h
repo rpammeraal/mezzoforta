@@ -3,51 +3,57 @@
 
 #include "QHash"
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 class SBSqlQueryModel;
 class QLineEdit;
 
-//	CWIP: for now, use sb_song_performer_id and songPerformerName.
-//	Later on, these attributes will make it to the correct classes.
-class SBIDPerformer : public SBID
+class SBIDPerformer : public SBIDBase
 {
 public:
         //	Ctors, dtors
-    SBIDPerformer():SBID() { }
-    SBIDPerformer(const SBID& c);
+    SBIDPerformer();
+    SBIDPerformer(const SBIDBase& c);
     SBIDPerformer(const SBIDPerformer& c);
     SBIDPerformer(int itemID);
-    SBIDPerformer(QByteArray encodedData);
-    SBIDPerformer(const QString& songPerformerName);
-    ~SBIDPerformer() { }
+    SBIDPerformer(const QString& performerName);
+    ~SBIDPerformer();
 
     //	Public methods
-    virtual void assign(int itemID);
-    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual
-    virtual SBSqlQueryModel* findMatches(const QString& newPerformerName) const;
+    virtual SBSqlQueryModel* findMatches(const QString& name) const;
+    virtual QString genericDescription() const;
+    virtual int getDetail(bool createIfNotExistFlag=0);
+    virtual QString hash() const;
+    virtual QString iconResourceLocation() const;
+    virtual int itemID() const;
+    virtual sb_type itemType() const;
     virtual bool save();
-    virtual inline int sb_item_id() const { return this->sb_song_performer_id; }
-    virtual inline sb_type sb_item_type() const { return SBID::sb_type_performer; }
     virtual void sendToPlayQueue(bool enqueueFlag=0);
+    virtual void setText(const QString &text);
+    virtual QString text() const;
+    virtual QString type() const;
 
     //	Methods unique to SBIDPerformer
     bool savePerformer();
+    void setCount1(int count1) { _count1=count1; }
+    void setCount2(int count2) { _count1=count2; }
+    void setNotes(const QString& notes) { _notes=notes; }
+    void setPerformerID(int performerID) { _sb_performer_id=performerID; }
+    void setPerformerName(const QString& performerName) { _performerName=performerName; }
     static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformer& existingPerformer,SBIDPerformer& selectedPerformer,QLineEdit* field=NULL, bool saveNewPerformer=1);
+    void setURL(const QString& url) { _url=url; }
 
     //	Operators
-    virtual bool operator==(const SBID& i) const;
+    virtual bool operator==(const SBIDBase& i) const;
     friend QDebug operator<<(QDebug dbg, const SBIDPerformer& id);
 
 private:
-    SBIDPerformer(SBID::sb_type type, int itemID);
-    virtual void assign(const SBID::sb_type type, const int itemID);
-    virtual void assign(const QString& itemType, const int itemID, const QString& text="");
+    void _init();
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)
 {
-    return p.sb_song_performer_id>=0?qHash(p.sb_song_performer_id,seed):qHash(p.songPerformerName,seed);
+    return p.performerID()>=0?qHash(p.performerID(),seed):qHash(p.performerName(),seed);
 }
 
 #endif // SBIDPERFORMER_H

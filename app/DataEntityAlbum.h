@@ -9,16 +9,16 @@ class SBSqlQueryModel;
 class DataEntityAlbum
 {
 public:
-    static QStringList addSongToAlbum(const SBID& song);
-    static SBIDAlbum getDetail(const SBID& id);
-    static SBSqlQueryModel* getAllSongs(const SBID& id);
-    static SBSqlQueryModel* matchAlbum(const SBID& newAlbum);
-    static QStringList mergeAlbum(const SBID& from, const SBID& to);
-    static QStringList mergeSongInAlbum(const SBID& album, int newPosition, const SBID& song);
-    static QStringList removeAlbum(const SBID& album);
-    static QStringList removeSongFromAlbum(const SBID& album, int position);
+    static QStringList addSongToAlbum(const SBIDSong& song);
+    static SBIDAlbum getDetail(const SBIDBase& id);
+    static SBSqlQueryModel* getAllSongs(const SBIDBase& id);
+    static SBSqlQueryModel* matchAlbum(const SBIDBase& newAlbum);
+    static QStringList mergeAlbum(const SBIDBase& from, const SBIDBase& to);
+    static QStringList mergeSongInAlbum(const SBIDBase& album, int newPosition, const SBIDBase& song);
+    static QStringList removeAlbum(const SBIDBase& album);
+    static QStringList removeSongFromAlbum(const SBIDBase& album, int position);
     static QStringList repositionSongOnAlbum(int albumID, int fromPosition, int toPosition);
-    static bool updateExistingAlbum(const SBID& orgAlbum, const SBID& newAlbum, const QStringList& SQL,bool commitFlag=1);
+    static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);
     static QStringList updateSongOnAlbum(int albumID, const SBIDSong& song);
 };
 

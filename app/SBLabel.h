@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QLabel>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 class QMouseEvent;
 
@@ -20,13 +20,13 @@ public:
 
     //	Inherited methods
     virtual void mousePressEvent(QMouseEvent* me);
-    void setSBID(const SBID& nid);
+    void setSBID(const SBIDBase& nid);
 
 protected:
     virtual void contextMenuEvent(QContextMenuEvent *ev);
 
 private:
-    SBID _id;
+    SBIDBase _id;
 };
 
 #endif // SBLABEL_H

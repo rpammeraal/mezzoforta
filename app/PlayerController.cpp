@@ -108,8 +108,9 @@ void
 PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
-    SBID item(static_cast<SBID::sb_type>(l[0].toInt()),l[1].toInt());
-    Context::instance()->getNavigator()->openScreenByID(item);
+    SBIDBase item=SBIDBase::createSBID(static_cast<SBIDBase::sb_type>(l[0].toInt()),l[1].toInt());
+    qDebug() << SB_DEBUG_INFO;
+    Context::instance()->getNavigator()->openScreen(item);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
 
@@ -149,7 +150,7 @@ PlayerController::playerPlay()
         _updatePlayState(PlayerController::sb_player_state_play);
     }
     else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState &&
-            _currentSongPlaying.sb_item_id()>0)
+            _currentSongPlaying.itemID()>0)
     {
         //	If stopped and there is a valid song, play.
         _playerInstance[_currentPlayerID].play();
@@ -192,9 +193,9 @@ PlayerController::playSong(SBIDSong& song)
 
     QString path=QString("%1/%2")
                 .arg(p->musicLibraryDirectorySchema())
-                .arg(song.path)
+                .arg(song.path())
     ;
-    emit setRowVisible(song.playPosition);	//	changed to here, so we can continue in case of error of playing a song.
+    emit setRowVisible(song.playPosition());	//	changed to here, so we can continue in case of error of playing a song.
 
     qDebug() << SB_DEBUG_INFO << path;
 
@@ -204,7 +205,7 @@ PlayerController::playSong(SBIDSong& song)
         c->updateStatusBarText(errorMsg);
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
-        song.errorMsg=errorMsg;
+        song.setErrorMessage(errorMsg);
         qDebug() << SB_DEBUG_INFO << "returning 0";
         return 0;
     }
@@ -223,7 +224,7 @@ void
 PlayerController::_init()
 {
     _currentPlayerID=0;
-    _currentSongPlaying=SBID();
+    _currentSongPlaying=SBIDBase();
     _state=PlayerController::sb_player_state_stopped;
 
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -358,17 +359,17 @@ PlayerController::_refreshPlayingNowData() const
             "<A HREF=\"%1_%2\">%3</A> by "
             "<A HREF=\"%4_%5\">%6</A> from the "
             "<A HREF=\"%7_%8\">'%9'</A> album")
-            .arg(SBID::sb_type_song)
-            .arg(_currentSongPlaying.sb_song_id)
-            .arg(_currentSongPlaying.songTitle)
+            .arg(SBIDBase::sb_type_song)
+            .arg(_currentSongPlaying.songID())
+            .arg(_currentSongPlaying.songTitle())
 
-            .arg(SBID::sb_type_performer)
-            .arg(_currentSongPlaying.sb_song_performer_id)
-            .arg(_currentSongPlaying.songPerformerName)
+            .arg(SBIDBase::sb_type_performer)
+            .arg(_currentSongPlaying.performerID())
+            .arg(_currentSongPlaying.performerName())
 
-            .arg(SBID::sb_type_album)
-            .arg(_currentSongPlaying.sb_album_id)
-            .arg(_currentSongPlaying.albumTitle)
+            .arg(SBIDBase::sb_type_album)
+            .arg(_currentSongPlaying.albumID())
+            .arg(_currentSongPlaying.albumTitle())
         ;
     }
     playState+="</CENTER></BODY>";
@@ -378,10 +379,6 @@ PlayerController::_refreshPlayingNowData() const
 void
 PlayerController::_updatePlayState(PlayerController::sb_player_state newState)
 {
-//    if(newState==_state)
-//    {
-//        return;
-//    }
     _state=newState;
 
     return _refreshPlayingNowData();

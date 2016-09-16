@@ -5,7 +5,7 @@
 
 #include "Common.h"
 #include "Controller.h"
-#include "SBID.h"
+#include "SBIDBase.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("Songbase");
 
     //	Set up types
-    qRegisterMetaType<SBID>();
+    qRegisterMetaType<SBIDBase>();
 
     //	Set up randomizer
     qsrand(QDateTime::currentMSecsSinceEpoch());

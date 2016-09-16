@@ -8,46 +8,55 @@
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
 
-SBIDAlbum::SBIDAlbum(const SBID &c):SBID(c)
+SBIDAlbum::SBIDAlbum():SBIDBase()
 {
-    _sb_item_type=SBID::sb_type_album;
+    _init();
 }
 
-SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBID(c)
+SBIDAlbum::SBIDAlbum(const SBIDBase &c):SBIDBase(c)
 {
-    _sb_item_type=SBID::sb_type_album;
+    _sb_item_type=SBIDBase::sb_type_album;
 }
 
-SBIDAlbum::SBIDAlbum(int itemID):SBID(SBID::sb_type_album, itemID)
+SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
 {
 }
 
-SBIDAlbum::SBIDAlbum(QByteArray encodedData):SBID(encodedData)
+SBIDAlbum::SBIDAlbum(int itemID)
 {
-    _sb_item_type=SBID::sb_type_album;
+    _init();
+    this->_sb_album_id=itemID;
 }
 
-void
-SBIDAlbum::assign(int itemID)
+SBIDAlbum::~SBIDAlbum()
 {
-    this->sb_album_id=itemID;
+
 }
 
+///	Public methods
 bool
-SBIDAlbum::compare(const SBID &i) const
+SBIDAlbum::compare(const SBIDBase &i) const
 {
     return
         (
-            i.sb_item_type()==SBID::sb_type_album &&
-            i.albumTitle==this->albumTitle &&
-            i.albumPerformerName==this->albumPerformerName
+            i.itemType()==SBIDBase::sb_type_album &&
+            i._albumTitle==this->_albumTitle &&
+            i._albumPerformerName==this->_albumPerformerName
         )?1:0;
+}
+
+SBSqlQueryModel*
+SBIDAlbum::findMatches(const QString& name) const
+{
+    Q_UNUSED(name);
+    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
+    return NULL;
 }
 
 int
 SBIDAlbum::getDetail(bool createIfNotExistFlag)
 {
-    qDebug() << SB_DEBUG_INFO << this->sb_album_id;
+    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -93,9 +102,9 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
                 "CASE WHEN r.record_id=%1 THEN 0 ELSE 1 END "
             "LIMIT 1 "
         )
-            .arg(this->sb_album_id)
-            .arg(Common::escapeSingleQuotes(Common::removeAccents(this->albumTitle)))
-            .arg(Common::escapeSingleQuotes(Common::removeAccents(this->albumPerformerName)))
+            .arg(this->_sb_album_id)
+            .arg(Common::escapeSingleQuotes(Common::removeAccents(this->_albumTitle)))
+            .arg(Common::escapeSingleQuotes(Common::removeAccents(this->_albumPerformerName)))
         ;
         dal->customize(q);
 
@@ -106,18 +115,18 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
         {
             qDebug() << SB_DEBUG_INFO;
             existsFlag=1;
-            this->sb_album_id          =query.value(1).toInt();
-            this->albumTitle           =query.value(2).toString();
-            this->sb_album_performer_id=query.value(3).toInt();
-            this->albumPerformerName   =query.value(4).toString();
-            this->year                 =query.value(6).toInt();
-            this->genre                =query.value(7).toString();
-            this->notes                =query.value(8).toString();
-            this->count1               =query.value(9).toInt();
+            this->_sb_album_id          =query.value(1).toInt();
+            this->_albumTitle           =query.value(2).toString();
+            this->_sb_album_performer_id=query.value(3).toInt();
+            this->_albumPerformerName   =query.value(4).toString();
+            this->_year                 =query.value(6).toInt();
+            this->_genre                =query.value(7).toString();
+            this->_notes                =query.value(8).toString();
+            this->_count1               =query.value(9).toInt();
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << this->sb_album_id;
+            qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
             //	Need to match on performer name with accents in database with
             //	performer name without accents to get the performer_id. Then retry.
             QString q=QString
@@ -138,8 +147,8 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
             QSqlQuery query(q,db);
             QString foundAlbumTitle;
             QString foundPerformerName;
-            QString searchAlbumTitle=Common::removeArticles(Common::removeAccents(this->albumTitle));
-            QString searchPerformerName=Common::removeArticles(Common::removeAccents(this->albumPerformerName));
+            QString searchAlbumTitle=Common::removeArticles(Common::removeAccents(this->_albumTitle));
+            QString searchPerformerName=Common::removeArticles(Common::removeAccents(this->_albumPerformerName));
             bool foundFlag=0;
             while(query.next() && foundFlag==0)
             {
@@ -148,8 +157,8 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
                 if(foundAlbumTitle==searchAlbumTitle && foundPerformerName==searchPerformerName)
                 {
                     foundFlag=1;
-                    this->sb_album_id =query.value(0).toInt();
-                    qDebug() << SB_DEBUG_INFO << this->sb_album_id;
+                    this->_sb_album_id =query.value(0).toInt();
+                    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
                 }
             }
             if(foundFlag)
@@ -168,7 +177,37 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
         count--;
     } while(existsFlag==0 && createIfNotExistFlag==1 && count);
     qDebug() << SB_DEBUG_INFO << count;
-    return sb_item_id();
+    return itemID();
+}
+
+QString
+SBIDAlbum::hash() const
+{
+    return QString("%1:%2:%3").arg(itemType()).arg(this->albumID()).arg(this->albumPerformerID());
+}
+
+QString
+SBIDAlbum::genericDescription() const
+{
+    return "Album - "+this->text()+" by "+this->_albumPerformerName;
+}
+
+QString
+SBIDAlbum::iconResourceLocation() const
+{
+    return ":/images/NoAlbumCover.png";
+}
+
+int
+SBIDAlbum::itemID() const
+{
+    return this->_sb_album_id;
+}
+
+SBIDBase::sb_type
+SBIDAlbum::itemType() const
+{
+    return SBIDBase::sb_type_album;
 }
 
 ///
@@ -179,13 +218,13 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
 bool
 SBIDAlbum::save()
 {
-    qDebug() << SB_DEBUG_INFO << this->sb_album_id;
-    if(this->sb_album_id==-1)
+    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
+    if(this->_sb_album_id==-1)
     {
         //	Insert new
         DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-        QString newSoundex=Common::soundex(this->songPerformerName);
+        QString newSoundex=Common::soundex(this->_songPerformerName);
         QString q;
 
         q=QString
@@ -211,11 +250,11 @@ SBIDAlbum::save()
             "FROM "
                 "___SB_SCHEMA_NAME___record "
         )
-            .arg(this->sb_album_performer_id)
-            .arg(Common::escapeSingleQuotes(this->albumTitle))
-            .arg(this->year)
-            .arg(Common::escapeSingleQuotes(this->genre))
-            .arg(Common::escapeSingleQuotes(this->notes))
+            .arg(this->_sb_album_performer_id)
+            .arg(Common::escapeSingleQuotes(this->_albumTitle))
+            .arg(this->_year)
+            .arg(Common::escapeSingleQuotes(this->_genre))
+            .arg(Common::escapeSingleQuotes(this->_notes))
         ;
 
 
@@ -240,14 +279,14 @@ SBIDAlbum::save()
                 "title='%1' AND "
                 "artist_id=%2 "
         )
-            .arg(Common::escapeSingleQuotes(this->albumTitle))
-            .arg(this->sb_album_performer_id)
+            .arg(Common::escapeSingleQuotes(this->_albumTitle))
+            .arg(this->_sb_album_performer_id)
         ;
 
         dal->customize(q);
         QSqlQuery select(q,db);
         select.next();
-        this->sb_album_id=select.value(0).toInt();
+        this->_sb_album_id=select.value(0).toInt();
         qDebug() << SB_DEBUG_INFO << (*this);
     }
     else
@@ -260,25 +299,44 @@ SBIDAlbum::save()
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBID> list;
+    QMap<int,SBIDBase> list;
 
-            SBSqlQueryModel* qm=DataEntityAlbum::getAllSongs(*this);
-            for(int i=0;i<qm->rowCount();i++)
-            {
-                SBID song=SBID(SBID::sb_type_song,qm->data(qm->index(i,5)).toInt());
-                song.sb_position=qm->data(qm->index(i,1)).toInt();
-                song.songTitle=qm->data(qm->index(i,6)).toString();
-                song.duration=qm->data(qm->index(i,7)).toTime();
-                song.sb_song_performer_id=qm->data(qm->index(i,9)).toInt();
-                song.songPerformerName=qm->data(qm->index(i,10)).toString();
-                song.path=qm->data(qm->index(i,13)).toString();
-                song.sb_album_id=this->sb_album_id;
-                song.albumTitle=this->albumTitle;
-                list[list.count()]=song;
-            }
+    SBSqlQueryModel* qm=DataEntityAlbum::getAllSongs(*this);
+
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        SBIDSong song=SBIDSong(qm->data(qm->index(i,5)).toInt());
+        song.setAlbumPosition(qm->data(qm->index(i,1)).toInt());
+        song.setSongTitle(qm->data(qm->index(i,6)).toString());
+        song.setDuration(qm->data(qm->index(i,7)).toTime());
+        song.setSongPerformerID(qm->data(qm->index(i,9)).toInt());
+        song.setSongPerformerName(qm->data(qm->index(i,10)).toString());
+        song.setPath(qm->data(qm->index(i,13)).toString());
+        song.setAlbumID(this->_sb_album_id);
+        song.setAlbumTitle(this->_albumTitle);
+        list[list.count()]=song;
+    }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+}
+
+void
+SBIDAlbum::setText(const QString &text)
+{
+    _albumTitle=text;
+}
+
+QString
+SBIDAlbum::text() const
+{
+    return _albumTitle;
+}
+
+QString
+SBIDAlbum::type() const
+{
+    return "album";
 }
 
 ///	Album specific methods
@@ -289,16 +347,16 @@ SBIDAlbum::saveSongToAlbum(const SBIDSong &song)
     QStringList SQL;
 
     //	Determine extension
-    QFileInfo fi(song.path);
+    QFileInfo fi(song._path);
     QString suffix=fi.suffix().trimmed().toLower();
 
     //	Determine relative path
     Properties* p=Context::instance()->getProperties();
     QString pathRoot=p->musicLibraryDirectorySchema()+'/';
     qDebug() << SB_DEBUG_INFO << pathRoot;
-    qDebug() << SB_DEBUG_INFO << song.path;
+    qDebug() << SB_DEBUG_INFO << song._path;
 
-    QString relPath=song.path;
+    QString relPath=song._path;
     relPath=relPath.replace(pathRoot,QString(),Qt::CaseInsensitive);
     qDebug() << SB_DEBUG_INFO << relPath;
 
@@ -332,11 +390,11 @@ SBIDAlbum::saveSongToAlbum(const SBIDSong &song)
                 "'%5' "
              ") "
         )
-            .arg(song.sb_song_id)
-            .arg(song.sb_song_performer_id)
-            .arg(song.sb_album_id)
-            .arg(song.sb_position)
-            .arg(song.duration.toString(Duration::sb_full_hhmmss_format))
+            .arg(song.songID())
+            .arg(song.songPerformerID())
+            .arg(song.albumID())
+            .arg(song.albumPosition())
+            .arg(song.duration().toString(Duration::sb_full_hhmmss_format))
     );
 
     SQL.append
@@ -373,15 +431,45 @@ SBIDAlbum::saveSongToAlbum(const SBIDSong &song)
                 "df.extension=E'%5' "
 
         )
-            .arg(song.sb_song_id)
-            .arg(song.sb_song_performer_id)
-            .arg(song.sb_album_id)
-            .arg(song.sb_position)
+            .arg(song.songID())
+            .arg(song.songPerformerID())
+            .arg(song.albumID())
+            .arg(song.albumPosition())
             .arg(suffix)
             .arg(Common::escapeSingleQuotes(relPath))
     );
 
     return dal->executeBatch(SQL);
+}
+
+void
+SBIDAlbum::setAlbumID(int albumID)
+{
+    _sb_album_id=albumID;
+}
+
+void
+SBIDAlbum::setAlbumPerformerID(int albumPerformerID)
+{
+    _sb_album_performer_id=albumPerformerID;
+}
+
+void
+SBIDAlbum::setAlbumPerformerName(const QString &albumPerformerName)
+{
+    _albumPerformerName=albumPerformerName;
+}
+
+void
+SBIDAlbum::setAlbumTitle(const QString &albumTitle)
+{
+    _albumTitle=albumTitle;
+}
+
+void
+SBIDAlbum::setYear(int year)
+{
+    _year=year;
 }
 
 QStringList
@@ -402,10 +490,10 @@ SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
                 "record_id=%3 AND "
                 "record_position=%4 "
         )
-            .arg(song.sb_song_id)
-            .arg(song.sb_song_performer_id)
-            .arg(this->sb_album_id)
-            .arg(song.sb_position)
+            .arg(song.songID())
+            .arg(song.songPerformerID())
+            .arg(this->albumID())
+            .arg(song.albumPosition())
     );
 
     SQL.append
@@ -421,10 +509,10 @@ SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
                 "record_id=%3 AND "
                 "record_position=%4 "
         )
-            .arg(song.sb_song_id)
-            .arg(song.sb_song_performer_id)
-            .arg(this->sb_album_id)
-            .arg(song.sb_position)
+            .arg(song.songID())
+            .arg(song.songPerformerID())
+            .arg(this->albumID())
+            .arg(song.albumPosition())
     );
 
     SQL.append
@@ -450,8 +538,8 @@ SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
                 "record_id=%1 AND  "
                 "record_position=%2  "
         )
-            .arg(this->sb_album_id)
-            .arg(song.sb_position)
+            .arg(this->albumID())
+            .arg(song.albumPosition())
     );
 
     return SQL;
@@ -459,10 +547,10 @@ SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
 
 ///	Operators
 bool
-SBIDAlbum::operator ==(const SBID& i) const
+SBIDAlbum::operator ==(const SBIDBase& i) const
 {
     if(
-        i.sb_album_id==this->sb_album_id
+        i._sb_album_id==this->_sb_album_id
     )
     {
         return 1;
@@ -473,32 +561,21 @@ SBIDAlbum::operator ==(const SBID& i) const
 QDebug
 operator<<(QDebug dbg, const SBIDAlbum& id)
 {
-    QString albumPerformerName=id.albumPerformerName.length() ? id.albumPerformerName : "<N/A>";
-    QString albumTitle=id.albumTitle.length() ? id.albumTitle : "<N/A>";
-    dbg.nospace() << "SBID: " << id.getType() << id.sb_album_id << "[" << id.sb_unique_item_id << "]"
-                  << "|t" << albumTitle << id.sb_album_id << "[" << id.sb_unique_album_id << "]"
-                  << "|pn" << albumPerformerName << id.sb_album_performer_id << "[" << id.sb_unique_performer_id << "]"
+    QString albumPerformerName=id._albumPerformerName.length() ? id._albumPerformerName : "<N/A>";
+    QString albumTitle=id._albumTitle.length() ? id._albumTitle : "<N/A>";
+    dbg.nospace() << "SBIDAlbum:" << id._sb_album_id << "[" << id._sb_tmp_item_id << "]"
+                  << "|t" << albumTitle << id._sb_album_id << "[" << id._sb_tmp_album_id << "]"
+                  << "|pn" << albumPerformerName << id._sb_album_performer_id << "[" << id._sb_tmp_performer_id << "]"
     ;
     return dbg.space();
 }
 
 ///	Private methods
-SBIDAlbum::SBIDAlbum(SBID::sb_type type, int itemID):SBID(SBID::sb_type_album, itemID)
-{
-    Q_UNUSED(type);
-}
-
 void
-SBIDAlbum::assign(const SBID::sb_type type, const int itemID)
+SBIDAlbum::_init()
 {
-    Q_UNUSED(type);
-    Q_UNUSED(itemID);
-}
-
-void
-SBIDAlbum::assign(const QString &itemType, const int itemID, const QString &text)
-{
-    Q_UNUSED(itemType);
-    Q_UNUSED(itemID);
-    Q_UNUSED(text);
+    _sb_item_type=SBIDBase::sb_type_album;
+    _sb_album_id=-1;
+    _sb_album_performer_id=-1;
+    _year=-1;
 }

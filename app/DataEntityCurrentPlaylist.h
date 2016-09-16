@@ -3,7 +3,7 @@
 
 #include <QSqlQueryModel>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 class SBSqlQueryModel;
 

@@ -8,7 +8,7 @@
 #include <QThread>
 #include <QTime>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 
 class QString;
 class QTableView;
@@ -71,6 +71,17 @@ public:
         sb_stopped=0,
         sb_paused =1,
         sp_playing=2
+    };
+
+    enum sb_field
+    {
+        sb_field_invalid=0,
+        sb_field_song_id,
+        sb_field_performer_id,
+        sb_field_album_id,
+        sb_field_chart_id,
+        sb_field_playlist_id,
+        sb_field_album_position
     };
 
     static QString escapeSingleQuotes(const QString &);

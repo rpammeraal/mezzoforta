@@ -90,23 +90,23 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBID fromID=SBID(encodedData);
+    SBIDBase fromID=SBIDBase(encodedData);
     qDebug() << SB_DEBUG_INFO << "Dropping " << fromID;
 
     const QModelIndex n=this->index(parent.row(),0);
     qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
-    SBID toID=determineSBID(n);
+    SBIDBase toID=determineSBID(n);
 
     emit assign(fromID,toID);
     qDebug() << SB_DEBUG_INFO << row;
     if(row>=0)
     {
-        if(fromID.playPosition>row)
+        if(fromID.playPosition()>row)
         {
             row+=1;
         }
-        qDebug() << SB_DEBUG_INFO << fromID << fromID.playPosition << "to row" << row;
+        qDebug() << SB_DEBUG_INFO << fromID << fromID.playPosition() << "to row" << row;
         emit assign(fromID,row);
     }
     else
@@ -152,7 +152,7 @@ SBSqlQueryModel::supportedDropActions() const
 }
 
 ///	NATIVE METHODS
-SBID
+SBIDBase
 SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
 {
     return SBModel::_determineSBID(this,idx);

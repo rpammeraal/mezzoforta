@@ -4,7 +4,7 @@
 #include <QMimeData>
 #include <QStandardItemModel>
 
-#include "SBID.h"
+#include "SBIDBase.h"
 #include "SBModel.h"
 
 class QSqlQueryModel;
@@ -35,11 +35,11 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent);	//	CWIP
 
     //	Native methods
-    SBID determineSBID(const QModelIndex &idx) const;
+    SBIDBase determineSBID(const QModelIndex &idx) const;
 
 signals:
-    void assign(const QModelIndex& idx, const SBID& id);	//	CWIP: move to assign below
-    void assign(const SBID& from, const SBID& to);
+    void assign(const QModelIndex& idx, const SBIDBase& id);	//	CWIP: move to assign below
+    void assign(const SBIDBase& from, const SBIDBase& to);
 
 };
 

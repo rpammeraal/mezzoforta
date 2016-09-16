@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "SBID.h"
+#include "SBIDPerformer.h"
 
 class SBSqlQueryModel;
 
@@ -17,21 +17,21 @@ public:
 
     QString addRelatedPerformerSQL(int performerID1, int performerID2) const;
     QString deleteRelatedPerformerSQL(int performerID1, int performerID2) const;
-    SBID getDetail(const SBID& id);
-    SBSqlQueryModel* getAllAlbums(const SBID& id);
-    SBSqlQueryModel* getAllCharts(const SBID& id);
+	SBIDPerformer getDetail(const SBIDBase& id);
+	SBSqlQueryModel* getAllAlbums(const SBIDBase& id);
+	SBSqlQueryModel* getAllCharts(const SBIDBase& id);
     SBSqlQueryModel* getAllPerformers();
-    SBSqlQueryModel* getAllSongs(const SBID& id);
-    SBSqlQueryModel* getAllOnlineSongs(const SBID& id);
-    SBSqlQueryModel* getRelatedPerformers(const SBID& id);
-	SBSqlQueryModel* matchPerformer(const SBID& id, const QString& newPerformerName);	//	DEPRECIATED: USE SBIDPerformer::match()
-    bool updateExistingPerformer(const SBID& orgPerformerID, SBID& newPerformerID, const QStringList& extraSQL=QStringList(),bool commitFlag=1);
+	SBSqlQueryModel* getAllSongs(const SBIDBase& id);
+	SBSqlQueryModel* getAllOnlineSongs(const SBIDBase& id);
+	SBSqlQueryModel* getRelatedPerformers(const SBIDBase& id);
+	SBSqlQueryModel* matchPerformer(const SBIDBase& id, const QString& newPerformerName);	//	DEPRECIATED: USE SBIDPerformer::match()
+	bool updateExistingPerformer(const SBIDBase& orgPerformerID, SBIDPerformer& newPerformerID, const QStringList& extraSQL=QStringList(),bool commitFlag=1);
 
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
 public slots:
-    void updateHomePage(const SBID& id);
-    void updateMBID(const SBID& id);
+	void updateHomePage(const SBIDPerformer& id);
+	void updateMBID(const SBIDPerformer& id);
 };
 
 #endif // DATAENTITYPERFORMER_H

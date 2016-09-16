@@ -553,12 +553,19 @@ X	playlists that song belongs to can be edited
 -	Unable to add song to Zooropa
 -	music directory cleaned up. Rescan Music Library shows 0 discrepancies.
 
-<CURRENT>
+20160908:
 -	MetaData class to read/write metadata on songs.
 -	Adjusted AudioDecoder classes to not include reading meta data.
 -	Common::sanitize(QString) to do what it supposed to do.
 -	Common::removeArticles() is now data driven and removes articles from either front, back or both
 -	Import of simple albums (new or existing performers with new or existing titles) work. No matching yet.
+
+20160915:
+-	in the middle of reorganizing SBID -> SBIDBase, ScreenItem. Basic screen naviation barely working.
+
+<CURRENT>:
+-	SBID*:: _init() exists
+-	virtual operator==() exists
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
