@@ -244,6 +244,7 @@ SBTabPlaylistDetail::_getSBIDSelected(const QModelIndex &idx)
             text=aim->data(idy).toString();
         }
     }
+    qDebug() << SB_DEBUG_INFO << itemType << itemID << position << text;
     switch(itemType)
     {
     case SBIDBase::sb_type_album:
@@ -269,7 +270,10 @@ SBTabPlaylistDetail::_getSBIDSelected(const QModelIndex &idx)
 
     lastIdx=idx;
     lastItem=id;
+    qDebug() << SB_DEBUG_INFO << (long)&id;
     id.setText(text);
+    qDebug() << SB_DEBUG_INFO << id.text();
+    qDebug() << SB_DEBUG_INFO << (long)&id;
     return id;
 }
 

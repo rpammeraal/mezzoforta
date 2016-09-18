@@ -114,7 +114,7 @@ Navigator::openScreen(const ScreenItem &si)
         st->pushScreen(si);
     }
     st->debugShow("openScreen:118");
-    if(_activateTab()==0)
+    if(_activateScreen()==0)
     {
         st->removeScreen(si);
     }
@@ -134,7 +134,18 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     MainWindow* mw=Context::instance()->getMainWindow();
     const int eventKey=event->key();
-    qDebug() << SB_DEBUG_INFO << eventKey;
+
+    //	Sometimes we get too many escape key press events. Trying to suppress these
+    //	by eliminating
+    if(_lastKeypressEventTime.msecsTo(QTime::currentTime())<500 && _lastKeypressed==eventKey)
+    {
+        qDebug() << SB_DEBUG_WARNING << "suppressing possible duplicate keyevent on " << eventKey;
+        QCoreApplication::processEvents();
+        return;
+    }
+    _lastKeypressEventTime=QTime::currentTime();
+    _lastKeypressed=eventKey;
+
     if(eventKey==0x01000004 || eventKey==0x01000005)
     {
         //	Return key
@@ -222,7 +233,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     if(closeTab==1)
     {
-        _moveFocusToTab(-1);
+        _moveFocusToScreen(-1);
     }
 }
 
@@ -290,7 +301,7 @@ Navigator::removeFromScreenStack(const SBIDBase &id)
     st->removeScreen(id);
 
     //	Activate the current screen
-    _activateTab();
+    _activateScreen();
 }
 
 void
@@ -359,13 +370,13 @@ Navigator::closeCurrentTab()
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeCurrentScreen();
     ScreenItem si=st->currentScreen();
-    _activateTab();
+    _activateScreen();
 }
 
 void
 Navigator::editItem()
 {
-    //	Nothing to do here. To add new edit screen, go to _activateTab.
+    //	Nothing to do here. To add new edit screen, go to _activateScreen.
     //	All steps prior to this are not relevant.
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si=st->currentScreen();
@@ -452,13 +463,13 @@ Navigator::setFocus()
 void
 Navigator::tabBackward()
 {
-    _moveFocusToTab(-1);
+    _moveFocusToScreen(-1);
 }
 
 void
 Navigator::tabForward()
 {
-    _moveFocusToTab(1);
+    _moveFocusToScreen(1);
 }
 
 ///	PROTECTED
@@ -471,11 +482,11 @@ Navigator::doInit()
 ///	Private methods()
 
 ///
-/// _activateTab populates the appropriate tab and
+/// _activateScreen populates the appropriate tab and
 /// returns a fully populated SBIDBase.
 /// It expects the screenstack to be in sync with the parameter
 bool
-Navigator::_activateTab()
+Navigator::_activateScreen()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenStack* st=Context::instance()->getScreenStack();
@@ -677,21 +688,6 @@ Navigator::_checkOutstandingEdits() const
 }
 
 void
-Navigator::_init()
-{
-    const MainWindow* mw=Context::instance()->getMainWindow();
-
-    //	Set up menus
-    connect(mw->ui.menuEditEditID, SIGNAL(triggered(bool)),
-             this, SLOT(editItem()));
-
-    //	Notify when schema is changed
-    connect(Context::instance()->getDataAccessLayer(), SIGNAL(schemaChanged()),
-            this, SLOT(schemaChanged()));
-
-}
-
-void
 Navigator::_filterSongs(const SBIDBase &id)
 {
     QString labelAllSongDetailAllSongsText="Your Songs";
@@ -730,7 +726,24 @@ Navigator::_filterSongs(const SBIDBase &id)
 }
 
 void
-Navigator::_moveFocusToTab(int direction)
+Navigator::_init()
+{
+    const MainWindow* mw=Context::instance()->getMainWindow();
+
+    //	Set up menus
+    connect(mw->ui.menuEditEditID, SIGNAL(triggered(bool)),
+             this, SLOT(editItem()));
+
+    //	Notify when schema is changed
+    connect(Context::instance()->getDataAccessLayer(), SIGNAL(schemaChanged()),
+            this, SLOT(schemaChanged()));
+
+    _lastKeypressEventTime=QTime::currentTime();
+    _lastKeypressed=0;
+}
+
+void
+Navigator::_moveFocusToScreen(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si;
@@ -748,7 +761,7 @@ Navigator::_moveFocusToTab(int direction)
         si=st->previousScreen();
     }
 
-    _activateTab();
+    _activateScreen();
 }
 
 ///	PRIVATE SLOTS

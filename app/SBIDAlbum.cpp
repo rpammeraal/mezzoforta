@@ -176,7 +176,6 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
         qDebug() << SB_DEBUG_INFO << existsFlag << createIfNotExistFlag;
         count--;
     } while(existsFlag==0 && createIfNotExistFlag==1 && count);
-    qDebug() << SB_DEBUG_INFO << count;
     return itemID();
 }
 

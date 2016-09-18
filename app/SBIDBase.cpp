@@ -309,8 +309,26 @@ SBIDBase::sendToPlayQueue(bool enqueueFlag)
 void
 SBIDBase::setText(const QString &text)
 {
-    Q_UNUSED(text);
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
+    switch(this->itemType())
+    {
+    case SBIDBase::sb_type_album:
+        return static_cast<SBIDAlbum>(*this).setText(text);
+
+    case SBIDBase::sb_type_performer:
+        return static_cast<SBIDPerformer>(*this).setText(text);
+
+    case SBIDBase::sb_type_song:
+    {
+        return static_cast<SBIDSong>(*this).setText(text);
+    }
+
+    case SBIDBase::sb_type_playlist:
+        return static_cast<SBIDPlaylist>(*this).setText(text);
+
+    case SBIDBase::sb_type_invalid:
+    case SBIDBase::sb_type_chart:
+        break;
+    }
 }
 
 QString
@@ -499,7 +517,7 @@ SBIDBase::operator !=(const SBIDBase& i) const
 }
 
 QDebug
-operator<<(QDebug dbg, const SBIDBase& id)
+operator <<(QDebug dbg, const SBIDBase& id)
 {
 
     QString songTitle=id._songTitle.length() ? id._songTitle : "<N/A>";
@@ -510,7 +528,7 @@ operator<<(QDebug dbg, const SBIDBase& id)
     switch(id.itemType())
     {
     case SBIDBase::sb_type_song:
-        dbg.nospace() << "SBIDBase:" << id.itemType() << id.type() << id._sb_song_id << "[" << id._sb_tmp_item_id << "]"
+        dbg.nospace() << "SBIDBase:" << id.type() << id._sb_song_id << "[" << id._sb_tmp_item_id << "]"
                       << "|t" << songTitle
                       << "|pn" << songPerformerName << id._sb_song_performer_id << "[" << id._sb_tmp_performer_id << "]"
                       << "|at" << albumTitle << id._sb_album_id << "[" << id._sb_tmp_album_id << "]"
@@ -518,20 +536,20 @@ operator<<(QDebug dbg, const SBIDBase& id)
         break;
 
     case SBIDBase::sb_type_performer:
-        dbg.nospace() << "SBIDBase:" << id.itemType() << id.type()<< "[" << id._sb_tmp_item_id << "]"
+        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
                       << "|" << id._sb_performer_id << "|pn" << songPerformerName
         ;
         break;
 
     case SBIDBase::sb_type_album:
-        dbg.nospace() << "SBIDBase:" << id.itemType() << id.type()<< "[" << id._sb_tmp_item_id << "]"
+        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
                       << "|" << id._sb_album_id << "|at" << albumTitle
                       << "|" << id._sb_album_performer_id << "|pn" << albumPerformerName
         ;
         break;
 
     case SBIDBase::sb_type_chart:
-        dbg.nospace() << "SBIDBase:" << id.itemType() << id.type()<< "[" << id._sb_tmp_item_id << "]"
+        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
                       << "|" << id._sb_chart_id
                       << "|" << "<name not implemented for charts>"
         ;

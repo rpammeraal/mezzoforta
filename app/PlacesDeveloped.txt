@@ -563,9 +563,11 @@ X	playlists that song belongs to can be edited
 20160915:
 -	in the middle of reorganizing SBID -> SBIDBase, ScreenItem. Basic screen naviation barely working.
 
-<CURRENT>:
+20160917:
 -	SBID*:: _init() exists
 -	virtual operator==() exists
+-	fixed bug in which multiple esc key presses are generated. Suppressed duplicates by keeping track of
+    last key pressed and the duration in ms between these.
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box

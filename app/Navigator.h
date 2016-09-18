@@ -66,13 +66,16 @@ protected:
 private:
     //	Private variables
     bool _threadPrioritySetFlag;
+    QTime _lastKeypressEventTime;
+    int   _lastKeypressed;
+
 
     //	Private methods
-    bool _activateTab();
+    bool _activateScreen();
     bool _checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
     void _init();
     void _filterSongs(const SBIDBase& id);
-    void _moveFocusToTab(int direction);
+    void _moveFocusToScreen(int direction);
 };
 
 #endif // SONGLISTSCREENHANDLER_H
