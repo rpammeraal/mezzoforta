@@ -263,13 +263,13 @@ DataEntityPlaylist::createNewPlaylist() const
 }
 
 void
-DataEntityPlaylist::deletePlaylistItem(const SBIDBase &toBeDeleted, const SBIDBase &fromID) const
+DataEntityPlaylist::deletePlaylistItem(SBIDBase::sb_type itemType,int playlistID, int playlistPosition)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(toBeDeleted.itemType())
+    switch(itemType)
     {
     case SBIDBase::sb_type_song:
         q=QString
@@ -278,8 +278,8 @@ DataEntityPlaylist::deletePlaylistItem(const SBIDBase &toBeDeleted, const SBIDBa
             "WHERE "
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
-          ).arg(fromID.playlistID())
-           .arg(toBeDeleted.playlistPosition());
+          ).arg(playlistID)
+           .arg(playlistPosition);
         break;
 
     case SBIDBase::sb_type_performer:
@@ -292,8 +292,8 @@ DataEntityPlaylist::deletePlaylistItem(const SBIDBase &toBeDeleted, const SBIDBa
             "WHERE "
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
-          ).arg(fromID.playlistID())
-           .arg(toBeDeleted.playlistPosition())
+          ).arg(playlistID)
+           .arg(playlistPosition)
         ;
         break;
 
@@ -308,15 +308,16 @@ DataEntityPlaylist::deletePlaylistItem(const SBIDBase &toBeDeleted, const SBIDBa
         qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery remove(q,db);
         Q_UNUSED(remove);
-        reorderPlaylistPositions(fromID);
-        recalculatePlaylistDuration(fromID);
+        SBIDPlaylist playlist(playlistID);
+        reorderPlaylistPositions(playlist);
+        recalculatePlaylistDuration(playlist);
     }
 }
 
 SBIDSong
-DataEntityPlaylist::getDetailPlaylistItemSong(const SBIDBase &id) const
+DataEntityPlaylist::getDetailPlaylistItemSong(int playlistID, int playlistPosition) const
 {
-    SBIDSong result=id;	//	CWIP: this should *NOT* be done. Assign result with query results *ONLY*
+    SBIDSong result;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
@@ -355,8 +356,8 @@ DataEntityPlaylist::getDetailPlaylistItemSong(const SBIDBase &id) const
             "pp.playlist_id=%1 AND "
             "pp.playlist_position=%2 "
     )
-        .arg(id.playlistID())
-        .arg(id.playlistPosition())
+        .arg(playlistID)
+        .arg(playlistPosition)
     ;
     dal->customize(q);
 
@@ -374,7 +375,7 @@ DataEntityPlaylist::getDetailPlaylistItemSong(const SBIDBase &id) const
         result.setSongPerformerName(query.value(6).toString());
         result.setAlbumTitle(query.value(7).toString());
         result.setPath(query.value(8).toString());
-        result.setPlaylistPosition(query.value(9).toInt());
+        result.setPlaylistPosition(query.value(9).toInt());	//	CWIP: possibly not needed
     }
     return result;
 }

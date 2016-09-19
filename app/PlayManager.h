@@ -41,7 +41,7 @@ public slots:
     //	Playlist et al related
     void changeSchema();
     void clearPlaylist();
-    bool playItemNow(SBIDBase& toPlay,const bool enqueueFlag=0);
+    bool playItemNow(SBIDBase& toPlay,const bool enqueueFlag=0);	//	CWIP: convert to SBIDPtr
     bool playItemNow(unsigned int playlistIndex);
     void shufflePlaylist();
     void startRadio();

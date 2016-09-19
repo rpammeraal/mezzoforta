@@ -22,6 +22,8 @@ public:
     ~SBIDSong();
 
     //	Public methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
     virtual int getDetail(bool createIfNotExistFlag=0);
@@ -44,7 +46,7 @@ public:
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; }
     void setNotes(const QString& notes) { _notes=notes; }
     void setPath(const QString path) { _path=path; }
-    void setPlaylistPosition(int position);
+    void setPlaylistPosition(int position);	//	CWIP: should not be necessary
     void setSongID(int songID);
     void setSongPerformerID(int performerID);
     void setSongPerformerName(const QString& songPerformerName);

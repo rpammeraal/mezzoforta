@@ -42,6 +42,18 @@ SBIDPerformer::~SBIDPerformer()
 }
 
 ///	Public methods
+int
+SBIDPerformer::commonPerformerID() const
+{
+    return this->performerID();
+}
+
+QString
+SBIDPerformer::commonPerformerName() const
+{
+    return this->performerName();
+}
+
 SBSqlQueryModel*
 SBIDPerformer::findMatches(const QString &newPerformerName) const
 {

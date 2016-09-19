@@ -34,6 +34,18 @@ SBIDSong::~SBIDSong()
 }
 
 ///	Public methods
+int
+SBIDSong::commonPerformerID() const
+{
+    return this->songPerformerID();
+}
+
+QString
+SBIDSong::commonPerformerName() const
+{
+    return this->songPerformerName();
+}
+
 SBSqlQueryModel*
 SBIDSong::findMatches(const QString& name) const
 {
@@ -114,14 +126,11 @@ SBIDSong::getDetail(bool createIfNotExistFlag)
             this->_sb_song_performer_id =query.value(3).toInt();
             this->_songPerformerName    =query.value(4).toString();
             this->_year                 =query.value(5).toInt();
-            this->_lyrics               =query.value(7).toString();
-            this->_originalPerformerFlag=query.value(8).toBool();
-            qDebug() << SB_DEBUG_INFO << "found:" << (*this);
+            this->_lyrics               =query.value(6).toString();
+            this->_originalPerformerFlag=query.value(7).toBool();
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << this->_sb_song_id;
-
             //	Need to match an performer name with accents in database with
             //	performer name without accents to get the performer_id. Then retry.
             QString q=QString
@@ -157,7 +166,6 @@ SBIDSong::getDetail(bool createIfNotExistFlag)
                     foundFlag=1;
                     this->_sb_song_id=query.value(0).toInt();
                     this->_sb_song_performer_id=query.value(1).toInt();
-                    qDebug() << SB_DEBUG_INFO << this->_sb_song_id << this->_sb_song_performer_id;
                 }
             }
             if(foundFlag)
@@ -166,13 +174,11 @@ SBIDSong::getDetail(bool createIfNotExistFlag)
             }
         }
 
-        qDebug() << SB_DEBUG_INFO << existsFlag << createIfNotExistFlag;
         if(existsFlag==0 && createIfNotExistFlag==1)
         {
             this->save();
         }
     } while(existsFlag==0 && createIfNotExistFlag==1);
-    qDebug() << SB_DEBUG_INFO << (*this);
     return itemID();
 }
 

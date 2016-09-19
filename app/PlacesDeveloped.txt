@@ -569,6 +569,14 @@ X	playlists that song belongs to can be edited
 -	fixed bug in which multiple esc key presses are generated. Suppressed duplicates by keeping track of
     last key pressed and the duration in ms between these.
 
+20160918:
+-	Simplified things in SBTabPlaylistDetail by moving away from using SBIDBase, and introducing SBIDPtr
+
+<now>
+*	Navigator::openItemFromCompleter(): fix
+*	SBIDBase::createSBID(): remove
+*	DataEntity* classes: merge with corresponding SBID* class.
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
@@ -576,8 +584,8 @@ X	playlists that song belongs to can be edited
 *	Radio mode: sometimes song appears in list twice
 *	Search From Nubia To Cairo: haywire
 
-
 <near future>
+*	SBIDSong::setPlaylist*(): remove
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.

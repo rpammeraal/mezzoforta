@@ -235,6 +235,23 @@ Navigator::keyPressEvent(QKeyEvent *event)
     {
         _moveFocusToScreen(-1);
     }
+
+    /*
+    qDebug() << SB_DEBUG_INFO << "**************************************************************************";
+    SBIDSong song;
+    song.setText("this is a song");
+    qDebug() << SB_DEBUG_INFO << song.text();
+
+    std::shared_ptr<SBIDSong> ptr=std::make_shared<SBIDSong>(song);
+    qDebug() << SB_DEBUG_INFO << ptr->text();
+
+
+    std::shared_ptr<SBIDBase> ptrb=ptr;
+    ptrb->setText("new text");
+    qDebug() << SB_DEBUG_INFO << ptrb->text();
+    qDebug() << SB_DEBUG_INFO << *ptrb;
+    qDebug() << SB_DEBUG_INFO << ptr->text();
+    */
 }
 
 void

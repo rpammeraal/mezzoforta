@@ -34,6 +34,18 @@ SBIDAlbum::~SBIDAlbum()
 }
 
 ///	Public methods
+int
+SBIDAlbum::commonPerformerID() const
+{
+    return this->albumPerformerID();
+}
+
+QString
+SBIDAlbum::commonPerformerName() const
+{
+    return this->albumPerformerName();
+}
+
 bool
 SBIDAlbum::compare(const SBIDBase &i) const
 {
@@ -56,8 +68,6 @@ SBIDAlbum::findMatches(const QString& name) const
 int
 SBIDAlbum::getDetail(bool createIfNotExistFlag)
 {
-    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
-
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     bool existsFlag=0;
@@ -65,7 +75,6 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
 
     do
     {
-        qDebug() << SB_DEBUG_INFO << existsFlag;
         QString q=QString
         (
             "SELECT DISTINCT "
@@ -113,7 +122,6 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
 
         if(query.next())
         {
-            qDebug() << SB_DEBUG_INFO;
             existsFlag=1;
             this->_sb_album_id          =query.value(1).toInt();
             this->_albumTitle           =query.value(2).toString();
@@ -126,7 +134,6 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
             //	Need to match on performer name with accents in database with
             //	performer name without accents to get the performer_id. Then retry.
             QString q=QString
@@ -158,7 +165,6 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
                 {
                     foundFlag=1;
                     this->_sb_album_id =query.value(0).toInt();
-                    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
                 }
             }
             if(foundFlag)
@@ -167,13 +173,10 @@ SBIDAlbum::getDetail(bool createIfNotExistFlag)
             }
         }
 
-        qDebug() << SB_DEBUG_INFO << existsFlag << createIfNotExistFlag;
         if(existsFlag==0 && createIfNotExistFlag==1)
         {
-            qDebug() << SB_DEBUG_INFO;
             this->save();
         }
-        qDebug() << SB_DEBUG_INFO << existsFlag << createIfNotExistFlag;
         count--;
     } while(existsFlag==0 && createIfNotExistFlag==1 && count);
     return itemID();
@@ -217,7 +220,6 @@ SBIDAlbum::itemType() const
 bool
 SBIDAlbum::save()
 {
-    qDebug() << SB_DEBUG_INFO << this->_sb_album_id;
     if(this->_sb_album_id==-1)
     {
         //	Insert new
@@ -286,7 +288,6 @@ SBIDAlbum::save()
         QSqlQuery select(q,db);
         select.next();
         this->_sb_album_id=select.value(0).toInt();
-        qDebug() << SB_DEBUG_INFO << (*this);
     }
     else
     {
@@ -352,12 +353,9 @@ SBIDAlbum::saveSongToAlbum(const SBIDSong &song)
     //	Determine relative path
     Properties* p=Context::instance()->getProperties();
     QString pathRoot=p->musicLibraryDirectorySchema()+'/';
-    qDebug() << SB_DEBUG_INFO << pathRoot;
-    qDebug() << SB_DEBUG_INFO << song._path;
 
     QString relPath=song._path;
     relPath=relPath.replace(pathRoot,QString(),Qt::CaseInsensitive);
-    qDebug() << SB_DEBUG_INFO << relPath;
 
     //	It is assumed that song and performance already exist
     SQL.append

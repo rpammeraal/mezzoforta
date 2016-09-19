@@ -25,10 +25,29 @@ public slots:
     void showContextMenuView(const QPoint &p);
 
 private:
+    class PlaylistItem
+    {
+    public:
+        PlaylistItem() { _init(); }
+
+        SBIDBase::sb_type itemType;
+        int               itemID;
+        int               playlistPosition;
+        QString           text;
+
+    private:
+        void _init()
+        {
+            itemType=SBIDBase::sb_type_invalid;
+            itemID=-1;
+            playlistPosition=-1;
+        }
+    };
+
     QAction*     _deletePlaylistItemAction;
 
     void _init();
-    SBIDBase _getSBIDSelected(const QModelIndex& idx);
+    PlaylistItem _getSelectedItem(const QModelIndex& idx);
     virtual ScreenItem _populate(const ScreenItem& id);
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
 };

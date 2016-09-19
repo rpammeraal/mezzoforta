@@ -27,19 +27,19 @@ SBTabPlaylistDetail::deletePlaylistItem()
 {
     _init();
     SBIDPlaylist currentID=this->currentScreenItem().base();
-    SBIDPlaylist assignID=_getSBIDSelected(_lastClickedIndex);
-    if(assignID.itemType()!=SBIDBase::sb_type_invalid)
+    PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
+    if(selected.itemType!=SBIDBase::sb_type_invalid)
     {
         DataEntityPlaylist pl;
 
-        pl.deletePlaylistItem(assignID,currentID);
+        pl.deletePlaylistItem(selected.itemType,currentID.playlistID(),selected.playlistPosition);
         refreshTabIfCurrent(currentID);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
-            .arg(assignID.text())   //	2
+            .arg(selected.text)   //	2
             .arg(QChar(180))           //	3
             .arg(currentID.text())     //	4
-            .arg(assignID.type())   //	5
+            .arg(selected.itemType)   //	5
             .arg(currentID.type());    //	6
         Context::instance()->getController()->updateStatusBarText(updateText);
 
@@ -75,26 +75,31 @@ void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
     const SBIDPlaylist currentID=this->currentScreenItem().base();
-    SBIDPlaylist selectedID=_getSBIDSelected(_lastClickedIndex);
+    PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
+    SBIDPtr ptr;
 
-    if(selectedID.itemType()==SBIDBase::sb_type_invalid)
+    if(selected.itemType==SBIDBase::sb_type_invalid)
     {
         //	Label clicked
-        selectedID=currentID;
+        ptr=std::make_shared<SBIDPlaylist>(currentID);
+    }
+    else if(selected.itemType==SBIDBase::sb_type_song)
+    {
+        DataEntityPlaylist dep;
+        //	Need to retrieve songID, performerID, albumID and albumPosition
+        //	based on playlistID, playlistPosition/
+        ptr=std::make_shared<SBIDSong>(dep.getDetailPlaylistItemSong(currentID.playlistID(),selected.playlistPosition));
     }
     else
     {
-        if(selectedID.itemType()==SBIDBase::sb_type_song)
-        {
-            DataEntityPlaylist pl;
-
-            selectedID.setPlaylistID(currentID.playlistID());
-            selectedID=pl.getDetailPlaylistItemSong(selectedID);	//	gets path, fills in 4 field titles
-        }
+        ptr=SBIDBase::createPtr(selected.itemType,selected.itemID);
     }
-    PlayManager* pmgr=Context::instance()->getPlayManager();
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
-    SBTab::playNow(enqueueFlag);
+    if(ptr)
+    {
+        PlayManager* pmgr=Context::instance()->getPlayManager();
+        pmgr?pmgr->playItemNow(*ptr,enqueueFlag):0;
+        SBTab::playNow(enqueueFlag);
+    }
 }
 
 void
@@ -120,10 +125,10 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
 
-    SBIDPlaylist selectedID=_getSBIDSelected(idx);
+    PlaylistItem selected=_getSelectedItem(idx);
 
     //	title etc not populated
-    if(selectedID.itemType()!=SBIDBase::sb_type_invalid)
+    if(selected.itemType!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=idx;
 
@@ -135,8 +140,8 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
         }
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.text()));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selected.text));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected.text));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
@@ -205,22 +210,18 @@ SBTabPlaylistDetail::_init()
 //	-	SB_ITEM_TYPE
 //	-	SB_ITEM_ID
 //	The next field after this is assumed to contain the main item (e.g.: song title, album name, etc).
-SBIDBase
-SBTabPlaylistDetail::_getSBIDSelected(const QModelIndex &idx)
+SBTabPlaylistDetail::PlaylistItem
+SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
 {
     static QModelIndex lastIdx;
-    static SBIDBase lastItem;
-    int position=-1;
+    static SBIDBase __lastItem;
+    PlaylistItem currentPlaylistItem;
 
     _init();
-    SBIDBase id;
 
     MainWindow* mw=Context::instance()->getMainWindow();
     QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
 
-    QString text;
-    int itemID=-1;
-    SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
     for(int i=0; i<aim->columnCount();i++)
     {
         QString header=aim->headerData(i, Qt::Horizontal).toString();
@@ -229,52 +230,22 @@ SBTabPlaylistDetail::_getSBIDSelected(const QModelIndex &idx)
 
         if(header=="sb_item_type")
         {
-            itemType=static_cast<SBIDBase::sb_type>(aim->data(idy).toInt());
+            currentPlaylistItem.itemType=static_cast<SBIDBase::sb_type>(aim->data(idy).toInt());
         }
         else if(header=="sb_item_id")
         {
-            itemID=aim->data(idy).toInt();
+            currentPlaylistItem.itemID=aim->data(idy).toInt();
         }
         else if(header=="#")
         {
-            position=aim->data(idy).toInt();
+            currentPlaylistItem.playlistPosition=aim->data(idy).toInt();
         }
-        else if(text.length()==0)
+        else if(currentPlaylistItem.text.length()==0)
         {
-            text=aim->data(idy).toString();
+            currentPlaylistItem.text=aim->data(idy).toString();
         }
     }
-    qDebug() << SB_DEBUG_INFO << itemType << itemID << position << text;
-    switch(itemType)
-    {
-    case SBIDBase::sb_type_album:
-        id=SBIDAlbum(itemID);
-        break;
-
-    case SBIDBase::sb_type_performer:
-        id=SBIDPerformer(itemID);
-        break;
-
-    case SBIDBase::sb_type_playlist:
-        id=SBIDPlaylist(itemID);
-        break;
-
-    case SBIDBase::sb_type_song:
-        id=SBIDSong(itemID);
-        break;
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-
-    lastIdx=idx;
-    lastItem=id;
-    qDebug() << SB_DEBUG_INFO << (long)&id;
-    id.setText(text);
-    qDebug() << SB_DEBUG_INFO << id.text();
-    qDebug() << SB_DEBUG_INFO << (long)&id;
-    return id;
+    return currentPlaylistItem;
 }
 
 ScreenItem

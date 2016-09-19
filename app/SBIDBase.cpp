@@ -136,6 +136,35 @@ SBIDBase::createSBID(SBIDBase::sb_type itemType,int ID)
     return id;
 }
 
+SBIDPtr
+SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
+{
+    SBIDPtr ptr;
+    switch(itemType)
+    {
+    case SBIDBase::sb_type_album:
+        ptr=std::make_shared<SBIDAlbum>(SBIDAlbum(ID));
+        break;
+
+    case SBIDBase::sb_type_performer:
+        ptr=std::make_shared<SBIDPerformer>(SBIDPerformer(ID));
+        break;
+
+    case SBIDBase::sb_type_song:
+        ptr=std::make_shared<SBIDSong>(SBIDSong(ID));
+        break;
+
+    case SBIDBase::sb_type_playlist:
+        ptr=std::make_shared<SBIDPlaylist>(SBIDPlaylist(ID));
+        break;
+
+    case SBIDBase::sb_type_invalid:
+    case SBIDBase::sb_type_chart:
+        break;
+    }
+    return ptr;
+}
+
 ///	Public methods
 
 QByteArray
@@ -194,6 +223,19 @@ SBIDBase::encode() const
 //    Q_UNUSED(t);
 //    return 0;
 //}
+int
+SBIDBase::commonPerformerID() const
+{
+    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
+    return -1;
+}
+
+QString
+SBIDBase::commonPerformerName() const
+{
+    return "Ambigious Name at SBID Base";
+}
+
 SBSqlQueryModel*
 SBIDBase::findMatches(const QString& name) const
 {
@@ -302,6 +344,7 @@ SBIDBase::save()
 void
 SBIDBase::sendToPlayQueue(bool enqueueFlag)
 {
+    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     Q_UNUSED(enqueueFlag);
     qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
 }
@@ -309,73 +352,22 @@ SBIDBase::sendToPlayQueue(bool enqueueFlag)
 void
 SBIDBase::setText(const QString &text)
 {
-    switch(this->itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return static_cast<SBIDAlbum>(*this).setText(text);
-
-    case SBIDBase::sb_type_performer:
-        return static_cast<SBIDPerformer>(*this).setText(text);
-
-    case SBIDBase::sb_type_song:
-    {
-        return static_cast<SBIDSong>(*this).setText(text);
-    }
-
-    case SBIDBase::sb_type_playlist:
-        return static_cast<SBIDPlaylist>(*this).setText(text);
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
+    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
+    Q_UNUSED(text);
+    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
 }
 
 QString
 SBIDBase::text() const
 {
-    switch(this->itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return static_cast<const SBIDAlbum>(*this).text();
-
-    case SBIDBase::sb_type_performer:
-        return static_cast<const SBIDPerformer>(*this).text();
-
-    case SBIDBase::sb_type_song:
-        return static_cast<const SBIDSong>(*this).text();
-
-    case SBIDBase::sb_type_playlist:
-        return static_cast<const SBIDPlaylist>(*this).text();
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
+    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     return QString("n/a");
 }
 
 QString
 SBIDBase::type() const
 {
-    switch(this->itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return static_cast<const SBIDAlbum>(*this).type();
-
-    case SBIDBase::sb_type_performer:
-        return static_cast<const SBIDPerformer>(*this).type();
-
-    case SBIDBase::sb_type_song:
-        return static_cast<const SBIDSong>(*this).type();
-
-    case SBIDBase::sb_type_playlist:
-        return static_cast<const SBIDPlaylist>(*this).type();
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
+    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     return "n/a";
 }
 
@@ -383,59 +375,6 @@ bool
 SBIDBase::validFlag() const
 {
     return (itemType()!=SBIDBase::sb_type_invalid && itemID()>=0?1:0);
-}
-
-int
-SBIDBase::commonPerformerID() const
-{
-    switch(itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return this->albumPerformerID();
-        break;
-
-    case SBIDBase::sb_type_performer:
-        return this->performerID();
-        break;
-
-    case SBIDBase::sb_type_song:
-        return this->songPerformerID();
-        break;
-
-    case SBIDBase::sb_type_playlist:
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-
-    return -1;
-}
-
-
-QString
-SBIDBase::commonPerformerName() const
-{
-    switch(itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return this->albumPerformerName();
-        break;
-
-    case SBIDBase::sb_type_performer:
-        return this->performerName();
-        break;
-
-    case SBIDBase::sb_type_song:
-        return this->songPerformerName();
-        break;
-
-    case SBIDBase::sb_type_playlist:
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-
-    return "Ambigious Name at SBID Base";
 }
 
 

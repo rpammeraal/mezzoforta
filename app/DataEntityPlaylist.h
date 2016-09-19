@@ -19,10 +19,10 @@ public:
 
     void assignPlaylistItem(const SBIDBase& assignID, const SBIDBase& toID) const;
     SBIDPlaylist createNewPlaylist() const;
-    void deletePlaylistItem(const SBIDBase& assignID, const SBIDBase& fromID) const;
+    void deletePlaylistItem(SBIDBase::sb_type itemType,int playlistID, int playlistPosition);
     void deletePlaylist(const SBIDBase& id) const;
     SBIDBase getDetail(const SBIDBase& id) const;
-    SBIDSong getDetailPlaylistItemSong(const SBIDBase& id) const;
+    SBIDSong getDetailPlaylistItemSong(int playlistID, int playlistPosition) const;
     SBSqlQueryModel* getAllItemsByPlaylist(const SBIDBase& id) const;
     void getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDBase& id) const;
     SBSqlQueryModel* getAllPlaylists() const;

@@ -20,6 +20,8 @@ public:
     ~SBIDPerformer();
 
     //	Public methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
     virtual int getDetail(bool createIfNotExistFlag=0);

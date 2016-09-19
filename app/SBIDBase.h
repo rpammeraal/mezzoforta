@@ -10,6 +10,9 @@
 
 class SBSqlQueryModel;
 
+class SBIDBase;
+typedef std::shared_ptr<SBIDBase> SBIDPtr;
+
 class SBIDBase
 {
 public:
@@ -28,12 +31,15 @@ public:
     SBIDBase(QByteArray encodedData);
     virtual ~SBIDBase();
     static SBIDBase createSBID(SBIDBase::sb_type itemType,int ID);
+    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID);
 
     //	Public methods
     virtual QByteArray encode() const;
 
     //	Public virtual methods (Methods that only apply to subclasseses)
     //virtual bool compare(const SBIDBase& t) const;	//	compares on attributes. To compare on ID, use operator==().	//	CWIP: make pure virtual
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
     virtual int getDetail(bool createIfNotExistFlag=0);
@@ -74,8 +80,6 @@ public:
     inline int year() const { return _year; }
 
     //	Methods specific to SBIDBase
-    int commonPerformerID() const;
-    QString commonPerformerName() const;
     int count1() const { return _count1; }
     int count2() const { return _count2; }
     QString errorMessage() const { return _errorMsg; }
@@ -176,6 +180,5 @@ inline uint qHash(const SBIDBase& k, uint seed)
     return qHash(k.hash(),seed);
 }
 
-//typedef std::shared_ptr<SBIDBase> SBIDPtr;
 
 #endif // SBIDBASE_H

@@ -18,6 +18,8 @@ public:
     ~SBIDAlbum();
 
     //	Public methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
     virtual bool compare(const SBIDBase& i) const;
 
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
