@@ -174,17 +174,12 @@ Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
     switch(rootType)
     {
     case Chooser::sb_your_songs:
-        qDebug() << SB_DEBUG_INFO;
 
     case Chooser::sb_playlists:
-        qDebug() << SB_DEBUG_INFO;
         {
 
             SBIDPlaylist toID=_getPlaylistSelected(idx);
             SBIDPlaylist fromID;
-
-            qDebug() << SB_DEBUG_INFO << toID;
-            qDebug() << SB_DEBUG_INFO << fromID;
 
             if(toBeAssignedToID==toID)
             {
@@ -241,13 +236,13 @@ void
 Chooser::deletePlaylist()
 {
     _setCurrentIndex(_lastClickedIndex);
-    SBIDPlaylist id=_getPlaylistSelected(_lastClickedIndex);
-    if(id.validFlag())
+    SBIDPlaylist playlist=_getPlaylistSelected(_lastClickedIndex);
+    if(playlist.validFlag())
     {
         //	Show dialog box
         QString updateText;
         QMessageBox msgBox;
-        msgBox.setText(QString("Delete Playlist %1%2%3 ?").arg(QChar(96)).arg(id.playlistName()).arg(QChar(180)));
+        msgBox.setText(QString("Delete Playlist %1%2%3 ?").arg(QChar(96)).arg(playlist.playlistName()).arg(QChar(180)));
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
         int result=msgBox.exec();
@@ -255,14 +250,15 @@ Chooser::deletePlaylist()
         switch(result)
         {
             case QMessageBox::Ok:
-                pl.deletePlaylist(id);
-                Context::instance()->getNavigator()->removeFromScreenStack(id);
+                pl.deletePlaylist(playlist);
+                Context::instance()->getNavigator()->removeFromScreenStack(std::make_shared<SBIDPlaylist>(playlist));
                 this->_populate();
 
                 updateText=QString("Removed playlist %1%2%3.")
-                    .arg(QChar(96))      //	1
-                    .arg(id.text())      //	2
-                    .arg(QChar(180));    //	3
+                    .arg(QChar(96))
+                    .arg(playlist.text())
+                    .arg(QChar(180))
+                ;
                 Context::instance()->getController()->updateStatusBarText(updateText);
                 break;
 
@@ -415,8 +411,8 @@ void
 Chooser::recalculateDuration()
 {
     DataEntityPlaylist dep;
-    SBIDPlaylist id=_getPlaylistSelected(_lastClickedIndex);
-    dep.recalculatePlaylistDuration(id);
+    SBIDPlaylist playlist=_getPlaylistSelected(_lastClickedIndex);
+    dep.recalculatePlaylistDuration(std::make_shared<SBIDBase>(playlist));
 }
 
 ///	PROTECTED METHODS

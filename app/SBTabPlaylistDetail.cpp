@@ -43,7 +43,8 @@ SBTabPlaylistDetail::deletePlaylistItem()
             .arg(currentID.type());    //	6
         Context::instance()->getController()->updateStatusBarText(updateText);
 
-        _populate(currentID);
+        //	Repopulate the current screen
+        _populate(currentScreenItem());
     }
     if(_menu)
     {
@@ -121,6 +122,13 @@ SBTabPlaylistDetail::showContextMenuLabel(const QPoint &p)
 void
 SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
 {
+    if(_lastPopupWindowEventTime.msecsTo(QTime::currentTime())<500 && p==_lastPopupWindowPoint)
+    {
+        qDebug() << SB_DEBUG_WARNING << "Suppressing repeated popup windows";
+        QCoreApplication::processEvents();
+        return;
+    }
+
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
@@ -147,7 +155,10 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_enqueueAction);
         _menu->addAction(_deletePlaylistItemAction);
         _menu->exec(gp);
+        _lastPopupWindowEventTime=QTime::currentTime();
+        _lastPopupWindowPoint=p;
     }
+
 }
 
 ///	Private methods
@@ -200,6 +211,7 @@ SBTabPlaylistDetail::_init()
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
     }
+    _lastPopupWindowEventTime=QTime::currentTime();
 }
 
 //	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
@@ -260,7 +272,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     if(base.validFlag()==0)
     {
         //	Not found
-        return base;
+        return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
     //SBTab::_setCurrentScreenItem(currentScreenItem);

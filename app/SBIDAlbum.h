@@ -46,7 +46,7 @@ public:
 
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;
-    friend QDebug operator<<(QDebug dbg, const SBIDAlbum& id);
+    virtual operator QString() const;
 
 private:
     void _init();

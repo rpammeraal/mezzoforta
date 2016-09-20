@@ -10,32 +10,39 @@ QCompleter*
 CompleterFactory::getCompleterAll()
 {
     QString query=
-        "SELECT DISTINCT "
-            "s.title || ' - song by ' || a.name, "
-            "s.song_id AS SB_ITEM_ID, "
-            "'SB_SONG_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id AND "
-                    "p.role_id=0 "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
-        "UNION "
-        "SELECT DISTINCT "
-            "r.title || ' - record', "
-            "r.record_id AS SB_ITEM_ID, "
-            "'SB_ALBUM_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___record r "
-        "UNION "
-        "SELECT DISTINCT "
-            "a.name || ' - performer', "
-            "a.artist_id, "
-            "'SB_PERFORMER_TYPE' AS SB_TYPE_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___artist a "
-        "ORDER BY 1 ";
+        QString
+        (
+            "SELECT DISTINCT "
+                "s.title || ' - song by ' || a.name, "
+                "s.song_id AS SB_ITEM_ID, "
+                "%1 AS SB_TYPE_ID "
+            "FROM "
+                "___SB_SCHEMA_NAME___song s "
+                    "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                        "s.song_id=p.song_id AND "
+                        "p.role_id=0 "
+                    "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                        "p.artist_id=a.artist_id "
+            "UNION "
+            "SELECT DISTINCT "
+                "r.title || ' - record', "
+                "r.record_id AS SB_ITEM_ID, "
+                "%2 AS SB_TYPE_ID "
+            "FROM "
+                "___SB_SCHEMA_NAME___record r "
+            "UNION "
+            "SELECT DISTINCT "
+                "a.name || ' - performer', "
+                "a.artist_id, "
+                "%3 AS SB_TYPE_ID "
+            "FROM "
+                "___SB_SCHEMA_NAME___artist a "
+            "ORDER BY 1 "
+        )
+            .arg(SBIDBase::sb_type_song)
+            .arg(SBIDBase::sb_type_album)
+            .arg(SBIDBase::sb_type_performer)
+        ;
 
     return createCompleter(query);
 }
@@ -101,7 +108,6 @@ CompleterFactory::createCompleter(QString& query)
     //	Prep query
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
 
     //	Get data
     QSqlQueryModel* sqm = new QSqlQueryModel();

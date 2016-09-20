@@ -822,8 +822,6 @@ SBTabAlbumEdit::save() const
             newAlbum=selectedAlbum;
         }
     }
-    qDebug() << SB_DEBUG_INFO << orgAlbum;
-    qDebug() << SB_DEBUG_INFO << newAlbum;
 
     //	D.	Populate edited songList
     QTableView* tv=mw->ui.albumEditSongList;
@@ -903,7 +901,6 @@ SBTabAlbumEdit::save() const
         isRemovedMap[position]=isRemovedFlag;
         mergedTo[position]=mergedToIndex;
         hasChangedMap[position]=0;
-        qDebug() << SB_DEBUG_INFO << position << orgPosition << song.songTitle() << isRemovedFlag << isNewFlag << mergedToIndex << songList[position];
 
         if(isNewFlag)
         {
@@ -1341,7 +1338,7 @@ SBTabAlbumEdit::save() const
             //	Remove from screenstack removed album
             if(removedAlbum.albumID()!=-1)
             {
-                st->removeScreen(removedAlbum);
+                st->removeScreen(ScreenItem(std::make_shared<SBIDAlbum>(removedAlbum)));
             }
             st->updateCurrentScreen(currentScreenItem);
         }
@@ -1349,7 +1346,6 @@ SBTabAlbumEdit::save() const
 
     //	Close screen
     Context::instance()->getNavigator()->closeCurrentTab();
-    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Private methods
@@ -1464,7 +1460,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     if(base.validFlag()==0)
     {
         //	Not found
-        return base;
+        return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);

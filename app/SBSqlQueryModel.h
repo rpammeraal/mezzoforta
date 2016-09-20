@@ -35,7 +35,7 @@ public:
     virtual Qt::DropActions supportedDropActions() const;
 
     //	Native methods
-    SBIDBase determineSBID(const QModelIndex &idx) const;
+    SBIDPtr determineSBID(const QModelIndex &idx) const;
     inline int getSelectedColumn() const { return _selectedColumn; }
     void handleSQLError() const;
     void setDragableColumns(const QList<bool>& list);

@@ -133,7 +133,6 @@ DataEntityPerformer::getDetail(const SBIDBase& id)
             }
         }
     }
-
     return result;
 }
 

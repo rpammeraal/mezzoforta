@@ -139,7 +139,7 @@ SBStandardItemModel::supportedDropActions() const
 }
 
 ///	NATIVE METHODS
-SBIDBase
+SBIDPtr
 SBStandardItemModel::determineSBID(const QModelIndex &idx) const
 {
     return SBModel::_determineSBID(this,idx);

@@ -32,16 +32,16 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDBase selectedID=sm->determineSBID(_lastClickedIndex);
+    SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selectedID.itemType()==SBIDBase::sb_type_invalid)
+    if(selected->itemType()==SBIDBase::sb_type_invalid)
     {
         //	Context menu from SBLabel is clicked
-        selectedID=this->currentScreenItem().base();
+        selected=std::make_shared<SBIDBase>(this->currentScreenItem().base());
     }
 
-    pmgr?pmgr->playItemNow(selectedID,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(*selected,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -71,9 +71,9 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDBase selectedID=sm->determineSBID(ids);
+    SBIDPtr selected=sm->determineSBID(ids);
 
-    if(selectedID.itemType()!=SBIDBase::sb_type_invalid)
+    if(selected->itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=ids;
 
@@ -81,8 +81,8 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 
         _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selectedID.text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selectedID.text()));
+        _playNowAction->setText(QString("Play '%1' Now").arg(selected->text()));
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected->text()));
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
@@ -248,7 +248,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
-    ed->loadAlbumData(album);
+    ed->loadAlbumData(std::make_shared<SBIDAlbum>(album));
 
     //	Populate record detail tab
     mw->ui.labelAlbumDetailAlbumTitle->setText(album.albumTitle());

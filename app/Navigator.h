@@ -37,10 +37,11 @@ public:
 
     void clearSearchFilter();
     void openScreen(const SBIDBase& id);	//	CWIP: remove!
+    void openScreen(const SBIDPtr& ptr);
     void openScreen(const ScreenItem& si);
     void keyPressEvent(QKeyEvent * event);
     void navigateDetailTab(int direction=1);
-    void removeFromScreenStack(const SBIDBase& id);
+    void removeFromScreenStack(const SBIDPtr& ptr);
     void resetAllFiltersAndSelections();
     void showCurrentPlaylist();
     void showSonglist();

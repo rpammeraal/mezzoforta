@@ -1,4 +1,6 @@
 #include <QDebug>
+
+#include "Common.h"
 #include "ScreenItem.h"
 
 ///	Ctors
@@ -7,11 +9,11 @@ ScreenItem::ScreenItem()
     _init();
 }
 
-ScreenItem::ScreenItem(const SBIDBase &base)
+ScreenItem::ScreenItem(const SBIDPtr& ptr)
 {
     _init();
     _screenType=ScreenItem::screen_type_sbidbase;
-    _base=base;
+    _ptr=ptr;
 }
 
 ScreenItem::ScreenItem(const QString &searchCriteria)
@@ -51,7 +53,7 @@ ScreenItem::operator ==(const ScreenItem& i) const
             return 1;
 
         case ScreenItem::screen_type_sbidbase:
-            return (this->_base==i._base) && (this->_editFlag==i._editFlag);
+            return (*(this->_ptr)==*(i._ptr)) && (this->_editFlag==i._editFlag);
 
         case ScreenItem::screen_type_songsearch:
             return this->_searchCriteria==i._searchCriteria;
@@ -68,11 +70,11 @@ ScreenItem::operator !=(const ScreenItem& i) const
 }
 
 QDebug
-operator<<(QDebug dbg, const ScreenItem& id)
+operator<<(QDebug dbg, const ScreenItem& screenItem)
 {
     dbg.nospace() << "ScreenItem:";
 
-    switch(id._screenType)
+    switch(screenItem._screenType)
     {
     case ScreenItem::screen_type_allsongs:
         dbg.nospace() << "AllSongs";
@@ -87,15 +89,19 @@ operator<<(QDebug dbg, const ScreenItem& id)
         break;
 
     case ScreenItem::screen_type_sbidbase:
-        dbg.nospace() << "SBIDBase [" << id._base << "]";
+        dbg.nospace() << "SBIDBase [" << screenItem._ptr->operator QString() << "]";
         break;
 
     case ScreenItem::screen_type_songsearch:
-        dbg.nospace() << "search [" << id._searchCriteria << "]";
+        dbg.nospace() << "search [" << screenItem._searchCriteria << "]";
         break;
     }
 
-    dbg.nospace() << ":subtabID=" << id._subtabID << ":sortColumn=" << id._sortColumn;
+    dbg.nospace()
+            << " :subtabID=" << screenItem._subtabID
+            << " :sortColumn=" << screenItem._sortColumn
+            << " :editFlag=" << screenItem._editFlag
+    ;
 
     return dbg.space();
 }
@@ -106,8 +112,8 @@ void
 ScreenItem::_init()
 {
     _screenType=ScreenItem::screen_type_invalid;
-    _base=SBIDBase();
     _editFlag=0;
+    _ptr=std::make_shared<SBIDBase>(SBIDBase());
     _searchCriteria=QString();
     _subtabID=INT_MAX;
     _sortColumn=INT_MAX;

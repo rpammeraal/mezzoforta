@@ -67,6 +67,12 @@ Navigator::openScreen(const SBIDBase &id)
 }
 
 void
+Navigator::openScreen(const SBIDPtr &ptr)
+{
+    openScreen(ScreenItem(ptr));
+}
+
+void
 Navigator::openScreen(const ScreenItem &si)
 {
     if(!_threadPrioritySetFlag)
@@ -244,13 +250,26 @@ Navigator::keyPressEvent(QKeyEvent *event)
 
     std::shared_ptr<SBIDSong> ptr=std::make_shared<SBIDSong>(song);
     qDebug() << SB_DEBUG_INFO << ptr->text();
+    qDebug() << SB_DEBUG_INFO << song;
+    qDebug() << SB_DEBUG_INFO << *ptr;
 
 
-    std::shared_ptr<SBIDBase> ptrb=ptr;
+    //std::shared_ptr<SBIDBase> ptrb=ptr;
+    std::shared_ptr<SBIDBase> ptrb=std::make_shared<SBIDSong>(song);
     ptrb->setText("new text");
-    qDebug() << SB_DEBUG_INFO << ptrb->text();
+    qDebug() << SB_DEBUG_INFO << song;
     qDebug() << SB_DEBUG_INFO << *ptrb;
-    qDebug() << SB_DEBUG_INFO << ptr->text();
+    qDebug() << SB_DEBUG_INFO << ptrb->text();
+
+    SBIDPerformer performer=SBIDPerformer(5);
+    performer.setText("this is an performer");
+    qDebug() << SB_DEBUG_INFO << performer.text();
+
+    SBIDPtr pptr=std::make_shared<SBIDPerformer>(performer);
+    pptr->setText("new performer");
+    qDebug() << SB_DEBUG_INFO << performer;
+    qDebug() << SB_DEBUG_INFO << *pptr;
+    qDebug() << SB_DEBUG_INFO << pptr->text();
     */
 }
 
@@ -300,14 +319,14 @@ Navigator::navigateDetailTab(int direction)
 }
 
 void
-Navigator::removeFromScreenStack(const SBIDBase &id)
+Navigator::removeFromScreenStack(const SBIDPtr& ptr)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeForward();
     ScreenItem si=st->currentScreen();
 
     //	Move currentScreen one back, until it is on that is not current
-    while(si==id)
+    while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && si.base()==(*ptr))
     {
         tabBackward();	//	move display one back
         si=st->currentScreen();	//	find out what new current screen is.
@@ -315,7 +334,7 @@ Navigator::removeFromScreenStack(const SBIDBase &id)
     }
 
     //	Now remove all instances of requested to be removed
-    st->removeScreen(id);
+    st->removeScreen(ptr);
 
     //	Activate the current screen
     _activateScreen();
@@ -404,25 +423,24 @@ Navigator::editItem()
 void
 Navigator::openItemFromCompleter(const QModelIndex& i)
 {
-    //	Retrieve SB_ITEM_TYPE and SB_ITEM_ID from index.
-    SBIDBase id;
-    //	CWIP SBIDBase: Need to find a way to get to SBIDBase::sb_type
-    //id.assign(i.sibling(i.row(), i.column()+2).data().toString(), i.sibling(i.row(), i.column()+1).data().toInt());
+    SBIDPtr ptr=SBIDBase::createPtr(
+             static_cast<SBIDBase::sb_type>(i.sibling(i.row(), i.column()+2).data().toInt()),
+             i.sibling(i.row(), i.column()+1).data().toInt());
 
-    openScreen(id);
+    openScreen(ptr);
 }
 
 void
 Navigator::openChooserItem(const QModelIndex &i)
 {
     ScreenItem::screen_type screenType=static_cast<ScreenItem::screen_type>(i.sibling(i.row(), i.column()+2).data().toInt());
-    SBIDBase base;
+    SBIDPtr ptr;
     ScreenItem screenItem;
     if(screenType==ScreenItem::screen_type_sbidbase)
     {
-        base=SBIDBase::createSBID((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
 
-        screenItem=ScreenItem(base);
+        screenItem=ScreenItem(ptr);
 
     }
     else
@@ -436,8 +454,8 @@ Navigator::openChooserItem(const QModelIndex &i)
 void
 Navigator::openPerformer(const QString &itemID)
 {
-    SBIDBase id=SBIDBase::createSBID(SBIDBase::sb_type_performer,itemID.toInt());
-    openScreen(id);
+    SBIDPtr ptr=SBIDBase::createPtr(SBIDBase::sb_type_performer,itemID.toInt());
+    openScreen(ptr);
 }
 
 void
@@ -620,7 +638,7 @@ Navigator::_activateScreen()
         this->tabBackward();
 
         //	Remove all from screenStack with requested ID.
-        this->removeFromScreenStack(result);
+        this->removeFromScreenStack(si.ptr());
 
         return 1;
     }

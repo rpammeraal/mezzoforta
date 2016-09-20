@@ -124,14 +124,14 @@ SBIDPlaylist::operator ==(const SBIDBase& i) const
     return 0;
 }
 
-QDebug
-operator<<(QDebug dbg, const SBIDPlaylist& id)
+SBIDPlaylist::operator QString() const
 {
-    QString playlistName=id._playlistName.length() ? id._playlistName : "<N/A>";
-    dbg.nospace() << "SBIDPlaylist:"
-                  << "|" << id._sb_playlist_id << "|pln" << playlistName
+    QString playlistName=this->_playlistName.length() ? this->_playlistName : "<N/A>";
+    return QString("SBIDPlaylist:%1,%2:n=%3")
+            .arg(this->_sb_playlist_id)
+            .arg(this->_sb_tmp_item_id)
+            .arg(playlistName)
     ;
-    return dbg.space();
 }
 
 ///	Private methods

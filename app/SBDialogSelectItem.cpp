@@ -113,7 +113,7 @@ SBDialogSelectItem::selectSongAlbum(const SBIDBase& id, const QSqlQueryModel* m,
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(albumIcon);
+        QString imagePath=ExternalData::getCachePath(std::make_shared<SBIDAlbum>(albumIcon));
         QFile imageFile(imagePath);
 
         if(imageFile.exists()==0)
@@ -163,7 +163,7 @@ SBDialogSelectItem::selectPerformer(const SBIDBase& item, const QSqlQueryModel* 
 
         if(performersShown.contains(currentPerformer)==0)
         {
-            QString imagePath=ExternalData::getCachePath(currentPerformer);
+            QString imagePath=ExternalData::getCachePath(std::make_shared<SBIDPerformer>(currentPerformer));
             QFile imageFile(imagePath);
             if(imageFile.exists()==0)
             {

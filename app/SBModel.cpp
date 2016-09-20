@@ -34,7 +34,7 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
     return true;
 }
 
-SBIDBase
+SBIDPtr
 SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) const
 {
     //	Two types of how data can be dragged and dropped.
@@ -45,7 +45,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     //	See also SBTabPlaylistDetail::getSBIDSelected()
     QVariant v;
     QString header;
-    SBIDBase baseItem;
+    SBIDPtr ptr;
     QString text;
     QModelIndex n;
     SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
@@ -57,7 +57,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         dragableColumnFlag=_dragableColumnList.at(idx.column());
     }
 
-    qDebug() << SB_DEBUG_INFO << idx << _dragableColumnList.count() << dragableColumnFlag;
     if(_dragableColumnList.count()==0)
     {
         //	Determine sbid by going through all columns.
@@ -80,7 +79,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             }
             else if(header=="#")
             {
-                baseItem._sb_album_position=v.toInt();
+                if(ptr)
+                {
+                    ptr->_sb_album_position=v.toInt();
+                }
             }
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
@@ -98,9 +100,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 itemID=v.toInt();
             }
 
-            if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+            if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
-                baseItem=SBIDBase::createSBID(itemType,itemID);
+                ptr=SBIDBase::createPtr(itemType,itemID);
                 //	reset index to go through all fields again
                 i=0;
             }
@@ -126,9 +128,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         n=aim->index(idx.row(),idx.column());
         text=aim->data(n, Qt::DisplayRole).toString();
 
-        if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+        if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
-            baseItem=SBIDBase::createSBID(itemType,itemID);
+            ptr=SBIDBase::createPtr(itemType,itemID);
         }
     }
     else if( idx.column()+1 >= _dragableColumnList.count())
@@ -150,75 +152,76 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             if(itemType==SBIDBase::sb_type_invalid)
             {
                 itemType=static_cast<SBIDBase::sb_type>(v.toInt());
-                qDebug() << SB_DEBUG_INFO << "set itemType=" << itemType;
             }
         }
         else if(header=="sb_item_id")
         {
             itemID=v.toInt();
         }
-        else if(header=="sb_song_id")
+        if(ptr)
         {
-            baseItem._sb_song_id=v.toInt();
+            if(header=="sb_song_id" && ptr)
+            {
+                ptr->_sb_song_id=v.toInt();
+            }
+            else if(header=="sb_performer_id")
+            {
+                ptr->_sb_song_performer_id=v.toInt();
+            }
+            else if(header=="sb_album_id")
+            {
+                ptr->_sb_album_id=v.toInt();
+            }
+            else if(header=="sb_album_position")
+            {
+                ptr->_sb_album_position=v.toInt();
+            }
+            else if(header=="sb_position_id")
+            {
+                ptr->_sb_album_position=v.toInt();
+            }
+            else if(header=="performer")
+            {
+                ptr->_songPerformerName=v.toString();
+            }
+            else if(header=="album title")
+            {
+                ptr->_albumTitle=v.toString();
+            }
+            else if(header=="album_title")
+            {
+                ptr->_albumTitle=v.toString();
+            }
+            else if(header=="sb_path")
+            {
+                ptr->_path=v.toString();
+            }
+            else if(header=="sb_duration")
+            {
+                ptr->_duration=v.toTime();
+            }
+            else if(header=="duration")
+            {
+                ptr->_duration=v.toTime();
+            }
+            else if(header=="#")
+            {
+                ptr->_sb_play_position=v.toInt();
+            }
         }
-        else if(header=="sb_performer_id")
-        {
-            baseItem._sb_song_performer_id=v.toInt();
-        }
-        else if(header=="sb_album_id")
-        {
-            baseItem._sb_album_id=v.toInt();
-        }
-        else if(header=="sb_album_position")
-        {
-            baseItem._sb_album_position=v.toInt();
-        }
-        else if(header=="sb_position_id")
-        {
-            baseItem._sb_album_position=v.toInt();
-        }
-        else if(header=="performer")
-        {
-            baseItem._songPerformerName=v.toString();
-        }
-        else if(header=="album title")
-        {
-            baseItem._albumTitle=v.toString();
-        }
-        else if(header=="album_title")
-        {
-            baseItem._albumTitle=v.toString();
-        }
-        else if(header=="sb_path")
-        {
-            baseItem._path=v.toString();
-        }
-        else if(header=="sb_duration")
-        {
-            baseItem._duration=v.toTime();
-        }
-        else if(header=="duration")
-        {
-            baseItem._duration=v.toTime();
-        }
-        else if(header=="#")
-        {
-            baseItem._sb_play_position=v.toInt();
-        }
-        else if(header.left(3)!="sb_" && text.length()==0)
+        if(header.left(3)!="sb_" && text.length()==0)
         {
             text=v.toString();
         }
 
-        if(baseItem.validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0)
+        if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
-            baseItem=SBIDBase::createSBID(itemType,itemID);
+            ptr=SBIDBase::createPtr(itemType,itemID);
             //	reset index to go through all fields again
             i=0;
         }
     }
-    qDebug() << SB_DEBUG_INFO << itemType << itemID;
-    return baseItem;
+    return ptr;
 }
 
 Qt::ItemFlags
@@ -259,19 +262,19 @@ SBModel::_init()
 QMimeData*
 SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
-
     foreach (const QModelIndex &i, indexes)
     {
         if (i.isValid())
         {
             QMimeData* mimeData = new QMimeData();
-            SBIDBase id=_determineSBID(aim, i);
-            qDebug() << SB_DEBUG_INFO << id << id.playPosition();
-            QByteArray ba=id.encode();
-            mimeData->setData("application/vnd.text.list", ba);
-            qDebug() << SB_DEBUG_INFO << "Dragging " << id;
-            return mimeData;
+            SBIDPtr ptr=_determineSBID(aim, i);
+            if(ptr)
+            {
+                SBIDBase id=*ptr;
+                QByteArray ba=id.encode();
+                mimeData->setData("application/vnd.text.list", ba);
+                return mimeData;
+            }
         }
     }
     return NULL;
@@ -288,7 +291,6 @@ SBModel::_mimeTypes() const
 void
 SBModel::setDragableColumns(const QList<bool>& list)
 {
-    qDebug() << SB_DEBUG_INFO;
     _dragableColumnList=list;
 }
 

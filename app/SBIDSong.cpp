@@ -470,19 +470,23 @@ SBIDSong::operator ==(const SBIDSong& i) const
     return 0;
 }
 
-QDebug
-operator<<(QDebug dbg, const SBIDSong& id)
+SBIDSong::operator QString() const
 {
-    QString songTitle=id._songTitle.length() ? id._songTitle : "<N/A>";
-    QString songPerformerName=id._songPerformerName.length() ? id._songPerformerName : "<N/A>";
-    QString albumTitle=id._albumTitle.length() ? id._albumTitle : "<N/A>";
+    QString songTitle=this->_songTitle.length() ? this->_songTitle : "<N/A>";
+    QString songPerformerName=this->_songPerformerName.length() ? this->_songPerformerName : "<N/A>";
+    QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
 
-    dbg.nospace() << "SBIDSong:" << id._sb_song_id << "[" << id._sb_tmp_item_id << "]"
-                  << "|t" << songTitle
-                  << "|pn" << songPerformerName << id._sb_song_performer_id << "[" << id._sb_tmp_performer_id << "]"
-                  << "|at" << albumTitle << id._sb_album_id << "[" << id._sb_tmp_album_id << "]"
+    return QString("SBIDSong:%1,%2:t=%3:p=%4 %5,%6:a=%7 %8,%9")
+            .arg(this->_sb_song_id)
+            .arg(this->_sb_tmp_item_id)
+            .arg(songTitle)
+            .arg(songPerformerName)
+            .arg(this->_sb_song_performer_id)
+            .arg(this->_sb_tmp_performer_id)
+            .arg(albumTitle)
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_tmp_album_id)
     ;
-    return dbg.space();
 }
 
 void

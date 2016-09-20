@@ -56,7 +56,7 @@ public:
 
     //	Operators
     virtual bool operator==(const SBIDSong& i) const;
-    friend QDebug operator<<(QDebug dbg, const SBIDSong& id);
+    virtual operator QString() const;
 
 private:
     void _init();

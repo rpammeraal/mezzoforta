@@ -108,9 +108,8 @@ void
 PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
-    SBIDBase item=SBIDBase::createSBID(static_cast<SBIDBase::sb_type>(l[0].toInt()),l[1].toInt());
-    qDebug() << SB_DEBUG_INFO;
-    Context::instance()->getNavigator()->openScreen(item);
+    SBIDPtr ptr=SBIDBase::createPtr(static_cast<SBIDBase::sb_type>(l[0].toInt()),l[1].toInt());
+    Context::instance()->getNavigator()->openScreen(ptr);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
 
@@ -197,8 +196,6 @@ PlayerController::playSong(SBIDSong& song)
     ;
     emit setRowVisible(song.playPosition());	//	changed to here, so we can continue in case of error of playing a song.
 
-    qDebug() << SB_DEBUG_INFO << path;
-
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
         QString errorMsg=_playerInstance[_currentPlayerID].error();
@@ -232,7 +229,6 @@ PlayerController::_init()
     //	Left player
     connect(mw->ui.pbMusicPlayerControlLeftREW, SIGNAL(clicked(bool)),
             this, SLOT(playerRewind()));
-    qDebug() << SB_DEBUG_INFO;
     connect(mw->ui.pbMusicPlayerControlLeftSTOP, SIGNAL(clicked(bool)),
             this, SLOT(playerStop()));
     connect(mw->ui.pbMusicPlayerControlLeftFWD, SIGNAL(clicked(bool)),
@@ -242,7 +238,6 @@ PlayerController::_init()
 
     connect(mw->ui.pbMusicPlayerControlRightREW, SIGNAL(clicked(bool)),
             this, SLOT(playerRewind()));
-    qDebug() << SB_DEBUG_INFO;
     connect(mw->ui.pbMusicPlayerControlRightSTOP, SIGNAL(clicked(bool)),
             this, SLOT(playerStop()));
     connect(mw->ui.pbMusicPlayerControlRightFWD, SIGNAL(clicked(bool)),

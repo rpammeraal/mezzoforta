@@ -14,7 +14,6 @@ SBMessageBox::createSBMessageBox(const QString& text,
                                  bool blockFlag)
 {
     SBMessageBox* mb=new SBMessageBox();
-    qDebug() << SB_DEBUG_INFO << blockFlag;
     mb->setWindowModality(blockFlag?Qt::NonModal:Qt::ApplicationModal);
     mb->setText(text);
     if(informativeText.length()>0)

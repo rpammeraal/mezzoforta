@@ -208,7 +208,7 @@ DataEntityPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID, const SBI
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
         qDebug() << SB_DEBUG_INFO << q;
-        recalculatePlaylistDuration(toPlaylistID);
+        recalculatePlaylistDuration(std::make_shared<SBIDBase>(toPlaylistID));
     }
 }
 
@@ -310,7 +310,7 @@ DataEntityPlaylist::deletePlaylistItem(SBIDBase::sb_type itemType,int playlistID
         Q_UNUSED(remove);
         SBIDPlaylist playlist(playlistID);
         reorderPlaylistPositions(playlist);
-        recalculatePlaylistDuration(playlist);
+        recalculatePlaylistDuration(std::make_shared<SBIDBase>(playlist));
     }
 }
 
@@ -550,21 +550,21 @@ DataEntityPlaylist::getAllItemsByPlaylist(const SBIDBase& id) const
 }
 
 void
-DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed,QList<SBIDBase>& allSongs,const SBIDBase &rootID) const
+DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed,QList<SBIDBase>& allSongs,const SBIDPtr& rootPtr) const
 {
-    this->reorderPlaylistPositions(rootID);
+    this->reorderPlaylistPositions(*rootPtr);
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    if(compositesTraversed.contains(rootID))
+    if(compositesTraversed.contains(*rootPtr))
     {
         return;
     }
-    compositesTraversed.append(rootID);
+    compositesTraversed.append(*rootPtr);
 
-    //	If rootID is a playlist, traverse trough all items within this playlist, recurse when neccessary.
-    switch(rootID.itemType())
+    //	If *rootPtr is a playlist, traverse trough all items within this playlist, recurse when neccessary.
+    switch(rootPtr->itemType())
     {
     case SBIDBase::sb_type_playlist:
         q=QString
@@ -626,7 +626,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                     "2 "
             )
                 .arg(dal->getIsNull())
-                .arg(rootID.playlistID())
+                .arg(rootPtr->playlistID())
             ;
 
         dal->customize(q);
@@ -645,6 +645,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                 if(compositeFlag)
                 {
                     SBIDBase t;
+                    SBIDPtr ptr;
                     SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
                     int itemID;
                     if(playlistID!=0)
@@ -669,8 +670,8 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                     }
                     if(itemType!=SBIDBase::sb_type_invalid)
                     {
-                        t=SBIDBase::createSBID(itemType,itemID);
-                        getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,t);
+                        ptr=SBIDBase::createPtr(itemType,itemID);
+                        getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,ptr);
                     }
                 }
                 else
@@ -738,7 +739,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                 "ORDER BY "
                     "pp.chart_position "
             )
-                .arg(rootID.playlistID())
+                .arg(rootPtr->playlistID())
             ;
         break;
 
@@ -773,7 +774,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                 "ORDER BY "
                     "rp.record_position "
             )
-                .arg(rootID.albumID())
+                .arg(rootPtr->albumID())
             ;
         break;
 
@@ -806,7 +807,7 @@ DataEntityPlaylist::getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTr
                 "WHERE "
                     "rp.artist_id=%2"
             )
-                .arg(rootID.commonPerformerID())
+                .arg(rootPtr->commonPerformerID())
             ;
         break;
 
@@ -896,14 +897,14 @@ DataEntityPlaylist::recalculateAllPlaylistDurations() const
 
     while(query.next())
     {
-        SBIDPlaylist t(query.value(1).toInt());
+        SBIDPlaylist playlist(query.value(1).toInt());
 
-        recalculatePlaylistDuration(t);
+        recalculatePlaylistDuration(std::make_shared<SBIDBase>(playlist));
     }
 }
 
 void
-DataEntityPlaylist::recalculatePlaylistDuration(const SBIDBase &id) const
+DataEntityPlaylist::recalculatePlaylistDuration(const SBIDPtr &ptr) const
 {
     QList<SBIDBase> compositesTraversed;
     QList<SBIDBase> allSongs;
@@ -911,7 +912,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBIDBase &id) const
     //	Get all songs
     compositesTraversed.clear();
     allSongs.clear();
-    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
+    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,ptr);
 
     //	Calculate duration
     Duration duration;
@@ -934,7 +935,7 @@ DataEntityPlaylist::recalculatePlaylistDuration(const SBIDBase &id) const
             "playlist_id=%2 "
     )
         .arg(duration.toString(Duration::sb_full_hhmmss_format))
-        .arg(id.playlistID())
+        .arg(ptr->playlistID())
     ;
     dal->customize(q);
 
@@ -1420,7 +1421,7 @@ DataEntityPlaylist::retrievePlaylistItems(const SBIDBase &id)
     //	Get all songs
     compositesTraversed.clear();
     allSongs.clear();
-    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,id);
+    getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,std::make_shared<SBIDBase>(id));
 
     //	Populate playlist
     for(int i=0;i<allSongs.count();i++)
@@ -1528,5 +1529,4 @@ DataEntityPlaylist::reorderPlaylistPositions(const SBIDBase &id,int maxPosition)
 void
 DataEntityPlaylist::init()
 {
-    qDebug() << SB_DEBUG_INFO;
 }

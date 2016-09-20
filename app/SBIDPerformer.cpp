@@ -470,14 +470,14 @@ SBIDPerformer::operator ==(const SBIDBase& i) const
     return 0;
 }
 
-QDebug
-operator<<(QDebug dbg, const SBIDPerformer& id)
+SBIDPerformer::operator QString() const
 {
-    QString songPerformerName=id._performerName.length() ? id._performerName : "<N/A>";
-    dbg.nospace() << "SBIDPerformer:" << id._sb_performer_id << "[" << id._sb_tmp_item_id << "]"
-                  << "|n" << songPerformerName
+    QString performerName=this->_performerName.length() ? this->_performerName : "<N/A>";
+    return QString("SBIDPerformer:%1,%2:n=%3")
+            .arg(this->_sb_performer_id)
+            .arg(this->_sb_tmp_item_id)
+            .arg(performerName);
     ;
-    return dbg.space();
 }
 
 ///	Private methods

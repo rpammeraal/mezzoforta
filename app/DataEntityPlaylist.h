@@ -24,10 +24,10 @@ public:
     SBIDBase getDetail(const SBIDBase& id) const;
     SBIDSong getDetailPlaylistItemSong(int playlistID, int playlistPosition) const;
     SBSqlQueryModel* getAllItemsByPlaylist(const SBIDBase& id) const;
-    void getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDBase& id) const;
+    void getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDPtr& root) const;
     SBSqlQueryModel* getAllPlaylists() const;
     void recalculateAllPlaylistDurations() const;
-    void recalculatePlaylistDuration(const SBIDBase& id) const;
+    void recalculatePlaylistDuration(const SBIDPtr& ptr) const;
     void renamePlaylist(const SBIDBase& id) const;
     void reorderItem(const SBIDBase& playlistID, const SBIDBase& fromID, int row) const;
     void reorderItem(const SBIDBase& playlistID, const SBIDBase& fromID, const SBIDBase& toID) const;

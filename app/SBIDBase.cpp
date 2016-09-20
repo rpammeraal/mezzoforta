@@ -107,35 +107,6 @@ SBIDBase::~SBIDBase()
 {
 }
 
-SBIDBase
-SBIDBase::createSBID(SBIDBase::sb_type itemType,int ID)
-{
-    SBIDBase id;
-    switch(itemType)
-    {
-    case SBIDBase::sb_type_album:
-        id=SBIDAlbum(ID);
-        break;
-
-    case SBIDBase::sb_type_performer:
-        id=SBIDPerformer(ID);
-        break;
-
-    case SBIDBase::sb_type_song:
-        id=SBIDSong(ID);
-        break;
-
-    case SBIDBase::sb_type_playlist:
-        id=SBIDPlaylist(ID);
-        break;
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-    return id;
-}
-
 SBIDPtr
 SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
 {
@@ -147,8 +118,10 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
         break;
 
     case SBIDBase::sb_type_performer:
+    {
         ptr=std::make_shared<SBIDPerformer>(SBIDPerformer(ID));
         break;
+    }
 
     case SBIDBase::sb_type_song:
         ptr=std::make_shared<SBIDSong>(SBIDSong(ID));
@@ -352,14 +325,15 @@ SBIDBase::sendToPlayQueue(bool enqueueFlag)
 void
 SBIDBase::setText(const QString &text)
 {
+    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
     SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     Q_UNUSED(text);
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
 }
 
 QString
 SBIDBase::text() const
 {
+    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
     SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     return QString("n/a");
 }
@@ -367,6 +341,7 @@ SBIDBase::text() const
 QString
 SBIDBase::type() const
 {
+    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
     SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
     return "n/a";
 }
@@ -455,60 +430,69 @@ SBIDBase::operator !=(const SBIDBase& i) const
     return !(this->operator==(i));
 }
 
-QDebug
-operator <<(QDebug dbg, const SBIDBase& id)
+SBIDBase::operator QString() const
 {
-
-    QString songTitle=id._songTitle.length() ? id._songTitle : "<N/A>";
-    QString songPerformerName=id._songPerformerName.length() ? id._songPerformerName : "<N/A>";
-    QString albumTitle=id._albumTitle.length() ? id._albumTitle : "<N/A>";
-    QString albumPerformerName=id._albumPerformerName.length() ? id._albumPerformerName : "<N/A>";
-    QString playlistName=id._playlistName.length() ? id._playlistName : "<N/A>";
-    switch(id.itemType())
+    QStringList out;
+    QString songTitle=this->_songTitle.length() ? this->_songTitle : "<N/A>";
+    QString songPerformerName=this->_songPerformerName.length() ? this->_songPerformerName : "<N/A>";
+    QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
+    QString albumPerformerName=this->_albumPerformerName.length() ? this->_albumPerformerName : "<N/A>";
+    QString playlistName=this->_playlistName.length() ? this->_playlistName : "<N/A>";
+    switch(this->itemType())
     {
     case SBIDBase::sb_type_song:
-        dbg.nospace() << "SBIDBase:" << id.type() << id._sb_song_id << "[" << id._sb_tmp_item_id << "]"
-                      << "|t" << songTitle
-                      << "|pn" << songPerformerName << id._sb_song_performer_id << "[" << id._sb_tmp_performer_id << "]"
-                      << "|at" << albumTitle << id._sb_album_id << "[" << id._sb_tmp_album_id << "]"
+        return QString("SBIDBase:%1 %2,%3:t=%4:p=%5 %6,%7:a=%8 %9,%10")
+                .arg(this->type())
+                .arg(this->_sb_song_id)
+                .arg(this->_sb_tmp_item_id)
+                .arg(songTitle)
+                .arg(songPerformerName)
+                .arg(this->_sb_song_performer_id)
+                .arg(this->_sb_tmp_performer_id)
+                .arg(albumTitle)
+                .arg(this->_sb_album_id)
+                .arg(this->_sb_tmp_album_id)
         ;
-        break;
 
     case SBIDBase::sb_type_performer:
-        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
-                      << "|" << id._sb_performer_id << "|pn" << songPerformerName
+        return QString("SBIDBase:%1 %2,%3:n=%4")
+                .arg(this->type())
+                .arg(this->_sb_performer_id)
+                .arg(this->_sb_tmp_item_id)
+                .arg(performerName().length()==0?"n/a":performerName())
         ;
-        break;
 
     case SBIDBase::sb_type_album:
-        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
-                      << "|" << id._sb_album_id << "|at" << albumTitle
-                      << "|" << id._sb_album_performer_id << "|pn" << albumPerformerName
+        return QString("SBIDBase:%1 %2,%3:t=%4:p=%5 %6 %7")
+                .arg(this->type())
+                .arg(this->_sb_album_id)
+                .arg(this->_sb_tmp_item_id)
+                .arg(albumTitle)
+                .arg(albumPerformerName)
+                .arg(this->_sb_album_performer_id)
+                .arg(this->_sb_tmp_performer_id)
         ;
-        break;
 
     case SBIDBase::sb_type_chart:
-        dbg.nospace() << "SBIDBase:" << id.type()<< "[" << id._sb_tmp_item_id << "]"
-                      << "|" << id._sb_chart_id
-                      << "|" << "<name not implemented for charts>"
-        ;
+        return QString("Not implemented");
         break;
 
     case SBIDBase::sb_type_playlist:
-        dbg.nospace() << "SBIDBase:" << id.itemType() << id.type()<< "[" << id._sb_tmp_item_id << "]"
-                      << "|" << id._sb_playlist_id << "|pln" << playlistName
+        return QString("SBIDBase:%1 %2,%3:n=%4")
+                .arg(this->type())
+                .arg(this->_sb_playlist_id)
+                .arg(this->_sb_tmp_item_id)
+                .arg(playlistName)
         ;
         break;
 
     case SBIDBase::sb_type_invalid:
-        dbg.nospace() << "<INVALID ID>";
-        break;
+        return "<INVALID ID>";
 
     default:
-        dbg.nospace() << "<not implemented in operator<< >";
         break;
     }
-    return dbg.space();
+    return "<not implemented in operator<< >";
 }
 
 ///	PRIVATE

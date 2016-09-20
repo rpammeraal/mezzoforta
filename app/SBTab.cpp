@@ -105,10 +105,13 @@ SBTab::populate(const ScreenItem& si)
     const ScreenItem& onStack=currentScreenItem(); //Context::instance()->getScreenStack()->currentScreen();
 
     ScreenItem result=_populate(si);
-    result.setSortColumn(onStack.sortColumn());
-    result.setSubtabID(onStack.subtabID());
-    Context::instance()->getScreenStack()->updateCurrentScreen(result);
-    _populatePost(result);
+    if(result.screenType()!=ScreenItem::screen_type_invalid)
+    {
+        result.setSortColumn(onStack.sortColumn());
+        result.setSubtabID(onStack.subtabID());
+        Context::instance()->getScreenStack()->updateCurrentScreen(result);
+        _populatePost(result);
+    }
 
     return result;
 }
@@ -376,7 +379,6 @@ SBTab::tabBarClicked(int index)
 void
 SBTab::tableViewCellClicked(const QModelIndex& idx)
 {
-    SBIDBase id;
     const QSortFilterProxyModel* sfpm=dynamic_cast<const QSortFilterProxyModel *>(idx.model());
 
     if(sfpm)
@@ -388,8 +390,9 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << ' ';
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
-            id=m->determineSBID(idy);
-            Context::instance()->getNavigator()->openScreen(id);
+            SBIDPtr ptr=m->determineSBID(idy);
+            qDebug() << SB_DEBUG_INFO;
+            Context::instance()->getNavigator()->openScreen(ptr);
         }
     }
 }

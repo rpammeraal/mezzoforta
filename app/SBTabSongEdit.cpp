@@ -239,7 +239,7 @@ SBTabSongEdit::save() const
                 if(orgSongID.songID()!=newSongID.songID())
                 {
                     //	Remove old from screenstack
-                    Context::instance()->getScreenStack()->removeScreen(orgSongID);
+                    Context::instance()->getScreenStack()->removeScreen(ScreenItem(std::make_shared<SBIDSong>(orgSongID)));
                 }
             }
             else
@@ -283,21 +283,17 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     if(song.getDetail()<0)
     {
         //	Not found
-        return song;
+        return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);
     //SBTab::_setCurrentScreenItem(currentScreenItem);
 
-    qDebug() << SB_DEBUG_INFO << song;
     mw->ui.songEditTitle->setText(song.songTitle());
     mw->ui.songEditPerformerName->setText(song.songPerformerName());
     mw->ui.songEditYearOfRelease->setText(QString("%1").arg(song.year()));
     mw->ui.songEditNotes->setText(song.notes());
     mw->ui.songEditLyrics->setText(song.lyrics());
-
-    qDebug() << SB_DEBUG_INFO << song.songPerformerName();
-    qDebug() << SB_DEBUG_INFO << mw->ui.songEditPerformerName->text();
 
     //	Disable tmpButtons
     mw->ui.pbNA2->hide();

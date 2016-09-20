@@ -268,7 +268,6 @@ SBTabQueuedSongs::_populate(const ScreenItem& si)
     Q_UNUSED(si);
     _init();
     _updateDetail();
-    //SBTab::_setCurrentScreenItem(si);
     return si;
 }
 

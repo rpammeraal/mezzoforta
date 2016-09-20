@@ -16,7 +16,7 @@ public:
     };
 
     ScreenItem();
-    ScreenItem(const SBIDBase& base);
+    ScreenItem(const SBIDPtr& base);
     ScreenItem(const QString& searchCriteria);
     ScreenItem(ScreenItem::screen_type screenType);
     ~ScreenItem();
@@ -28,7 +28,8 @@ public:
     void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    SBIDBase base() const { return _base; }
+    SBIDBase base() const { return *_ptr; }	//	CWIP: remove
+    SBIDPtr ptr() const { return _ptr; }
 
     bool operator==(const ScreenItem& i) const;
     bool operator!=(const ScreenItem& i) const;
@@ -36,7 +37,7 @@ public:
 
 private:
     screen_type _screenType;
-    SBIDBase    _base;
+    SBIDPtr     _ptr;
     bool        _editFlag;
     QString     _searchCriteria;
     int         _subtabID;

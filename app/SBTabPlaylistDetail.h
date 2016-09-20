@@ -25,6 +25,8 @@ public slots:
     void showContextMenuView(const QPoint &p);
 
 private:
+    //	PlaylistItem class is used to transfer the four items
+    //	between the different methods in this class.
     class PlaylistItem
     {
     public:
@@ -44,7 +46,9 @@ private:
         }
     };
 
-    QAction*     _deletePlaylistItemAction;
+    QAction* _deletePlaylistItemAction;
+    QTime    _lastPopupWindowEventTime;
+    QPoint   _lastPopupWindowPoint;
 
     void _init();
     PlaylistItem _getSelectedItem(const QModelIndex& idx);

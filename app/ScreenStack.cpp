@@ -199,8 +199,9 @@ void
 ScreenStack::updateCurrentScreen(const ScreenItem &id)
 {
     qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << id << id.editFlag();
-    qDebug() << SB_DEBUG_INFO << _currentScreenID << _stack.count();
+
+    qDebug() << SB_DEBUG_INFO << "id=" << id;
+    qDebug() << SB_DEBUG_INFO << "curr=" << currentScreen();
 
     if(_currentScreenID>=0 && _currentScreenID<_stack.count())
     {

@@ -287,7 +287,7 @@ SBTabPerformerEdit::save() const
                 Context::instance()->getController()->refreshModels();
 
                 //	Remove old from screenstack
-                Context::instance()->getScreenStack()->removeScreen(orgPerformerID);
+                Context::instance()->getScreenStack()->removeScreen(ScreenItem(std::make_shared<SBIDPerformer>(orgPerformerID)));
             }
         }
 

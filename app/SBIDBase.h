@@ -30,7 +30,6 @@ public:
     SBIDBase(const SBIDBase& c);
     SBIDBase(QByteArray encodedData);
     virtual ~SBIDBase();
-    static SBIDBase createSBID(SBIDBase::sb_type itemType,int ID);
     static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID);
 
     //	Public methods
@@ -99,7 +98,7 @@ public:
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;	//	compares on ID(s)
     virtual bool operator!=(const SBIDBase& i) const;
-    friend QDebug operator<<(QDebug dbg, const SBIDBase& id);
+    virtual operator QString() const;
 
     //	Helper functions for import
     int assignTmpItemID();

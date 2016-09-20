@@ -555,16 +555,18 @@ SBIDAlbum::operator ==(const SBIDBase& i) const
     return 0;
 }
 
-QDebug
-operator<<(QDebug dbg, const SBIDAlbum& id)
+SBIDAlbum::operator QString() const
 {
-    QString albumPerformerName=id._albumPerformerName.length() ? id._albumPerformerName : "<N/A>";
-    QString albumTitle=id._albumTitle.length() ? id._albumTitle : "<N/A>";
-    dbg.nospace() << "SBIDAlbum:" << id._sb_album_id << "[" << id._sb_tmp_item_id << "]"
-                  << "|t" << albumTitle << id._sb_album_id << "[" << id._sb_tmp_album_id << "]"
-                  << "|pn" << albumPerformerName << id._sb_album_performer_id << "[" << id._sb_tmp_performer_id << "]"
+    QString albumPerformerName=this->_albumPerformerName.length() ? this->_albumPerformerName : "<N/A>";
+    QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
+    return QString("SBIDAlbum:%1,%2:t=%3:p=%4 %5 %6")
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_tmp_item_id)
+            .arg(albumTitle)
+            .arg(albumPerformerName)
+            .arg(this->_sb_album_performer_id)
+            .arg(this->_sb_tmp_performer_id)
     ;
-    return dbg.space();
 }
 
 ///	Private methods
