@@ -23,13 +23,14 @@ public:
 
     inline bool editFlag() const { return _editFlag; }
     inline ScreenItem::screen_type screenType() const { return _screenType; }
+    inline QString searchCriteria() const { return _searchCriteria; }
     void setEditFlag(bool editFlag) { _editFlag=editFlag; }
     void setSortColumn(int sortColumn) { _sortColumn=sortColumn; }
     void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    SBIDBase base() const { return *_ptr; }	//	CWIP: remove
     SBIDPtr ptr() const { return _ptr; }
+    void updateSBIDBase(const SBIDPtr& ptr);
 
     bool operator==(const ScreenItem& i) const;
     bool operator!=(const ScreenItem& i) const;

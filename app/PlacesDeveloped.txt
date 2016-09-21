@@ -572,23 +572,30 @@ X	playlists that song belongs to can be edited
 20160918:
 -	Simplified things in SBTabPlaylistDetail by moving away from using SBIDBase, and introducing SBIDPtr
 
-<current>:
+20160919
 -	SBID*::_populate(): if not found, return ScreenItem();
 -	Converted more classes to using SBIDPtr
 -	Navigator::openItemFromCompleter(): fix
 -	SBIDBase::createSBID(): remove
 
+20160920:
+-	Even more classes converted to using SBIDPtr
+-	Removed searchCriteria from SBIDBase
+-	NO text in context menu for songs in AllSongs, Album,
+-	Can't select U2 from the War album: fixed
+-	Can't play albums from album page using album icon: also fixed for other pages
+-	Fix multiple popup in albumpage: fixed in all SBTab* classes
+-	Search From Nubia To Cairo: haywire: context menu on label did not display text: fixed
+-   void openScreen(const SBIDBase& id);	//	CWIP: remove!
+-	Play 'World Relaxed'. Enqueue 'Tranquiillent World'. Song 'Saraab' is twice in queue.
+
 <now>
 *	DataEntity* classes: merge with corresponding SBID* class.
-*    void openScreen(const SBIDBase& id);	//	CWIP: remove!
 
 <bugs>
-*	Can't play albums from album page using album icon
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
-*	Play 'World Relaxed'. Enqueue 'Tranquiillent World'. Song 'Saraab' is twice in queue.
 *	Radio mode: sometimes song appears in list twice
-*	Search From Nubia To Cairo: haywire
 
 <near future>
 *	SBIDSong::setPlaylist*(): remove

@@ -44,7 +44,6 @@ SBIDBase::SBIDBase(const SBIDBase &c)
     this->_performerName=c._performerName;
     this->_albumPerformerName=c._albumPerformerName;
     this->_playlistName=c._playlistName;
-    this->_searchCriteria=c._searchCriteria;
     this->_songTitle=c._songTitle;
     this->_url=c._url;
     this->_wiki=c._wiki;
@@ -96,10 +95,9 @@ SBIDBase::SBIDBase(QByteArray encodedData)
     _count1                   =sl[24].toInt();
     _count2                   =sl[25].toInt();
     _duration.setDuration(sl[26].toInt());
-    _searchCriteria           =sl[27];
-    _sb_play_position         =sl[28].toInt();
-    _sb_playlist_position     =sl[29].toInt();
-    _sb_model_position        =sl[30].toInt();
+    _sb_play_position         =sl[27].toInt();
+    _sb_playlist_position     =sl[28].toInt();
+    _sb_model_position        =sl[29].toInt();
     return;
 }
 
@@ -172,7 +170,6 @@ SBIDBase::encode() const
     sl.append(QString("%1").arg(_count1));
     sl.append(QString("%1").arg(_count2));                     //	25
     sl.append(QString("%1").arg(_duration.MS()));
-    sl.append(SB_REPLACE_UNDERSCORE(_searchCriteria));
     sl.append(QString("%1").arg(_sb_play_position));
     sl.append(QString("%1").arg(_sb_playlist_position));
     sl.append(QString("%1").arg(_sb_model_position));          //	30
@@ -380,7 +377,6 @@ SBIDBase::showDebug(const QString& title) const
     qDebug() << SB_DEBUG_INFO << "albumPerformerName" << _albumPerformerName;
     qDebug() << SB_DEBUG_INFO << "performerName" << _performerName;
     qDebug() << SB_DEBUG_INFO << "playlistName" << _playlistName;
-    qDebug() << SB_DEBUG_INFO << "searchCriteria" << _searchCriteria;
     qDebug() << SB_DEBUG_INFO << "songTitle" << _songTitle;
     qDebug() << SB_DEBUG_INFO << "url" << _url;
     qDebug() << SB_DEBUG_INFO << "wiki" << _wiki;
@@ -527,7 +523,6 @@ SBIDBase::_init()
     _albumPerformerName=e;
     _performerName=e;
     _playlistName=e;
-    _searchCriteria=e;
     _songTitle=e;
     _url=e;
     _wiki=e;

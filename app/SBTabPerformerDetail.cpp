@@ -49,44 +49,56 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
-    const SBIDBase currentID=this->currentScreenItem().base();
+    const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selected->itemType()==SBIDBase::sb_type_invalid)
+    if(!selected || selected->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
-        selected=std::make_shared<SBIDBase>(currentID);
+        selected=currentPtr;
     }
-    else if(selected->itemType()==SBIDBase::sb_type_song)
+    else if(selected && selected->itemType()==SBIDBase::sb_type_song)
     {
         SBIDSong song(*selected);
-        song.setSongPerformerName(currentID.songPerformerName());
-        song.setSongPerformerID(currentID.songPerformerID());
-        selected=std::make_shared<SBIDBase>(SBTabSongDetail::selectSongFromAlbum(song));
+        song.setSongPerformerName(currentPtr->songPerformerName());
+        song.setSongPerformerID(currentPtr->songPerformerID());
+        selected=SBTabSongDetail::selectSongFromAlbum(song);
     }
-    pmgr?pmgr->playItemNow(*selected,enqueueFlag):0;
+
+    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
 void
 SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBIDBase currentID=this->currentScreenItem().base();
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
 
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
+    _recordLastPopup(p);
 }
 
 void
 SBTabPerformerDetail::showContextMenuView(const QPoint &p)
 {
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
     const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
     QTableView* tv=_determineViewCurrentTab();
 
@@ -110,6 +122,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
         _menu->exec(gp);
+        _recordLastPopup(p);
     }
 }
 
@@ -150,7 +163,7 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().base());
+    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().ptr());
 }
 
 void
@@ -277,14 +290,15 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     DataEntityPerformer* mp=new DataEntityPerformer();
 
     //	Get detail
-    SBIDPerformer performer=mp->getDetail(si.base());
+    SBIDPerformer performer=mp->getDetail(*(si.ptr()));
     if(performer.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
     mw->ui.labelPerformerDetailIcon->setSBID(performer);
-    ScreenItem currentScreenItem(std::make_shared<SBIDPerformer>(performer));
+    ScreenItem currentScreenItem=si;
+    currentScreenItem.updateSBIDBase(std::make_shared<SBIDPerformer>(performer));
 
     //	Clear image
     setPerformerImage(QPixmap());

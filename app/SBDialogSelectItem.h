@@ -30,24 +30,24 @@ class SBDialogSelectItem : public QDialog
     };
 
 public:
-    SBDialogSelectItem(const SBIDBase& id, QWidget *parent = 0, SBDialogSelectItem::SB_DialogType newDialogType=SBDialogSelectItem::sb_invalid);
+    SBDialogSelectItem(const SBIDPtr& id, QWidget *parent = 0, SBDialogSelectItem::SB_DialogType newDialogType=SBDialogSelectItem::sb_invalid);
     ~SBDialogSelectItem();
-    SBIDBase getSBID() const;
+    SBIDPtr getSelected() const;
     inline bool hasSelectedItem() const { return _hasSelectedItemFlag; }
     void setTitle(const QString& title);
 
     //	CWIP: remove m parameter if possible
-    static SBDialogSelectItem* selectAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectSongAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectPerformer(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectSongByPerformer(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectSongAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectSongByPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
 
 
 private:
     Ui::SBDialogSelectItem *ui;
-    SBIDBase _currentID;
+    SBIDPtr _currentPtr;
     SB_DialogType _dialogType;
-    QMap<int,SBIDBase> _itemsDisplayed;
+    QMap<int,SBIDPtr> _itemsDisplayed;
     bool _hasSelectedItemFlag;
 
     void init();

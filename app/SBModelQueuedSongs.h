@@ -48,7 +48,7 @@ public:
     //	Methods unrelated to drag&drop
     QModelIndex addRow();
     QString formatDisplayPlayID(int playID,bool isCurrent=0) const;
-    SBIDBase getSBIDSelected(const QModelIndex& idx) const;
+    SBIDPtr selectedItem(const QModelIndex& idx) const;
     void paintRow(int i);
     virtual void sort(int column, Qt::SortOrder order);
 
@@ -88,6 +88,7 @@ private:
     QString _formatPlaylistPosition(int playlistPositionID) const;
     void _populateHeader();
     QMap<int,int> _populateMapPlaylistPosition2ViewPosition();
+    bool _recordExists(const QList<QStandardItem *>& record) const;
 };
 
 #endif // SBMODELCURRENTPLAYLIST_H

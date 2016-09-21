@@ -35,6 +35,19 @@ ScreenItem::~ScreenItem()
 {
 }
 
+void
+ScreenItem::updateSBIDBase(const SBIDPtr &ptr)
+{
+    if(this->screenType()==ScreenItem::screen_type_sbidbase)
+    {
+        this->_ptr=ptr;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_ERROR << "Incompatible screenType: " << this->screenType();
+    }
+}
+
 ///	Public methods
 bool
 ScreenItem::operator ==(const ScreenItem& i) const

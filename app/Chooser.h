@@ -34,7 +34,7 @@ public slots:
     void enqueuePlaylist();
     void newPlaylist();
     void playlistChanged(const SBIDPlaylist& playlistID);
-    void playPlaylist();
+    void playPlaylist(bool enqueueFlag=0);
     void renamePlaylist();
     void schemaChanged();
     void showContextMenu(const QPoint& p);

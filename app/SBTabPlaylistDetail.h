@@ -47,8 +47,6 @@ private:
     };
 
     QAction* _deletePlaylistItemAction;
-    QTime    _lastPopupWindowEventTime;
-    QPoint   _lastPopupWindowPoint;
 
     void _init();
     PlaylistItem _getSelectedItem(const QModelIndex& idx);

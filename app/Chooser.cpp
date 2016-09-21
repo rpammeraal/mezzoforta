@@ -194,7 +194,9 @@ Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
                 if(toBeAssignedToID.albumID()==-1)
                 {
                     SBIDSong song(toBeAssignedToID);
-                    fromID=SBTabSongDetail::selectSongFromAlbum(song);
+                    SBIDPtr fromPtr;
+                    fromPtr=SBTabSongDetail::selectSongFromAlbum(song);
+                    fromID=*fromPtr;
                 }
             }
             else
@@ -221,10 +223,9 @@ Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
                 else if(rootType==Chooser::sb_your_songs)
                 {
                     PlayManager* pmgr=Context::instance()->getPlayManager();
-                    pmgr?pmgr->playItemNow(fromID,1):0;
+                    pmgr->startRadio();
                 }
             }
-
         }
     case Chooser::sb_empty1:
     default:
@@ -271,12 +272,7 @@ Chooser::deletePlaylist()
 void
 Chooser::enqueuePlaylist()
 {
-    SBIDPlaylist id=_getPlaylistSelected(_lastClickedIndex);
-    if(id.validFlag())
-    {
-        PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(id,1):0;
-    }
+    playPlaylist(true);
 }
 
 void
@@ -338,13 +334,13 @@ Chooser::playlistChanged(const SBIDPlaylist &playlistID)
 }
 
 void
-Chooser::playPlaylist()
+Chooser::playPlaylist(bool enqueueFlag)
 {
-    SBIDPlaylist id=_getPlaylistSelected(_lastClickedIndex);
-    if(id.validFlag())
+    SBIDPlaylist playlist=_getPlaylistSelected(_lastClickedIndex);
+    if(playlist.validFlag())
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(id):0;
+        pmgr?pmgr->playItemNow(std::make_shared<SBIDPlaylist>(playlist),enqueueFlag):0;
     }
 }
 

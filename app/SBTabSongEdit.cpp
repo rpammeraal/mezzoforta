@@ -23,16 +23,16 @@ SBTabSongEdit::handleEnterKey()
 bool
 SBTabSongEdit::hasEdits() const
 {
-    const SBIDBase& currentID=this->currentScreenItem().base();
+    const SBIDPtr& ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(currentID.itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
     {
-        if(currentID.songTitle()!=mw->ui.songEditTitle->text() ||
-            currentID.songPerformerName()!=mw->ui.songEditPerformerName->text() ||
-            currentID.year()!=mw->ui.songEditYearOfRelease->text().toInt() ||
-            currentID.notes()!=mw->ui.songEditNotes->text() ||
-            currentID.lyrics()!=mw->ui.songEditLyrics->toPlainText()
+        if(ptr->songTitle()!=mw->ui.songEditTitle->text() ||
+            ptr->songPerformerName()!=mw->ui.songEditPerformerName->text() ||
+            ptr->year()!=mw->ui.songEditYearOfRelease->text().toInt() ||
+            ptr->notes()!=mw->ui.songEditNotes->text() ||
+            ptr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
         )
         {
             return 1;
@@ -65,7 +65,7 @@ SBTabSongEdit::save() const
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDSong orgSongID=static_cast<SBIDSong>(currentScreenItem.base());
+    SBIDSong orgSongID=static_cast<SBIDSong>(*(currentScreenItem.ptr()));
     SBIDSong newSongID=orgSongID;
 
     qDebug() << SB_DEBUG_INFO << "orgSong" << orgSongID;
@@ -168,11 +168,11 @@ SBTabSongEdit::save() const
             }
             else
             {
-                SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(selectedSongID,songMatches);
+                SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(std::make_shared<SBIDSong>(selectedSongID),songMatches);
                 pu->exec();
 
-                SBIDBase selected=pu->getSBID();
-                selectedSongID=SBIDSong(selected);
+                SBIDPtr selected=pu->getSelected();
+                selectedSongID=SBIDSong(*selected);
 
                 //	Go back to screen if no item has been selected
                 if(pu->hasSelectedItem()==0)
@@ -219,7 +219,6 @@ SBTabSongEdit::save() const
         orgSongID.lyrics()!=newSongID.lyrics() ||
         hasCaseChange==1)
     {
-        qDebug() << SB_DEBUG_INFO;
 
         const bool successFlag=DataEntitySong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
 
@@ -279,7 +278,7 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     _init();
 
     //	Get detail
-    SBIDSong song=SBIDSong(si.base().itemID());
+    SBIDSong song=SBIDSong(si.ptr()->itemID());
     if(song.getDetail()<0)
     {
         //	Not found

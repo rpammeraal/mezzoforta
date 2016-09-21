@@ -47,7 +47,7 @@ SBTab::refreshTabIfCurrent(const SBIDBase& id)
 {
     ScreenItem si=currentScreenItem();
 
-    if(si.base()==id)
+    if(*(si.ptr())==id)
     {
         populate(si);
     }
@@ -161,6 +161,7 @@ SBTab::init()
     _menu=NULL;
     _enqueueAction=NULL;
     _playNowAction=NULL;
+    _lastPopupWindowEventTime=QTime::currentTime();
 }
 
 int
@@ -274,12 +275,12 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBIDBase &newID, Q
 */
 
 void
-SBTab::setImage(const QPixmap& p, QLabel* l, const SBIDBase& id) const
+SBTab::setImage(const QPixmap& p, QLabel* l, const SBIDPtr& ptr) const
 {
     SB_DEBUG_IF_NULL(l);
-    if(p.isNull())
+    if(p.isNull() && ptr)
     {
-        QPixmap q=QPixmap(id.iconResourceLocation());
+        QPixmap q=QPixmap(ptr->iconResourceLocation());
         l->setPixmap(q);
     }
     else
@@ -289,6 +290,18 @@ SBTab::setImage(const QPixmap& p, QLabel* l, const SBIDBase& id) const
         int h=l->height();
         l->setPixmap(p.scaled(w,h,Qt::KeepAspectRatio));
     }
+}
+
+bool
+SBTab::_allowPopup(const QPoint& p) const
+{
+    if(_lastPopupWindowEventTime.msecsTo(QTime::currentTime())<500 && p==_lastPopupWindowPoint)
+    {
+        qDebug() << SB_DEBUG_WARNING << "Suppressing repeated popup windows";
+        QCoreApplication::processEvents();
+        return 0;
+    }
+    return 1;
 }
 
 void
@@ -302,6 +315,13 @@ void
 SBTab::_populatePost(const ScreenItem& si)
 {
     this->_setSubtab(si);
+}
+
+void
+SBTab::_recordLastPopup(const QPoint &p)
+{
+        _lastPopupWindowEventTime=QTime::currentTime();
+        _lastPopupWindowPoint=p;
 }
 
 //void

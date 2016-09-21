@@ -161,7 +161,7 @@ PlayManager::clearPlaylist()
 }
 
 bool
-PlayManager::playItemNow(SBIDBase& toPlay, const bool enqueueFlag)
+PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
 {
     bool isPlayingFlag=0;
     PlayerController* pc=Context::instance()->getPlayerController();
@@ -171,11 +171,11 @@ PlayManager::playItemNow(SBIDBase& toPlay, const bool enqueueFlag)
         this->clearPlaylist();
         pc->playerStop();
     }
-    toPlay.sendToPlayQueue(enqueueFlag);
+    ptr->sendToPlayQueue(enqueueFlag);
     _radioModeFlag=0;
-    if(toPlay.itemType()==SBIDBase::sb_type_playlist && enqueueFlag==0)
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && enqueueFlag==0)
     {
-        emit playlistChanged(SBIDPlaylist(toPlay));
+        emit playlistChanged(SBIDPlaylist(*ptr));
     }
     else
     {
@@ -219,7 +219,6 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         //	Song is valid, go and play
         song.setPlayPosition(this->currentPlayID());
         isPlayingFlag=pc->playSong(song);
-        qDebug() << SB_DEBUG_INFO << isPlayingFlag;
         if(isPlayingFlag==0)
         {
             errorMsg=song.errorMessage();

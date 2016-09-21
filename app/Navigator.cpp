@@ -53,19 +53,6 @@ Navigator::clearSearchFilter()
     Context::instance()->getMainWindow()->ui.searchEdit->setText(tr(""));
 }
 
-///
-/// \brief Navigator::openScreen
-/// \param id
-///
-/// openScreenByID() populates the appropriate screen and pushes
-/// this screen on stack.
-///
-void
-Navigator::openScreen(const SBIDBase &id)
-{
-    openScreen(ScreenItem(id));
-}
-
 void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
@@ -83,6 +70,7 @@ Navigator::openScreen(const ScreenItem &si)
 
     ScreenStack* st=Context::instance()->getScreenStack();
     st->debugShow("openScreen:81");
+    SBIDPtr ptr;
     SBIDBase base;
 
     //	Check for valid parameter
@@ -93,10 +81,10 @@ Navigator::openScreen(const ScreenItem &si)
     }
     else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
-        base=si.base();
-        if(base.itemType()==SBIDBase::sb_type_invalid)
+        ptr=si.ptr();
+        if(ptr->itemType()==SBIDBase::sb_type_invalid)
         {
-            qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << base.itemType();
+            qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << ptr->itemType();
             return;
         }
     }
@@ -115,7 +103,7 @@ Navigator::openScreen(const ScreenItem &si)
 
     //	Add screen to stack first.
     //	CWIP: investigate logic of this
-    if(si.screenType()!=ScreenItem::screen_type_songsearch || base.searchCriteria().length()>0)
+    if(si.screenType()!=ScreenItem::screen_type_songsearch || si.searchCriteria().length()>0)
     {
         st->pushScreen(si);
     }
@@ -326,7 +314,7 @@ Navigator::removeFromScreenStack(const SBIDPtr& ptr)
     ScreenItem si=st->currentScreen();
 
     //	Move currentScreen one back, until it is on that is not current
-    while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && si.base()==(*ptr))
+    while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && *(si.ptr())==(*ptr))
     {
         tabBackward();	//	move display one back
         si=st->currentScreen();	//	find out what new current screen is.
@@ -554,13 +542,13 @@ Navigator::_activateScreen()
     SBIDBase result;
     bool editFlag=si.editFlag();
     bool canBeEditedFlag=1;
-    SBIDBase base;
+    SBIDPtr ptr;
 
     switch(si.screenType())
     {
         case ScreenItem::screen_type_sbidbase:
-            base=si.base();
-            switch(base.itemType())
+            ptr=si.ptr();
+            switch(ptr->itemType())
             {
             case SBIDBase::sb_type_song:
                 if(editFlag)
@@ -608,14 +596,12 @@ Navigator::_activateScreen()
 
         case ScreenItem::screen_type_songsearch:
         case ScreenItem::screen_type_allsongs:
-            result=base;
             tab=mw->ui.tabAllSongs;
-            _filterSongs(base);
+            _filterSongs(si);
             canBeEditedFlag=0;
         break;
 
         case ScreenItem::screen_type_current_playlist:
-            result=base;
             tab=mw->ui.tabCurrentPlaylist;
             canBeEditedFlag=0;
         break;
@@ -629,10 +615,10 @@ Navigator::_activateScreen()
     {
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
-        result=tab->populate(si).base();
+        si=tab->populate(si);
     }
 
-    if(si.screenType()==ScreenItem::screen_type_sbidbase && result.validFlag()==0)
+    if(si.screenType()==ScreenItem::screen_type_sbidbase && si.ptr()->validFlag()==0)
     {
         //	Go to previous screen first
         this->tabBackward();
@@ -648,7 +634,7 @@ Navigator::_activateScreen()
     {
         mw->ui.searchEdit->setEnabled(1);
         mw->ui.searchEdit->setFocus();
-        mw->ui.searchEdit->setText(base.searchCriteria());
+        mw->ui.searchEdit->setText(si.searchCriteria());
         mw->ui.leftColumnChooser->setEnabled(1);
         if(canBeEditedFlag)
         {
@@ -723,7 +709,7 @@ Navigator::_checkOutstandingEdits() const
 }
 
 void
-Navigator::_filterSongs(const SBIDBase &id)
+Navigator::_filterSongs(const ScreenItem& si)
 {
     QString labelAllSongDetailAllSongsText="Your Songs";
     QString labelAllSongDetailNameText="All Songs";
@@ -739,7 +725,7 @@ Navigator::_filterSongs(const SBIDBase &id)
 
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
-    QString filter=id.searchCriteria();
+    QString filter=si.searchCriteria();
     re=QRegExp();
     if(filter.length()>0)
     {
@@ -750,7 +736,7 @@ Navigator::_filterSongs(const SBIDBase &id)
         //	Apply filter
         re=QRegExp(filter,Qt::CaseInsensitive);
         labelAllSongDetailAllSongsText="Search Results for:";
-        labelAllSongDetailNameText=id.searchCriteria();
+        labelAllSongDetailNameText=si.searchCriteria();
     }
     mw->ui.labelAllSongDetailAllSongs->setText(labelAllSongDetailAllSongsText);
     mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);

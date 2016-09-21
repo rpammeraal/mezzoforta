@@ -45,14 +45,14 @@ SBTabPerformerEdit::handleEscapeKey()
 bool
 SBTabPerformerEdit::hasEdits() const
 {
-    const SBIDBase& base=this->currentScreenItem().base();
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(base.itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr && ptr->itemType()!=SBIDBase::sb_type_invalid)
     {
-        if(base.songPerformerName()!=mw->ui.performerEditName->text() ||
-            base.notes()!=mw->ui.performerEditNotes->text() ||
-            base.url()!=mw->ui.performerEditWebSite->text() ||
+        if(ptr->songPerformerName()!=mw->ui.performerEditName->text() ||
+            ptr->notes()!=mw->ui.performerEditNotes->text() ||
+            ptr->url()!=mw->ui.performerEditWebSite->text() ||
             _relatedPerformerHasChanged==1
         )
         {
@@ -167,7 +167,7 @@ SBTabPerformerEdit::save() const
     const MainWindow* mw=Context::instance()->getMainWindow();
     DataEntityPerformer* p=new DataEntityPerformer();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDPerformer orgPerformerID=currentScreenItem.base();
+    SBIDPerformer orgPerformerID=*(currentScreenItem.ptr());
     SBIDPerformer newPerformerID=orgPerformerID;
     QStringList SQL;
 
@@ -427,7 +427,7 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
 
     //	Get detail
     DataEntityPerformer* p=new DataEntityPerformer();
-    SBIDPerformer performer=p->getDetail(si.base());
+    SBIDPerformer performer=p->getDetail(*(si.ptr()));
     if(performer.validFlag()==0)
     {
         //	Not found

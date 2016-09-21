@@ -427,7 +427,7 @@ SBIDPerformer::selectSavePerformer(
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(existingPerformer,performerMatches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(std::make_shared<SBIDPerformer>(existingPerformer),performerMatches);
             pu->exec();
 
             //	Go back to screen if no item has been selected
@@ -438,7 +438,11 @@ SBIDPerformer::selectSavePerformer(
             }
             else
             {
-                selectedPerformer=static_cast<SBIDPerformer>(pu->getSBID());
+                SBIDPtr selected=pu->getSelected();
+                if(selected)
+                {
+                    selectedPerformer=static_cast<SBIDPerformer>(*selected);
+                }
             }
         }
 

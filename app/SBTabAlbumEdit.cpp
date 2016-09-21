@@ -424,15 +424,15 @@ SBTabAlbumEdit::handleMergeKey()
 bool
 SBTabAlbumEdit::hasEdits() const
 {
-    const SBIDBase& currentID=this->currentScreenItem().base();
+    const SBIDPtr& ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(currentID.itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
     {
         if(_hasChanges ||
-            currentID.albumTitle()!=mw->ui.albumEditTitle->text() ||
-            currentID.albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
-            currentID.year()!=mw->ui.albumEditYear->text().toInt()
+            ptr->albumTitle()!=mw->ui.albumEditTitle->text() ||
+            ptr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
+            ptr->year()!=mw->ui.albumEditYear->text().toInt()
         )
         {
             return 1;
@@ -781,7 +781,7 @@ SBTabAlbumEdit::save() const
     QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
     QMutableMapIterator<int,SBIDSong> songListIt(songList); //	Common used iterator
 
-    SBIDAlbum orgAlbum=DataEntityAlbum::getDetail(this->currentScreenItem().base());
+    SBIDAlbum orgAlbum=DataEntityAlbum::getDetail(*(this->currentScreenItem().ptr()));
     SBIDAlbum newAlbum=orgAlbum;
     SBIDAlbum removedAlbum;
 
@@ -807,19 +807,27 @@ SBTabAlbumEdit::save() const
         }
         else if(albumMatches->rowCount()>2)
         {
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(selectedAlbum,albumMatches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(std::make_shared<SBIDAlbum>(selectedAlbum),albumMatches);
             pu->exec();
 
-            selectedAlbum=pu->getSBID();
             if(pu->hasSelectedItem()==0)
             {
                 return;
             }
 
-            mw->ui.albumEditTitle->setText(selectedAlbum.albumTitle());
-            mw->ui.albumEditPerformer->setText(selectedAlbum.albumPerformerName());
+            SBIDPtr selected=pu->getSelected();
+            if(selected)
+            {
+                selectedAlbum=*selected;
+                mw->ui.albumEditTitle->setText(selectedAlbum.albumTitle());
+                mw->ui.albumEditPerformer->setText(selectedAlbum.albumPerformerName());
 
-            newAlbum=selectedAlbum;
+                newAlbum=selectedAlbum;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_WARNING << "null pointer";
+            }
         }
     }
 
@@ -1064,23 +1072,27 @@ SBTabAlbumEdit::save() const
                 }
                 else
                 {
-                    SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(currentSong,songMatches);
+                    SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(std::make_shared<SBIDSong>(currentSong),songMatches);
                     pu->exec();
 
-                    selectedSong=static_cast<SBIDSong>(pu->getSBID());
+                    SBIDPtr selected=pu->getSelected();
+                    if(selected)
+                    {
+                        SBIDSong selectedSong=static_cast<SBIDSong>(*selected);
 
-                    //	Go back to screen if no item has been selected
-                    if(pu->hasSelectedItem()==0)
-                    {
-                        return;
-                    }
-                    if(selectedSong.songID()==-1)
-                    {
-                        selectedSong.save();
-                        if(isNewMap[index]==0)
+                        //	Go back to screen if no item has been selected
+                        if(pu->hasSelectedItem()==0)
                         {
-                            changedSongIsNewOriginalMap[index]=1;
-                            hasChangedMap[index]=1;
+                            return;
+                        }
+                        if(selectedSong.songID()==-1)
+                        {
+                            selectedSong.save();
+                            if(isNewMap[index]==0)
+                            {
+                                changedSongIsNewOriginalMap[index]=1;
+                                hasChangedMap[index]=1;
+                            }
                         }
                     }
                 }
@@ -1456,7 +1468,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
-    SBIDBase base=DataEntityAlbum::getDetail(si.base());
+    SBIDBase base=DataEntityAlbum::getDetail(*(si.ptr()));
     if(base.validFlag()==0)
     {
         //	Not found

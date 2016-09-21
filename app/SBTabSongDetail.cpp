@@ -42,10 +42,11 @@ SBTabSongDetail::tabWidget() const
     return mw->ui.tabSongDetailLists;
 }
 
-SBIDSong
-SBTabSongDetail::selectSongFromAlbum(SBIDSong &songOnUnknownAlbum)
+SBIDPtr
+SBTabSongDetail::selectSongFromAlbum(SBIDSong& songOnUnknownAlbum)
 {
     SBIDSong selectedSong;
+    SBIDPtr ptr;
     SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(songOnUnknownAlbum);
     if(m->rowCount()==0)
     {
@@ -66,22 +67,18 @@ SBTabSongDetail::selectSongFromAlbum(SBIDSong &songOnUnknownAlbum)
         selectedSong.setSongPerformerName(m->data(m->index(0,7)).toString());
         selectedSong.setAlbumPosition(m->data(m->index(0,9)).toInt());
         selectedSong.setPath(m->data(m->index(0,10)).toString());
+
+        ptr=std::make_shared<SBIDSong>(selectedSong);
     }
     else
     {
         //	Ask from which album song should be assigned from
-        SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(songOnUnknownAlbum,m);
+        SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(std::make_shared<SBIDSong>(songOnUnknownAlbum),m);
 
         ssa->exec();
-        SBIDBase selected=ssa->getSBID();
-        SBIDSong selectedSong=SBIDSong(selected);
-        if(selectedSong.albumID()!=-1 && selectedSong.albumPosition()!=-1)
-        {
-            //	If user cancels out, don't continue
-            selectedSong=selectedSong;
-        }
+        ptr=ssa->getSelected();
     }
-    return selectedSong;
+    return ptr;
 }
 
 ///	Public slots
@@ -95,35 +92,48 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selected->itemType()==SBIDBase::sb_type_invalid)
+    if(!selected || selected->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
-        SBIDSong base=static_cast<SBIDSong>(currentScreenItem().base());
-        selected=std::make_shared<SBIDBase>(selectSongFromAlbum(base));
+        SBIDSong base=static_cast<SBIDSong>(*(currentScreenItem().ptr()));
+
+        selected=selectSongFromAlbum(base);
     }
-    pmgr?pmgr->playItemNow(*selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
 void
 SBTabSongDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBIDBase currentID=this->currentScreenItem().base();
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
 
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
+
+    _recordLastPopup(p);
 }
 
 void
 SBTabSongDetail::showContextMenuView(const QPoint &p)
 {
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=_determineViewCurrentTab();
 
@@ -147,6 +157,7 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
         _menu->exec(gp);
+        _recordLastPopup(p);
     }
 }
 
@@ -264,15 +275,15 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
-    SBIDSong song=SBIDSong(si.base().itemID());
+    SBIDSong song=SBIDSong(si.ptr()->itemID());
     song.getDetail(0);
     if(song.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
-    ScreenItem currentScreenItem(std::make_shared<SBIDSong>(song));
-
+    ScreenItem currentScreenItem=si;
+    currentScreenItem.updateSBIDBase(std::make_shared<SBIDSong>(song));
     mw->ui.labelSongDetailIcon->setSBID(song);
 
     ExternalData* ed=new ExternalData();

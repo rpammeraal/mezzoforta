@@ -74,12 +74,12 @@ SBTabSongsAll::playNow(bool enqueueFlag)
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selected->itemType()==SBIDBase::sb_type_invalid)
+    if(!selected || selected->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
         return;
     }
-    pmgr?pmgr->playItemNow(*selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -92,17 +92,23 @@ SBTabSongsAll::schemaChanged()
 void
 SBTabSongsAll::showContextMenuLabel(const QPoint &p)
 {
-    const SBIDBase currentID=this->currentScreenItem().base();
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
 
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
+    _recordLastPopup(p);
 }
 
 void

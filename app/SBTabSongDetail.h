@@ -26,7 +26,7 @@ public:
 
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
-    static SBIDSong selectSongFromAlbum(SBIDSong& songOnUnknownAlbum);
+    static SBIDPtr selectSongFromAlbum(SBIDSong& songOnUnknownAlbum);
 
 public slots:
     virtual void playNow(bool enqueueFlag=0);

@@ -67,10 +67,10 @@ SBModelQueuedSongs::mimeData(const QModelIndexList & indexes) const
     {
         if (idx.isValid())
         {
-            SBIDBase id=getSBIDSelected(idx);
+            SBIDPtr ptr=selectedItem(idx);
 
             QMimeData* mimeData = new QMimeData();
-            QByteArray ba=id.encode();
+            QByteArray ba=ptr->encode();
 
             mimeData->setData("application/vnd.text.list", ba);
             return mimeData;
@@ -131,10 +131,11 @@ SBModelQueuedSongs::formatDisplayPlayID(int playID,bool isCurrent) const
 
 //	Due to the nature of drag/drop, this view differs from others.
 //	idx must a source idx
-SBIDBase
-SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
+SBIDPtr
+SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 {
     SBIDBase id;
+    SBIDPtr ptr;
     QStandardItem* item;
     int itemID=-1;
 
@@ -157,6 +158,7 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_songid);
             itemID=(item!=NULL)?item->text().toInt():-1;
             SBIDSong song(itemID);
+            ptr=std::make_shared<SBIDSong>(song);
 
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             song.setSongPerformerID((item!=NULL)?item->text().toInt():-1);
@@ -185,6 +187,7 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             itemID=(item!=NULL)?item->text().toInt():-1;
             SBIDPerformer performer(itemID);
+            ptr=std::make_shared<SBIDPerformer>(performer);
 
             //	Fill in text attributes
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
@@ -198,6 +201,7 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
             itemID=(item!=NULL)?item->text().toInt():-1;
             SBIDAlbum album(itemID);
+            ptr=std::make_shared<SBIDAlbum>(album);
 
             //	Fill in text attributes
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
@@ -206,7 +210,7 @@ SBModelQueuedSongs::getSBIDSelected(const QModelIndex &idx) const
         }
         break;
     }
-    return id;
+    return ptr;
 }
 
 void
@@ -280,6 +284,7 @@ SBModelQueuedSongs::getAllSongs()
 void
 SBModelQueuedSongs::populate(QMap<int,SBIDBase> newPlaylist,bool firstBatchHasLoadedFlag)
 {
+    this->debugShow("populate:start");
     int offset=0;
     int initialCount=this->rowCount();
 
@@ -304,7 +309,10 @@ SBModelQueuedSongs::populate(QMap<int,SBIDBase> newPlaylist,bool firstBatchHasLo
         record=createRecord(id,i+offset+1);
         _totalDuration+=id.duration();
 
-        this->appendRow(record);
+        if(_recordExists(record)==0)
+        {
+            this->appendRow(record);
+        }
 
         QCoreApplication::processEvents();
 
@@ -325,6 +333,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDBase> newPlaylist,bool firstBatchHasLo
             _currentPlayID=-1;
         }
     }
+    this->debugShow("populate:end");
     emit listChanged();
 }
 
@@ -737,4 +746,29 @@ SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
         }
     }
     return mapPlaylistPosition2ViewPosition;
+}
+
+bool
+SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
+{
+    int matchSongID=record[SBModelQueuedSongs::sb_column_songid]->text().toInt();
+    int matchPerformerID=record[SBModelQueuedSongs::sb_column_performerid]->text().toInt();
+    int matchAlbumID=record[SBModelQueuedSongs::sb_column_albumid]->text().toInt();
+    int matchPositionID=record[SBModelQueuedSongs::sb_column_position]->text().toInt();
+
+    for(int i=0;i<this->rowCount();i++)
+    {
+        QString row=QString("row=%1").arg(i);
+
+        int songID=this->item(i,SBModelQueuedSongs::sb_column_songid)->text().toInt();
+        int performerID=this->item(i,SBModelQueuedSongs::sb_column_performerid)->text().toInt();
+        int albumID=this->item(i,SBModelQueuedSongs::sb_column_albumid)->text().toInt();
+        int positionID=this->item(i,SBModelQueuedSongs::sb_column_position)->text().toInt();
+
+        if(songID==matchSongID && performerID==matchPerformerID && albumID==matchAlbumID && positionID==matchPositionID)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }

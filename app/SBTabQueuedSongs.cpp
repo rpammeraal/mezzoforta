@@ -40,16 +40,16 @@ void
 SBTabQueuedSongs::deletePlaylistItem()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBIDBase assignID=mqs->getSBIDSelected(_lastClickedIndex);
-    if(assignID.itemType()!=SBIDBase::sb_type_invalid)
+    SBIDPtr ptr=mqs->selectedItem(_lastClickedIndex);
+    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
     {
         mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
 
         QString updateText=QString("Removed %4 %1%2%3 from playlist.")
-            .arg(QChar(96))         //	1
-            .arg(assignID.text())   //	2
-            .arg(QChar(180))        //	3
-            .arg(assignID.type())   //	4
+            .arg(QChar(96))     //	1
+            .arg(ptr->text())   //	2
+            .arg(QChar(180))    //	3
+            .arg(ptr->type())   //	4
         ;
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
@@ -84,13 +84,18 @@ SBTabQueuedSongs::playNow(bool enqueueFlag)
 void
 SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
 {
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBIDBase id=mqs->getSBIDSelected(idx);
-    if(id.itemType()!=SBIDBase::sb_type_invalid)
+    SBIDPtr ptr=mqs->selectedItem(idx);
+    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
     {
         _lastClickedIndex=idx;
 
@@ -100,6 +105,7 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
         menu.addAction(_deletePlaylistAction);
         menu.addAction(_playNowAction);
         menu.exec(gp);
+        _recordLastPopup(p);
     }
 }
 
@@ -175,10 +181,11 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-        SBIDBase item=mqs->getSBIDSelected(sourceIDX);
-        Context::instance()->getNavigator()->openScreen(item);
+        SBIDPtr ptr=mqs->selectedItem(sourceIDX);
+        Context::instance()->getNavigator()->openScreen(ptr);
     }
 }
+
 void
 SBTabQueuedSongs::tableViewCellDoubleClicked(QModelIndex idx)
 {

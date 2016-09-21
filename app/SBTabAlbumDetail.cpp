@@ -35,35 +35,46 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(selected->itemType()==SBIDBase::sb_type_invalid)
+    if(!selected || selected->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
-        selected=std::make_shared<SBIDBase>(this->currentScreenItem().base());
+        selected=this->currentScreenItem().ptr();
     }
 
-    pmgr?pmgr->playItemNow(*selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
 void
 SBTabAlbumDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBIDBase currentID=this->currentScreenItem().base();
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
 
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
+    _recordLastPopup(p);
 }
 
 void
 SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 {
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
     const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
     QTableView* tv=_determineViewCurrentTab();
 
@@ -87,6 +98,7 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
         _menu->exec(gp);
+        _recordLastPopup(p);
     }
 }
 
@@ -118,7 +130,7 @@ SBTabAlbumDetail::refreshAlbumReviews()
 void
 SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().base());
+    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().ptr());
 }
 
 void
@@ -225,14 +237,14 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBIDAlbum album=DataEntityAlbum::getDetail(si.base());
+    SBIDAlbum album=DataEntityAlbum::getDetail(*(si.ptr()));
     if(album.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    //SBTab::_setCurrentScreenItem(currentScreenItem);
+    currentScreenItem.updateSBIDBase(std::make_shared<SBIDAlbum>(album));
     mw->ui.labelAlbumDetailIcon->setSBID(album);
 
     //	Clear image
@@ -289,7 +301,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     tv=mw->ui.albumDetailAlbumContents;
     qm=DataEntityAlbum::getAllSongs(album);
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
+    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);
     populateTableView(tv,qm,1);
 

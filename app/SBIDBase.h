@@ -85,11 +85,9 @@ public:
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
     int playPosition() const { return _sb_play_position; }
-    QString searchCriteria() const { return _searchCriteria; }
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
     void setMBID(const QString& mbid) { _sb_mbid=mbid; }
-    void setSearchCriteria(const QString& searchCriteria) { _searchCriteria=searchCriteria; }
     void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
 
     //void resetSequence() const;
@@ -155,7 +153,6 @@ protected:
     QString     _songPerformerName;
     QString     _performerName;
     QString     _playlistName;
-    QString     _searchCriteria;
     QString     _songTitle;
     QString     _url;
     QString     _wiki;

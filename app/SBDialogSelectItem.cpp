@@ -14,10 +14,10 @@
 #include "ui_SBDialogSelectItem.h"
 
 ///	PUBLIC METHODS
-SBDialogSelectItem::SBDialogSelectItem(const SBIDBase& id, QWidget *parent, SBDialogSelectItem::SB_DialogType newDialogType) :
+SBDialogSelectItem::SBDialogSelectItem(const SBIDPtr& ptr, QWidget *parent, SBDialogSelectItem::SB_DialogType newDialogType) :
     QDialog(parent),
     ui(new Ui::SBDialogSelectItem),
-    _currentID(id),
+    _currentPtr(ptr),
     _dialogType(newDialogType)
 {
 }
@@ -30,9 +30,9 @@ SBDialogSelectItem::setTitle(const QString &title)
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectItem* d=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_album);
+    SBDialogSelectItem* d=new SBDialogSelectItem(ptr,parent,SBDialogSelectItem::sb_album);
     d->ui->setupUi(d);
 
     //	Populate choices
@@ -77,7 +77,7 @@ SBDialogSelectItem::selectAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWi
 
             d->ui->vlAlbumList->addWidget(l);
 
-            d->_itemsDisplayed[i]=currentAlbum;
+            d->_itemsDisplayed[i]=std::make_shared<SBIDAlbum>(currentAlbum);
             albumIDPopulated.append(currentAlbum);
         }
     }
@@ -86,20 +86,20 @@ SBDialogSelectItem::selectAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWi
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectSongAlbum(const SBIDBase& id, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectSongAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent)
 {
-    SBDialogSelectItem* dialog=new SBDialogSelectItem(id,parent,SBDialogSelectItem::sb_songalbum);
+    SBDialogSelectItem* dialog=new SBDialogSelectItem(ptr,parent,SBDialogSelectItem::sb_songalbum);
     dialog->ui->setupUi(dialog);
 
     //	Populate choices
-    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(dialog->_currentID.songTitle()).arg(QChar(180));
+    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(dialog->_currentPtr->songTitle()).arg(QChar(180));
     dialog->setTitle(title);
     for(int i=0;i<m->rowCount(); i++)
     {
         QLabel* l=new QLabel;
 
-        SBIDSong songChoice(id.itemID());
-        songChoice.setSongTitle(id.songTitle());
+        SBIDSong songChoice(ptr->itemID());
+        songChoice.setSongTitle(ptr->songTitle());
         songChoice.setAlbumID(m->data(m->index(i,1)).toInt());
         songChoice.setAlbumTitle(m->data(m->index(i,2)).toString());
         songChoice.setDuration(m->data(m->index(i,3)).toTime());
@@ -136,18 +136,18 @@ SBDialogSelectItem::selectSongAlbum(const SBIDBase& id, const QSqlQueryModel* m,
 
 
         dialog->ui->vlAlbumList->addWidget(l);
-        dialog->_itemsDisplayed[i]=songChoice;
+        dialog->_itemsDisplayed[i]=std::make_shared<SBIDSong>(songChoice);
     }
     dialog->updateGeometry();
     return dialog;
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectPerformer(const SBIDBase& item, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent)
 {
     //	Used by MusicLibrary to import songs
 
-    SBDialogSelectItem* d=new SBDialogSelectItem(item,parent,SBDialogSelectItem::sb_performer);
+    SBDialogSelectItem* d=new SBDialogSelectItem(ptr,parent,SBDialogSelectItem::sb_performer);
     d->ui->setupUi(d);
 
     //	Populate choices
@@ -189,7 +189,7 @@ SBDialogSelectItem::selectPerformer(const SBIDBase& item, const QSqlQueryModel* 
 
             d->ui->vlAlbumList->addWidget(l);
 
-            d->_itemsDisplayed[i]=currentPerformer;
+            d->_itemsDisplayed[i]=std::make_shared<SBIDPerformer>(currentPerformer);
             performersShown.append(currentPerformer);
         }
     }
@@ -198,7 +198,7 @@ SBDialogSelectItem::selectPerformer(const SBIDBase& item, const QSqlQueryModel* 
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectSongByPerformer(const SBIDBase& orgSong, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectSongByPerformer(const SBIDPtr& orgSong, const QSqlQueryModel* m, QWidget *parent)
 {
     SBDialogSelectItem* d=new SBDialogSelectItem(orgSong,parent,SBDialogSelectItem::sb_songperformer);
     d->ui->setupUi(d);
@@ -209,7 +209,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDBase& orgSong, const QSqlQue
     int currentRank=0;
     QString title=QString("Who is the original performer");
     d->setTitle(title+"?");
-    title="<FONT SIZE+=1><B>"+title+" for </B></FONT><B><I><FONT SIZE=+1>"+orgSong.songTitle()+"</FONT></I></B>";
+    title="<FONT SIZE+=1><B>"+title+" for </B></FONT><B><I><FONT SIZE=+1>"+orgSong->songTitle()+"</FONT></I></B>";
     d->ui->lHeader->setText(title+':');
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
     for(int i=0;i<m->rowCount(); i++)
@@ -256,7 +256,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDBase& orgSong, const QSqlQue
                            .arg(i)
                            .arg(currentSong.songTitle())
                            .arg(currentSong.songPerformerName())
-                           .arg(orgSong.songPerformerName())
+                           .arg(orgSong->songPerformerName())
                 );
                 break;
 
@@ -267,7 +267,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDBase& orgSong, const QSqlQue
                            .arg(i)
                            .arg(currentSong.songTitle())
                            .arg(currentSong.songPerformerName())
-                           .arg(orgSong.songPerformerName())
+                           .arg(orgSong->songPerformerName())
                 );
                 break;
 
@@ -290,7 +290,7 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDBase& orgSong, const QSqlQue
 
             d->ui->vlAlbumList->addWidget(l);
 
-            d->_itemsDisplayed[i]=currentSong;
+            d->_itemsDisplayed[i]=std::make_shared<SBIDSong>(currentSong);
             songsShown.append(currentSong);
         }
         lastSeenRank=currentRank;
@@ -304,10 +304,10 @@ SBDialogSelectItem::~SBDialogSelectItem()
     delete ui;
 }
 
-SBIDBase
-SBDialogSelectItem::getSBID() const
+SBIDPtr
+SBDialogSelectItem::getSelected() const
 {
-    return _currentID;
+    return _currentPtr;
 }
 
 
@@ -316,16 +316,16 @@ void
 SBDialogSelectItem::OK(const QString& i)
 {
     _hasSelectedItemFlag=1;
-    QMapIterator<int,SBIDBase> it(_itemsDisplayed);
+    QMapIterator<int,SBIDPtr> it(_itemsDisplayed);
     while(it.hasNext())
     {
         it.next();
-        qDebug() << SB_DEBUG_INFO << it.value().itemID() << it.value().songPerformerName() << it.value().songPerformerID();
+        qDebug() << SB_DEBUG_INFO << it.value()->itemID() << it.value()->songPerformerName() << it.value()->songPerformerID();
     }
 
-    _currentID=_itemsDisplayed[i.toInt()];
-    qDebug() << SB_DEBUG_INFO << _currentID;
-    qDebug() << SB_DEBUG_INFO << "position=" << _currentID.albumPosition();
+    _currentPtr=_itemsDisplayed[i.toInt()];
+    qDebug() << SB_DEBUG_INFO << *_currentPtr;
+    qDebug() << SB_DEBUG_INFO << "position=" << _currentPtr->albumPosition();
 
     this->close();
 }

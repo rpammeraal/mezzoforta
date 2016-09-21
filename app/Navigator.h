@@ -36,7 +36,6 @@ public:
     ~Navigator();
 
     void clearSearchFilter();
-    void openScreen(const SBIDBase& id);	//	CWIP: remove!
     void openScreen(const SBIDPtr& ptr);
     void openScreen(const ScreenItem& si);
     void keyPressEvent(QKeyEvent * event);
@@ -75,7 +74,7 @@ private:
     bool _activateScreen();
     bool _checkOutstandingEdits() const;	//	return 1 if there are outstanding edits
     void _init();
-    void _filterSongs(const SBIDBase& id);
+    void _filterSongs(const ScreenItem& si);
     void _moveFocusToScreen(int direction);
 };
 

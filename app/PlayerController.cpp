@@ -168,12 +168,15 @@ void
 PlayerController::playerStop()
 {
     qDebug() << SB_DEBUG_INFO << "**************************************";
-    qDebug() << SB_DEBUG_INFO << "_state_=" << _state
-    ;
+    qDebug() << SB_DEBUG_INFO << "_state_=" << _state;
     _playerProgressSlider[_currentPlayerID]->setValue(0);
+    qDebug() << SB_DEBUG_INFO;
     _updatePlayState(PlayerController::sb_player_state_stopped);
+    qDebug() << SB_DEBUG_INFO;
     _playerInstance[_currentPlayerID].stop();
+    qDebug() << SB_DEBUG_INFO;
     playerSeek(0);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 ///

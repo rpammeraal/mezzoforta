@@ -51,18 +51,22 @@ protected:
     QModelIndex _lastClickedIndex;
 
     //	Menu and actions
-    QMenu* _menu;
+    QMenu*   _menu;
     QAction* _enqueueAction;
+    QTime    _lastPopupWindowEventTime;
+    QPoint   _lastPopupWindowPoint;
     QAction* _playNowAction;
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
-    void setImage(const QPixmap& p, QLabel* l, const SBIDBase& id) const;
+    void setImage(const QPixmap& p, QLabel* l, const SBIDPtr& ptr) const;
 
+    bool _allowPopup(const QPoint& p) const;
     virtual QTableView* _determineViewCurrentTab() const=0;
     virtual void _populatePre(const ScreenItem& si);
     virtual ScreenItem _populate(const ScreenItem& si)=0;
     virtual void _populatePost(const ScreenItem& id);
+    void _recordLastPopup(const QPoint& p);
     //void _setCurrentScreenItem(const ScreenItem& currentScreenItem);
 
 protected slots:

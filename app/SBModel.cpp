@@ -52,7 +52,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     int itemID=-1;
     bool dragableColumnFlag=0;
 
-    if(_dragableColumnList.count() && idx.column()>=0)
+    if(_dragableColumnList.count() && idx.column()>=0 && idx.column()<_dragableColumnList.count())
     {
         dragableColumnFlag=_dragableColumnList.at(idx.column());
     }
@@ -100,7 +100,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 itemID=v.toInt();
             }
 
-            if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+            if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
                 ptr=SBIDBase::createPtr(itemType,itemID);
                 //	reset index to go through all fields again
@@ -128,7 +128,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         n=aim->index(idx.row(),idx.column());
         text=aim->data(n, Qt::DisplayRole).toString();
 
-        if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
         }
@@ -164,6 +164,34 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             {
                 ptr->_sb_song_id=v.toInt();
             }
+            else if(header=="title")
+            {
+                switch(ptr->itemType())
+                {
+                case SBIDBase::sb_type_album:
+                    ptr->_albumTitle=v.toString();
+                    break;
+
+                case SBIDBase::sb_type_song:
+                    ptr->_songTitle=v.toString();
+                    break;
+
+                default:
+                    break;
+                }
+            }
+            else if(header=="song")
+            {
+                ptr->_songTitle=v.toString();
+            }
+            else if(header=="song_title")
+            {
+                ptr->_songTitle=v.toString();
+            }
+            else if(header=="song title")
+            {
+                ptr->_songTitle=v.toString();
+            }
             else if(header=="sb_performer_id")
             {
                 ptr->_sb_song_performer_id=v.toInt();
@@ -182,7 +210,23 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             }
             else if(header=="performer")
             {
-                ptr->_songPerformerName=v.toString();
+                switch(ptr->itemType())
+                {
+                case SBIDBase::sb_type_album:
+                    ptr->_albumPerformerName=v.toString();
+                    break;
+
+                case SBIDBase::sb_type_song:
+                    ptr->_songPerformerName=v.toString();
+                    break;
+
+                case SBIDBase::sb_type_performer:
+                    ptr->_performerName=v.toString();
+                    break;
+
+                default:
+                    break;
+                }
             }
             else if(header=="album title")
             {
@@ -204,6 +248,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             {
                 ptr->_duration=v.toTime();
             }
+            else if(header=="playlist")
+            {
+                ptr->_playlistName=v.toString();
+            }
             else if(header=="#")
             {
                 ptr->_sb_play_position=v.toInt();
@@ -214,7 +262,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             text=v.toString();
         }
 
-        if(!ptr || (ptr->validFlag()==0 && itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
             //	reset index to go through all fields again

@@ -26,21 +26,21 @@ void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
     _init();
-    SBIDPlaylist currentID=this->currentScreenItem().base();
+    SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     if(selected.itemType!=SBIDBase::sb_type_invalid)
     {
         DataEntityPlaylist pl;
 
-        pl.deletePlaylistItem(selected.itemType,currentID.playlistID(),selected.playlistPosition);
-        refreshTabIfCurrent(currentID);
+        pl.deletePlaylistItem(selected.itemType,ptr->playlistID(),selected.playlistPosition);
+        refreshTabIfCurrent(*ptr);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
             .arg(selected.text)   //	2
             .arg(QChar(180))           //	3
-            .arg(currentID.text())     //	4
+            .arg(ptr->text())     //	4
             .arg(selected.itemType)   //	5
-            .arg(currentID.type());    //	6
+            .arg(ptr->type());    //	6
         Context::instance()->getController()->updateStatusBarText(updateText);
 
         //	Repopulate the current screen
@@ -57,11 +57,11 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDBase& fromID, int row)
 {
     _init();
     //	Determine current playlist
-    SBIDPlaylist currentID=this->currentScreenItem().base();
+    SBIDPtr ptr=this->currentScreenItem().ptr();
 
     DataEntityPlaylist mpl;
-    mpl.reorderItem(currentID,fromID,row);
-    refreshTabIfCurrent(currentID);
+    mpl.reorderItem(*ptr,fromID,row);
+    refreshTabIfCurrent(*ptr);
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.playlistDetailSongList;
@@ -75,21 +75,21 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDBase& fromID, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
-    const SBIDPlaylist currentID=this->currentScreenItem().base();
+    const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     SBIDPtr ptr;
 
     if(selected.itemType==SBIDBase::sb_type_invalid)
     {
         //	Label clicked
-        ptr=std::make_shared<SBIDPlaylist>(currentID);
+        ptr=std::make_shared<SBIDPlaylist>(*currentPtr);
     }
     else if(selected.itemType==SBIDBase::sb_type_song)
     {
         DataEntityPlaylist dep;
         //	Need to retrieve songID, performerID, albumID and albumPosition
         //	based on playlistID, playlistPosition/
-        ptr=std::make_shared<SBIDSong>(dep.getDetailPlaylistItemSong(currentID.playlistID(),selected.playlistPosition));
+        ptr=std::make_shared<SBIDSong>(dep.getDetailPlaylistItemSong(currentPtr->playlistID(),selected.playlistPosition));
     }
     else
     {
@@ -98,7 +98,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     if(ptr)
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(*ptr,enqueueFlag):0;
+        pmgr?pmgr->playItemNow(ptr,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }
 }
@@ -106,26 +106,30 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
 void
 SBTabPlaylistDetail::showContextMenuLabel(const QPoint &p)
 {
-    const SBIDPlaylist currentID=this->currentScreenItem().base();
+    if(_allowPopup(p)==0)
+    {
+        return;
+    }
+
+    const SBIDPtr ptr=this->currentScreenItem().ptr();
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
 
-    _playNowAction->setText(QString("Play '%1' Now").arg(currentID.text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(currentID.text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);
     _menu->exec(p);
+    _recordLastPopup(p);
 }
 
 void
-SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
+SBTabPlaylistDetail::showContextMenuView(const QPoint& p)
 {
-    if(_lastPopupWindowEventTime.msecsTo(QTime::currentTime())<500 && p==_lastPopupWindowPoint)
+    if(_allowPopup(p)==0)
     {
-        qDebug() << SB_DEBUG_WARNING << "Suppressing repeated popup windows";
-        QCoreApplication::processEvents();
         return;
     }
 
@@ -155,10 +159,8 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_enqueueAction);
         _menu->addAction(_deletePlaylistItemAction);
         _menu->exec(gp);
-        _lastPopupWindowEventTime=QTime::currentTime();
-        _lastPopupWindowPoint=p;
+        _recordLastPopup(p);
     }
-
 }
 
 ///	Private methods
@@ -211,7 +213,6 @@ SBTabPlaylistDetail::_init()
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
     }
-    _lastPopupWindowEventTime=QTime::currentTime();
 }
 
 //	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
@@ -268,22 +269,22 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     DataEntityPlaylist pl;
 
     //	Get detail
-    SBIDBase base=pl.getDetail(si.base());
-    if(base.validFlag()==0)
+    SBIDBase playlist=pl.getDetail(*(si.ptr()));
+    if(playlist.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    //SBTab::_setCurrentScreenItem(currentScreenItem);
-    mw->ui.labelPlaylistDetailIcon->setSBID(base);
+    currentScreenItem.updateSBIDBase(std::make_shared<SBIDPlaylist>(playlist));
+    mw->ui.labelPlaylistDetailIcon->setSBID(playlist);
 
-    mw->ui.labelPlaylistDetailPlaylistName->setText(base.playlistName());
-    const QString detail=QString("%1 items ").arg(base.count1())+QChar(8226)+QString(" %2").arg(base.duration().toString());
+    mw->ui.labelPlaylistDetailPlaylistName->setText(playlist.playlistName());
+    const QString detail=QString("%1 items ").arg(playlist.count1())+QChar(8226)+QString(" %2").arg(playlist.duration().toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBSqlQueryModel* qm=pl.getAllItemsByPlaylist(base);
+    SBSqlQueryModel* qm=pl.getAllItemsByPlaylist(playlist);
     populateTableView(tv,qm,0);
     connect(qm, SIGNAL(assign(const SBIDBase&,int)),
             this, SLOT(movePlaylistItem(const SBIDBase&, int)));
