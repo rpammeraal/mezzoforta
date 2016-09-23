@@ -32,7 +32,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-        QByteArray ba=_id.encode();
+        QByteArray ba=_ptr->encode();
 
         mimeData->setData("application/vnd.text.list", ba);
         drag->setMimeData(mimeData);
@@ -43,7 +43,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         }
         else
         {
-            QString l=_id.iconResourceLocation();
+            QString l=_ptr->iconResourceLocation();
             QPixmap pb(l);
             pb.load(l);
             drag->setPixmap(pb.scaledToWidth(50));
@@ -53,9 +53,9 @@ SBLabel::mousePressEvent(QMouseEvent* me)
 }
 
 void
-SBLabel::setSBID(const SBIDBase &id)
+SBLabel::setPtr(const SBIDPtr& ptr)
 {
-    _id=id;
+    _ptr=ptr;
 }
 
 ///	Protected methods

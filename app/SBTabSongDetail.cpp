@@ -4,7 +4,6 @@
 
 #include "Context.h"
 #include "MainWindow.h"
-#include "DataEntitySong.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
 
@@ -47,7 +46,7 @@ SBTabSongDetail::selectSongFromAlbum(SBIDSong& songOnUnknownAlbum)
 {
     SBIDSong selectedSong;
     SBIDPtr ptr;
-    SBSqlQueryModel* m=DataEntitySong::getOnAlbumListBySong(songOnUnknownAlbum);
+    SBSqlQueryModel* m=songOnUnknownAlbum.getOnAlbumListBySong();
     if(m->rowCount()==0)
     {
         //	Can't assign -- does not exist on an album
@@ -283,8 +282,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(std::make_shared<SBIDSong>(song));
-    mw->ui.labelSongDetailIcon->setSBID(song);
+    SBIDPtr songPtr=std::make_shared<SBIDSong>(song);
+    currentScreenItem.updateSBIDBase(songPtr);
+    mw->ui.labelSongDetailIcon->setPtr(songPtr);
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),
@@ -308,7 +308,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     _alsoPerformedBy.clear();
 
     //	Recreate
-    qm=DataEntitySong::getPerformedByListBySong(song);
+    qm=song.getPerformedByListBySong();
     QString cs;
     int toDisplay=qm->rowCount();
     if(toDisplay>3)
@@ -358,7 +358,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    qm=DataEntitySong::getOnAlbumListBySong(song);
+    qm=song.getOnAlbumListBySong();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     qm->setDragableColumns(dragableColumns);
@@ -367,7 +367,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    qm=DataEntitySong::getOnPlaylistListBySong(song);
+    qm=song.getOnPlaylistListBySong();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);

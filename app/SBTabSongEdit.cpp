@@ -4,7 +4,6 @@
 
 #include "Context.h"
 #include "Controller.h"
-#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDPerformer.h"
@@ -151,7 +150,7 @@ SBTabSongEdit::save() const
         qDebug() << SB_DEBUG_INFO << selectedSongID;
 
         qDebug() << SB_DEBUG_INFO << editTitle << "!=" << newSongID.songTitle() << newSongID.songID();
-        SBSqlQueryModel* songMatches=DataEntitySong::matchSongWithinPerformer(newSongID, editTitle);
+        SBSqlQueryModel* songMatches=newSongID.matchSongWithinPerformer(editTitle);
 
         qDebug() << SB_DEBUG_INFO << songMatches->rowCount();
 
@@ -197,7 +196,7 @@ SBTabSongEdit::save() const
 
     //	H.	Check if there is another song with exactly the same title and performer but with different song_id.
     //		Goal is to detect another way of merging songs.
-    SBSqlQueryModel* existingSongs=DataEntitySong::findSong(newSongID);
+    SBSqlQueryModel* existingSongs=newSongID.findSong();
     if(existingSongs!=0 && existingSongs->rowCount()==1)
     {
         qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongID;
@@ -220,7 +219,7 @@ SBTabSongEdit::save() const
         hasCaseChange==1)
     {
 
-        const bool successFlag=DataEntitySong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
+        const bool successFlag=SBIDSong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
 
         if(successFlag==1)
         {

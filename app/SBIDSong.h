@@ -3,6 +3,8 @@
 
 #include "SBIDBase.h"
 
+class SBSqlQueryModel;
+
 ///
 /// \brief The SBIDSong class
 ///
@@ -37,7 +39,17 @@ public:
     virtual QString text() const;
     virtual QString type() const;
 
-    //	Song specific operators
+    //	Song specific methods
+    void deleteIfOrphanized();
+    SBSqlQueryModel* findSong() const;
+    static SBSqlQueryModel* getAllSongs();
+    //static int getMaxSongID();
+    SBSqlQueryModel* getPerformedByListBySong() const;
+    SBSqlQueryModel* getOnAlbumListBySong() const;
+    static SBSqlQueryModel* getOnlineSongs(int limit=0);
+    SBSqlQueryModel* getOnPlaylistListBySong() const;
+    SBSqlQueryModel* matchSong() const;
+    SBSqlQueryModel* matchSongWithinPerformer(const QString& newSongTitle) const;
     void setAlbumID(int albumID);
     void setAlbumTitle(const QString& albumTitle);
     void setAlbumPosition(int position);
@@ -52,7 +64,9 @@ public:
     void setSongPerformerName(const QString& songPerformerName);
     void setSongTitle(const QString& songTitle);
     void setYear(int year) { _year=year; }
-    void deleteIfOrphanized();
+    static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
+    bool updateLastPlayDate();
+    static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
     //	Operators
     virtual bool operator==(const SBIDSong& i) const;

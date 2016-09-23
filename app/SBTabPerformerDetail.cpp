@@ -2,7 +2,6 @@
 
 #include "Context.h"
 #include "MainWindow.h"
-#include "DataEntityPerformer.h"
 #include "SBIDAlbum.h"
 #include "SBSqlQueryModel.h"
 
@@ -123,6 +122,36 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
         _menu->addAction(_enqueueAction);
         _menu->exec(gp);
         _recordLastPopup(p);
+    }
+}
+
+void
+SBTabPerformerDetail::updatePerformerHomePage(const SBIDPtr &ptr)
+{
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
+    {
+        //	URL is set by ExternalData::, need to store in database
+        SBIDPerformer p(*ptr);
+        p.updateURLdb(p.url());
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "Ptr supplied not sb_type_performer";
+    }
+}
+
+void
+SBTabPerformerDetail::updatePerformerMBID(const SBIDPtr &ptr)
+{
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
+    {
+        //	MBID is set by ExternalData::, need to store in database
+        SBIDPerformer p(*ptr);
+        p.updateMBIDdb(p.MBID());
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "Ptr supplied not sb_type_performer";
     }
 }
 
@@ -287,18 +316,22 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.tabPerformerDetailLists->setTabEnabled(4,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
-    DataEntityPerformer* mp=new DataEntityPerformer();
-
     //	Get detail
-    SBIDPerformer performer=mp->getDetail(*(si.ptr()));
+    SBIDPerformer performer;
+    if(si.ptr())
+    {
+        performer=SBIDPerformer(si.ptr()->itemID());
+        performer.getDetail();
+    }
     if(performer.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
-    mw->ui.labelPerformerDetailIcon->setSBID(performer);
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(std::make_shared<SBIDPerformer>(performer));
+    SBIDPtr performerPtr=std::make_shared<SBIDPerformer>(performer);
+    currentScreenItem.updateSBIDBase(performerPtr);
+    mw->ui.labelPerformerDetailIcon->setPtr(performerPtr);
 
     //	Clear image
     setPerformerImage(QPixmap());
@@ -309,10 +342,10 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerHomePage(QString)));
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(SBIDPerformer)),
-            mp, SLOT(updateMBID(SBIDPerformer)));
-    connect(ed, SIGNAL(updatePerformerHomePage(SBIDPerformer)),
-            mp, SLOT(updateHomePage(SBIDPerformer)));
+    connect(ed, SIGNAL(updatePerformerMBID(SBIDPtr)),
+            this, SLOT(updateMBID(SBIDPtr)));
+    connect(ed, SIGNAL(updatePerformerHomePage(SBIDPtr)),
+            this, SLOT(updatePerformerHomePage(SBIDPtr)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setPerformerImage(QPixmap)));
     connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),
@@ -343,7 +376,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     _relatedItems.clear();
 
     //	Recreate
-    SBSqlQueryModel* rm=mp->getRelatedPerformers(performer);
+    SBSqlQueryModel* rm=performer.getRelatedPerformers();
 
     QString cs;
 
@@ -398,13 +431,13 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    qm=mp->getAllSongs(performer);
+    qm=performer.getAllSongs();
     rowCount=populateTableView(tv,qm,3);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    qm=mp->getAllAlbums(performer);
+    qm=performer.getAlbums();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);

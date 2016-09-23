@@ -15,6 +15,7 @@ typedef std::shared_ptr<SBIDBase> SBIDPtr;
 
 class SBIDBase
 {
+
 public:
     enum sb_type
     {

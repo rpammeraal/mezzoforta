@@ -30,7 +30,7 @@ public:
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
     SBIDPtr ptr() const { return _ptr; }
-    void updateSBIDBase(const SBIDPtr& ptr);
+    void updateSBIDBase(const SBIDPtr& ptr);	//	CWIP: rename to updateSBIDPtr
 
     bool operator==(const ScreenItem& i) const;
     bool operator!=(const ScreenItem& i) const;

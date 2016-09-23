@@ -15,9 +15,6 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
-#include "DataEntitySong.h"
-#include "DataEntityPerformer.h"
-#include "DataEntityPlaylist.h"
 #include "DBManager.h"
 #include "ExternalData.h"
 #include "MainWindow.h"
@@ -236,8 +233,8 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     mw->setWindowTitle(mw->windowTitle() + " - " + dbm->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
 
-    DataEntitySong::updateSoundexFields();
-    DataEntityPerformer::updateSoundexFields();
+    SBIDSong::updateSoundexFields();
+    SBIDPerformer::updateSoundexFields();
 
     _resetStatusBar();
 

@@ -3,8 +3,7 @@
 
 #include "BackgroundThread.h"
 #include "Common.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
+#include "SBIDPlaylist.h"
 
 BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
 {
@@ -17,8 +16,8 @@ BackgroundThread::recalculateAllPlaylistDurations() const
     qDebug() << SB_DEBUG_INFO << "semaphore start";
     s_cpd->acquire(1);
 
-    DataEntityPlaylist pl;
-    pl.recalculateAllPlaylistDurations();
+    SBIDPlaylist::recalculateAllPlaylistDurations();
+
     qDebug() << SB_DEBUG_INFO << "semaphore release";
     s_cpd->release(1);
 }

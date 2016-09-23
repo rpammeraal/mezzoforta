@@ -4,9 +4,6 @@
 
 #include "Context.h"
 #include "Controller.h"
-#include "DataEntityCurrentPlaylist.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayerController.h"
@@ -225,7 +222,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         }
         else if(_radioModeFlag)
         {
-            DataEntitySong::updateLastPlayDate(song);
+            song.updateLastPlayDate();
         }
     }
 
@@ -342,7 +339,7 @@ PlayManager::_loadRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=DataEntityCurrentPlaylist::getAllOnlineSongs();
+    SBSqlQueryModel* qm=SBIDSong::getOnlineSongs(100);
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 

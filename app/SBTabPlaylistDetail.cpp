@@ -6,7 +6,6 @@
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
-#include "DataEntityPlaylist.h"
 #include "SBSqlQueryModel.h"
 
 SBTabPlaylistDetail::SBTabPlaylistDetail(QWidget* parent) : SBTab(parent,0)
@@ -28,11 +27,10 @@ SBTabPlaylistDetail::deletePlaylistItem()
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
-    if(selected.itemType!=SBIDBase::sb_type_invalid)
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemType!=SBIDBase::sb_type_invalid)
     {
-        DataEntityPlaylist pl;
-
-        pl.deletePlaylistItem(selected.itemType,ptr->playlistID(),selected.playlistPosition);
+        SBIDPlaylist playlist=SBIDPlaylist(*ptr);
+        playlist.deletePlaylistItem(selected.itemType,selected.playlistPosition);
         refreshTabIfCurrent(*ptr);
         QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
             .arg(QChar(96))            //	1
@@ -59,8 +57,12 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDBase& fromID, int row)
     //	Determine current playlist
     SBIDPtr ptr=this->currentScreenItem().ptr();
 
-    DataEntityPlaylist mpl;
-    mpl.reorderItem(*ptr,fromID,row);
+    SBIDPlaylist playlist;
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
+    {
+        playlist=SBIDPlaylist(ptr->itemID());
+        playlist.reorderItem(fromID,row);
+    }
     refreshTabIfCurrent(*ptr);
 
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -86,10 +88,13 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     }
     else if(selected.itemType==SBIDBase::sb_type_song)
     {
-        DataEntityPlaylist dep;
         //	Need to retrieve songID, performerID, albumID and albumPosition
         //	based on playlistID, playlistPosition/
-        ptr=std::make_shared<SBIDSong>(dep.getDetailPlaylistItemSong(currentPtr->playlistID(),selected.playlistPosition));
+        if(currentPtr && currentPtr->itemType()==SBIDBase::sb_type_playlist)
+        {
+            SBIDPlaylist playlist=SBIDPlaylist(currentPtr->playlistID());
+            ptr=std::make_shared<SBIDSong>(playlist.getDetailPlaylistItemSong(selected.playlistPosition));
+        }
     }
     else
     {
@@ -266,25 +271,31 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
-    DataEntityPlaylist pl;
 
     //	Get detail
-    SBIDBase playlist=pl.getDetail(*(si.ptr()));
+    SBIDPlaylist playlist;
+    if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
+    {
+        playlist=SBIDPlaylist(si.ptr()->playlistID());
+        playlist.getDetail();
+    }
+
     if(playlist.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(std::make_shared<SBIDPlaylist>(playlist));
-    mw->ui.labelPlaylistDetailIcon->setSBID(playlist);
+    SBIDPtr playlistPtr=std::make_shared<SBIDPlaylist>(playlist);
+    currentScreenItem.updateSBIDBase(playlistPtr);
+    mw->ui.labelPlaylistDetailIcon->setPtr(playlistPtr);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(playlist.playlistName());
     const QString detail=QString("%1 items ").arg(playlist.count1())+QChar(8226)+QString(" %2").arg(playlist.duration().toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBSqlQueryModel* qm=pl.getAllItemsByPlaylist(playlist);
+    SBSqlQueryModel* qm=playlist.getAllItemsByPlaylist();
     populateTableView(tv,qm,0);
     connect(qm, SIGNAL(assign(const SBIDBase&,int)),
             this, SLOT(movePlaylistItem(const SBIDBase&, int)));

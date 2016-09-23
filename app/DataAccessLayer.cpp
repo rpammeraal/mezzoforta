@@ -10,9 +10,6 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
-#include "DataEntityGenrelist.h"
 #include <SBSqlQueryModel.h>
 
 //	Singleton

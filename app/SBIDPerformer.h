@@ -10,6 +10,7 @@ class QLineEdit;
 
 class SBIDPerformer : public SBIDBase
 {
+
 public:
         //	Ctors, dtors
     SBIDPerformer();
@@ -36,7 +37,12 @@ public:
     virtual QString type() const;
 
     //	Methods unique to SBIDPerformer
-    bool savePerformer();
+    QString addRelatedPerformerSQL(int performerID) const;
+    QString deleteRelatedPerformerSQL(int performerID) const;
+    SBSqlQueryModel* getAlbums() const;
+    SBSqlQueryModel* getAllSongs() const;
+    SBSqlQueryModel* getAllOnlineSongs() const;
+    SBSqlQueryModel* getRelatedPerformers() const;
     void setCount1(int count1) { _count1=count1; }
     void setCount2(int count2) { _count1=count2; }
     void setNotes(const QString& notes) { _notes=notes; }
@@ -44,10 +50,20 @@ public:
     void setPerformerName(const QString& performerName) { _performerName=performerName; }
     static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformer& existingPerformer,SBIDPerformer& selectedPerformer,QLineEdit* field=NULL, bool saveNewPerformer=1);
     void setURL(const QString& url) { _url=url; }
+    static bool updateExistingPerformer(const SBIDBase& orgPerformerID, SBIDPerformer& newPerformerID, const QStringList& extraSQL=QStringList(),bool commitFlag=1);	//	CWIP: merge with save
+    void updateURLdb(const QString& homePage); //	CWIP: implement mechanism where these can be set through the regular set-methods
+    void updateMBIDdb(const QString& mbid);    //	CWIP: and get either updated in the database by save() or on destruction.
+                                               //	CWIP: would be helpful to have a cache of SBID* ready
+    static void updateSoundexFields();
 
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
+
+//public slots:
+    /*
+public:
+    */
 
 private:
     void _init();

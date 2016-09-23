@@ -2,7 +2,6 @@
 
 #include "Context.h"
 #include "MainWindow.h"
-#include "DataEntityAlbum.h"
 #include "SBSqlQueryModel.h"
 
 ///	Public methods
@@ -237,15 +236,17 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBIDAlbum album=DataEntityAlbum::getDetail(*(si.ptr()));
+    SBIDAlbum album=SBIDAlbum(si.ptr());
+    album.getDetail();
     if(album.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(std::make_shared<SBIDAlbum>(album));
-    mw->ui.labelAlbumDetailIcon->setSBID(album);
+    SBIDPtr albumPtr=std::make_shared<SBIDAlbum>(album);
+    currentScreenItem.updateSBIDBase(albumPtr);
+    mw->ui.labelAlbumDetailIcon->setPtr(albumPtr);
 
     //	Clear image
     setAlbumImage(QPixmap());
@@ -299,7 +300,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=DataEntityAlbum::getAllSongs(album);
+    qm=album.getAllSongs();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);

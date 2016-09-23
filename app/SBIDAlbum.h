@@ -14,6 +14,7 @@ public:
     SBIDAlbum();
     SBIDAlbum(const SBIDBase& c);
     SBIDAlbum(const SBIDAlbum& c);
+    SBIDAlbum(const SBIDPtr& c);
     SBIDAlbum(int itemID);
     ~SBIDAlbum();
 
@@ -36,13 +37,23 @@ public:
     virtual QString type() const;
 
     //	Album specific methods
-    bool saveSongToAlbum(const SBIDSong& song);
+    QStringList addSongToAlbum(const SBIDSong& song) const;
+    SBSqlQueryModel* getAllSongs() const;
+    SBSqlQueryModel* matchAlbum() const;
+    QStringList mergeAlbum(const SBIDBase& to) const;
+    QStringList mergeSongInAlbum(int newPosition, const SBIDBase& song) const;
+    QStringList removeAlbum();
+    QStringList removeSongFromAlbum(int position);
+    QStringList repositionSongOnAlbum(int fromPosition, int toPosition);
+    bool saveSongToAlbum(const SBIDSong& song) const;
     void setAlbumID(int albumID);
     void setAlbumPerformerID(int albumPerformerID);
     void setAlbumPerformerName(const QString& albumPerformerName);
     void setAlbumTitle(const QString& albumTitle);
     void setYear(int year);
-    QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);
+    static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
+    QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);  //	CWIP: cmp with
+    QStringList updateSongOnAlbum(const SBIDSong& song);                 //	CWIP: this one, possible merge, otherwise rename
 
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;

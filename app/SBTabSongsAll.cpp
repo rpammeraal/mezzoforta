@@ -1,7 +1,6 @@
 #include "SBTabSongsAll.h"
 
 #include "Context.h"
-#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
 
@@ -24,7 +23,7 @@ SBTabSongsAll::preload()
     QSortFilterProxyModel* slP;
 
     //	Songlist
-    SBSqlQueryModel* sm=DataEntitySong::getAllSongs();
+    SBSqlQueryModel* sm=SBIDSong::getAllSongs();
     QList<bool> dragableColumns;
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 0;

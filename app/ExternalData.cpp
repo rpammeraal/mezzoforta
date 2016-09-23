@@ -396,7 +396,7 @@ ExternalData::handleMBIDNetwork(QNetworkReply *r)
     {
         //	Recall now that sb_mbid is loaded
         SBIDPerformer p(*_currentPtr);
-        emit updatePerformerMBID(p);
+        emit updatePerformerMBID(_currentPtr);
         _getMBIDAndMore();
     }
 }
@@ -600,7 +600,7 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                     _currentPtr=std::make_shared<SBIDPerformer>(p);
                                     _performerHomepageRetrievedFlag=1;
                                     emit performerHomePageAvailable(_currentPtr->url());
-                                    emit updatePerformerHomePage(p);
+                                    emit updatePerformerHomePage(_currentPtr);
                                 }
                             }
                         }

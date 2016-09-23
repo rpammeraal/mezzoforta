@@ -8,8 +8,6 @@
 #include "Context.h"
 #include "Controller.h"
 #include "Chooser.h"
-#include "DataEntityPlaylist.h"
-#include "DataEntitySong.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayManager.h"
@@ -117,8 +115,7 @@ public:
         this->appendRow(item1);
         _playlistRoot=item1;
 
-        DataEntityPlaylist pl;
-        SBSqlQueryModel* allPlaylists=pl.getAllPlaylists();
+        SBSqlQueryModel* allPlaylists=SBIDPlaylist::getAllPlaylists();
         for(int i=0;i<allPlaylists->rowCount();i++)
         {
             QSqlRecord r=allPlaylists->record(i);
@@ -208,9 +205,7 @@ Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
             {
                 if(rootType==Chooser::sb_playlists)
                 {
-                    DataEntityPlaylist pl;
-
-                    pl.assignPlaylistItem(fromID, toID);
+                    toID.assignPlaylistItem(fromID);
                     QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
                         .arg(QChar(96))               //	1
                         .arg(toBeAssignedToID.text()) //	2
@@ -247,11 +242,10 @@ Chooser::deletePlaylist()
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Cancel);
         int result=msgBox.exec();
-        DataEntityPlaylist pl;
         switch(result)
         {
             case QMessageBox::Ok:
-                pl.deletePlaylist(playlist);
+                playlist.deletePlaylist();
                 Context::instance()->getNavigator()->removeFromScreenStack(std::make_shared<SBIDPlaylist>(playlist));
                 this->_populate();
 
@@ -279,8 +273,7 @@ void
 Chooser::newPlaylist()
 {
     //	Create placeholder in database
-    DataEntityPlaylist pl;
-    SBIDBase id=pl.createNewPlaylist();
+    SBIDBase id=SBIDPlaylist::createNewPlaylistDB();
 
     //	Refresh this
     this->_populate();
@@ -406,9 +399,8 @@ Chooser::showContextMenu(const QPoint &p)
 void
 Chooser::recalculateDuration()
 {
-    DataEntityPlaylist dep;
     SBIDPlaylist playlist=_getPlaylistSelected(_lastClickedIndex);
-    dep.recalculatePlaylistDuration(std::make_shared<SBIDBase>(playlist));
+    SBIDPlaylist::recalculatePlaylistDuration(std::make_shared<SBIDBase>(playlist));
 }
 
 ///	PROTECTED METHODS
@@ -429,21 +421,25 @@ void
 Chooser::_renamePlaylist(const SBIDBase &id)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    DataEntityPlaylist pl;
-    pl.renamePlaylist(id);
-    this->_populate();
-    QModelIndex in=_findItem(id);
-    if(in.isValid())
+    SBIDPlaylist playlist;
+    if(id.itemType()==SBIDBase::sb_type_playlist)
     {
-        _setCurrentIndex(in);
-    }
-    QString updateText=QString("Renamed playlist %1%2%3.")
-        .arg(QChar(96))      //	1
-        .arg(id.text())      //	2
-        .arg(QChar(180));    //	3
-    Context::instance()->getController()->updateStatusBarText(updateText);
+        playlist=SBIDPlaylist(id);
+        playlist.renamePlaylist();
+        this->_populate();
+        QModelIndex in=_findItem(id);
+        if(in.isValid())
+        {
+            _setCurrentIndex(in);
+        }
+        QString updateText=QString("Renamed playlist %1%2%3.")
+            .arg(QChar(96))      //	1
+            .arg(id.text())      //	2
+            .arg(QChar(180));    //	3
+        Context::instance()->getController()->updateStatusBarText(updateText);
 
-    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(id);
+        mw->ui.tabPlaylistDetail->refreshTabIfCurrent(id);
+    }
 }
 
 ///	PRIVATE

@@ -411,7 +411,6 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
             SBIDPtr ptr=m->determineSBID(idy);
-            qDebug() << SB_DEBUG_INFO;
             Context::instance()->getNavigator()->openScreen(ptr);
         }
     }

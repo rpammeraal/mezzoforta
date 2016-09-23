@@ -37,12 +37,6 @@ HEADERS     = \
     AudioDecoderMP3.h \
     AudioDecoderOggVorbis.h \
     AudioDecoderWave.h \
-    DataEntityAlbum.h \
-    DataEntityCurrentPlaylist.h \
-    DataEntityGenrelist.h \
-    DataentityPerformer.h \
-    DataEntityPlaylist.h \
-    DataEntitySong.h \
     AudioDecoderOggVorbisReader.h \
     AudioDecoderWaveReader.h \
     AudioDecoderMP3Reader.h \
@@ -106,12 +100,6 @@ SOURCES     = \
     AudioDecoderMP3.cpp \
     AudioDecoderOggVorbis.cpp \
     AudioDecoderWave.cpp \
-    DataEntityAlbum.cpp \
-    DataEntityCurrentPlaylist.cpp \
-    DataEntityGenreList.cpp \
-    DataEntityPerformer.cpp \
-    DataEntityPlaylist.cpp \
-    DataEntitySong.cpp \
     AudioDecoderOggVorbisReader.cpp \
     AudioDecoderWaveReader.cpp \
     AudioDecoderMP3Reader.cpp \

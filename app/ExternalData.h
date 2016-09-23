@@ -41,8 +41,8 @@ signals:
     void performerWikipediaPageAvailable(const QString& url);
     void songLyricsURLAvailable(const QString& url);
     void songWikipediaPageAvailable(const QString& url);
-    void updatePerformerMBID(const SBIDPerformer& id);
-    void updatePerformerHomePage(const SBIDPerformer& id);
+    void updatePerformerMBID(const SBIDPtr& ptr);
+    void updatePerformerHomePage(const SBIDPtr& ptr);
 
 public slots:
     void handleAlbumImageURLFromAS(QNetworkReply *r);

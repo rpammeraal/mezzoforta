@@ -388,10 +388,13 @@ SBIDBase::showDebug(const QString& title) const
 int
 SBIDBase::assignTmpItemID()
 {
+    /*
     this->_sb_tmp_item_id=-(_sequence.length()+1);
     _sequence.append(this->_sb_tmp_item_id);
     _sequenceMap[this->_sb_tmp_item_id]=(*this);
     return this->_sb_tmp_item_id;
+    */
+    return 0;
 }
 
 void

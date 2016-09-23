@@ -18,8 +18,6 @@
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"
-#include "DataEntityAlbum.h"
-#include "DataEntitySong.h"
 #include "SBSqlQueryModel.h"
 
 
@@ -242,7 +240,8 @@ public:
 
     void populate()
     {
-        SBSqlQueryModel* qm=DataEntityAlbum::getAllSongs(_id);
+        SBIDAlbum album=SBIDAlbum(_id);
+        SBSqlQueryModel* qm=album.getAllSongs();
         QList<QStandardItem *>column;
         QStandardItem* item;
 
@@ -781,7 +780,8 @@ SBTabAlbumEdit::save() const
     QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
     QMutableMapIterator<int,SBIDSong> songListIt(songList); //	Common used iterator
 
-    SBIDAlbum orgAlbum=DataEntityAlbum::getDetail(*(this->currentScreenItem().ptr()));
+    SBIDAlbum orgAlbum=SBIDAlbum(this->currentScreenItem().ptr());
+    orgAlbum.getDetail();
     SBIDAlbum newAlbum=orgAlbum;
     SBIDAlbum removedAlbum;
 
@@ -790,7 +790,7 @@ SBTabAlbumEdit::save() const
     newAlbum.setYear(mw->ui.albumEditYear->text().toInt());
 
     //	B.	Validate album
-    SBSqlQueryModel* albumMatches=DataEntityAlbum::matchAlbum(newAlbum);
+    SBSqlQueryModel* albumMatches=newAlbum.matchAlbum();
     if(newAlbum.compare(orgAlbum)==0 && (albumMatches->rowCount()>1))
     {
         //	Album has changed and there are multiple matches
@@ -1057,7 +1057,7 @@ SBTabAlbumEdit::save() const
             SBIDSong currentSong=songListIt.value();
 
             //	Match song and performer. Song could have its original performer someone else than entered.
-            SBSqlQueryModel* songMatches=DataEntitySong::matchSong(currentSong);
+            SBSqlQueryModel* songMatches=currentSong.matchSong();
 
             if(songMatches->rowCount()>1)
             {
@@ -1182,13 +1182,13 @@ SBTabAlbumEdit::save() const
         if(isRemovedMap[fromToIt.value()])
         {
             qDebug() << SB_DEBUG_INFO << "DEL:" << fromToIt.key();
-            SQL.append(DataEntityAlbum::removeSongFromAlbum(newAlbum,fromToIt.key()));
+            SQL.append(newAlbum.removeSongFromAlbum(fromToIt.key()));
         }
 
         if(isRemovedMapOrg[fromToIt.key()])
         {
             qDebug() << SB_DEBUG_INFO << "DELorg:" << fromToIt.key();
-            SQL.append(DataEntityAlbum::removeSongFromAlbum(newAlbum,fromToIt.key()));
+            SQL.append(newAlbum.removeSongFromAlbum(fromToIt.key()));
         }
     }
     qDebug() << SB_DEBUG_INFO << "REMOVALS END";
@@ -1205,7 +1205,7 @@ SBTabAlbumEdit::save() const
             int mergedToPos=mergedTo[songListIt.key()];
             SBIDSong t=songList[mergedToPos];
             qDebug() << SB_DEBUG_INFO << "MRG:" << "from:" << songListIt.key() << "to:" << t.albumPosition() << songListIt.value();
-            SQL.append(DataEntityAlbum::mergeSongInAlbum(newAlbum,mergedTo[songListIt.key()],songListIt.value()));
+            SQL.append(newAlbum.mergeSongInAlbum(mergedTo[songListIt.key()],songListIt.value()));
         }
     }
     qDebug() << SB_DEBUG_INFO << "MERGED END";
@@ -1228,8 +1228,8 @@ SBTabAlbumEdit::save() const
             mergedTo[songListIt.key()]==0)              //	not merged
         {
             qDebug() << SB_DEBUG_INFO << "RPS:" << "from:" << orgPosition << "to:" << currentPosition << songListIt.value();
-            SQL.append(DataEntityAlbum::repositionSongOnAlbum(newAlbum.albumID(),orgPosition,currentPosition+maxCount));
-            tmpList.append(DataEntityAlbum::repositionSongOnAlbum(newAlbum.albumID(),currentPosition+maxCount,currentPosition));
+            SQL.append(newAlbum.repositionSongOnAlbum(orgPosition,currentPosition+maxCount));
+            tmpList.append(newAlbum.repositionSongOnAlbum(currentPosition+maxCount,currentPosition));
         }
     }
     SQL.append(tmpList); tmpList.clear();
@@ -1272,7 +1272,7 @@ SBTabAlbumEdit::save() const
         {
             qDebug() << SB_DEBUG_INFO << "CHG:" << currentPosition << songListIt.value();
 
-            SQL.append(DataEntityAlbum::updateSongOnAlbum(newAlbum.albumID(),songListIt.value()));
+            SQL.append(newAlbum.updateSongOnAlbum(songListIt.value()));
         }
     }
     qDebug() << SB_DEBUG_INFO << "CHG END";
@@ -1287,7 +1287,7 @@ SBTabAlbumEdit::save() const
         if(isNewMap[songListIt.key()])
         {
             qDebug() << SB_DEBUG_INFO << "NEW:" << "at:" << songListIt.value().albumPosition() << songListIt.value();
-            SQL.append(DataEntityAlbum::addSongToAlbum(songListIt.value()));
+            SQL.append(newAlbum.addSongToAlbum(songListIt.value()));
         }
     }
     qDebug() << SB_DEBUG_INFO << "NEW END";
@@ -1298,7 +1298,7 @@ SBTabAlbumEdit::save() const
     {
         qDebug() << SB_DEBUG_INFO << "CMB:" << "from:" << orgAlbum;
         qDebug() << SB_DEBUG_INFO << "CMB:" << "to:" << newAlbum;
-        SQL.append(DataEntityAlbum::mergeAlbum(orgAlbum,newAlbum));
+        SQL.append(orgAlbum.mergeAlbum(newAlbum));
         removedAlbum=orgAlbum;
     }
 
@@ -1306,7 +1306,7 @@ SBTabAlbumEdit::save() const
     if(removedAlbum.albumID()!=-1)
     {
         qDebug() << SB_DEBUG_INFO << "Remove ORG album";
-        SQL.append(DataEntityAlbum::removeAlbum(orgAlbum));
+        SQL.append(orgAlbum.removeAlbum());
     }
 
     if(
@@ -1320,7 +1320,7 @@ SBTabAlbumEdit::save() const
             newAlbum.albumID()!=-1
     )
     {
-        const bool successFlag=DataEntityAlbum::updateExistingAlbum(orgAlbum,newAlbum,SQL,1);
+        const bool successFlag=SBIDAlbum::updateExistingAlbum(orgAlbum,newAlbum,SQL,1);
 
         //	Go through the list of possible orphans
         QListIterator<SBIDSong> li(possibleOrphan);
@@ -1468,8 +1468,9 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
-    SBIDBase base=DataEntityAlbum::getDetail(*(si.ptr()));
-    if(base.validFlag()==0)
+    SBIDAlbum album=SBIDAlbum(si.ptr());
+    album.getDetail();
+    if(album.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
@@ -1479,14 +1480,14 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //SBTab::_setCurrentScreenItem(currentScreenItem);
 
     //	Attributes
-    mw->ui.albumEditTitle->setText(base.albumTitle());
-    mw->ui.albumEditPerformer->setText(base.albumPerformerName());
-    mw->ui.albumEditYear->setText(QString("%1").arg(base.year()));
+    mw->ui.albumEditTitle->setText(album.albumTitle());
+    mw->ui.albumEditPerformer->setText(album.albumPerformerName());
+    mw->ui.albumEditYear->setText(QString("%1").arg(album.year()));
 
     //	Songs
 
     //	1.	Get all songs for this album
-    AlbumEditModel* aem=new AlbumEditModel(base);
+    AlbumEditModel* aem=new AlbumEditModel(album);
     aem->populate();
     QTableView* tv=mw->ui.albumEditSongList;
     tv->setModel(aem);

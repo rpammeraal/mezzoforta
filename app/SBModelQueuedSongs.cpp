@@ -6,7 +6,6 @@
 #include "Common.h"
 #include "Context.h"
 #include "SBIDBase.h"
-#include "DataEntityCurrentPlaylist.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
 #include "SBModelQueuedSongs.h"

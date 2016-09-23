@@ -6,8 +6,6 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataEntityPerformer.h"
-#include "DataEntitySong.h"
 #include "MetaData.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
@@ -106,7 +104,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     pd.activateWindow();
 
     //	1.	Retrieve existing paths
-    SBSqlQueryModel* sqm=DataEntitySong::getOnlineSongs();
+    SBSqlQueryModel* sqm=SBIDSong::getOnlineSongs();
 
     pd.setMaximum(sqm->rowCount());
     pd.setValue(0);

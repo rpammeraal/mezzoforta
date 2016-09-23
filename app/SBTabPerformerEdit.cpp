@@ -8,7 +8,6 @@
 #include "CompleterFactory.h"
 #include "MainWindow.h"
 #include "SBIDPerformer.h"
-#include "DataEntityPerformer.h"
 #include "SBSqlQueryModel.h"
 
 ///	Public methods
@@ -165,7 +164,6 @@ SBTabPerformerEdit::save() const
     //	1.	Rename U2 to Simple Minds.
     //	2.	Rename Simple Minds -> Dire Straitz
     const MainWindow* mw=Context::instance()->getMainWindow();
-    DataEntityPerformer* p=new DataEntityPerformer();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDPerformer orgPerformerID=*(currentScreenItem.ptr());
     SBIDPerformer newPerformerID=orgPerformerID;
@@ -243,7 +241,7 @@ SBTabPerformerEdit::save() const
             int ID=it->data(Qt::DisplayRole).toInt();
             if(_allRelatedPerformers.contains(ID)==0)
             {
-                SQL.append(p->addRelatedPerformerSQL(newPerformerID.performerID(),ID));
+                newPerformerID.addRelatedPerformerSQL(ID);
             }
             else
             {
@@ -261,7 +259,7 @@ SBTabPerformerEdit::save() const
         int ID=_allRelatedPerformers.at(i);
         if(remainingRelatedPerformerIDList.contains(ID)==0)
         {
-            SQL.append(p->deleteRelatedPerformerSQL(newPerformerID.performerID(),ID));
+            SQL.append(newPerformerID.deleteRelatedPerformerSQL(ID));
         }
     }
 
@@ -270,8 +268,7 @@ SBTabPerformerEdit::save() const
         orgPerformerID.notes()!=newPerformerID.notes() ||
         SQL.count()>0)
     {
-        DataEntityPerformer* p=new DataEntityPerformer();
-        const bool successFlag=p->updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
+        const bool successFlag=SBIDPerformer::updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
 
         if(successFlag==1)
         {
@@ -426,8 +423,12 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
-    DataEntityPerformer* p=new DataEntityPerformer();
-    SBIDPerformer performer=p->getDetail(*(si.ptr()));
+    SBIDPerformer performer;
+    if(si.ptr())
+    {
+        performer=SBIDPerformer(si.ptr()->itemID());
+        performer.getDetail();
+    }
     if(performer.validFlag()==0)
     {
         //	Not found
@@ -435,7 +436,6 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     }
     ScreenItem currentScreenItem(performer);
     currentScreenItem.setEditFlag(1);
-    //SBTab::_setCurrentScreenItem(currentScreenItem);
 
     _setRelatedPerformerBeingAddedFlag(0);
     _setRelatedPerformerBeingDeletedFlag(0);
@@ -448,7 +448,7 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     mw->ui.performerEditWebSite->setText(performer.url());
 
     //	Related performers
-    SBSqlQueryModel* rp=p->getRelatedPerformers(performer);
+    SBSqlQueryModel* rp=performer.getRelatedPerformers();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
 
     rpt->clear();
