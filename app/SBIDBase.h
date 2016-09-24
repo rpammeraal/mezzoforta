@@ -29,9 +29,10 @@ public:
 
     SBIDBase();
     SBIDBase(const SBIDBase& c);
-    SBIDBase(QByteArray encodedData);
+    //SBIDBase(QByteArray encodedData);
     virtual ~SBIDBase();
     static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID);
+    static SBIDPtr createPtr(const QByteArray& encodedData);
 
     //	Public methods
     virtual QByteArray encode() const;

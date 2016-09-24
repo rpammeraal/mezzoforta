@@ -29,7 +29,7 @@ public:
     QStandardItemModel* getModel() const;
 
 public slots:
-    void assignItem(const QModelIndex& idx, const SBIDBase& assignID);
+    void assignItem(const QModelIndex& idx, const SBIDPtr& assignPtr);
     void deletePlaylist();
     void enqueuePlaylist();
     void newPlaylist();

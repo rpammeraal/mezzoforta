@@ -17,7 +17,6 @@ SBStandardItemModel::SBStandardItemModel(QSqlQueryModel *sqm) : QStandardItemMod
 
         for(int i=0;i<sqm->rowCount();i++)
         {
-            qDebug() << SB_DEBUG_INFO << i;
             //	Copy vertical header data
             this->setHeaderData(i, Qt::Vertical, sqm->headerData(i, Qt::Vertical));
 
@@ -70,14 +69,14 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDBase id=SBIDBase(encodedData);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << id;
+    SBIDPtr ptr=SBIDBase::createPtr(encodedData);
+    qDebug() << SB_DEBUG_INFO << "Dropping " << *ptr;
 
     //const QModelIndex n=this->index(parent.row(),parent.column());
     qDebug() << SB_DEBUG_INFO << "Dropping on " << row;
 
-    this->beginRemoveRows(parent,id.modelPosition(),id.modelPosition());
-    this->removeRow(id.modelPosition());
+    this->beginRemoveRows(parent,ptr->modelPosition(),ptr->modelPosition());
+    this->removeRow(ptr->modelPosition());
     this->endRemoveRows();
 
 

@@ -29,7 +29,7 @@ public:
     virtual QString type() const;
 
     //	Methods specific to SBIDPlaylist
-    void assignPlaylistItem(const SBIDBase& assignID) const;
+    void assignPlaylistItem(const SBIDPtr& ptr) const;
     static SBIDPlaylist createNewPlaylistDB();
     void deletePlaylist();
     void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;

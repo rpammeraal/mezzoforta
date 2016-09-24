@@ -90,24 +90,24 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDBase fromID=SBIDBase(encodedData);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << fromID;
+    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData);
+    qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
 
     const QModelIndex n=this->index(parent.row(),0);
     qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
-    SBIDPtr toID=determineSBID(n);
+    SBIDPtr toIDPtr=determineSBID(n);
 
-    emit assign(fromID,*toID);
+    emit assign(fromIDPtr,toIDPtr);
     qDebug() << SB_DEBUG_INFO << row;
     if(row>=0)
     {
-        if(fromID.playPosition()>row)
+        if(fromIDPtr->playPosition()>row)
         {
             row+=1;
         }
-        qDebug() << SB_DEBUG_INFO << fromID << fromID.playPosition() << "to row" << row;
-        emit assign(fromID,row);
+        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
+        emit assign(fromIDPtr,row);
     }
     else
     {
@@ -137,7 +137,6 @@ SBSqlQueryModel::mimeTypes() const
 bool
 SBSqlQueryModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    qDebug() << SB_DEBUG_INFO;
     Q_UNUSED(value);
     QVector<int> v;
     v.append(role);

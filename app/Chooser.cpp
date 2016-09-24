@@ -63,12 +63,11 @@ public:
         }
 
         QByteArray encodedData = data->data("application/vnd.text.list");
-        SBIDBase id=SBIDBase(encodedData);
+        SBIDPtr ptr=SBIDBase::createPtr(encodedData);
 
-        qDebug() << SB_DEBUG_INFO << "Dropping " << id << " on " << parent.row();
-        if(_c && id.itemType()!=SBIDBase::sb_type_invalid)
+        if(_c && ptr->itemType()!=SBIDBase::sb_type_invalid)
         {
-            _c->assignItem(parent,id);
+            _c->assignItem(parent,ptr);
             return 1;
         }
         return 0;
@@ -164,7 +163,7 @@ Chooser::~Chooser()
 ///	SLOTS
 
 void
-Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
+Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 {
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
@@ -175,44 +174,46 @@ Chooser::assignItem(const QModelIndex &idx, const SBIDBase &toBeAssignedToID)
     case Chooser::sb_playlists:
         {
 
-            SBIDPlaylist toID=_getPlaylistSelected(idx);
-            SBIDPlaylist fromID;
+            SBIDPlaylist playlist=_getPlaylistSelected(idx);
+            SBIDPtr fromPtr;
 
-            if(toBeAssignedToID==toID)
+            if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
             {
-                //	Do not allow the same item to be assigned to itself
-                    QMessageBox mb;
-                    mb.setText("Ouroboros Error               ");
-                    mb.setInformativeText("Cannot assign items to itself.");
-                    mb.exec();
-            }
-            else if(toBeAssignedToID.itemType()==SBIDBase::sb_type_song)
-            {
-                if(toBeAssignedToID.albumID()==-1)
+                SBIDPlaylist assignedPlaylist=SBIDPlaylist(*toBeAssignedToPtr);
+                if(assignedPlaylist==playlist)
                 {
-                    SBIDSong song(toBeAssignedToID);
-                    SBIDPtr fromPtr;
+                    //	Do not allow the same item to be assigned to itself
+                        QMessageBox mb;
+                        mb.setText("Ouroboros Error               ");
+                        mb.setInformativeText("Cannot assign items to itself.");
+                        mb.exec();
+                }
+            }
+            else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
+            {
+                SBIDSong song(*toBeAssignedToPtr);
+                if(toBeAssignedToPtr->albumID()==-1)
+                {
                     fromPtr=SBTabSongDetail::selectSongFromAlbum(song);
-                    fromID=*fromPtr;
                 }
             }
             else
             {
-                fromID=toBeAssignedToID;
+                fromPtr=toBeAssignedToPtr;
             }
 
-            if(fromID.itemType()!=SBIDBase::sb_type_invalid)
+            if(fromPtr->itemType()!=SBIDBase::sb_type_invalid)
             {
                 if(rootType==Chooser::sb_playlists)
                 {
-                    toID.assignPlaylistItem(fromID);
+                    playlist.assignPlaylistItem(fromPtr);
                     QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
-                        .arg(QChar(96))               //	1
-                        .arg(toBeAssignedToID.text()) //	2
-                        .arg(QChar(180))              //	3
-                        .arg(toID.text())             //	4
-                        .arg(toBeAssignedToID.type()) //	5
-                        .arg(toID.type());            //	6
+                        .arg(QChar(96))                 //	1
+                        .arg(toBeAssignedToPtr->text()) //	2
+                        .arg(QChar(180))                //	3
+                        .arg(playlist.text())           //	4
+                        .arg(toBeAssignedToPtr->type()) //	5
+                        .arg(playlist.type());          //	6
                     Context::instance()->getController()->updateStatusBarText(updateText);
                 }
                 else if(rootType==Chooser::sb_your_songs)

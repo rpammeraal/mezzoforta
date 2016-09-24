@@ -42,8 +42,8 @@ public:
     void setSelectedColumn(int c);
 
 signals:
-    void assign(const SBIDBase& fromID, const SBIDBase& toID) const;
-    void assign(const SBIDBase& fromID, int row) const;
+    void assign(const SBIDPtr& fromPtr, const SBIDPtr& toIDPtr) const;
+    void assign(const SBIDPtr& fromPtr, int row) const;
 
 public slots:
     void schemaChanged();

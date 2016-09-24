@@ -56,6 +56,7 @@ SBIDBase::SBIDBase(const SBIDBase &c)
     this->_sb_tmp_performer_id=c._sb_tmp_performer_id;
 }
 
+/*
 SBIDBase::SBIDBase(QByteArray encodedData)
 {
     _init();
@@ -100,6 +101,7 @@ SBIDBase::SBIDBase(QByteArray encodedData)
     _sb_model_position        =sl[29].toInt();
     return;
 }
+*/
 
 SBIDBase::~SBIDBase()
 {
@@ -133,6 +135,56 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
     case SBIDBase::sb_type_chart:
         break;
     }
+    return ptr;
+}
+
+SBIDPtr
+SBIDBase::createPtr(const QByteArray& encodedData)
+{
+    SBIDPtr ptr;
+    QString s=QString(encodedData);
+    if(!s.length())
+    {
+        qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
+        return SBIDPtr();
+    }
+    QStringList sl=s.split('_');
+
+    //	This gotta be the weirdest formatting.
+    ptr=SBIDBase::createPtr(
+                static_cast<sb_type>(sl[0].toInt()),
+                                     sl[1].toInt()
+    );
+
+    ptr->_sb_song_performer_id      =sl[2].toInt();
+    ptr->_sb_album_id               =sl[3].toInt();
+    ptr->_sb_album_performer_id     =sl[4].toInt();
+    ptr->_sb_performer_id           =sl[5].toInt();
+    ptr->_sb_album_position         =sl[6].toInt();
+    ptr->_sb_chart_id               =sl[7].toInt();
+    ptr->_sb_playlist_id            =sl[8].toInt();
+    ptr->_sb_mbid                   =sl[9].replace("___SB_UNDERSCORE_123___","_");
+    ptr->_originalPerformerFlag    =sl[10].toInt();
+    ptr->_songPerformerName        =sl[11];
+    ptr->_albumPerformerName       =sl[12];
+    ptr->_performerName            =sl[13];
+    ptr->_albumTitle               =sl[14];
+    ptr->_songTitle                =sl[15];
+    ptr->_year                     =sl[16].toInt();
+    ptr->_path                     =sl[17];
+    ptr->_lyrics                   =sl[18];
+    ptr->_notes                    =sl[19];
+    ptr->_genre                    =sl[20];
+    ptr->_url                      =sl[21];
+    ptr->_wiki                     =sl[22];
+    ptr->_playlistName             =sl[23];
+    ptr->_count1                   =sl[24].toInt();
+    ptr->_count2                   =sl[25].toInt();
+         ptr->_duration.setDuration(sl[26].toInt());
+    ptr->_sb_play_position         =sl[27].toInt();
+    ptr->_sb_playlist_position     =sl[28].toInt();
+    ptr->_sb_model_position        =sl[29].toInt();
+
     return ptr;
 }
 

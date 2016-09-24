@@ -35,8 +35,8 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDBase id=SBIDBase(encodedData);
-    QList<QStandardItem *> newRow=createRecord(id,id.playPosition());
+    SBIDPtr ptr=SBIDBase::createPtr(encodedData);
+    QList<QStandardItem *> newRow=createRecord(*ptr,ptr->playPosition());
 
     //	Add record
     this->insertRow(row,newRow);

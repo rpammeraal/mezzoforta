@@ -51,7 +51,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
 }
 
 void
-SBTabPlaylistDetail::movePlaylistItem(const SBIDBase& fromID, int row)
+SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 {
     _init();
     //	Determine current playlist
@@ -61,7 +61,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDBase& fromID, int row)
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
     {
         playlist=SBIDPlaylist(ptr->itemID());
-        playlist.reorderItem(fromID,row);
+        playlist.reorderItem(*fromIDPtr,row);
     }
     refreshTabIfCurrent(*ptr);
 
@@ -297,8 +297,8 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     QTableView* tv=mw->ui.playlistDetailSongList;
     SBSqlQueryModel* qm=playlist.getAllItemsByPlaylist();
     populateTableView(tv,qm,0);
-    connect(qm, SIGNAL(assign(const SBIDBase&,int)),
-            this, SLOT(movePlaylistItem(const SBIDBase&, int)));
+    connect(qm, SIGNAL(assign(const SBIDPtr&,int)),
+            this, SLOT(movePlaylistItem(const SBIDPtr&, int)));
 
     //	Drag & drop mw->ui.playlistDetailSongList->setAcceptDrops(1);
     mw->ui.playlistDetailSongList->setDropIndicatorShown(1);

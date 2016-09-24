@@ -165,21 +165,21 @@ SBIDPlaylist::type() const
 //	Methods specific to SBIDPlaylist
 
 void
-SBIDPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID) const
+SBIDPlaylist::assignPlaylistItem(const SBIDPtr& ptr) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    switch(toBeAssignedID.itemType())
+    switch(ptr->itemType())
     {
     case SBIDBase::sb_type_song:
-        if(toBeAssignedID.albumID()==-1 || toBeAssignedID.albumPosition()==-1)
+        if(ptr->albumID()==-1 || ptr->albumPosition()==-1)
         {
             qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
-            qDebug() << SB_DEBUG_ERROR << toBeAssignedID;
-            qDebug() << SB_DEBUG_ERROR << toBeAssignedID.albumID();
-            qDebug() << SB_DEBUG_ERROR << toBeAssignedID.albumPosition();
+            qDebug() << SB_DEBUG_ERROR << *ptr;
+            qDebug() << SB_DEBUG_ERROR << ptr->albumID();
+            qDebug() << SB_DEBUG_ERROR << ptr->albumPosition();
 
             SBMessageBox::createSBMessageBox("Error: you should never see this...",
                 "Assignment of song without album",
@@ -224,10 +224,10 @@ SBIDPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID) const
                 ") "
         )
             .arg(this->playlistID())
-            .arg(toBeAssignedID.songID())
-            .arg(toBeAssignedID.commonPerformerID())
-            .arg(toBeAssignedID.albumID())
-            .arg(toBeAssignedID.albumPosition())
+            .arg(ptr->songID())
+            .arg(ptr->commonPerformerID())
+            .arg(ptr->albumID())
+            .arg(ptr->albumPosition())
             .arg(dal->getGetDate())
             .arg(dal->getIsNull());
         break;
@@ -264,7 +264,7 @@ SBIDPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID) const
           ).arg(this->playlistID())
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(toBeAssignedID.commonPerformerID())
+           .arg(ptr->commonPerformerID())
         ;
         break;
 
@@ -300,7 +300,7 @@ SBIDPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID) const
           ).arg(this->playlistID())
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(toBeAssignedID.albumID())
+           .arg(ptr->albumID())
         ;
         break;
 
@@ -339,7 +339,7 @@ SBIDPlaylist::assignPlaylistItem(const SBIDBase &toBeAssignedID) const
           ).arg(this->playlistID())
            .arg(dal->getGetDate())
            .arg(dal->getIsNull())
-           .arg(toBeAssignedID.playlistID())
+           .arg(ptr->playlistID())
         ;
         break;
 

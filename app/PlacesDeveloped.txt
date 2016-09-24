@@ -592,14 +592,16 @@ X	playlists that song belongs to can be edited
 20160922:
 -	DataEntity* classes: merged with corresponding SBID* class.
 
+20160923:
+-	Drag Rave On/Buddy Holly to Heverlee - Lommel
+-	More classes/methods converted to using SBIDPtr
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
-*	Drag Rave On/Buddy Holly to Heverlee - Lommel
 
 <near future>
-*	SBIDSong::setPlaylist*(): remove
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.

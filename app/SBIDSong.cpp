@@ -505,34 +505,6 @@ SBIDSong::getAllSongs()
     return new SBSqlQueryModel(q);
 }
 
-/*
-int
-SBIDSong::getMaxSongID()
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
-    //	Find out new songID
-    q=QString
-    (
-        "SELECT "
-            "%1(MAX(song_id)+1,0) AS MaxSongID "
-        "FROM "
-            "___SB_SCHEMA_NAME___song "
-    )
-        .arg(dal->getIsNull())
-    ;
-
-    dal->customize(q);
-
-    QSqlQuery select(q,db);
-    select.next();
-
-    return select.value(0).toInt();
-}
-*/
-
 SBSqlQueryModel*
 SBIDSong::getPerformedByListBySong() const
 {

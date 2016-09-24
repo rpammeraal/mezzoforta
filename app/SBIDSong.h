@@ -43,7 +43,6 @@ public:
     void deleteIfOrphanized();
     SBSqlQueryModel* findSong() const;
     static SBSqlQueryModel* getAllSongs();
-    //static int getMaxSongID();
     SBSqlQueryModel* getPerformedByListBySong() const;
     SBSqlQueryModel* getOnAlbumListBySong() const;
     static SBSqlQueryModel* getOnlineSongs(int limit=0);
@@ -58,7 +57,7 @@ public:
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; }
     void setNotes(const QString& notes) { _notes=notes; }
     void setPath(const QString path) { _path=path; }
-    void setPlaylistPosition(int position);	//	CWIP: should not be necessary
+    void setPlaylistPosition(int position);
     void setSongID(int songID);
     void setSongPerformerID(int performerID);
     void setSongPerformerName(const QString& songPerformerName);

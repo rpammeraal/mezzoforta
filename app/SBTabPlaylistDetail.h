@@ -19,7 +19,7 @@ public:
 
 public slots:
     void deletePlaylistItem();
-    void movePlaylistItem(const SBIDBase& fromID, int row);
+    void movePlaylistItem(const SBIDPtr& fromIDPtr, int row);
     virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
