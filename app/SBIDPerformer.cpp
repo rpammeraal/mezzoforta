@@ -252,7 +252,7 @@ SBIDPerformer::genericDescription() const
 }
 
 QString
-SBIDPerformer::iconResourceLocation() const
+SBIDPerformer::iconResourceLocation()
 {
     return QString(":/images/NoBandPhoto.png");
 }

@@ -34,7 +34,7 @@ public:
 public slots:
     void deletePlaylistItem();
     void movePlaylistItem(const SBIDBase& fromID, const SBIDBase& toID);
-    void playlistChanged(const SBIDPlaylist& pl);
+    void playlistChanged(int playlistID);
     virtual void playNow(bool enqueueFlag=0);
     void showContextMenuPlaylist(const QPoint &p);
     void setRowVisible(int index);

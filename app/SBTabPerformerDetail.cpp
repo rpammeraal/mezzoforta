@@ -343,7 +343,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
     connect(ed, SIGNAL(updatePerformerMBID(SBIDPtr)),
-            this, SLOT(updateMBID(SBIDPtr)));
+            this, SLOT(updatePerformerMBID(SBIDPtr)));
     connect(ed, SIGNAL(updatePerformerHomePage(SBIDPtr)),
             this, SLOT(updatePerformerHomePage(SBIDPtr)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),

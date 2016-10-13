@@ -80,7 +80,6 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
 
     if (!canDropMimeData(data, action, row, column, parent))
     {
-        qDebug() << SB_DEBUG_INFO;
         return false;
     }
 

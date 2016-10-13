@@ -202,7 +202,7 @@ SBIDAlbum::genericDescription() const
 }
 
 QString
-SBIDAlbum::iconResourceLocation() const
+SBIDAlbum::iconResourceLocation()
 {
     return ":/images/NoAlbumCover.png";
 }

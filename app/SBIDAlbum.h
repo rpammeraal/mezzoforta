@@ -27,7 +27,7 @@ public:
     virtual QString genericDescription() const;
     virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual
     virtual QString hash() const;
-    virtual QString iconResourceLocation() const;
+    static QString iconResourceLocation();
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual bool save();

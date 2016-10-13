@@ -1,26 +1,26 @@
 #ifndef SBIDPLAYLIST_H
 #define SBIDPLAYLIST_H
 
+#include <QSqlRecord>
+
 #include "SBIDBase.h"
 #include "SBIDSong.h"
+
+class SBIDPlaylist;
+typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
 
 class SBIDPlaylist : public SBIDBase
 {
 public:
     //	Ctors, dtors
-    SBIDPlaylist();
-    SBIDPlaylist(const SBIDBase& c);
     SBIDPlaylist(const SBIDPlaylist& c);
-    SBIDPlaylist(int itemID);
     ~SBIDPlaylist();
 
     //	Public methods
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
-    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual -- possible rename to retrieveDetail()
     virtual QString hash() const;
-    virtual QString iconResourceLocation() const;
-    virtual bool save();
+    static QString iconResourceLocation();
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -31,24 +31,36 @@ public:
     //	Methods specific to SBIDPlaylist
     void assignPlaylistItem(const SBIDPtr& ptr) const;
     static SBIDPlaylist createNewPlaylistDB();
-    void deletePlaylist();
     void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;
     SBSqlQueryModel* getAllItemsByPlaylist() const;
-    static SBSqlQueryModel* getAllPlaylists();
     SBIDSong getDetailPlaylistItemSong(int playlistPosition) const;
     static void recalculatePlaylistDuration(const SBIDPtr& ptr);
     static void recalculateAllPlaylistDurations();
-    void renamePlaylist();
-    void reorderItem(const SBIDBase& fromID, int row) const;
+    //void renamePlaylist();
+    void reorderItem(const SBIDPtr& fromPtr, int row) const;
     void reorderItem(const SBIDBase& fromID, const SBIDBase& toID) const;
-    void setCount1(const int count1) { _count1=count1; }
-    void setDuration(const Duration& duration) { _duration=duration; }
+    void setCount1(const int count1) { _count1=count1;  }
+    void setDuration(const Duration& duration) { _duration=duration;  }
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
-    void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; }
+    void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
+    SBIDPlaylist& operator=(const SBIDPlaylist& t);	//	CWIP: to be moved to protected
+
+protected:
+    SBIDPlaylist();
+    SBIDPlaylist(int itemID);
+
+    template <class T> friend class SBIDManagerTemplate;
+
+    //	Methods used by SBIDManager (these should all become pure virtual if not static)
+    static SBIDPlaylistPtr createInDB();
+    QStringList deleteFromDB() const;
+    static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
+    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    QStringList updateSQL() const;
 
 private:
     static void _getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDPtr& root);

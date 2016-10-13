@@ -28,7 +28,7 @@ public:
     inline int radioModeFlag() const { return _radioModeFlag; }
 
 signals:
-    void playlistChanged(const SBIDPlaylist& playlist);
+    void playlistChanged(int playlistID);
     void setRowVisible(int playIndex);
 
 public slots:

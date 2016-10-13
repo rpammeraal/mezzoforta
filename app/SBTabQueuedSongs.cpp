@@ -64,9 +64,9 @@ SBTabQueuedSongs::movePlaylistItem(const SBIDBase& fromID, const SBIDBase& toID)
 }
 
 void
-SBTabQueuedSongs::playlistChanged(const SBIDPlaylist &pl)
+SBTabQueuedSongs::playlistChanged(int playlistID)
 {
-    Q_UNUSED(pl);
+    Q_UNUSED(playlistID);
     _updateDetail();
 }
 
@@ -222,8 +222,8 @@ SBTabQueuedSongs::_init()
                 this,SLOT(setRowVisible(int)));
 
         //	If playManager changes playlist, we need to update the details.
-        connect(Context::instance()->getPlayManager(),SIGNAL(playlistChanged(SBIDPlaylist)),
-                this, SLOT(playlistChanged(SBIDPlaylist)));
+        connect(Context::instance()->getPlayManager(),SIGNAL(playlistChanged(int)),
+                this, SLOT(playlistChanged(int)));
 
         //	Context menu
         tv->setContextMenuPolicy(Qt::CustomContextMenu);

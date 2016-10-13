@@ -191,7 +191,7 @@ SBIDSong::hash() const
 }
 
 QString
-SBIDSong::iconResourceLocation() const
+SBIDSong::iconResourceLocation()
 {
     return QString(":/images/SongIcon.png");
 }

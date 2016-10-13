@@ -20,6 +20,8 @@
 #include "MainWindow.h"
 #include "PlayerController.h"
 #include "SBIDBase.h"
+#include "SBIDManagerTemplate.h"
+#include "SBIDPlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
 #include "SBTab.h"
@@ -66,7 +68,6 @@ Navigator::openScreen(const ScreenItem &si)
     ScreenStack* st=Context::instance()->getScreenStack();
     st->debugShow("openScreen:81");
     SBIDPtr ptr;
-    SBIDBase base;
 
     //	Check for valid parameter
     if(si.screenType()==ScreenItem::screen_type_invalid)
@@ -77,6 +78,12 @@ Navigator::openScreen(const ScreenItem &si)
     else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
         ptr=si.ptr();
+        if(!ptr)
+        {
+            qDebug() << SB_DEBUG_NPTR;
+            return;
+        }
+
         if(ptr->itemType()==SBIDBase::sb_type_invalid)
         {
             qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << ptr->itemType();
@@ -225,6 +232,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
         _moveFocusToScreen(-1);
     }
 
+
     /*
     qDebug() << SB_DEBUG_INFO << "**************************************************************************";
     SBIDSong song;
@@ -254,6 +262,51 @@ Navigator::keyPressEvent(QKeyEvent *event)
     qDebug() << SB_DEBUG_INFO << *pptr;
     qDebug() << SB_DEBUG_INFO << pptr->text();
     */
+
+//    SBIDManagerTemplate<SBIDPlaylist> pmm;
+//    int itemID=444;
+//    std::shared_ptr<SBIDPlaylist> single=pmm.retrieve(itemID);
+//    qDebug() << SB_DEBUG_INFO;
+//    if(single)
+//    {
+//        qDebug() << SB_DEBUG_INFO << "After single:" << *single;
+//    }
+//    else
+//    {
+//        qDebug() << SB_DEBUG_INFO << "single empty";
+//    }
+
+//    pmm.debugShow("After single retrieval");
+    //single->setPlaylistName("COmpletely new playlist name");
+    //pmm.debugShow("After rename");
+
+
+    /*
+    QList<std::shared_ptr<SBIDPlaylist>> list=pmm.retrieveAll();
+    qDebug() << SB_DEBUG_INFO << "List of playlist";
+    for(int i=0;i<list.count();i++)
+    {
+        std::shared_ptr<SBIDPlaylist> ptr=list[i];
+        if(ptr)
+        {
+            qDebug() << SB_DEBUG_INFO << i << ptr->i << ptr->playlistID() << ptr->playlistName();
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << i << "empty ptr";
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO << "RESTART!";
+    list=pmm.retrieveAll();
+    qDebug() << SB_DEBUG_INFO << "List of playlists";
+    for(int i=0;i<list.count();i++)
+    {
+        std::shared_ptr<SBIDPlaylist> ptr=list[i];
+        qDebug() << SB_DEBUG_INFO << ptr->i << ptr->playlistID() << ptr->playlistName();
+    }
+    */
+
 }
 
 void

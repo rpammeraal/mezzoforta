@@ -3,9 +3,11 @@
 #include "SBIDBase.h"
 
 #include "Common.h"
+#include "Context.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
+#include "SBIDManagerTemplate.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"
 
@@ -110,6 +112,8 @@ SBIDBase::~SBIDBase()
 SBIDPtr
 SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
 {
+    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+
     SBIDPtr ptr;
     switch(itemType)
     {
@@ -128,7 +132,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
         break;
 
     case SBIDBase::sb_type_playlist:
-        ptr=std::make_shared<SBIDPlaylist>(SBIDPlaylist(ID));
+        ptr=pmgr->retrieve(ID);
         break;
 
     case SBIDBase::sb_type_invalid:
@@ -302,16 +306,16 @@ SBIDBase::iconResourceLocation() const
     switch(this->itemType())
     {
     case SBIDBase::sb_type_album:
-        return static_cast<const SBIDAlbum>(*this).iconResourceLocation();
+        return SBIDSong::iconResourceLocation();
 
     case SBIDBase::sb_type_performer:
-        return static_cast<const SBIDPerformer>(*this).iconResourceLocation();
+        return SBIDPerformer::iconResourceLocation();
 
     case SBIDBase::sb_type_song:
-        return static_cast<const SBIDSong>(*this).iconResourceLocation();
+        return SBIDSong::iconResourceLocation();
 
     case SBIDBase::sb_type_playlist:
-        return static_cast<const SBIDPlaylist>(*this).iconResourceLocation();
+        return SBIDPlaylist::iconResourceLocation();
 
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_chart:
@@ -335,7 +339,7 @@ SBIDBase::itemID() const
         return static_cast<const SBIDSong>(*this).itemID();
 
     case SBIDBase::sb_type_playlist:
-        return static_cast<const SBIDPlaylist>(*this).itemID();
+        //return static_cast<const SBIDPlaylist>(*this).itemID();
 
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_chart:
@@ -588,4 +592,7 @@ SBIDBase::_init()
     this->_sb_tmp_song_id=0;
     this->_sb_tmp_album_id=0;
     this->_sb_tmp_performer_id=0;
+
+    _changedFlag=0;
+    _newFlag=0;
 }

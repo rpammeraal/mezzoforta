@@ -13,6 +13,7 @@
 #include "PlayManager.h"
 #include "Properties.h"
 #include "SBModelQueuedSongs.h"
+#include "SBIDManagerTemplate.h"
 #include "ScreenStack.h"
 
 class BackgroundThread;
@@ -23,6 +24,7 @@ class MainWindow;
 class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
+typedef SBIDManagerTemplate<SBIDPlaylist> SBIDPlaylistMgr;
 
 class Context
 {
@@ -47,6 +49,7 @@ public:
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
+    inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline SBModelQueuedSongs* getSBModelQueuedSongs() { return &_mqs; }
     inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
     inline SBTabQueuedSongs* getTabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
@@ -79,6 +82,7 @@ private:
     PlayManager _pm;
     Properties _p;
     SBModelQueuedSongs _mqs;
+    SBIDPlaylistMgr _playlistMgr;
     ScreenStack _st;
 
     Context();

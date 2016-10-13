@@ -60,7 +60,8 @@ HEADERS     = \
     MetaData.h \
     SBCaseInsensitiveString.h \
     SBIDBase.h \
-    ScreenItem.h
+    ScreenItem.h \
+    SBIDManagerTemplate.h
 
 SOURCES     = \
     main.cpp \

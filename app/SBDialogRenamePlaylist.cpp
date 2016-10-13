@@ -1,28 +1,28 @@
 #include "ui_SBDialogRenamePlaylist.h"
 #include "SBDialogRenamePlaylist.h"
 
-SBDialogRenamePlaylist::SBDialogRenamePlaylist(const SBIDPlaylist& nid,QWidget *parent) :
+SBDialogRenamePlaylist::SBDialogRenamePlaylist(const SBIDPlaylistPtr& playlistPtr,QWidget *parent) :
     QDialog(parent),
-    id(nid),
-    ui(new Ui::SBDialogRenamePlaylist)
+    _playlistPtr(playlistPtr),
+    _ui(new Ui::SBDialogRenamePlaylist)
 {
-    ui->setupUi(this);
-    ui->playlistName->setText(id.playlistName());
-    ui->playlistName->setFocus();
-    ui->playlistName->selectAll();
-    connect(ui->buttonBox, SIGNAL(accepted()),
+    _ui->setupUi(this);
+    _ui->playlistName->setText(playlistPtr->playlistName());
+    _ui->playlistName->setFocus();
+    _ui->playlistName->selectAll();
+    connect(_ui->buttonBox, SIGNAL(accepted()),
             this, SLOT(accepted()));
 
 }
 
 SBDialogRenamePlaylist::~SBDialogRenamePlaylist()
 {
-    delete ui;
+    delete _ui;
 }
 
 void
 SBDialogRenamePlaylist::accepted()
 {
-    id.setPlaylistName(ui->playlistName->text());
-    emit playlistNameChanged(id);
+    _playlistPtr->setPlaylistName(_ui->playlistName->text());
+    emit playlistNameChanged(_playlistPtr);
 }

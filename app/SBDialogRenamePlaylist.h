@@ -15,15 +15,15 @@ class SBDialogRenamePlaylist : public QDialog
     Q_OBJECT
 
 public:
-    explicit SBDialogRenamePlaylist(const SBIDPlaylist& nid, QWidget *parent = 0);
+    explicit SBDialogRenamePlaylist(const SBIDPlaylistPtr& playlistPtr, QWidget *parent = 0);
     ~SBDialogRenamePlaylist();
 
 signals:
-    void playlistNameChanged(const SBIDPlaylist& id);
+    void playlistNameChanged(const SBIDPlaylistPtr& playlistPtr);
 
 private:
-    SBIDPlaylist id;
-    Ui::SBDialogRenamePlaylist *ui;
+    SBIDPlaylistPtr             _playlistPtr;
+    Ui::SBDialogRenamePlaylist* _ui;
 
 private slots:
     void accepted();

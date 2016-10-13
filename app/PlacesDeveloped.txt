@@ -19,6 +19,11 @@ Hamburg Hbf, Germany
 On board: Arnhem - Zwolle, Breda - Rotterdam,
 Enroute: LAX-PVR
 Puerto Vallarta
+Enroute: LAX-DUB
+Dublin, Ireland
+Luik, Belgie
+Diest, Belgie
+Berkel-Enschot, N-Brabant
 
 
 
@@ -595,6 +600,13 @@ X	playlists that song belongs to can be edited
 20160923:
 -	Drag Rave On/Buddy Holly to Heverlee - Lommel
 -	More classes/methods converted to using SBIDPtr
+
+20161013 - Ongeloofelijk...
+-	Converting SBIDPlaylist to use cache using SBIDManagerTemplate
+-	implement save functionality
+
+<future>
+*	SBIDPLaylist::getDetail(): move to retrieveSQL
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box

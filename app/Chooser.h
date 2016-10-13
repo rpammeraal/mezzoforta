@@ -18,6 +18,7 @@ public:
     //	row number of each 'tree root'
     enum sb_root
     {
+        sb_parent=-1,
         sb_your_songs=0,
         sb_empty1,
         sb_playlists
@@ -33,7 +34,7 @@ public slots:
     void deletePlaylist();
     void enqueuePlaylist();
     void newPlaylist();
-    void playlistChanged(const SBIDPlaylist& playlistID);
+    void playlistChanged(int playlistID);
     void playPlaylist(bool enqueueFlag=0);
     void renamePlaylist();
     void schemaChanged();
@@ -47,7 +48,7 @@ protected:
 
 private slots:
     void _clicked(const QModelIndex& mi);
-    void _renamePlaylist(const SBIDBase& id);
+    void _renamePlaylist(SBIDPlaylistPtr playlistPtr);
 
 private:
     //	Context menu actions
@@ -64,7 +65,7 @@ private:
 
     QModelIndex _findItem(const QString& toFind);
     QModelIndex _findItem(const SBIDBase& id);
-    SBIDPlaylist _getPlaylistSelected(const QModelIndex& i);
+    SBIDPlaylistPtr _getPlaylistSelected(const QModelIndex& i);
     void _init();
     void _populate();
     void _setCurrentIndex(const QModelIndex& i);

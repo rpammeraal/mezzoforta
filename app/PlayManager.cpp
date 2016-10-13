@@ -86,6 +86,10 @@ PlayManager::playerNext(bool previousFlag)
     {
         numTries=numSongs-currentPlayID()-1;
     }
+    if(numTries>5)
+    {
+        numTries=5;
+    }
 
     pc->playerStop();
     while(numTries>0 && isPlayingFlag==0 && exitLoopFlag==0)
@@ -121,6 +125,7 @@ PlayManager::playerNext(bool previousFlag)
                 exitLoopFlag=1;
             }
         }
+        numTries--;
     }
     if(exitLoopFlag)
     {
@@ -154,7 +159,8 @@ PlayManager::clearPlaylist()
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->clear();
     _resetCurrentPlayID();
-    emit playlistChanged(SBIDBase());
+
+    emit playlistChanged(-1);
 }
 
 bool
@@ -172,11 +178,11 @@ PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
     _radioModeFlag=0;
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && enqueueFlag==0)
     {
-        emit playlistChanged(SBIDPlaylist(*ptr));
+        emit playlistChanged(-1);
     }
     else
     {
-        emit playlistChanged(SBIDBase());
+        emit playlistChanged(-1);
     }
 
     if(enqueueFlag==0)
@@ -262,7 +268,7 @@ PlayManager::startRadio()
 
     //	load queue
     _loadRadio();
-    emit playlistChanged(SBIDBase());
+    emit playlistChanged(-1);
 
     //	show Songs in Queue tab
     Context::instance()->getNavigator()->showCurrentPlaylist();
@@ -416,7 +422,7 @@ PlayManager::_loadRadio()
                 tqs->setViewLayout();
 
                 this->playerNext();
-                emit playlistChanged(SBIDBase());
+                emit playlistChanged(-1);
 
                 firstBatchLoaded=true;
 

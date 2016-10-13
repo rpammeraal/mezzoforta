@@ -64,6 +64,7 @@ SBTabSongDetail::selectSongFromAlbum(SBIDSong& songOnUnknownAlbum)
         selectedSong.setYear(m->data(m->index(0,4)).toInt());
         selectedSong.setSongPerformerID(m->data(m->index(0,6)).toInt());
         selectedSong.setSongPerformerName(m->data(m->index(0,7)).toString());
+        selectedSong.setSongID(m->data(m->index(0,8)).toInt());
         selectedSong.setAlbumPosition(m->data(m->index(0,9)).toInt());
         selectedSong.setPath(m->data(m->index(0,10)).toString());
 

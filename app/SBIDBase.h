@@ -1,8 +1,11 @@
 #ifndef SBIDBASE_H
 #define SBIDBASE_H
 
+#include <memory>
+
 #include <QString>
 #include <QByteArray>
+
 #include <QDataStream>
 #include <QStandardItem>
 
@@ -45,7 +48,7 @@ public:
     virtual QString genericDescription() const;
     virtual int getDetail(bool createIfNotExistFlag=0);
     virtual QString hash() const;
-    virtual QString iconResourceLocation() const;
+    QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual bool save();
@@ -119,6 +122,7 @@ protected:
     friend class SBIDPlaylist;
     friend class SBIDSong;
     friend class SBModel;
+    template <class T> friend class SBIDManagerTemplate;
 
     //	Primary identifiers
     sb_type     _sb_item_type;           //  song  performer album playlist chart
@@ -164,7 +168,15 @@ protected:
     //	Tertiary identifiers (navigation et al)
     QString     _errorMsg;
 
+    //	Used by SBIDManager*:: and SBID*:: classes
+    inline bool changedFlag() const { return _changedFlag; }
+    inline void setChangedFlag() { _changedFlag=1; }
+    inline void clearChangedFlag() { _changedFlag=0; }
+
 private:
+    bool        _changedFlag;
+    bool        _newFlag;
+
     void _init();
 };
 
