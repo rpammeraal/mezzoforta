@@ -183,15 +183,14 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 
     case SBModelQueuedSongs::sb_column_performername:
         {
+            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            SBIDPerformer performer(itemID);
-            ptr=std::make_shared<SBIDPerformer>(performer);
+            ptr=pemgr->retrieve(itemID);
 
             //	Fill in text attributes
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
-            performer.setPerformerName((item!=NULL)?item->text():QString());
-            id=performer;
         }
         break;
 

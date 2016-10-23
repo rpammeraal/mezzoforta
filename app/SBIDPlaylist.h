@@ -13,7 +13,7 @@ class SBIDPlaylist : public SBIDBase
 {
 public:
     //	Ctors, dtors
-    SBIDPlaylist(const SBIDPlaylist& c);
+    SBIDPlaylist(const SBIDPlaylist& c);	//	to be moved to protected
     ~SBIDPlaylist();
 
     //	Public methods
@@ -57,8 +57,7 @@ protected:
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPlaylistPtr createInDB();
-    QStringList deleteFromDB() const;
-    static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
+    static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     static SBSqlQueryModel* retrieveSQL(int itemID=-1);
     QStringList updateSQL() const;
 

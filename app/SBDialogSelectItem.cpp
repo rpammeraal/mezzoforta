@@ -6,6 +6,7 @@
 #include <QSqlQueryModel>
 
 #include "Common.h"
+#include "Context.h"
 #include "ExternalData.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDAlbum.h"
@@ -143,7 +144,7 @@ SBDialogSelectItem::selectSongAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m,
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent)
+SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, QList<QList<SBIDPerformerPtr>> matches, QWidget *parent)
 {
     //	Used by MusicLibrary to import songs
 
@@ -151,46 +152,50 @@ SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m,
     d->ui->setupUi(d);
 
     //	Populate choices
-    QList<SBIDPerformer> performersShown;
+    QList<SBIDPerformerPtr> performersShown;
     QString title=QString("Choose Performer ");
     d->setTitle(title);
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
-    for(int i=0;i<m->rowCount(); i++)
+
+    int performerCount=0;
+    for(int i=0;i<matches.count();i++)
     {
-        SBIDPerformer currentPerformer(m->data(m->index(i,1)).toInt());
-        currentPerformer.setPerformerName(m->data(m->index(i,2)).toString());
-
-        if(performersShown.contains(currentPerformer)==0)
+        for(int j=0;j<matches[i].count();j++)
         {
-            QString imagePath=ExternalData::getCachePath(std::make_shared<SBIDPerformer>(currentPerformer));
-            QFile imageFile(imagePath);
-            if(imageFile.exists()==0)
+            SBIDPerformerPtr currentPerformerPtr=matches[i][j];
+
+            if(performersShown.contains(currentPerformerPtr)==0)
             {
-                imagePath=currentPerformer.iconResourceLocation();
+                QString imagePath=ExternalData::getCachePath(currentPerformerPtr);
+                QFile imageFile(imagePath);
+                if(imageFile.exists()==0)
+                {
+                    imagePath=currentPerformerPtr->iconResourceLocation();
+                }
+
+                QLabel* l=new QLabel;
+                l->setWindowFlags(Qt::FramelessWindowHint);
+                l->setTextFormat(Qt::RichText);
+                l->setFont(QFont("Trebuchet MS",13));
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   //"</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
+                                   "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
+                           .arg(imagePath)
+                           .arg(i)
+                           .arg(currentPerformerPtr->performerName())
+                );
+
+                l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+                connect(l, SIGNAL(linkActivated(QString)),
+                        d, SLOT(OK(QString)));
+
+                d->ui->vlAlbumList->addWidget(l);
+
+                d->_itemsDisplayed[performerCount++]=currentPerformerPtr;
+                performersShown.append(currentPerformerPtr);
             }
-
-            QLabel* l=new QLabel;
-            l->setWindowFlags(Qt::FramelessWindowHint);
-            l->setTextFormat(Qt::RichText);
-            l->setFont(QFont("Trebuchet MS",13));
-            l->setText(QString("<html><head><style type=text/css> "
-                               "a:link {color:black; text-decoration:none;} "
-                               //"</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
-                               "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
-                       .arg(imagePath)
-                       .arg(i)
-                       .arg(currentPerformer.performerName())
-            );
-
-            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-            connect(l, SIGNAL(linkActivated(QString)),
-                    d, SLOT(OK(QString)));
-
-            d->ui->vlAlbumList->addWidget(l);
-
-            d->_itemsDisplayed[i]=std::make_shared<SBIDPerformer>(currentPerformer);
-            performersShown.append(currentPerformer);
         }
     }
     d->updateGeometry();

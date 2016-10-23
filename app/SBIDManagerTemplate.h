@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include <QList>
 #include <QMap>
 #include <QSqlRecord>
 
@@ -23,13 +24,24 @@ template <class T>
 class SBIDManagerTemplate
 {
 public:
+    enum open_flag
+    {
+        open_flag_default=0,
+        open_flag_refresh=1,
+        open_flag_foredit=2,
+        open_flag_parentonly=3
+    };
+
     SBIDManagerTemplate<T>();
     ~SBIDManagerTemplate<T>();
 
-    void commitChanges(std::shared_ptr<T> ptr, DataAccessLayer* dal);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal);
+    bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
-    void deleteFromDB(std::shared_ptr<T> ptr, DataAccessLayer* dal);
-    std::shared_ptr<T> retrieve(int itemID, bool forEditFlag=0);
+    int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches);
+    void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
+    void remove(std::shared_ptr<T> ptr);
+    std::shared_ptr<T> retrieve(int itemID, open_flag openFlag=open_flag_default);
     QList<std::shared_ptr<T>> retrieveAll();
     void rollbackChanges();
     void debugShow(const QString title="");
@@ -37,7 +49,6 @@ public:
 private:
     QList<std::shared_ptr<T>>    _changes;
     QMap<int,std::shared_ptr<T>> _leMap;
-    QMap<int,std::shared_ptr<T>> _new;
 
     void _init();
 };
@@ -54,49 +65,46 @@ SBIDManagerTemplate<T>::~SBIDManagerTemplate()
 }
 
 ///	Public methods
-template <class T> void
-SBIDManagerTemplate<T>::commitChanges(std::shared_ptr<T> ptr, DataAccessLayer* dal)
+template <class T> bool
+SBIDManagerTemplate<T>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal)
 {
-    //std::shared_ptr<T> ptr;
     QList<std::shared_ptr<T>> list;
 
-    //	Create list of objects to commit
-    if(ptr)
-    {
-        //	If ptr is provided, only commit changes for this object
-        list.append(ptr);
-    }
-    else if(_changes.count())
-    {
-        //	Changes on multiple objects.
-        list=_changes;
-    }
-    else
-    {
-        //	Construct list by going through all items in _leMap and find out
-        //	if object has changed.
-        for(int i=0;i<_leMap.count();i++)
-        {
-            std::shared_ptr<T> ptr=_leMap[i];
-            if(ptr && ptr->changedFlag())
-            {
-                list.append(ptr);
-            }
-        }
-    }
-
     //	Collect SQL to update changes
-    QStringList SQL;
-    for(int i=0;i<list.count();i++)
-    {
-        std::shared_ptr<T> ptr=list[i];
-        SQL.append(ptr->updateSQL());
+    QStringList SQL=ptr->updateSQL();
 
+    bool successFlag=0;
+    successFlag=dal->executeBatch(SQL);
+
+    if(successFlag)
+    {
+        _changes.clear();
     }
 
-    dal->executeBatch(SQL);
+    return dal->executeBatch(SQL);
 }
 
+template <class T> bool
+SBIDManagerTemplate<T>::commitAll(DataAccessLayer* dal)
+{
+    std::shared_ptr<T> ptr;
+    QStringList SQL;
+
+    //	Collect SQL for changes
+    for(int i=0;i<_changes.count();i++)
+    {
+        ptr=_changes.at(i);
+        SQL.append(ptr->updateSQL());
+    }
+
+    bool successFlag=dal->executeBatch(SQL);
+    if(successFlag)
+    {
+        _changes.clear();
+    }
+
+    return successFlag;
+}
 
 template <class T> std::shared_ptr<T>
 SBIDManagerTemplate<T>::createInDB()
@@ -107,21 +115,51 @@ SBIDManagerTemplate<T>::createInDB()
     return newT;
 }
 
-template <class T> void
-SBIDManagerTemplate<T>::deleteFromDB(const std::shared_ptr<T> ptr, DataAccessLayer* dal)
+template <class T> int
+SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches)
 {
-    SB_DEBUG_IF_NULL(dal);
+    int count=0;
+    SBSqlQueryModel* qm=T::find(tobeFound);
+    matches.clear();
 
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        QSqlRecord r=qm->record(i);
+
+        int bucket=r.value(0).toInt();
+        int itemID=r.value(1).toInt();
+        if(currentPtr->itemID()!=itemID)
+        {
+            //	Retrieve and store
+            std::shared_ptr<T> ptr=this->retrieve(itemID);
+            matches[bucket].append(ptr);
+            count++;
+        }
+    }
+    return count;
+}
+
+template <class T> void
+SBIDManagerTemplate<T>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
+{
+    fromPtr->mergeTo(toPtr);
+    fromPtr->setDeletedFlag();
+    toPtr->setChangedFlag();
+    _changes.append(fromPtr);
+    _changes.append(toPtr);
+    _leMap.remove(fromPtr->itemID());
+}
+
+template <class T> void
+SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
+{
     //	Find item in _leMap
     if(_leMap.find(ptr->itemID())!=_leMap.end())
     {
         //	Remove from cache
+        ptr->setDeletedFlag();
         _leMap.erase(_leMap.find(ptr->itemID()));
-
-        //	Remove from database
-        QStringList SQL;
-        SQL.append(ptr->deleteFromDB());
-        dal->executeBatch(SQL);
+        _changes.append(ptr);
     }
     else
     {
@@ -129,29 +167,36 @@ SBIDManagerTemplate<T>::deleteFromDB(const std::shared_ptr<T> ptr, DataAccessLay
     }
 }
 
+
 template <class T> std::shared_ptr<T>
-SBIDManagerTemplate<T>::retrieve(int itemID,bool forEditFlag)
+SBIDManagerTemplate<T>::retrieve(int itemID,SBIDManagerTemplate::open_flag openFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     std::shared_ptr<T> ptr;
     if(_leMap.contains(itemID))
     {
         ptr=_leMap[itemID];
     }
-    if(!ptr)
+    qDebug() << SB_DEBUG_INFO;
+    if(!ptr || openFlag==open_flag_refresh)
     {
         SBSqlQueryModel* qm=T::retrieveSQL(itemID);
         QSqlRecord r=qm->record(0);
 
-        if(r.isEmpty()!=0)
+        if(!r.isEmpty())
         {
-            ptr=T::instantiate(r);
+            ptr=T::instantiate(r,openFlag==SBIDManagerTemplate::open_flag_parentonly);
             _leMap[itemID]=ptr;
         }
     }
-    if(ptr && forEditFlag)
+    qDebug() << SB_DEBUG_INFO;
+
+    if(ptr && openFlag==open_flag_foredit)
     {
         _changes.append(ptr);
+        ptr->setChangedFlag();
     }
+    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 

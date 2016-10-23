@@ -98,7 +98,6 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     SBIDPtr toIDPtr=determineSBID(n);
 
     emit assign(fromIDPtr,toIDPtr);
-    qDebug() << SB_DEBUG_INFO << row;
     if(row>=0)
     {
         if(fromIDPtr->playPosition()>row)

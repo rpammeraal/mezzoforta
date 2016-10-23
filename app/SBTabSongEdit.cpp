@@ -104,14 +104,12 @@ SBTabSongEdit::save() const
         (editTitle!=newSongID.songTitle()) &&
         (editPerformerName==newSongID.songPerformerName()))
     {
-        qDebug() << SB_DEBUG_INFO;
         newSongID.setSongID(-1);
         newSongID.setSongTitle(editTitle);
         hasCaseChange=1;	//	Identify to saveSong that title has changed.
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO;
         Common::toTitleCase(editTitle);
         Common::toTitleCase(editPerformerName);
         hasCaseChange=0;
@@ -123,13 +121,13 @@ SBTabSongEdit::save() const
     //	Handle performer name edits
     if(hasCaseChange==0 && editPerformerName!=newSongID.songPerformerName())
     {
-        SBIDPerformer selectedPerformer=newSongID;
-        if(SBIDPerformer::selectSavePerformer(editPerformerName,selectedPerformer,selectedPerformer,mw->ui.songEditPerformerName)==0)
+        SBIDPerformerPtr selectedPerformerPtr;
+        if(SBIDPerformer::selectSavePerformer(editPerformerName,selectedPerformerPtr,selectedPerformerPtr,mw->ui.songEditPerformerName)==0)
         {
             return;
         }
-        newSongID.setSongPerformerID(selectedPerformer.songPerformerID());
-        newSongID.setSongPerformerName(selectedPerformer.songPerformerName());
+        newSongID.setSongPerformerID(selectedPerformerPtr->songPerformerID());
+        newSongID.setSongPerformerName(selectedPerformerPtr->songPerformerName());
     }
 
     qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.songPerformerID();

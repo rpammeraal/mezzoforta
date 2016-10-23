@@ -141,222 +141,224 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     ///	Creating data structures
     ///////////////////////////////////////////////////////////////////////////////////
 
-    QHash<SBIDPerformer,int> performerToTmpID;
-    QHash<SBIDAlbumSimpleCompare,int> albumToTmpID;
-    QList<SBIDSong> newEntries;
-    QMap<QString,QString> errors;
+    //	NEED TO RECREATE THIS AFTER IMPLEMENTATION OF SBIDMANAGERTEMPLATE
 
-    performerToTmpID.reserve(entries.count());
-    albumToTmpID.reserve(entries.count());
-    newEntries.reserve(entries.count());
+//    QHash<SBIDPerformer,int> performerToTmpID;
+//    QHash<SBIDAlbumSimpleCompare,int> albumToTmpID;
+//    QList<SBIDSong> newEntries;
+//    QMap<QString,QString> errors;
 
-    pd.setMaximum(sqm->rowCount());
-    pd.setValue(0);
-    pd.setLabelText("Processing new music");
-    QCoreApplication::processEvents();
+//    performerToTmpID.reserve(entries.count());
+//    albumToTmpID.reserve(entries.count());
+//    newEntries.reserve(entries.count());
 
-    QHashIterator<QString,bool> hi(existingPath);
+//    pd.setMaximum(sqm->rowCount());
+//    pd.setValue(0);
+//    pd.setLabelText("Processing new music");
+//    QCoreApplication::processEvents();
 
-    for(int i=0;i<entries.count();i++)
-    {
-        if(pathToSong.contains(entries.at(i)))
-        {
-            existingPath[entries.at(i)]=1;
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << entries.at(i);
+//    QHashIterator<QString,bool> hi(existingPath);
 
-            //	Determine any attributes from each file.
-            MetaData md(lower2Upper[entries.at(i)]);
+//    for(int i=0;i<entries.count();i++)
+//    {
+//        if(pathToSong.contains(entries.at(i)))
+//        {
+//            existingPath[entries.at(i)]=1;
+//        }
+//        else
+//        {
+//            qDebug() << SB_DEBUG_INFO << entries.at(i);
 
-            //	For each song, determine all tmp performers and albums
-            SBIDSong song=md.parse();
-            song.setPath(lower2Upper[entries.at(i)]);
-            song.assignTmpItemID();
-            qDebug() << SB_DEBUG_INFO << song << song.path();
+//            //	Determine any attributes from each file.
+//            MetaData md(lower2Upper[entries.at(i)]);
 
-            SBIDPerformer performer=song;
-            performer.setTmpSongID(song.tmpItemID());
-            if(performerToTmpID.contains(performer)==0)
-            {
-                performer.assignTmpItemID();
-                performerToTmpID[performer]=performer.tmpItemID();
-            }
-            else
-            {
-                performer.setTmpItemID(performerToTmpID[performer]);
-            }
-            song.setTmpPerformerID(performer.tmpItemID());
+//            //	For each song, determine all tmp performers and albums
+//            SBIDSong song=md.parse();
+//            song.setPath(lower2Upper[entries.at(i)]);
+//            song.assignTmpItemID();
+//            qDebug() << SB_DEBUG_INFO << song << song.path();
 
-            SBIDAlbumSimpleCompare album=song;
-            ///	CWIP
-            ///	NEED TO THINK ABOUT
-            /// -	missing album performer name
-            /// -	mixed album names in one directory
-            album.setAlbumPerformerName(song.songPerformerName());
+//            SBIDPerformer performer=song;
+//            performer.setTmpSongID(song.tmpItemID());
+//            if(performerToTmpID.contains(performer)==0)
+//            {
+//                performer.assignTmpItemID();
+//                performerToTmpID[performer]=performer.tmpItemID();
+//            }
+//            else
+//            {
+//                performer.setTmpItemID(performerToTmpID[performer]);
+//            }
+//            song.setTmpPerformerID(performer.tmpItemID());
 
-            album.setTmpSongID(song.tmpItemID());
-            if(albumToTmpID.contains(album)==0)
-            {
-                album.assignTmpItemID();
-                albumToTmpID[album]=album.tmpItemID();
-            }
-            else
-            {
-                album.setTmpItemID(albumToTmpID[album]);
-            }
-            song.setTmpAlbumID(album.tmpItemID());
+//            SBIDAlbumSimpleCompare album=song;
+//            ///	CWIP
+//            ///	NEED TO THINK ABOUT
+//            /// -	missing album performer name
+//            /// -	mixed album names in one directory
+//            album.setAlbumPerformerName(song.songPerformerName());
 
-            newEntries.append(song);
-        }
-        if((i%100)==0)
-        {
-            pd.setValue(i);
-            QCoreApplication::processEvents();
-            //qDebug() << i << entries.count() << performerToTmpID.count() << albumToTmpID.count();
-        }
-    }
-    SBIDBase::listTmpIDItems();
+//            album.setTmpSongID(song.tmpItemID());
+//            if(albumToTmpID.contains(album)==0)
+//            {
+//                album.assignTmpItemID();
+//                albumToTmpID[album]=album.tmpItemID();
+//            }
+//            else
+//            {
+//                album.setTmpItemID(albumToTmpID[album]);
+//            }
+//            song.setTmpAlbumID(album.tmpItemID());
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///	Validation
-    ///////////////////////////////////////////////////////////////////////////////////
+//            newEntries.append(song);
+//        }
+//        if((i%100)==0)
+//        {
+//            pd.setValue(i);
+//            QCoreApplication::processEvents();
+//            //qDebug() << i << entries.count() << performerToTmpID.count() << albumToTmpID.count();
+//        }
+//    }
+//    SBIDBase::listTmpIDItems();
 
-    qDebug() << SB_DEBUG_INFO << "L7";
-    QMapIterator<QString,QString> shit(errors);
-    while(shit.hasNext())
-    {
-        shit.next();
-        qDebug() << SB_DEBUG_ERROR << shit.key() << ":" << shit.value();
-    }
-    qDebug() << SB_DEBUG_INFO << "total files found" << entries.count();
-    qDebug() << SB_DEBUG_INFO << "new files" << newEntries.count();
-    /*
-    QListIterator<SBIDSong> newEntriesIT(newEntries);
-    while(newEntriesIT.hasNext())
-    {
-        SBIDSong s=newEntriesIT.next();
-        qDebug() << SB_DEBUG_INFO << "new" << s.path;
-    }
-    */
+//    ///////////////////////////////////////////////////////////////////////////////////
+//    ///	Validation
+//    ///////////////////////////////////////////////////////////////////////////////////
 
-    //	Deal with missing files
-    int missingFiles=0;
-    QHashIterator<QString,bool> pe_i(existingPath);
-    QMap<QString,int> missingFilesMap;	//	QMap provides sorting, the value is not used.
+//    qDebug() << SB_DEBUG_INFO << "L7";
+//    QMapIterator<QString,QString> shit(errors);
+//    while(shit.hasNext())
+//    {
+//        shit.next();
+//        qDebug() << SB_DEBUG_ERROR << shit.key() << ":" << shit.value();
+//    }
+//    qDebug() << SB_DEBUG_INFO << "total files found" << entries.count();
+//    qDebug() << SB_DEBUG_INFO << "new files" << newEntries.count();
+//    /*
+//    QListIterator<SBIDSong> newEntriesIT(newEntries);
+//    while(newEntriesIT.hasNext())
+//    {
+//        SBIDSong s=newEntriesIT.next();
+//        qDebug() << SB_DEBUG_INFO << "new" << s.path;
+//    }
+//    */
 
-    while(pe_i.hasNext())
-    {
-        pe_i.next();
-        if(pe_i.value()==0)
-        {
-            missingFilesMap[pe_i.key()]=1;
-        }
-        missingFiles+=(pe_i.value()==0?1:0);
-    }
-    qDebug() << SB_DEBUG_INFO << "#missing files" << missingFiles;
+//    //	Deal with missing files
+//    int missingFiles=0;
+//    QHashIterator<QString,bool> pe_i(existingPath);
+//    QMap<QString,int> missingFilesMap;	//	QMap provides sorting, the value is not used.
 
-    //	Now list missing files alphabetically
-    QMapIterator<QString,int> mfi(missingFilesMap);
-    while(mfi.hasNext())
-    {
-        mfi.next();
-        qDebug() << SB_DEBUG_INFO << "missing" << mfi.key();
-    }
+//    while(pe_i.hasNext())
+//    {
+//        pe_i.next();
+//        if(pe_i.value()==0)
+//        {
+//            missingFilesMap[pe_i.key()]=1;
+//        }
+//        missingFiles+=(pe_i.value()==0?1:0);
+//    }
+//    qDebug() << SB_DEBUG_INFO << "#missing files" << missingFiles;
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    /// Lookup phase
-    ///
-    /// It would be great if the various SBIDBase* objects are somehow connected with
-    /// signals that if the actual sb_item_id changes, all dependent SBIDBase objects
-    /// are changed as well.
-    ///////////////////////////////////////////////////////////////////////////////////
-    QMap<int,int> tmpPerformerID2realPerformerID;
-    QMap<int,int> tmpAlbumID2realAlbumID;
+//    //	Now list missing files alphabetically
+//    QMapIterator<QString,int> mfi(missingFilesMap);
+//    while(mfi.hasNext())
+//    {
+//        mfi.next();
+//        qDebug() << SB_DEBUG_INFO << "missing" << mfi.key();
+//    }
 
-    //	Lookup performers based on performer name, create if not exist.
-    qDebug() << SB_DEBUG_INFO << performerToTmpID.count();
-    QHashIterator<SBIDPerformer,int> performerToTmpIDIT(performerToTmpID);
-    performerToTmpIDIT.toFront();
-    while(performerToTmpIDIT.hasNext())
-    {
-        performerToTmpIDIT.next();
-        SBIDPerformer performer=performerToTmpIDIT.key();
-        tmpPerformerID2realPerformerID[performer.tmpItemID()]=performer.getDetail(true);
-        qDebug() << SB_DEBUG_INFO << performer;
-    }
+//    ///////////////////////////////////////////////////////////////////////////////////
+//    /// Lookup phase
+//    ///
+//    /// It would be great if the various SBIDBase* objects are somehow connected with
+//    /// signals that if the actual sb_item_id changes, all dependent SBIDBase objects
+//    /// are changed as well.
+//    ///////////////////////////////////////////////////////////////////////////////////
+//    QMap<int,int> tmpPerformerID2realPerformerID;
+//    QMap<int,int> tmpAlbumID2realAlbumID;
 
-    QMapIterator<int,int> unP2ID(tmpPerformerID2realPerformerID);
-    while(unP2ID.hasNext())
-    {
-        unP2ID.next();
-        qDebug() << SB_DEBUG_INFO << unP2ID.key() << unP2ID.value();
-    }
+//    //	Lookup performers based on performer name, create if not exist.
+//    qDebug() << SB_DEBUG_INFO << performerToTmpID.count();
+//    QHashIterator<SBIDPerformer,int> performerToTmpIDIT(performerToTmpID);
+//    performerToTmpIDIT.toFront();
+//    while(performerToTmpIDIT.hasNext())
+//    {
+//        performerToTmpIDIT.next();
+//        SBIDPerformer performer=performerToTmpIDIT.key();
+//        tmpPerformerID2realPerformerID[performer.tmpItemID()]=performer.getDetail(true);
+//        qDebug() << SB_DEBUG_INFO << performer;
+//    }
 
-    //	Lookup albums
-    QHashIterator<SBIDAlbumSimpleCompare,int> albumToTmpIDIT(albumToTmpID);
-    albumToTmpIDIT.toFront();
-    QMap<int,SBIDAlbum> savedAlbums;
-    while(albumToTmpIDIT.hasNext())
-    {
-        albumToTmpIDIT.next();
-        SBIDAlbum album=albumToTmpIDIT.key();
+//    QMapIterator<int,int> unP2ID(tmpPerformerID2realPerformerID);
+//    while(unP2ID.hasNext())
+//    {
+//        unP2ID.next();
+//        qDebug() << SB_DEBUG_INFO << unP2ID.key() << unP2ID.value();
+//    }
 
-        //	Now put in actual sb_album_performer_id
-        album.setAlbumPerformerID(tmpPerformerID2realPerformerID[album.tmpPerformerID()]);
+//    //	Lookup albums
+//    QHashIterator<SBIDAlbumSimpleCompare,int> albumToTmpIDIT(albumToTmpID);
+//    albumToTmpIDIT.toFront();
+//    QMap<int,SBIDAlbum> savedAlbums;
+//    while(albumToTmpIDIT.hasNext())
+//    {
+//        albumToTmpIDIT.next();
+//        SBIDAlbum album=albumToTmpIDIT.key();
 
-        //	Look up
-        tmpAlbumID2realAlbumID[album.tmpItemID()]=album.getDetail(true);
-        qDebug() << SB_DEBUG_INFO << album;
+//        //	Now put in actual sb_album_performer_id
+//        album.setAlbumPerformerID(tmpPerformerID2realPerformerID[album.tmpPerformerID()]);
 
-        savedAlbums[album.albumID()]=album;
-    }
+//        //	Look up
+//        tmpAlbumID2realAlbumID[album.tmpItemID()]=album.getDetail(true);
+//        qDebug() << SB_DEBUG_INFO << album;
 
-    QMapIterator<int,int> unA2ID(tmpAlbumID2realAlbumID);
-    while(unA2ID.hasNext())
-    {
-        unA2ID.next();
-        qDebug() << SB_DEBUG_INFO << unA2ID.key() << unA2ID.value();
-    }
+//        savedAlbums[album.albumID()]=album;
+//    }
 
-    //	Lookup songs
-    QListIterator<SBIDSong> newEntriesIT(newEntries);
-    newEntriesIT.toFront();
-    while(newEntriesIT.hasNext())
-    {
-        SBIDSong song=newEntriesIT.next();
+//    QMapIterator<int,int> unA2ID(tmpAlbumID2realAlbumID);
+//    while(unA2ID.hasNext())
+//    {
+//        unA2ID.next();
+//        qDebug() << SB_DEBUG_INFO << unA2ID.key() << unA2ID.value();
+//    }
 
-        //	Put in actual sb_album_id, sb_song_performer_id
-        song.setAlbumID(tmpAlbumID2realAlbumID[song.tmpAlbumID()]);
-        song.setSongPerformerID(tmpPerformerID2realPerformerID[song.tmpPerformerID()]);
+//    //	Lookup songs
+//    QListIterator<SBIDSong> newEntriesIT(newEntries);
+//    newEntriesIT.toFront();
+//    while(newEntriesIT.hasNext())
+//    {
+//        SBIDSong song=newEntriesIT.next();
 
-        int sb_song_id=song.getDetail(true);
-        if(sb_song_id<0)
-        {
-            SBMessageBox::standardWarningBox("Unable to continue, abort save.");
-            return;
-        }
-        SBIDAlbum album;
-        album=savedAlbums[song.albumID()];
-        if(album.albumID()<0)
-        {
-            album=SBIDAlbum(song.albumID());
-            album.getDetail();
-        }
-        if(album.saveSongToAlbum(song)==0)
-        {
-            SBMessageBox::standardWarningBox("Unable to continue, abort save.");
-            return;
-        }
-        qDebug() << SB_DEBUG_INFO << song;
-    }
+//        //	Put in actual sb_album_id, sb_song_performer_id
+//        song.setAlbumID(tmpAlbumID2realAlbumID[song.tmpAlbumID()]);
+//        song.setSongPerformerID(tmpPerformerID2realPerformerID[song.tmpPerformerID()]);
 
-    //	Refresh caches
-    //if(newPerformersSavedFlag)	//	CWIP: set nowhere, need to be set somewhere
-    {
-        Context::instance()->getController()->refreshModels();
-    }
+//        int sb_song_id=song.getDetail(true);
+//        if(sb_song_id<0)
+//        {
+//            SBMessageBox::standardWarningBox("Unable to continue, abort save.");
+//            return;
+//        }
+//        SBIDAlbum album;
+//        album=savedAlbums[song.albumID()];
+//        if(album.albumID()<0)
+//        {
+//            album=SBIDAlbum(song.albumID());
+//            album.getDetail();
+//        }
+//        if(album.saveSongToAlbum(song)==0)
+//        {
+//            SBMessageBox::standardWarningBox("Unable to continue, abort save.");
+//            return;
+//        }
+//        qDebug() << SB_DEBUG_INFO << song;
+//    }
+
+//    //	Refresh caches
+//    //if(newPerformersSavedFlag)	//	CWIP: set nowhere, need to be set somewhere
+//    {
+//        Context::instance()->getController()->refreshModels();
+//    }
 
     qDebug() << SB_DEBUG_INFO << "Finished";
 

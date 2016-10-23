@@ -605,13 +605,14 @@ X	playlists that song belongs to can be edited
 -	Converting SBIDPlaylist to use cache using SBIDManagerTemplate
 -	implement save functionality
 
-<future>
-*	SBIDPLaylist::getDetail(): move to retrieveSQL
+20161022:
+-	Converting SBIDPerformer to use cache using SBIDManagerTemplate
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
+*	Assign playlist to another playlist: crash
 
 <near future>
 *	Redesign/larger font 'now playing' in player section.

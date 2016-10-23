@@ -160,22 +160,19 @@ SBTabPerformerEdit::enableRelatedPerformerDeleteButton()
 void
 SBTabPerformerEdit::save() const
 {
+    //	CWIP:PEMGR
     //	Test cases:
     //	1.	Rename U2 to Simple Minds.
     //	2.	Rename Simple Minds -> Dire Straitz
+
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDPerformer orgPerformerID=*(currentScreenItem.ptr());
-    SBIDPerformer newPerformerID=orgPerformerID;
+    SBIDPerformerPtr orgPerformerPtr=std::dynamic_pointer_cast<SBIDPerformer>(currentScreenItem.ptr());
     QStringList SQL;
-
-    if(orgPerformerID.performerID()==-1 || newPerformerID.performerID()==-1)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Navigator::save:old or new performer undefined");
-        msgBox.exec();
-        return;
-    }
+    bool mergeToNewPerformer=0;	//	This indicates whether we have to deal with saving to current performer or merge to another performer
+    bool successFlag=0;
 
     if(currentScreenItem.editFlag()==0)
     {
@@ -198,12 +195,10 @@ SBTabPerformerEdit::save() const
     bool hasCaseChange=0;
 
     //	If only case is different in performerName, save the new name as is.
-    if((editPerformerName.toLower()==newPerformerID.performerName().toLower()) &&
-        (editPerformerName==newPerformerID.performerName()))
+    if(editPerformerName.toLower()==orgPerformerPtr->performerName().toLower())
     {
-        newPerformerID.setPerformerID(-1);
-        newPerformerID.setPerformerName(editPerformerName);
         hasCaseChange=1;	//	Identify to saveSong that title has changed.
+        mergeToNewPerformer=0;	//	Explicitly set over here, indicating that we dealing with the same performer
     }
     else
     {
@@ -212,81 +207,104 @@ SBTabPerformerEdit::save() const
     }
 
     //	Different performer name
-    if(hasCaseChange==0 && editPerformerName!=orgPerformerID.songPerformerName())
+    SBIDPerformerPtr selectedPerformerPtr;
+    if(hasCaseChange==0 && editPerformerName!=orgPerformerPtr->songPerformerName())
     {
         //	Save entry alltogether as a complete new record in artist table
-        if(SBIDPerformer::selectSavePerformer(editPerformerName,newPerformerID,newPerformerID,mw->ui.performerEditName,0)==0)
+        if(SBIDPerformer::selectSavePerformer(editPerformerName,orgPerformerPtr,selectedPerformerPtr,mw->ui.performerEditName,0)==0)
         {
+            //	No selection is made, don't do anything and let user continue with edit.
             return;
         }
-    }
-    else
-    {
-        //	No changes, copy the original ID
-        newPerformerID.setPerformerID(orgPerformerID.performerID());
-    }
 
-    newPerformerID.setURL(editURL);
-    newPerformerID.setNotes(editNotes);
-
-    //	Figure out what needs to be done for related performers
-    //	1.	Find additions
-    QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-    QList<int> remainingRelatedPerformerIDList;
-    for(int i=0;i<rpt->rowCount();i++)
-    {
-        QTableWidgetItem* it=rpt->item(i,1);
-        if(it)
+        //	At this point, selectedPerformer could be:
+        if(orgPerformerPtr->performerID()!=selectedPerformerPtr->performerID())
         {
-            int ID=it->data(Qt::DisplayRole).toInt();
-            if(_allRelatedPerformers.contains(ID)==0)
-            {
-                newPerformerID.addRelatedPerformerSQL(ID);
-            }
-            else
-            {
-                remainingRelatedPerformerIDList.append(ID);
-            }
+            //	A. Different: merge orgPerformerPtr to selectedPerformer.
+            mergeToNewPerformer=1;
         }
         else
         {
-            it=rpt->item(i,0);
-        }
-    }
-    //	2.	Find removals
-    for(int i=0;i<_allRelatedPerformers.count();i++)
-    {
-        int ID=_allRelatedPerformers.at(i);
-        if(remainingRelatedPerformerIDList.contains(ID)==0)
-        {
-            SQL.append(newPerformerID.deleteRelatedPerformerSQL(ID));
+            //	B.	The same
+
+            //	Set explicitly for readability.
+            mergeToNewPerformer=0;
         }
     }
 
-    if(orgPerformerID!=newPerformerID ||
-        orgPerformerID.url()!=newPerformerID.url() ||
-        orgPerformerID.notes()!=newPerformerID.notes() ||
-        SQL.count()>0)
+    if(mergeToNewPerformer==0)
     {
-        const bool successFlag=SBIDPerformer::updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
+        //	Same performer. All is needed is to save orgPerformer.
 
-        if(successFlag==1)
+        orgPerformerPtr->setURL(editURL);
+        orgPerformerPtr->setNotes(editNotes);
+
+        //	Figure out what needs to be done for related performers
+        //	1.	Find additions
+
+        QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+        QList<int> remainingRelatedPerformerIDList;
+        for(int i=0;i<rpt->rowCount();i++)
         {
+            QTableWidgetItem* it=rpt->item(i,1);
+            if(it)
+            {
+                int ID=it->data(Qt::DisplayRole).toInt();
+                if(_allRelatedPerformers.contains(ID)==0)
+                {
+                    orgPerformerPtr->addRelatedPerformer(ID);
+                }
+                else
+                {
+                    remainingRelatedPerformerIDList.append(ID);
+                }
+            }
+            else
+            {
+                it=rpt->item(i,0);
+            }
+        }
+
+        //	2.	Find removals
+        for(int i=0;i<_allRelatedPerformers.count();i++)
+        {
+            int ID=_allRelatedPerformers.at(i);
+            if(remainingRelatedPerformerIDList.contains(ID)==0)
+            {
+                orgPerformerPtr->deleteRelatedPerformer(ID);
+            }
+        }
+
+        //	Below assignment is for display purposes in the next block only
+        selectedPerformerPtr=orgPerformerPtr;
+    }
+    else
+    {
+        pemgr->merge(orgPerformerPtr,selectedPerformerPtr);
+    }
+    successFlag=pemgr->commitAll(dal);
+
+    if(successFlag)
+    {
+        //const bool successFlag=SBIDPerformer::updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
+
+        //if(successFlag==1)
+        //{
             QString updateText=QString("Saved performer %1%2%3.")
                 .arg(QChar(96))      //	1
-                .arg(newPerformerID.songPerformerName())	//	2
+                .arg(selectedPerformerPtr->songPerformerName())	//	2
                 .arg(QChar(180));    //	3
             Context::instance()->getController()->updateStatusBarText(updateText);
 
-            if(orgPerformerID.performerID()!=newPerformerID.performerID())
+            if(mergeToNewPerformer)
             {
                 //	Update models!
                 Context::instance()->getController()->refreshModels();
 
                 //	Remove old from screenstack
-                Context::instance()->getScreenStack()->removeScreen(ScreenItem(std::make_shared<SBIDPerformer>(orgPerformerID)));
+                Context::instance()->getScreenStack()->removeScreen(ScreenItem(orgPerformerPtr));
             }
-        }
+        //}
 
         //	Update screenstack
         currentScreenItem.setEditFlag(0);
@@ -316,19 +334,18 @@ SBTabPerformerEdit::closeRelatedPerformerComboBox()
 void
 SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
 {
-    SBIDPerformer performer;
-
     closeRelatedPerformerComboBox();
 
+    SBIDPerformerPtr pptr;
     if(_addNewRelatedPerformerCompleter!=NULL)
     {
         QSqlQueryModel* m=dynamic_cast<QSqlQueryModel *>(_addNewRelatedPerformerCompleter->model());
         if(m!=NULL)
         {
-            performer=SBIDPerformer(idx.sibling(idx.row(),idx.column()+1).data().toInt());
-            performer.setPerformerName(idx.sibling(idx.row(),idx.column()).data().toString());
+            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+            pptr=pemgr->retrieve(idx.sibling(idx.row(),idx.column()+1).data().toInt());
         }
-            else
+        else
         {
             qDebug() << SB_DEBUG_NPTR << "m";
         }
@@ -338,20 +355,22 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
         qDebug() << SB_DEBUG_NPTR << "_addNewRelatedPerformerCompleter";
     }
 
-    if(performer.performerName().length()==0)
+    if(!pptr)
     {
         QMessageBox msgBox;
         msgBox.setText("Unknown Performer!");
         msgBox.exec();
         return;
     }
-
-    //	Populate table
-    _addItemToRelatedPerformerList(performer);
+    else
+    {
+        //	Populate table
+        _addItemToRelatedPerformerList(pptr);
+    }
 }
 
 void
-SBTabPerformerEdit::_addItemToRelatedPerformerList(const SBIDPerformer &performer) const
+SBTabPerformerEdit::_addItemToRelatedPerformerList(const SBIDPerformerPtr& pptr) const
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
@@ -362,12 +381,12 @@ SBTabPerformerEdit::_addItemToRelatedPerformerList(const SBIDPerformer &performe
     QTableWidgetItem *newItem=NULL;
 
     newItem=new QTableWidgetItem;	//	Performer name
-    newItem->setText(performer.performerName());
+    newItem->setText(pptr->performerName());
     newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
     rpt->setItem(currentRowCount,0,newItem);
 
     newItem=new QTableWidgetItem;	//	Performer ID
-    newItem->setText(QString("%1").arg(performer.performerID()));
+    newItem->setText(QString("%1").arg(pptr->performerID()));
     rpt->setItem(currentRowCount,1,newItem);
 
     //	Make item visible
@@ -421,20 +440,20 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBIDPerformerPtr performerPtr;
 
     //	Get detail
-    SBIDPerformer performer;
     if(si.ptr())
     {
-        performer=SBIDPerformer(si.ptr()->itemID());
-        performer.getDetail();
+        SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+        performerPtr=pemgr->retrieve(si.ptr()->itemID());
     }
-    if(performer.validFlag()==0)
+    if(!performerPtr)
     {
         //	Not found
         return ScreenItem();
     }
-    ScreenItem currentScreenItem(performer);
+    ScreenItem currentScreenItem(performerPtr);
     currentScreenItem.setEditFlag(1);
 
     _setRelatedPerformerBeingAddedFlag(0);
@@ -443,34 +462,36 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(0);
 
     //	Attributes
-    mw->ui.performerEditName->setText(performer.performerName());
-    mw->ui.performerEditNotes->setText(performer.notes());
-    mw->ui.performerEditWebSite->setText(performer.url());
+    mw->ui.performerEditName->setText(performerPtr->performerName());
+    mw->ui.performerEditNotes->setText(performerPtr->notes());
+    mw->ui.performerEditWebSite->setText(performerPtr->url());
 
     //	Related performers
-    SBSqlQueryModel* rp=performer.getRelatedPerformers();
+    QVector<SBIDPerformerPtr> related=performerPtr->relatedPerformers();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
 
     rpt->clear();
-    rpt->setRowCount(rp->rowCount());
+    rpt->setRowCount(related.count());
     rpt->setColumnCount(2);
     rpt->setColumnHidden(1,1);
     rpt->horizontalHeader()->hide();
     rpt->verticalHeader()->hide();
 
     _allRelatedPerformers.clear();
-    for(int i=0;i<rp->rowCount();i++)
+    SBIDPerformerPtr relatedPtr;
+    for(int i=0;i<related.count();i++)
     {
+        relatedPtr=related.at(i);
         QTableWidgetItem *newItem;
 
         newItem=new QTableWidgetItem;
 
-        newItem->setText(rp->data(rp->index(i,1)).toString());
+        newItem->setText(relatedPtr->performerName());
         newItem->setFlags(newItem->flags() ^ Qt::ItemIsEditable);
         rpt->setItem(i,0,newItem);
 
         newItem=new QTableWidgetItem;
-        QString performerIDString=rp->data(rp->index(i,0)).toString();
+        QString performerIDString=QString("%1").arg(relatedPtr->performerID());
         newItem->setText(performerIDString);
         rpt->setItem(i,1,newItem);
         _allRelatedPerformers.append(performerIDString.toInt());

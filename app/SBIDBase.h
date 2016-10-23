@@ -46,19 +46,19 @@ public:
     virtual QString commonPerformerName() const;
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
-    virtual int getDetail(bool createIfNotExistFlag=0);
+    virtual int getDetailOLD(bool createIfNotExistFlag=0);	//	to be removed
     virtual QString hash() const;
     QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
-    virtual bool save();
+    virtual bool saveOLD();	//	to be removed
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual void setText(const QString &text);
     virtual QString text() const;
     virtual QString type() const;
     virtual bool validFlag() const;
 
-    //	Common Getters: CWIP pure virtualize, and perform checks
+    //	Common Getters: CWIP virtualize, and perform checks
     inline int albumID() const { return _sb_album_id; }
     inline int albumPerformerID() const { return _sb_album_performer_id; }
     inline int albumPosition() const { return _sb_album_position; }
@@ -168,10 +168,18 @@ protected:
     //	Tertiary identifiers (navigation et al)
     QString     _errorMsg;
 
+    //	Used by SBIDManager
+    bool        _deletedFlag;
+    int         _mergedWithID;
+
     //	Used by SBIDManager*:: and SBID*:: classes
     inline bool changedFlag() const { return _changedFlag; }
-    inline void setChangedFlag() { _changedFlag=1; }
     inline void clearChangedFlag() { _changedFlag=0; }
+    inline bool deletedFlag() const { return _deletedFlag; }
+    inline bool mergedFlag() const { return _mergedWithID!=-1; }
+    inline int mergeWithID() const { return _mergedWithID; }
+    inline void setChangedFlag() { _changedFlag=1; }
+    inline void setDeletedFlag() { _deletedFlag=1; }
 
 private:
     bool        _changedFlag;

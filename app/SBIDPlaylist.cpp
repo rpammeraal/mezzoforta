@@ -5,24 +5,8 @@
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
 
-SBIDPlaylist::SBIDPlaylist():SBIDBase()
-{
-    _init();
-}
-
 SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
 {
-}
-
-//SBIDPlaylist::SBIDPlaylist(const SBIDBase &c):SBIDBase(c)
-//{
-//    _sb_item_type=SBIDBase::sb_type_playlist;
-//}
-
-SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
-{
-    _init();
-    _sb_playlist_id=itemID;
 }
 
 SBIDPlaylist::~SBIDPlaylist()
@@ -587,7 +571,6 @@ SBIDPlaylist::recalculateAllPlaylistDurations()
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     while(query.next())
     {
-                qDebug() << SB_DEBUG_INFO;
         SBIDPlaylistPtr playlistPtr=pmgr->retrieve(query.value(1).toInt());
 
         recalculatePlaylistDuration(playlistPtr);
@@ -1101,72 +1084,19 @@ SBIDPlaylist::reorderItem(const SBIDPtr& fromPtr, int row) const
     updateToNewPositionComposite.next();
 }
 
+///	Protected methods
+SBIDPlaylist::SBIDPlaylist():SBIDBase()
+{
+    _init();
+}
+
+SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
+{
+    _init();
+    _sb_playlist_id=itemID;
+}
 
 ///	Methods used by SBIDManager
-SBSqlQueryModel*
-SBIDPlaylist::retrieveSQL(int itemID)
-{
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "p.playlist_id, "
-            "p.name, "
-            "p.duration, "
-            "COALESCE(a.num,0)+COALESCE(b.num,0)  "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist p "
-                "LEFT JOIN "
-                    "( "
-                        "SELECT "
-                            "p.playlist_id, "
-                            "COUNT(*) AS num "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___playlist_performance p  "
-                            "%1 "
-                        "GROUP BY "
-                            "p.playlist_id "
-                    ") a ON a.playlist_id=p.playlist_id "
-                "LEFT JOIN "
-                    "( "
-                        "SELECT "
-                            "p.playlist_id, "
-                            "COUNT(*) AS num "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___playlist_composite p  "
-                            "%1 "
-                        "GROUP BY "
-                            "p.playlist_id "
-                    ") b ON b.playlist_id=p.playlist_id "
-        "%1 "
-        "ORDER BY "
-            "p.name "
-    )
-        .arg(itemID==-1?"":QString("WHERE p.playlist_id=%1").arg(itemID))
-    ;
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-}
-
-QStringList
-SBIDPlaylist::updateSQL() const
-{
-    QString q=QString
-    (
-        "UPDATE "
-            "___SB_SCHEMA_NAME___playlist "
-        "SET "
-            "name='%1' "
-        "WHERE "
-            "playlist_id=%2 "
-    )
-        .arg(Common::escapeSingleQuotes(this->playlistName()))
-        .arg(this->playlistID())
-    ;
-    QStringList list;
-    list.append(q);
-    return list;
-}
-
 SBIDPlaylistPtr
 SBIDPlaylist::createInDB()
 {
@@ -1221,35 +1151,100 @@ SBIDPlaylist::createInDB()
     return std::make_shared<SBIDPlaylist>(playlist);
 }
 
+SBIDPlaylistPtr
+SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+{
+    Q_UNUSED(noDependentsFlag);
+    SBIDPlaylist playlist;
+
+    playlist._sb_playlist_id=r.value(0).toInt();
+    playlist._playlistName  =r.value(1).toString();
+    playlist._duration      =r.value(2).toTime();
+    playlist._count1        =r.value(3).toInt();
+
+    return std::make_shared<SBIDPlaylist>(playlist);
+}
+
+SBSqlQueryModel*
+SBIDPlaylist::retrieveSQL(int itemID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "p.playlist_id, "
+            "p.name, "
+            "p.duration, "
+            "COALESCE(a.num,0)+COALESCE(b.num,0)  "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist p "
+                "LEFT JOIN "
+                    "( "
+                        "SELECT "
+                            "p.playlist_id, "
+                            "COUNT(*) AS num "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_performance p  "
+                            "%1 "
+                        "GROUP BY "
+                            "p.playlist_id "
+                    ") a ON a.playlist_id=p.playlist_id "
+                "LEFT JOIN "
+                    "( "
+                        "SELECT "
+                            "p.playlist_id, "
+                            "COUNT(*) AS num "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___playlist_composite p  "
+                            "%1 "
+                        "GROUP BY "
+                            "p.playlist_id "
+                    ") b ON b.playlist_id=p.playlist_id "
+        "%1 "
+        "ORDER BY "
+            "p.name "
+    )
+        .arg(itemID==-1?"":QString("WHERE p.playlist_id=%1").arg(itemID))
+    ;
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+}
+
 QStringList
-SBIDPlaylist::deleteFromDB() const
+SBIDPlaylist::updateSQL() const
 {
     QStringList SQL;
-    QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
-
-    QStringList l;
-    l.append("playlist_performance");
-    l.append("playlist_composite");
-    l.append("playlist");
-
-    for(int i=0;i<l.count();i++)
+    if(deletedFlag())
     {
-        QString q=qTemplate.arg(l.at(i)).arg(this->playlistID());
+        QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
+
+        QStringList l;
+        l.append("playlist_performance");
+        l.append("playlist_composite");
+        l.append("playlist");
+
+        for(int i=0;i<l.count();i++)
+        {
+            QString q=qTemplate.arg(l.at(i)).arg(this->playlistID());
+            SQL.append(q);
+        }
+    }
+    else if(changedFlag())
+    {
+        QString q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist "
+            "SET "
+                "name='%1' "
+            "WHERE "
+                "playlist_id=%2 "
+        )
+            .arg(Common::escapeSingleQuotes(this->playlistName()))
+            .arg(this->playlistID())
+        ;
         SQL.append(q);
     }
     return SQL;
-}
-
-
-SBIDPlaylistPtr
-SBIDPlaylist::instantiate(const QSqlRecord &r)
-{
-    SBIDPlaylist playlist;
-    playlist._sb_playlist_id=r.value(0).toInt();
-    playlist._playlistName=r.value(1).toString();
-    playlist._duration=r.value(2).toTime();
-    playlist._count1=r.value(3).toInt();
-    return std::make_shared<SBIDPlaylist>(playlist);
 }
 
 SBIDPlaylist&
@@ -1423,6 +1418,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTravers
                     }
                     if(itemType!=SBIDBase::sb_type_invalid)
                     {
+        qDebug() << SB_DEBUG_INFO;
                         ptr=SBIDBase::createPtr(itemType,itemID);
                         _getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,ptr);
                     }

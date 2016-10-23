@@ -38,7 +38,7 @@ private:
     QLineEdit*    _relatedPerformerLineEdit;
     bool          _removeRelatedPerformerButtonMaybeEnabledFlag;
 
-    void _addItemToRelatedPerformerList(const SBIDPerformer& performer) const;
+    void _addItemToRelatedPerformerList(const SBIDPerformerPtr& pptr) const;
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
     void _init();
     virtual ScreenItem _populate(const ScreenItem& id);

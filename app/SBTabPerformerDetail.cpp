@@ -130,9 +130,18 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDPtr &ptr)
 {
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
-        //	URL is set by ExternalData::, need to store in database
-        SBIDPerformer p(*ptr);
-        p.updateURLdb(p.url());
+        //	Check if we're still the current screen. If not, ignore
+        ScreenStack* st=Context::instance()->getScreenStack();
+        ScreenItem si=st->currentScreen();
+
+        if(si.ptr()==ptr)
+        {
+            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+            DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+            SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+            performerPtr->setURL(performerPtr->url());
+            pemgr->commit(performerPtr,dal);
+        }
     }
     else
     {
@@ -145,9 +154,19 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDPtr &ptr)
 {
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
-        //	MBID is set by ExternalData::, need to store in database
-        SBIDPerformer p(*ptr);
-        p.updateMBIDdb(p.MBID());
+        //	Check if we're still the current screen. If not, ignore
+        ScreenStack* st=Context::instance()->getScreenStack();
+        ScreenItem si=st->currentScreen();
+
+        if(si.ptr()==ptr)
+        {
+            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+            DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+            SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+
+            performerPtr->setMBID(performerPtr->MBID());
+            pemgr->commit(performerPtr,dal);
+        }
     }
     else
     {
@@ -317,19 +336,18 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
     //	Get detail
-    SBIDPerformer performer;
+    SBIDPerformerPtr performerPtr;
     if(si.ptr())
     {
-        performer=SBIDPerformer(si.ptr()->itemID());
-        performer.getDetail();
+        SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+        performerPtr=pemgr->retrieve(si.ptr()->itemID());
     }
-    if(performer.validFlag()==0)
+    if(!performerPtr)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    SBIDPtr performerPtr=std::make_shared<SBIDPerformer>(performer);
     currentScreenItem.updateSBIDBase(performerPtr);
     mw->ui.labelPerformerDetailIcon->setPtr(performerPtr);
 
@@ -352,15 +370,15 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerNews(QList<NewsItem>)));
 
     //	Performer cover image
-    ed->loadPerformerData(std::make_shared<SBIDPerformer>(performer));
+    ed->loadPerformerData(performerPtr);
 
     //	Populate performer detail tab
-    mw->ui.labelPerformerDetailPerformerName->setText(performer.performerName());
+    mw->ui.labelPerformerDetailPerformerName->setText(performerPtr->performerName());
 
     QString details=QString("%1 albums %2 %3 songs")
-        .arg(performer.count1())
+        .arg(performerPtr->count1())
         .arg(QChar(8226))
-        .arg(performer.count2());
+        .arg(performerPtr->count2());
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers
@@ -376,24 +394,25 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     _relatedItems.clear();
 
     //	Recreate
-    SBSqlQueryModel* rm=performer.getRelatedPerformers();
+    QVector<SBIDPerformerPtr> related=performerPtr->relatedPerformers();
 
     QString cs;
 
-    for(int i=-2;i<rm->rowCount();i++)
+    SBIDPerformerPtr ptr;
+    for(int i=-2;i<related.count();i++)
     {
         QString t;
         switch(i)
         {
         case -2:
-            if(performer.notes().length()>0)
+            if(performerPtr->notes().length()>0)
             {
-                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(performer.notes());
+                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(performerPtr->notes());
             }
             break;
 
         case -1:
-            if(rm->rowCount()>0)
+            if(related.count()>0)
             {
                 if(cs.length()>0)
                 {
@@ -404,9 +423,11 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             break;
 
         default:
+            ptr=related.at(i);
             cs=cs+QString("<A style=\"color: black\" HREF=\"%1\">%2</A>&nbsp;")
-            .arg(rm->data(rm->index(i,0)).toString())
-            .arg(rm->data(rm->index(i,1)).toString());
+                .arg(ptr->itemID())
+                .arg(ptr->performerName())
+            ;
         }
     }
     if(cs.length()>0)
@@ -431,13 +452,13 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    qm=performer.getAllSongs();
+    qm=performerPtr->getAllSongs();
     rowCount=populateTableView(tv,qm,3);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    qm=performer.getAlbums();
+    qm=performerPtr->getAlbums();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);

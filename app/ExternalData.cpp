@@ -395,7 +395,6 @@ ExternalData::handleMBIDNetwork(QNetworkReply *r)
     if(matchFound==1)
     {
         //	Recall now that sb_mbid is loaded
-        SBIDPerformer p(*_currentPtr);
         emit updatePerformerMBID(_currentPtr);
         _getMBIDAndMore();
     }
@@ -594,10 +593,10 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                 }
                                 else if(e.attribute("type")=="official homepage" && _performerHomepageRetrievedFlag==0)
                                 {
-                                    SBIDPerformer p=(*_currentPtr);
+                                    SBIDPerformerPtr ptr=std::dynamic_pointer_cast<SBIDPerformer>(_currentPtr);
 
-                                    p.setURL(e.text());
-                                    _currentPtr=std::make_shared<SBIDPerformer>(p);
+                                    ptr->setURL(e.text());
+                                    _currentPtr=ptr;
                                     _performerHomepageRetrievedFlag=1;
                                     emit performerHomePageAvailable(_currentPtr->url());
                                     emit updatePerformerHomePage(_currentPtr);

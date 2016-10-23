@@ -5,6 +5,7 @@
 #include <QDialog>
 
 #include "SBIDBase.h"
+#include "SBIDPerformer.h"
 
 
 class QAbstractButton;
@@ -39,7 +40,7 @@ public:
     //	CWIP: remove m parameter if possible
     static SBDialogSelectItem* selectAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
     static SBDialogSelectItem* selectSongAlbum(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
-    static SBDialogSelectItem* selectPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
+    static SBDialogSelectItem* selectPerformer(const SBIDPtr& ptr, QList<QList<SBIDPerformerPtr>> matches, QWidget *parent = 0);
     static SBDialogSelectItem* selectSongByPerformer(const SBIDPtr& ptr, const QSqlQueryModel* m, QWidget *parent = 0);
 
 

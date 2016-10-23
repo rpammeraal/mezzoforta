@@ -1,72 +1,81 @@
 #ifndef SBIDPERFORMER_H
 #define SBIDPERFORMER_H
 
-#include "QHash"
+#include <QHash>
+#include <QSqlRecord>
 
 #include "SBIDBase.h"
 
 class SBSqlQueryModel;
 class QLineEdit;
 
+class SBIDPerformer;
+typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
+
 class SBIDPerformer : public SBIDBase
 {
 
 public:
         //	Ctors, dtors
-    SBIDPerformer();
-    SBIDPerformer(const SBIDBase& c);
     SBIDPerformer(const SBIDPerformer& c);
-    SBIDPerformer(int itemID);
-    SBIDPerformer(const QString& performerName);
     ~SBIDPerformer();
 
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
-    virtual int getDetail(bool createIfNotExistFlag=0);
     virtual QString hash() const;
     static QString iconResourceLocation();
     virtual int itemID() const;
     virtual sb_type itemType() const;
-    virtual bool save();
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual void setText(const QString &text);
     virtual QString text() const;
     virtual QString type() const;
 
     //	Methods unique to SBIDPerformer
-    QString addRelatedPerformerSQL(int performerID) const;
-    QString deleteRelatedPerformerSQL(int performerID) const;
+    void addRelatedPerformer(int performerID);
+    void deleteRelatedPerformer(int performerID);
     SBSqlQueryModel* getAlbums() const;
     SBSqlQueryModel* getAllSongs() const;
     SBSqlQueryModel* getAllOnlineSongs() const;
-    SBSqlQueryModel* getRelatedPerformers() const;
+    QVector<SBIDPerformerPtr> relatedPerformers();
     void setCount1(int count1) { _count1=count1; }
     void setCount2(int count2) { _count1=count2; }
-    void setNotes(const QString& notes) { _notes=notes; }
-    void setPerformerID(int performerID) { _sb_performer_id=performerID; }
-    void setPerformerName(const QString& performerName) { _performerName=performerName; }
-    static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformer& existingPerformer,SBIDPerformer& selectedPerformer,QLineEdit* field=NULL, bool saveNewPerformer=1);
-    void setURL(const QString& url) { _url=url; }
-    static bool updateExistingPerformer(const SBIDBase& orgPerformerID, SBIDPerformer& newPerformerID, const QStringList& extraSQL=QStringList(),bool commitFlag=1);	//	CWIP: merge with save
-    void updateURLdb(const QString& homePage); //	CWIP: implement mechanism where these can be set through the regular set-methods
-    void updateMBIDdb(const QString& mbid);    //	CWIP: and get either updated in the database by save() or on destruction.
-                                               //	CWIP: would be helpful to have a cache of SBID* ready
+    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
+    static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformerPtr& existingPerformerPtr,SBIDPerformerPtr& selectedPerformerPtr,QLineEdit* field=NULL, bool saveNewPerformer=1);
+    void setURL(const QString& url) { _url=url; setChangedFlag(); }
+    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
+
     static void updateSoundexFields();
 
     //	Operators
     virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
 
-//public slots:
-    /*
-public:
-    */
+protected:
+    template <class T> friend class SBIDManagerTemplate;
+
+    SBIDPerformer();
+
+    //	Methods used by SBIDManager (these should all become pure virtual if not static)
+    static SBIDPerformerPtr createInDB();
+    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID=-1);
+    static SBIDPerformerPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    void mergeTo(SBIDPerformerPtr& to);
+    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    QStringList updateSQL() const;
+
+    //	Helper methods
+    QString addRelatedPerformerSQL(int performerID) const;
+    QString deleteRelatedPerformerSQL(int performerID) const;
 
 private:
+    QVector<int> _relatedPerformerID;
+
     void _init();
+    QVector<int> _loadRelatedPerformers() const;
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)

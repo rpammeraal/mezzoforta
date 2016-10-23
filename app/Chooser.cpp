@@ -260,7 +260,8 @@ Chooser::deletePlaylist()
         switch(result)
         {
             case QMessageBox::Ok:
-                pmgr->deleteFromDB(playlistPtr,dal);
+                pmgr->remove(playlistPtr);
+                pmgr->commit(playlistPtr,dal);
                 Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr);
                 this->_populate();
 
@@ -459,12 +460,12 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
 
     //	Re-open object for editing
-    playlistPtr=pmgr->retrieve(playlistPtr->playlistID(),1);
+    playlistPtr=pmgr->retrieve(playlistPtr->playlistID(),SBIDManagerTemplate<SBIDPlaylist>::open_flag_foredit);
 
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    pmgr->commitChanges(playlistPtr,dal);
+    pmgr->commit(playlistPtr,dal);
 
     this->_populate();
     QModelIndex in=_findItem(*playlistPtr);
@@ -520,7 +521,6 @@ Chooser::_findItem(const QString& toFind)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return index;
 }
 

@@ -25,6 +25,7 @@ class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
 typedef SBIDManagerTemplate<SBIDPlaylist> SBIDPlaylistMgr;
+typedef SBIDManagerTemplate<SBIDPerformer> SBIDPerformerMgr;
 
 class Context
 {
@@ -49,6 +50,7 @@ public:
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
+    inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline SBModelQueuedSongs* getSBModelQueuedSongs() { return &_mqs; }
     inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
@@ -82,6 +84,7 @@ private:
     PlayManager _pm;
     Properties _p;
     SBModelQueuedSongs _mqs;
+    SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
     ScreenStack _st;
 

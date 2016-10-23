@@ -112,7 +112,8 @@ SBIDBase::~SBIDBase()
 SBIDPtr
 SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
 
     SBIDPtr ptr;
     switch(itemType)
@@ -123,7 +124,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
 
     case SBIDBase::sb_type_performer:
     {
-        ptr=std::make_shared<SBIDPerformer>(SBIDPerformer(ID));
+        ptr=pemgr->retrieve(ID);
         break;
     }
 
@@ -132,7 +133,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
         break;
 
     case SBIDBase::sb_type_playlist:
-        ptr=pmgr->retrieve(ID);
+        ptr=plmgr->retrieve(ID);
         break;
 
     case SBIDBase::sb_type_invalid:
@@ -271,7 +272,7 @@ SBIDBase::findMatches(const QString& name) const
 }
 
 int
-SBIDBase::getDetail(bool createIfNotExistFlag)
+SBIDBase::getDetailOLD(bool createIfNotExistFlag)
 {
     Q_UNUSED(createIfNotExistFlag);
     qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
@@ -333,13 +334,15 @@ SBIDBase::itemID() const
         return static_cast<const SBIDAlbum>(*this).itemID();
 
     case SBIDBase::sb_type_performer:
-        return static_cast<const SBIDPerformer>(*this).itemID();
+        //return static_cast<const SBIDPerformer>(*this).itemID();
+        break;
 
     case SBIDBase::sb_type_song:
         return static_cast<const SBIDSong>(*this).itemID();
 
     case SBIDBase::sb_type_playlist:
         //return static_cast<const SBIDPlaylist>(*this).itemID();
+        break;
 
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_chart:
@@ -355,7 +358,7 @@ SBIDBase::itemType() const
 }
 
 bool
-SBIDBase::save()
+SBIDBase::saveOLD()
 {
     qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
     return 0;
@@ -595,4 +598,7 @@ SBIDBase::_init()
 
     _changedFlag=0;
     _newFlag=0;
+
+    _deletedFlag=0;
+    _mergedWithID=-1;
 }

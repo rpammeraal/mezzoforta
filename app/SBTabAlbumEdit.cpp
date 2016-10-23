@@ -982,12 +982,12 @@ SBTabAlbumEdit::save() const
     //	E.	Validate performers
     for(int i=0;i<performerList.count();i++)
     {
-        SBIDPerformer selectedPerformerID;
+        SBIDPerformerPtr selectedPerformerPtr;
 
         //	Performers are saved in processPerformerEdit
-        if(SBIDPerformer::selectSavePerformer(performerList.at(i),selectedPerformerID,selectedPerformerID,NULL,1))
+        if(SBIDPerformer::selectSavePerformer(performerList.at(i),selectedPerformerPtr,selectedPerformerPtr,NULL,1))
         {
-            qDebug() << SB_DEBUG_INFO << "selected performer" << selectedPerformerID << selectedPerformerID.songPerformerID();
+            qDebug() << SB_DEBUG_INFO << "selected performer" << (*selectedPerformerPtr) << selectedPerformerPtr->songPerformerID();
 
             //	Go thru each song and update sb_song_performer_id
             QMutableMapIterator<int,SBIDSong> it(songList);
@@ -1002,7 +1002,7 @@ SBTabAlbumEdit::save() const
 
                     if(currentSong.songPerformerName()==performerList.at(i))
                     {
-                        currentSong.setSongPerformerID(selectedPerformerID.songPerformerID());
+                        currentSong.setSongPerformerID(selectedPerformerPtr->songPerformerID());
                         it.setValue(currentSong);
 
                         //	Reset performer name by taking the 1-based index and
@@ -1010,7 +1010,7 @@ SBTabAlbumEdit::save() const
                         QStandardItem* si=aem->takeItem(index-1,AlbumEditModel::sb_column_performername);
                         if(si)
                         {
-                            si->setText(selectedPerformerID.songPerformerName());
+                            si->setText(selectedPerformerPtr->songPerformerName());
                             aem->setItem(index-1,AlbumEditModel::sb_column_performername,si);
                         }
                     }
@@ -1020,9 +1020,9 @@ SBTabAlbumEdit::save() const
             //	Check album performer
             if(mw->ui.albumEditPerformer->text()==performerList.at(i))
             {
-                newAlbum.setAlbumPerformerName(selectedPerformerID.performerName());
-                newAlbum.setAlbumPerformerID(selectedPerformerID.performerID());
-                mw->ui.albumEditPerformer->setText(selectedPerformerID.performerName());
+                newAlbum.setAlbumPerformerName(selectedPerformerPtr->performerName());
+                newAlbum.setAlbumPerformerID(selectedPerformerPtr->performerID());
+                mw->ui.albumEditPerformer->setText(selectedPerformerPtr->performerName());
             }
         }
         else
