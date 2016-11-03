@@ -61,7 +61,9 @@ HEADERS     = \
     SBCaseInsensitiveString.h \
     SBIDBase.h \
     ScreenItem.h \
-    SBIDManagerTemplate.h
+    SBIDManagerTemplate.h \
+    SBTableModel.h \
+    SBIDPerformance.h
 
 SOURCES     = \
     main.cpp \
@@ -123,7 +125,9 @@ SOURCES     = \
     MetaData.cpp \
     SBCaseInsensitiveString.cpp \
     SBIDBase.cpp \
-    ScreenItem.cpp
+    ScreenItem.cpp \
+    SBTableModel.cpp \
+    SBIDPerformance.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

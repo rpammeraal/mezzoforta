@@ -211,37 +211,26 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     _setCurrentPlayID(playlistIndex);
 
     //	CWIP: change to SBIDSong
-    SBIDSong song=_songAt(currentPlayID());
+    SBIDPerformancePtr performancePtr=_performanceAt(currentPlayID());
 
-    if(song.itemType()==SBIDBase::sb_type_invalid)
+    if(!performancePtr)
     {
-        errorMsg=song.errorMessage();
+        return 0;
     }
     else
     {
         //	Song is valid, go and play
-        song.setPlayPosition(this->currentPlayID());
-        isPlayingFlag=pc->playSong(song);
+        performancePtr->setPlayPosition(this->currentPlayID());
+        isPlayingFlag=pc->playSong(performancePtr);
         if(isPlayingFlag==0)
         {
-            errorMsg=song.errorMessage();
+            return 0;
         }
         else if(_radioModeFlag)
         {
-            song.updateLastPlayDate();
-        }
-    }
+            performancePtr->updateLastPlayDate();
 
-    if(errorMsg.length()!=0)
-    {
-        qDebug() << SB_DEBUG_ERROR << song << errorMsg;
-        SBMessageBox::createSBMessageBox("Error:",
-            errorMsg,
-            QMessageBox::Warning,
-            QMessageBox::Ok,
-            QMessageBox::Ok,
-            QMessageBox::Ok,
-            0);
+        }
     }
     return isPlayingFlag;
 }
@@ -332,7 +321,7 @@ PlayManager::_loadRadio()
     bool firstBatchLoaded=false;
     _radioModeFlag=1;
 
-    QMap<int,SBIDBase> playList;
+    QMap<int,SBIDPerformancePtr> playList;
     QList<int> indexCovered;
 
     int progressStep=0;
@@ -345,25 +334,25 @@ PlayManager::_loadRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=SBIDSong::getOnlineSongs(100);
+    SBSqlQueryModel* qm=SBIDPerformance::onlinePerformances(100);
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 
-    int numSongs=qm->rowCount();
-    if(numSongs>100)
+    int numPerformances=qm->rowCount();
+    if(numPerformances>100)
     {
         //	DataEntityCurrentPlaylist::getAllOnlineSongs() may return more than 100,
         //	limit this to a 100 to make the view not too large.
-        numSongs=100;
+        numPerformances=100;
     }
     const int maxNumberAttempts=50;
-    int songInterval=numSongs/10;
+    int songInterval=numPerformances/10;
 
     bool found=1;
     int nextOpenSlotIndex=0;
     tqs->setViewLayout();
     int index=0;
-    while(index<numSongs)
+    while(index<numPerformances)
     {
         found=0;
         int idx=-1;
@@ -382,7 +371,7 @@ PlayManager::_loadRadio()
         {
             //	If we can't get a random index after n tries, get the first
             //	not-used index
-            for(int i=0;i<numSongs && found==0;i++)
+            for(int i=0;i<numPerformances && found==0;i++)
             {
                 if(indexCovered.contains(i)==0)
                 {
@@ -393,20 +382,14 @@ PlayManager::_loadRadio()
             }
         }
 
-        SBIDSong song=SBIDSong(qm->record(idx).value(0).toInt());
+        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+        SBIDSongPtr songPtr=smgr->retrieve(qm->record(idx).value(0).toInt());
 
-        song.setSongTitle(qm->record(idx).value(1).toString());
-        song.setSongPerformerID(qm->record(idx).value(2).toInt());
-        song.setSongPerformerName(qm->record(idx).value(3).toString());
-        song.setAlbumID(qm->record(idx).value(4).toInt());
-        song.setAlbumTitle(qm->record(idx).value(5).toString());
-        song.setAlbumPosition(qm->record(idx).value(6).toInt());
-        song.setPath(qm->record(idx).value(7).toString());
-        song.setDuration(qm->record(idx).value(8).toTime());
+        SBIDPerformancePtr performancePtr=songPtr->performance(qm->record(idx).value(4).toInt(),qm->record(idx).value(6).toInt());
 
-        playList[nextOpenSlotIndex++]=song;
+        playList[nextOpenSlotIndex++]=performancePtr;
 
-        if(index%songInterval==0 || index+1==numSongs)
+        if(index%songInterval==0 || index+1==numPerformances)
         {
             //	Update progress
             pd.setValue(++progressStep);
@@ -414,7 +397,7 @@ PlayManager::_loadRadio()
         }
 
         //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
-        if(index+1==firstBatchNumber || index+1==numSongs)
+        if(index+1==firstBatchNumber || index+1==numPerformances)
         {
             if(!firstBatchLoaded)
             {
@@ -454,11 +437,12 @@ PlayManager::_resetCurrentPlayID()
     _setCurrentPlayID(-1);
 }
 
-SBIDSong
-PlayManager::_songAt(int index) const
+SBIDPerformancePtr
+PlayManager::_performanceAt(int index) const
 {
+    SBIDPerformancePtr null;
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    return mqs?mqs->songAt(index):SBIDBase();
+    return mqs?mqs->performanceAt(index):null;
 }
 
 void

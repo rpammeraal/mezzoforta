@@ -4,16 +4,17 @@
 #include <QSqlRecord>
 
 #include "SBIDBase.h"
-#include "SBIDSong.h"
 
 class SBIDPlaylist;
 typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
+
+#include "SBIDSong.h"
 
 class SBIDPlaylist : public SBIDBase
 {
 public:
     //	Ctors, dtors
-    SBIDPlaylist(const SBIDPlaylist& c);	//	to be moved to protected
+    SBIDPlaylist(const SBIDPlaylist& c);
     ~SBIDPlaylist();
 
     //	Public methods
@@ -33,7 +34,7 @@ public:
     static SBIDPlaylist createNewPlaylistDB();
     void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;
     SBSqlQueryModel* getAllItemsByPlaylist() const;
-    SBIDSong getDetailPlaylistItemSong(int playlistPosition) const;
+    SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     static void recalculatePlaylistDuration(const SBIDPtr& ptr);
     static void recalculateAllPlaylistDurations();
     //void renamePlaylist();
@@ -58,14 +59,15 @@ protected:
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPlaylistPtr createInDB();
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    void postInstantiate(SBIDPlaylistPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(int itemID=-1);
     QStringList updateSQL() const;
 
 private:
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDBase>& allSongs, const SBIDPtr& root);
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, const SBIDPtr& root);
     void _init();
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    QMap<int,SBIDBase> _retrievePlaylistItems();
+    QMap<int,SBIDPerformancePtr> _retrievePlaylistItems();
 };
 
 #endif // SBIDPLAYLIST_H

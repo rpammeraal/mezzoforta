@@ -110,30 +110,32 @@ SBIDBase::~SBIDBase()
 }
 
 SBIDPtr
-SBIDBase::createPtr(SBIDBase::sb_type itemType, int ID)
+SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID)
 {
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
 
     SBIDPtr ptr;
     switch(itemType)
     {
     case SBIDBase::sb_type_album:
-        ptr=std::make_shared<SBIDAlbum>(SBIDAlbum(ID));
+        ptr=amgr->retrieve(itemID);
         break;
 
     case SBIDBase::sb_type_performer:
     {
-        ptr=pemgr->retrieve(ID);
+        ptr=pemgr->retrieve(itemID);
         break;
     }
 
     case SBIDBase::sb_type_song:
-        ptr=std::make_shared<SBIDSong>(SBIDSong(ID));
+        ptr=smgr->retrieve(itemID);
         break;
 
     case SBIDBase::sb_type_playlist:
-        ptr=plmgr->retrieve(ID);
+        ptr=plmgr->retrieve(itemID);
         break;
 
     case SBIDBase::sb_type_invalid:
@@ -331,14 +333,15 @@ SBIDBase::itemID() const
     switch(this->itemType())
     {
     case SBIDBase::sb_type_album:
-        return static_cast<const SBIDAlbum>(*this).itemID();
+        //return static_cast<const SBIDAlbum>(*this).itemID();
+        break;
 
     case SBIDBase::sb_type_performer:
         //return static_cast<const SBIDPerformer>(*this).itemID();
         break;
 
     case SBIDBase::sb_type_song:
-        return static_cast<const SBIDSong>(*this).itemID();
+        //return static_cast<const SBIDSong>(*this).itemID();
 
     case SBIDBase::sb_type_playlist:
         //return static_cast<const SBIDPlaylist>(*this).itemID();

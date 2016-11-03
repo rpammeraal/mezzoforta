@@ -146,8 +146,7 @@ PlayerController::playerPlay()
         _playerInstance[_currentPlayerID].play();
         _updatePlayState(PlayerController::sb_player_state_play);
     }
-    else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState &&
-            _currentSongPlaying.itemID()>0)
+    else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState && _currentPerformancePlayingPtr)
     {
         //	If stopped and there is a valid song, play.
         _playerInstance[_currentPlayerID].play();
@@ -180,7 +179,7 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBIDSong& song)
+PlayerController::playSong(SBIDPerformancePtr& performancePtr)
 {
     Properties* p=Context::instance()->getProperties();
     Controller* c=Context::instance()->getController();
@@ -189,9 +188,9 @@ PlayerController::playSong(SBIDSong& song)
 
     QString path=QString("%1/%2")
                 .arg(p->musicLibraryDirectorySchema())
-                .arg(song.path())
+                .arg(performancePtr->path())
     ;
-    emit setRowVisible(song.playPosition());	//	changed to here, so we can continue in case of error of playing a song.
+    emit setRowVisible(performancePtr->playPosition());	//	changed to here, so we can continue in case of error of playing a song.
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
@@ -199,13 +198,15 @@ PlayerController::playSong(SBIDSong& song)
         c->updateStatusBarText(errorMsg);
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
-        song.setErrorMessage(errorMsg);
+        performancePtr->setErrorMessage(errorMsg);
         qDebug() << SB_DEBUG_INFO << "returning 0";
+        SBIDPerformancePtr null;
+        _currentPerformancePlayingPtr=null;
         return 0;
     }
 
     //	Instruct player to play
-    _currentSongPlaying=song;
+    _currentPerformancePlayingPtr=performancePtr;
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
@@ -218,7 +219,8 @@ void
 PlayerController::_init()
 {
     _currentPlayerID=0;
-    _currentSongPlaying=SBIDBase();
+    SBIDPerformancePtr null;
+    _currentPerformancePlayingPtr=null;
     _state=PlayerController::sb_player_state_stopped;
 
     const MainWindow* mw=Context::instance()->getMainWindow();
@@ -352,16 +354,16 @@ PlayerController::_refreshPlayingNowData() const
             "<A HREF=\"%4_%5\">%6</A> from the "
             "<A HREF=\"%7_%8\">'%9'</A> album")
             .arg(SBIDBase::sb_type_song)
-            .arg(_currentSongPlaying.songID())
-            .arg(_currentSongPlaying.songTitle())
+            .arg(_currentPerformancePlayingPtr->songID())
+            .arg(_currentPerformancePlayingPtr->songTitle())
 
             .arg(SBIDBase::sb_type_performer)
-            .arg(_currentSongPlaying.performerID())
-            .arg(_currentSongPlaying.performerName())
+            .arg(_currentPerformancePlayingPtr->performerID())
+            .arg(_currentPerformancePlayingPtr->performerName())
 
             .arg(SBIDBase::sb_type_album)
-            .arg(_currentSongPlaying.albumID())
-            .arg(_currentSongPlaying.albumTitle())
+            .arg(_currentPerformancePlayingPtr->albumID())
+            .arg(_currentPerformancePlayingPtr->albumTitle())
         ;
     }
     playState+="</CENTER></BODY>";

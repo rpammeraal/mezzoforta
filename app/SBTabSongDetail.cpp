@@ -41,13 +41,11 @@ SBTabSongDetail::tabWidget() const
     return mw->ui.tabSongDetailLists;
 }
 
-SBIDPtr
-SBTabSongDetail::selectSongFromAlbum(SBIDSong& songOnUnknownAlbum)
+SBIDPerformancePtr
+SBTabSongDetail::selectPerformanceFromAlbum(SBIDSongPtr& songPtr)
 {
-    SBIDSong selectedSong;
-    SBIDPtr ptr;
-    SBSqlQueryModel* m=songOnUnknownAlbum.getOnAlbumListBySong();
-    if(m->rowCount()==0)
+    SBIDPerformancePtr selectedPerformancePtr;
+    if(songPtr->numPerformances()==0)
     {
         //	Can't assign -- does not exist on an album
         QMessageBox mb;
@@ -55,30 +53,21 @@ SBTabSongDetail::selectSongFromAlbum(SBIDSong& songOnUnknownAlbum)
         mb.setInformativeText("Songs that do not appear on an album cannot be used.");
         mb.exec();
     }
-    else if(m->rowCount()==1)
+    else if(songPtr->numPerformances()==1)
     {
-        //	Populate assignID and assign
-        selectedSong.setAlbumID(m->data(m->index(0,1)).toInt());
-        selectedSong.setAlbumTitle(m->data(m->index(0,2)).toString());
-        selectedSong.setDuration(m->data(m->index(0,3)).toTime());
-        selectedSong.setYear(m->data(m->index(0,4)).toInt());
-        selectedSong.setSongPerformerID(m->data(m->index(0,6)).toInt());
-        selectedSong.setSongPerformerName(m->data(m->index(0,7)).toString());
-        selectedSong.setSongID(m->data(m->index(0,8)).toInt());
-        selectedSong.setAlbumPosition(m->data(m->index(0,9)).toInt());
-        selectedSong.setPath(m->data(m->index(0,10)).toString());
-
-        ptr=std::make_shared<SBIDSong>(selectedSong);
+        selectedPerformancePtr=songPtr->allPerformances().at(0);
     }
     else
     {
         //	Ask from which album song should be assigned from
-        SBDialogSelectItem* ssa=SBDialogSelectItem::selectSongAlbum(std::make_shared<SBIDSong>(songOnUnknownAlbum),m);
+        SBDialogSelectItem* ssa=SBDialogSelectItem::selectAlbumFromSong(songPtr);
 
         ssa->exec();
-        ptr=ssa->getSelected();
+        SBIDPtr ptr=ssa->getSelected();
+
+        selectedPerformancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
     }
-    return ptr;
+    return selectedPerformancePtr;
 }
 
 ///	Public slots
@@ -89,17 +78,17 @@ SBTabSongDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
+    SBIDPtr selectPtr=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selected || selected->validFlag()==0)
+    if(!selectPtr || selectPtr->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
-        SBIDSong base=static_cast<SBIDSong>(*(currentScreenItem().ptr()));
+        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(currentScreenItem().ptr());
 
-        selected=selectSongFromAlbum(base);
+        selectPtr=selectPerformanceFromAlbum(songPtr);
     }
-    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -267,23 +256,28 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     QList<bool> dragableColumns;
-    SBSqlQueryModel* qm=NULL;
+    SBTableModel* tm;
+    SBIDSongPtr songPtr;
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
-    SBIDSong song=SBIDSong(si.ptr()->itemID());
-    song.getDetail(0);
-    if(song.validFlag()==0)
+    if(si.ptr())
     {
-        //	Not found
+        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+        songPtr=smgr->retrieve(si.ptr()->itemID());
+    }
+
+    if(!songPtr)
+    {
         return ScreenItem();
     }
+
     ScreenItem currentScreenItem=si;
-    SBIDPtr songPtr=std::make_shared<SBIDSong>(song);
     currentScreenItem.updateSBIDBase(songPtr);
     mw->ui.labelSongDetailIcon->setPtr(songPtr);
 
@@ -293,10 +287,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     connect(ed, SIGNAL(songLyricsURLAvailable(QString)),
             this, SLOT(setSongLyricsPage(QString)));
 
-    ed->loadSongData(std::make_shared<SBIDSong>(song));
+    ed->loadSongData(songPtr);
 
     //	Populate song detail tab
-    mw->ui.labelSongDetailSongTitle->setText(song.songTitle());
+    mw->ui.labelSongDetailSongTitle->setText(songPtr->songTitle());
     QTextBrowser* frAlsoPerformedBy=mw->ui.frSongDetailSongPerformerName;
 
     //	Clear current
@@ -309,31 +303,37 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     _alsoPerformedBy.clear();
 
     //	Recreate
-    qm=song.getPerformedByListBySong();
+    QVector<int> performerList=songPtr->performerIDList();
     QString cs;
-    int toDisplay=qm->rowCount();
+    int toDisplay=performerList.count();
     if(toDisplay>3)
     {
         toDisplay=3;
     }
     for(int i=-1;i<toDisplay;i++)
     {
+        SBIDPerformerPtr performerPtr;
         QString t;
         switch(i)
         {
         case -1:
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
-                .arg(song.songPerformerID())
-                .arg(song.songPerformerName());
+                .arg(songPtr->songPerformerID())
+                .arg(songPtr->songPerformerName());
             break;
 
         default:
-            cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
-            .arg(qm->data(qm->index(i,0)).toString())
-            .arg(qm->data(qm->index(i,1)).toString());
+            performerPtr=pemgr->retrieve(performerList.at(i));
+            if(performerPtr)
+            {
+                cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
+                    .arg(performerPtr->performerID())
+                    .arg(performerPtr->performerName())
+                ;
+            }
         }
     }
-    if(qm->rowCount()>toDisplay)
+    if(performerList.count()>toDisplay)
     {
             cs=cs+QString(",&nbsp;...");
     }
@@ -343,10 +343,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
 
     //	Populate song details
-    cs=QString("<B>Released:</B> %1").arg(song.year());
-    if(song.notes().length())
+    cs=QString("<B>Released:</B> %1").arg(songPtr->year());
+    if(songPtr->notes().length())
     {
-        cs+=QString(" %1 <B>Notes:</B> %2").arg(QChar(8226)).arg(song.notes());
+        cs+=QString(" %1 <B>Notes:</B> %2").arg(QChar(8226)).arg(songPtr->notes());
     }
     cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
     mw->ui.frSongDetailSongDetail->setText(cs);
@@ -359,20 +359,20 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    qm=song.getOnAlbumListBySong();
+    tm=songPtr->albumList();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
-    qm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,qm,2);
+    tm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,tm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_albums,rowCount>0);
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    qm=song.getOnPlaylistListBySong();
+    tm=songPtr->playlistList();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    qm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,qm,2);
+    tm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,tm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_playlists,rowCount>0);
 
     //  populate tabSongDetailChartList
@@ -382,13 +382,13 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,0);
 
     //	lyrics
-    if(song.lyrics().length()>0)
+    if(songPtr->lyrics().length()>0)
     {
-        QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+song.lyrics();
+        QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+songPtr->lyrics();
         html.replace("\n","<BR>");
         mw->ui.songDetailLyrics->setHtml(html);
     }
-    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,song.lyrics().length()>0);
+    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,songPtr->lyrics().length()>0);
 
     //	Update current eligible tabID
     currentScreenItem.setSubtabID(mw->ui.tabSongDetailLists->currentIndex());

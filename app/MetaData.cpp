@@ -14,18 +14,19 @@ MetaData::~MetaData()
 
 }
 
-SBIDSong
+SBIDSongPtr
 MetaData::parse()
 {
-    SBIDSong s;
-    s.setAlbumTitle(Common::sanitize(TStringToQString(_f.tag()->album())));
-    s.setGenre(Common::sanitize(TStringToQString(_f.tag()->genre())));
-    s.setNotes(Common::sanitize(TStringToQString(_f.tag()->comment())));
-    s.setSongPerformerName(Common::sanitize(TStringToQString(_f.tag()->artist())));
-    s.setSongTitle(Common::sanitize(TStringToQString(_f.tag()->title())));
-    s.setAlbumPosition(_f.tag()->track());
-    s.setYear(_f.tag()->year());
-    s.setDuration(Duration(0,0,_f.audioProperties()->length()));
+    //	CWIP: no idea how to model this right now...
+    SBIDSongPtr s;
+//    s.setAlbumTitle(Common::sanitize(TStringToQString(_f.tag()->album())));
+//    s.setGenre(Common::sanitize(TStringToQString(_f.tag()->genre())));
+//    s.setNotes(Common::sanitize(TStringToQString(_f.tag()->comment())));
+//    s.setSongPerformerName(Common::sanitize(TStringToQString(_f.tag()->artist())));
+//    s.setSongTitle(Common::sanitize(TStringToQString(_f.tag()->title())));
+//    s.setAlbumPosition(_f.tag()->track());
+//    s.setYear(_f.tag()->year());
+//    s.setDuration(Duration(0,0,_f.audioProperties()->length()));
 
     return s;
 }

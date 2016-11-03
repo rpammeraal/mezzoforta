@@ -47,25 +47,26 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
+    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selected || selected->validFlag()==0)
+    if(!selectedPtr || selectedPtr->validFlag()==0)
     {
         //	Context menu from SBLabel is clicked
-        selected=currentPtr;
+        selectedPtr=currentPtr;
     }
-    else if(selected && selected->itemType()==SBIDBase::sb_type_song)
+    else if(selectedPtr && selectedPtr->itemType()==SBIDBase::sb_type_song)
     {
-        SBIDSong song(*selected);
-        song.setSongPerformerName(currentPtr->songPerformerName());
-        song.setSongPerformerID(currentPtr->songPerformerID());
-        selected=SBTabSongDetail::selectSongFromAlbum(song);
+        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(selectedPtr);
+        selectedPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
     }
 
-    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
-    SBTab::playNow(enqueueFlag);
+    if(selectedPtr)
+    {
+        pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
+        SBTab::playNow(enqueueFlag);
+    }
 }
 
 void

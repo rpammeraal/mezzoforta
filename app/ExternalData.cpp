@@ -162,13 +162,16 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 
                 for(int i=0; i<level1nodelist.count(); i++)
                 {
-                    SBIDAlbum pm;
+                    SBIDAlbumPtr albumPtr;
                     QString key;
                     QString value;
                     QString urlString;
 
                     QDomNode     level2node    =level1nodelist.at(i);
                     QDomNodeList level2nodelist=level2node.childNodes();
+
+                    QString albumTitle;
+                    QString albumPerformerName;
 
                     for(int j=0; j<level2nodelist.count();j++)
                     {
@@ -185,11 +188,11 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 
                         if(key=="name")
                         {
-                            pm.setAlbumTitle(value);
+                            albumTitle=value;
                         }
                         else if(key=="artist")
                         {
-                            pm.setAlbumPerformerName(value);
+                            albumPerformerName=value;
                         }
                         else if(key=="image")
                         {
@@ -197,7 +200,10 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
                         }
                     }
 
-                    if(_fuzzyMatch(*_currentPtr,pm)==1)
+                    if(_currentPtr->itemType()==SBIDBase::sb_type_album &&
+                        Common::simplified(_currentPtr->albumTitle())==Common::simplified(albumTitle) &&
+                        Common::simplified(_currentPtr->albumPerformerName())==Common::simplified(albumPerformerName)
+                    )
                     {
                         QNetworkAccessManager* n=new QNetworkAccessManager(this);
                         connect(n, SIGNAL(finished(QNetworkReply *)),
@@ -954,18 +960,18 @@ ExternalData::_storeInCache(QByteArray *a) const
     }
 }
 
-bool
-ExternalData::_fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const
-{
-    bool match=1;
-    if(j.albumTitle().count()!=i.albumTitle().count() || j.albumTitle().toLower()!=i.albumTitle().toLower())
-    {
-        match=0;
-    }
-    if(j.songPerformerName().count()!=i.songPerformerName().count() || j.songPerformerName().toLower()!=i.songPerformerName().toLower())
-    {
-        match=0;
-    }
+//bool
+//ExternalData::_fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const
+//{
+//    bool match=1;
+//    if(j.albumTitle().count()!=i.albumTitle().count() || j.albumTitle().toLower()!=i.albumTitle().toLower())
+//    {
+//        match=0;
+//    }
+//    if(j.songPerformerName().count()!=i.songPerformerName().count() || j.songPerformerName().toLower()!=i.songPerformerName().toLower())
+//    {
+//        match=0;
+//    }
 
-    return match;
-}
+//    return match;
+//}

@@ -55,7 +55,7 @@ SBIDPlaylist::itemType() const
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDBase> list;
+    QMap<int,SBIDPerformancePtr> list;
     list=_retrievePlaylistItems();
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -467,44 +467,21 @@ SBIDPlaylist::getAllItemsByPlaylist() const
     return new SBSqlQueryModel(q,0);
 }
 
-SBIDSong
+SBIDSongPtr
 SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 {
-    SBIDSong result;
+    SBIDSongPtr songPtr;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString
     (
         "SELECT DISTINCT "
-            "s.song_id, "           //	0
-            "a.artist_id, "
-            "r.record_id, "
-            "rp.record_position, "
-            "rp.duration, "
-            "s.title, "             //	5
-            "a.name, "
-            "r.title, "
-            "op.path, "
-            "pp.playlist_position "
+            "pp.song_id, "           //	0
+            "pp.record_id, "
+            "pp.record_position "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_performance pp "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "pp.song_id=s.song_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "pp.artist_id=a.artist_id "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "pp.record_id=r.record_id "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "pp.song_id=rp.song_id AND "
-                    "pp.artist_id=rp.artist_id AND "
-                    "pp.record_id=rp.record_id AND "
-                    "pp.record_position=rp.record_position "
-                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "pp.song_id=op.song_id AND "
-                    "pp.artist_id=op.artist_id AND "
-                    "pp.record_id=op.record_id AND "
-                    "pp.record_position=op.record_position "
         "WHERE "
             "pp.playlist_id=%1 AND "
             "pp.playlist_position=%2 "
@@ -519,18 +496,12 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 
     if(query.next())
     {
-        result=SBIDSong(query.value(0).toInt());
-        result.setSongPerformerID(query.value(1).toInt());
-        result.setAlbumID(query.value(2).toInt());
-        result.setAlbumPosition(query.value(3).toInt());
-        result.setDuration(query.value(4).toTime());
-        result.setSongTitle(query.value(5).toString());
-        result.setSongPerformerName(query.value(6).toString());
-        result.setAlbumTitle(query.value(7).toString());
-        result.setPath(query.value(8).toString());
-        result.setPlaylistPosition(query.value(9).toInt());	//	CWIP: possibly not needed
+        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+        songPtr=smgr->retrieve(query.value(0).toInt());
+        //	CWIP:performance
+        //songPtr->setCurrentPerformanceByAlbumPosition(query.value(1).toInt(),query.value(2).toInt());
     }
-    return result;
+    return songPtr;
 }
 
 void
@@ -585,18 +556,18 @@ SBIDPlaylist::recalculatePlaylistDuration(const SBIDPtr &ptr)
         return;
     }
     QList<SBIDBase> compositesTraversed;
-    QList<SBIDBase> allSongs;
+    QList<SBIDPerformancePtr> allPerformances;
 
     //	Get all songs
     compositesTraversed.clear();
-    allSongs.clear();
-    _getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,ptr);
+    allPerformances.clear();
+    _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,ptr);
 
     //	Calculate duration
     Duration duration;
-    for(int i=0;i<allSongs.count();i++)
+    for(int i=0;i<allPerformances.count();i++)
     {
-        duration+=allSongs.at(i).duration();
+        duration+=allPerformances.at(i)->duration();
     }
 
     //	Store calculation
@@ -1165,6 +1136,12 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     return std::make_shared<SBIDPlaylist>(playlist);
 }
 
+void
+SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
+{
+    Q_UNUSED(ptr);
+}
+
 SBSqlQueryModel*
 SBIDPlaylist::retrieveSQL(int itemID)
 {
@@ -1244,6 +1221,12 @@ SBIDPlaylist::updateSQL() const
         ;
         SQL.append(q);
     }
+
+    if(SQL.count()==0)
+    {
+        SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
+    }
+
     return SQL;
 }
 
@@ -1284,8 +1267,9 @@ SBIDPlaylist::operator QString() const
 ///	Private methods
 
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed,QList<SBIDBase>& allSongs,const SBIDPtr& rootPtr)
+SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed,QList<SBIDPerformancePtr>& allPerformances,const SBIDPtr& rootPtr)
 {
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr playlistPtr;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
@@ -1418,29 +1402,21 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTravers
                     }
                     if(itemType!=SBIDBase::sb_type_invalid)
                     {
-        qDebug() << SB_DEBUG_INFO;
                         ptr=SBIDBase::createPtr(itemType,itemID);
-                        _getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,ptr);
+                        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,ptr);
                     }
                 }
                 else
                 {
-                int songID=allItems.value(6).toInt();
-                    SBIDSong song=SBIDSong(songID);
-                    song.setAlbumID(albumID);
-                    song.setSongPerformerID(performerID);
-                    song.setAlbumPosition(allItems.value(7).toInt());
-                    song.setPath(allItems.value(8).toString());
-                    song.setSongTitle(allItems.value(9).toString());
-                    song.setSongPerformerName(allItems.value(10).toString());
-                    song.setAlbumTitle(allItems.value(11).toString());
-                    song.setPlayPosition(allSongs.count()+1);
-                    song.setDuration(allItems.value(12).toTime());
-                    song.setPlaylistPosition(playlistPosition);
-
-                    if(allSongs.contains(song)==0)
+                    //	CWIP:performance
+                    SBIDSongPtr songPtr=smgr->retrieve(allItems.value(6).toInt());
+                    if(songPtr)
                     {
-                        allSongs.append(song);
+                        SBIDPerformancePtr performancePtr=songPtr->performance(albumID,allItems.value(7).toInt());
+                        if(performancePtr)
+                        {
+                            allPerformances.append(performancePtr);
+                        }
                     }
                 }
             }
@@ -1571,20 +1547,17 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTravers
         QSqlQuery querySong(q,db);
         while(querySong.next())
         {
-            SBIDSong song(querySong.value(1).toInt());
-            song.setSongPerformerID(querySong.value(0).toInt());
-            song.setAlbumID(querySong.value(2).toInt());
-            song.setAlbumPosition(querySong.value(3).toInt());
-            song.setDuration(querySong.value(4).toTime());
-            song.setSongTitle(querySong.value(5).toString());
-            song.setSongPerformerName(querySong.value(6).toString());
-            song.setAlbumTitle(querySong.value(7).toString());
-            song.setPath(querySong.value(8).toString());
-            song.setPlaylistPosition(allSongs.count()+1);
-
-            if(allSongs.contains(song)==0)
+            SBIDSongPtr songPtr=smgr->retrieve(querySong.value(1).toInt());
+            if(songPtr)
             {
-                allSongs.append(song);
+                int albumID=querySong.value(2).toInt();
+                int albumPosition=querySong.value(3).toInt();
+
+                SBIDPerformancePtr performancePtr=songPtr->performance(albumID,albumPosition);
+                if(performancePtr &&  allPerformances.contains(performancePtr)==0)
+                {
+                    allPerformances.append(performancePtr);
+                }
             }
         }
     }
@@ -1692,22 +1665,22 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
     }
 }
 
-QMap<int,SBIDBase>
+QMap<int,SBIDPerformancePtr>
 SBIDPlaylist::_retrievePlaylistItems()
 {
     QList<SBIDBase> compositesTraversed;
-    QList<SBIDBase> allSongs;
-    QMap<int,SBIDBase> playList;
+    QList<SBIDPerformancePtr> allPerformances;
+    QMap<int,SBIDPerformancePtr> playList;
 
     //	Get all songs
     compositesTraversed.clear();
-    allSongs.clear();
-    _getAllItemsByPlaylistRecursive(compositesTraversed,allSongs,std::make_shared<SBIDBase>(*this));
+    allPerformances.clear();
+    _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,std::make_shared<SBIDBase>(*this));
 
     //	Populate playlist
-    for(int i=0;i<allSongs.count();i++)
+    for(int i=0;i<allPerformances.count();i++)
     {
-        playList[i]=allSongs.at(i);
+        playList[i]=allPerformances.at(i);
     }
     return playList;
 }

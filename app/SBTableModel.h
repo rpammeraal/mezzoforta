@@ -1,0 +1,41 @@
+#ifndef SBTABLEMODEL_H
+#define SBTABLEMODEL_H
+
+#include <QAbstractTableModel>
+#include <QVector>
+
+#include "Common.h"
+#include "SBIDPerformance.h"
+#include "SBIDPlaylist.h"
+#include "SBModel.h"
+
+class SBTableModel : public QStandardItemModel, public SBModel
+{
+public:
+    SBTableModel();
+
+//    //	Inherited methods
+//    virtual int columnCount(const QModelIndex &parent) const;
+//    virtual QVariant data(const QModelIndex &item, int role) const;
+//    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
+//    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+//    //virtual QModelIndex index(int row, int column, const QModelIndex &parent) const;
+//    virtual QModelIndex parent(const QModelIndex &child) const;
+//    virtual int rowCount(const QModelIndex &parent) const;
+
+    virtual QVariant data(const QModelIndex &item, int role) const;
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
+    virtual void setDragableColumns(const QList<bool>& list);
+
+    //	SBTableModel specific methods
+    SBIDPtr determineSBID(const QModelIndex &idx) const;
+    void populateAlbumsBySong(QVector<SBIDPerformancePtr> performances);
+    void populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID);
+
+private:
+    QVector<QStandardItem *> _standardItemsAllocated;
+    void _init();
+    void _setItem(int row, int column, const QString& value);
+};
+
+#endif // SBTABLEMODEL_H

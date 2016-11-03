@@ -13,7 +13,7 @@ public:
     MetaData(const QString& path);
     ~MetaData();
 
-    SBIDSong parse();
+    SBIDSongPtr parse();
 
 private:
     TagLib::FileRef _f;

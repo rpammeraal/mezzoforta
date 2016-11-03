@@ -608,6 +608,14 @@ X	playlists that song belongs to can be edited
 20161022:
 -	Converting SBIDPerformer to use cache using SBIDManagerTemplate
 
+20161102:
+-	initial conversion to using SBIDManagerTemplate complete.
+-	in set*() methods: check if parameter is different from field, only then set and do setChangedFlag()
+
+<current>
+*	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
+*	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
+
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped

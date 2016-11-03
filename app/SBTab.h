@@ -15,6 +15,8 @@ class QTabWidget;
 class QAbstractItemModel;
 class QListView;
 
+class SBModel;
+
 class SBTab : public QWidget
 {
     Q_OBJECT

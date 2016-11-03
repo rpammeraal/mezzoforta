@@ -2,30 +2,30 @@
 #define SBIDALBUM_H
 
 #include "QHash"
+#include "QSqlRecord"
 
 #include "Common.h"
 #include "SBIDBase.h"
 #include "SBIDSong.h"
 
+class SBIDAlbum;
+typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
+
 class SBIDAlbum : public SBIDBase
 {
 public:
     //	Ctors, dtors
-    SBIDAlbum();
-    SBIDAlbum(const SBIDBase& c);
     SBIDAlbum(const SBIDAlbum& c);
-    SBIDAlbum(const SBIDPtr& c);
-    SBIDAlbum(int itemID);
     ~SBIDAlbum();
+
+    //	toberemoved
 
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual bool compare(const SBIDBase& i) const;
 
-    virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
-    virtual int getDetail(bool createIfNotExistFlag=0);	//	CWIP: pure virtual
     virtual QString hash() const;
     static QString iconResourceLocation();
     virtual int itemID() const;
@@ -38,15 +38,15 @@ public:
 
     //	Album specific methods
     QStringList addSongToAlbum(const SBIDSong& song) const;
-    SBSqlQueryModel* getAllSongs() const;
+    QVector<SBIDPerformancePtr> allPerformances() const;
     SBSqlQueryModel* matchAlbum() const;
-    QStringList mergeAlbum(const SBIDBase& to) const;
-    QStringList mergeSongInAlbum(int newPosition, const SBIDBase& song) const;
-    QStringList removeAlbum();
-    QStringList removeSongFromAlbum(int position);
-    QStringList repositionSongOnAlbum(int fromPosition, int toPosition);
-    bool saveSongToAlbum(const SBIDSong& song) const;
-    void setAlbumID(int albumID);
+    QStringList mergeAlbum(const SBIDBase& to) const;	//	CWIP: amgr
+    QStringList mergeSongInAlbum(int newPosition, const SBIDBase& song) const;	//	CWIP: amgr
+    QStringList removeAlbum();	//	CWIP: amgr
+    QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
+    QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
+    SBSqlQueryModel* retrieveAllPerformances() const;	//	CWIP:rm -> allPerformances
+    bool saveSongToAlbum(const SBIDSong& song) const;	//	CWIP: amgr
     void setAlbumPerformerID(int albumPerformerID);
     void setAlbumPerformerName(const QString& albumPerformerName);
     void setAlbumTitle(const QString& albumTitle);
@@ -59,8 +59,25 @@ public:
     virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
 
+protected:
+    template <class T> friend class SBIDManagerTemplate;
+
+    SBIDAlbum();
+
+    //	Methods used by SBIDManager
+    static SBIDAlbumPtr createInDB();
+    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
+    static SBIDAlbumPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    void mergeTo(SBIDAlbumPtr& to);
+    void postInstantiate(SBIDAlbumPtr& ptr);
+    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    QStringList updateSQL() const;
+
 private:
+    QVector<SBIDPerformancePtr> _performances;
+
     void _init();
+    void _loadPerformances();
 };
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)
@@ -69,10 +86,10 @@ inline uint qHash(const SBIDAlbum& p,uint seed=0)
 }
 
 //	Use case: import of new songs. This way we can create a hash function based
-class SBIDAlbumSimpleCompare : public SBIDAlbum
+class SBIDAlbumSimpleCompare //: public SBIDAlbum
 {
 public:
-    SBIDAlbumSimpleCompare(const SBIDBase& c) : SBIDAlbum(c),_simplifiedAlbumTitle(Common::simplified(c.albumTitle())) { }
+    SBIDAlbumSimpleCompare(const SBIDAlbumPtr& c) : _simplifiedAlbumTitle(Common::simplified(c->albumTitle())) { }
 
     QString _simplifiedAlbumTitle;
 

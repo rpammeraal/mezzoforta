@@ -27,7 +27,6 @@ class AudioDecoder : public QObject
 public:
     virtual ~AudioDecoder();
     quint64 getSamples(void* buffer, quint64 sampleCount);
-    inline SBIDSong header() const { return _header; }
     quint64 setPosition(qint64 position);
     inline quint64 getIndex() const { return _index; }
 
@@ -77,7 +76,7 @@ protected:
     char*               _stream;	//	pointer to stream in memory
 
     //	Header
-    SBIDSong            _header;
+    //	SBIDSongPtr         _headerPtr;
 
     //	Other
     QFile*              _file;

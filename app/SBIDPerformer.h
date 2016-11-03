@@ -61,9 +61,10 @@ protected:
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPerformerPtr createInDB();
-    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID=-1);
+    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     void mergeTo(SBIDPerformerPtr& to);
+    void postInstantiate(SBIDPerformerPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(int itemID=-1);
     QStringList updateSQL() const;
 

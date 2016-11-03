@@ -198,7 +198,7 @@ Common::sanitize(const QString &s)
 QString
 Common::simplified(const QString &s)
 {
-    return removeAccents(removeNonAlphanumeric(s.toLower().simplified().replace(" ","")));
+    return removeAccents(removeNonAlphanumeric(sanitize(s.toLower().simplified().replace(" ",""))));
 }
 
 QString

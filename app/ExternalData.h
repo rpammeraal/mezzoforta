@@ -69,7 +69,7 @@ private:
     QList<QString> _allReviews;
 
     void _init();
-    bool _fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const;
+    //bool _fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const;
     void _loadAlbumCoverAS();
     static bool _loadImageFromCache(QPixmap& p,const SBIDPtr& ptr);
     void _getMBIDAndMore();

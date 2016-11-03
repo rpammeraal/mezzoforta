@@ -65,25 +65,26 @@ SBIDPerformer::itemType() const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDBase> list;
-    SBSqlQueryModel* qm=this->getAllOnlineSongs();
-    for(int i=0;i<qm->rowCount();i++)
-    {
-        SBIDSong song=SBIDSong(qm->data(qm->index(i,0)).toInt());
-        song.setSongPerformerID(qm->data(qm->index(i,1)).toInt());
-        song.setAlbumID(qm->data(qm->index(i,2)).toInt());
-        song.setAlbumPosition(qm->data(qm->index(i,3)).toInt());
-        song.setSongTitle(qm->data(qm->index(i,4)).toString());
-        song.setSongPerformerName(qm->data(qm->index(i,5)).toString());
-        song.setAlbumTitle(qm->data(qm->index(i,6)).toString());
-        song.setDuration(qm->data(qm->index(i,7)).toTime());
-        song.setPath(qm->data(qm->index(i,8)).toString());
-        list[list.count()]=song;
-    }
+    //	CWIP:performance
+//    QMap<int,SBIDBase> list;
+//    SBSqlQueryModel* qm=this->getAllOnlineSongs();
+//    for(int i=0;i<qm->rowCount();i++)
+//    {
+//        SBIDSong song=SBIDSong(qm->data(qm->index(i,0)).toInt());
+//        song.setSongPerformerID(qm->data(qm->index(i,1)).toInt());
+//        song.setAlbumID(qm->data(qm->index(i,2)).toInt());
+//        song.setAlbumPosition(qm->data(qm->index(i,3)).toInt());
+//        song.setSongTitle(qm->data(qm->index(i,4)).toString());
+//        song.setSongPerformerName(qm->data(qm->index(i,5)).toString());
+//        song.setAlbumTitle(qm->data(qm->index(i,6)).toString());
+//        song.setDuration(qm->data(qm->index(i,7)).toTime());
+//        song.setPath(qm->data(qm->index(i,8)).toString());
+//        list[list.count()]=song;
+//    }
 
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SB_DEBUG_IF_NULL(mqs);
-    mqs->populate(list,enqueueFlag);
+//    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+//    SB_DEBUG_IF_NULL(mqs);
+//    mqs->populate(list,enqueueFlag);
 }
 
 void
@@ -485,8 +486,9 @@ SBIDPerformer::createInDB()
 }
 
 SBSqlQueryModel*
-SBIDPerformer::find(const QString& tobeFound,int excludeItemID)
+SBIDPerformer::find(const QString& tobeFound,int excludeItemID,QString secondaryParameter)
 {
+    Q_UNUSED(secondaryParameter);
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString newSoundex=Common::soundex(tobeFound);
@@ -579,6 +581,12 @@ SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
             to->_relatedPerformerID.append(_relatedPerformerID.at(i));
         }
     }
+}
+
+void
+SBIDPerformer::postInstantiate(SBIDPerformerPtr &ptr)
+{
+    Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
@@ -884,6 +892,11 @@ SBIDPerformer::updateSQL() const
         }
     }
 
+    if(SQL.count()==0)
+    {
+        SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
+    }
+
     return SQL;
 }
 
@@ -994,11 +1007,9 @@ SBIDPerformer::_loadRelatedPerformers() const
     SBSqlQueryModel qm(q);
     SBIDPerformerPtr ptr;
     int performerID;
-    qDebug() << SB_DEBUG_INFO << qm.rowCount();
     for(int i=0;i<qm.rowCount();i++)
     {
         performerID=qm.data(qm.index(i,0)).toInt();
-        qDebug() << SB_DEBUG_INFO << performerID;
         if(performerID!=this->performerID())
         {
             ptr=pemgr->retrieve(performerID,SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly);
@@ -1008,6 +1019,5 @@ SBIDPerformer::_loadRelatedPerformers() const
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << this->performerID() << relatedPerformerID;
     return relatedPerformerID;
 }

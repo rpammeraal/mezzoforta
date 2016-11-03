@@ -104,38 +104,38 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     pd.activateWindow();
 
     //	1.	Retrieve existing paths
-    SBSqlQueryModel* sqm=SBIDSong::getOnlineSongs();
+    SBSqlQueryModel* sqm=SBIDPerformance::onlinePerformances();
 
     pd.setMaximum(sqm->rowCount());
     pd.setValue(0);
     pd.setLabelText("Retrieving existing songs...");
     QCoreApplication::processEvents();
 
-    QHash<QString,SBIDSong> pathToSong;
-    QHash<QString,bool> existingPath;
-    for(int i=0;i<sqm->rowCount();i++)
-    {
-        SBIDSong song(sqm->data(sqm->index(i,0)).toInt());
-        song.setSongPerformerID(sqm->data(sqm->index(i,1)).toInt());
-        song.setAlbumID(sqm->data(sqm->index(i,2)).toInt());
-        song.setAlbumPosition(sqm->data(sqm->index(i,3)).toInt());
-        QString path=schemaRoot.toLower()+sqm->data(sqm->index(i,4)).toString().replace("\\","").toLower();
+//    QHash<QString,SBIDSong> pathToSong;
+//    QHash<QString,bool> existingPath;
+//    for(int i=0;i<sqm->rowCount();i++)
+//    {
+//        SBIDSong song(sqm->data(sqm->index(i,0)).toInt());
+//        song.setSongPerformerID(sqm->data(sqm->index(i,1)).toInt());
+//        song.setAlbumID(sqm->data(sqm->index(i,2)).toInt());
+//        song.setAlbumPosition(sqm->data(sqm->index(i,3)).toInt());
+//        QString path=schemaRoot.toLower()+sqm->data(sqm->index(i,4)).toString().replace("\\","").toLower();
 
 
-        pathToSong[path]=song;
-        existingPath[path]=0;
+//        pathToSong[path]=song;
+//        existingPath[path]=0;
 
-        if(path.contains("take on me"))
-        {
-            qDebug() << SB_DEBUG_INFO << path;
-        }
+//        if(path.contains("take on me"))
+//        {
+//            qDebug() << SB_DEBUG_INFO << path;
+//        }
 
-        if((i%100)==0)
-        {
-            pd.setValue(i);
-            QCoreApplication::processEvents();
-        }
-    }
+//        if((i%100)==0)
+//        {
+//            pd.setValue(i);
+//            QCoreApplication::processEvents();
+//        }
+//    }
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Creating data structures

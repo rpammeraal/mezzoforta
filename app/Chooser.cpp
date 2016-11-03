@@ -195,14 +195,14 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             }
             else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
             {
-                SBIDSong song(*toBeAssignedToPtr);
+                SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
                 if(toBeAssignedToPtr->albumID()==-1)
                 {
-                    fromPtr=SBTabSongDetail::selectSongFromAlbum(song);
+                    fromPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
                 }
                 else
                 {
-                    fromPtr=std::make_shared<SBIDSong>(song);
+                    fromPtr=songPtr;
                 }
             }
             else

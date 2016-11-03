@@ -81,6 +81,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             {
                 if(ptr)
                 {
+                    //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                     ptr->_sb_album_position=v.toInt();
                 }
             }
@@ -162,10 +163,12 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             if(header=="sb_song_id" && ptr)
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_song_id=v.toInt();
             }
             else if(header=="title")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 switch(ptr->itemType())
                 {
                 case SBIDBase::sb_type_album:
@@ -182,34 +185,42 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             }
             else if(header=="song")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_songTitle=v.toString();
             }
             else if(header=="song_title")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_songTitle=v.toString();
             }
             else if(header=="song title")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_songTitle=v.toString();
             }
             else if(header=="sb_performer_id")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_song_performer_id=v.toInt();
             }
             else if(header=="sb_album_id")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_album_id=v.toInt();
             }
             else if(header=="sb_album_position")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_album_position=v.toInt();
             }
             else if(header=="sb_position_id")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_album_position=v.toInt();
             }
             else if(header=="performer")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 switch(ptr->itemType())
                 {
                 case SBIDBase::sb_type_album:
@@ -230,30 +241,37 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             }
             else if(header=="album title")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_albumTitle=v.toString();
             }
             else if(header=="album_title")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_albumTitle=v.toString();
             }
             else if(header=="sb_path")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_path=v.toString();
             }
             else if(header=="sb_duration")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_duration=v.toTime();
             }
             else if(header=="duration")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_duration=v.toTime();
             }
             else if(header=="playlist")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_playlistName=v.toString();
             }
             else if(header=="#")
             {
+                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
                 ptr->_sb_play_position=v.toInt();
             }
         }
@@ -266,6 +284,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
             //	reset index to go through all fields again
+            //	CWIP: the above should not be neccessary anymore
             i=0;
         }
     }

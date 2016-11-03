@@ -38,7 +38,7 @@ public:
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal);
     bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
-    int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches);
+    int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     void remove(std::shared_ptr<T> ptr);
     std::shared_ptr<T> retrieve(int itemID, open_flag openFlag=open_flag_default);
@@ -116,10 +116,10 @@ SBIDManagerTemplate<T>::createInDB()
 }
 
 template <class T> int
-SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches)
+SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches,QString secondaryParameter)
 {
     int count=0;
-    SBSqlQueryModel* qm=T::find(tobeFound);
+    SBSqlQueryModel* qm=T::find(tobeFound,currentPtr->itemID(),secondaryParameter);
     matches.clear();
 
     for(int i=0;i<qm->rowCount();i++)
@@ -171,13 +171,12 @@ SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
 template <class T> std::shared_ptr<T>
 SBIDManagerTemplate<T>::retrieve(int itemID,SBIDManagerTemplate::open_flag openFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << itemID << openFlag;
     std::shared_ptr<T> ptr;
     if(_leMap.contains(itemID))
     {
         ptr=_leMap[itemID];
     }
-    qDebug() << SB_DEBUG_INFO;
     if(!ptr || openFlag==open_flag_refresh)
     {
         SBSqlQueryModel* qm=T::retrieveSQL(itemID);
@@ -189,14 +188,16 @@ SBIDManagerTemplate<T>::retrieve(int itemID,SBIDManagerTemplate::open_flag openF
             _leMap[itemID]=ptr;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
 
-    if(ptr && openFlag==open_flag_foredit)
+    if(ptr)
     {
-        _changes.append(ptr);
-        ptr->setChangedFlag();
+        ptr->postInstantiate(ptr);
+        if(openFlag==open_flag_foredit)
+        {
+            _changes.append(ptr);
+            ptr->setChangedFlag();
+        }
     }
-    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 

@@ -13,6 +13,7 @@
 #include "PlayManager.h"
 #include "Properties.h"
 #include "SBModelQueuedSongs.h"
+#include "SBIDAlbum.h"
 #include "SBIDManagerTemplate.h"
 #include "ScreenStack.h"
 
@@ -24,8 +25,10 @@ class MainWindow;
 class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
+typedef SBIDManagerTemplate<SBIDAlbum> SBIDAlbumMgr;
 typedef SBIDManagerTemplate<SBIDPlaylist> SBIDPlaylistMgr;
 typedef SBIDManagerTemplate<SBIDPerformer> SBIDPerformerMgr;
+typedef SBIDManagerTemplate<SBIDSong> SBIDSongMgr;
 
 class Context
 {
@@ -38,6 +41,7 @@ public:
         return &_instance;
     }
 
+    inline SBIDAlbumMgr* getAlbumMgr() { return &_albumMgr; }
     inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
     inline Chooser* getChooser() { return &_lcc; }
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
@@ -47,12 +51,13 @@ public:
     inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
     inline Navigator* getNavigator() { return &_nav; }
     inline PlayerController* getPlayerController() { return &_pc; }
+    inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
+    inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
-    inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
-    inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline SBModelQueuedSongs* getSBModelQueuedSongs() { return &_mqs; }
+    inline SBIDSongMgr* getSongMgr() { return &_songMgr; }
     inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
     inline SBTabQueuedSongs* getTabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
 
@@ -84,8 +89,10 @@ private:
     PlayManager _pm;
     Properties _p;
     SBModelQueuedSongs _mqs;
+    SBIDAlbumMgr _albumMgr;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
+    SBIDSongMgr _songMgr;
     ScreenStack _st;
 
     Context();

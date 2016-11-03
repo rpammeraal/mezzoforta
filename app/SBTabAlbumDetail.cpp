@@ -236,15 +236,18 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBIDAlbum album=SBIDAlbum(si.ptr());
-    album.getDetail();
-    if(album.validFlag()==0)
+    SBIDAlbumPtr albumPtr;
+    if(si.ptr())
+    {
+        SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+        albumPtr=amgr->retrieve(si.ptr()->itemID());
+    }
+    if(!albumPtr)
     {
         //	Not found
         return ScreenItem();
     }
     ScreenItem currentScreenItem=si;
-    SBIDPtr albumPtr=std::make_shared<SBIDAlbum>(album);
     currentScreenItem.updateSBIDBase(albumPtr);
     mw->ui.labelAlbumDetailIcon->setPtr(albumPtr);
 
@@ -261,16 +264,16 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
-    ed->loadAlbumData(std::make_shared<SBIDAlbum>(album));
+    ed->loadAlbumData(albumPtr);
 
     //	Populate record detail tab
-    mw->ui.labelAlbumDetailAlbumTitle->setText(album.albumTitle());
-    QString genre=album.genre();
+    mw->ui.labelAlbumDetailAlbumTitle->setText(albumPtr->albumTitle());
+    QString genre=albumPtr->genre();
     genre.replace("|",",");
     QString details;
-    if(album.year()>0)
+    if(albumPtr->year()>0)
     {
-        details=QString("Released %1").arg(album.year());
+        details=QString("Released %1").arg(albumPtr->year());
     }
     if(details.length()>0 && genre.length()>0)
     {
@@ -284,11 +287,11 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     }
 
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
-    mw->ui.labelAlbumDetailAlbumNotes->setText(album.notes());
+    mw->ui.labelAlbumDetailAlbumNotes->setText(albumPtr->notes());
 
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-        .arg(album.albumPerformerID())
-        .arg(album.albumPerformerName());
+        .arg(albumPtr->albumPerformerID())
+        .arg(albumPtr->albumPerformerName());
     mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
     mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
     connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
@@ -300,7 +303,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=album.getAllSongs();
+    qm=albumPtr->retrieveAllPerformances();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
     qm->setDragableColumns(dragableColumns);
