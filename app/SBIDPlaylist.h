@@ -30,16 +30,14 @@ public:
     virtual QString type() const;
 
     //	Methods specific to SBIDPlaylist
-    void assignPlaylistItem(const SBIDPtr& ptr) const;
-    static SBIDPlaylist createNewPlaylistDB();
-    void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;
+    void assignPlaylistItem(const SBIDPtr& ptr) const;	//	CWIP:pmgr rewrite
+    void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;	//	CWIP:pmgr rewrite
     SBSqlQueryModel* getAllItemsByPlaylist() const;
     SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     static void recalculatePlaylistDuration(const SBIDPtr& ptr);
     static void recalculateAllPlaylistDurations();
-    //void renamePlaylist();
-    void reorderItem(const SBIDPtr& fromPtr, int row) const;
-    void reorderItem(const SBIDBase& fromID, const SBIDBase& toID) const;
+    void reorderItem(const SBIDPtr& fromPtr, int row) const;	//	CWIP:pmgr rewrite
+    void reorderItem(const SBIDBase& fromID, const SBIDBase& toID) const;	//	CWIP:pmgr rewrite
     void setCount1(const int count1) { _count1=count1;  }
     void setDuration(const Duration& duration) { _duration=duration;  }
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }

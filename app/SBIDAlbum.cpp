@@ -1511,3 +1511,9 @@ SBIDAlbum::_init()
     _sb_album_performer_id=-1;
     _year=-1;
 }
+
+void
+SBIDAlbum::_loadPerformances()
+{
+
+}

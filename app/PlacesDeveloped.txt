@@ -613,6 +613,7 @@ X	playlists that song belongs to can be edited
 -	in set*() methods: check if parameter is different from field, only then set and do setChangedFlag()
 
 <current>
+*	SBIDManagerTemplate: investigate if key can be templatized, so it can be used for performances
 *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
 *	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
 

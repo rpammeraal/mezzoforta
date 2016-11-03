@@ -275,57 +275,6 @@ SBIDPlaylist::assignPlaylistItem(const SBIDPtr& ptr) const
     }
 }
 
-//SBIDPlaylist
-//SBIDPlaylist::createNewPlaylistDB()
-//{
-//    ///	old
-//    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-//    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-//    SBIDPlaylist result;
-//    QString q;
-
-//    //	Get next ID available
-//    q=QString("SELECT %1(MAX(playlist_id),0)+1 FROM ___SB_SCHEMA_NAME___playlist ").arg(dal->getIsNull());
-//    dal->customize(q);
-//    qDebug() << SB_DEBUG_INFO << q;
-//    QSqlQuery qID(q,db);
-//    qID.next();
-
-//    result=SBIDPlaylist(qID.value(0).toInt());
-
-//    //	Figure out name of next playlist
-//    QString playlistName;
-//    int maxNum=1;
-//    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
-//    dal->customize(q);
-//    qDebug() << SB_DEBUG_INFO << q;
-//    QSqlQuery qName(q,db);
-//    while(qName.next())
-//    {
-//        QString existing=qName.value(0).toString();
-//        existing.replace("New Playlist","");
-//        int i=existing.toInt();
-//        if(i>=maxNum)
-//        {
-//            maxNum=i+1;
-//        }
-//    }
-//    result.setPlaylistName(QString("New Playlist%1").arg(maxNum));
-
-//    //	Insert
-//    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
-//            .arg(result.playlistID())
-//            .arg(result.playlistName())
-//            .arg(dal->getGetDate());
-//    dal->customize(q);
-//    qDebug() << SB_DEBUG_INFO << q;
-//    QSqlQuery insert(q,db);
-//    Q_UNUSED(insert);
-//    //	insert.exec();	-- no need to run on insert statements
-
-//    return result;
-//}
-
 void
 SBIDPlaylist::deletePlaylistItem(SBIDBase::sb_type itemType,int playlistPosition) const
 {
@@ -591,33 +540,6 @@ SBIDPlaylist::recalculatePlaylistDuration(const SBIDPtr &ptr)
     QSqlQuery query(q,db);
     query.exec();
 }
-
-/*
-void
-SBIDPlaylist::renamePlaylist()
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-    QString q=QString
-    (
-        "UPDATE "
-            "___SB_SCHEMA_NAME___playlist "
-        "SET "
-            "name='%1' "
-        "WHERE "
-            "playlist_id=%2 "
-    )
-        .arg(this->playlistName())
-        .arg(this->playlistID())
-    ;
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-    query.exec();
-}
-*/
 
 void
 SBIDPlaylist::reorderItem(const SBIDBase &fID, const SBIDBase &tID) const
