@@ -256,7 +256,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     QList<bool> dragableColumns;
     SBTableModel* tm;
     SBIDSongPtr songPtr;
@@ -268,8 +267,8 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr())
     {
-        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-        songPtr=smgr->retrieve(si.ptr()->itemID());
+        qDebug() << SB_DEBUG_INFO;
+        songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
     }
 
     if(!songPtr)
@@ -323,7 +322,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
             break;
 
         default:
-            performerPtr=pemgr->retrieve(performerList.at(i));
+            performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i));
             if(performerPtr)
             {
                 cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
@@ -359,7 +358,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    tm=songPtr->albumList();
+    tm=songPtr->albums();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     tm->setDragableColumns(dragableColumns);

@@ -340,8 +340,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     SBIDPerformerPtr performerPtr;
     if(si.ptr())
     {
-        SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-        performerPtr=pemgr->retrieve(si.ptr()->itemID());
+        performerPtr=SBIDPerformer::retrievePerformer(si.ptr()->itemID());
     }
     if(!performerPtr)
     {

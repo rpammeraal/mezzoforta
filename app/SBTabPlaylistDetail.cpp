@@ -24,13 +24,12 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemType!=SBIDBase::sb_type_invalid)
     {
-        SBIDPlaylistPtr playlistPtr=pmgr->retrieve(ptr->playlistID());
+        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->playlistID());
         if(playlistPtr)
         {
             playlistPtr->deletePlaylistItem(selected.itemType,selected.playlistPosition);
@@ -63,10 +62,9 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
     {
-        SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
         SBIDPlaylistPtr playlistPtr;
 
-        playlistPtr=pmgr->retrieve(ptr->itemID());
+        playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
         if(playlistPtr)
         {
             playlistPtr->reorderItem(fromIDPtr,row);
@@ -86,7 +84,6 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     SBIDPtr ptr;
@@ -94,7 +91,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     if(selected.itemType==SBIDBase::sb_type_invalid)
     {
         //	Label clicked
-        ptr=pmgr->retrieve(currentPtr->playlistID());
+        ptr=SBIDPlaylist::retrievePlaylist(currentPtr->playlistID());
     }
     else if(selected.itemType==SBIDBase::sb_type_song)
     {
@@ -102,7 +99,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
         //	based on playlistID, playlistPosition/
         if(currentPtr && currentPtr->itemType()==SBIDBase::sb_type_playlist)
         {
-            ptr=pmgr->retrieve(currentPtr->playlistID());
+            ptr=SBIDPlaylist::retrievePlaylist(currentPtr->playlistID());
         }
     }
     else
@@ -279,7 +276,6 @@ ScreenItem
 SBTabPlaylistDetail::_populate(const ScreenItem& si)
 {
     _init();
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr playlistPtr;
     const MainWindow* mw=Context::instance()->getMainWindow();
 
@@ -287,9 +283,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     //SBIDPlaylist playlist;
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
     {
-        playlistPtr=pmgr->retrieve(si.ptr()->playlistID());
-        //playlist=SBIDPlaylist(si.ptr()->playlistID());
-        //playlist.getDetail();
+        playlistPtr=SBIDPlaylist::retrievePlaylist(si.ptr()->playlistID());
     }
 
     if(!playlistPtr)

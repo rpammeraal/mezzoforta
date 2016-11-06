@@ -342,8 +342,7 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
         QSqlQueryModel* m=dynamic_cast<QSqlQueryModel *>(_addNewRelatedPerformerCompleter->model());
         if(m!=NULL)
         {
-            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-            pptr=pemgr->retrieve(idx.sibling(idx.row(),idx.column()+1).data().toInt());
+            pptr=SBIDPerformer::retrievePerformer(idx.sibling(idx.row(),idx.column()+1).data().toInt());
         }
         else
         {
@@ -445,8 +444,7 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr())
     {
-        SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-        performerPtr=pemgr->retrieve(si.ptr()->itemID());
+        performerPtr=SBIDPerformer::retrievePerformer(si.ptr()->itemID());
     }
     if(!performerPtr)
     {

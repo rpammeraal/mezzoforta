@@ -48,6 +48,13 @@ public:
     virtual operator QString() const;
     SBIDPlaylist& operator=(const SBIDPlaylist& t);	//	CWIP: to be moved to protected
 
+    //	Methods required by SBIDManagerTemplate
+    QString key() const;
+
+    //	Static methods
+    static QString createKey(int playlistID,int unused=-1);
+    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=0);
+
 protected:
     SBIDPlaylist();
     SBIDPlaylist(int itemID);
@@ -57,8 +64,9 @@ protected:
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPlaylistPtr createInDB();
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
 
 private:

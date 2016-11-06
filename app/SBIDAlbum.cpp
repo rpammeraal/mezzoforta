@@ -159,22 +159,18 @@ SBIDAlbum::save()
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     QMap<int,SBIDPerformancePtr> list;
 
-    SBSqlQueryModel* qm=retrieveAllPerformances();
-
-    for(int i=0;i<qm->rowCount();i++)
+    if(_performances.count()==0)
     {
-        SBIDSongPtr songPtr=smgr->retrieve(qm->data(qm->index(i,5)).toInt());
-        if(songPtr)
-        {
-            SBIDPerformancePtr performancePtr=songPtr->performance(this->_sb_album_id,qm->data(qm->index(i,1)).toInt());
-            if(performancePtr)
-            {
+        SBIDAlbum* somewhere=const_cast<SBIDAlbum *>(this);
+        somewhere->_loadPerformances();
+    }
 
-            }
-        }
+    int index=0;
+    for(int i=0;i<_performances.count();i++)
+    {
+        list[index++]=_performances.at(i);
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -604,6 +600,19 @@ SBIDAlbum::mergeSongInAlbum(int newPosition, const SBIDBase& song) const
     return SQL;
 }
 
+SBTableModel*
+SBIDAlbum::performances() const
+{
+    if(_performances.count()==0)
+    {
+        SBIDAlbum* somewhere=const_cast<SBIDAlbum *>(this);
+        somewhere->_loadPerformances();
+    }
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePerformancesByAlbum(_performances);
+    return tm;
+}
+
 QStringList
 SBIDAlbum::removeAlbum()
 {
@@ -868,53 +877,6 @@ SBIDAlbum::repositionSongOnAlbum(int fromPosition, int toPosition)
     );
 
     return SQL;
-}
-
-SBSqlQueryModel*
-SBIDAlbum::retrieveAllPerformances() const
-{
-    QString q=QString
-    (
-        "SELECT "
-            "%1 AS SB_MAIN_ITEM, "
-            "rp.record_position AS \"#\", "
-            "%2 AS SB_ITEM_TYPE1, "
-            "%3 AS SB_ALBUM_ID, "
-            "%1 AS SB_ITEM_TYPE2, "
-            "s.song_id AS SB_SONG_ID , "
-            "s.title AS \"song\", "
-            "rp.duration AS \"duration\", "
-            "%4 AS SB_ITEM_TYPE3, "
-            "a.artist_id AS SB_PERFORMER_ID, "
-            "a.name AS \"performer\", "
-            "%5 AS SB_POSITION, "
-            "rp.record_position AS SB_ALBUM_POSITION, "
-            "op.path AS SB_PATH, "
-            "r.title AS album_title "
-        "FROM "
-            "___SB_SCHEMA_NAME___record_performance rp "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "rp.song_id=s.song_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "rp.artist_id=a.artist_id "
-                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "rp.op_song_id=op.song_id AND "
-                    "rp.op_artist_id=op.artist_id AND "
-                    "rp.op_record_id=op.record_id AND "
-                    "rp.op_record_position=op.record_position "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "rp.record_id=r.record_id "
-        "WHERE "
-            "rp.record_id=%3 "
-        "ORDER BY 2"
-    )
-        .arg(Common::sb_field_song_id)
-        .arg(Common::sb_field_album_id)
-        .arg(this->albumID())
-        .arg(Common::sb_field_performer_id)
-        .arg(Common::sb_field_album_position)
-    ;
-    return new SBSqlQueryModel(q);
 }
 
 bool
@@ -1295,6 +1257,31 @@ SBIDAlbum::operator QString() const
     ;
 }
 
+//	Methods required by SBIDManagerTemplate
+QString
+SBIDAlbum::key() const
+{
+    return createKey(this->albumID());
+}
+
+//	Static methods
+QString
+SBIDAlbum::createKey(int albumID,int unused)
+{
+    Q_UNUSED(unused);
+    return QString("%1:%2")
+        .arg(SBIDBase::sb_type_album)
+        .arg(albumID)
+    ;
+}
+
+SBIDAlbumPtr
+SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
+{
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    return amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum>::open_flag_default));
+}
+
 ///	Protected methods
 SBIDAlbum::SBIDAlbum():SBIDBase()
 {
@@ -1341,7 +1328,8 @@ SBIDAlbum::createInDB()
 
     //	Find performer 'VARIOUS ARTISTS', create if not exists
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDPerformerPtr peptr=pemgr->retrieve(1);
+    //SBIDPerformerPtr peptr=pemgr->retrieve(1);
+    SBIDPerformerPtr peptr=SBIDPerformer::retrievePerformer(1);
     if(!peptr)
     {
         peptr=pemgr->createInDB();
@@ -1418,8 +1406,6 @@ SBIDAlbum::find(const QString& tobeFound,int excludeItemID,QString secondaryPara
 SBIDAlbumPtr
 SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 {
-    Q_UNUSED(noDependentsFlag);
-
     SBIDAlbum album;
     album._sb_album_id          =r.value(0).toInt();
     album._albumTitle           =r.value(1).toString();
@@ -1443,9 +1429,18 @@ SBIDAlbum::mergeTo(SBIDAlbumPtr &to)
     Q_UNUSED(to);
 }
 
-SBSqlQueryModel*
-SBIDAlbum::retrieveSQL(int itemID)
+void
+SBIDAlbum::openKey(const QString &key, int &albumID)
 {
+    QStringList l=key.split(":");
+    albumID=l.count()==2?l[1].toInt():-1;
+}
+
+SBSqlQueryModel*
+SBIDAlbum::retrieveSQL(const QString& key)
+{
+    int albumID=-1;
+    openKey(key,albumID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -1472,7 +1467,7 @@ SBIDAlbum::retrieveSQL(int itemID)
         "%1 "
         "LIMIT 1 "
     )
-        .arg(itemID==-1?"":QString("WHERE r.record_id=%1").arg(itemID))
+        .arg(key.length()==0?"":QString("WHERE r.record_id=%1").arg(albumID))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -1515,5 +1510,7 @@ SBIDAlbum::_init()
 void
 SBIDAlbum::_loadPerformances()
 {
-
+    SBSqlQueryModel* qm=SBIDPerformance::performancesByAlbum(albumID());
+    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
+    _performances=pemgr->retrieveSet(qm);
 }

@@ -160,11 +160,10 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
     case SBModelQueuedSongs::sb_column_duration:
         {
             //	CWIP:performance
-            SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_songid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            SBIDSongPtr songPtr=smgr->retrieve(itemID);
+        qDebug() << SB_DEBUG_INFO;
+            SBIDSongPtr songPtr=SBIDSong::retrieveSong(itemID);
 
             //item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             //int song.setSongPerformerID((item!=NULL)?item->text().toInt():-1);
@@ -193,11 +192,9 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 
     case SBModelQueuedSongs::sb_column_performername:
         {
-            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            ptr=pemgr->retrieve(itemID);
+            ptr=SBIDPerformer::retrievePerformer(itemID);
 
             //	Fill in text attributes
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
@@ -206,11 +203,9 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 
     case SBModelQueuedSongs::sb_column_albumtitle:
         {
-            SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            ptr=amgr->retrieve(itemID);
+            ptr=SBIDAlbum::retrieveAlbum(itemID);
 
             //	Fill in text attributes
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
@@ -398,9 +393,8 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
 
     if(songID!=-1)
     {
-        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-        bool performanceSet=0;
-        songPtr=smgr->retrieve(songID);
+        qDebug() << SB_DEBUG_INFO << songID;
+        songPtr=SBIDSong::retrieveSong(songID);
 
         performancePtr=songPtr->performance(albumID,albumPosition);
         performancePtr->setPlaylistPosition(playlistPosition);

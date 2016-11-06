@@ -46,8 +46,8 @@ public:
     virtual QString type() const;
 
     //	Song specific methods
-    SBTableModel* albumList() const;
-    QVector<int> albumIDList() const;
+    SBTableModel* albums() const;
+//    QVector<int> albumIDList() const;
     QVector<SBIDPerformancePtr> allPerformances() const;
     void deleteIfOrphanized();
     static SBSqlQueryModel* getAllSongs();
@@ -69,6 +69,12 @@ public:
     virtual bool operator==(const SBIDSong& i) const;
     virtual operator QString() const;
 
+    //	Methods required by SBIDManagerTemplate
+    QString key() const;
+
+    //	Static methods
+    static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=0);
+
 protected:
     template <class T> friend class SBIDManagerTemplate;
 
@@ -76,11 +82,13 @@ protected:
 
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB();
+    static QString createKey(int songID);
     static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
     static SBIDSongPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     void mergeTo(SBIDSongPtr& to);
+    static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
 
 private:

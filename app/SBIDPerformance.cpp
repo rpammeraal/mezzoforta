@@ -4,17 +4,21 @@
 #include "Context.h"
 #include "SBSqlQueryModel.h"
 
+#include "SBIDPerformer.h"
 
 ///	Ctors, dtors
 SBIDPerformance::SBIDPerformance(const SBIDPerformance &p):SBIDBase(p)
 {
     _duration             =p._duration;
     _notes                =p._notes;
+    _sb_song_id           =p._sb_song_id;
     _sb_performer_id      =p._sb_performer_id;
     _sb_album_id          =p._sb_album_id;
     _sb_album_position    =p._sb_album_position;
     _originalPerformerFlag=p._originalPerformerFlag;
     _path                 =p._path;
+    _albumPtr             =p._albumPtr;
+    _performerPtr         =p._performerPtr;
     _songPtr              =p._songPtr;
 }
 
@@ -22,59 +26,68 @@ SBIDPerformance::~SBIDPerformance()
 {
 }
 
-///	Public methods
+//	Inherited methods
 QString
-SBIDPerformance::albumTitle()
+SBIDPerformance::text() const
 {
-    if(_albumTitle.length()==0)
-    {
-        SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-        SBIDAlbumPtr aptr=amgr->retrieve(_sb_album_id);
-        if(aptr)
-        {
-            _albumTitle=aptr->albumTitle();
-        }
-    }
-    return _albumTitle;
+    //	UGLY! But it works...
+    SBIDPerformance* somewhere=const_cast<SBIDPerformance *>(this);
+    return somewhere->songTitle();
 }
 
 QString
-SBIDPerformance::key() const
+SBIDPerformance::type() const
 {
-    return createKey(this->songID(),this->songPerformerID(),this->albumID(),this->albumPosition());
+    return QString("performance");
+}
+
+///	Public methods
+int
+SBIDPerformance::albumID()
+{
+    return _sb_album_id;
+}
+
+QString
+SBIDPerformance::albumTitle()
+{
+    if(!_albumPtr)
+    {
+        _albumPtr=SBIDAlbum::retrieveAlbum(_sb_album_id,1);
+    }
+    return _albumPtr?_albumPtr->albumTitle():"SBIDPerformance::albumTitle()::albumPtr null";
 }
 
 int
 SBIDPerformance::songID() const
 {
-    return _songPtr->songID();
+    return _sb_song_id;
 }
 
 int
 SBIDPerformance::songPerformerID() const
 {
-    return _songPtr->songPerformerID();
+    return _sb_performer_id;
 }
 
 QString
 SBIDPerformance::songPerformerName()
 {
-    if(_songPerformerName.length()==0)
+    if(!_performerPtr)
     {
-        SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-        SBIDPerformerPtr peptr=pemgr->retrieve(_sb_performer_id);
-        if(peptr)
-        {
-            _songPerformerName=peptr->performerName();
-        }
+        _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,1);
     }
-    return _songPerformerName;
+    return _performerPtr?_performerPtr->performerName():"SBIDPerformance::songPerformerName()::performerPtr null";
 }
 
 QString
-SBIDPerformance::songTitle() const
+SBIDPerformance::songTitle()
 {
-    return _songPtr->songTitle();
+    if(!_songPtr)
+    {
+        _songPtr=SBIDSong::retrieveSong(_sb_song_id,1);
+    }
+    return _songPtr?_songPtr->songTitle():"SBIDPerformance::songTitle():_songPtr null";
 }
 
 bool
@@ -112,12 +125,12 @@ SBIDPerformance::updateLastPlayDate()
 
 SBIDPerformance::operator QString()
 {
-    QString songTitle=this->songTitle().length() ? this->songTitle() : "<N/A>";
-    QString songPerformerName=this->songPerformerName().length() ? this->songPerformerName() : "<N/A>";
-    QString albumTitle=this->albumTitle().length() ? this->albumTitle() : "<N/A>";
+    //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
+    QString songTitle=_songPtr?this->songTitle():"not retrieved yet";
+    QString songPerformerName=_performerPtr?this->songPerformerName():"not retrieved yet";
+    QString albumTitle=_albumPtr?this->albumTitle():"not retrieved yet";
 
     return QString("SBIDPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
-            .arg(this->songID())
             .arg(songTitle)
             .arg(songPerformerName)
             .arg(this->songPerformerID())
@@ -126,12 +139,19 @@ SBIDPerformance::operator QString()
     ;
 }
 
+//	Methods required by SBIDManagerTemplate
 QString
-SBIDPerformance::createKey(int songID, int performerID, int albumID, int albumPosition)
+SBIDPerformance::key() const
 {
-    return QString("%1:%2:%3:%4")
-        .arg(songID)
-        .arg(performerID)
+    return createKey(_sb_album_id,_sb_album_position);
+}
+
+//	Static methods
+QString
+SBIDPerformance::createKey(int albumID, int albumPosition)
+{
+    return QString("%1:%2:%3")
+        .arg(SBIDBase::sb_type_performance)
         .arg(albumID)
         .arg(albumPosition)
     ;
@@ -201,6 +221,94 @@ SBIDPerformance::onlinePerformances(int limit)
     return new SBSqlQueryModel(q);
 }
 
+SBSqlQueryModel*
+SBIDPerformance::performancesByAlbum(int albumID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "s.song_id, "
+            "rp.record_id, "
+            "rp.record_position, "
+            "a.artist_id, "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
+            "rp.duration, "
+            "p.year, "
+            "rp.notes, "
+            "op.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "p.song_id=rp.song_id AND "
+                    "p.artist_id=rp.artist_id  "
+                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "rp.op_song_id=op.song_id AND "
+                    "rp.op_artist_id=op.artist_id AND "
+                    "rp.op_record_id=op.record_id AND "
+                    "rp.op_record_position=rp.record_position  "
+                "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE rp.record_id=%1 "
+        "ORDER BY rp.record_position "
+    )
+        .arg(albumID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
+SBIDPerformance::performancesBySong(int songID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "s.song_id, "
+            "rp.record_id, "
+            "rp.record_position, "
+            "a.artist_id, "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
+            "rp.duration, "
+            "p.year, "
+            "rp.notes, "
+            "op.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "p.song_id=rp.song_id AND "
+                    "p.artist_id=rp.artist_id  "
+                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "rp.op_song_id=op.song_id AND "
+                    "rp.op_artist_id=op.artist_id AND "
+                    "rp.op_record_id=op.record_id AND "
+                    "rp.op_record_position=rp.record_position  "
+                "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE s.song_id=%1 "
+    )
+        .arg(songID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+}
+
+SBIDPerformancePtr
+SBIDPerformance::retrievePerformance(int albumID, int positionID)
+{
+    SBIDPerformanceMgr* pfMgr=Context::instance()->getPerformanceMgr();
+    return pfMgr->retrieve(createKey(albumID,positionID));
+}
+
 ///	Protected methods
 SBIDPerformance::SBIDPerformance()
 {
@@ -208,24 +316,55 @@ SBIDPerformance::SBIDPerformance()
 }
 
 SBIDPerformancePtr
-SBIDPerformance::instantiate(const QSqlRecord &r)
+SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 {
+    Q_UNUSED(noDependentsFlag);
+
     SBIDPerformance performance;
-    performance._sb_album_id          =r.value(0).toInt();
-    performance._sb_album_position    =r.value(1).toInt();
-    performance._sb_performer_id      =r.value(2).toInt();
-    performance._originalPerformerFlag=r.value(3).toBool();
-    performance._duration             =r.value(4).toTime();
-    performance._year                 =r.value(5).toInt();
-    performance._notes                =r.value(6).toString();
-    performance._path                 =r.value(7).toString();
+    performance._sb_song_id           =r.value(0).toInt();
+    performance._sb_album_id          =r.value(1).toInt();
+    performance._sb_album_position    =r.value(2).toInt();
+    performance._sb_performer_id      =r.value(3).toInt();
+    performance._originalPerformerFlag=r.value(4).toBool();
+    performance._duration             =r.value(5).toTime();
+    performance._year                 =r.value(6).toInt();
+    performance._notes                =r.value(7).toString();
+    performance._path                 =r.value(8).toString();
+
+    qDebug() << SB_DEBUG_INFO << performance._sb_song_id << performance.key();
 
     return std::make_shared<SBIDPerformance>(performance);
 }
 
-SBSqlQueryModel*
-SBIDPerformance::retrieveSQL(int songID)
+void
+SBIDPerformance::postInstantiate(SBIDPerformancePtr &ptr)
 {
+    Q_UNUSED(ptr);
+}
+
+void
+SBIDPerformance::openKey(const QString& key, int& albumID, int& albumPosition)
+{
+    QStringList l=key.split(":");
+    if(l.count()==3)
+    {
+        albumID=l[1].toInt();
+        albumPosition=l[2].toInt();
+    }
+    else
+    {
+        albumID=-1;
+        albumPosition=-1;
+    }
+}
+
+SBSqlQueryModel*
+SBIDPerformance::retrieveSQL(const QString& key)
+{
+    int albumID=-1;
+    int albumPosition=-1;
+    openKey(key,albumID,albumPosition);
+
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -253,10 +392,9 @@ SBIDPerformance::retrieveSQL(int songID)
                     "p.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
-        "WHERE "
-            "s.song_id=%1 "
+        "%1 "
     )
-        .arg(songID)
+        .arg(key.length()==0?"":QString("WHERE rp.record_id=%1 AND rp.record_position=%2").arg(albumID).arg(albumPosition))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -267,12 +405,7 @@ SBIDPerformance::retrieveSQL(int songID)
 void
 SBIDPerformance::_init()
 {
-    SBIDSongPtr null;
-    _songPtr=null;
-}
-
-void
-SBIDPerformance::_setSongPtr(SBIDSongPtr songPtr)
-{
-    _songPtr=songPtr;
+    _albumPtr=SBIDAlbumPtr();
+    _performerPtr=SBIDPerformerPtr();
+    _songPtr=SBIDSongPtr();
 }

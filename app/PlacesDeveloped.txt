@@ -612,8 +612,15 @@ X	playlists that song belongs to can be edited
 -	initial conversion to using SBIDManagerTemplate complete.
 -	in set*() methods: check if parameter is different from field, only then set and do setChangedFlag()
 
+20161105:
+-	SBIDManagerTemplate: investigate if key can be templatized, so it can be used for performances: no, using QString as key:
+    -	each SBID* class must have key(), createKey() methods
+	-	SBIDSong, SBIDAlbum: finish how performances are actually loaded into SBIDManager
+	-	SBIDPerformance should have smart pointers for performer, album (song already exist). These pointers should be
+	    initialized upon calling a method that relies on the pointer being populated. Eg.: SBIDPerformance::songPerformerName()
+		should test if _performerPtr is set. If not, look up, and retrieve performerName from _performerPtr.
+
 <current>
-*	SBIDManagerTemplate: investigate if key can be templatized, so it can be used for performances
 *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
 *	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
 
@@ -627,7 +634,7 @@ X	playlists that song belongs to can be edited
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.
-	*	trim at end and start, dedupe white space. Use Common::simplified().
+	*	trim at end and start, dedupe white space. Use Common::simplified().70099
 	*	remove dots at start of any item (song, album, performer) when creating path
 *	Consider caching of entire database:
 	*	Subclasses of SBID, pretty much all of DataEntity classes can go in subclasses of SBID

@@ -112,30 +112,26 @@ SBIDBase::~SBIDBase()
 SBIDPtr
 SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-
     SBIDPtr ptr;
     switch(itemType)
     {
     case SBIDBase::sb_type_album:
-        ptr=amgr->retrieve(itemID);
+        ptr=SBIDAlbum::retrieveAlbum(itemID);
         break;
 
     case SBIDBase::sb_type_performer:
     {
-        ptr=pemgr->retrieve(itemID);
+        ptr=SBIDPerformer::retrievePerformer(itemID);
         break;
     }
 
     case SBIDBase::sb_type_song:
-        ptr=smgr->retrieve(itemID);
+        qDebug() << SB_DEBUG_INFO;
+        ptr=SBIDSong::retrieveSong(itemID);
         break;
 
     case SBIDBase::sb_type_playlist:
-        ptr=plmgr->retrieve(itemID);
+        ptr=SBIDPlaylist::retrievePlaylist(itemID);
         break;
 
     case SBIDBase::sb_type_invalid:

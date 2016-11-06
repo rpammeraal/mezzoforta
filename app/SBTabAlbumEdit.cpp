@@ -240,22 +240,24 @@ public:
 
     void populate()
     {
-        SBSqlQueryModel* qm=_albumPtr->retrieveAllPerformances();
+        QVector<SBIDPerformancePtr> performanceList=_albumPtr->performanceList();
         QList<QStandardItem *>column;
         QStandardItem* item;
 
-        for(int i=0;i<qm->rowCount();i++)
+        //for(int i=0;i<qm->rowCount();i++)
+        for(int i=0;i<performanceList.count();i++)
         {
-            item=new QStandardItem("0"); column.append(item);                                //	sb_column_deleteflag
-            item=new QStandardItem("0"); column.append(item);                                //	sb_column_newflag
-            item=new QStandardItem("0"); column.append(item);                                //	sb_column_mergedtoindex
-            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);             //	sb_column_itemnumber
-            item=new QStandardItem(qm->record(i).value(5).toString()); column.append(item);  //	sb_column_orgsongid
-            item=new QStandardItem(qm->record(i).value(9).toString()); column.append(item);  //	sb_column_orgperformerid
-            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);             //	sb_column_orgitemnumber
-            item=new QStandardItem(qm->record(i).value(6).toString()); column.append(item);  //	sb_column_songtitle
-            item=new QStandardItem(qm->record(i).value(10).toString()); column.append(item); //	sb_column_performername
-            item=new QStandardItem(""); column.append(item);                                 //	sb_column_notes
+            SBIDPerformancePtr performancePtr=performanceList.at(i);
+            item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_deleteflag
+            item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_newflag
+            item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_mergedtoindex
+            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);                                 //	sb_column_itemnumber
+            item=new QStandardItem(QString("%1").arg(performancePtr->songID())); column.append(item);            //	sb_column_orgsongid
+            item=new QStandardItem(QString("%1").arg(performancePtr->songPerformerID())); column.append(item);   //	sb_column_orgperformerid
+            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);                                 //	sb_column_orgitemnumber
+            item=new QStandardItem(QString("%1").arg(performancePtr->songTitle())); column.append(item);         //	sb_column_songtitle
+            item=new QStandardItem(QString("%1").arg(performancePtr->songPerformerName())); column.append(item); //	sb_column_performername
+            item=new QStandardItem(""); column.append(item);                                                     //	sb_column_notes
             this->appendRow(column); column.clear();
         }
 
@@ -780,7 +782,7 @@ SBTabAlbumEdit::save() const
     QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
     QMutableMapIterator<int,SBIDSong> songListIt(songList); //	Common used iterator
 
-    SBIDAlbumPtr orgAlbumPtr=amgr->retrieve(this->currentScreenItem().ptr()->itemID());
+    SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
     SBIDAlbumPtr selectedAlbumPtr=orgAlbumPtr;
     //SBIDAlbum newAlbum=orgAlbum;
     //SBIDAlbum removedAlbum;
@@ -1471,8 +1473,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //	Get detail
     if(si.ptr())
     {
-        SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-        albumPtr=amgr->retrieve(si.ptr()->itemID());
+        albumPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
     }
 
     if(!albumPtr)

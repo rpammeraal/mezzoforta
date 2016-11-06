@@ -41,14 +41,15 @@ public:
     int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     void remove(std::shared_ptr<T> ptr);
-    std::shared_ptr<T> retrieve(int itemID, open_flag openFlag=open_flag_default);
-    QList<std::shared_ptr<T>> retrieveAll();
+    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=open_flag_default);
+    QVector<std::shared_ptr<T>> retrieveAll();
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm);
     void rollbackChanges();
     void debugShow(const QString title="");
 
 private:
-    QList<std::shared_ptr<T>>    _changes;
-    QMap<int,std::shared_ptr<T>> _leMap;
+    QList<std::shared_ptr<T>>        _changes;
+    QMap<QString,std::shared_ptr<T>> _leMap;
 
     void _init();
 };
@@ -110,8 +111,8 @@ template <class T> std::shared_ptr<T>
 SBIDManagerTemplate<T>::createInDB()
 {
     std::shared_ptr<T> newT=T::createInDB();
-    int itemID=newT->itemID();
-    _leMap[itemID]=newT;
+    QString key=newT->key();
+    _leMap[key]=newT;
     return newT;
 }
 
@@ -127,11 +128,13 @@ SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeF
         QSqlRecord r=qm->record(i);
 
         int bucket=r.value(0).toInt();
-        int itemID=r.value(1).toInt();
-        if(currentPtr->itemID()!=itemID)
+        int k1=r.value(1).toInt();
+        int k2=r.value(2).toInt();
+        QString key=T::createKey(k1,k2);
+        if(currentPtr->key()!=key)
         {
             //	Retrieve and store
-            std::shared_ptr<T> ptr=this->retrieve(itemID);
+            std::shared_ptr<T> ptr=this->retrieve(key);
             matches[bucket].append(ptr);
             count++;
         }
@@ -147,18 +150,18 @@ SBIDManagerTemplate<T>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& t
     toPtr->setChangedFlag();
     _changes.append(fromPtr);
     _changes.append(toPtr);
-    _leMap.remove(fromPtr->itemID());
+    _leMap.remove(fromPtr->key());
 }
 
 template <class T> void
 SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
 {
     //	Find item in _leMap
-    if(_leMap.find(ptr->itemID())!=_leMap.end())
+    if(_leMap.find(ptr->key())!=_leMap.end())
     {
         //	Remove from cache
         ptr->setDeletedFlag();
-        _leMap.erase(_leMap.find(ptr->itemID()));
+        _leMap.erase(_leMap.find(ptr->key()));
         _changes.append(ptr);
     }
     else
@@ -169,23 +172,23 @@ SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
 
 
 template <class T> std::shared_ptr<T>
-SBIDManagerTemplate<T>::retrieve(int itemID,SBIDManagerTemplate::open_flag openFlag)
+SBIDManagerTemplate<T>::retrieve(QString key,SBIDManagerTemplate::open_flag openFlag)
 {
-    qDebug() << SB_DEBUG_INFO << itemID << openFlag;
+    qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
-    if(_leMap.contains(itemID))
+    if(_leMap.contains(key))
     {
-        ptr=_leMap[itemID];
+        ptr=_leMap[key];
     }
     if(!ptr || openFlag==open_flag_refresh)
     {
-        SBSqlQueryModel* qm=T::retrieveSQL(itemID);
+        SBSqlQueryModel* qm=T::retrieveSQL(key);
         QSqlRecord r=qm->record(0);
 
         if(!r.isEmpty())
         {
             ptr=T::instantiate(r,openFlag==SBIDManagerTemplate::open_flag_parentonly);
-            _leMap[itemID]=ptr;
+            _leMap[key]=ptr;
         }
     }
 
@@ -201,21 +204,22 @@ SBIDManagerTemplate<T>::retrieve(int itemID,SBIDManagerTemplate::open_flag openF
     return ptr;
 }
 
-template <class T> QList<std::shared_ptr<T>>
+template <class T> QVector<std::shared_ptr<T>>
 SBIDManagerTemplate<T>::retrieveAll()
 {
     SBSqlQueryModel* qm=T::retrieveSQL();
+
     for(int i=0;i<qm->rowCount();i++)
     {
         QSqlRecord r=qm->record(i);
         std::shared_ptr<T> newT=T::instantiate(r);
-        const int itemID=newT->itemID();
+        const QString key=newT->key();
         std::shared_ptr<T> oldT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
-        if(_leMap.contains(i))
+        if(_leMap.contains(key))
         {
-            oldT=_leMap[itemID];
+            oldT=_leMap[key];
         }
 
         //	If pointer is not empty, assign new object to existing object,
@@ -226,20 +230,71 @@ SBIDManagerTemplate<T>::retrieveAll()
         }
         else
         {
-            _leMap[itemID]=newT;
+            _leMap[key]=newT;
         }
     }
 
     //	Iterate through the entire map again to get all items
-    QList<std::shared_ptr<T>> list;
-    for(int i=0;i<_leMap.count();i++)
+    QVector<std::shared_ptr<T>> list;
+    QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
+    while(it.hasNext())
     {
+        it.next();
         //	Assemble list to return
-        std::shared_ptr<T> ptr=_leMap[i];
+        std::shared_ptr<T> ptr=it.value();
         if(ptr)
         {
-            list.append(_leMap[i]);
+            list.append(it.value());
         }
+    }
+
+    //	And one more time to sort...
+    int n;
+    int i;
+    for (n=0; n < list.count(); n++)
+    {
+        for (i=n+1; i < list.count(); i++)
+        {
+            QString valorN=list.at(n)->text();
+            QString valorI=list.at(i)->text();
+            if (valorN.toUpper() > valorI.toUpper())
+            {
+                list.move(i, n);
+                n=0;
+            }
+        }
+    }
+    return list;
+}
+
+template <class T> QVector<std::shared_ptr<T>>
+SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm)
+{
+    QVector<std::shared_ptr<T>> list;
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        QSqlRecord r=qm->record(i);
+        std::shared_ptr<T> newT=T::instantiate(r);
+        const QString key=newT->key();
+        std::shared_ptr<T> oldT;
+
+        //	Find if pointer exist -- Qt may have allocated slots for these
+        if(_leMap.contains(key))
+        {
+            oldT=_leMap[key];
+        }
+
+        //	If pointer is not empty, assign new object to existing object,
+        //	otherwise, set pointer
+        if(oldT)
+        {
+            *oldT=*newT;
+        }
+        else
+        {
+            _leMap[key]=newT;
+        }
+        list.append(newT);
     }
 
     //	And one more time to sort...
@@ -272,15 +327,17 @@ SBIDManagerTemplate<T>::debugShow(const QString text)
 {
     qDebug() << SB_DEBUG_INFO << text;
     qDebug() << SB_DEBUG_INFO << "start #=" << _leMap.count();
-    for(int i=0;i<_leMap.count();i++)
+    QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
+    while(it.hasNext())
     {
-        std::shared_ptr<T> ptr=_leMap[i];
+        it.next();
+        std::shared_ptr<T> ptr=it.value();
         if(ptr)
         {
-            qDebug() << SB_DEBUG_INFO << i << ptr->playlistName();
+            qDebug() << SB_DEBUG_INFO << it.key() << ptr->itemType();
+            qDebug() << SB_DEBUG_INFO << *ptr;
         }
     }
-    qDebug() << SB_DEBUG_INFO << "end";
 }
 
 ///	Private methods

@@ -9,96 +9,6 @@ SBTableModel::SBTableModel()
 }
 
 ///	Inherited methods
-//int
-//SBTableModel::columnCount(const QModelIndex &parent) const
-//{
-//    Q_UNUSED(parent);
-//    return _header.count();
-//}
-
-//QVariant
-//SBTableModel::data(const QModelIndex &item, int role) const
-//{
-//    QVariant i;
-//    if(item.column()<this->columnCount(item) && item.row()<this->rowCount(item))
-//    {
-//        switch(role)
-//        {
-//        case Qt::DisplayRole:
-//            i=_data[item.row()][item.column()];
-//            break;
-
-//        case Qt::ToolTipRole:
-//            i=_header.at(item.column());
-//            break;
-
-//        default:
-//            break;
-//        }
-//    }
-//    i=QVariant(tr("o ja?"));
-//    qDebug() << SB_DEBUG_INFO << item << role << i;
-//    return i;
-//}
-
-//Qt::ItemFlags
-//SBTableModel::flags(const QModelIndex &index) const
-//{
-//    Q_UNUSED(index);
-//    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-//}
-
-//QVariant
-//SBTableModel::headerData(int section, Qt::Orientation orientation, int role) const
-//{
-//    QVariant i;
-
-//    switch(orientation)
-//    {
-//    case Qt::Horizontal:
-//        switch(role)
-//        {
-//        case Qt::DisplayRole:
-//            i=_header.at(section);
-//            break;
-
-//        default:
-//            break;
-//        }
-//        break;
-
-//    case Qt::Vertical:
-//        i=QVariant(tr("vertical"));
-//    default:
-//        break;
-//    }
-
-//    qDebug() << SB_DEBUG_INFO << i;
-//    return i;
-//}
-
-//QModelIndex
-//SBTableModel::index(int row, int column, const QModelIndex &parent) const
-//{
-//    Q_UNUSED(parent);
-//    return createIndex(row,column);
-//}
-
-//QModelIndex
-//SBTableModel::parent(const QModelIndex &child) const
-//{
-//    Q_UNUSED(child);
-//    QModelIndex i;
-//    return i;
-//}
-
-//int
-//SBTableModel::rowCount(const QModelIndex &parent) const
-//{
-//    Q_UNUSED(parent);
-//    return _data.count();
-//}
-
 QVariant
 SBTableModel::data(const QModelIndex &item, int role) const
 {
@@ -106,7 +16,12 @@ SBTableModel::data(const QModelIndex &item, int role) const
     {
         return QVariant(QFont("Trebuchet MS",13));
     }
-    else return QStandardItemModel::data(item,role);
+    QVariant v=QStandardItemModel::data(item,role);
+//    if(v.isValid() && v.isNull()==0 && v.toString().length()>0)
+//    {
+//        qDebug() << SB_DEBUG_INFO << item << this->rowCount() << v.toString().length() << v.toString();
+//    }
+    return v;
 }
 
 Qt::ItemFlags
@@ -133,6 +48,7 @@ void
 SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 {
     _init();
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 
     //	Populate header
     QStringList header;
@@ -169,13 +85,69 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
             _setItem(i,10,performancePtr->path());
         }
     }
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
+}
+
+void
+SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances)
+{
+    _init();
+
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
+
+    QStringList header;
+    header.append("SB_MAIN_ITEM");
+    header.append("#");
+    header.append("SB_ITEM_TYPE1");
+    header.append("SB_ALBUM_ID");
+    header.append("SB_ITEM_TYPE2");
+    header.append("SB_SONG_ID");
+    header.append("song");
+    header.append("duration");
+    header.append("SB_ITEM_TYPE3");
+    header.append("SB_PERFORMER_ID");
+    header.append("performer");
+    header.append("SB_POSITION");
+    header.append("SB_ALBUM_POSITION");
+    header.append("SB_PATH");
+    header.append("album_title");
+    setHorizontalHeaderLabels(header);
+
+    //	Populate data
+    for(int i=0;i<performances.count();i++)
+    {
+        SBIDPerformancePtr performancePtr=performances.at(i);
+
+        if(performancePtr)
+        {
+            _setItem(i, 0,QString("%1").arg(Common::sb_field_song_id));
+            _setItem(i, 1,QString("%1").arg(performancePtr->albumPosition()));
+            _setItem(i, 2,QString("%1").arg(Common::sb_field_album_id));
+            _setItem(i, 3,QString("%1").arg(performancePtr->albumID()));
+            _setItem(i, 4,QString("%1").arg(Common::sb_field_song_id));
+            _setItem(i, 5,QString("%1").arg(performancePtr->songID()));
+            _setItem(i, 6,performancePtr->songTitle());
+            _setItem(i, 7,performancePtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i, 8,QString("%1").arg(Common::sb_field_performer_id));
+            _setItem(i, 9,QString("%1").arg(performancePtr->songPerformerID()));
+            _setItem(i,10,performancePtr->songPerformerName());
+            _setItem(i,11,QString("%1").arg(Common::sb_field_album_position));
+            _setItem(i,12,QString("%1").arg(performancePtr->albumPosition()));
+            _setItem(i,13,performancePtr->path());
+            _setItem(i,14,performancePtr->albumTitle());
+
+            qDebug() << SB_DEBUG_INFO << *performancePtr;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 }
 
 void
 SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     _init();
+
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 
     //	Populate header
     QStringList header;
@@ -199,7 +171,7 @@ SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlis
         it.next();
         SBIDPerformancePtr performancePtr=it.key();
         int playlistID=it.value();
-        SBIDPlaylistPtr playlistPtr=pmgr->retrieve(playlistID);
+        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
 
         if(playlistPtr)
         {
@@ -217,19 +189,20 @@ SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlis
             i++;
         }
     }
+    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 }
 
 ///	Private methods
 void
 SBTableModel::_init()
 {
+    QStandardItemModel::beginResetModel();
     QStandardItemModel::clear();
-//    _header.clear();
-//    _data.clear();
+    QStandardItemModel::endResetModel();
 }
 
 void
-SBTableModel::_setItem(int row, int column, const QString &value)
+SBTableModel::_setItem(int row, int column, const QString& value)
 {
     QStandardItem *i=new QStandardItem(value);
     _standardItemsAllocated.append(i);

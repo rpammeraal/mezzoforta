@@ -192,7 +192,7 @@ private:
 static QList<int> _sequence;
 static QMap<int,SBIDBase> _sequenceMap;
 
-Q_DECLARE_METATYPE(SBIDBase);
+//Q_DECLARE_METATYPE(SBIDBase);
 
 inline uint qHash(const SBIDBase& k, uint seed)
 {

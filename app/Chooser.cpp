@@ -115,7 +115,7 @@ public:
         _playlistRoot=item1;
 
         SBIDPlaylistMgr* plm=Context::instance()->getPlaylistMgr();
-        QList<SBIDPlaylistPtr> l=plm->retrieveAll();
+        QVector<SBIDPlaylistPtr> l=plm->retrieveAll();
         for(int i=0;i<l.count();i++)
         {
             SBIDPlaylistPtr ptr=l[i];
@@ -166,7 +166,6 @@ Chooser::~Chooser()
 void
 Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
     switch(rootType)
@@ -180,7 +179,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 
             if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
             {
-                SBIDPlaylistPtr assignedPlaylistPtr=pmgr->retrieve(toBeAssignedToPtr->playlistID());
+                SBIDPlaylistPtr assignedPlaylistPtr=SBIDPlaylist::retrievePlaylist(toBeAssignedToPtr->playlistID());
                 if(*assignedPlaylistPtr==*playlistPtr)
 
                 //SBIDPlaylist assignedPlaylist=SBIDPlaylist(*toBeAssignedToPtr);
@@ -310,8 +309,7 @@ Chooser::newPlaylist()
 void
 Chooser::playlistChanged(int playlistID)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-    SBIDPlaylistPtr playlistPtr=pmgr->retrieve(playlistID);
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
 
     for(int y=0;_cm && y<_cm->rowCount();y++)
     {
@@ -460,7 +458,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
 
     //	Re-open object for editing
-    playlistPtr=pmgr->retrieve(playlistPtr->playlistID(),SBIDManagerTemplate<SBIDPlaylist>::open_flag_foredit);
+    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDManagerTemplate<SBIDPlaylist>::open_flag_foredit);
 
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
@@ -575,10 +573,7 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
 
             if(playlistNameItem && playlistIDItem)
             {
-                SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-                playlistPtr=pmgr->retrieve(playlistIDItem->text().toInt());
-                //id=SBIDPlaylist(playlistIDItem->text().toInt());
-                //id.setPlaylistName(playlistNameItem->text());
+                playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt());
             }
         }
         else

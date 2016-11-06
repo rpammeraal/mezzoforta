@@ -227,28 +227,28 @@ SBIDSong::type() const
 
 ///	Song specific methods
 SBTableModel*
-SBIDSong::albumList() const
+SBIDSong::albums() const
 {
     SBTableModel* tm=new SBTableModel();
     tm->populateAlbumsBySong(_performances);
     return tm;
 }
 
-QVector<int>
-SBIDSong::albumIDList() const
-{
-    QVector<int> list;
+//QVector<int>
+//SBIDSong::albumIDList() const
+//{
+//    QVector<int> list;
 
-    for(int i=0;i<_performances.size();i++)
-    {
-        int albumID=_performances.at(i)->albumID();
-        if(!list.contains(albumID))
-        {
-            list.append(albumID);
-        }
-    }
-    return list;
-}
+//    for(int i=0;i<_performances.size();i++)
+//    {
+//        int albumID=_performances.at(i)->albumID();
+//        if(!list.contains(albumID))
+//        {
+//            list.append(albumID);
+//        }
+//    }
+//    return list;
+//}
 
 QVector<SBIDPerformancePtr>
 SBIDSong::allPerformances() const
@@ -1137,10 +1137,35 @@ SBIDSong::operator QString() const
     ;
 }
 
+//	Methods required by SBIDManagerTemplate
+QString
+SBIDSong::key() const
+{
+    return createKey(this->songID());
+}
+
+//	Static methods
+SBIDSongPtr
+SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
+{
+        qDebug() << SB_DEBUG_INFO << songID;
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    return smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong>::open_flag_default));
+}
+
 ///	Protected methods
 SBIDSong::SBIDSong():SBIDBase()
 {
     _init();
+}
+
+QString
+SBIDSong::createKey(int songID)
+{
+    return QString("%1:%2")
+        .arg(SBIDBase::sb_type_song)
+        .arg(songID)
+    ;
 }
 
 SBIDSongPtr
@@ -1283,11 +1308,15 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     song._lyrics               =r.value(6).toString();
     song._originalPerformerFlag=r.value(7).toBool();
 
-    song._loadPerformances();
+    qDebug() << SB_DEBUG_INFO << song;
 
     if(!noDependentsFlag)
     {
+    qDebug() << SB_DEBUG_INFO;
         song._loadPlaylists();
+    qDebug() << SB_DEBUG_INFO;
+        song._loadPerformances();
+    qDebug() << SB_DEBUG_INFO;
     }
 
     return std::make_shared<SBIDSong>(song);
@@ -1300,17 +1329,24 @@ SBIDSong::mergeTo(SBIDSongPtr &to)
 }
 
 void
+SBIDSong::openKey(const QString &key, int &songID)
+{
+    QStringList l=key.split(":");
+    songID=l.count()==2?l[1].toInt():-1;
+}
+
+void
 SBIDSong::postInstantiate(SBIDSongPtr &ptr)
 {
-    for(int i=0;i<_performances.count();i++)
-    {
-        _performances.at(i)->_setSongPtr(ptr);
-    }
+    Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDSong::retrieveSQL(int itemID)
+SBIDSong::retrieveSQL(const QString& key)
 {
+    int songID=-1;
+    openKey(key,songID);
+
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -1334,7 +1370,7 @@ SBIDSong::retrieveSQL(int itemID)
         "ORDER BY "
             "s.title "
     )
-        .arg(itemID==-1?"":QString("WHERE s.song_id=%1").arg(itemID))
+        .arg(key.length()==0?"":QString("WHERE s.song_id=%1").arg(songID))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -1361,14 +1397,9 @@ SBIDSong::_init()
 void
 SBIDSong::_loadPerformances()
 {
-    SBSqlQueryModel* qm=SBIDPerformance::retrieveSQL(this->songID());
-    for(int i=0;i<qm->rowCount();i++)
-    {
-        QSqlRecord r=qm->record(i);
-        SBIDPerformancePtr performancePtr=SBIDPerformance::instantiate(r);
-
-        _performances.append(performancePtr);
-    }
+    SBSqlQueryModel* qm=SBIDPerformance::performancesBySong(songID());
+    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
+    _performances=pemgr->retrieveSet(qm);
 }
 
 void

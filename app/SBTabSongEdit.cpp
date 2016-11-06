@@ -279,8 +279,8 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr())
     {
-        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-        songPtr=smgr->retrieve(si.ptr()->itemID());
+        qDebug() << SB_DEBUG_INFO;
+        songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
     }
 
     if(!songPtr)

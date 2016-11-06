@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("Songbase");
 
     //	Set up types
-    qRegisterMetaType<SBIDBase>();
+    //qRegisterMetaType<SBIDBase>();
 
     //	Set up randomizer
     qsrand(QDateTime::currentMSecsSinceEpoch());

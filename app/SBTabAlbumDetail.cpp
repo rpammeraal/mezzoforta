@@ -227,6 +227,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
     QList<bool> dragableColumns;
+    SBTableModel* tm;
 
     //	set constant connections
 
@@ -239,8 +240,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     SBIDAlbumPtr albumPtr;
     if(si.ptr())
     {
-        SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-        albumPtr=amgr->retrieve(si.ptr()->itemID());
+        albumPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
     }
     if(!albumPtr)
     {
@@ -299,15 +299,15 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Reused vars
     QTableView* tv=NULL;
-    SBSqlQueryModel* qm=NULL;
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    qm=albumPtr->retrieveAllPerformances();
+    tm=albumPtr->performances();
     dragableColumns.clear();
+    qDebug() << SB_DEBUG_INFO << tm->rowCount();
     dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    qm->setDragableColumns(dragableColumns);
-    populateTableView(tv,qm,1);
+    tm->setDragableColumns(dragableColumns);
+    populateTableView(tv,tm,1);
 
     currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
     return currentScreenItem;

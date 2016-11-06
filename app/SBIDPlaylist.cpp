@@ -445,8 +445,8 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 
     if(query.next())
     {
-        SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-        songPtr=smgr->retrieve(query.value(0).toInt());
+        qDebug() << SB_DEBUG_INFO;
+        songPtr=SBIDSong::retrieveSong(query.value(0).toInt());
         //	CWIP:performance
         //songPtr->setCurrentPerformanceByAlbumPosition(query.value(1).toInt(),query.value(2).toInt());
     }
@@ -488,10 +488,10 @@ SBIDPlaylist::recalculateAllPlaylistDurations()
 
     QSqlQuery query(q,db);
 
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     while(query.next())
     {
-        SBIDPlaylistPtr playlistPtr=pmgr->retrieve(query.value(1).toInt());
+        //SBIDPlaylistPtr playlistPtr=pmgr->retrieve(query.value(1).toInt());
+        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(query.value(1).toInt());
 
         recalculatePlaylistDuration(playlistPtr);
     }
@@ -977,6 +977,31 @@ SBIDPlaylist::reorderItem(const SBIDPtr& fromPtr, int row) const
     updateToNewPositionComposite.next();
 }
 
+//	Methods required by SBIDManagerTemplate
+QString
+SBIDPlaylist::key() const
+{
+    return createKey(this->playlistID());
+}
+
+//	Static methods
+QString
+SBIDPlaylist::createKey(int playlistID, int unused)
+{
+    Q_UNUSED(unused);
+    return QString("%1:%2")
+        .arg(SBIDBase::sb_type_playlist)
+        .arg(playlistID)
+    ;
+}
+
+SBIDPlaylistPtr
+SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
+{
+    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    return pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist>::open_flag_default));
+}
+
 ///	Protected methods
 SBIDPlaylist::SBIDPlaylist():SBIDBase()
 {
@@ -1059,14 +1084,23 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 }
 
 void
+SBIDPlaylist::openKey(const QString& key, int& playlistID)
+{
+    QStringList l=key.split(":");
+    playlistID=l.count()==2?l[1].toInt():-1;
+}
+
+void
 SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDPlaylist::retrieveSQL(int itemID)
+SBIDPlaylist::retrieveSQL(const QString& key)
 {
+    int playlistID=-1;
+    openKey(key,playlistID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -1102,7 +1136,7 @@ SBIDPlaylist::retrieveSQL(int itemID)
         "ORDER BY "
             "p.name "
     )
-        .arg(itemID==-1?"":QString("WHERE p.playlist_id=%1").arg(itemID))
+        .arg(key.length()==0?"":QString("WHERE p.playlist_id=%1").arg(playlistID))
     ;
     qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
@@ -1191,12 +1225,10 @@ SBIDPlaylist::operator QString() const
 void
 SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTraversed,QList<SBIDPerformancePtr>& allPerformances,const SBIDPtr& rootPtr)
 {
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr playlistPtr;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
     {
-        playlistPtr=pmgr->retrieve(rootPtr->itemID());
+        playlistPtr=retrievePlaylist(rootPtr->itemID());
         if(playlistPtr)
         {
             playlistPtr->_reorderPlaylistPositions();
@@ -1331,7 +1363,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTravers
                 else
                 {
                     //	CWIP:performance
-                    SBIDSongPtr songPtr=smgr->retrieve(allItems.value(6).toInt());
+        qDebug() << SB_DEBUG_INFO;
+                    SBIDSongPtr songPtr=SBIDSong::retrieveSong(allItems.value(6).toInt());
                     if(songPtr)
                     {
                         SBIDPerformancePtr performancePtr=songPtr->performance(albumID,allItems.value(7).toInt());
@@ -1469,7 +1502,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDBase>& compositesTravers
         QSqlQuery querySong(q,db);
         while(querySong.next())
         {
-            SBIDSongPtr songPtr=smgr->retrieve(querySong.value(1).toInt());
+        qDebug() << SB_DEBUG_INFO;
+            SBIDSongPtr songPtr=SBIDSong::retrieveSong(querySong.value(1).toInt());
             if(songPtr)
             {
                 int albumID=querySong.value(2).toInt();

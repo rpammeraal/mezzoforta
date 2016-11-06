@@ -250,13 +250,11 @@ SBIDPerformer::relatedPerformers()
         _relatedPerformerID=_loadRelatedPerformers();
     }
 
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-
     QVector<SBIDPerformerPtr> related;
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerID.count();i++)
     {
-        ptr=pemgr->retrieve(_relatedPerformerID.at(i));
+        ptr=retrievePerformer(_relatedPerformerID.at(i));
         if(ptr)
         {
             related.append(ptr);
@@ -408,6 +406,21 @@ SBIDPerformer::operator QString() const
     ;
 }
 
+//	Methods required by SBIDManagerTemplate
+QString
+SBIDPerformer::key() const
+{
+    return createKey(performerID());
+}
+
+//	Static methods
+SBIDPerformerPtr
+SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
+{
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    return pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer>::open_flag_default));
+}
+
 ///	Protected methods
 SBIDPerformer::SBIDPerformer():SBIDBase()
 {
@@ -483,6 +496,16 @@ SBIDPerformer::createInDB()
 
     //	Done
     return std::make_shared<SBIDPerformer>(performer);
+}
+
+QString
+SBIDPerformer::createKey(int performerID,int unused)
+{
+    Q_UNUSED(unused);
+    return QString("%1:%2")
+        .arg(SBIDBase::sb_type_performer)
+        .arg(performerID)
+    ;
 }
 
 SBSqlQueryModel*
@@ -584,14 +607,23 @@ SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
 }
 
 void
+SBIDPerformer::openKey(const QString &key, int &performerID)
+{
+    QStringList l=key.split(":");
+    performerID=l.count()==2?l[1].toInt():-1;
+}
+
+void
 SBIDPerformer::postInstantiate(SBIDPerformerPtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDPerformer::retrieveSQL(int itemID)
+SBIDPerformer::retrieveSQL(const QString& key)
 {
+    int performerID;
+    openKey(key,performerID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -620,7 +652,7 @@ SBIDPerformer::retrieveSQL(int itemID)
         "ORDER BY "
             "a.name "
     )
-        .arg(itemID==-1?"":QString("WHERE a.artist_id=%1").arg(itemID))
+        .arg(key.length()==0?"":QString("WHERE a.artist_id=%1").arg(performerID))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -1012,7 +1044,7 @@ SBIDPerformer::_loadRelatedPerformers() const
         performerID=qm.data(qm.index(i,0)).toInt();
         if(performerID!=this->performerID())
         {
-            ptr=pemgr->retrieve(performerID,SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly);
+            ptr=pemgr->retrieve(createKey(performerID),SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly);
             if(ptr && !relatedPerformerID.contains(performerID))
             {
                 relatedPerformerID.append(performerID);

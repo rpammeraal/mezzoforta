@@ -8,6 +8,12 @@
 class SBIDPerformance;
 typedef std::shared_ptr<SBIDPerformance> SBIDPerformancePtr;
 
+class SBIDAlbum;
+typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
+
+class SBIDPerformer;
+typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
+
 class SBIDSong;
 typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 
@@ -18,59 +24,70 @@ public:
     SBIDPerformance(const SBIDPerformance& p);
     ~SBIDPerformance();
 
+    //	Inherited methods
+    virtual QString text() const;
+    virtual QString type() const;
+
     //	SBIDPerformance specific methods
-    inline int albumID() const { return _sb_album_id; }
+    int albumID();
     QString albumTitle();
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
-    QString key() const;
     inline QString notes() const { return _notes; }
     inline QString path() const { return _path; }
     inline int playlistPosition() const { return _playlistPosition; }
-    inline int performerID() const { return _sb_performer_id; }
     void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
     int songID() const;
     int songPerformerID() const;
     QString songPerformerName();
-    QString songTitle() const;
+    QString songTitle();
     bool updateLastPlayDate();
 
+    //	Operators
     virtual operator QString();
 
+    //	Methods required by SBIDManagerTemplate
+    QString key() const;
+
     //	Static methods
-    static QString createKey(int songID, int performerID, int albumID, int albumPosition);
+    static QString createKey(int albumID, int albumPosition);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
+    static SBSqlQueryModel* performancesByAlbum(int songID);
+    static SBSqlQueryModel* performancesBySong(int songID);
+    void postInstantiate(SBIDPerformancePtr& ptr);
+    static SBIDPerformancePtr retrievePerformance(int albumID, int positionID);
 
 protected:
+    template <class T> friend class SBIDManagerTemplate;
+
     SBIDPerformance();
 
     //	The following methods differs from those that are used by the
     //	SBIDManagerTemplate as SBIDSong is actually managing SBIDPerformances,
     //	for the reason that an SBIDPerformance has a composite key.
-    static SBIDPerformancePtr instantiate(const QSqlRecord& r);
-    static SBSqlQueryModel* retrieveSQL(int songID);
+    static SBIDPerformancePtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static void openKey(const QString& key, int& albumID, int& albumPosition);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
 
 private:
-    friend class SBIDSong;
-
-    Duration     _duration;
-    QString      _notes;
-    int          _sb_performer_id;
-    int          _sb_album_id;
-    int          _sb_album_position;
-    bool         _originalPerformerFlag;
-    QString      _path;
-    SBIDSongPtr  _songPtr;
+    Duration         _duration;
+    QString          _notes;
+    int              _sb_song_id;
+    int              _sb_performer_id;
+    int              _sb_album_id;
+    int              _sb_album_position;
+    bool             _originalPerformerFlag;
+    QString          _path;
 
     //	Attributes derived from core attributes
-    QString      _albumTitle;
-    QString      _songPerformerName;
+    SBIDAlbumPtr     _albumPtr;
+    SBIDPerformerPtr _performerPtr;
+    SBIDSongPtr      _songPtr;
 
     //	Not instantiated
-    int          _playlistPosition;
+    int                _playlistPosition;
 
     void _init();
-    void _setSongPtr(SBIDSongPtr songPtr);
 };
 
 #endif // SBIDPERFORMANCE_H

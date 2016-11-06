@@ -54,6 +54,12 @@ public:
     virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
 
+    //	Methods required by SBIDManagerTemplate
+    QString key() const;
+
+    //	Static methods
+    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0);
+
 protected:
     template <class T> friend class SBIDManagerTemplate;
 
@@ -61,11 +67,13 @@ protected:
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPerformerPtr createInDB();
+    static QString createKey(int performerID,int unused=-1);
     static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     void mergeTo(SBIDPerformerPtr& to);
+    static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(int itemID=-1);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
 
     //	Helper methods

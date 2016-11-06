@@ -9,6 +9,7 @@
 #include "Context.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
+#include "SBSortFilterProxyTableModel.h"
 
 
 ///	Public methods
@@ -167,19 +168,20 @@ SBTab::init()
 int
 SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn)
 {
-    QSortFilterProxyModel* pm=NULL;
+    SBSortFilterProxyTableModel* pm=NULL;
     QHeaderView* hv=NULL;
+    SBSqlQueryModel emptyModel;
 
     //	Unload
     QAbstractItemModel* m=tv->model();
-    tv->setModel(NULL);
+    tv->setModel(&emptyModel);
     if(m!=NULL)
     {
         delete m;
     }
 
     //	Load
-    pm=new QSortFilterProxyModel();
+    pm=new SBSortFilterProxyTableModel();
     pm->setSourceModel(qm);
     tv->setModel(pm);
     tv->setSortingEnabled(1);

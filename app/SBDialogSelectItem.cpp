@@ -91,7 +91,6 @@ SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumP
 SBDialogSelectItem*
 SBDialogSelectItem::selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *parent)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     QVector<SBIDPerformancePtr> performanceList=songPtr->allPerformances();
     SBDialogSelectItem* dialog=new SBDialogSelectItem(songPtr,parent,SBDialogSelectItem::sb_songalbum);
     dialog->ui->setupUi(dialog);
@@ -104,7 +103,7 @@ SBDialogSelectItem::selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *par
         SBIDPerformancePtr currentPerformancePtr=performanceList.at(i);
 
         QLabel* l=new QLabel;
-        SBIDAlbumPtr currentAlbumPtr=amgr->retrieve(currentPerformancePtr->albumID());
+        SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
@@ -199,7 +198,6 @@ SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QList<QList<SBIDPe
 SBDialogSelectItem*
 SBDialogSelectItem::selectSongByPerformer(const SBIDSongPtr& songPtr, const QString& newPerformerName, QWidget *parent)
 {
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBDialogSelectItem* d=new SBDialogSelectItem(songPtr,parent,SBDialogSelectItem::sb_songperformer);
     d->ui->setupUi(d);
 

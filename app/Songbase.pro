@@ -63,7 +63,8 @@ HEADERS     = \
     ScreenItem.h \
     SBIDManagerTemplate.h \
     SBTableModel.h \
-    SBIDPerformance.h
+    SBIDPerformance.h \
+    SBSortFilterProxyTableModel.h
 
 SOURCES     = \
     main.cpp \
@@ -127,7 +128,8 @@ SOURCES     = \
     SBIDBase.cpp \
     ScreenItem.cpp \
     SBTableModel.cpp \
-    SBIDPerformance.cpp
+    SBIDPerformance.cpp \
+    SBSortFilterProxyTableModel.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
