@@ -24,12 +24,10 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
-    virtual QString hash() const;
-    static QString iconResourceLocation();
+    virtual QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
-    virtual void setText(const QString &text);
     virtual QString text() const;
     virtual QString type() const;
 

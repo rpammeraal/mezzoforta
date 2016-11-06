@@ -138,6 +138,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID)
     case SBIDBase::sb_type_chart:
         break;
     }
+    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 
@@ -241,26 +242,6 @@ SBIDBase::encode() const
 
 ///	Public virtual methods (Methods that only apply to subclasseses)
 
-//bool
-//SBIDBase::compare(const SBIDBase &t) const
-//{
-//    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-//    Q_UNUSED(t);
-//    return 0;
-//}
-int
-SBIDBase::commonPerformerID() const
-{
-    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
-    return -1;
-}
-
-QString
-SBIDBase::commonPerformerName() const
-{
-    return "Ambigious Name at SBID Base";
-}
-
 SBSqlQueryModel*
 SBIDBase::findMatches(const QString& name) const
 {
@@ -268,145 +249,6 @@ SBIDBase::findMatches(const QString& name) const
     qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
     return NULL;
 }
-
-int
-SBIDBase::getDetailOLD(bool createIfNotExistFlag)
-{
-    Q_UNUSED(createIfNotExistFlag);
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-    return 0;
-}
-
-QString
-SBIDBase::genericDescription() const
-{
-    return "Generic";
-}
-
-QString
-SBIDBase::hash() const
-{
-    return QString("%1:%2:%3:%4:%5:%6:%7:%8:%9")
-        .arg(this->itemType())
-        .arg(this->songID())
-        .arg(this->songPerformerID())
-        .arg(this->albumID())
-        .arg(this->albumPerformerID())
-        .arg(this->performerID())
-        .arg(this->playlistID())
-        .arg(this->albumPosition())
-        .arg(this->playlistPosition())
-    ;
-}
-
-QString
-SBIDBase::iconResourceLocation() const
-{
-    switch(this->itemType())
-    {
-    case SBIDBase::sb_type_album:
-        return SBIDSong::iconResourceLocation();
-
-    case SBIDBase::sb_type_performer:
-        return SBIDPerformer::iconResourceLocation();
-
-    case SBIDBase::sb_type_song:
-        return SBIDSong::iconResourceLocation();
-
-    case SBIDBase::sb_type_playlist:
-        return SBIDPlaylist::iconResourceLocation();
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-    return QString();
-}
-
-int
-SBIDBase::itemID() const
-{
-    switch(this->itemType())
-    {
-    case SBIDBase::sb_type_album:
-        //return static_cast<const SBIDAlbum>(*this).itemID();
-        break;
-
-    case SBIDBase::sb_type_performer:
-        //return static_cast<const SBIDPerformer>(*this).itemID();
-        break;
-
-    case SBIDBase::sb_type_song:
-        //return static_cast<const SBIDSong>(*this).itemID();
-
-    case SBIDBase::sb_type_playlist:
-        //return static_cast<const SBIDPlaylist>(*this).itemID();
-        break;
-
-    case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
-        break;
-    }
-    return -1;
-}
-
-SBIDBase::sb_type
-SBIDBase::itemType() const
-{
-    return _sb_item_type;
-}
-
-bool
-SBIDBase::saveOLD()
-{
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-    return 0;
-}
-
-//void
-//SBIDBase::resetSequence() const
-//{
-//    _sequence.clear();
-//}
-
-void
-SBIDBase::sendToPlayQueue(bool enqueueFlag)
-{
-    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
-    Q_UNUSED(enqueueFlag);
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-}
-
-void
-SBIDBase::setText(const QString &text)
-{
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
-    Q_UNUSED(text);
-}
-
-QString
-SBIDBase::text() const
-{
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
-    return QString("n/a");
-}
-
-QString
-SBIDBase::type() const
-{
-    qDebug() << SB_DEBUG_ERROR << "SHOULD NOT BE CALLED!";
-    SBMessageBox::standardWarningBox(QString("Method %1() called [%2:%3]").arg(__FUNCTION__).arg(__FILE__).arg(__LINE__));
-    return "n/a";
-}
-
-bool
-SBIDBase::validFlag() const
-{
-    return (itemType()!=SBIDBase::sb_type_invalid && itemID()>=0?1:0);
-}
-
 
 void
 SBIDBase::showDebug(const QString& title) const
@@ -446,26 +288,12 @@ SBIDBase::showDebug(const QString& title) const
 int
 SBIDBase::assignTmpItemID()
 {
-    /*
-    this->_sb_tmp_item_id=-(_sequence.length()+1);
-    _sequence.append(this->_sb_tmp_item_id);
-    _sequenceMap[this->_sb_tmp_item_id]=(*this);
-    return this->_sb_tmp_item_id;
-    */
     return 0;
 }
 
 void
 SBIDBase::listTmpIDItems()
 {
-    QMapIterator<int,SBIDBase> it(_sequenceMap);
-
-    qDebug() << SB_DEBUG_INFO;
-    while(it.hasNext())
-    {
-        it.next();
-        qDebug() << SB_DEBUG_INFO << it.key() << it.value();
-    }
 }
 
 

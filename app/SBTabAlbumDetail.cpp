@@ -34,7 +34,7 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selected || selected->validFlag()==0)
+    if(!selected)
     {
         //	Context menu from SBLabel is clicked
         selected=this->currentScreenItem().ptr();

@@ -238,7 +238,7 @@ SBTabPlaylistDetail::PlaylistItem
 SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
 {
     static QModelIndex lastIdx;
-    static SBIDBase __lastItem;
+    //static SBIDBase __lastItem;
     PlaylistItem currentPlaylistItem;
 
     _init();

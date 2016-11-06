@@ -70,15 +70,15 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
+    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selected || selected->validFlag()==0)
+    if(!selectedPtr)
     {
         //	Context menu from SBLabel is clicked
         return;
     }
-    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 

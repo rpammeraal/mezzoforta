@@ -43,19 +43,13 @@ SBIDAlbum::compare(const SBIDBase &i) const
 }
 
 QString
-SBIDAlbum::hash() const
-{
-    return QString("%1:%2:%3").arg(itemType()).arg(this->albumID()).arg(this->albumPerformerID());
-}
-
-QString
 SBIDAlbum::genericDescription() const
 {
     return "Album - "+this->text()+" by "+this->_albumPerformerName;
 }
 
 QString
-SBIDAlbum::iconResourceLocation()
+SBIDAlbum::iconResourceLocation() const
 {
     return ":/images/NoAlbumCover.png";
 }
@@ -175,12 +169,6 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
-}
-
-void
-SBIDAlbum::setText(const QString &text)
-{
-    _albumTitle=text;
 }
 
 QString

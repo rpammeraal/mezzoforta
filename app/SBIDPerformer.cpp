@@ -33,19 +33,13 @@ SBIDPerformer::commonPerformerName() const
 }
 
 QString
-SBIDPerformer::hash() const
-{
-    return QString("%1:%2").arg(itemType()).arg(this->performerID());
-}
-
-QString
 SBIDPerformer::genericDescription() const
 {
     return "Performer - "+this->text();
 }
 
 QString
-SBIDPerformer::iconResourceLocation()
+SBIDPerformer::iconResourceLocation() const
 {
     return QString(":/images/NoBandPhoto.png");
 }
@@ -85,12 +79,6 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 //    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
 //    SB_DEBUG_IF_NULL(mqs);
 //    mqs->populate(list,enqueueFlag);
-}
-
-void
-SBIDPerformer::setText(const QString &text)
-{
-    _performerName=text;
 }
 
 QString

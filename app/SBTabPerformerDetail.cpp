@@ -51,7 +51,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selectedPtr || selectedPtr->validFlag()==0)
+    if(!selectedPtr)
     {
         //	Context menu from SBLabel is clicked
         selectedPtr=currentPtr;

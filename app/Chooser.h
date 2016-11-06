@@ -64,7 +64,7 @@ private:
     ChooserModel* _cm;
 
     QModelIndex _findItem(const QString& toFind);
-    QModelIndex _findItem(const SBIDBase& id);
+    QModelIndex _findItem(const SBIDPtr playlistPtr);
     SBIDPlaylistPtr _getPlaylistSelected(const QModelIndex& i);
     void _init();
     void _populate();

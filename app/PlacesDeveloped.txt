@@ -620,6 +620,10 @@ X	playlists that song belongs to can be edited
 	    initialized upon calling a method that relies on the pointer being populated. Eg.: SBIDPerformance::songPerformerName()
 		should test if _performerPtr is set. If not, look up, and retrieve performerName from _performerPtr.
 
+20161106:
+-	All Songs -> War -> Back (All Songs) -> 40: no albums
+-	Many methods in SBIDBase made pure virtual.
+
 <current>
 *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
 *	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses

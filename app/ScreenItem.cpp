@@ -126,7 +126,7 @@ ScreenItem::_init()
 {
     _screenType=ScreenItem::screen_type_invalid;
     _editFlag=0;
-    _ptr=std::make_shared<SBIDBase>(SBIDBase());
+    _ptr=SBIDPtr();
     _searchCriteria=QString();
     _subtabID=INT_MAX;
     _sortColumn=INT_MAX;

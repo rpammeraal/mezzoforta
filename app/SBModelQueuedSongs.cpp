@@ -138,7 +138,6 @@ SBModelQueuedSongs::formatDisplayPlayID(int playID,bool isCurrent) const
 SBIDPtr
 SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 {
-    SBIDBase id;
     SBIDPtr ptr;
     QStandardItem* item;
     int itemID=-1;

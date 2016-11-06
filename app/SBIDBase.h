@@ -43,21 +43,16 @@ public:
 
     //	Public virtual methods (Methods that only apply to subclasseses)
     //virtual bool compare(const SBIDBase& t) const;	//	compares on attributes. To compare on ID, use operator==().	//	CWIP: make pure virtual
-    virtual int commonPerformerID() const;
-    virtual QString commonPerformerName() const;
+    virtual int commonPerformerID() const=0;
+    virtual QString commonPerformerName() const=0;
     virtual SBSqlQueryModel* findMatches(const QString& name) const;
-    virtual QString genericDescription() const;
-    virtual int getDetailOLD(bool createIfNotExistFlag=0);	//	to be removed
-    virtual QString hash() const;
-    QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual sb_type itemType() const;
-    virtual bool saveOLD();	//	to be removed
-    virtual void sendToPlayQueue(bool enqueueFlag=0);
-    virtual void setText(const QString &text);
-    virtual QString text() const;
-    virtual QString type() const;
-    virtual bool validFlag() const;
+    virtual QString genericDescription() const=0;
+    virtual QString iconResourceLocation() const=0;
+    virtual int itemID() const=0;
+    virtual sb_type itemType() const=0;
+    virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
+    virtual QString text() const=0;
+    virtual QString type() const=0;
 
     //	Common Getters: CWIP virtualize, and perform checks
     inline int albumID() const { return _sb_album_id; }
@@ -103,6 +98,9 @@ public:
     virtual bool operator==(const SBIDBase& i) const;	//	compares on ID(s)
     virtual bool operator!=(const SBIDBase& i) const;
     virtual operator QString() const;
+
+    //	Methods required by SBIDManagerTemplate
+    virtual QString key() const=0;
 
     //	Helper functions for import
     int assignTmpItemID();
@@ -189,14 +187,11 @@ private:
     void _init();
 };
 
-static QList<int> _sequence;
-static QMap<int,SBIDBase> _sequenceMap;
-
 //Q_DECLARE_METATYPE(SBIDBase);
 
 inline uint qHash(const SBIDBase& k, uint seed)
 {
-    return qHash(k.hash(),seed);
+    return qHash(k.key(),seed);
 }
 
 

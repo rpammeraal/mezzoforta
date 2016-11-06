@@ -229,6 +229,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     if(closeTab==1)
     {
+        qDebug() << SB_DEBUG_INFO;
         _moveFocusToScreen(-1);
     }
 
@@ -364,6 +365,7 @@ Navigator::removeFromScreenStack(const SBIDPtr& ptr)
     //	Move currentScreen one back, until it is on that is not current
     while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && *(si.ptr())==(*ptr))
     {
+        qDebug() << SB_DEBUG_INFO;
         tabBackward();	//	move display one back
         si=st->currentScreen();	//	find out what new current screen is.
         st->popScreen();	//	remove top screen
@@ -534,12 +536,14 @@ Navigator::setFocus()
 void
 Navigator::tabBackward()
 {
+        qDebug() << SB_DEBUG_INFO;
     _moveFocusToScreen(-1);
 }
 
 void
 Navigator::tabForward()
 {
+        qDebug() << SB_DEBUG_INFO;
     _moveFocusToScreen(1);
 }
 
@@ -587,7 +591,7 @@ Navigator::_activateScreen()
     }
 
     SBTab* tab=NULL;
-    SBIDBase result;
+    //SBIDBase result;
     bool editFlag=si.editFlag();
     bool canBeEditedFlag=1;
     SBIDPtr ptr;
@@ -666,9 +670,10 @@ Navigator::_activateScreen()
         si=tab->populate(si);
     }
 
-    if(si.screenType()==ScreenItem::screen_type_sbidbase && si.ptr()->validFlag()==0)
+    if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.ptr())
     {
         //	Go to previous screen first
+        qDebug() << SB_DEBUG_INFO;
         this->tabBackward();
 
         //	Remove all from screenStack with requested ID.
@@ -814,9 +819,10 @@ Navigator::_init()
 void
 Navigator::_moveFocusToScreen(int direction)
 {
+    qDebug() << SB_DEBUG_INFO << direction;
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si;
-    SBIDBase id;
+    //SBIDBase id;
     if(_checkOutstandingEdits()==1)
     {
         return;
@@ -827,6 +833,7 @@ Navigator::_moveFocusToScreen(int direction)
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO;
         si=st->previousScreen();
     }
 

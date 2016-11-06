@@ -36,22 +36,14 @@ SBIDSong::commonPerformerName() const
 QString
 SBIDSong::genericDescription() const
 {
-    return QString("Song %1 [%2] / %3 - %4")
+    qDebug() << SB_DEBUG_INFO;
+    return QString("Song %1")
         .arg(this->text())
-        .arg(this->_duration.toString())
-        .arg(this->_songPerformerName)
-        .arg(this->_albumTitle.length()?QString("on '%1'").arg(_albumTitle):QString())
     ;
 }
 
 QString
-SBIDSong::hash() const
-{
-    return QString("%1%2%3%4").arg(this->itemID()).arg(this->songID()).arg(this->songPerformerID()).arg(this->albumID()).arg(this->albumPosition());
-}
-
-QString
-SBIDSong::iconResourceLocation()
+SBIDSong::iconResourceLocation() const
 {
     return QString(":/images/SongIcon.png");
 }
@@ -204,12 +196,6 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     SB_DEBUG_IF_NULL(mqs);
     mqs->populate(list,enqueueFlag);
-}
-
-void
-SBIDSong::setText(const QString &text)
-{
-    _songTitle=text;
 }
 
 QString
@@ -409,16 +395,19 @@ SBIDSong::performance(int albumID, int albumPosition) const
 QVector<int>
 SBIDSong::performerIDList() const
 {
+    qDebug() << SB_DEBUG_INFO;
     QVector<int> list;
 
     for(int i=0;i<_performances.size();i++)
     {
-        int performerID=_performances.at(i)->performerID();
+        int performerID=_performances.at(i)->songPerformerID();
+        qDebug() << SB_DEBUG_INFO << _performances.at(i)->key() << performerID;
         if(!list.contains(performerID))
         {
             list.append(performerID);
         }
     }
+    qDebug() << SB_DEBUG_INFO << list.count();
     return list;
 }
 
@@ -1308,15 +1297,10 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     song._lyrics               =r.value(6).toString();
     song._originalPerformerFlag=r.value(7).toBool();
 
-    qDebug() << SB_DEBUG_INFO << song;
-
     if(!noDependentsFlag)
     {
-    qDebug() << SB_DEBUG_INFO;
         song._loadPlaylists();
-    qDebug() << SB_DEBUG_INFO;
         song._loadPerformances();
-    qDebug() << SB_DEBUG_INFO;
     }
 
     return std::make_shared<SBIDSong>(song);

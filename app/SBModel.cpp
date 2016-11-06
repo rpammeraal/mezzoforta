@@ -101,7 +101,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 itemID=v.toInt();
             }
 
-            if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+            if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
                 ptr=SBIDBase::createPtr(itemType,itemID);
                 //	reset index to go through all fields again
@@ -129,7 +129,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         n=aim->index(idx.row(),idx.column());
         text=aim->data(n, Qt::DisplayRole).toString();
 
-        if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
         }
@@ -280,7 +280,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             text=v.toString();
         }
 
-        if((!ptr || ptr->validFlag()==0) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
             //	reset index to go through all fields again
@@ -337,8 +337,7 @@ SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexe
             SBIDPtr ptr=_determineSBID(aim, i);
             if(ptr)
             {
-                SBIDBase id=*ptr;
-                QByteArray ba=id.encode();
+                QByteArray ba=ptr->encode();
                 mimeData->setData("application/vnd.text.list", ba);
                 return mimeData;
             }

@@ -81,7 +81,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     SBIDPtr selectPtr=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selectPtr || selectPtr->validFlag()==0)
+    if(!selectPtr)
     {
         //	Context menu from SBLabel is clicked
         SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(currentScreenItem().ptr());
@@ -276,6 +276,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         return ScreenItem();
     }
 
+        qDebug() << SB_DEBUG_INFO;
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(songPtr);
     mw->ui.labelSongDetailIcon->setPtr(songPtr);
@@ -286,6 +287,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     connect(ed, SIGNAL(songLyricsURLAvailable(QString)),
             this, SLOT(setSongLyricsPage(QString)));
 
+        qDebug() << SB_DEBUG_INFO;
     ed->loadSongData(songPtr);
 
     //	Populate song detail tab
@@ -301,8 +303,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     }
     _alsoPerformedBy.clear();
 
+        qDebug() << SB_DEBUG_INFO;
     //	Recreate
     QVector<int> performerList=songPtr->performerIDList();
+    qDebug() << SB_DEBUG_INFO << performerList.count();
     QString cs;
     int toDisplay=performerList.count();
     if(toDisplay>3)
@@ -316,13 +320,15 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         switch(i)
         {
         case -1:
+            qDebug() << SB_DEBUG_INFO;
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
                 .arg(songPtr->songPerformerID())
                 .arg(songPtr->songPerformerName());
             break;
 
         default:
-            performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i));
+            qDebug() << SB_DEBUG_INFO;
+            performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i),1);
             if(performerPtr)
             {
                 cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
@@ -332,6 +338,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
             }
         }
     }
+        qDebug() << SB_DEBUG_INFO;
     if(performerList.count()>toDisplay)
     {
             cs=cs+QString(",&nbsp;...");
@@ -340,6 +347,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     frAlsoPerformedBy->setText(cs);
     connect(frAlsoPerformedBy, SIGNAL(anchorClicked(QUrl)),
         Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
+        qDebug() << SB_DEBUG_INFO;
 
     //	Populate song details
     cs=QString("<B>Released:</B> %1").arg(songPtr->year());
@@ -352,10 +360,12 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //mw->ui.labelSongDetailSongDetail->setText(details);
     //mw->ui.labelSongDetailSongNotes->setText(song.notes);
 
+        qDebug() << SB_DEBUG_INFO;
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
 
+        qDebug() << SB_DEBUG_INFO;
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
     tm=songPtr->albums();

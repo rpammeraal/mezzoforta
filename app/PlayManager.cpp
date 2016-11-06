@@ -439,9 +439,8 @@ PlayManager::_resetCurrentPlayID()
 SBIDPerformancePtr
 PlayManager::_performanceAt(int index) const
 {
-    SBIDPerformancePtr null;
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    return mqs?mqs->performanceAt(index):null;
+    return mqs?mqs->performanceAt(index):SBIDPerformancePtr();
 }
 
 void

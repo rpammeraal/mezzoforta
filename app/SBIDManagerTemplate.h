@@ -296,23 +296,6 @@ SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm)
         }
         list.append(newT);
     }
-
-    //	And one more time to sort...
-    int n;
-    int i;
-    for (n=0; n < list.count(); n++)
-    {
-        for (i=n+1; i < list.count(); i++)
-        {
-            QString valorN=list.at(n)->text();
-            QString valorI=list.at(i)->text();
-            if (valorN.toUpper() > valorI.toUpper())
-            {
-                list.move(i, n);
-                n=0;
-            }
-        }
-    }
     return list;
 }
 

@@ -325,8 +325,8 @@ Chooser::playlistChanged(int playlistID)
                     QStandardItem* sic=si0->child(i,2);
                     if(sia && sib && sic && playlistPtr)
                     {
-                        if(sib->text().toInt()==playlistPtr->itemID() &&
-                            sic->text().toInt()==playlistPtr->itemType())
+                        if(sib->text().toInt()==playlistPtr->playlistID() &&
+                            sic->text().toInt()==SBIDBase::sb_type_playlist)
                         {
                             QStandardItem* newItem=new QStandardItem(QIcon(":/images/playing.png"),sia->text());
                             si0->setChild(i,0,newItem);
@@ -389,7 +389,7 @@ Chooser::showContextMenu(const QPoint &p)
         {
             SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
 
-            if(playlistPtr->validFlag())
+            if(playlistPtr)
             {
                 //	Only show in the right context :)
                 _lastClickedIndex=idx;
@@ -466,7 +466,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     pmgr->commit(playlistPtr,dal);
 
     this->_populate();
-    QModelIndex in=_findItem(*playlistPtr);
+    QModelIndex in=_findItem(playlistPtr);
     if(in.isValid())
     {
         _setCurrentIndex(in);
@@ -523,7 +523,7 @@ Chooser::_findItem(const QString& toFind)
 }
 
 QModelIndex
-Chooser::_findItem(const SBIDBase& id)
+Chooser::_findItem(const SBIDPtr id)
 {
     QModelIndex index;
     bool found=0;
@@ -541,8 +541,8 @@ Chooser::_findItem(const SBIDBase& id)
                     QStandardItem* si2=si0->child(i,2);
                     if(si1 && si2)
                     {
-                        if(si1->text().toInt()==id.itemID() &&
-                            si2->text().toInt()==id.itemType())
+                        if(si1->text().toInt()==id->itemID() &&
+                            si2->text().toInt()==id->itemType())
                         {
                             index=_cm->indexFromItem(si1);
                             found=1;
