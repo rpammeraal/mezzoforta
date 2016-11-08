@@ -12,7 +12,13 @@
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
-    this->_relatedPerformerID=c._relatedPerformerID;
+    _notes             =c._notes;
+    _performerName     =c._performerName;
+    _sb_performer_id   =c._sb_performer_id;
+    _relatedPerformerID=c._relatedPerformerID;
+
+    _num_albums        =c._num_albums;
+    _num_songs         =c._num_songs;
 }
 
 SBIDPerformer::~SBIDPerformer()
@@ -371,24 +377,11 @@ SBIDPerformer::updateSoundexFields()
 }
 
 ///	Operators
-bool
-SBIDPerformer::operator ==(const SBIDBase& i) const
-{
-    if(
-        i._sb_performer_id==this->_sb_performer_id
-    )
-    {
-        return 1;
-    }
-    return 0;
-}
-
 SBIDPerformer::operator QString() const
 {
     QString performerName=this->_performerName.length() ? this->_performerName : "<N/A>";
-    return QString("SBIDPerformer:%1,%2:n=%3 [#related=%4]")
+    return QString("SBIDPerformer:%1:n=%2 [#related=%4]")
             .arg(this->_sb_performer_id)
-            .arg(this->_sb_tmp_item_id)
             .arg(performerName)
             .arg(_relatedPerformerID.count())
     ;
@@ -570,8 +563,8 @@ SBIDPerformer::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performer._url            =r.value(2).toString();
     performer._notes          =r.value(3).toString();
     performer._sb_mbid        =r.value(4).toString();
-    performer._count1         =r.value(5).toInt();
-    performer._count2         =r.value(6).toInt();
+    performer._num_albums     =r.value(5).toInt();
+    performer._num_songs      =r.value(6).toInt();
 
     if(!noDependentsFlag)
     {
@@ -988,6 +981,9 @@ void
 SBIDPerformer::_init()
 {
     _sb_item_type=SBIDBase::sb_type_performer;
+    _notes="";
+    _performerName="";
+    _relatedPerformerID.clear();
     _sb_performer_id=-1;
 }
 

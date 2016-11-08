@@ -37,19 +37,21 @@ public:
     SBSqlQueryModel* getAlbums() const;
     SBSqlQueryModel* getAllSongs() const;
     SBSqlQueryModel* getAllOnlineSongs() const;
+    inline QString notes() const { return _notes; }
+    inline int numAlbums() const { return _num_albums; }
+    inline int numSongs() const { return _num_songs; }
+    inline int performerID() const { return _sb_performer_id; }
+    inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
-    void setCount1(int count1) { _count1=count1; }
-    void setCount2(int count2) { _count1=count2; }
+    //void setCount1(int count1) { _count1=count1; }
+    //void setCount2(int count2) { _count1=count2; }
     void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
     void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
     static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformerPtr& existingPerformerPtr,SBIDPerformerPtr& selectedPerformerPtr,QLineEdit* field=NULL, bool saveNewPerformer=1);
-    void setURL(const QString& url) { _url=url; setChangedFlag(); }
-    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
 
     static void updateSoundexFields();
 
     //	Operators
-    virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
@@ -79,8 +81,16 @@ protected:
     QString deleteRelatedPerformerSQL(int performerID) const;
 
 private:
+    QString      _notes;
+    QString      _performerName;
+    int          _sb_performer_id;
     QVector<int> _relatedPerformerID;
 
+    //	Not instantiated
+    int          _num_albums;
+    int          _num_songs;
+
+    //	Methods
     void _init();
     QVector<int> _loadRelatedPerformers() const;
 };

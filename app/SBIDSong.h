@@ -45,26 +45,27 @@ public:
 
     //	Song specific methods
     SBTableModel* albums() const;
-//    QVector<int> albumIDList() const;
     QVector<SBIDPerformancePtr> allPerformances() const;
     void deleteIfOrphanized();
     static SBSqlQueryModel* getAllSongs();
-    SBTableModel* playlistList();
-//    SBSqlQueryModel* matchSong() const;	//	TO ::find()
-//    SBSqlQueryModel* matchSongWithinPerformer(const QString& newSongTitle) const;
+    inline QString lyrics() const { return _lyrics; }
+    inline QString notes() const { return _notes; }
     int numPerformances() const { return _performances.count(); }
     SBIDPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
-    void setGenre(const QString& genre) { _genre=genre; }
+    SBTableModel* playlistList();
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
     void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void setPlaylistPosition(int position);	//	CWIP:rm
     void setSongTitle(const QString& songTitle);
+    inline int songID() const { return _sb_song_id; }
+    int songPerformerID() const;
+    QString songPerformerName() const;
+    inline QString songTitle() const { return _songTitle; }
     static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
+    inline int year() const { return _year; }
 
     //	Operators
-    virtual bool operator==(const SBIDSong& i) const;
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
@@ -90,12 +91,24 @@ protected:
     QStringList updateSQL() const;
 
 private:
-    QVector<SBIDPerformancePtr>  _performances;
+    QString                      _lyrics;
+    QString                      _notes;
+    int                          _sb_song_id;
+    int                          _sb_song_performer_id;
+    QString                      _songTitle;
+    int                          _year;
+
+    //	Attributes derived from core attributes
+    SBIDPerformerPtr             _performerPtr;
+
+    //	Dependent attributes
     QMap<SBIDPerformancePtr,int> _performance2playlistID;
+    QVector<SBIDPerformancePtr>  _performances;
 
     void _init();
     void _loadPerformances();
     void _loadPlaylists();
+    void _setPerformerPtr();
 };
 
 #endif // SBIDSONG_H

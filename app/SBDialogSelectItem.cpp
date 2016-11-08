@@ -96,7 +96,7 @@ SBDialogSelectItem::selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *par
     dialog->ui->setupUi(dialog);
 
     //	Populate choices
-    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(dialog->_currentPtr->songTitle()).arg(QChar(180));
+    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(songPtr->songTitle()).arg(QChar(180));
     dialog->setTitle(title);
     for(int i=0;i<performanceList.size();i++)
     {

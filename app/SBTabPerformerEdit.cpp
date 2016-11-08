@@ -47,11 +47,12 @@ SBTabPerformerEdit::hasEdits() const
     const SBIDPtr ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr && ptr->itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
-        if(ptr->songPerformerName()!=mw->ui.performerEditName->text() ||
-            ptr->notes()!=mw->ui.performerEditNotes->text() ||
-            ptr->url()!=mw->ui.performerEditWebSite->text() ||
+        SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+        if(performerPtr->performerName()!=mw->ui.performerEditName->text() ||
+            performerPtr->notes()!=mw->ui.performerEditNotes->text() ||
+            performerPtr->url()!=mw->ui.performerEditWebSite->text() ||
             _relatedPerformerHasChanged==1
         )
         {
@@ -208,7 +209,7 @@ SBTabPerformerEdit::save() const
 
     //	Different performer name
     SBIDPerformerPtr selectedPerformerPtr;
-    if(hasCaseChange==0 && editPerformerName!=orgPerformerPtr->songPerformerName())
+    if(hasCaseChange==0 && editPerformerName!=orgPerformerPtr->performerName())
     {
         //	Save entry alltogether as a complete new record in artist table
         if(SBIDPerformer::selectSavePerformer(editPerformerName,orgPerformerPtr,selectedPerformerPtr,mw->ui.performerEditName,0)==0)
@@ -292,7 +293,7 @@ SBTabPerformerEdit::save() const
         //{
             QString updateText=QString("Saved performer %1%2%3.")
                 .arg(QChar(96))      //	1
-                .arg(selectedPerformerPtr->songPerformerName())	//	2
+                .arg(selectedPerformerPtr->performerName())	//	2
                 .arg(QChar(180));    //	3
             Context::instance()->getController()->updateStatusBarText(updateText);
 

@@ -20,7 +20,7 @@ public:
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual SBSqlQueryModel* findMatches(const QString& name) const;
+//    virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
@@ -30,21 +30,23 @@ public:
     virtual QString type() const;
 
     //	Methods specific to SBIDPlaylist
-    void assignPlaylistItem(const SBIDPtr& ptr) const;	//	CWIP:pmgr rewrite
+    void assignPlaylistItem(SBIDPtr ptr) ;	//	CWIP:pmgr rewrite
     void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;	//	CWIP:pmgr rewrite
+    inline Duration duration() const { return _duration; }
     SBSqlQueryModel* getAllItemsByPlaylist() const;
     SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
-    static void recalculatePlaylistDuration(const SBIDPtr& ptr);
+    inline int numItems() const { return _num_items; }
+    inline int playlistID() const { return _sb_playlist_id; }
+    inline QString playlistName() const { return _playlistName; }
+    void recalculatePlaylistDuration();
     static void recalculateAllPlaylistDurations();
     void reorderItem(const SBIDPtr& fromPtr, int row) const;	//	CWIP:pmgr rewrite
     void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
-    void setCount1(const int count1) { _count1=count1;  }
-    void setDuration(const Duration& duration) { _duration=duration;  }
+    //void setDuration(const Duration& duration) { _duration=duration;  }
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 
     //	Operators
-    virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
     SBIDPlaylist& operator=(const SBIDPlaylist& t);	//	CWIP: to be moved to protected
 
@@ -70,7 +72,15 @@ protected:
     QStringList updateSQL() const;
 
 private:
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, const SBIDPtr& root);
+    Duration _duration;
+    int      _sb_playlist_id;
+    QString  _playlistName;
+
+    //	Not instantiated
+    int      _num_items;
+
+    //	Methods
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root);
     void _init();
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID);

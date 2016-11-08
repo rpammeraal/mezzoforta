@@ -200,17 +200,19 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
                         }
                     }
 
-                    if(_currentPtr->itemType()==SBIDBase::sb_type_album &&
-                        Common::simplified(_currentPtr->albumTitle())==Common::simplified(albumTitle) &&
-                        Common::simplified(_currentPtr->albumPerformerName())==Common::simplified(albumPerformerName)
-                    )
+                    if(_currentPtr->itemType()==SBIDBase::sb_type_album)
                     {
-                        QNetworkAccessManager* n=new QNetworkAccessManager(this);
-                        connect(n, SIGNAL(finished(QNetworkReply *)),
-                                this, SLOT(handleImageDataNetwork(QNetworkReply*)));
+                        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+                        if(Common::simplified(albumPtr->albumTitle())==Common::simplified(albumTitle) &&
+                            Common::simplified(albumPtr->albumPerformerName())==Common::simplified(albumPerformerName))
+                        {
+                            QNetworkAccessManager* n=new QNetworkAccessManager(this);
+                            connect(n, SIGNAL(finished(QNetworkReply *)),
+                                    this, SLOT(handleImageDataNetwork(QNetworkReply*)));
 
-                        n->get(QNetworkRequest(QUrl(urlString)));
-                        return;
+                            n->get(QNetworkRequest(QUrl(urlString)));
+                            return;
+                        }
                     }
                 }
             }
@@ -228,61 +230,65 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 void
 ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
 {
-    QString matchAlbumName=Common::removeNonAlphanumeric(_currentPtr->albumTitle()).toLower();
-    QString foundAlbumName;
-    _allReviews.clear();
-
-    if(r->error()==QNetworkReply::NoError)
+    if(_currentPtr->itemType()==SBIDBase::sb_type_album)
     {
-        if(r->open(QIODevice::ReadOnly))
+        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+        QString matchAlbumName=Common::removeNonAlphanumeric(albumPtr->albumTitle()).toLower();
+        QString foundAlbumName;
+        _allReviews.clear();
+
+        if(r->error()==QNetworkReply::NoError)
         {
-            QByteArray a=r->readAll();
-            QString s=QString(a.data());
-
-            QDomDocument doc;
-            QString errorMsg;
-            int errorLine;
-            int errorColumn;
-            doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
-
-            QDomElement e=doc.documentElement();
-
-            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+            if(r->open(QIODevice::ReadOnly))
             {
-                QDomElement e = n.toElement();
+                QByteArray a=r->readAll();
+                QString s=QString(a.data());
 
-                if(!e.isNull())
+                QDomDocument doc;
+                QString errorMsg;
+                int errorLine;
+                int errorColumn;
+                doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
+
+                QDomElement e=doc.documentElement();
+
+                for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                 {
-                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                    QDomElement e = n.toElement();
+
+                    if(!e.isNull())
                     {
-                        QDomElement e = n.toElement();
-
-                        if(!e.isNull())
+                        for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                         {
-                            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                            QDomElement e = n.toElement();
+
+                            if(!e.isNull())
                             {
-                                QDomElement e = n.toElement();
+                                for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                                {
+                                    QDomElement e = n.toElement();
 
-                                if(e.tagName()=="title")
-                                {
-                                    foundAlbumName=Common::removeNonAlphanumeric(e.text()).toLower();
-                                }
-                                if(!e.isNull())
-                                {
-                                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                                    if(e.tagName()=="title")
                                     {
-                                        QDomElement e = n.toElement();
+                                        foundAlbumName=Common::removeNonAlphanumeric(e.text()).toLower();
+                                    }
+                                    if(!e.isNull())
+                                    {
+                                        for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                                        {
+                                            QDomElement e = n.toElement();
 
-                                        if(e.attribute("type")=="wikipedia" && matchAlbumName==foundAlbumName && _wikipediaURLRetrievedFlag==0)
-                                        {
-                                            QString urlString=e.text() + "&printable=yes";
-                                            urlString.replace("/wiki/","/w/index.php?title=");
-                                            _wikipediaURLRetrievedFlag=1;
-                                            emit albumWikipediaPageAvailable(urlString);
-                                        }
-                                        else if(e.attribute("type")=="review" && matchAlbumName==foundAlbumName)
-                                        {
-                                            _allReviews.append(e.text());
+                                            if(e.attribute("type")=="wikipedia" && matchAlbumName==foundAlbumName && _wikipediaURLRetrievedFlag==0)
+                                            {
+                                                QString urlString=e.text() + "&printable=yes";
+                                                urlString.replace("/wiki/","/w/index.php?title=");
+                                                _wikipediaURLRetrievedFlag=1;
+                                                emit albumWikipediaPageAvailable(urlString);
+                                            }
+                                            else if(e.attribute("type")=="review" && matchAlbumName==foundAlbumName)
+                                            {
+                                                _allReviews.append(e.text());
+                                            }
                                         }
                                     }
                                 }
@@ -292,17 +298,17 @@ ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
                 }
             }
         }
-    }
-    else if(0)
-    {
-        QMessageBox messagebox;
-        messagebox.setText("Error processing network request:");
-        messagebox.setInformativeText(r->errorString());
-        messagebox.exec();
-    }
-    if(_allReviews.count()>0)
-    {
-        emit albumReviewsAvailable(_allReviews);
+        else if(0)
+        {
+            QMessageBox messagebox;
+            messagebox.setText("Error processing network request:");
+            messagebox.setInformativeText(r->errorString());
+            messagebox.exec();
+        }
+        if(_allReviews.count()>0)
+        {
+            emit albumReviewsAvailable(_allReviews);
+        }
     }
 }
 
@@ -338,7 +344,7 @@ void
 ExternalData::handleMBIDNetwork(QNetworkReply *r)
 {
     bool matchFound=0;
-    QString title=Common::removeNonAlphanumeric(_currentPtr->songPerformerName().toLower());
+    QString title=Common::removeNonAlphanumeric(_currentPtr->commonPerformerName().toLower());
     _performerMBIDRetrievedFlag=1;
 
     if(r->error()==QNetworkReply::NoError)
@@ -626,85 +632,89 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
 void
 ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
 {
-    QString matchSongName=Common::removeNonAlphanumeric(_currentPtr->songTitle()).toLower();
-    QString foundSongName;
-    int index=0;
-    QString mbid;
-
-    if(r->error()==QNetworkReply::NoError)
+    if(_currentPtr->itemType()==SBIDBase::sb_type_song)
     {
-        if(r->open(QIODevice::ReadOnly))
+        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(_currentPtr);
+        QString matchSongName=Common::removeNonAlphanumeric(songPtr->songTitle()).toLower();
+        QString foundSongName;
+        int index=0;
+        QString mbid;
+
+        if(r->error()==QNetworkReply::NoError)
         {
-            QByteArray a=r->readAll();
-
-            QDomDocument doc;
-            QString errorMsg;
-            int errorLine;
-            int errorColumn;
-            doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
-
-            QDomElement e=doc.documentElement();
-
-            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+            if(r->open(QIODevice::ReadOnly))
             {
-                QDomElement e = n.toElement();
+                QByteArray a=r->readAll();
 
-                if(!e.isNull() && e.hasChildNodes()==1)
+                QDomDocument doc;
+                QString errorMsg;
+                int errorLine;
+                int errorColumn;
+                doc.setContent(a,0,&errorMsg,&errorLine,&errorColumn);
+
+                QDomElement e=doc.documentElement();
+
+                for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                 {
-                    for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                    QDomElement e = n.toElement();
+
+                    if(!e.isNull() && e.hasChildNodes()==1)
                     {
-                        QDomElement e = n.toElement();
-
-                        if(e.attribute("type")!="Song" && e.attribute("type")!="")
+                        for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                         {
-                            continue;
-                        }
+                            QDomElement e = n.toElement();
 
-                        mbid=e.attribute("id");
-
-                        if(!e.isNull())
-                        {
-                            for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
+                            if(e.attribute("type")!="Song" && e.attribute("type")!="")
                             {
-                                QDomElement e = n.toElement();
+                                continue;
+                            }
 
-                                if(e.tagName()=="title")
+                            mbid=e.attribute("id");
+
+                            if(!e.isNull())
+                            {
+                                for(QDomNode n=e.firstChild();!n.isNull();n = n.nextSibling())
                                 {
-                                    index++;
-                                    foundSongName=Common::removeNonAlphanumeric(e.text()).toLower();
-                                    if(foundSongName==matchSongName)
-                                    {
-                                        //	Now fire off a request to get all URLs for this work.
-                                        QNetworkAccessManager* mb=new QNetworkAccessManager(this);
-                                        connect(mb, SIGNAL(finished(QNetworkReply *)),
-                                                this, SLOT(handleSongURLFromMB(QNetworkReply*)));
+                                    QDomElement e = n.toElement();
 
-                                        QString urlString=QString("http://musicbrainz.org/ws/2/work/%1?inc=url-rels")
-                                            .arg(mbid)
-                                        ;
-                                        mb->get(QNetworkRequest(QUrl(urlString)));
-                                        return;
+                                    if(e.tagName()=="title")
+                                    {
+                                        index++;
+                                        foundSongName=Common::removeNonAlphanumeric(e.text()).toLower();
+                                        if(foundSongName==matchSongName)
+                                        {
+                                            //	Now fire off a request to get all URLs for this work.
+                                            QNetworkAccessManager* mb=new QNetworkAccessManager(this);
+                                            connect(mb, SIGNAL(finished(QNetworkReply *)),
+                                                    this, SLOT(handleSongURLFromMB(QNetworkReply*)));
+
+                                            QString urlString=QString("http://musicbrainz.org/ws/2/work/%1?inc=url-rels")
+                                                .arg(mbid)
+                                            ;
+                                            mb->get(QNetworkRequest(QUrl(urlString)));
+                                            return;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if(index>0)
-            {
-                //	If this point is reached, we need to do another iteration
-                _currentOffset+=MUSICBRAINZ_MAXNUM;
-                _getMBIDAndMore();
+                if(index>0)
+                {
+                    //	If this point is reached, we need to do another iteration
+                    _currentOffset+=MUSICBRAINZ_MAXNUM;
+                    _getMBIDAndMore();
+                }
             }
         }
-    }
-    else if(0)
-    {
-        QMessageBox messagebox;
-        messagebox.setText("Error processing network request:");
-        messagebox.setInformativeText(r->errorString());
-        messagebox.exec();
+        else if(0)
+        {
+            QMessageBox messagebox;
+            messagebox.setText("Error processing network request:");
+            messagebox.setInformativeText(r->errorString());
+            messagebox.exec();
+        }
     }
 }
 
@@ -874,6 +884,8 @@ ExternalData::_getMBIDAndMore()
         }
         else if(_currentPtr->itemType()==SBIDBase::sb_type_album)
         {
+            SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+
             //	1.	Artwork
             if(_artworkRetrievedFlag==0)
             {
@@ -882,7 +894,7 @@ ExternalData::_getMBIDAndMore()
                         this, SLOT(handleAlbumImageURLFromAS(QNetworkReply*)));
 
                 QString urlString=QString("http://ws.audioscrobbler.com/2.0/?method=album.search&limit=9999&api_key=5dacbfb3b24d365bcd43050c6149a40d&album=%1").
-                        arg(_currentPtr->albumTitle());
+                        arg(albumPtr->albumTitle());
                 m->get(QNetworkRequest(QUrl(urlString)));
 
             }

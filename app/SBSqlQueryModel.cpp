@@ -100,11 +100,14 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     emit assign(fromIDPtr,toIDPtr);
     if(row>=0)
     {
-        if(fromIDPtr->playPosition()>row)
-        {
-            row+=1;
-        }
-        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
+        //	CWIP: is this always performance?
+        //	If yes: use the performance specific method
+        //	If no: propagate/instantiate playPosition back to SBIDBase
+//        if(fromIDPtr->playPosition()>row)
+//        {
+//            row+=1;
+//        }
+//        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
         emit assign(fromIDPtr,row);
     }
     else

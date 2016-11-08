@@ -41,14 +41,21 @@ public:
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
+    inline bool originalPerformerFlag() const { return _originalPerformerFlag; }
     inline QString path() const { return _path; }
     inline int playlistPosition() const { return _playlistPosition; }
+    inline int playPosition() const { return _sb_play_position; }
     void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
+    void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
     int songID() const;
     int songPerformerID() const;
     QString songPerformerName() const;
     QString songTitle() const;
     bool updateLastPlayDate();
+    inline int year() const { return _year; }
+
+    //	Pointers
+    inline SBIDSongPtr songPtr() const { return _songPtr; }
 
     //	Operators
     virtual operator QString();
@@ -83,6 +90,7 @@ private:
     int              _sb_album_position;
     bool             _originalPerformerFlag;
     QString          _path;
+    int              _year;
 
     //	Attributes derived from core attributes
     SBIDAlbumPtr     _albumPtr;
@@ -90,7 +98,8 @@ private:
     SBIDSongPtr      _songPtr;
 
     //	Not instantiated
-    int                _playlistPosition;
+    int              _sb_play_position;	//	current position in SBTabQueuedSongs
+    int              _playlistPosition;
 
     void _init();
     void _setAlbumPtr();

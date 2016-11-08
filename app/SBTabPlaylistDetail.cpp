@@ -29,7 +29,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemType!=SBIDBase::sb_type_invalid)
     {
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->playlistID());
+        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
         if(playlistPtr)
         {
             playlistPtr->deletePlaylistItem(selected.itemType,selected.playlistPosition);
@@ -91,7 +91,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     if(selected.itemType==SBIDBase::sb_type_invalid)
     {
         //	Label clicked
-        ptr=SBIDPlaylist::retrievePlaylist(currentPtr->playlistID());
+        ptr=SBIDPlaylist::retrievePlaylist(currentPtr->itemID());
     }
     else if(selected.itemType==SBIDBase::sb_type_song)
     {
@@ -99,7 +99,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
         //	based on playlistID, playlistPosition/
         if(currentPtr && currentPtr->itemType()==SBIDBase::sb_type_playlist)
         {
-            ptr=SBIDPlaylist::retrievePlaylist(currentPtr->playlistID());
+            ptr=SBIDPlaylist::retrievePlaylist(currentPtr->itemID());
         }
     }
     else
@@ -283,7 +283,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     //SBIDPlaylist playlist;
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
     {
-        playlistPtr=SBIDPlaylist::retrievePlaylist(si.ptr()->playlistID());
+        playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(si.ptr());
     }
 
     if(!playlistPtr)
@@ -299,7 +299,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     mw->ui.labelPlaylistDetailIcon->setPtr(playlistPtr);
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(playlistPtr->playlistName());
-    const QString detail=QString("%1 items ").arg(playlistPtr->count1())+QChar(8226)+QString(" %2").arg(playlistPtr->duration().toString());
+    const QString detail=QString("%1 items ").arg(playlistPtr->numItems())+QChar(8226)+QString(" %2").arg(playlistPtr->duration().toString());
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;

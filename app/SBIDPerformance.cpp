@@ -17,9 +17,14 @@ SBIDPerformance::SBIDPerformance(const SBIDPerformance &p):SBIDBase(p)
     _sb_album_position    =p._sb_album_position;
     _originalPerformerFlag=p._originalPerformerFlag;
     _path                 =p._path;
+    _year                 =p._year;
+
     _albumPtr             =p._albumPtr;
     _performerPtr         =p._performerPtr;
     _songPtr              =p._songPtr;
+
+    _sb_play_position     =p._sb_play_position;
+    _playlistPosition     =p._playlistPosition;
 }
 
 SBIDPerformance::~SBIDPerformance()
@@ -63,8 +68,8 @@ SBIDPerformance::genericDescription() const
     return QString("Performance %1 [%2] / %3 - %4")
         .arg(this->text())
         .arg(this->_duration.toString())
-        .arg(this->_songPerformerName)
-        .arg(this->_albumTitle.length()?QString("on '%1'").arg(_albumTitle):QString())
+        .arg(this->songPerformerName())
+        .arg(this->albumTitle().length()?QString("on '%1'").arg(albumTitle()):QString())
     ;
 }
 
@@ -178,6 +183,7 @@ SBIDPerformance::updateLastPlayDate()
     return 1;	//	CWIP: need proper error handling
 }
 
+///	Operators
 SBIDPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
@@ -386,7 +392,7 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performance._notes                =r.value(7).toString();
     performance._path                 =r.value(8).toString();
 
-    qDebug() << SB_DEBUG_INFO << performance._sb_song_id << performance._sb_song_performer_id << performance.key();
+    qDebug() << SB_DEBUG_INFO << performance._sb_song_id << performance._sb_performer_id << performance.key();
 
     return std::make_shared<SBIDPerformance>(performance);
 }
@@ -460,6 +466,13 @@ SBIDPerformance::retrieveSQL(const QString& key)
 void
 SBIDPerformance::_init()
 {
+    _notes="";
+    _sb_song_id=-1;
+    _sb_performer_id=-1;
+    _sb_album_id=-1;
+    _sb_album_position=-1;
+    _originalPerformerFlag=0;
+    _path="";
     _albumPtr=SBIDAlbumPtr();
     _performerPtr=SBIDPerformerPtr();
     _songPtr=SBIDSongPtr();

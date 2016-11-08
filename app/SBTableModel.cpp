@@ -72,13 +72,15 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 
         if(performancePtr)
         {
+            qDebug() << SB_DEBUG_INFO << performancePtr->albumTitle();
+
             _setItem(i,0,QString("%1").arg(SBIDBase::sb_type_album));
             _setItem(i,1,QString("%1").arg(performancePtr->albumID()));
             _setItem(i,2,performancePtr->albumTitle());
             _setItem(i,3,performancePtr->duration().toString(Duration::sb_hhmmss_format));
             _setItem(i,4,QString("%1").arg(performancePtr->year()));
             _setItem(i,5,QString("%1").arg(SBIDBase::sb_type_performer));
-            _setItem(i,6,QString("%1").arg(performancePtr->performerID()));
+            _setItem(i,6,QString("%1").arg(performancePtr->songPerformerID()));
             _setItem(i,7,performancePtr->songPerformerName());
             _setItem(i,8,QString("%1").arg(SBIDBase::sb_type_song));
             _setItem(i,9,QString("%1").arg(performancePtr->albumPosition()));

@@ -25,13 +25,14 @@ SBTabSongEdit::hasEdits() const
     const SBIDPtr& ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr->itemType()==SBIDBase::sb_type_song)
     {
-        if(ptr->songTitle()!=mw->ui.songEditTitle->text() ||
-            ptr->songPerformerName()!=mw->ui.songEditPerformerName->text() ||
-            ptr->year()!=mw->ui.songEditYearOfRelease->text().toInt() ||
-            ptr->notes()!=mw->ui.songEditNotes->text() ||
-            ptr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
+        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(ptr);
+        if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
+            songPtr->songPerformerName()!=mw->ui.songEditPerformerName->text() ||
+            songPtr->year()!=mw->ui.songEditYearOfRelease->text().toInt() ||
+            songPtr->notes()!=mw->ui.songEditNotes->text() ||
+            songPtr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
         )
         {
             return 1;

@@ -40,7 +40,7 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     if(ptr->itemType()==SBIDBase::sb_type_performance)
     {
         SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
-        QList<QStandardItem *> newRow=createRecord(performancePtr,ptr->playPosition());
+        QList<QStandardItem *> newRow=createRecord(performancePtr,performancePtr->playPosition());
 
         //	Add record
         this->insertRow(row,newRow);

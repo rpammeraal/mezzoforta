@@ -77,14 +77,14 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             {
                 itemID=v.toInt();
             }
-            else if(header=="#")
-            {
-                if(ptr)
-                {
-                    //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                    ptr->_sb_album_position=v.toInt();
-                }
-            }
+//            else if(header=="#")
+//            {
+//                if(ptr)
+//                {
+//                    //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
+//                    ptr->_sb_album_position=v.toInt();
+//                }
+//            }
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
@@ -159,6 +159,8 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             itemID=v.toInt();
         }
+
+        /*
         if(ptr)
         {
             if(header=="sb_song_id" && ptr)
@@ -279,6 +281,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         {
             text=v.toString();
         }
+        */
 
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {

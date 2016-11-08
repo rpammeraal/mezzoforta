@@ -12,7 +12,17 @@
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
 {
-    this->_performances=c._performances;
+    _lyrics                =c._lyrics;
+    _notes                 =c._notes;
+    _sb_song_id            =c._sb_song_id;
+    _sb_song_performer_id  =c._sb_song_performer_id;
+    _songTitle             =c._songTitle;
+    _year                  =c._year;
+
+    _performerPtr          =c._performerPtr;
+
+    _performance2playlistID=c._performance2playlistID;
+    _performances          =c._performances;
 }
 
 SBIDSong::~SBIDSong()
@@ -219,22 +229,6 @@ SBIDSong::albums() const
     tm->populateAlbumsBySong(_performances);
     return tm;
 }
-
-//QVector<int>
-//SBIDSong::albumIDList() const
-//{
-//    QVector<int> list;
-
-//    for(int i=0;i<_performances.size();i++)
-//    {
-//        int albumID=_performances.at(i)->albumID();
-//        if(!list.contains(albumID))
-//        {
-//            list.append(albumID);
-//        }
-//    }
-//    return list;
-//}
 
 QVector<SBIDPerformancePtr>
 SBIDSong::allPerformances() const
@@ -573,18 +567,34 @@ SBIDSong::performerIDList() const
 //}
 
 
-void
-SBIDSong::setPlaylistPosition(int playlistPosition)
-{
-    _sb_playlist_position=playlistPosition;
-    setChangedFlag();
-}
+//void
+//SBIDSong::setPlaylistPosition(int playlistPosition)
+//{
+//    _sb_playlist_position=playlistPosition;
+//    setChangedFlag();
+//}
 
 void
 SBIDSong::setSongTitle(const QString &songTitle)
 {
     _songTitle=songTitle;
     setChangedFlag();
+}
+
+int
+SBIDSong::songPerformerID() const
+{
+    return _sb_song_performer_id;
+}
+
+QString
+SBIDSong::songPerformerName() const
+{
+    if(!_performerPtr)
+    {
+        const_cast<SBIDSong *>(this)->_setPerformerPtr();
+    }
+    return _performerPtr?_performerPtr->performerName():"SBIDPerformance::songPerformerName()::performerPtr null";
 }
 
 bool
@@ -1093,36 +1103,16 @@ SBIDSong::updateSoundexFields()
 }
 
 ///	Operators
-bool
-SBIDSong::operator ==(const SBIDSong& i) const
-{
-    if(
-        i._sb_song_id==this->_sb_song_id &&
-        i._sb_song_performer_id==this->_sb_song_performer_id &&
-        i._sb_album_id==this->_sb_album_id &&
-        i._sb_album_position==this->_sb_album_position)
-    {
-        return 1;
-    }
-    return 0;
-}
-
 SBIDSong::operator QString() const
 {
-    QString songTitle=this->_songTitle.length() ? this->_songTitle : "<N/A>";
-    QString songPerformerName=this->_songPerformerName.length() ? this->_songPerformerName : "<N/A>";
-    QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
+    QString songTitle=this->_songTitle.length() ? this->_songTitle:"<N/A>";
+    QString songPerformerName=_performerPtr?this->songPerformerName():"not retrieved yet";
 
-    return QString("SBIDSong:%1,%2:t=%3:p=%4 %5,%6:a=%7 %8,%9")
+    return QString("SBIDSong:%1:t=%2:p=%3 %4")
             .arg(this->_sb_song_id)
-            .arg(this->_sb_tmp_item_id)
             .arg(songTitle)
             .arg(songPerformerName)
             .arg(this->_sb_song_performer_id)
-            .arg(this->_sb_tmp_performer_id)
-            .arg(albumTitle)
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_tmp_album_id)
     ;
 }
 
@@ -1292,10 +1282,8 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     song._songTitle            =r.value(1).toString();
     song._notes                =r.value(2).toString();
     song._sb_song_performer_id =r.value(3).toInt();
-    song._songPerformerName    =r.value(4).toString();
     song._year                 =r.value(5).toInt();
     song._lyrics               =r.value(6).toString();
-    song._originalPerformerFlag=r.value(7).toBool();
 
     if(!noDependentsFlag)
     {
@@ -1337,17 +1325,14 @@ SBIDSong::retrieveSQL(const QString& key)
             "s.song_id,"
             "s.title, "
             "s.notes, "
-            "a.artist_id, "
-            "a.name, "
+            "p.artist_id, "
             "p.year, "
-            "l.lyrics, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END "
+            "l.lyrics "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
+                    "s.song_id=p.song_id AND "
+                    "p.role_id=0 "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
         "%1  "
@@ -1425,4 +1410,10 @@ SBIDSong::_loadPlaylists()
         }
     }
     qDebug() << SB_DEBUG_INFO;
+}
+
+void
+SBIDSong::_setPerformerPtr()
+{
+    _performerPtr=SBIDPerformer::retrievePerformer(_sb_song_performer_id);
 }

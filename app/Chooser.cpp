@@ -179,7 +179,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 
             if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
             {
-                SBIDPlaylistPtr assignedPlaylistPtr=SBIDPlaylist::retrievePlaylist(toBeAssignedToPtr->playlistID());
+                SBIDPlaylistPtr assignedPlaylistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(toBeAssignedToPtr);
                 if(*assignedPlaylistPtr==*playlistPtr)
 
                 //SBIDPlaylist assignedPlaylist=SBIDPlaylist(*toBeAssignedToPtr);
@@ -195,14 +195,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
             {
                 SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
-                if(toBeAssignedToPtr->albumID()==-1)
-                {
-                    fromPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
-                }
-                else
-                {
-                    fromPtr=songPtr;
-                }
+                fromPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
             }
             else
             {
@@ -434,7 +427,7 @@ void
 Chooser::recalculateDuration()
 {
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
-    SBIDPlaylist::recalculatePlaylistDuration(playlistPtr);
+    playlistPtr->recalculatePlaylistDuration();
 }
 
 ///	PROTECTED METHODS

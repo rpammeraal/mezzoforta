@@ -23,7 +23,6 @@ public:
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual bool compare(const SBIDBase& i) const;
 
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
@@ -35,10 +34,17 @@ public:
     virtual QString type() const;
 
     //	Album specific methods
+    inline int albumID() const { return _sb_album_id; }
+    inline int albumPerformerID() const { return _sb_album_performer_id; }
+    inline QString albumTitle() const { return _albumTitle; }
+    inline QString albumPerformerName() const { return _albumPerformerName; }
     QStringList addSongToAlbum(const SBIDSong& song) const;
+    inline QString genre() const { return _genre; }
     SBSqlQueryModel* matchAlbum() const;
     QStringList mergeAlbum(const SBIDBase& to) const;	//	CWIP: amgr
     QStringList mergeSongInAlbum(int newPosition, const SBIDBase& song) const;	//	CWIP: amgr
+    inline QString notes() const { return _notes; }
+    int numPerformances() const;
     SBTableModel* performances() const;
     QVector<SBIDPerformancePtr> performanceList() const { return _performances; }
     QStringList removeAlbum();	//	CWIP: amgr
@@ -52,9 +58,9 @@ public:
     static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
     QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);  //	CWIP: cmp with
     QStringList updateSongOnAlbum(const SBIDSong& song);                 //	CWIP: this one, possible merge, otherwise rename
+    inline int year() const { return _year; }
 
     //	Operators
-    virtual bool operator==(const SBIDBase& i) const;
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
@@ -80,6 +86,17 @@ protected:
     QStringList updateSQL() const;
 
 private:
+    QString                     _albumTitle;
+    QString                     _albumPerformerName;
+    QString                     _genre;
+    QString                     _notes;
+    int                         _sb_album_id;
+    int                         _sb_album_performer_id;
+    int                         _year;
+
+    //	Attributes derived from core attributes
+    //SBIDPerformancePtr          _performancePtr; //	not used yet
+
     QVector<SBIDPerformancePtr> _performances;
 
     void _init();

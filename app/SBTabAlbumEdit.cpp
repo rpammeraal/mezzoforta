@@ -427,12 +427,14 @@ SBTabAlbumEdit::hasEdits() const
     const SBIDPtr& ptr=this->currentScreenItem().ptr();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
+    if(ptr->itemType()==SBIDBase::sb_type_album)
     {
+        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(ptr);
+
         if(_hasChanges ||
-            ptr->albumTitle()!=mw->ui.albumEditTitle->text() ||
-            ptr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
-            ptr->year()!=mw->ui.albumEditYear->text().toInt()
+            albumPtr->albumTitle()!=mw->ui.albumEditTitle->text() ||
+            albumPtr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
+            albumPtr->year()!=mw->ui.albumEditYear->text().toInt()
         )
         {
             return 1;

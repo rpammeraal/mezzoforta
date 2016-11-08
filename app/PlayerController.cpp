@@ -358,8 +358,8 @@ PlayerController::_refreshPlayingNowData() const
             .arg(_currentPerformancePlayingPtr->songTitle())
 
             .arg(SBIDBase::sb_type_performer)
-            .arg(_currentPerformancePlayingPtr->performerID())
-            .arg(_currentPerformancePlayingPtr->performerName())
+            .arg(_currentPerformancePlayingPtr->songPerformerID())
+            .arg(_currentPerformancePlayingPtr->songPerformerName())
 
             .arg(SBIDBase::sb_type_album)
             .arg(_currentPerformancePlayingPtr->albumID())
