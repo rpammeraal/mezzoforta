@@ -280,21 +280,18 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Get detail
-    //SBIDPlaylist playlist;
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
     {
         playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(si.ptr());
     }
 
     if(!playlistPtr)
-    //if(playlist.validFlag()==0)
     {
         //	Not found
         return ScreenItem();
     }
 
     ScreenItem currentScreenItem=si;
-    //SBIDPtr playlistPtr=std::make_shared<SBIDPlaylist>(playlist);
     currentScreenItem.updateSBIDBase(playlistPtr);
     mw->ui.labelPlaylistDetailIcon->setPtr(playlistPtr);
 
@@ -303,9 +300,9 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBSqlQueryModel* qm=playlistPtr->getAllItemsByPlaylist();
-    populateTableView(tv,qm,0);
-    connect(qm, SIGNAL(assign(const SBIDPtr&,int)),
+    SBTableModel* tm=playlistPtr->items();
+    populateTableView(tv,tm,0);
+    connect(tm, SIGNAL(assign(const SBIDPtr&,int)),
             this, SLOT(movePlaylistItem(const SBIDPtr&, int)));
 
     //	Drag & drop mw->ui.playlistDetailSongList->setAcceptDrops(1);

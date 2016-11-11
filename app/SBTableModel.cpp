@@ -17,10 +17,6 @@ SBTableModel::data(const QModelIndex &item, int role) const
         return QVariant(QFont("Trebuchet MS",13));
     }
     QVariant v=QStandardItemModel::data(item,role);
-//    if(v.isValid() && v.isNull()==0 && v.toString().length()>0)
-//    {
-//        qDebug() << SB_DEBUG_INFO << item << this->rowCount() << v.toString().length() << v.toString();
-//    }
     return v;
 }
 
@@ -48,7 +44,6 @@ void
 SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 {
     _init();
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 
     //	Populate header
     QStringList header;
@@ -72,8 +67,6 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 
         if(performancePtr)
         {
-            qDebug() << SB_DEBUG_INFO << performancePtr->albumTitle();
-
             _setItem(i,0,QString("%1").arg(SBIDBase::sb_type_album));
             _setItem(i,1,QString("%1").arg(performancePtr->albumID()));
             _setItem(i,2,performancePtr->albumTitle());
@@ -87,15 +80,12 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
             _setItem(i,10,performancePtr->path());
         }
     }
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 }
 
 void
 SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances)
 {
     _init();
-
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 
     QStringList header;
     header.append("SB_MAIN_ITEM");
@@ -112,7 +102,6 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performanc
     header.append("SB_POSITION");
     header.append("SB_ALBUM_POSITION");
     header.append("SB_PATH");
-    header.append("album_title");
     setHorizontalHeaderLabels(header);
 
     //	Populate data
@@ -136,20 +125,14 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performanc
             _setItem(i,11,QString("%1").arg(Common::sb_field_album_position));
             _setItem(i,12,QString("%1").arg(performancePtr->albumPosition()));
             _setItem(i,13,performancePtr->path());
-            _setItem(i,14,performancePtr->albumTitle());
-
-            qDebug() << SB_DEBUG_INFO << *performancePtr;
         }
     }
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 }
 
 void
 SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID)
 {
     _init();
-
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
 
     //	Populate header
     QStringList header;
@@ -191,7 +174,36 @@ SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlis
             i++;
         }
     }
-    qDebug() << SB_DEBUG_INFO << this->columnCount() << this->rowCount();
+}
+
+void
+SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
+{
+    _init();
+
+    //	Populate header
+    QStringList header;
+    header.append("#");
+    header.append("SB_ITEM_KEY");
+    header.append("item");
+    setHorizontalHeaderLabels(header);
+
+    QMapIterator<int,SBIDPtr> it(items);
+    int i=0;
+    while(it.hasNext())
+    {
+        it.next();
+        SBIDPtr itemPtr=it.value();
+
+        if(itemPtr)
+        {
+
+            _setItem(i,0,QString("%1").arg(it.key()+1));
+            _setItem(i,1,QString("%1").arg(itemPtr->key()));
+            _setItem(i,2,QString("%1").arg(itemPtr->genericDescription()));
+            i++;
+        }
+    }
 }
 
 ///	Private methods

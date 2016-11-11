@@ -16,7 +16,8 @@ public:
 signals:
 
 public slots:
-    void recalculateAllPlaylistDurations() const;
+    //	NOT USED ANYMORE -- CODE LEFT AS EXAMPLE
+    //void recalculateAllPlaylistDurations() const;
 
 private:
     QSemaphore* s_cpd;

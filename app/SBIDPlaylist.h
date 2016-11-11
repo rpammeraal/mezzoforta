@@ -10,6 +10,8 @@ typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
 
 #include "SBIDSong.h"
 
+class SBTableModel;
+
 class SBIDPlaylist : public SBIDBase
 {
 public:
@@ -20,7 +22,6 @@ public:
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-//    virtual SBSqlQueryModel* findMatches(const QString& name) const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
@@ -33,16 +34,14 @@ public:
     void assignPlaylistItem(SBIDPtr ptr) ;	//	CWIP:pmgr rewrite
     void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;	//	CWIP:pmgr rewrite
     inline Duration duration() const { return _duration; }
-    SBSqlQueryModel* getAllItemsByPlaylist() const;
     SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
+    SBTableModel* items() const;
     inline int numItems() const { return _num_items; }
     inline int playlistID() const { return _sb_playlist_id; }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
-    static void recalculateAllPlaylistDurations();
     void reorderItem(const SBIDPtr& fromPtr, int row) const;	//	CWIP:pmgr rewrite
     void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
-    //void setDuration(const Duration& duration) { _duration=duration;  }
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 
@@ -72,16 +71,19 @@ protected:
     QStringList updateSQL() const;
 
 private:
-    Duration _duration;
-    int      _sb_playlist_id;
-    QString  _playlistName;
+    Duration          _duration;
+    int               _sb_playlist_id;
+    QString           _playlistName;
 
     //	Not instantiated
-    int      _num_items;
+    int               _num_items;
+
+    QMap<int,SBIDPtr> _items;
 
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root);
     void _init();
+    void _loadItems(bool showProgressDialogFlag=1);
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID);
 };

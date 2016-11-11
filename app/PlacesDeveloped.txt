@@ -631,7 +631,20 @@ X	playlists that song belongs to can be edited
     -	Subclasses of SBID, pretty much all of DataEntity classes can go in subclasses of SBID
 	-	At that point, we can tell to a SBID instance: throw yourself in the queue, play yourself, etc.
 
+20161110:
+-	Added progress dialog when playlist is loaded.
+-	Updating MBID() for performers fixed().
+    -	Playlist:Moose!Music/Playlist:Il venti d'azzuro/Album:I'l venti d'azzrirp/Song:Visitors/Performer:Koto
+	-	Directly look up Performer:Koto
+-	bug with SBIDManagerTemplate fixed -- executeBatch called multiple times. SBIDBase::isSaved() is called after each object has been updated in the database.
+-	all navigation tested
+-	test search
+
 <current>
+*	No SBID* class should create SBSqlQueryModel. This should be replaced with SBTableModel.
+*	test drag/drop to playlists
+*	test music player including play keys
+
 *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
 *	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
 

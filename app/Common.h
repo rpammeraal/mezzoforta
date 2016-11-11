@@ -8,8 +8,6 @@
 #include <QThread>
 #include <QTime>
 
-#include "SBIDBase.h"
-
 class QString;
 class QTableView;
 

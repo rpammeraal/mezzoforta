@@ -69,6 +69,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             n=aim->index(idx.row(),i);
             v=aim->data(n, Qt::DisplayRole);
 
+            if(header=="sb_item_key")
+            {
+                ptr=SBIDBase::createPtr(v.toString());
+                return ptr;
+            }
             if(header=="sb_item_type" || header=="sb_main_item")
             {
                 itemType=static_cast<SBIDBase::sb_type>(v.toInt());
@@ -77,14 +82,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             {
                 itemID=v.toInt();
             }
-//            else if(header=="#")
-//            {
-//                if(ptr)
-//                {
-//                    //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-//                    ptr->_sb_album_position=v.toInt();
-//                }
-//            }
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
@@ -104,8 +101,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
                 ptr=SBIDBase::createPtr(itemType,itemID);
-                //	reset index to go through all fields again
-                i=0;
+                return ptr;
             }
         }
     }
@@ -132,6 +128,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
+            return ptr;
         }
     }
     else if( idx.column()+1 >= _dragableColumnList.count())
@@ -160,135 +157,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             itemID=v.toInt();
         }
 
-        /*
-        if(ptr)
-        {
-            if(header=="sb_song_id" && ptr)
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_song_id=v.toInt();
-            }
-            else if(header=="title")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                switch(ptr->itemType())
-                {
-                case SBIDBase::sb_type_album:
-                    ptr->_albumTitle=v.toString();
-                    break;
-
-                case SBIDBase::sb_type_song:
-                    ptr->_songTitle=v.toString();
-                    break;
-
-                default:
-                    break;
-                }
-            }
-            else if(header=="song")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_songTitle=v.toString();
-            }
-            else if(header=="song_title")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_songTitle=v.toString();
-            }
-            else if(header=="song title")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_songTitle=v.toString();
-            }
-            else if(header=="sb_performer_id")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_song_performer_id=v.toInt();
-            }
-            else if(header=="sb_album_id")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_album_id=v.toInt();
-            }
-            else if(header=="sb_album_position")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_album_position=v.toInt();
-            }
-            else if(header=="sb_position_id")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_album_position=v.toInt();
-            }
-            else if(header=="performer")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                switch(ptr->itemType())
-                {
-                case SBIDBase::sb_type_album:
-                    ptr->_albumPerformerName=v.toString();
-                    break;
-
-                case SBIDBase::sb_type_song:
-                    ptr->_songPerformerName=v.toString();
-                    break;
-
-                case SBIDBase::sb_type_performer:
-                    ptr->_performerName=v.toString();
-                    break;
-
-                default:
-                    break;
-                }
-            }
-            else if(header=="album title")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_albumTitle=v.toString();
-            }
-            else if(header=="album_title")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_albumTitle=v.toString();
-            }
-            else if(header=="sb_path")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_path=v.toString();
-            }
-            else if(header=="sb_duration")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_duration=v.toTime();
-            }
-            else if(header=="duration")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_duration=v.toTime();
-            }
-            else if(header=="playlist")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_playlistName=v.toString();
-            }
-            else if(header=="#")
-            {
-                //	CWIP: this should not happen -- a ptr is created from itemID, itemType -- should not 'create' new ptr entities here
-                ptr->_sb_play_position=v.toInt();
-            }
-        }
-        if(header.left(3)!="sb_" && text.length()==0)
-        {
-            text=v.toString();
-        }
-        */
-
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
             ptr=SBIDBase::createPtr(itemType,itemID);
-            //	reset index to go through all fields again
-            //	CWIP: the above should not be neccessary anymore
-            i=0;
+            return ptr;
         }
     }
     return ptr;

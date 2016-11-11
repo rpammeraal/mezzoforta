@@ -1,11 +1,10 @@
-#include "DataAccessLayer.h"
-
 #include <QApplication>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QSettings>
 
+#include "DataAccessLayer.h"
 
 #include "Common.h"
 #include "Context.h"
@@ -81,7 +80,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             {
                 errorMsg=e.text();
                 successFlag=0;
-                qDebug() << SB_DEBUG_INFO << errorMsg;
+                qDebug() << SB_DEBUG_ERROR << errorMsg;
             }
             pd.setValue(++currentValue);
             QCoreApplication::processEvents();

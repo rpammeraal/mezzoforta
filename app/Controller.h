@@ -37,7 +37,6 @@ public:
     void refreshModels();
 
 signals:
-    void recalculateAllPlaylistDurations();
     void schemaChanged();
 
 public slots:
@@ -83,7 +82,6 @@ private:
 private slots:
     void _disableScreenNavigationButtons();
     void _resetStatusBar();
-    void _updateAllplaylistDurations();
 };
 
 

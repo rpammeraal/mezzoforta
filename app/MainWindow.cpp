@@ -1,7 +1,6 @@
 #include <QtWidgets>
 #include <QDebug>
 
-#include "Common.h"
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"

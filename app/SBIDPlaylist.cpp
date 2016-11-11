@@ -1,3 +1,5 @@
+#include <QProgressDialog>
+
 #include "SBIDPlaylist.h"
 
 #include "Context.h"
@@ -11,6 +13,8 @@ SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
     _sb_playlist_id=c._sb_playlist_id;
     _playlistName  =c._playlistName;
     _num_items     =c._num_items;
+
+    _items         =c._items;
 }
 
 SBIDPlaylist::~SBIDPlaylist()
@@ -31,14 +35,6 @@ SBIDPlaylist::commonPerformerName() const
     qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
     return QString("SBIDPlaylist::commonPerformerName");
 }
-
-//SBSqlQueryModel*
-//SBIDPlaylist::findMatches(const QString& name) const
-//{
-//    Q_UNUSED(name);
-//    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
-//    return NULL;
-//}
 
 QString
 SBIDPlaylist::genericDescription() const
@@ -334,95 +330,6 @@ SBIDPlaylist::deletePlaylistItem(SBIDBase::sb_type itemType,int playlistPosition
     }
 }
 
-SBSqlQueryModel*
-SBIDPlaylist::getAllItemsByPlaylist() const
-{
-    this->_reorderPlaylistPositions();
-
-    //	Main query
-    QString q=QString
-    (
-        "SELECT "
-            "pc.playlist_position as \"#\", "
-            "CASE "
-                "WHEN pc.playlist_playlist_id IS NOT NULL THEN %2 "
-                "WHEN pc.playlist_chart_id    IS NOT NULL THEN %3 "
-                "WHEN pc.playlist_record_id   IS NOT NULL THEN %4 "
-                "WHEN pc.playlist_artist_id   IS NOT NULL THEN %5 "
-            "END AS SB_ITEM_TYPE, "
-            "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
-            "CASE "
-                "WHEN pc.playlist_playlist_id IS NOT NULL THEN 'playlist' "
-                "WHEN pc.playlist_chart_id    IS NOT NULL THEN 'chart' "
-                "WHEN pc.playlist_record_id   IS NOT NULL THEN 'album' "
-                "WHEN pc.playlist_artist_id   IS NOT NULL THEN 'artist' "
-            "END || ': ' || "
-            "COALESCE(p.name,c.name,r.title,a.name) || "
-            "CASE "
-                "WHEN pc.playlist_record_id   IS NOT NULL THEN ' - ' || ra.name "
-                "WHEN pc.playlist_artist_id   IS NOT NULL AND pc.playlist_record_id IS NOT NULL THEN ' - ' || a.name "
-                "ELSE '' "
-            "END  as item, "
-            "0 AS SB_ITEM_TYPE1, "
-            "0 AS SB_ALBUM_ID, "
-            "0 AS SB_ITEM_TYPE2, "
-            "0 AS SB_POSITION_ID, "
-            "0 AS SB_ITEM_TYPE3, "
-            "a.artist_id AS SB_PERFORMER_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist_composite pc "
-                "LEFT JOIN ___SB_SCHEMA_NAME___playlist p ON "
-                    "pc.playlist_playlist_id=p.playlist_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___chart c ON "
-                    "pc.playlist_chart_id=c.chart_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "pc.playlist_record_id=r.record_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___artist ra ON "
-                    "r.artist_id=ra.artist_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "pc.playlist_artist_id=a.artist_id "
-        "WHERE "
-            "pc.playlist_id=%1 "
-        "UNION "
-        "SELECT "
-            "pp.playlist_position, "
-            "%6, "
-            "s.song_id, "
-            "'song - ' || s.title || ' [' || CAST(rp.duration AS VARCHAR) || '] / ' || a.name || ' - ' || r.title, "
-            "%3 AS SB_ITEM_TYPE1, "
-            "r.record_id AS SB_ALBUM_ID, "
-            "%7 AS SB_ITEM_TYPE2, "
-            "rp.record_position AS SB_POSITION_ID, "
-            "%5 AS SB_ITEM_TYPE3, "
-            "pp.artist_id AS SB_PERFORMER_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist_performance pp  "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "pp.song_id=s.song_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "pp.artist_id=a.artist_id "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "pp.song_id=rp.song_id AND "
-                    "pp.artist_id=rp.artist_id AND "
-                    "pp.record_id=rp.record_id AND "
-                    "pp.record_position=rp.record_position "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "rp.record_id=r.record_id "
-        "WHERE "
-            "pp.playlist_id=%1 "
-        "ORDER BY 1"
-    )
-            .arg(this->playlistID())
-            .arg(Common::sb_field_playlist_id)
-            .arg(Common::sb_field_chart_id)
-            .arg(Common::sb_field_album_id)
-            .arg(Common::sb_field_performer_id)
-            .arg(Common::sb_field_song_id)
-            .arg(Common::sb_field_album_position);
-
-    return new SBSqlQueryModel(q,0);
-}
-
 SBIDSongPtr
 SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 {
@@ -452,7 +359,6 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 
     if(query.next())
     {
-        qDebug() << SB_DEBUG_INFO;
         songPtr=SBIDSong::retrieveSong(query.value(0).toInt());
         //	CWIP:performance
         //songPtr->setCurrentPerformanceByAlbumPosition(query.value(1).toInt(),query.value(2).toInt());
@@ -460,48 +366,17 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
     return songPtr;
 }
 
-void
-SBIDPlaylist::recalculateAllPlaylistDurations()
+SBTableModel*
+SBIDPlaylist::items() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-    QString q=QString
-        (
-            "SELECT DISTINCT "
-                "0,playlist_id "
-            "FROM "
-                "playlist_performance pp "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT "
-                        "NULL "
-                    "FROM "
-                        "playlist_composite pc "
-                    "WHERE "
-                        "pp.playlist_id=pc.playlist_id "
-                ") "
-            "UNION "
-            "SELECT DISTINCT "
-                "1,playlist_id "
-            "FROM "
-                "playlist_composite "
-            "ORDER BY "
-                "1,2 "
-        );
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-
-    while(query.next())
+    if(_items.count()==0)
     {
-        //SBIDPlaylistPtr playlistPtr=pmgr->retrieve(query.value(1).toInt());
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(query.value(1).toInt());
-
-        playlistPtr->recalculatePlaylistDuration();
+        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
+        somewhere->_loadItems();
     }
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePlaylistContent(_items);
+    return tm;
 }
 
 void
@@ -1072,7 +947,7 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     playlist._sb_playlist_id=r.value(0).toInt();
     playlist._playlistName  =r.value(1).toString();
-    playlist._duration      =r.value(2).toTime();
+    playlist._duration      =r.value(2).toString();
     playlist._num_items     =r.value(3).toInt();
 
     return std::make_shared<SBIDPlaylist>(playlist);
@@ -1343,8 +1218,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 }
                 else
                 {
-                    //	CWIP:performance
-        qDebug() << SB_DEBUG_INFO;
                     SBIDSongPtr songPtr=SBIDSong::retrieveSong(allItems.value(6).toInt());
                     if(songPtr)
                     {
@@ -1484,7 +1357,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         QSqlQuery querySong(q,db);
         while(querySong.next())
         {
-        qDebug() << SB_DEBUG_INFO;
             SBIDSongPtr songPtr=SBIDSong::retrieveSong(querySong.value(1).toInt());
             if(songPtr)
             {
@@ -1508,6 +1380,148 @@ SBIDPlaylist::_init()
 {
     _sb_item_type=SBIDBase::sb_type_playlist;
     _sb_playlist_id=-1;
+}
+
+void
+SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    int maxValue=0;
+
+    QString q;
+
+    //	Retrieve number of items
+    q=QString
+    (
+        "SELECT SUM(cnt) "
+        "FROM "
+        "( "
+            "SELECT "
+                "COUNT(*) AS cnt "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_composite pc "
+            "WHERE "
+                "pc.playlist_id=%1 "
+            "UNION "
+            "SELECT "
+                "COUNT(*) AS cnt "
+            "FROM "
+                "___SB_SCHEMA_NAME___playlist_performance pp  "
+            "WHERE "
+                "pp.playlist_id=%1 "
+        ") a "
+    )
+        .arg(this->playlistID())
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery countList(q,db);
+    if(countList.next())
+    {
+        maxValue=countList.value(0).toInt();
+    }
+    qDebug() << SB_DEBUG_INFO << maxValue;
+
+    //	Retrieve detail
+    q=QString
+    (
+        "SELECT "
+            "pc.playlist_position as \"#\", "
+            "CASE "
+                "WHEN pc.playlist_playlist_id IS NOT NULL THEN %2 "
+                "WHEN pc.playlist_chart_id    IS NOT NULL THEN %3 "
+                "WHEN pc.playlist_record_id   IS NOT NULL THEN %4 "
+                "WHEN pc.playlist_artist_id   IS NOT NULL THEN %5 "
+            "END AS SB_ITEM_TYPE, "
+            "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
+            "0 AS SB_ALBUM_ID, "
+            "0 AS SB_POSITION_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_composite pc "
+        "WHERE "
+            "pc.playlist_id=%1 "
+        "UNION "
+        "SELECT "
+            "pp.playlist_position, "
+            "%6, "
+            "pp.song_id, "	//	not used, only to indicate a performance
+            "pp.record_id AS SB_ALBUM_ID, "
+            "pp.record_position AS SB_POSITION_ID "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_performance pp  "
+        "WHERE "
+            "pp.playlist_id=%1 "
+        "ORDER BY 1"
+    )
+            .arg(this->playlistID())
+            .arg(Common::sb_field_playlist_id)
+            .arg(Common::sb_field_chart_id)
+            .arg(Common::sb_field_album_id)
+            .arg(Common::sb_field_performer_id)
+            .arg(Common::sb_field_song_id)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    //	Set up progress dialog
+    QProgressDialog pd("Retrieving Playlist",QString(),0,maxValue);
+    if(maxValue<=10)
+    {
+        showProgressDialogFlag=0;
+    }
+
+    int currentValue=0;
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+        QCoreApplication::processEvents();
+    }
+
+    QSqlQuery queryList(q,db);
+    int playlistIndex=0;
+    while(queryList.next())
+    {
+        Common::sb_field itemType=static_cast<Common::sb_field>(queryList.value(1).toInt());
+        SBIDPtr itemPtr;
+
+        switch(itemType)
+        {
+        case Common::sb_field_playlist_id:
+        case Common::sb_field_chart_id:
+        case Common::sb_field_album_id:
+        case Common::sb_field_performer_id:
+            itemPtr=SBIDBase::createPtr(SBIDBase::convert(itemType),queryList.value(2).toInt(),1);
+            break;
+
+        case Common::sb_field_song_id:
+            itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt());
+            break;
+
+        case Common::sb_field_invalid:
+        case Common::sb_field_album_position:
+            break;
+        }
+        if(itemPtr)
+        {
+            _items[playlistIndex++]=itemPtr;
+        }
+        QCoreApplication::processEvents();
+        if(showProgressDialogFlag)
+        {
+            pd.setValue(++currentValue);
+        }
+    }
+    if(showProgressDialogFlag)
+    {
+        pd.setValue(maxValue);
+    }
 }
 
 void

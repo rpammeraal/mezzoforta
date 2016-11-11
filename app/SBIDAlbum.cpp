@@ -1320,7 +1320,7 @@ SBIDAlbum::createInDB()
     {
         peptr=pemgr->createInDB();
         peptr->setPerformerName("VARIOUS ARTISTS");
-        pemgr->commit(peptr,dal);
+        pemgr->commit(peptr,dal,0);
     }
 
     //	Insert
@@ -1401,7 +1401,6 @@ SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     album._genre                =r.value(6).toString();
     album._notes                =r.value(7).toString();
 
-    qDebug() << SB_DEBUG_INFO << album._sb_album_id << album._albumTitle;
     if(!noDependentsFlag)
     {
         album._loadPerformances();

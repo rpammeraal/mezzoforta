@@ -647,205 +647,205 @@ SBIDPerformer::updateSQL() const
     QString q;
     bool deletedFlag=this->deletedFlag();
 
-    //	Merged
-    if(mergedFlag())
-    {
-        //	1.	artist_rel
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___artist_rel "
-            "SET     "
-                "artist1_id=%1 "
-            "WHERE "
-                "artist1_id=%2 "
-        )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//    //	Merged
+//    if(mergedFlag())
+//    {
+//        //	1.	artist_rel
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___artist_rel "
+//            "SET     "
+//                "artist1_id=%1 "
+//            "WHERE "
+//                "artist1_id=%2 "
+//        )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___artist_rel "
-            "SET     "
-                "artist2_id=%1 "
-            "WHERE "
-                "artist2_id=%2 "
-        )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___artist_rel "
+//            "SET     "
+//                "artist2_id=%1 "
+//            "WHERE "
+//                "artist2_id=%2 "
+//        )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	1.	Performance
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-            "( "
-                "song_id, "
-                "artist_id, "
-                "role_id, "
-                "year, "
-                "notes "
-            ") "
-            "SELECT "
-                "p.song_id, "
-                "%1, "
-                "p.role_id, "
-                "p.year, "
-                "p.notes "
-            "FROM "
-                "___SB_SCHEMA_NAME___performance p "
-            "WHERE "
-                "p.artist_id=%2 AND "
-                "NOT EXISTS "
-                "( "
-                    "SELECT "
-                        "NULL "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___performance q "
-                    "WHERE "
-                        "q.song_id=p.song_id AND "
-                        "q.artist_id=%1 "
-                ") "
-        )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	1.	Performance
+//        q=QString
+//        (
+//            "INSERT INTO ___SB_SCHEMA_NAME___performance "
+//            "( "
+//                "song_id, "
+//                "artist_id, "
+//                "role_id, "
+//                "year, "
+//                "notes "
+//            ") "
+//            "SELECT "
+//                "p.song_id, "
+//                "%1, "
+//                "p.role_id, "
+//                "p.year, "
+//                "p.notes "
+//            "FROM "
+//                "___SB_SCHEMA_NAME___performance p "
+//            "WHERE "
+//                "p.artist_id=%2 AND "
+//                "NOT EXISTS "
+//                "( "
+//                    "SELECT "
+//                        "NULL "
+//                    "FROM "
+//                        "___SB_SCHEMA_NAME___performance q "
+//                    "WHERE "
+//                        "q.song_id=p.song_id AND "
+//                        "q.artist_id=%1 "
+//                ") "
+//        )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	2.	Record
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record "
-            "SET     "
-                "artist_id=%1 "
-            "WHERE "
-                "artist_id=%2 "
-        )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	2.	Record
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___record "
+//            "SET     "
+//                "artist_id=%1 "
+//            "WHERE "
+//                "artist_id=%2 "
+//        )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	3.	Update performance tables
-        QStringList performanceTable;
-        performanceTable.append("chart_performance");
-        performanceTable.append("collection_performance");
-        performanceTable.append("online_performance");
-        performanceTable.append("playlist_performance");
-        performanceTable.append("record_performance");
+//        //	3.	Update performance tables
+//        QStringList performanceTable;
+//        performanceTable.append("chart_performance");
+//        performanceTable.append("collection_performance");
+//        performanceTable.append("online_performance");
+//        performanceTable.append("playlist_performance");
+//        performanceTable.append("record_performance");
 
-        for(int i=0;i<performanceTable.size();i++)
-        {
-            q=QString
-            (
-                "UPDATE "
-                    "___SB_SCHEMA_NAME___%1 "
-                "SET "
-                    "artist_id=%2 "
-                "WHERE "
-                    "artist_id=%3 "
-             )
-                .arg(performanceTable.at(i))
-                .arg(this->mergeWithID())
-                .arg(this->performerID())
-            ;
-            SQL.append(q);
-        }
+//        for(int i=0;i<performanceTable.size();i++)
+//        {
+//            q=QString
+//            (
+//                "UPDATE "
+//                    "___SB_SCHEMA_NAME___%1 "
+//                "SET "
+//                    "artist_id=%2 "
+//                "WHERE "
+//                    "artist_id=%3 "
+//             )
+//                .arg(performanceTable.at(i))
+//                .arg(this->mergeWithID())
+//                .arg(this->performerID())
+//            ;
+//            SQL.append(q);
+//        }
 
-        //	4.	Update record_performance for op_ fields
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET     "
-                "op_artist_id=%1 "
-            "WHERE "
-                "op_artist_id=%2 "
-         )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	4.	Update record_performance for op_ fields
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___record_performance "
+//            "SET     "
+//                "op_artist_id=%1 "
+//            "WHERE "
+//                "op_artist_id=%2 "
+//         )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	5.	Update toplay
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___toplay "
-            "SET     "
-                "artist_id=%1 "
-            "WHERE "
-                "artist_id=%2 "
-         )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	5.	Update toplay
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___toplay "
+//            "SET     "
+//                "artist_id=%1 "
+//            "WHERE "
+//                "artist_id=%2 "
+//         )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	6.	Update playlist_composite
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___playlist_composite "
-            "SET     "
-                "playlist_artist_id=%1 "
-            "WHERE "
-                "playlist_artist_id=%2 "
-         )
-            .arg(this->mergeWithID())
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	6.	Update playlist_composite
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___playlist_composite "
+//            "SET     "
+//                "playlist_artist_id=%1 "
+//            "WHERE "
+//                "playlist_artist_id=%2 "
+//         )
+//            .arg(this->mergeWithID())
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        deletedFlag=1;
-    }
+//        deletedFlag=1;
+//    }
 
-    //	Deleted
-    if(deletedFlag)
-    {
-        //	Remove performance
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___performance "
-            "WHERE "
-                "artist_id=%1 "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//    //	Deleted
+//    if(deletedFlag)
+//    {
+//        //	Remove performance
+//        q=QString
+//        (
+//            "DELETE FROM  "
+//                "___SB_SCHEMA_NAME___performance "
+//            "WHERE "
+//                "artist_id=%1 "
+//        )
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	Remove entries pointing to eachother in artist_rel
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___artist_rel "
-            "WHERE "
-                "artist1_id=artist2_id "
-        )
-        ;
-        SQL.append(q);
+//        //	Remove entries pointing to eachother in artist_rel
+//        q=QString
+//        (
+//            "DELETE FROM  "
+//                "___SB_SCHEMA_NAME___artist_rel "
+//            "WHERE "
+//                "artist1_id=artist2_id "
+//        )
+//        ;
+//        SQL.append(q);
 
-        //	Remove artist
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___artist "
-            "WHERE "
-                "artist_id=%1 "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
+//        //	Remove artist
+//        q=QString
+//        (
+//            "DELETE FROM  "
+//                "___SB_SCHEMA_NAME___artist "
+//            "WHERE "
+//                "artist_id=%1 "
+//        )
+//            .arg(this->performerID())
+//        ;
+//        SQL.append(q);
 
-        //	CWIP:	current contents is geared for merges only.
-        //			need to add more content for removing from all tables with a FK to performer
-    }
+//        //	CWIP:	current contents is geared for merges only.
+//        //			need to add more content for removing from all tables with a FK to performer
+//    }
 
     if(!mergedFlag() && !deletedFlag && changedFlag())
     {
@@ -859,57 +859,53 @@ SBIDPerformer::updateSQL() const
                 "SET     "
                     "name='%1', "
                     "notes='%2', "
-                    "www='%3' "
+                    "www='%3', "
+                    "mbid='%4' "
                 "WHERE "
-                    "artist_id=%4 "
+                    "artist_id=%5 "
              )
                 .arg(Common::escapeSingleQuotes(this->performerName()))
                 .arg(Common::escapeSingleQuotes(this->notes()))
                 .arg(Common::escapeSingleQuotes(this->url()))
+                .arg(Common::escapeSingleQuotes(this->MBID()))
                 .arg(this->performerID())
             ;
             SQL.append(q);
         }
 
-        //	Related performers
+//        //	Related performers
 
-        //	_relatedPerformerID is the current user modified list of related performers
-        QVector<int> currentRelatedPerformerID=_relatedPerformerID;
+//        //	_relatedPerformerID is the current user modified list of related performers
+//        QVector<int> currentRelatedPerformerID=_relatedPerformerID;
 
-        //	Reload this data from the database
-        QVector<int> relatedPerformerID=_loadRelatedPerformers();
+//        //	Reload this data from the database
+//        QVector<int> relatedPerformerID=_loadRelatedPerformers();
 
-        //	Now, do a difference between currentRelatedPerformerID and _relatedPerformerID
-        //	to find what has been:
+//        //	Now, do a difference between currentRelatedPerformerID and _relatedPerformerID
+//        //	to find what has been:
 
-        //	A.	Added
-        for(int i=0;i<currentRelatedPerformerID.count();i++)
-        {
-            int performerID=currentRelatedPerformerID.at(i);
-            if(!relatedPerformerID.contains(performerID))
-            {
-                //	New entry
-                SQL.append(this->addRelatedPerformerSQL(performerID));
-            }
-        }
+//        //	A.	Added
+//        for(int i=0;i<currentRelatedPerformerID.count();i++)
+//        {
+//            int performerID=currentRelatedPerformerID.at(i);
+//            if(!relatedPerformerID.contains(performerID))
+//            {
+//                //	New entry
+//                SQL.append(this->addRelatedPerformerSQL(performerID));
+//            }
+//        }
 
-        //	B.	Removed
-        for(int i=0;i<relatedPerformerID.count();i++)
-        {
-            int performerID=relatedPerformerID.at(i);
-            if(!currentRelatedPerformerID.contains(performerID))
-            {
-                //	Removed entry
-                SQL.append(this->deleteRelatedPerformerSQL(performerID));
-            }
-        }
+//        //	B.	Removed
+//        for(int i=0;i<relatedPerformerID.count();i++)
+//        {
+//            int performerID=relatedPerformerID.at(i);
+//            if(!currentRelatedPerformerID.contains(performerID))
+//            {
+//                //	Removed entry
+//                SQL.append(this->deleteRelatedPerformerSQL(performerID));
+//            }
+//        }
     }
-
-    if(SQL.count()==0)
-    {
-        SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
-    }
-
     return SQL;
 }
 

@@ -267,8 +267,15 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr())
     {
-        qDebug() << SB_DEBUG_INFO;
-        songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
+        if(si.ptr()->itemType()==SBIDBase::sb_type_song)
+        {
+            songPtr=std::dynamic_pointer_cast<SBIDSong>(si.ptr());
+        }
+        else if(si.ptr()->itemType()==SBIDBase::sb_type_performance)
+        {
+            SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(si.ptr());
+            songPtr=performancePtr->songPtr();
+        }
     }
 
     if(!songPtr)
@@ -276,7 +283,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         return ScreenItem();
     }
 
-        qDebug() << SB_DEBUG_INFO;
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(songPtr);
     mw->ui.labelSongDetailIcon->setPtr(songPtr);
@@ -287,7 +293,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     connect(ed, SIGNAL(songLyricsURLAvailable(QString)),
             this, SLOT(setSongLyricsPage(QString)));
 
-        qDebug() << SB_DEBUG_INFO;
     ed->loadSongData(songPtr);
 
     //	Populate song detail tab
@@ -303,16 +308,15 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     }
     _alsoPerformedBy.clear();
 
-        qDebug() << SB_DEBUG_INFO;
     //	Recreate
     QVector<int> performerList=songPtr->performerIDList();
-    qDebug() << SB_DEBUG_INFO << performerList.count();
     QString cs;
     int toDisplay=performerList.count();
     if(toDisplay>3)
     {
         toDisplay=3;
     }
+    QVector<int> processedPerformerIDs;
     for(int i=-1;i<toDisplay;i++)
     {
         SBIDPerformerPtr performerPtr;
@@ -320,25 +324,27 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         switch(i)
         {
         case -1:
-            qDebug() << SB_DEBUG_INFO;
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
                 .arg(songPtr->songPerformerID())
                 .arg(songPtr->songPerformerName());
+            processedPerformerIDs.append(songPtr->songPerformerID());
             break;
 
         default:
-            qDebug() << SB_DEBUG_INFO;
-            performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i),1);
-            if(performerPtr)
+            if(!processedPerformerIDs.contains(performerList.at(i)))
             {
-                cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
-                    .arg(performerPtr->performerID())
-                    .arg(performerPtr->performerName())
-                ;
+                performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i),1);
+                if(performerPtr)
+                {
+                    cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")
+                        .arg(performerPtr->performerID())
+                        .arg(performerPtr->performerName())
+                    ;
+                    processedPerformerIDs.append(performerPtr->performerID());
+                }
             }
         }
     }
-        qDebug() << SB_DEBUG_INFO;
     if(performerList.count()>toDisplay)
     {
             cs=cs+QString(",&nbsp;...");
@@ -347,7 +353,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     frAlsoPerformedBy->setText(cs);
     connect(frAlsoPerformedBy, SIGNAL(anchorClicked(QUrl)),
         Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
-        qDebug() << SB_DEBUG_INFO;
 
     //	Populate song details
     cs=QString("<B>Released:</B> %1").arg(songPtr->year());
@@ -360,12 +365,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //mw->ui.labelSongDetailSongDetail->setText(details);
     //mw->ui.labelSongDetailSongNotes->setText(song.notes);
 
-        qDebug() << SB_DEBUG_INFO;
     //	Reused vars
     QTableView* tv=NULL;
     int rowCount=0;
 
-        qDebug() << SB_DEBUG_INFO;
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
     tm=songPtr->albums();

@@ -65,11 +65,11 @@ SBIDPerformance::itemType() const
 QString
 SBIDPerformance::genericDescription() const
 {
-    return QString("Performance %1 [%2] / %3 - %4")
+    return QString("Song - %1 [%2] / %3 - %4")
         .arg(this->text())
-        .arg(this->_duration.toString())
+        .arg(this->_duration.toString(Duration::sb_hhmmss_format))
         .arg(this->songPerformerName())
-        .arg(this->albumTitle().length()?QString("on '%1'").arg(albumTitle()):QString())
+        .arg(this->albumTitle().length()?QString("'%1'").arg(albumTitle()):QString())
     ;
 }
 
@@ -89,7 +89,6 @@ QString
 SBIDPerformance::text() const
 {
     //	UGLY! But it works...
-    qDebug() << SB_DEBUG_INFO;
     SBIDPerformance* somewhere=const_cast<SBIDPerformance *>(this);
     return somewhere->songTitle();
 }
@@ -144,7 +143,6 @@ SBIDPerformance::songTitle() const
 {
     if(!_songPtr)
     {
-        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDPerformance *>(this)->_setSongPtr();
     }
     return _songPtr?_songPtr->songTitle():"SBIDPerformance::songTitle():_songPtr null";
@@ -392,8 +390,6 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performance._notes                =r.value(7).toString();
     performance._path                 =r.value(8).toString();
 
-    qDebug() << SB_DEBUG_INFO << performance._sb_song_id << performance._sb_performer_id << performance.key();
-
     return std::make_shared<SBIDPerformance>(performance);
 }
 
@@ -429,6 +425,7 @@ SBIDPerformance::retrieveSQL(const QString& key)
     QString q=QString
     (
         "SELECT DISTINCT "
+            "s.song_id, "
             "rp.record_id, "
             "rp.record_position, "
             "a.artist_id, "
@@ -481,18 +478,17 @@ SBIDPerformance::_init()
 void
 SBIDPerformance::_setAlbumPtr()
 {
-    _albumPtr=SBIDAlbum::retrieveAlbum(_sb_album_id);
+    _albumPtr=SBIDAlbum::retrieveAlbum(_sb_album_id,0);
 }
 
 void
 SBIDPerformance::_setPerformerPtr()
 {
-    _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id);
+    _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,0);
 }
 
 void
 SBIDPerformance::_setSongPtr()
 {
-    qDebug() << SB_DEBUG_INFO;
-    _songPtr=SBIDSong::retrieveSong(_sb_song_id);
+    _songPtr=SBIDSong::retrieveSong(_sb_song_id,1);
 }

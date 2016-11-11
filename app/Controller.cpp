@@ -188,12 +188,10 @@ Controller::openMainWindow(bool appStartUpFlag)
     if(appStartUpFlag==0 && dbm->databaseChanged()==0)
     {
         //	no database opened upin appStartUpFlag.
-        qDebug() << SB_DEBUG_INFO;
         return 0;
     }
     if(dbm->databaseOpened()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         return 0;
     }
 
@@ -389,8 +387,6 @@ Controller::configureMenuItems(const QList<QAction *>& list)
 void
 Controller::setFontSizes() const
 {
-    qDebug() << SB_DEBUG_INFO << _app->platformName();
-
     if(_app->platformName()=="windows")
     {
         QWidgetList l=_app->allWidgets();
@@ -425,13 +421,14 @@ Controller::init()
     backgroundThread.start();
     Context::instance()->setBackgroundThread(bgt);
 
-    //	Recalculate playlist duration
-    updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
-    statusBarResetTimer.setSingleShot(0);
-    connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
-            this, SLOT(_updateAllplaylistDurations()));
-    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
-            bgt, SLOT(recalculateAllPlaylistDurations()));
+    //	Recalculate playlist duration -- NOT USED ANYMORE
+    //	CODE LEFT AS EXAMPLE
+//    updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
+//    statusBarResetTimer.setSingleShot(0);
+//    connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
+//            this, SLOT(_updateAllplaylistDurations()));
+//    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
+//            bgt, SLOT(recalculateAllPlaylistDurations()));
 }
 
 ///	PRIVATE SLOTS
@@ -449,9 +446,10 @@ Controller::_resetStatusBar()
     Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
 }
 
-void
-Controller::_updateAllplaylistDurations()
-{
-    updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
-    emit recalculateAllPlaylistDurations();
-}
+//	NOT USED ANYMORE -- CODE LEFT AS EXAMPLE
+//void
+//Controller::_updateAllplaylistDurations()
+//{
+//    updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
+//    emit recalculateAllPlaylistDurations();
+//}

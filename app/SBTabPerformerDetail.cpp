@@ -140,8 +140,9 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDPtr &ptr)
             SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
             DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
             SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+
             performerPtr->setURL(performerPtr->url());
-            pemgr->commit(performerPtr,dal);
+            pemgr->commit(performerPtr,dal,0);
         }
     }
     else
@@ -166,7 +167,7 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDPtr &ptr)
             SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
 
             performerPtr->setMBID(performerPtr->MBID());
-            pemgr->commit(performerPtr,dal);
+            pemgr->commit(performerPtr,dal,0);
         }
     }
     else

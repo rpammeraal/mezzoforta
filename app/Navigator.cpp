@@ -53,7 +53,19 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
-    openScreen(ScreenItem(ptr));
+    //	Until we have a dedicated screen for SBIDBase::sb_type_performance,
+    //	we need to convert this to a SBIDBase::sb_type_song
+    SBIDPtr itemPtr;
+    if(ptr->itemType()==SBIDBase::sb_type_performance)
+    {
+        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+        itemPtr=performancePtr->songPtr();
+    }
+    else
+    {
+        itemPtr=ptr;
+    }
+    openScreen(ScreenItem(itemPtr));
 }
 
 void
@@ -229,7 +241,6 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     if(closeTab==1)
     {
-        qDebug() << SB_DEBUG_INFO;
         _moveFocusToScreen(-1);
     }
 
@@ -365,7 +376,6 @@ Navigator::removeFromScreenStack(const SBIDPtr& ptr)
     //	Move currentScreen one back, until it is on that is not current
     while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && *(si.ptr())==(*ptr))
     {
-        qDebug() << SB_DEBUG_INFO;
         tabBackward();	//	move display one back
         si=st->currentScreen();	//	find out what new current screen is.
         st->popScreen();	//	remove top screen
@@ -536,14 +546,12 @@ Navigator::setFocus()
 void
 Navigator::tabBackward()
 {
-        qDebug() << SB_DEBUG_INFO;
     _moveFocusToScreen(-1);
 }
 
 void
 Navigator::tabForward()
 {
-        qDebug() << SB_DEBUG_INFO;
     _moveFocusToScreen(1);
 }
 
@@ -602,6 +610,7 @@ Navigator::_activateScreen()
             ptr=si.ptr();
             switch(ptr->itemType())
             {
+            case SBIDBase::sb_type_performance:
             case SBIDBase::sb_type_song:
                 if(editFlag)
                 {
@@ -673,7 +682,6 @@ Navigator::_activateScreen()
     if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.ptr())
     {
         //	Go to previous screen first
-        qDebug() << SB_DEBUG_INFO;
         this->tabBackward();
 
         //	Remove all from screenStack with requested ID.
@@ -819,7 +827,6 @@ Navigator::_init()
 void
 Navigator::_moveFocusToScreen(int direction)
 {
-    qDebug() << SB_DEBUG_INFO << direction;
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si;
     //SBIDBase id;
@@ -833,7 +840,6 @@ Navigator::_moveFocusToScreen(int direction)
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO;
         si=st->previousScreen();
     }
 

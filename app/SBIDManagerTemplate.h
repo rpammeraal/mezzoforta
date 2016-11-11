@@ -35,7 +35,7 @@ public:
     SBIDManagerTemplate<T>();
     ~SBIDManagerTemplate<T>();
 
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1);
     bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
     int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
@@ -67,27 +67,29 @@ SBIDManagerTemplate<T>::~SBIDManagerTemplate()
 
 ///	Public methods
 template <class T> bool
-SBIDManagerTemplate<T>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal)
+SBIDManagerTemplate<T>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     QList<std::shared_ptr<T>> list;
 
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
     bool successFlag=0;
-    successFlag=dal->executeBatch(SQL);
+    successFlag=dal->executeBatch(SQL,1,1,showProgressDialogFlag);
 
     if(successFlag)
     {
         _changes.clear();
+        ptr->isSaved();
     }
-
-    return dal->executeBatch(SQL);
+    return successFlag;
 }
 
 template <class T> bool
 SBIDManagerTemplate<T>::commitAll(DataAccessLayer* dal)
 {
+    qDebug() << SB_DEBUG_INFO;
     std::shared_ptr<T> ptr;
     QStringList SQL;
 
@@ -101,9 +103,13 @@ SBIDManagerTemplate<T>::commitAll(DataAccessLayer* dal)
     bool successFlag=dal->executeBatch(SQL);
     if(successFlag)
     {
+        for(int i=0;i<_changes.count();i++)
+        {
+            ptr=_changes.at(i);
+            ptr->isSaved();
+        }
         _changes.clear();
     }
-
     return successFlag;
 }
 

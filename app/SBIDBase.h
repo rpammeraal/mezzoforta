@@ -9,6 +9,7 @@
 #include <QDataStream>
 #include <QStandardItem>
 
+#include "Common.h"
 #include "Duration.h"
 
 class SBSqlQueryModel;
@@ -35,8 +36,9 @@ public:
     SBIDBase(const SBIDBase& c);
     //SBIDBase(QByteArray encodedData);
     virtual ~SBIDBase();
-    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID);
+    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=0);
     static SBIDPtr createPtr(const QByteArray& encodedData);
+    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=0);
 
     //	Public methods
     virtual QByteArray encode() const;
@@ -65,7 +67,7 @@ public:
     int modelPosition() const { return _sb_model_position; }
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
-    void setMBID(const QString& mbid) { _sb_mbid=mbid; }
+    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
 
     void showDebug(const QString& title) const;
 
@@ -76,6 +78,9 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const=0;
+
+    //	Aux methods
+    static SBIDBase::sb_type convert(Common::sb_field f);
 
 protected:
     friend class SBIDAlbum;
@@ -97,10 +102,13 @@ protected:
     inline bool changedFlag() const { return _changedFlag; }
     inline void clearChangedFlag() { _changedFlag=0; }
     inline bool deletedFlag() const { return _deletedFlag; }
-    inline bool mergedFlag() const { return _mergedWithID!=-1; }
+    inline bool mergedFlag() const { qDebug() << SB_DEBUG_INFO << _mergedWithID; return _mergedWithID!=-1; }
     inline int mergeWithID() const { return _mergedWithID; }
     inline void setChangedFlag() { _changedFlag=1; }
     inline void setDeletedFlag() { _deletedFlag=1; }
+
+    //	Used by SBIDManager*:: and SBID*:: classes
+    virtual void isSaved();
 
 private:
     bool        _changedFlag;

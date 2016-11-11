@@ -10,17 +10,18 @@ BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
     init();
 }
 
-void
-BackgroundThread::recalculateAllPlaylistDurations() const
-{
-    qDebug() << SB_DEBUG_INFO << "semaphore start";
-    s_cpd->acquire(1);
+//	CODE LEFT UNCOMMENTED AS EXAMPLE
+//void
+//BackgroundThread::recalculateAllPlaylistDurations() const
+//{
+//    qDebug() << SB_DEBUG_INFO << "semaphore start";
+//    s_cpd->acquire(1);
 
-    SBIDPlaylist::recalculateAllPlaylistDurations();
+//    SBIDPlaylist::recalculateAllPlaylistDurations();
 
-    qDebug() << SB_DEBUG_INFO << "semaphore release";
-    s_cpd->release(1);
-}
+//    qDebug() << SB_DEBUG_INFO << "semaphore release";
+//    s_cpd->release(1);
+//}
 
 void
 BackgroundThread::init()
