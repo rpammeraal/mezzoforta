@@ -13,3 +13,4 @@ apt-get install libvorbis-dev
 apt-get install libid3tag0-dev
 apt-get install postgresql postgresql-contrib
 apt-get install nfs-common
+apt-get install libtag1-dev
