@@ -39,19 +39,16 @@ public:
     SBTableModel* albums() const;
     void addRelatedPerformer(int performerID);
     void deleteRelatedPerformer(int performerID);
-    SBSqlQueryModel* getAllSongs() const;
-    SBSqlQueryModel* getAllOnlineSongs() const;
     inline QString notes() const { return _notes; }
     inline int numAlbums() const { return _num_albums; }
     inline int numSongs() const { return _num_songs; }
     inline int performerID() const { return _sb_performer_id; }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
-    //void setCount1(int count1) { _count1=count1; }
-    //void setCount2(int count2) { _count1=count2; }
     void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
     void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
     static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformerPtr& existingPerformerPtr,SBIDPerformerPtr& selectedPerformerPtr,QLineEdit* field=NULL, bool saveNewPerformer=1);
+    SBTableModel* songs() const;
 
     static void updateSoundexFields();
 

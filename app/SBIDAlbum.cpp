@@ -265,45 +265,45 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
     return SQL;
 }
 
-SBSqlQueryModel*
-SBIDAlbum::matchAlbum() const
-{
-    //	MatchRank:
-    //	0	-	edited value (always one in data set).
-    //	1	-	exact match with specified artist (0 or 1 in data set).
-    //	2	-	exact match with any other artist (0 or more in data set).
-    QString q=QString
-    (
-        "SELECT "
-            "0 AS matchRank, "
-            "-1 AS album_id, "
-            "'%1' AS title, "
-            "%3 AS artist_id, "
-            "'%2' AS artistName "
-        "UNION "
-        "SELECT "
-            "CASE WHEN a.artist_id=%3 THEN 1 ELSE 2 END AS matchRank, "
-            "p.record_id, "
-            "p.title, "
-            "a.artist_id, "
-            "a.name "
-        "FROM "
-            "___SB_SCHEMA_NAME___record p "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
-        "WHERE "
-            "REPLACE(LOWER(p.title),' ','') = REPLACE(LOWER('%1'),' ','') AND "
-            "p.record_id!=%4 "
-        "ORDER BY "
-            "1 "
-    )
-        .arg(Common::escapeSingleQuotes(this->albumTitle()))
-        .arg(Common::escapeSingleQuotes(this->albumPerformerName()))
-        .arg(this->albumPerformerID())
-        .arg(this->albumID())
-    ;
-    return new SBSqlQueryModel(q);
-}
+//SBSqlQueryModel*
+//SBIDAlbum::matchAlbum() const
+//{
+//    //	MatchRank:
+//    //	0	-	edited value (always one in data set).
+//    //	1	-	exact match with specified artist (0 or 1 in data set).
+//    //	2	-	exact match with any other artist (0 or more in data set).
+//    QString q=QString
+//    (
+//        "SELECT "
+//            "0 AS matchRank, "
+//            "-1 AS album_id, "
+//            "'%1' AS title, "
+//            "%3 AS artist_id, "
+//            "'%2' AS artistName "
+//        "UNION "
+//        "SELECT "
+//            "CASE WHEN a.artist_id=%3 THEN 1 ELSE 2 END AS matchRank, "
+//            "p.record_id, "
+//            "p.title, "
+//            "a.artist_id, "
+//            "a.name "
+//        "FROM "
+//            "___SB_SCHEMA_NAME___record p "
+//                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+//                    "p.artist_id=a.artist_id "
+//        "WHERE "
+//            "REPLACE(LOWER(p.title),' ','') = REPLACE(LOWER('%1'),' ','') AND "
+//            "p.record_id!=%4 "
+//        "ORDER BY "
+//            "1 "
+//    )
+//        .arg(Common::escapeSingleQuotes(this->albumTitle()))
+//        .arg(Common::escapeSingleQuotes(this->albumPerformerName()))
+//        .arg(this->albumPerformerID())
+//        .arg(this->albumID())
+//    ;
+//    return new SBSqlQueryModel(q);
+//}
 
 QStringList
 SBIDAlbum::mergeAlbum(const SBIDBase& to) const
@@ -1349,7 +1349,6 @@ SBIDAlbum::createInDB()
 
     //	Find performer 'VARIOUS ARTISTS', create if not exists
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    //SBIDPerformerPtr peptr=pemgr->retrieve(1);
     SBIDPerformerPtr peptr=SBIDPerformer::retrievePerformer(1);
     if(!peptr)
     {
@@ -1533,7 +1532,9 @@ SBIDAlbum::_loadPerformances()
 {
     SBSqlQueryModel* qm=SBIDPerformance::performancesByAlbum(albumID());
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
-    _performances.clear();
-    _performances=pemgr->retrieveSet(qm);
+
+    //	Load performances including dependents, this will set its internal pointers
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default);
+
     delete qm;
 }

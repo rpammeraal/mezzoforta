@@ -640,16 +640,22 @@ X	playlists that song belongs to can be edited
 -	all navigation tested
 -	test search
 
-<current>
+20161112:
+-	Milestone -- reorg SBID.h into parent- and childclasses. Effort started at 6/29/2016.
+    -	SBIDBase: attributes pushed down to subclasses
+	-	All SBIDBase items are properly cached and used from cache
+-	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
 -	SBIDPerformer: need to load album directly associated with performer. Include this in ::albums().
 -	progress bar SBIDPerformer::_loadPerformances
 -	all _load* methods in SBID* classes must do a clear() on its data structure
-*	No SBID* class should create SBSqlQueryModel. This should be replaced with SBTableModel.
-*	test drag/drop to playlists
-*	test music player including play keys
+-	Add open_flag to retrieveSet.
+-	No SBID* class should create SBSqlQueryModel, except static methods. This should be replaced with SBTableModel.
 
-*	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
-*	investigate if all fields at the SBIDBase can be removed and delegated to the subclasses
+<current>
+*	test drag/drop to playlists
+    *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
+*	test play now/enqueue
+*	test music player including play keys
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box

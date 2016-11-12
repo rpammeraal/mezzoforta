@@ -80,19 +80,16 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& album
 
     //	Go through all albums referred to in performances
     QVectorIterator<SBIDPerformancePtr> itap(albumPerformances);
-    qDebug() << SB_DEBUG_INFO << albumPerformances.count();
     while(itap.hasNext())
     {
         SBIDPerformancePtr performancePtr=itap.next();
 
         if(performancePtr)
         {
-            qDebug() << SB_DEBUG_INFO << performancePtr->key();
             SBIDAlbumPtr albumPtr=performancePtr->albumPtr();
 
             if(albumPtr && !albumIDs.contains(albumPtr->albumID()))
             {
-                qDebug() << SB_DEBUG_INFO << *albumPtr;
                 _setItem(index,0,QString("%1").arg(SBIDBase::sb_type_album));
                 _setItem(index,1,QString("%1").arg(albumPtr->albumID()));
                 _setItem(index,2,QString("%1").arg(albumPtr->albumTitle()));
@@ -270,6 +267,35 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
             _setItem(i,1,QString("%1").arg(itemPtr->key()));
             _setItem(i,2,QString("%1").arg(itemPtr->genericDescription()));
             i++;
+        }
+    }
+}
+
+void
+SBTableModel::populateSongsByPerformer(const QVector<SBIDPerformancePtr>& performances)
+{
+    _init();
+
+    QStringList header;
+    header.append("SB_ITEM_KEY");
+    header.append("title");
+    header.append("year");
+    setHorizontalHeaderLabels(header);
+
+    //	Populate data
+    QVector<int> songID;
+    int index=0;
+    for(int i=0;i<performances.count();i++)
+    {
+        SBIDPerformancePtr performancePtr=performances.at(i);
+
+        if(performancePtr && !songID.contains(performancePtr->songID()))
+        {
+            _setItem(index, 0,performancePtr->key());
+            _setItem(index, 1,performancePtr->songTitle());
+            _setItem(index, 2,QString("%1").arg(performancePtr->year()));
+            index++;
+            songID.append(performancePtr->songID());
         }
     }
 }

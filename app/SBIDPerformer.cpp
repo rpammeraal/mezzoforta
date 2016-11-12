@@ -143,73 +143,6 @@ SBIDPerformer::deleteRelatedPerformer(int performerID)
 //    }
 }
 
-SBSqlQueryModel*
-SBIDPerformer::getAllSongs() const
-{
-    QString q=QString
-    (
-        "SELECT "
-            "%1 AS SB_PERFORMER_ID, "
-            "%2 AS SB_ITEM_TYPE, "
-            "s.song_id AS SB_ITEM_ID, "
-            "s.title AS \"title\", "
-            "p.year AS \"year released\" "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
-        "WHERE "
-            "a.artist_id=%1 "
-        "ORDER BY "
-            "s.title "
-    )
-        .arg(this->performerID())
-        .arg(SBIDBase::sb_type_song);
-
-    return new SBSqlQueryModel(q);
-}
-
-SBSqlQueryModel*
-SBIDPerformer::getAllOnlineSongs() const
-{
-    QString q=QString
-    (
-        "SELECT "
-            "s.song_id AS SB_SONG_ID, "
-            "a.artist_id AS SB_PERFORMER_ID, "
-            "r.record_id AS SB_ALBUM_ID, "
-            "rp.record_position AS \"#\", "
-            "s.title AS song_title, "
-            "a.name AS \"performer\", "
-            "r.title AS album_title, "
-            "rp.duration AS \"duration\", "
-            "op.path AS SB_PATH "
-        "FROM "
-            "___SB_SCHEMA_NAME___record_performance rp "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "rp.record_id=r.record_id "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "rp.song_id=s.song_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "rp.artist_id=a.artist_id "
-                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "rp.op_song_id=op.song_id AND "
-                    "rp.op_artist_id=op.artist_id AND "
-                    "rp.op_record_id=op.record_id AND "
-                    "rp.op_record_position=op.record_position "
-        "WHERE "
-            "rp.artist_id=%1 "
-        "ORDER BY "
-            "r.year, "
-            "rp.record_position "
-    ).arg(this->performerID());
-
-    return new SBSqlQueryModel(q);
-}
-
-
 QVector<SBIDPerformerPtr>
 SBIDPerformer::relatedPerformers()
 {
@@ -223,7 +156,8 @@ SBIDPerformer::relatedPerformers()
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerID.count();i++)
     {
-        ptr=retrievePerformer(_relatedPerformerID.at(i));
+        qDebug() << SB_DEBUG_INFO;
+        ptr=retrievePerformer(_relatedPerformerID.at(i),1);
         if(ptr)
         {
             related.append(ptr);
@@ -301,6 +235,18 @@ SBIDPerformer::selectSavePerformer(
         //resultCode=selectedPerformer.save();
     }
     return resultCode;
+}
+
+SBTableModel*
+SBIDPerformer::songs() const
+{
+    SBTableModel* tm=new SBTableModel();
+    if(_performances.count()==0)
+    {
+        const_cast<SBIDPerformer *>(this)->_loadPerformances();
+    }
+    tm->populateSongsByPerformer(_performances);
+    return tm;
 }
 
 //	This method is called on start up.
@@ -966,7 +912,7 @@ SBIDPerformer::_loadAlbums()
 {
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    _albums=amgr->retrieveSet(qm);
+    _albums=amgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbum>::open_flag_parentonly);
     delete qm;
 }
 
@@ -975,10 +921,13 @@ SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
 {
     SBSqlQueryModel* qm=SBIDPerformance::performancesByPerformer(this->performerID());
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
-    _performances=pemgr->retrieveSet(qm,showProgressDialogFlag==1?"Loading Performances":QString());
-    delete qm;
-}
 
+    //	Load performances including dependents, this will set its internal pointers
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default,showProgressDialogFlag==1?"Loading Performances":QString());
+
+    delete qm;
+    qDebug() << SB_DEBUG_INFO;
+}
 
 QVector<int>
 SBIDPerformer::_loadRelatedPerformers() const

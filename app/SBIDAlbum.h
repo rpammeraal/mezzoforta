@@ -40,7 +40,7 @@ public:
     inline QString albumPerformerName() const { return _albumPerformerName; }
     QStringList addSongToAlbum(const SBIDSong& song) const;
     inline QString genre() const { return _genre; }
-    SBSqlQueryModel* matchAlbum() const;
+    //SBSqlQueryModel* matchAlbum() const;
     QStringList mergeAlbum(const SBIDBase& to) const;	//	CWIP: amgr
     QStringList mergeSongInAlbum(int newPosition, const SBIDBase& song) const;	//	CWIP: amgr
     inline QString notes() const { return _notes; }

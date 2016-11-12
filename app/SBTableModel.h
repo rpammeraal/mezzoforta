@@ -25,6 +25,7 @@ public:
     void populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances);
     void populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID);
     void populatePlaylistContent(const QMap<int,SBIDPtr>& items);
+    void populateSongsByPerformer(const QVector<SBIDPerformancePtr>& performances);
 
 private:
     QVector<QStandardItem *> _standardItemsAllocated;

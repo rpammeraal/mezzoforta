@@ -90,6 +90,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag
         break;
 
     case SBIDBase::sb_type_performer:
+        qDebug() << SB_DEBUG_INFO;
         ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
@@ -144,6 +145,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         break;
 
     case sb_type_performer:
+        qDebug() << SB_DEBUG_INFO;
         itemPtr=SBIDPerformer::retrievePerformer(list[1].toInt(),noDependentsFlag);
         break;
 

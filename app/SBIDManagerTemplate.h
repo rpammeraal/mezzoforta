@@ -44,7 +44,7 @@ public:
     void remove(std::shared_ptr<T> ptr);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
-    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,const QString& label="");
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=open_flag_default,const QString& label="");
     void rollbackChanges();
     void debugShow(const QString title="");
 
@@ -275,7 +275,7 @@ SBIDManagerTemplate<T>::retrieveAll()
 }
 
 template <class T> QVector<std::shared_ptr<T>>
-SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, const QString& label)
+SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
 {
     bool showProgressDialogFlag=label.count()>1;
     const int rowCount=qm->rowCount();
@@ -301,7 +301,7 @@ SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, const QString& label)
     for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newT=T::instantiate(r,1);
+        std::shared_ptr<T> newT=T::instantiate(r,openFlag==SBIDManagerTemplate::open_flag_parentonly);
         const QString key=newT->key();
         std::shared_ptr<T> oldT;
 

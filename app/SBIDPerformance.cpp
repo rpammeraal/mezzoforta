@@ -413,7 +413,7 @@ SBIDPerformance::SBIDPerformance()
 SBIDPerformancePtr
 SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 {
-
+    qDebug() << SB_DEBUG_INFO << noDependentsFlag;
     SBIDPerformance performance;
     performance._sb_song_id           =r.value(0).toInt();
     performance._sb_album_id          =r.value(1).toInt();
@@ -427,9 +427,11 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     if(!noDependentsFlag)
     {
+        qDebug() << SB_DEBUG_INFO << performance.key();
         performance._setAlbumPtr();
         performance._setPerformerPtr();
         performance._setSongPtr();
+        qDebug() << SB_DEBUG_INFO << performance.key() << performance.songTitle();
     }
     return std::make_shared<SBIDPerformance>(performance);
 }
@@ -527,6 +529,7 @@ void
 SBIDPerformance::_setPerformerPtr()
 {
     //	From the performance level, do NOT load any dependents
+        qDebug() << SB_DEBUG_INFO;
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,1);
 }
 

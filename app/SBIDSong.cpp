@@ -1387,7 +1387,10 @@ SBIDSong::_loadPerformances()
 {
     SBSqlQueryModel* qm=SBIDPerformance::performancesBySong(songID());
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
-    _performances=pemgr->retrieveSet(qm);
+
+    //	Load performances including dependents, this will set its internal pointers
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default);
+
     delete qm;
 }
 
