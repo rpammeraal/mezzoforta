@@ -641,6 +641,9 @@ X	playlists that song belongs to can be edited
 -	test search
 
 <current>
+-	SBIDPerformer: need to load album directly associated with performer. Include this in ::albums().
+-	progress bar SBIDPerformer::_loadPerformances
+-	all _load* methods in SBID* classes must do a clear() on its data structure
 *	No SBID* class should create SBSqlQueryModel. This should be replaced with SBTableModel.
 *	test drag/drop to playlists
 *	test music player including play keys

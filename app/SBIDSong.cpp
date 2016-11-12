@@ -1305,6 +1305,7 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     if(!noDependentsFlag)
     {
+        qDebug() << SB_DEBUG_INFO << noDependentsFlag;
         song._loadPlaylists();
         song._loadPerformances();
     }
@@ -1387,11 +1388,14 @@ SBIDSong::_loadPerformances()
     SBSqlQueryModel* qm=SBIDPerformance::performancesBySong(songID());
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
     _performances=pemgr->retrieveSet(qm);
+    delete qm;
 }
 
 void
 SBIDSong::_loadPlaylists()
 {
+    //	Create a map between performance and playlist where this performance exists.
+    //	This will not be put in SBIDManagerTemplate
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q=QString
@@ -1414,6 +1418,7 @@ SBIDSong::_loadPlaylists()
     q1.exec(dal->customize(q));
 
     SBIDPerformancePtr performancePtr;
+    _performance2playlistID.clear();
     while(q1.next())
     {
         performancePtr=performance(q1.value(1).toInt(),q1.value(2).toInt());
@@ -1431,5 +1436,5 @@ SBIDSong::_loadPlaylists()
 void
 SBIDSong::_setPerformerPtr()
 {
-    _performerPtr=SBIDPerformer::retrievePerformer(_sb_song_performer_id);
+    _performerPtr=SBIDPerformer::retrievePerformer(_sb_song_performer_id,1);
 }

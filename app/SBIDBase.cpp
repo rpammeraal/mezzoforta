@@ -156,7 +156,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         break;
 
     case sb_type_performance:
-        itemPtr=SBIDPerformance::retrievePerformance(list[1].toInt(),list[2].toInt());
+        itemPtr=SBIDPerformance::retrievePerformance(list[1].toInt(),list[2].toInt(),1);
         break;
 
     case sb_type_chart:

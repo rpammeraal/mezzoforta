@@ -374,8 +374,10 @@ SBIDPlaylist::items() const
         SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
         somewhere->_loadItems();
     }
+    qDebug() << SB_DEBUG_INFO;
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylistContent(_items);
+    qDebug() << SB_DEBUG_INFO;
     return tm;
 }
 
@@ -1486,6 +1488,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
 
     QSqlQuery queryList(q,db);
     int playlistIndex=0;
+    _items.clear();
     while(queryList.next())
     {
         Common::sb_field itemType=static_cast<Common::sb_field>(queryList.value(1).toInt());
@@ -1501,7 +1504,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
             break;
 
         case Common::sb_field_song_id:
-            itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt());
+            itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt(),0);
             break;
 
         case Common::sb_field_invalid:
@@ -1512,16 +1515,18 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
         {
             _items[playlistIndex++]=itemPtr;
         }
-        QCoreApplication::processEvents();
-        if(showProgressDialogFlag)
+        if(showProgressDialogFlag && (currentValue%10)==0)
         {
-            pd.setValue(++currentValue);
+            QCoreApplication::processEvents();
+            pd.setValue(currentValue);
         }
+        currentValue++;
     }
     if(showProgressDialogFlag)
     {
         pd.setValue(maxValue);
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void

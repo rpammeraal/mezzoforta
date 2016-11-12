@@ -66,9 +66,10 @@ public:
     //	Methods required by SBIDManagerTemplate
     QString key() const;
 
-    //	Static methods
-    static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
+    //	Helper methods for SBIDManagerTemplate
+    static SBSqlQueryModel* albumsByPerformer(int performerID);
     static QString createKey(int albumID,int unused=-1);
+    static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
 
 protected:
     template <class T> friend class SBIDManagerTemplate;

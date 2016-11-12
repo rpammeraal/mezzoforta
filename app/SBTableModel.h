@@ -20,6 +20,7 @@ public:
 
     //	SBTableModel specific methods
     SBIDPtr determineSBID(const QModelIndex &idx) const;
+    void populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
     void populateAlbumsBySong(QVector<SBIDPerformancePtr> performances);
     void populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances);
     void populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID);

@@ -1,12 +1,15 @@
 #include <QLineEdit>
+#include <QProgressDialog>
 
 #include "SBIDPerformer.h"
 
 #include "Context.h"
 #include "SBDialogSelectItem.h"
+#include "SBIDPerformance.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 #include <SBIDAlbum.h>
 
@@ -16,6 +19,8 @@ SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
     _performerName     =c._performerName;
     _sb_performer_id   =c._sb_performer_id;
     _relatedPerformerID=c._relatedPerformerID;
+    _performances      =c._performances;
+    _albums            =c._albums;
 
     _num_albums        =c._num_albums;
     _num_songs         =c._num_songs;
@@ -100,72 +105,42 @@ SBIDPerformer::type() const
 }
 
 ///	Methods unique to SBIDPerformer
+SBTableModel*
+SBIDPerformer::albums() const
+{
+    SBTableModel* tm=new SBTableModel();
+    if(_performances.count()==0)
+    {
+        const_cast<SBIDPerformer *>(this)->_loadPerformances();
+    }
+    if(_albums.count()==0)
+    {
+        const_cast<SBIDPerformer *>(this)->_loadAlbums();
+    }
+
+    tm->populateAlbumsByPerformer(_performances,_albums);
+
+    return tm;
+}
+
 void
 SBIDPerformer::addRelatedPerformer(int performerID)
 {
-    if(!_relatedPerformerID.contains(performerID))
-    {
-        _relatedPerformerID.append(performerID);
-        setChangedFlag();
-    }
+//    if(!_relatedPerformerID.contains(performerID))
+//    {
+//        _relatedPerformerID.append(performerID);
+//        setChangedFlag();
+//    }
 }
 
 void
 SBIDPerformer::deleteRelatedPerformer(int performerID)
 {
-    if(_relatedPerformerID.contains(performerID))
-    {
-        _relatedPerformerID.remove(_relatedPerformerID.indexOf(performerID));
-        setChangedFlag();
-    }
-}
-
-SBSqlQueryModel*
-SBIDPerformer::getAlbums() const
-{
-    QString q=QString
-    (
-        "SELECT "
-            "%1 AS SB_ITEM_TYPE1, "
-            "r.record_id AS SB_ALBUM_ID, "
-            "r.title AS \"title\", "
-            "r.year AS \"year released\", "
-            "%2 AS SB_ITEM_TYPE2, "
-            "a.artist_id AS SB_PERFORMER_ID, "
-            "a.name \"performer\" "
-        "FROM "
-            "___SB_SCHEMA_NAME___artist a "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "a.artist_id=r.artist_id "
-        "WHERE "
-            "a.artist_id=%3 "
-        "UNION "
-        "SELECT "
-            "%1 AS SB_ITEM_TYPE, "
-            "r.record_id AS SB_ALBUM_ID, "
-            "r.title AS \"title\", "
-            "r.year AS \"year released\", "
-            "%2 AS SB_ITEM_TYPE2, "
-            "a1.artist_id AS SB_PERFORMER_ID, "
-            "a1.name AS \"performer\" "
-        "FROM "
-            "___SB_SCHEMA_NAME___artist a "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "a.artist_id=rp.artist_id "
-                "JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "rp.record_id=r.record_id "
-                "JOIN ___SB_SCHEMA_NAME___artist a1 ON "
-                    "r.artist_id=a1.artist_id "
-        "WHERE "
-            "a.artist_id=%3 "
-        "ORDER BY  "
-            "3 "
-    )
-        .arg(SBIDBase::sb_type_album)
-        .arg(SBIDBase::sb_type_performer)
-        .arg(this->performerID());
-
-    return new SBSqlQueryModel(q);
+//    if(_relatedPerformerID.contains(performerID))
+//    {
+//        _relatedPerformerID.remove(_relatedPerformerID.indexOf(performerID));
+//        setChangedFlag();
+//    }
 }
 
 SBSqlQueryModel*
@@ -398,6 +373,7 @@ SBIDPerformer::key() const
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
+    qDebug() << SB_DEBUG_INFO << performerID << noDependentsFlag;
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     return pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer>::open_flag_default));
 }
@@ -569,6 +545,8 @@ SBIDPerformer::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     if(!noDependentsFlag)
     {
         performer._relatedPerformerID=performer._loadRelatedPerformers();
+        performer._loadAlbums();
+        performer._loadPerformances();
     }
 
     return std::make_shared<SBIDPerformer>(performer);
@@ -578,13 +556,13 @@ void
 SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
 {
     //	Transfer related performers from `from' to `to' :)
-    for(int i=0;i<_relatedPerformerID.count();i++)
-    {
-        if(!(to->_relatedPerformerID.contains(_relatedPerformerID.at(i))))
-        {
-            to->_relatedPerformerID.append(_relatedPerformerID.at(i));
-        }
-    }
+//    for(int i=0;i<_relatedPerformerID.count();i++)
+//    {
+//        if(!(to->_relatedPerformerID.contains(_relatedPerformerID.at(i))))
+//        {
+//            to->_relatedPerformerID.append(_relatedPerformerID.at(i));
+//        }
+//    }
 }
 
 void
@@ -983,6 +961,25 @@ SBIDPerformer::_init()
     _sb_performer_id=-1;
 }
 
+void
+SBIDPerformer::_loadAlbums()
+{
+    SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    _albums=amgr->retrieveSet(qm);
+    delete qm;
+}
+
+void
+SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
+{
+    SBSqlQueryModel* qm=SBIDPerformance::performancesByPerformer(this->performerID());
+    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
+    _performances=pemgr->retrieveSet(qm,showProgressDialogFlag==1?"Loading Performances":QString());
+    delete qm;
+}
+
+
 QVector<int>
 SBIDPerformer::_loadRelatedPerformers() const
 {
@@ -1015,7 +1012,6 @@ SBIDPerformer::_loadRelatedPerformers() const
     ;
     qDebug() << SB_DEBUG_INFO << q;
 
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBSqlQueryModel qm(q);
     SBIDPerformerPtr ptr;
     int performerID;
@@ -1024,7 +1020,7 @@ SBIDPerformer::_loadRelatedPerformers() const
         performerID=qm.data(qm.index(i,0)).toInt();
         if(performerID!=this->performerID())
         {
-            ptr=pemgr->retrieve(createKey(performerID),SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly);
+            ptr=SBIDPerformer::retrievePerformer(performerID,1);
             if(ptr && !relatedPerformerID.contains(performerID))
             {
                 relatedPerformerID.append(performerID);

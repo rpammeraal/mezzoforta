@@ -1251,6 +1251,41 @@ SBIDAlbum::key() const
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDAlbum::albumsByPerformer(int performerID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "r.record_id, "
+            "r.title, "
+            "r.artist_id, "
+            "a.name,"
+            "r.media, "
+            "r.year, "
+            "r.genre, "
+            "r.notes "
+        "FROM "
+                "___SB_SCHEMA_NAME___record r "
+                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                        "r.artist_id=a.artist_id "
+                    "LEFT JOIN "
+                        "( "
+                            "SELECT r.record_id,COUNT(*) as song_count "
+                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
+                            "GROUP BY r.record_id "
+                        ") s ON r.record_id=s.record_id "
+        "WHERE "
+            "r.artist_id=%1 "
+    )
+        .arg(performerID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+
+}
+
 QString
 SBIDAlbum::createKey(int albumID,int unused)
 {
@@ -1498,5 +1533,7 @@ SBIDAlbum::_loadPerformances()
 {
     SBSqlQueryModel* qm=SBIDPerformance::performancesByAlbum(albumID());
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
+    _performances.clear();
     _performances=pemgr->retrieveSet(qm);
+    delete qm;
 }

@@ -12,6 +12,10 @@ class QLineEdit;
 class SBIDPerformer;
 typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
 
+#include "SBIDPerformance.h"
+
+class SBTableModel;
+
 class SBIDPerformer : public SBIDBase
 {
 
@@ -32,9 +36,9 @@ public:
     virtual QString type() const;
 
     //	Methods unique to SBIDPerformer
+    SBTableModel* albums() const;
     void addRelatedPerformer(int performerID);
     void deleteRelatedPerformer(int performerID);
-    SBSqlQueryModel* getAlbums() const;
     SBSqlQueryModel* getAllSongs() const;
     SBSqlQueryModel* getAllOnlineSongs() const;
     inline QString notes() const { return _notes; }
@@ -81,17 +85,21 @@ protected:
     QString deleteRelatedPerformerSQL(int performerID) const;
 
 private:
-    QString      _notes;
-    QString      _performerName;
-    int          _sb_performer_id;
-    QVector<int> _relatedPerformerID;
+    QVector<SBIDAlbumPtr>        _albums;
+    QString                      _notes;
+    QVector<SBIDPerformancePtr>  _performances;
+    QString                      _performerName;
+    int                          _sb_performer_id;
+    QVector<int>                 _relatedPerformerID;
 
     //	Not instantiated
-    int          _num_albums;
-    int          _num_songs;
+    int                          _num_albums;
+    int                          _num_songs;
 
     //	Methods
     void _init();
+    void _loadAlbums();
+    void _loadPerformances(bool showProgressDialogFlag=1);
     QVector<int> _loadRelatedPerformers() const;
 };
 

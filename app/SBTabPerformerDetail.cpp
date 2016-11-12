@@ -448,6 +448,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     QTableView* tv=NULL;
     int rowCount=0;
     SBSqlQueryModel* qm=NULL;
+    SBTableModel* tm=NULL;
 
     mw->ui.tabPerformerDetailLists->setCurrentIndex(0);
 
@@ -459,11 +460,13 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    qm=performerPtr->getAlbums();
+    //qm=performerPtr->getAlbums();
+    tm=performerPtr->albums();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
-    qm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,qm,2);
+    //qm->setDragableColumns(dragableColumns);
+    tm->setDragableColumns(dragableColumns);
+    rowCount=populateTableView(tv,tm,2);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
 
     //	Populate charts

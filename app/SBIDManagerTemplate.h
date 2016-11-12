@@ -5,6 +5,7 @@
 
 #include <QList>
 #include <QMap>
+#include <QProgressDialog>
 #include <QSqlRecord>
 
 #include "DataAccessLayer.h"
@@ -43,7 +44,7 @@ public:
     void remove(std::shared_ptr<T> ptr);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
-    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm);
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,const QString& label="");
     void rollbackChanges();
     void debugShow(const QString title="");
 
@@ -274,13 +275,33 @@ SBIDManagerTemplate<T>::retrieveAll()
 }
 
 template <class T> QVector<std::shared_ptr<T>>
-SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm)
+SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, const QString& label)
 {
+    bool showProgressDialogFlag=label.count()>1;
+    const int rowCount=qm->rowCount();
+    int currentRowIndex=0;
+    QProgressDialog pd(label,QString(),0,rowCount);
+
+    qDebug() << SB_DEBUG_INFO << label << rowCount;
+    if(rowCount<=20)
+    {
+        showProgressDialogFlag=0;
+    }
+
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+        QCoreApplication::processEvents();
+    }
+
     QVector<std::shared_ptr<T>> list;
-    for(int i=0;i<qm->rowCount();i++)
+    for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newT=T::instantiate(r);
+        std::shared_ptr<T> newT=T::instantiate(r,1);
         const QString key=newT->key();
         std::shared_ptr<T> oldT;
 
@@ -301,7 +322,16 @@ SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm)
             _leMap[key]=newT;
         }
         list.append(newT);
+
+        //	Take care of progress dialog
+        if(showProgressDialogFlag && (currentRowIndex%10)==0)
+        {
+            QCoreApplication::processEvents();
+            pd.setValue(currentRowIndex);
+        }
+        currentRowIndex++;
     }
+    pd.setValue(rowCount);
     return list;
 }
 

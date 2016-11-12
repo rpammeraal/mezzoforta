@@ -41,6 +41,74 @@ SBTableModel::determineSBID(const QModelIndex &idx) const
 }
 
 void
+SBTableModel::populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums)
+{
+    _init();
+    QStringList header;
+    header.append("SB_ITEM_TYPE1");
+    header.append("SB_ALBUM_ID");
+    header.append("title");
+    header.append("year released");
+    header.append("SB_ITEM_TYPE2");
+    header.append("SB_PERFORMER_ID");
+    header.append("name");
+    setHorizontalHeaderLabels(header);
+
+    QVector<int> albumIDs;
+    int index=0;
+
+    //	Go through all albums directly associated with performer
+    QVectorIterator<SBIDAlbumPtr> ita(albums);
+    while(ita.hasNext())
+    {
+        SBIDAlbumPtr albumPtr=ita.next();
+
+        if(albumPtr && !albumIDs.contains(albumPtr->albumID()))
+        {
+            _setItem(index,0,QString("%1").arg(SBIDBase::sb_type_album));
+            _setItem(index,1,QString("%1").arg(albumPtr->albumID()));
+            _setItem(index,2,QString("%1").arg(albumPtr->albumTitle()));
+            _setItem(index,3,QString("%1").arg(albumPtr->year()));
+            _setItem(index,4,QString("%1").arg(SBIDBase::sb_type_performer));
+            _setItem(index,5,QString("%1").arg(albumPtr->albumPerformerID()));
+            _setItem(index,6,QString("%1").arg(albumPtr->albumPerformerName()));
+
+            index++;
+            albumIDs.append(albumPtr->albumID());
+        }
+    }
+
+    //	Go through all albums referred to in performances
+    QVectorIterator<SBIDPerformancePtr> itap(albumPerformances);
+    qDebug() << SB_DEBUG_INFO << albumPerformances.count();
+    while(itap.hasNext())
+    {
+        SBIDPerformancePtr performancePtr=itap.next();
+
+        if(performancePtr)
+        {
+            qDebug() << SB_DEBUG_INFO << performancePtr->key();
+            SBIDAlbumPtr albumPtr=performancePtr->albumPtr();
+
+            if(albumPtr && !albumIDs.contains(albumPtr->albumID()))
+            {
+                qDebug() << SB_DEBUG_INFO << *albumPtr;
+                _setItem(index,0,QString("%1").arg(SBIDBase::sb_type_album));
+                _setItem(index,1,QString("%1").arg(albumPtr->albumID()));
+                _setItem(index,2,QString("%1").arg(albumPtr->albumTitle()));
+                _setItem(index,3,QString("%1").arg(albumPtr->year()));
+                _setItem(index,4,QString("%1").arg(SBIDBase::sb_type_performer));
+                _setItem(index,5,QString("%1").arg(albumPtr->albumPerformerID()));
+                _setItem(index,6,QString("%1").arg(albumPtr->albumPerformerName()));
+
+                index++;
+                albumIDs.append(albumPtr->albumID());
+            }
+        }
+    }
+}
+
+void
 SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 {
     _init();

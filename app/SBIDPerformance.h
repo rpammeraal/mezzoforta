@@ -38,6 +38,7 @@ public:
     //	SBIDPerformance specific methods
     int albumID() const;
     QString albumTitle() const;
+    SBIDAlbumPtr albumPtr() const;
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
@@ -66,10 +67,12 @@ public:
     //	Static methods
     static QString createKey(int albumID, int albumPosition);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
+    static SBIDPerformancePtr retrievePerformance(int albumID, int positionID, bool noDependentsFlag=0);
+
+	//	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesByAlbum(int songID);
+    static SBSqlQueryModel* performancesByPerformer(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
-    void postInstantiate(SBIDPerformancePtr& ptr);
-    static SBIDPerformancePtr retrievePerformance(int albumID, int positionID);
 
 protected:
     template <class T> friend class SBIDManagerTemplate;
@@ -79,6 +82,7 @@ protected:
 
     static SBIDPerformancePtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     static void openKey(const QString& key, int& albumID, int& albumPosition);
+    void postInstantiate(SBIDPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
 
 private:
