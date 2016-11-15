@@ -70,26 +70,25 @@ SBIDPerformer::itemType() const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    //	CWIP:performance
-//    QMap<int,SBIDBase> list;
-//    SBSqlQueryModel* qm=this->getAllOnlineSongs();
-//    for(int i=0;i<qm->rowCount();i++)
-//    {
-//        SBIDSong song=SBIDSong(qm->data(qm->index(i,0)).toInt());
-//        song.setSongPerformerID(qm->data(qm->index(i,1)).toInt());
-//        song.setAlbumID(qm->data(qm->index(i,2)).toInt());
-//        song.setAlbumPosition(qm->data(qm->index(i,3)).toInt());
-//        song.setSongTitle(qm->data(qm->index(i,4)).toString());
-//        song.setSongPerformerName(qm->data(qm->index(i,5)).toString());
-//        song.setAlbumTitle(qm->data(qm->index(i,6)).toString());
-//        song.setDuration(qm->data(qm->index(i,7)).toTime());
-//        song.setPath(qm->data(qm->index(i,8)).toString());
-//        list[list.count()]=song;
-//    }
+    QMap<int,SBIDPerformancePtr> list;
 
-//    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-//    SB_DEBUG_IF_NULL(mqs);
-//    mqs->populate(list,enqueueFlag);
+    if(_performances.count()==0)
+    {
+        this->_loadPerformances();
+    }
+
+    int index=0;
+    for(int i=0;i<_performances.count();i++)
+    {
+        const SBIDPerformancePtr performancePtr=_performances.at(i);
+        if(performancePtr->path().length()>0)
+        {
+            list[index++]=performancePtr;
+        }
+    }
+
+    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    mqs->populate(list,enqueueFlag);
 }
 
 QString
@@ -923,10 +922,9 @@ SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default,showProgressDialogFlag==1?"Loading Performances":QString());
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default,showProgressDialogFlag==1?"Retrieving Songs":QString());
 
     delete qm;
-    qDebug() << SB_DEBUG_INFO;
 }
 
 QVector<int>

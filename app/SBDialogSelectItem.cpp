@@ -43,7 +43,6 @@ SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumP
     d->ui->lHeader->setText(title+':');
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 
-    int albumCount=0;
     for(int i=0;i<matches.count(); i++)
     {
         for(int j=0;j<matches[i].count();j++)
@@ -68,7 +67,7 @@ SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumP
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
-                           .arg(i)
+                           .arg(currentAlbumPtr->key())
                            .arg(currentAlbumPtr->albumTitle())
                            .arg(currentAlbumPtr->albumPerformerName())
                 );
@@ -79,7 +78,6 @@ SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumP
 
                 d->ui->vlAlbumList->addWidget(l);
 
-                d->_itemsDisplayed[albumCount++]=currentAlbumPtr;
                 albumsShown.append(currentAlbumPtr);
             }
         }
@@ -89,7 +87,7 @@ SBDialogSelectItem::selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumP
 }
 
 SBDialogSelectItem*
-SBDialogSelectItem::selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *parent)
+SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool playableOnlyFlag, QWidget *parent)
 {
     QVector<SBIDPerformancePtr> performanceList=songPtr->allPerformances();
     SBDialogSelectItem* dialog=new SBDialogSelectItem(songPtr,parent,SBDialogSelectItem::sb_songalbum);
@@ -102,35 +100,36 @@ SBDialogSelectItem::selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *par
     {
         SBIDPerformancePtr currentPerformancePtr=performanceList.at(i);
 
-        QLabel* l=new QLabel;
-        SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
-
-        l->setWindowFlags(Qt::FramelessWindowHint);
-        l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(currentAlbumPtr);
-        QFile imageFile(imagePath);
-
-        if(imageFile.exists()==0)
+        if(playableOnlyFlag==0 || (playableOnlyFlag==1 && currentPerformancePtr->path().length()>0))
         {
-            imagePath=songPtr->iconResourceLocation();
+            QLabel* l=new QLabel;
+            SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
+
+            l->setWindowFlags(Qt::FramelessWindowHint);
+            l->setTextFormat(Qt::RichText);
+            QString imagePath=ExternalData::getCachePath(currentAlbumPtr);
+            QFile imageFile(imagePath);
+
+            if(imageFile.exists()==0)
+            {
+                imagePath=songPtr->iconResourceLocation();
+            }
+            l->setText(QString("<html><head><style type=text/css> "
+                               "a:link {color:black; text-decoration:none;} "
+                               "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
+                       //	set args correctly
+                       .arg(imagePath)
+                       .arg(currentPerformancePtr->key())
+                       .arg(currentAlbumPtr->albumTitle())
+                       .arg(currentPerformancePtr->songPerformerName())
+                       .arg(currentPerformancePtr->duration().toString(Duration::sb_hhmmss_format)));
+
+            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+            connect(l, SIGNAL(linkActivated(QString)),
+                    dialog, SLOT(OK(QString)));
+
+            dialog->ui->vlAlbumList->addWidget(l);
         }
-        l->setText(QString("<html><head><style type=text/css> "
-                           "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
-                   //	set args correctly
-                   .arg(imagePath)
-                   .arg(i)
-                   .arg(currentAlbumPtr->albumTitle())
-                   .arg(currentPerformancePtr->songPerformerName())
-                   .arg(currentPerformancePtr->duration().toString(Duration::sb_hhmmss_format)));
-
-        l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-        connect(l, SIGNAL(linkActivated(QString)),
-                dialog, SLOT(OK(QString)));
-
-        dialog->ui->vlAlbumList->addWidget(l);
-        //	dialog->_itemsDisplayed[i]=std::make_shared<SBIDSong>(songChoice);
-        //	Can't do this. Must assume all items are unique
     }
     dialog->updateGeometry();
     return dialog;
@@ -151,7 +150,6 @@ SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QList<QList<SBIDPe
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 
-    int performerCount=0;
     for(int i=0;i<matches.count();i++)
     {
         for(int j=0;j<matches[i].count();j++)
@@ -173,10 +171,9 @@ SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QList<QList<SBIDPe
                 l->setFont(QFont("Trebuchet MS",13));
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
-                                   //"</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     %2</a></font></body></html>")
                                    "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
                            .arg(imagePath)
-                           .arg(i)
+                           .arg(currentPerformerPtr->key())
                            .arg(currentPerformerPtr->performerName())
                 );
 
@@ -186,7 +183,6 @@ SBDialogSelectItem::selectPerformer(const SBIDPtr& ptr, const QList<QList<SBIDPe
 
                 d->ui->vlAlbumList->addWidget(l);
 
-                d->_itemsDisplayed[performerCount++]=currentPerformerPtr;
                 performersShown.append(currentPerformerPtr);
             }
         }
@@ -290,7 +286,6 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDSongPtr& songPtr, const QStr
 
 //            d->ui->vlAlbumList->addWidget(l);
 
-//            d->_itemsDisplayed[i]=std::make_shared<SBIDSong>(currentSong);
 //            songsShown.append(currentSong);
 //        lastSeenRank=currentRank;
 //    }
@@ -314,15 +309,12 @@ SBDialogSelectItem::getSelected() const
 void
 SBDialogSelectItem::OK(const QString& i)
 {
-    _hasSelectedItemFlag=1;
-    QMapIterator<int,SBIDPtr> it(_itemsDisplayed);
-    while(it.hasNext())
+    qDebug() << SB_DEBUG_INFO << i;
+    _currentPtr=SBIDBase::createPtr(i);
+    if(_currentPtr)
     {
-        it.next();
+        qDebug() << SB_DEBUG_INFO << _currentPtr->key();
     }
-
-    _currentPtr=_itemsDisplayed[i.toInt()];
-
     this->close();
 }
 

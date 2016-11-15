@@ -64,7 +64,7 @@ void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDPerformancePtr> list;
-    list=_retrievePlaylistItems(this->playlistID());
+    list=_retrievePlaylistItems(this->playlistID(),1);
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
@@ -273,6 +273,7 @@ SBIDPlaylist::assignPlaylistItem(SBIDPtr ptr)
         QSqlQuery insert(q,db);
         Q_UNUSED(insert);
         qDebug() << SB_DEBUG_INFO << q;
+    qDebug() << SB_DEBUG_INFO;
         SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
         playlistPtr->recalculatePlaylistDuration();
     }
@@ -374,10 +375,8 @@ SBIDPlaylist::items() const
         SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
         somewhere->_loadItems();
     }
-    qDebug() << SB_DEBUG_INFO;
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylistContent(_items);
-    qDebug() << SB_DEBUG_INFO;
     return tm;
 }
 
@@ -1080,9 +1079,8 @@ SBIDPlaylist::operator QString() const
 }
 
 ///	Private methods
-
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDPerformancePtr>& allPerformances,SBIDPtr rootPtr)
+SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDPerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
 {
     SBIDPlaylistPtr playlistPtr;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
@@ -1220,15 +1218,17 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 }
                 else
                 {
-                    SBIDSongPtr songPtr=SBIDSong::retrieveSong(allItems.value(6).toInt());
-                    if(songPtr)
+                    SBIDPerformancePtr performancePtr=SBIDPerformance::retrievePerformance(albumID,allItems.value(7).toInt(),0);
+                    if(performancePtr)
                     {
-                        SBIDPerformancePtr performancePtr=songPtr->performance(albumID,allItems.value(7).toInt());
-                        if(performancePtr)
-                        {
-                            allPerformances.append(performancePtr);
-                        }
+                        allPerformances.append(performancePtr);
                     }
+                }
+                qDebug() << SB_DEBUG_INFO;
+                if(progressDialog)
+                {
+                    qDebug() << SB_DEBUG_INFO;
+                    progressDialog->setValue(progressDialog->value()+1);
                 }
             }
         }
@@ -1470,7 +1470,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
     qDebug() << SB_DEBUG_INFO << q;
 
     //	Set up progress dialog
-    QProgressDialog pd("Retrieving Playlist",QString(),0,maxValue);
+    QProgressDialog pd("Retrieving All Items",QString(),0,maxValue);
     if(maxValue<=10)
     {
         showProgressDialogFlag=0;
@@ -1623,24 +1623,44 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
 }
 
 QMap<int,SBIDPerformancePtr>
-SBIDPlaylist::_retrievePlaylistItems(int playlistID)
+SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 {
     QList<SBIDPtr> compositesTraversed;
     QList<SBIDPerformancePtr> allPerformances;
     QMap<int,SBIDPerformancePtr> playList;
-    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,1);
+    qDebug() << SB_DEBUG_INFO;
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,0);
 
     if(playlistPtr)
     {
+        int currentRowIndex=0;
+        QProgressDialog pd("Preparing All Songs",QString(),0,playlistPtr->_num_items);
+
+        if(showProgressDialogFlag)
+        {
+            pd.setWindowModality(Qt::WindowModal);
+            pd.setValue(0);
+            pd.show();
+            pd.raise();
+            pd.activateWindow();
+            QCoreApplication::processEvents();
+        }
+
         //	Get all songs
         compositesTraversed.clear();
         allPerformances.clear();
-        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,playlistPtr);
+        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,playlistPtr,showProgressDialogFlag?&pd:NULL);
 
         //	Populate playlist
+        int index=0;
         for(int i=0;i<allPerformances.count();i++)
         {
-            playList[i]=allPerformances.at(i);
+            const SBIDPerformancePtr performancePtr=allPerformances.at(i);
+            if(performancePtr->path().length()>0)
+            {
+                playList[index++]=performancePtr;
+            }
+
         }
     }
     return playList;

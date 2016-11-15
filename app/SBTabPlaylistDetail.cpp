@@ -7,6 +7,7 @@
 #include "Controller.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
+#include "SBSortFilterProxyTableModel.h"
 
 SBTabPlaylistDetail::SBTabPlaylistDetail(QWidget* parent) : SBTab(parent,0)
 {
@@ -24,10 +25,12 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
+    /*
+    qDebug() << SB_DEBUG_INFO;
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemType!=SBIDBase::sb_type_invalid)
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemPtr)
     {
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
         if(playlistPtr)
@@ -51,6 +54,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
     {
         _menu->hide();
     }
+    */
 }
 
 void
@@ -88,23 +92,14 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
     SBIDPtr ptr;
 
-    if(selected.itemType==SBIDBase::sb_type_invalid)
+    if(selected.key.length()==0)
     {
         //	Label clicked
         ptr=SBIDPlaylist::retrievePlaylist(currentPtr->itemID());
     }
-    else if(selected.itemType==SBIDBase::sb_type_song)
-    {
-        //	Need to retrieve songID, performerID, albumID and albumPosition
-        //	based on playlistID, playlistPosition/
-        if(currentPtr && currentPtr->itemType()==SBIDBase::sb_type_playlist)
-        {
-            ptr=SBIDPlaylist::retrievePlaylist(currentPtr->itemID());
-        }
-    }
     else
     {
-        ptr=SBIDBase::createPtr(selected.itemType,selected.itemID);
+        ptr=SBIDBase::createPtr(selected.key);
     }
     if(ptr)
     {
@@ -151,7 +146,7 @@ SBTabPlaylistDetail::showContextMenuView(const QPoint& p)
     PlaylistItem selected=_getSelectedItem(idx);
 
     //	title etc not populated
-    if(selected.itemType!=SBIDBase::sb_type_invalid)
+    if(selected.key.length()>0)
     {
         _lastClickedIndex=idx;
 
@@ -237,8 +232,6 @@ SBTabPlaylistDetail::_init()
 SBTabPlaylistDetail::PlaylistItem
 SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
 {
-    static QModelIndex lastIdx;
-    //static SBIDBase __lastItem;
     PlaylistItem currentPlaylistItem;
 
     _init();
@@ -252,13 +245,9 @@ SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
         header=header.toLower();
         QModelIndex idy=idx.sibling(idx.row(),i);
 
-        if(header=="sb_item_type")
+        if(header=="sb_item_key")
         {
-            currentPlaylistItem.itemType=static_cast<SBIDBase::sb_type>(aim->data(idy).toInt());
-        }
-        else if(header=="sb_item_id")
-        {
-            currentPlaylistItem.itemID=aim->data(idy).toInt();
+            currentPlaylistItem.key=aim->data(idy).toString();
         }
         else if(header=="#")
         {
@@ -269,6 +258,7 @@ SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
             currentPlaylistItem.text=aim->data(idy).toString();
         }
     }
+
     return currentPlaylistItem;
 }
 

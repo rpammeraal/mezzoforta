@@ -392,10 +392,8 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
 
     if(songID!=-1)
     {
-        qDebug() << SB_DEBUG_INFO << songID;
-        songPtr=SBIDSong::retrieveSong(songID);
-
-        performancePtr=songPtr->performance(albumID,albumPosition);
+        qDebug() << SB_DEBUG_INFO << songID << albumID << albumPosition;
+        performancePtr=SBIDPerformance::retrievePerformance(albumID,albumPosition);
         performancePtr->setPlaylistPosition(playlistPosition);
     }
 

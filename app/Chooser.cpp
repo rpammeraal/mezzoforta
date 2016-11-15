@@ -195,7 +195,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
             {
                 SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
-                fromPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
+                fromPtr=SBTabSongDetail::selectPerformanceFromSong(songPtr,0);
             }
             else
             {
@@ -302,6 +302,7 @@ Chooser::newPlaylist()
 void
 Chooser::playlistChanged(int playlistID)
 {
+    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
 
     for(int y=0;_cm && y<_cm->rowCount();y++)
@@ -566,7 +567,8 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
 
             if(playlistNameItem && playlistIDItem)
             {
-                playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt());
+    qDebug() << SB_DEBUG_INFO;
+                playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt(),1);
             }
         }
         else

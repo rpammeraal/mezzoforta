@@ -78,10 +78,14 @@ void
 SBIDPerformance::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDPerformancePtr> list;
-    list[0]=SBIDPerformance::retrievePerformance(_sb_album_id,_sb_album_position,1);
+    const SBIDPerformancePtr performancePtr=SBIDPerformance::retrievePerformance(_sb_album_id,_sb_album_position,1);
+
+    if(performancePtr->path().length()>0)
+    {
+        list[0]=SBIDPerformance::retrievePerformance(_sb_album_id,_sb_album_position,1);
+    }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SB_DEBUG_IF_NULL(mqs);
     mqs->populate(list,enqueueFlag);
 }
 
@@ -104,16 +108,6 @@ int
 SBIDPerformance::albumID() const
 {
     return _sb_album_id;
-}
-
-SBIDAlbumPtr
-SBIDPerformance::albumPtr() const
-{
-    if(!_albumPtr)
-    {
-        const_cast<SBIDPerformance *>(this)->_setAlbumPtr();
-    }
-    return _albumPtr;
 }
 
 QString
@@ -185,6 +179,37 @@ SBIDPerformance::updateLastPlayDate()
     query.exec();
 
     return 1;	//	CWIP: need proper error handling
+}
+
+///	Pointers
+SBIDAlbumPtr
+SBIDPerformance::albumPtr() const
+{
+    if(!_albumPtr)
+    {
+        const_cast<SBIDPerformance *>(this)->_setAlbumPtr();
+    }
+    return _albumPtr;
+}
+
+SBIDPerformerPtr
+SBIDPerformance::performerPtr() const
+{
+    if(!_performerPtr)
+    {
+        const_cast<SBIDPerformance *>(this)->_setPerformerPtr();
+    }
+    return _performerPtr;
+}
+
+SBIDSongPtr
+SBIDPerformance::songPtr() const
+{
+    if(!_songPtr)
+    {
+        const_cast<SBIDPerformance *>(this)->_setSongPtr();
+    }
+    return _songPtr;
 }
 
 ///	Operators
@@ -415,15 +440,15 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 {
     qDebug() << SB_DEBUG_INFO << noDependentsFlag;
     SBIDPerformance performance;
-    performance._sb_song_id           =r.value(0).toInt();
-    performance._sb_album_id          =r.value(1).toInt();
-    performance._sb_album_position    =r.value(2).toInt();
-    performance._sb_performer_id      =r.value(3).toInt();
+    performance._sb_song_id           =Common::parseIntFieldDB(&r,0);
+    performance._sb_album_id          =Common::parseIntFieldDB(&r,1);
+    performance._sb_album_position    =Common::parseIntFieldDB(&r,2);
+    performance._sb_performer_id      =Common::parseIntFieldDB(&r,3);
     performance._originalPerformerFlag=r.value(4).toBool();
     performance._duration             =r.value(5).toTime();
     performance._year                 =r.value(6).toInt();
-    performance._notes                =r.value(7).toString();
-    performance._path                 =r.value(8).toString();
+    performance._notes                =Common::parseTextFieldDB(&r,7);
+    performance._path                 =Common::parseTextFieldDB(&r,8);
 
     if(!noDependentsFlag)
     {

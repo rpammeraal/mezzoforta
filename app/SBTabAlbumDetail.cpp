@@ -30,10 +30,10 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
     QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
-
+;
     if(!selected)
     {
         //	Context menu from SBLabel is clicked
@@ -79,7 +79,7 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
     SBIDPtr selected=sm->determineSBID(ids);
 
@@ -305,9 +305,9 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     tm=albumPtr->performances();
     dragableColumns.clear();
     qDebug() << SB_DEBUG_INFO << tm->rowCount();
-    dragableColumns << 0 << 0 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    dragableColumns << 0 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
-    populateTableView(tv,tm,1);
+    populateTableView(tv,tm,0);
 
     currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
     return currentScreenItem;

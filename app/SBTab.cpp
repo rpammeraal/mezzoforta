@@ -361,6 +361,7 @@ SBTab::sortOrderChanged(int column)
 void
 SBTab::tabBarClicked(int index)
 {
+    qDebug() << SB_DEBUG_INFO << index;
     _currentSubtabID=index;
     ScreenStack* st=Context::instance()->getScreenStack();
 
@@ -428,6 +429,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
         }
         if(ptr)
         {
+    qDebug() << SB_DEBUG_INFO;
             Context::instance()->getNavigator()->openScreen(ptr);
         }
     }
@@ -451,8 +453,9 @@ SBTab::_hideContextMenu()
 ///
 /// Set the subTab and sorted as found in screenstack.
 void
-SBTab::_setSubtab(const ScreenItem& si) const
+SBTab::_setSubtab(const ScreenItem& si)
 {
+    qDebug() << SB_DEBUG_INFO << _currentSubtabID << si;
     QTabWidget* tw=tabWidget();
     if(tw)
     {
@@ -466,11 +469,16 @@ SBTab::_setSubtab(const ScreenItem& si) const
         {
             tw->setCurrentIndex(si.subtabID());
         }
+        _currentSubtabID=subtabID;
     }
 
-    QTableView* ctv=subtabID2TableView(si.subtabID());
-    if(ctv && si.sortColumn()!=INT_MAX)
+    if(_currentSubtabID!=INT_MAX)
     {
-        ctv->sortByColumn(abs(si.sortColumn()),(si.sortColumn()>0?Qt::AscendingOrder:Qt::DescendingOrder));
+        QTableView* ctv=subtabID2TableView(_currentSubtabID);
+        if(ctv && si.sortColumn()!=INT_MAX)
+        {
+            ctv->sortByColumn(abs(si.sortColumn()),(si.sortColumn()>0?Qt::AscendingOrder:Qt::DescendingOrder));
+        }
     }
+    qDebug() << SB_DEBUG_INFO << _currentSubtabID;
 }

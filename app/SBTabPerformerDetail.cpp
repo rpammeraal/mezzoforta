@@ -46,7 +46,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
@@ -59,7 +59,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
     else if(selectedPtr && selectedPtr->itemType()==SBIDBase::sb_type_song)
     {
         SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(selectedPtr);
-        selectedPtr=SBTabSongDetail::selectPerformanceFromAlbum(songPtr);
+        selectedPtr=SBTabSongDetail::selectPerformanceFromSong(songPtr,1);
     }
 
     if(selectedPtr)
@@ -104,11 +104,11 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
 
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
     SBIDPtr selected=sm->determineSBID(ids);
 
-    if(selected->itemType()!=SBIDBase::sb_type_invalid)
+    if(selected)
     {
         _lastClickedIndex=ids;
 
@@ -461,9 +461,9 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     tv=mw->ui.performerDetailAlbums;
     tm=performerPtr->albums();
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    dragableColumns << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,2);
+    rowCount=populateTableView(tv,tm,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
 
     //	Populate charts

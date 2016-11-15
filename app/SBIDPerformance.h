@@ -38,7 +38,6 @@ public:
     //	SBIDPerformance specific methods
     int albumID() const;
     QString albumTitle() const;
-    SBIDAlbumPtr albumPtr() const;
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
@@ -56,7 +55,9 @@ public:
     inline int year() const { return _year; }
 
     //	Pointers
-    inline SBIDSongPtr songPtr() const { return _songPtr; }
+    SBIDAlbumPtr albumPtr() const;
+    SBIDSongPtr songPtr() const;
+    SBIDPerformerPtr performerPtr() const;
 
     //	Operators
     virtual operator QString();

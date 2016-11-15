@@ -82,7 +82,7 @@ private:
     QMap<int,int> _tabSortMap;	//	last sort column by tab
 
     void _hideContextMenu();
-    void _setSubtab(const ScreenItem& si) const;
+    void _setSubtab(const ScreenItem& si);
 };
 
 #endif // SBTAB_H

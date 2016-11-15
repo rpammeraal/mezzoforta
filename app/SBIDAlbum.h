@@ -60,6 +60,9 @@ public:
     QStringList updateSongOnAlbum(const SBIDSong& song);                 //	CWIP: this one, possible merge, otherwise rename
     inline int year() const { return _year; }
 
+    //	Pointers
+    SBIDPerformerPtr performerPtr() const;
+
     //	Operators
     virtual operator QString() const;
 
@@ -96,12 +99,13 @@ private:
     int                         _year;
 
     //	Attributes derived from core attributes
-    //SBIDPerformancePtr          _performancePtr; //	not used yet
+    SBIDPerformerPtr            _performerPtr;
 
     QVector<SBIDPerformancePtr> _performances;
 
     void _init();
     void _loadPerformances();
+    void _setPerformerPtr();
 };
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)

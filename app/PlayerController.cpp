@@ -107,6 +107,7 @@ PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
     SBIDPtr ptr=SBIDBase::createPtr(static_cast<SBIDBase::sb_type>(l[0].toInt()),l[1].toInt());
+    qDebug() << SB_DEBUG_INFO;
     Context::instance()->getNavigator()->openScreen(ptr);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }

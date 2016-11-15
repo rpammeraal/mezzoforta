@@ -52,13 +52,16 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     int itemID=-1;
     bool dragableColumnFlag=0;
 
-    if(_dragableColumnList.count() && idx.column()>=0 && idx.column()<_dragableColumnList.count())
+    qDebug() << SB_DEBUG_INFO;
+    if((_dragableColumnList.count()>0) && (idx.column()>=0) && (idx.column()<_dragableColumnList.count()))
     {
         dragableColumnFlag=_dragableColumnList.at(idx.column());
     }
 
+    qDebug() << SB_DEBUG_INFO << dragableColumnFlag;
     if(_dragableColumnList.count()==0)
     {
+    qDebug() << SB_DEBUG_INFO;
         //	Determine sbid by going through all columns.
 
         for(int i=0;i<aim->columnCount();i++)
@@ -107,27 +110,18 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     }
     else if(dragableColumnFlag==1)
     {
+    qDebug() << SB_DEBUG_INFO;
         //	Determine sbid from relatively from actual column that is clicked
         QModelIndex n;
 
-        //	item clicked (debugging purposes only)
-        n=aim->index(idx.row(),idx.column());
-
-        //	sb_item_id
+        //	key
         n=aim->index(idx.row(),idx.column()-1);
-        itemID=aim->data(n, Qt::DisplayRole).toInt();
+        QString key=aim->data(n, Qt::DisplayRole).toString();
 
-        //	sb_item_type
-        n=aim->index(idx.row(),idx.column()-2);
-        itemType=static_cast<SBIDBase::sb_type>(aim->data(n, Qt::DisplayRole).toInt());
-
-        //	text
-        n=aim->index(idx.row(),idx.column());
-        text=aim->data(n, Qt::DisplayRole).toString();
-
-        if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!ptr) && key.length())
         {
-            ptr=SBIDBase::createPtr(itemType,itemID);
+            qDebug() << SB_DEBUG_INFO << key;
+            ptr=SBIDBase::createPtr(key,1);
             return ptr;
         }
     }
@@ -136,6 +130,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
 
+    qDebug() << SB_DEBUG_INFO;
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
     {
@@ -163,6 +158,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             return ptr;
         }
     }
+    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 

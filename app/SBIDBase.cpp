@@ -99,6 +99,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag
         break;
 
     case SBIDBase::sb_type_playlist:
+    qDebug() << SB_DEBUG_INFO;
         ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
         break;
 
@@ -154,6 +155,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         break;
 
     case sb_type_playlist:
+    qDebug() << SB_DEBUG_INFO << noDependentsFlag;
         itemPtr=SBIDPlaylist::retrievePlaylist(list[1].toInt(),noDependentsFlag);
         break;
 

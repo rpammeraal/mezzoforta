@@ -11,6 +11,7 @@ typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
 #include "SBIDSong.h"
 
 class SBTableModel;
+class QProgressDialog;
 
 class SBIDPlaylist : public SBIDBase
 {
@@ -81,11 +82,11 @@ private:
     QMap<int,SBIDPtr> _items;
 
     //	Methods
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root);
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
     void _loadItems(bool showProgressDialogFlag=1);
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID);
+    static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
 };
 
 #endif // SBIDPLAYLIST_H

@@ -40,7 +40,7 @@ public:
 
     //	CWIP: remove m parameter if possible
     static SBDialogSelectItem* selectAlbum(const SBIDPtr& ptr, const QList<QList<SBIDAlbumPtr>>& matches, QWidget *parent = 0);
-    static SBDialogSelectItem* selectAlbumFromSong(const SBIDSongPtr& songPtr, QWidget *parent = 0);
+    static SBDialogSelectItem* selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool playableOnlyFlag, QWidget *parent = 0);
     static SBDialogSelectItem* selectPerformer(const SBIDPtr& ptr, const QList<QList<SBIDPerformerPtr>>& matches, QWidget *parent = 0);
     static SBDialogSelectItem* selectSongByPerformer(const SBIDSongPtr& songPtr, const QString& newPerformerName, QWidget *parent = 0);
 
@@ -49,7 +49,6 @@ private:
     Ui::SBDialogSelectItem *ui;
     SBIDPtr _currentPtr;
     SB_DialogType _dialogType;
-    QMap<int,SBIDPtr> _itemsDisplayed;
     bool _hasSelectedItemFlag;
 
     void init();

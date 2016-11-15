@@ -9,6 +9,7 @@
 #include <QTime>
 
 class QString;
+class QSqlRecord;
 class QTableView;
 
 #define SB_DATABASE_ENTRY "DatabasePath"
@@ -79,11 +80,14 @@ public:
         sb_field_album_id,
         sb_field_chart_id,
         sb_field_playlist_id,
-        sb_field_album_position
+        sb_field_album_position,
+        sb_field_key
     };
 
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
+    static int parseIntFieldDB(const QSqlRecord* sr, int index);
+    static QString parseTextFieldDB(const QSqlRecord* sr, int index);
     static quint64 random(quint64 max);
     static quint64 randomOldestFirst(quint64 max);
     static QString removeAccents(const QString& s);

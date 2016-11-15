@@ -47,10 +47,9 @@ public:
     SBTableModel* albums() const;
     QVector<SBIDPerformancePtr> allPerformances() const;
     void deleteIfOrphanized();
-    static SBSqlQueryModel* getAllSongs();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
-    int numPerformances() const { return _performances.count(); }
+    int numPerformances() const;
     SBIDPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlistList();
@@ -72,6 +71,7 @@ public:
     QString key() const;
 
     //	Static methods
+    static SBSqlQueryModel* retrieveAllSongs();
     static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=0);
 
 protected:

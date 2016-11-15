@@ -651,19 +651,28 @@ X	playlists that song belongs to can be edited
 -	Add open_flag to retrieveSet.
 -	No SBID* class should create SBSqlQueryModel, except static methods. This should be replaced with SBTableModel.
 
+20161114:
+-	test play now/enqueue -- using SBIDBase*::key() throughout all views
+    -	All Songs/Play U2/Popmuzik does not get played -- without warning: test added to check for path length > 0
+-	Modified SBDIalogSelectItem to incorporate keys
+-	test music player including play keys
+
 <current>
+*	De Heer Klassiekers playlist: empty items
+*	Escape key from lyrics tab does not work
 *	test drag/drop to playlists
     *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
-*	test play now/enqueue
-*	test music player including play keys
+*	no performer logos retrieved
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
 *	Assign playlist to another playlist: crash
+*	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 
 <near future>
+*	SBIDPlaylist::_getAllItemsByPlaylistRecursive(): should use _items.
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.

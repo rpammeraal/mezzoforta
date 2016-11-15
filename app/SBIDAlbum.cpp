@@ -14,6 +14,7 @@ SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
     _albumPerformerName   =c._albumPerformerName;
     _genre                =c._genre;
     _notes                =c._notes;
+    _performerPtr         =c._performerPtr;
     _sb_album_id          =c._sb_album_id;
     _sb_album_performer_id=c._sb_album_performer_id;
     _year                 =c._year;
@@ -159,7 +160,11 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     int index=0;
     for(int i=0;i<_performances.count();i++)
     {
-        list[index++]=_performances.at(i);
+        const SBIDPerformancePtr performancePtr=_performances.at(i);
+        if(performancePtr->path().length()>0)
+        {
+            list[index++]=performancePtr;
+        }
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -1230,6 +1235,17 @@ SBIDAlbum::updateSongOnAlbum(const SBIDSong &song)
     return SQL;
 }
 
+///	Pointers
+SBIDPerformerPtr
+SBIDAlbum::performerPtr() const
+{
+    if(!_performerPtr)
+    {
+        const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
+    }
+    return _performerPtr;
+}
+
 ///	Operators
 SBIDAlbum::operator QString() const
 {
@@ -1438,6 +1454,7 @@ SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     if(!noDependentsFlag)
     {
         album._loadPerformances();
+        album._setPerformerPtr();
     }
     return std::make_shared<SBIDAlbum>(album);
 }
@@ -1537,4 +1554,10 @@ SBIDAlbum::_loadPerformances()
     _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default);
 
     delete qm;
+}
+
+void
+SBIDAlbum::_setPerformerPtr()
+{
+    _performerPtr=SBIDPerformer::retrievePerformer(_sb_album_performer_id,1);
 }

@@ -193,18 +193,26 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
     }
 
     //	Send the first performance where orginalPerformerFlag is set.
-    for(int i=0;i<_performances.size();i++)
+    for(int i=0;i<_performances.size() && list.count()==0;i++)
     {
-        if(_performances.at(i)->originalPerformerFlag()==1)
+        performancePtr=_performances.at(i);
+        if(performancePtr->originalPerformerFlag()==1 && performancePtr->path().length()>0)
         {
             list[list.count()]=performancePtr;
         }
     }
 
     //	If still empty, take the first available performance
-    if(list.count()==0 && _performances.count())
+    if(list.count()==0)
     {
-        list[list.count()]=_performances.at(0);
+        for(int i=0;i<_performances.size() && list.count()==0;i++)
+        {
+            performancePtr=_performances.at(i);
+            if(performancePtr->path().length()>0)
+            {
+                list[list.count()]=performancePtr;
+            }
+        }
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -300,70 +308,18 @@ SBIDSong::deleteIfOrphanized()
             QString t=it.next();
             SQL.append(QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE song_id=%2").arg(t).arg(_sb_song_id));
         }
-
         dal->executeBatch(SQL);
     }
-
 }
 
-SBSqlQueryModel*
-SBIDSong::getAllSongs()
+int
+SBIDSong::numPerformances() const
 {
-    //	Main query
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "SB_KEYWORDS, "
-            "%1 AS SB_ITEM_TYPE1, "
-            "SB_SONG_ID, "
-            "songTitle AS \"song title\", "
-            "%2 AS SB_ITEM_TYPE2, "
-            "SB_PERFORMER_ID, "
-            "artistName AS \"performer\", "
-            "%3 AS SB_ITEM_TYPE3, "
-            "SB_ALBUM_ID, "
-            "recordTitle AS \"album title\", "
-            "%4 AS SB_ITEM_TYPE4, "
-            "SB_POSITION_ID, "
-            "path AS SB_PATH, "
-            "duration AS SB_DURATION "
-        "FROM "
-            "( "
-                "SELECT "
-                    "s.song_id AS SB_SONG_ID, "
-                    "s.title AS songTitle, "
-                    "a.artist_id AS SB_PERFORMER_ID, "
-                    "a.name AS artistName, "
-                    "r.record_id AS SB_ALBUM_ID, "
-                    "r.title AS recordTitle, "
-                    "rp.record_position AS SB_POSITION_ID, "
-                    "s.title || ' ' || a.name || ' ' || r.title  AS SB_KEYWORDS, "
-                    "op.path, "
-                    "rp.duration "
-                "FROM "
-                    "___SB_SCHEMA_NAME___record_performance rp  "
-                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
-                            "rp.artist_id=a.artist_id "
-                        "JOIN ___SB_SCHEMA_NAME___record r ON  "
-                            "rp.record_id=r.record_id "
-                        "JOIN ___SB_SCHEMA_NAME___song s ON  "
-                            "rp.song_id=s.song_id "
-                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "rp.op_song_id=op.song_id AND "
-                            "rp.op_artist_id=op.artist_id AND "
-                            "rp.op_record_id=op.record_id AND "
-                            "rp.op_record_position=op.record_position "
-
-            ") a "
-        "ORDER BY 4,7,10 "
-    ).
-        arg(Common::sb_field_song_id).
-        arg(Common::sb_field_performer_id).
-        arg(Common::sb_field_album_id).
-        arg(Common::sb_field_album_position)
-    ;
-
-    return new SBSqlQueryModel(q);
+    if(_performances.count()==0)
+    {
+        const_cast<SBIDSong *>(this)->_loadPerformances();
+    }
+    return _performances.count();
 }
 
 SBTableModel*
@@ -1143,6 +1099,58 @@ SBIDSong::key() const
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDSong::retrieveAllSongs()
+{
+    //	List songs with actual online performance only
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "SB_KEYWORDS, "
+            "-1 AS SB_ITEM_TYPE1, "
+            "CAST(%1 AS VARCHAR)||':'||CAST(SB_ALBUM_ID AS VARCHAR)||':'||CAST(SB_POSITION_ID AS VARCHAR) AS SB_ITEM_KEY1, "
+            "songTitle AS \"song title\", "
+            "-1 AS SB_ITEM_TYPE2, "
+            "CAST(%2 AS VARCHAR)||':'||CAST(SB_PERFORMER_ID AS VARCHAR) AS SB_ITEM_KEY2, "
+            "artistName AS \"performer\", "
+            "-1 AS SB_ITEM_TYPE3, "
+            "CAST(%3 AS VARCHAR)||':'||CAST(SB_ALBUM_ID AS VARCHAR) AS SB_ITEM_KEY3, "
+            "recordTitle AS \"album title\" "
+        "FROM "
+            "( "
+                "SELECT "
+                    "s.song_id AS SB_SONG_ID, "
+                    "s.title AS songTitle, "
+                    "a.artist_id AS SB_PERFORMER_ID, "
+                    "a.name AS artistName, "
+                    "r.record_id AS SB_ALBUM_ID, "
+                    "r.title AS recordTitle, "
+                    "rp.record_position AS SB_POSITION_ID, "
+                    "s.title || ' ' || a.name || ' ' || r.title  AS SB_KEYWORDS "
+                "FROM "
+                    "___SB_SCHEMA_NAME___record_performance rp  "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
+                            "rp.artist_id=a.artist_id "
+                        "JOIN ___SB_SCHEMA_NAME___record r ON  "
+                            "rp.record_id=r.record_id "
+                        "JOIN ___SB_SCHEMA_NAME___song s ON  "
+                            "rp.song_id=s.song_id "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "rp.op_song_id=op.song_id AND "
+                            "rp.op_artist_id=op.artist_id AND "
+                            "rp.op_record_id=op.record_id AND "
+                            "rp.op_record_position=op.record_position "
+            ") a "
+        "ORDER BY 4,7,10 "
+    )
+        .arg(SBIDBase::sb_type_performance)
+        .arg(SBIDBase::sb_type_performer)
+        .arg(SBIDBase::sb_type_album)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 SBIDSongPtr
 SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
 {

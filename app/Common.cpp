@@ -50,6 +50,18 @@ Common::hideColumns(QTableView* tv)
     tv->verticalHeader()->hide();
 }
 
+int
+Common::parseIntFieldDB(const QSqlRecord *sr, int index)
+{
+    return sr->isNull(index)?-1:sr->value(index).toInt();
+}
+
+QString
+Common::parseTextFieldDB(const QSqlRecord *sr, int index)
+{
+    return sr->isNull(index)?"n/a":sr->value(index).toString();
+}
+
 //	Generated number where 0<= number < max
 quint64
 Common::random(quint64 max)

@@ -42,7 +42,7 @@ SBTabSongDetail::tabWidget() const
 }
 
 SBIDPerformancePtr
-SBTabSongDetail::selectPerformanceFromAlbum(SBIDSongPtr& songPtr)
+SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOnlyFlag)
 {
     SBIDPerformancePtr selectedPerformancePtr;
     if(songPtr->numPerformances()==0)
@@ -60,13 +60,23 @@ SBTabSongDetail::selectPerformanceFromAlbum(SBIDSongPtr& songPtr)
     else
     {
         //	Ask from which album song should be assigned from
-        SBDialogSelectItem* ssa=SBDialogSelectItem::selectAlbumFromSong(songPtr);
+        SBDialogSelectItem* ssa=SBDialogSelectItem::selectPerformanceFromSong(songPtr,playableOnlyFlag);
 
         ssa->exec();
         SBIDPtr ptr=ssa->getSelected();
+        if(ptr)
+        {
+            qDebug() << SB_DEBUG_INFO << ptr->key();
+        }
+        else
+        {
+
+            qDebug() << SB_DEBUG_INFO << "none";
+        }
 
         selectedPerformancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
     }
+        qDebug() << SB_DEBUG_INFO << selectedPerformancePtr->key();
     return selectedPerformancePtr;
 }
 
@@ -77,7 +87,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBIDPtr selectPtr=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
@@ -86,7 +96,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
         //	Context menu from SBLabel is clicked
         SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(currentScreenItem().ptr());
 
-        selectPtr=selectPerformanceFromAlbum(songPtr);
+        selectPtr=selectPerformanceFromSong(songPtr,1);
     }
     pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
@@ -128,11 +138,11 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
 
     QModelIndex idx=tv->indexAt(p);
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
     SBIDPtr selected=sm->determineSBID(ids);
 
-    if(selected->itemType()!=SBIDBase::sb_type_invalid)
+    if(selected)
     {
         _lastClickedIndex=ids;
 
@@ -373,16 +383,16 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     tv=mw->ui.songDetailAlbums;
     tm=songPtr->albums();
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 1 << 0 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
+    dragableColumns << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,2);
+    rowCount=populateTableView(tv,tm,1);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_albums,rowCount>0);
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
     tm=songPtr->playlistList();
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 1;
+    dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,tm,2);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_playlists,rowCount>0);

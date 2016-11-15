@@ -23,10 +23,10 @@ SBTabSongsAll::preload()
     QSortFilterProxyModel* slP;
 
     //	Songlist
-    SBSqlQueryModel* sm=SBIDSong::getAllSongs();
+    SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs();
     QList<bool> dragableColumns;
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 0 << 0;
+    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1;
     sm->setDragableColumns(dragableColumns);
 
     slP=new QSortFilterProxyModel();

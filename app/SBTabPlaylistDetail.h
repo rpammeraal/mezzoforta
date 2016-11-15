@@ -32,17 +32,18 @@ private:
     public:
         PlaylistItem() { _init(); }
 
-        SBIDBase::sb_type itemType;
-        int               itemID;
+        //	Store key instead of itemPtr -- this will make it easier
+        //	to purge items from cache later on
+        QString           key;
         int               playlistPosition;
         QString           text;
 
     private:
         void _init()
         {
-            itemType=SBIDBase::sb_type_invalid;
-            itemID=-1;
+            key="";
             playlistPosition=-1;
+            text="";
         }
     };
 

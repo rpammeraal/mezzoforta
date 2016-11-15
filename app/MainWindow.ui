@@ -514,7 +514,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>2</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -1133,7 +1133,7 @@
               </property>
               <widget class="QWidget" name="tabPerformerDetailPerformances">
                <attribute name="title">
-                <string>Performances</string>
+                <string>Songs</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_04">
                 <property name="leftMargin">
