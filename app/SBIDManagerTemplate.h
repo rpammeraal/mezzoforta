@@ -21,8 +21,7 @@
 
 class DataAccessLayer;
 
-template <class T>
-class SBIDManagerTemplate
+class OpenFlags
 {
 public:
     enum open_flag
@@ -32,6 +31,12 @@ public:
         open_flag_foredit=2,
         open_flag_parentonly=3
     };
+};
+
+template <class T>
+class SBIDManagerTemplate : public OpenFlags
+{
+public:
 
     SBIDManagerTemplate<T>();
     ~SBIDManagerTemplate<T>();
@@ -42,9 +47,9 @@ public:
     int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     void remove(std::shared_ptr<T> ptr);
-    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=open_flag_default);
+    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
-    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=open_flag_default,const QString& label="");
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
     void rollbackChanges();
     void debugShow(const QString title="");
 
@@ -179,7 +184,7 @@ SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
 
 
 template <class T> std::shared_ptr<T>
-SBIDManagerTemplate<T>::retrieve(QString key,SBIDManagerTemplate::open_flag openFlag)
+SBIDManagerTemplate<T>::retrieve(QString key,open_flag openFlag)
 {
     qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
@@ -194,7 +199,7 @@ SBIDManagerTemplate<T>::retrieve(QString key,SBIDManagerTemplate::open_flag open
 
         if(!r.isEmpty())
         {
-            ptr=T::instantiate(r,openFlag==SBIDManagerTemplate::open_flag_parentonly);
+            ptr=T::instantiate(r,openFlag==OpenFlags::open_flag_parentonly);
             _leMap[key]=ptr;
         }
     }
@@ -301,7 +306,7 @@ SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, con
     for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newT=T::instantiate(r,openFlag==SBIDManagerTemplate::open_flag_parentonly);
+        std::shared_ptr<T> newT=T::instantiate(r,openFlag==OpenFlags::open_flag_parentonly);
         const QString key=newT->key();
         std::shared_ptr<T> oldT;
 
