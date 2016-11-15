@@ -1504,7 +1504,16 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
             break;
 
         case Common::sb_field_song_id:
-            itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt(),0);
+            if(queryList.value(3).isNull())
+            {
+                //	Item is a song
+                itemPtr=SBIDSong::retrieveSong(queryList.value(2).toInt(),0);
+            }
+            else
+            {
+                //	Item is a performance as we have album_id and album_position populated
+                itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt(),0);
+            }
             break;
 
         case Common::sb_field_invalid:

@@ -46,8 +46,9 @@ SBIDSong::commonPerformerName() const
 QString
 SBIDSong::genericDescription() const
 {
-    return QString("Song %1")
+    return QString("Song - %1 / %2 (Not Available)")
         .arg(this->text())
+        .arg(this->songPerformerName())
     ;
 }
 

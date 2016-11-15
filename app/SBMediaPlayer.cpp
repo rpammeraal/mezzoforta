@@ -46,15 +46,6 @@ SBMediaPlayer::setMedia(const QString &fileName)
 {
     closeStream();
     QString fn=QString(fileName).replace("\\","");
-    //fn="/tmp/aap.wav";
-    //fn="C:/temp/aap.wav";
-    //fn="/tmp/noot.ogg";
-    //fn="C:/temp/noot.ogg";
-    //fn="/tmp/mies.mp3";
-    //fn="C:/temp/mies.mp3";
-    //fn="/tmp/wim.flac";
-    //fn="/Volumes/bigtmp/wim.flac";
-    //fn="/bogus/i/dont/exist.flac";
 
     if(_stream)
     {
@@ -65,7 +56,7 @@ SBMediaPlayer::setMedia(const QString &fileName)
 
     if(!_ad)
     {
-        qDebug() << SB_DEBUG_ERROR;
+        qDebug() << SB_DEBUG_ERROR << fileName;
         setErrorMsg(adf.error());
         return 0;
     }

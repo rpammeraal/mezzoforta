@@ -657,12 +657,15 @@ X	playlists that song belongs to can be edited
 -	Modified SBDIalogSelectItem to incorporate keys
 -	test music player including play keys
 
+20161115:
+-	De Heer Klassiekers playlist: empty items: added SBIDSongPtr as item to playlist
+        -	Trista Pena is skipped -- bug in retrieve path when retrieving performance
+-	Escape key from lyrics tab does not work: unable to reproduce
+
 <current>
-*	De Heer Klassiekers playlist: empty items
-*	Escape key from lyrics tab does not work
 *	test drag/drop to playlists
     *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
-*	no performer logos retrieved
+*	no performer logos retrieved: echonest is offline (20161115)
 
 <bugs>
 *	if it is not possible to connect to Postgres, need to see dialog box

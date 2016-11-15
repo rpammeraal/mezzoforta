@@ -450,6 +450,7 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performance._notes                =Common::parseTextFieldDB(&r,7);
     performance._path                 =Common::parseTextFieldDB(&r,8);
 
+    qDebug() << SB_DEBUG_INFO << performance._path;
     if(!noDependentsFlag)
     {
         qDebug() << SB_DEBUG_INFO << performance.key();
@@ -513,7 +514,7 @@ SBIDPerformance::retrieveSQL(const QString& key)
                     "rp.op_song_id=op.song_id AND "
                     "rp.op_artist_id=op.artist_id AND "
                     "rp.op_record_id=op.record_id AND "
-                    "rp.op_record_position=rp.record_position  "
+                    "rp.op_record_position=op.record_position  "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "

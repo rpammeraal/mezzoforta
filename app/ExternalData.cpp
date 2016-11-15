@@ -562,6 +562,7 @@ ExternalData::handlePerformerNewsURLFromEN(QNetworkReply *r)
 void
 ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(r->error()==QNetworkReply::NoError)
     {
         if(r->open(QIODevice::ReadOnly))
@@ -612,6 +613,10 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                     _performerHomepageRetrievedFlag=1;
                                     emit performerHomePageAvailable(_currentPtr->url());
                                     emit updatePerformerHomePage(_currentPtr);
+                                }
+                                else if(e.attribute("type")=="image")
+                                {
+                                    qDebug() << SB_DEBUG_INFO << e.text();
                                 }
                             }
                         }
@@ -814,6 +819,7 @@ ExternalData::_loadAlbumCoverAS()
 void
 ExternalData::_getMBIDAndMore()
 {
+    qDebug() << SB_DEBUG_INFO;
     QNetworkAccessManager* en;
     QString urlString;
     QNetworkAccessManager* mb;
@@ -857,20 +863,23 @@ ExternalData::_getMBIDAndMore()
             {
                 qDebug() << SB_DEBUG_WARNING << "Looks like we already have wiki and home page for performer";
             }
+            qDebug() << SB_DEBUG_INFO;
 
-            //	2.	Artwork
-            if(_artworkRetrievedFlag==0)
-            {
-                //	Get performer image from echonest
-                en=new QNetworkAccessManager(this);
-                connect(en, SIGNAL(finished(QNetworkReply *)),
-                        this, SLOT(handlePerformerImageURLFromEN(QNetworkReply *)));
+//            //	2.	Artwork
+//            if(_artworkRetrievedFlag==0)
+//            {
+//                qDebug() << SB_DEBUG_INFO;
+//                //	Get performer image from echonest
+//                en=new QNetworkAccessManager(this);
+//                connect(en, SIGNAL(finished(QNetworkReply *)),
+//                        this, SLOT(handlePerformerImageURLFromEN(QNetworkReply *)));
 
-                urlString=QString("http://developer.echonest.com/api/v4/artist/images?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml")
-                    .arg(_currentPtr->MBID())
-                ;
-                en->get(QNetworkRequest(QUrl(urlString)));
-            }
+//                urlString=QString("http://developer.echonest.com/api/v4/artist/images?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml")
+//                    .arg(_currentPtr->MBID())
+//                ;
+//                qDebug() << SB_DEBUG_INFO << urlString;
+//                en->get(QNetworkRequest(QUrl(urlString)));
+//            }
 
             //	3.	Get news items from echonest
             en=new QNetworkAccessManager(this);
