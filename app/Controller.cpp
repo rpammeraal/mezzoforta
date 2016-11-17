@@ -324,6 +324,8 @@ Controller::setupUI()
         mw->ui.frSchema->setVisible(0);
     }
 
+    qDebug() << SB_DEBUG_INFO << "playground";
+    qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }
 

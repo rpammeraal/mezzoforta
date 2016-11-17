@@ -235,6 +235,7 @@ DataAccessLayer::addMissingDatabaseItems()
     QStringList allSQL;
 
     allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN soundex VARCHAR NULL");
+    allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN mbid VARCHAR NULL");
     allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___song ADD COLUMN soundex VARCHAR NULL");
     allSQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___online_performance_alt( LIKE ___SB_SCHEMA_NAME___online_performance)");
     //allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___record_performance ALTER COLUMN duration TYPE interval");

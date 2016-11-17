@@ -166,154 +166,154 @@ SBTabPerformerEdit::save() const
     //	1.	Rename U2 to Simple Minds.
     //	2.	Rename Simple Minds -> Dire Straitz
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDPerformerPtr orgPerformerPtr=std::dynamic_pointer_cast<SBIDPerformer>(currentScreenItem.ptr());
-    QStringList SQL;
-    bool mergeToNewPerformer=0;	//	This indicates whether we have to deal with saving to current performer or merge to another performer
-    bool successFlag=0;
+//    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+//    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+//    const MainWindow* mw=Context::instance()->getMainWindow();
+//    ScreenItem currentScreenItem=this->currentScreenItem();
+//    SBIDPerformerPtr orgPerformerPtr=std::dynamic_pointer_cast<SBIDPerformer>(currentScreenItem.ptr());
+//    QStringList SQL;
+//    bool mergeToNewPerformer=0;	//	This indicates whether we have to deal with saving to current performer or merge to another performer
+//    bool successFlag=0;
 
-    if(currentScreenItem.editFlag()==0)
-    {
-        qDebug() << SB_DEBUG_ERROR << "isEditFlag flag not set";
-        return;
-    }
+//    if(currentScreenItem.editFlag()==0)
+//    {
+//        qDebug() << SB_DEBUG_ERROR << "isEditFlag flag not set";
+//        return;
+//    }
 
-    QString editPerformerName=mw->ui.performerEditName->text();
-    QString editNotes=mw->ui.performerEditNotes->text();
-    QString editURL=mw->ui.performerEditWebSite->text();
-    if(editURL.right(8).toLower()=="https://")
-    {
-        editURL=editURL.mid(8);
-    }
-    else if(editURL.right(7).toLower()=="http://")
-    {
-        editURL=editURL.mid(7);
-    }
+//    QString editPerformerName=mw->ui.performerEditName->text();
+//    QString editNotes=mw->ui.performerEditNotes->text();
+//    QString editURL=mw->ui.performerEditWebSite->text();
+//    if(editURL.right(8).toLower()=="https://")
+//    {
+//        editURL=editURL.mid(8);
+//    }
+//    else if(editURL.right(7).toLower()=="http://")
+//    {
+//        editURL=editURL.mid(7);
+//    }
 
-    bool hasCaseChange=0;
+//    bool hasCaseChange=0;
 
-    //	If only case is different in performerName, save the new name as is.
-    if(editPerformerName.toLower()==orgPerformerPtr->performerName().toLower())
-    {
-        hasCaseChange=1;	//	Identify to saveSong that title has changed.
-        mergeToNewPerformer=0;	//	Explicitly set over here, indicating that we dealing with the same performer
-    }
-    else
-    {
-        Common::toTitleCase(editPerformerName);
-        hasCaseChange=0;
-    }
+//    //	If only case is different in performerName, save the new name as is.
+//    if(editPerformerName.toLower()==orgPerformerPtr->performerName().toLower())
+//    {
+//        hasCaseChange=1;	//	Identify to saveSong that title has changed.
+//        mergeToNewPerformer=0;	//	Explicitly set over here, indicating that we dealing with the same performer
+//    }
+//    else
+//    {
+//        Common::toTitleCase(editPerformerName);
+//        hasCaseChange=0;
+//    }
 
-    //	Different performer name
-    SBIDPerformerPtr selectedPerformerPtr;
-    if(hasCaseChange==0 && editPerformerName!=orgPerformerPtr->performerName())
-    {
-        //	Save entry alltogether as a complete new record in artist table
-        if(SBIDPerformer::selectSavePerformer(editPerformerName,orgPerformerPtr,selectedPerformerPtr,mw->ui.performerEditName,0)==0)
-        {
-            //	No selection is made, don't do anything and let user continue with edit.
-            return;
-        }
+//    //	Different performer name
+//    SBIDPerformerPtr selectedPerformerPtr;
+//    if(hasCaseChange==0 && editPerformerName!=orgPerformerPtr->performerName())
+//    {
+//        //	Save entry alltogether as a complete new record in artist table
+//        if(SBIDPerformer::selectSavePerformer(editPerformerName,orgPerformerPtr,selectedPerformerPtr,mw->ui.performerEditName,0)==0)
+//        {
+//            //	No selection is made, don't do anything and let user continue with edit.
+//            return;
+//        }
 
-        //	At this point, selectedPerformer could be:
-        if(orgPerformerPtr->performerID()!=selectedPerformerPtr->performerID())
-        {
-            //	A. Different: merge orgPerformerPtr to selectedPerformer.
-            mergeToNewPerformer=1;
-        }
-        else
-        {
-            //	B.	The same
+//        //	At this point, selectedPerformer could be:
+//        if(orgPerformerPtr->performerID()!=selectedPerformerPtr->performerID())
+//        {
+//            //	A. Different: merge orgPerformerPtr to selectedPerformer.
+//            mergeToNewPerformer=1;
+//        }
+//        else
+//        {
+//            //	B.	The same
 
-            //	Set explicitly for readability.
-            mergeToNewPerformer=0;
-        }
-    }
+//            //	Set explicitly for readability.
+//            mergeToNewPerformer=0;
+//        }
+//    }
 
-    if(mergeToNewPerformer==0)
-    {
-        //	Same performer. All is needed is to save orgPerformer.
+//    if(mergeToNewPerformer==0)
+//    {
+//        //	Same performer. All is needed is to save orgPerformer.
 
-        orgPerformerPtr->setURL(editURL);
-        orgPerformerPtr->setNotes(editNotes);
+//        orgPerformerPtr->setURL(editURL);
+//        orgPerformerPtr->setNotes(editNotes);
 
-        //	Figure out what needs to be done for related performers
-        //	1.	Find additions
+//        //	Figure out what needs to be done for related performers
+//        //	1.	Find additions
 
-        QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-        QList<int> remainingRelatedPerformerIDList;
-        for(int i=0;i<rpt->rowCount();i++)
-        {
-            QTableWidgetItem* it=rpt->item(i,1);
-            if(it)
-            {
-                int ID=it->data(Qt::DisplayRole).toInt();
-                if(_allRelatedPerformers.contains(ID)==0)
-                {
-                    orgPerformerPtr->addRelatedPerformer(ID);
-                }
-                else
-                {
-                    remainingRelatedPerformerIDList.append(ID);
-                }
-            }
-            else
-            {
-                it=rpt->item(i,0);
-            }
-        }
+//        QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
+//        QList<int> remainingRelatedPerformerIDList;
+//        for(int i=0;i<rpt->rowCount();i++)
+//        {
+//            QTableWidgetItem* it=rpt->item(i,1);
+//            if(it)
+//            {
+//                int ID=it->data(Qt::DisplayRole).toInt();
+//                if(_allRelatedPerformers.contains(ID)==0)
+//                {
+//                    orgPerformerPtr->addRelatedPerformer(ID);
+//                }
+//                else
+//                {
+//                    remainingRelatedPerformerIDList.append(ID);
+//                }
+//            }
+//            else
+//            {
+//                it=rpt->item(i,0);
+//            }
+//        }
 
-        //	2.	Find removals
-        for(int i=0;i<_allRelatedPerformers.count();i++)
-        {
-            int ID=_allRelatedPerformers.at(i);
-            if(remainingRelatedPerformerIDList.contains(ID)==0)
-            {
-                orgPerformerPtr->deleteRelatedPerformer(ID);
-            }
-        }
+//        //	2.	Find removals
+//        for(int i=0;i<_allRelatedPerformers.count();i++)
+//        {
+//            int ID=_allRelatedPerformers.at(i);
+//            if(remainingRelatedPerformerIDList.contains(ID)==0)
+//            {
+//                orgPerformerPtr->deleteRelatedPerformer(ID);
+//            }
+//        }
 
-        //	Below assignment is for display purposes in the next block only
-        selectedPerformerPtr=orgPerformerPtr;
-    }
-    else
-    {
-        pemgr->merge(orgPerformerPtr,selectedPerformerPtr);
-    }
-    successFlag=pemgr->commitAll(dal);
+//        //	Below assignment is for display purposes in the next block only
+//        selectedPerformerPtr=orgPerformerPtr;
+//    }
+//    else
+//    {
+//        pemgr->merge(orgPerformerPtr,selectedPerformerPtr);
+//    }
+//    successFlag=pemgr->commitAll(dal);
 
-    if(successFlag)
-    {
-        //const bool successFlag=SBIDPerformer::updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
+//    if(successFlag)
+//    {
+//        //const bool successFlag=SBIDPerformer::updateExistingPerformer(orgPerformerID,newPerformerID,SQL,1);
 
-        //if(successFlag==1)
-        //{
-            QString updateText=QString("Saved performer %1%2%3.")
-                .arg(QChar(96))      //	1
-                .arg(selectedPerformerPtr->performerName())	//	2
-                .arg(QChar(180));    //	3
-            Context::instance()->getController()->updateStatusBarText(updateText);
+//        //if(successFlag==1)
+//        //{
+//            QString updateText=QString("Saved performer %1%2%3.")
+//                .arg(QChar(96))      //	1
+//                .arg(selectedPerformerPtr->performerName())	//	2
+//                .arg(QChar(180));    //	3
+//            Context::instance()->getController()->updateStatusBarText(updateText);
 
-            if(mergeToNewPerformer)
-            {
-                //	Update models!
-                Context::instance()->getController()->refreshModels();
+//            if(mergeToNewPerformer)
+//            {
+//                //	Update models!
+//                Context::instance()->getController()->refreshModels();
 
-                //	Remove old from screenstack
-                Context::instance()->getScreenStack()->removeScreen(ScreenItem(orgPerformerPtr));
-            }
-        //}
+//                //	Remove old from screenstack
+//                Context::instance()->getScreenStack()->removeScreen(ScreenItem(orgPerformerPtr));
+//            }
+//        //}
 
-        //	Update screenstack
-        currentScreenItem.setEditFlag(0);
-        Context::instance()->getScreenStack()->updateSBIDInStack(currentScreenItem);
-    }
+//        //	Update screenstack
+//        currentScreenItem.setEditFlag(0);
+//        Context::instance()->getScreenStack()->updateSBIDInStack(currentScreenItem);
+//    }
 
-    //	Close screen
-    Context::instance()->getNavigator()->closeCurrentTab();
+//    //	Close screen
+//    Context::instance()->getNavigator()->closeCurrentTab();
 }
 
 ///	Private slots

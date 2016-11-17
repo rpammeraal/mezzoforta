@@ -32,15 +32,15 @@ public:
     virtual QString type() const;
 
     //	Methods specific to SBIDPlaylist
-    void assignPlaylistItem(SBIDPtr ptr) ;	//	CWIP:pmgr rewrite
-    void deletePlaylistItem(SBIDBase::sb_type itemType, int playlistPosition) const;	//	CWIP:pmgr rewrite
+    bool addPlaylistItem(SBIDPtr ptr);
     inline Duration duration() const { return _duration; }
     SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
-    inline int numItems() const { return _num_items; }
+    inline int numItems() const;
     inline int playlistID() const { return _sb_playlist_id; }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
+    bool removePlaylistItem(int playlistPosition) const;
     void reorderItem(const SBIDPtr& fromPtr, int row) const;	//	CWIP:pmgr rewrite
     void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
@@ -51,7 +51,8 @@ public:
     SBIDPlaylist& operator=(const SBIDPlaylist& t);	//	CWIP: to be moved to protected
 
     //	Methods required by SBIDManagerTemplate
-    QString key() const;
+    virtual QString key() const;
+    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
 
     //	Static methods
     static QString createKey(int playlistID,int unused=-1);
@@ -61,13 +62,15 @@ protected:
     SBIDPlaylist();
     SBIDPlaylist(int itemID);
 
-    template <class T> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class SBIDManagerTemplate;
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
+    bool addDependent(SBIDPtr tobeAddedPtr);
     static SBIDPlaylistPtr createInDB();
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
+    bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
 
@@ -77,14 +80,14 @@ private:
     QString           _playlistName;
 
     //	Not instantiated
-    int               _num_items;
+    int               _num_items;	//	may only be used until _items has been loaded
 
     QMap<int,SBIDPtr> _items;
 
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
-    void _loadItems(bool showProgressDialogFlag=1);
+    QMap<int,SBIDPtr> _loadItemsFromDB(bool showProgressDialogFlag=1) const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
 };

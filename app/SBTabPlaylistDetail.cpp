@@ -25,25 +25,43 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
-    /*
     qDebug() << SB_DEBUG_INFO;
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.itemPtr)
+    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.playlistPosition>=0)
     {
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
         if(playlistPtr)
         {
-            playlistPtr->deletePlaylistItem(selected.itemType,selected.playlistPosition);
+            bool successFlag=playlistPtr->removePlaylistItem(selected.playlistPosition);
+            qDebug() << SB_DEBUG_INFO << successFlag;
+            QString updateText;
+            if(successFlag)
+            {
+                updateText=QString("Removed %1%2%3 from %5 %1%4%3.")
+                    .arg(QChar(96))            //	1
+                    .arg(selected.text)        //	2
+                    .arg(QChar(180))           //	3
+                    .arg(playlistPtr->text())  //	4
+                    .arg(playlistPtr->type()); //	5
+            }
+            else
+            {
+                updateText=QString("Unable to remove %1%2%3 from %5 %1%4%3.")
+                    .arg(QChar(96))            //	1
+                    .arg(selected.text)        //	2
+                    .arg(QChar(180))           //	3
+                    .arg(playlistPtr->text())  //	4
+                    .arg(playlistPtr->type()); //	5
+                SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+                qDebug() << SB_DEBUG_INFO << playlistPtr->numItems();
+                playlistPtr->refreshDependents(1,1);
+                playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDPlaylistMgr::open_flag_refresh);
+                ptr=playlistPtr;
+                qDebug() << SB_DEBUG_INFO << playlistPtr->numItems();
+            }
             refreshTabIfCurrent(*ptr);
-            QString updateText=QString("Removed %5 %1%2%3 from %6 %1%4%3.")
-                .arg(QChar(96))            //	1
-                .arg(selected.text)        //	2
-                .arg(QChar(180))           //	3
-                .arg(playlistPtr->text())  //	4
-                .arg(selected.itemType)    //	5
-                .arg(playlistPtr->type()); //	6
             Context::instance()->getController()->updateStatusBarText(updateText);
 
             //	Repopulate the current screen
@@ -54,7 +72,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
     {
         _menu->hide();
     }
-    */
 }
 
 void

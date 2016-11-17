@@ -179,21 +179,20 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 
             if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
             {
-                SBIDPlaylistPtr assignedPlaylistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(toBeAssignedToPtr);
-                if(*assignedPlaylistPtr==*playlistPtr)
-
-                //SBIDPlaylist assignedPlaylist=SBIDPlaylist(*toBeAssignedToPtr);
-                //if(assignedPlaylist==*playlistPtr)
+                //	Check for self assignment
+                fromPtr=std::dynamic_pointer_cast<SBIDPlaylist>(toBeAssignedToPtr);
+                if(fromPtr->key()==playlistPtr->key())
                 {
-                    //	Do not allow the same item to be assigned to itself
                     QMessageBox mb;
                     mb.setText("Ouroboros Error               ");
                     mb.setInformativeText("Cannot assign items to itself.");
                     mb.exec();
+                    return;
                 }
             }
             else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
             {
+                //	Check for multiple performances
                 SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
                 fromPtr=SBTabSongDetail::selectPerformanceFromSong(songPtr,0);
             }
@@ -202,20 +201,36 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                 fromPtr=toBeAssignedToPtr;
             }
 
-            if(fromPtr && fromPtr->itemType()!=SBIDBase::sb_type_invalid)
+            if(fromPtr)
             {
                 if(rootType==Chooser::sb_playlists)
                 {
                     if(playlistPtr)
                     {
-                        playlistPtr->assignPlaylistItem(fromPtr);
-                        QString updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
-                            .arg(QChar(96))                 //	1
-                            .arg(toBeAssignedToPtr->text()) //	2
-                            .arg(QChar(180))                //	3
-                            .arg(playlistPtr->text())       //	4
-                            .arg(toBeAssignedToPtr->type()) //	5
-                            .arg(playlistPtr->type());      //	6
+                        bool successFlag=playlistPtr->addPlaylistItem(fromPtr);
+                        QString updateText;
+                        if(successFlag)
+                        {
+                            updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
+                                .arg(QChar(96))                 //	1
+                                .arg(toBeAssignedToPtr->text()) //	2
+                                .arg(QChar(180))                //	3
+                                .arg(playlistPtr->text())       //	4
+                                .arg(toBeAssignedToPtr->type()) //	5
+                                .arg(playlistPtr->type())       //	6
+                            ;
+                            this->playlistChanged(playlistPtr->playlistID());
+                        }
+                        else
+                        {
+                            //UpdateText=QString("Warning: %5 %1%2%3 already contains %5 %1%2%3.")
+                            updateText=QString("Warning: %1%4%3 already contains %1%2%3.")
+                                .arg(QChar(96))                 //	1
+                                .arg(toBeAssignedToPtr->text()) //	2
+                                .arg(QChar(180))                //	3
+                                .arg(playlistPtr->text())       //	4
+                            ;
+                        }
                         Context::instance()->getController()->updateStatusBarText(updateText);
                     }
                 }
@@ -340,6 +355,7 @@ Chooser::playlistChanged(int playlistID)
 void
 Chooser::playPlaylist(bool enqueueFlag)
 {
+        qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     if(playlistPtr)
     {
@@ -351,6 +367,7 @@ Chooser::playPlaylist(bool enqueueFlag)
 void
 Chooser::renamePlaylist()
 {
+    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     if(playlistPtr)
     {
@@ -359,6 +376,7 @@ Chooser::renamePlaylist()
                 this, SLOT(_renamePlaylist(const SBIDPlaylistPtr&)));
         pl->exec();
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -381,6 +399,7 @@ Chooser::showContextMenu(const QPoint &p)
     {
     case Chooser::sb_playlists:
         {
+        qDebug() << SB_DEBUG_INFO;
             SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
 
             if(playlistPtr)
@@ -427,6 +446,7 @@ Chooser::showContextMenu(const QPoint &p)
 void
 Chooser::recalculateDuration()
 {
+        qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     playlistPtr->recalculatePlaylistDuration();
 }
@@ -452,7 +472,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
 
     //	Re-open object for editing
-    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDManagerTemplate<SBIDPlaylist>::open_flag_foredit);
+    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_foredit);
 
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
@@ -567,7 +587,6 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
 
             if(playlistNameItem && playlistIDItem)
             {
-    qDebug() << SB_DEBUG_INFO;
                 playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt(),1);
             }
         }

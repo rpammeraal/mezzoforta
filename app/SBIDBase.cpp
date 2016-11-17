@@ -116,18 +116,13 @@ SBIDBase::createPtr(const QByteArray& encodedData)
 {
     SBIDPtr ptr;
     QString s=QString(encodedData);
-    if(!s.length())
+    if(s.length()==0)
     {
         qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
         return SBIDPtr();
     }
-    QStringList sl=s.split('_');
-
-    //	This gotta be the weirdest formatting.
-    ptr=SBIDBase::createPtr(
-                static_cast<sb_type>(sl[0].toInt()),
-                                     sl[1].toInt()
-    );
+    qDebug() << SB_DEBUG_INFO << s;
+    ptr=SBIDBase::createPtr(s);
 
     return ptr;
 }

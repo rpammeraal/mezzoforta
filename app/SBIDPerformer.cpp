@@ -148,7 +148,7 @@ SBIDPerformer::relatedPerformers()
     if(_relatedPerformerID.count()==0)
     {
         //	Reload if no entries -- *this may have been loaded by SBIDManager without dependents
-        _relatedPerformerID=_loadRelatedPerformers();
+        this->refreshDependents();
     }
 
     QVector<SBIDPerformerPtr> related;
@@ -314,13 +314,30 @@ SBIDPerformer::key() const
     return createKey(performerID());
 }
 
+void
+SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
+{
+    if(forcedFlag || _performances.count()==0)
+    {
+        _loadPerformances(showProgressDialogFlag);
+    }
+    if(forcedFlag || _relatedPerformerID.count()==0)
+    {
+        _relatedPerformerID=_loadRelatedPerformers();
+    }
+    if(forcedFlag || _albums.count()==0)
+    {
+        _loadAlbums();
+    }
+}
+
 //	Static methods
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
     qDebug() << SB_DEBUG_INFO << performerID << noDependentsFlag;
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    return pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer>::open_flag_default));
+    return pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default));
 }
 
 ///	Protected methods
@@ -489,9 +506,7 @@ SBIDPerformer::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     if(!noDependentsFlag)
     {
-        performer._relatedPerformerID=performer._loadRelatedPerformers();
-        performer._loadAlbums();
-        performer._loadPerformances();
+        performer.refreshDependents();
     }
 
     return std::make_shared<SBIDPerformer>(performer);
@@ -911,7 +926,7 @@ SBIDPerformer::_loadAlbums()
 {
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    _albums=amgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbum>::open_flag_parentonly);
+    _albums=amgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
     delete qm;
 }
 
@@ -922,7 +937,7 @@ SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default,showProgressDialogFlag==1?"Retrieving Songs":QString());
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default,showProgressDialogFlag==1?"Retrieving Songs":QString());
 
     delete qm;
 }

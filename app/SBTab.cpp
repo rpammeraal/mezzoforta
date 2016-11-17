@@ -50,6 +50,7 @@ SBTab::refreshTabIfCurrent(const SBIDBase& id)
 
     if(*(si.ptr())==id)
     {
+        qDebug() << SB_DEBUG_INFO;
         populate(si);
     }
 }

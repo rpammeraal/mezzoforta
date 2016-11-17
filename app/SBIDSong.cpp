@@ -190,7 +190,7 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
 
     if(_performances.count()==0)
     {
-        this->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
 
     //	Send the first performance where orginalPerformerFlag is set.
@@ -241,7 +241,7 @@ SBIDSong::albums() const
     SBTableModel* tm=new SBTableModel();
     if(_performances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
     tm->populateAlbumsBySong(_performances);
     return tm;
@@ -252,7 +252,7 @@ SBIDSong::allPerformances() const
 {
     if(_performances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
     return _performances;
 }
@@ -318,7 +318,7 @@ SBIDSong::numPerformances() const
 {
     if(_performances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
     return _performances.count();
 }
@@ -329,7 +329,7 @@ SBIDSong::playlistList()
     if(!_performance2playlistID.count())
     {
         //	Playlists may not be loaded -- retrieve again
-        this->_loadPlaylists();
+        this->refreshDependents();
     }
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylists(_performance2playlistID);
@@ -343,7 +343,7 @@ SBIDSong::performance(int albumID, int albumPosition) const
 
     if(_performances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
 
     for(int i=0;i<_performances.size();i++)
@@ -367,7 +367,7 @@ SBIDSong::performerIDList() const
 
     if(_performances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->_loadPerformances();
+        const_cast<SBIDSong *>(this)->refreshDependents();
     }
 
     for(int i=0;i<_performances.size();i++)
@@ -1099,6 +1099,21 @@ SBIDSong::key() const
     return createKey(this->songID());
 }
 
+void
+SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+{
+    if(forcedFlag==1 || _performances.count()>=0)
+    {
+        _loadPerformances();
+    }
+    if(forcedFlag==1 || _performance2playlistID.count()==0)
+    {
+        _loadPlaylists();
+    }
+    _setPerformerPtr();
+}
+
+
 //	Static methods
 SBSqlQueryModel*
 SBIDSong::retrieveAllSongs()
@@ -1156,7 +1171,7 @@ SBIDSongPtr
 SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
 {
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-    return smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong>::open_flag_default));
+    return smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_default));
 }
 
 ///	Protected methods
@@ -1314,9 +1329,7 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     if(!noDependentsFlag)
     {
-        qDebug() << SB_DEBUG_INFO << noDependentsFlag;
-        song._loadPlaylists();
-        song._loadPerformances();
+        song.refreshDependents();
     }
 
     return std::make_shared<SBIDSong>(song);
@@ -1398,7 +1411,7 @@ SBIDSong::_loadPerformances()
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default);
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default);
 
     delete qm;
 }

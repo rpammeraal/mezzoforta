@@ -78,6 +78,7 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const=0;
+    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1)=0;
 
     //	Aux methods
     static SBIDBase::sb_type convert(Common::sb_field f);
@@ -88,7 +89,7 @@ protected:
     friend class SBIDPlaylist;
     friend class SBIDSong;
     friend class SBModel;
-    template <class T> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class SBIDManagerTemplate;
 
 
     //	Tertiary identifiers (navigation et al)

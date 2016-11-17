@@ -84,251 +84,13 @@ SBIDPlaylist::type() const
 
 //	Methods specific to SBIDPlaylist
 
-void
-SBIDPlaylist::assignPlaylistItem(SBIDPtr ptr)
+bool
+SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
-    switch(ptr->itemType())
-    {
-    case SBIDBase::sb_type_song:
-        qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
-        qDebug() << SB_DEBUG_ERROR << *ptr;
-        qDebug() << SB_DEBUG_ERROR << ptr->key();
-
-        SBMessageBox::createSBMessageBox("Error: you should never see this...",
-            "Assignment of song without album",
-            QMessageBox::Warning,
-            QMessageBox::Ok,
-            QMessageBox::Ok,
-            QMessageBox::Ok,
-            0);
-        break;
-
-    case SBIDBase::sb_type_performance:
-    {
-        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
-                "(playlist_id, playlist_position, song_id, artist_id, record_id, record_position, timestamp) "
-            "SELECT "
-                "%1, %7(a.playlist_position,0)+1, %2, %3, %4, %5, %6 "
-            "FROM "
-                "( "
-                    "SELECT MAX(playlist_position) AS playlist_position "
-                    "FROM "
-                    "( "
-                        "SELECT MAX(playlist_position) AS playlist_position "
-                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
-                        "WHERE playlist_id=%1 "
-                        "UNION "
-                        "SELECT MAX(playlist_position) AS playlist_composite "
-                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
-                        "WHERE playlist_id=%1 "
-                    ") b "
-                ") a "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_performance pp "
-                    "WHERE "
-                        "pp.playlist_id=%1 AND "
-                        "pp.song_id=%2 AND "
-                        "pp.artist_id=%3 AND "
-                        "pp.record_id=%4 AND "
-                        "pp.record_position=%5 "
-                ") "
-        )
-            .arg(this->playlistID())
-            .arg(performancePtr->songID())
-            .arg(performancePtr->songPerformerID())
-            .arg(performancePtr->albumID())
-            .arg(performancePtr->albumPosition())
-            .arg(dal->getGetDate())
-            .arg(dal->getIsNull());
-    }
-    break;
-
-    case SBIDBase::sb_type_performer:
-        q=QString
-          (
-            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
-                "(playlist_id, timestamp, playlist_position, playlist_artist_id) "
-            "SELECT "
-                "%1, %2, %3(playlist_position,0)+1, %4 "
-            "FROM "
-                "( "
-                    "SELECT MAX(playlist_position) AS playlist_position "
-                    "FROM "
-                    "( "
-                        "SELECT MAX(playlist_position) AS playlist_position "
-                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
-                        "WHERE playlist_id=%1 "
-                        "UNION "
-                        "SELECT MAX(playlist_position) "
-                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
-                        "WHERE playlist_id=%1 "
-                    ") b "
-                ") a "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
-                    "WHERE "
-                        "pp.playlist_id=%1 AND "
-                        "pp.playlist_artist_id=%4 "
-                ") "
-          ).arg(this->playlistID())
-           .arg(dal->getGetDate())
-           .arg(dal->getIsNull())
-           .arg(ptr->itemID())
-        ;
-        break;
-
-    case SBIDBase::sb_type_album:
-        q=QString
-          (
-            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
-                "(playlist_id, timestamp, playlist_position, playlist_record_id) "
-            "SELECT "
-                "%1, %2, %3(playlist_position,0)+1, %4 "
-            "FROM "
-                "( "
-                    "SELECT MAX(playlist_position) AS playlist_position "
-                    "FROM "
-                    "( "
-                        "SELECT MAX(playlist_position) AS playlist_position "
-                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
-                        "WHERE playlist_id=%1 "
-                        "UNION "
-                        "SELECT MAX(playlist_position) "
-                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
-                        "WHERE playlist_id=%1 "
-                    ") b "
-                ") a "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
-                    "WHERE "
-                        "pp.playlist_id=%1 AND "
-                        "pp.playlist_record_id=%4 "
-                ") "
-          ).arg(this->playlistID())
-           .arg(dal->getGetDate())
-           .arg(dal->getIsNull())
-           .arg(ptr->itemID())
-        ;
-    break;
-
-    case SBIDBase::sb_type_chart:
-        break;
-
-    case SBIDBase::sb_type_playlist:
-        q=QString
-          (
-            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
-                "(playlist_id, timestamp, playlist_position, playlist_playlist_id) "
-            "SELECT "
-                "%1, %2, %3(playlist_position,0)+1, %4 "
-            "FROM "
-                "( "
-                    "SELECT MAX(playlist_position) AS playlist_position "
-                    "FROM "
-                    "( "
-                        "SELECT MAX(playlist_position) AS playlist_position "
-                        "FROM ___SB_SCHEMA_NAME___playlist_performance "
-                        "WHERE playlist_id=%1 "
-                        "UNION "
-                        "SELECT MAX(playlist_position) "
-                        "FROM ___SB_SCHEMA_NAME___playlist_composite "
-                        "WHERE playlist_id=%1 "
-                    ") b "
-                ") a "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT NULL FROM ___SB_SCHEMA_NAME___playlist_composite pp "
-                    "WHERE "
-                        "pp.playlist_id=%1 AND "
-                        "pp.playlist_playlist_id=%4 "
-                ") "
-          ).arg(this->playlistID())
-           .arg(dal->getGetDate())
-           .arg(dal->getIsNull())
-           .arg(ptr->itemID())
-        ;
-        break;
-
-    case SBIDBase::sb_type_invalid:
-        break;
-    }
-
-    dal->customize(q);
-    if(q.length()>0)
-    {
-        QSqlQuery insert(q,db);
-        Q_UNUSED(insert);
-        qDebug() << SB_DEBUG_INFO << q;
-    qDebug() << SB_DEBUG_INFO;
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
-        playlistPtr->recalculatePlaylistDuration();
-    }
-}
-
-void
-SBIDPlaylist::deletePlaylistItem(SBIDBase::sb_type itemType,int playlistPosition) const
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
-    switch(itemType)
-    {
-    case SBIDBase::sb_type_song:
-        q=QString
-          (
-            "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
-            "WHERE "
-                "playlist_id=%1 AND "
-                "playlist_position=%2 "
-          ).arg(this->playlistID())
-           .arg(playlistPosition);
-        break;
-
-    case SBIDBase::sb_type_performer:
-    case SBIDBase::sb_type_album:
-    case SBIDBase::sb_type_chart:
-    case SBIDBase::sb_type_playlist:
-        q=QString
-          (
-            "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
-            "WHERE "
-                "playlist_id=%1 AND "
-                "playlist_position=%2 "
-          ).arg(this->playlistID())
-           .arg(playlistPosition)
-        ;
-        break;
-
-    case SBIDBase::sb_type_invalid:
-    default:
-        break;
-    }
-
-    dal->customize(q);
-    if(q.length()>0)
-    {
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery remove(q,db);
-        Q_UNUSED(remove);
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
-        playlistPtr->_reorderPlaylistPositions();
-        playlistPtr->recalculatePlaylistDuration();
-    }
+    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
+    return pmgr->addDependent(playlistPtr,ptr,dal);
 }
 
 SBIDSongPtr
@@ -370,14 +132,27 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 SBTableModel*
 SBIDPlaylist::items() const
 {
+    qDebug() << SB_DEBUG_INFO << _items.count();
     if(_items.count()==0)
     {
         SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
-        somewhere->_loadItems();
+        qDebug() << SB_DEBUG_INFO;
+        somewhere->refreshDependents();
     }
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylistContent(_items);
     return tm;
+}
+
+int
+SBIDPlaylist::numItems() const
+{
+    if(_items.count()==0)
+    {
+        //	Items are not loaded (yet) -- use precalculated _num_items
+        return _num_items;
+    }
+    return _items.count();
 }
 
 void
@@ -418,6 +193,15 @@ SBIDPlaylist::recalculatePlaylistDuration()
 
     QSqlQuery query(q,db);
     query.exec();
+}
+
+bool
+SBIDPlaylist::removePlaylistItem(int playlistPosition) const
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
+    return pmgr->removeDependent(playlistPtr,playlistPosition,dal);
 }
 
 void
@@ -855,6 +639,15 @@ SBIDPlaylist::key() const
     return createKey(this->playlistID());
 }
 
+void
+SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+{
+    if(forcedFlag==1 || _items.count()>=0)
+    {
+        _items=_loadItemsFromDB(showProgressDialogFlag);
+    }
+}
+
 //	Static methods
 QString
 SBIDPlaylist::createKey(int playlistID, int unused)
@@ -870,7 +663,7 @@ SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-    return pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist>::open_flag_default));
+    return pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
 }
 
 ///	Protected methods
@@ -881,11 +674,40 @@ SBIDPlaylist::SBIDPlaylist():SBIDBase()
 
 SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
 {
+    qDebug() << SB_DEBUG_INFO;
     _init();
     _sb_playlist_id=itemID;
 }
 
 ///	Methods used by SBIDManager
+bool
+SBIDPlaylist::addDependent(SBIDPtr tobeAddedPtr)
+{
+    if(_items.count()==0)
+    {
+        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
+        somewhere->refreshDependents();
+    }
+
+    bool found=0;
+    QMapIterator<int,SBIDPtr> it(_items);
+    while(it.hasNext())
+    {
+        it.next();
+        if(it.value()->key()==tobeAddedPtr->key())
+        {
+            found=1;
+        }
+    }
+
+    if(!found)
+    {
+        _items[_items.count()]=tobeAddedPtr;
+    }
+    setChangedFlag();
+    return !found;
+}
+
 SBIDPlaylistPtr
 SBIDPlaylist::createInDB()
 {
@@ -907,7 +729,6 @@ SBIDPlaylist::createInDB()
     playlist._num_items=0;
 
     //	Give new playlist unique name
-    QString playlistName;
     int maxNum=1;
     q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
     dal->customize(q);
@@ -951,6 +772,9 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     playlist._duration      =r.value(2).toString();
     playlist._num_items     =r.value(3).toInt();
 
+    //	Do *not* load dependents -- this will cause an infinite loop, as _loadItemsFromDB will
+    //	include loading dependents from all items loaded. Doing this will cause playlists to be
+    //	loaded as well.
     return std::make_shared<SBIDPlaylist>(playlist);
 }
 
@@ -965,6 +789,30 @@ void
 SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
 {
     Q_UNUSED(ptr);
+}
+
+bool
+SBIDPlaylist::removeDependent(int position)
+{
+    position--;	//	Position as parameter is 1-based, we need 0-based
+    if(_items.count()==0)
+    {
+        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
+        somewhere->refreshDependents();
+    }
+
+    if(position>=_items.count())
+    {
+        return 0;
+    }
+
+    for(int i=position;i<_items.count()-1;i++)
+    {
+        _items[i]=_items[i+1];
+    }
+    _items.remove(_items.count()-1);
+    setChangedFlag();
+    return 1;
 }
 
 SBSqlQueryModel*
@@ -1016,7 +864,9 @@ SBIDPlaylist::retrieveSQL(const QString& key)
 QStringList
 SBIDPlaylist::updateSQL() const
 {
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
+    QString q;
     if(deletedFlag())
     {
         QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
@@ -1047,6 +897,144 @@ SBIDPlaylist::updateSQL() const
             .arg(this->playlistID())
         ;
         SQL.append(q);
+
+        //	Go through items and check if there are any changes
+        QMap<int, SBIDPtr> oldItems=_loadItemsFromDB();
+        int count=oldItems.count();
+        count=_items.count()>count?_items.count():count;
+        for(int playlistPosition=0;playlistPosition<count;playlistPosition++)
+        {
+            bool insertFlag=0;
+            bool deleteFlag=0;
+            const int playlistPositionDB=playlistPosition+1;	//	1-based stored in database
+
+            if(_items.contains(playlistPosition) && oldItems.contains(playlistPosition))
+            {
+                if(_items[playlistPosition]!=oldItems[playlistPosition])
+                {
+                    //	delete position i
+                    deleteFlag=1;
+
+                    //	insert new item at i
+                    insertFlag=1;
+                }
+            }
+            else if(!_items.contains(playlistPosition) && oldItems.contains(playlistPosition))
+            {
+                //	delete position i
+                deleteFlag=1;
+            }
+            else if(_items.contains(playlistPosition) && !oldItems.contains(playlistPosition))
+            {
+                //	insert new item at i
+                insertFlag=1;
+            }
+
+            qDebug() << SB_DEBUG_INFO << playlistPosition << playlistPositionDB << deleteFlag << insertFlag;
+
+            if(deleteFlag)
+            {
+                SQL.append(QString
+                (
+                    "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
+                    "WHERE "
+                        "playlist_id=%1 AND "
+                        "playlist_position=%2 "
+                )
+                    .arg(this->playlistID())
+                    .arg(playlistPositionDB))
+                ;
+
+                SQL.append(QString
+                (
+                    "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
+                    "WHERE "
+                        "playlist_id=%1 AND "
+                        "playlist_position=%2 "
+                )
+                    .arg(this->playlistID())
+                    .arg(playlistPositionDB))
+                ;
+            }
+            if(insertFlag)
+            {
+                SBIDPtr ptr=_items[playlistPosition];
+                switch(ptr->itemType())
+                {
+                case SBIDBase::sb_type_song:
+                    qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
+                    qDebug() << SB_DEBUG_ERROR << *ptr;
+                    qDebug() << SB_DEBUG_ERROR << ptr->key();
+
+                    SBMessageBox::createSBMessageBox("Error: you should never see this...",
+                        "Assignment of song without album",
+                        QMessageBox::Warning,
+                        QMessageBox::Ok,
+                        QMessageBox::Ok,
+                        QMessageBox::Ok,
+                        0);
+                    break;
+
+                case SBIDBase::sb_type_performance:
+                {
+                    SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+                    q=QString
+                    (
+                        "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
+                            "(playlist_id, playlist_position, song_id, artist_id, record_id, record_position, timestamp) "
+                        "SELECT "
+                            "%1, %2, %3, %4, %5, %6, %7 "
+                    )
+                        .arg(this->playlistID())
+                        .arg(playlistPositionDB)
+                        .arg(performancePtr->songID())
+                        .arg(performancePtr->songPerformerID())
+                        .arg(performancePtr->albumID())
+                        .arg(performancePtr->albumPosition())
+                        .arg(dal->getGetDate())
+                    ;
+                }
+                break;
+
+                case SBIDBase::sb_type_chart:
+                    break;
+
+                case SBIDBase::sb_type_playlist:
+                case SBIDBase::sb_type_performer:
+                case SBIDBase::sb_type_album:
+                    q=QString
+                      (
+                        "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
+                        "( "
+                            "playlist_id, "
+                            "playlist_position, "
+                            "timestamp, "
+                            "playlist_playlist_id, "
+                            "playlist_record_id, "
+                            "playlist_artist_id "
+                        ") "
+                        "SELECT "
+                            "%1, "
+                            "%2, "
+                            "%3, "
+                            "CASE WHEN %5=%6 THEN %4 ELSE NULL END,  "
+                            "CASE WHEN %5=%7 THEN %4 ELSE NULL END,  "
+                            "CASE WHEN %5=%8 THEN %4 ELSE NULL END  "
+                      )
+                        .arg(this->playlistID())
+                        .arg(playlistPositionDB)
+                        .arg(dal->getGetDate())
+                        .arg(ptr->itemID())
+                        .arg(ptr->itemType())
+                        .arg(SBIDBase::sb_type_playlist)
+                        .arg(SBIDBase::sb_type_album)
+                        .arg(SBIDBase::sb_type_performer)
+                    ;
+                    break;
+                }
+                SQL.append(q);
+            }
+        }
     }
 
     if(SQL.count()==0)
@@ -1054,6 +1042,10 @@ SBIDPlaylist::updateSQL() const
         SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
     }
 
+    for(int i=0;i<SQL.count();i++)
+    {
+        qDebug() << SB_DEBUG_INFO << SQL[i];
+    }
     return SQL;
 }
 
@@ -1384,9 +1376,11 @@ SBIDPlaylist::_init()
     _sb_playlist_id=-1;
 }
 
-void
-SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
+QMap<int,SBIDPtr>
+SBIDPlaylist::_loadItemsFromDB(bool showProgressDialogFlag) const
 {
+    QMap<int,SBIDPtr> items;
+    qDebug() << SB_DEBUG_INFO << this->genericDescription() << this->key();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     int maxValue=0;
@@ -1488,7 +1482,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
 
     QSqlQuery queryList(q,db);
     int playlistIndex=0;
-    _items.clear();
+    items.clear();
     while(queryList.next())
     {
         Common::sb_field itemType=static_cast<Common::sb_field>(queryList.value(1).toInt());
@@ -1522,7 +1516,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
         }
         if(itemPtr)
         {
-            _items[playlistIndex++]=itemPtr;
+            items[playlistIndex++]=itemPtr;
         }
         if(showProgressDialogFlag && (currentValue%10)==0)
         {
@@ -1536,6 +1530,7 @@ SBIDPlaylist::_loadItems(bool showProgressDialogFlag)
         pd.setValue(maxValue);
     }
     qDebug() << SB_DEBUG_INFO;
+    return items;
 }
 
 void
@@ -1642,8 +1637,7 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 
     if(playlistPtr)
     {
-        int currentRowIndex=0;
-        QProgressDialog pd("Preparing All Songs",QString(),0,playlistPtr->_num_items);
+        QProgressDialog pd("Preparing All Songs",QString(),0,playlistPtr->numItems());
 
         if(showProgressDialogFlag)
         {

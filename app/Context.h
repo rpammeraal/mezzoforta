@@ -25,11 +25,11 @@ class MainWindow;
 class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
-typedef SBIDManagerTemplate<SBIDAlbum> SBIDAlbumMgr;
-typedef SBIDManagerTemplate<SBIDPlaylist> SBIDPlaylistMgr;
-typedef SBIDManagerTemplate<SBIDPerformer> SBIDPerformerMgr;
-typedef SBIDManagerTemplate<SBIDPerformance> SBIDPerformanceMgr;
-typedef SBIDManagerTemplate<SBIDSong> SBIDSongMgr;
+typedef SBIDManagerTemplate<SBIDAlbum,SBIDBase> SBIDAlbumMgr;
+typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
+typedef SBIDManagerTemplate<SBIDPerformer,SBIDBase> SBIDPerformerMgr;
+typedef SBIDManagerTemplate<SBIDPerformance,SBIDBase> SBIDPerformanceMgr;
+typedef SBIDManagerTemplate<SBIDSong,SBIDBase> SBIDSongMgr;
 
 class Context
 {

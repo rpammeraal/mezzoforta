@@ -65,7 +65,6 @@ SBIDPerformance::itemType() const
 QString
 SBIDPerformance::genericDescription() const
 {
-    qDebug() << SB_DEBUG_INFO;
     return QString("Song - %1 [%2] / %3 - %4")
         .arg(this->text())
         .arg(this->_duration.toString(Duration::sb_hhmmss_format))
@@ -133,7 +132,7 @@ SBIDPerformance::songPerformerName() const
 {
     if(!_performerPtr)
     {
-        const_cast<SBIDPerformance *>(this)->_setPerformerPtr();
+        const_cast<SBIDPerformance *>(this)->refreshDependents();
     }
     return _performerPtr?_performerPtr->performerName():"SBIDPerformance::songPerformerName()::performerPtr null";
 }
@@ -143,7 +142,7 @@ SBIDPerformance::songTitle() const
 {
     if(!_songPtr)
     {
-        const_cast<SBIDPerformance *>(this)->_setSongPtr();
+        const_cast<SBIDPerformance *>(this)->refreshDependents();
     }
     return _songPtr?_songPtr->songTitle():"SBIDPerformance::songTitle():_songPtr null";
 }
@@ -187,7 +186,7 @@ SBIDPerformance::albumPtr() const
 {
     if(!_albumPtr)
     {
-        const_cast<SBIDPerformance *>(this)->_setAlbumPtr();
+        const_cast<SBIDPerformance *>(this)->refreshDependents();
     }
     return _albumPtr;
 }
@@ -197,7 +196,7 @@ SBIDPerformance::performerPtr() const
 {
     if(!_performerPtr)
     {
-        const_cast<SBIDPerformance *>(this)->_setPerformerPtr();
+        const_cast<SBIDPerformance *>(this)->refreshDependents();
     }
     return _performerPtr;
 }
@@ -234,6 +233,17 @@ QString
 SBIDPerformance::key() const
 {
     return createKey(_sb_album_id,_sb_album_position);
+}
+
+void
+SBIDPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+{
+    Q_UNUSED(showProgressDialogFlag);
+    Q_UNUSED(forcedFlag);
+
+    _setAlbumPtr();
+    _setPerformerPtr();
+    _setSongPtr();
 }
 
 //	Static methods
@@ -426,7 +436,7 @@ SBIDPerformancePtr
 SBIDPerformance::retrievePerformance(int albumID, int positionID,bool noDependentsFlag)
 {
     SBIDPerformanceMgr* pfMgr=Context::instance()->getPerformanceMgr();
-    return pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformance>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformance>::open_flag_default));
+    return pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default));
 }
 
 ///	Protected methods
@@ -453,11 +463,7 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     qDebug() << SB_DEBUG_INFO << performance._path;
     if(!noDependentsFlag)
     {
-        qDebug() << SB_DEBUG_INFO << performance.key();
-        performance._setAlbumPtr();
-        performance._setPerformerPtr();
-        performance._setSongPtr();
-        qDebug() << SB_DEBUG_INFO << performance.key() << performance.songTitle();
+        performance.refreshDependents();
     }
     return std::make_shared<SBIDPerformance>(performance);
 }

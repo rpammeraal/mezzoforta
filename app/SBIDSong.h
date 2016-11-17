@@ -68,14 +68,15 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
-    QString key() const;
+    virtual QString key() const;
+    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
 
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
     static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=0);
 
 protected:
-    template <class T> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class SBIDManagerTemplate;
 
     SBIDSong();
 

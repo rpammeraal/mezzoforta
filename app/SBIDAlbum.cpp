@@ -153,8 +153,7 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 
     if(_performances.count()==0)
     {
-        SBIDAlbum* somewhere=const_cast<SBIDAlbum *>(this);
-        somewhere->_loadPerformances();
+        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
 
     int index=0;
@@ -594,8 +593,7 @@ SBIDAlbum::numPerformances() const
 {
     if(_performances.count()==0)
     {
-        SBIDAlbum* somewhere=const_cast<SBIDAlbum *>(this);
-        somewhere->_loadPerformances();
+        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
     return _performances.count();
 }
@@ -605,8 +603,7 @@ SBIDAlbum::performances() const
 {
     if(_performances.count()==0)
     {
-        SBIDAlbum* somewhere=const_cast<SBIDAlbum *>(this);
-        somewhere->_loadPerformances();
+        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
     SBTableModel* tm=new SBTableModel();
     tm->populatePerformancesByAlbum(_performances);
@@ -1266,6 +1263,18 @@ SBIDAlbum::key() const
     return createKey(this->albumID());
 }
 
+void
+SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+{
+    Q_UNUSED(showProgressDialogFlag);
+
+    if(forcedFlag==1 || _performances.count()>=0)
+    {
+        _loadPerformances();
+    }
+    _setPerformerPtr();
+}
+
 //	Static methods
 SBSqlQueryModel*
 SBIDAlbum::albumsByPerformer(int performerID)
@@ -1316,7 +1325,7 @@ SBIDAlbumPtr
 SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    return amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum>::open_flag_default));
+    return amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_default));
 }
 
 ///	Protected methods
@@ -1453,8 +1462,7 @@ SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     if(!noDependentsFlag)
     {
-        album._loadPerformances();
-        album._setPerformerPtr();
+        album.refreshDependents(0,1);
     }
     return std::make_shared<SBIDAlbum>(album);
 }
@@ -1551,7 +1559,7 @@ SBIDAlbum::_loadPerformances()
     SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance>::open_flag_default);
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default);
 
     delete qm;
 }

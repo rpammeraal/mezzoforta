@@ -33,103 +33,55 @@ public:
     };
 };
 
-template <class T>
+template <class T, class parentT>
 class SBIDManagerTemplate : public OpenFlags
 {
 public:
 
-    SBIDManagerTemplate<T>();
-    ~SBIDManagerTemplate<T>();
+    SBIDManagerTemplate<T, parentT>();
+    ~SBIDManagerTemplate<T, parentT>();
 
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1);
-    bool commitAll(DataAccessLayer* dal);
-    std::shared_ptr<T> createInDB();
+    //	Retrieve
     int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
-    void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
-    void remove(std::shared_ptr<T> ptr);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
-    void rollbackChanges();
+
+    //	Update
+    bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1);
+    bool commitAll1(DataAccessLayer* dal);
+    std::shared_ptr<T> createInDB();
+    void merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
+    void remove(std::shared_ptr<T> ptr);
+    bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
+    void rollbackChanges1();
+
+    //	Misc
     void debugShow(const QString title="");
 
 private:
-    QList<std::shared_ptr<T>>        _changes;
+    QList<QString>                   _changes;	//	Contains keys of objects changed
     QMap<QString,std::shared_ptr<T>> _leMap;
 
     void _init();
+    void _addToChangedList(std::shared_ptr<T> changedPtr);
 };
 
 ///	Ctors
-template <class T>
-SBIDManagerTemplate<T>::SBIDManagerTemplate()
+template <class T, class parentT>
+SBIDManagerTemplate<T,parentT>::SBIDManagerTemplate()
 {
 }
 
-template <class T>
-SBIDManagerTemplate<T>::~SBIDManagerTemplate()
+template <class T, class parentT>
+SBIDManagerTemplate<T,parentT>::~SBIDManagerTemplate()
 {
 }
 
-///	Public methods
-template <class T> bool
-SBIDManagerTemplate<T>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag)
-{
-    qDebug() << SB_DEBUG_INFO;
-    QList<std::shared_ptr<T>> list;
-
-    //	Collect SQL to update changes
-    QStringList SQL=ptr->updateSQL();
-
-    bool successFlag=0;
-    successFlag=dal->executeBatch(SQL,1,1,showProgressDialogFlag);
-
-    if(successFlag)
-    {
-        _changes.clear();
-        ptr->isSaved();
-    }
-    return successFlag;
-}
-
-template <class T> bool
-SBIDManagerTemplate<T>::commitAll(DataAccessLayer* dal)
-{
-    qDebug() << SB_DEBUG_INFO;
-    std::shared_ptr<T> ptr;
-    QStringList SQL;
-
-    //	Collect SQL for changes
-    for(int i=0;i<_changes.count();i++)
-    {
-        ptr=_changes.at(i);
-        SQL.append(ptr->updateSQL());
-    }
-
-    bool successFlag=dal->executeBatch(SQL);
-    if(successFlag)
-    {
-        for(int i=0;i<_changes.count();i++)
-        {
-            ptr=_changes.at(i);
-            ptr->isSaved();
-        }
-        _changes.clear();
-    }
-    return successFlag;
-}
-
-template <class T> std::shared_ptr<T>
-SBIDManagerTemplate<T>::createInDB()
-{
-    std::shared_ptr<T> newT=T::createInDB();
-    QString key=newT->key();
-    _leMap[key]=newT;
-    return newT;
-}
-
-template <class T> int
-SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches,QString secondaryParameter)
+///	Retrieve
+template <class T, class parentT> int
+SBIDManagerTemplate<T,parentT>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches,QString secondaryParameter)
 {
     int count=0;
     SBSqlQueryModel* qm=T::find(tobeFound,currentPtr->itemID(),secondaryParameter);
@@ -154,37 +106,8 @@ SBIDManagerTemplate<T>::find(std::shared_ptr<T> currentPtr, const QString& tobeF
     return count;
 }
 
-template <class T> void
-SBIDManagerTemplate<T>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
-{
-    fromPtr->mergeTo(toPtr);
-    fromPtr->setDeletedFlag();
-    toPtr->setChangedFlag();
-    _changes.append(fromPtr);
-    _changes.append(toPtr);
-    _leMap.remove(fromPtr->key());
-}
-
-template <class T> void
-SBIDManagerTemplate<T>::remove(const std::shared_ptr<T> ptr)
-{
-    //	Find item in _leMap
-    if(_leMap.find(ptr->key())!=_leMap.end())
-    {
-        //	Remove from cache
-        ptr->setDeletedFlag();
-        _leMap.erase(_leMap.find(ptr->key()));
-        _changes.append(ptr);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "Item not found: " << ptr->text();
-    }
-}
-
-
-template <class T> std::shared_ptr<T>
-SBIDManagerTemplate<T>::retrieve(QString key,open_flag openFlag)
+template <class T, class parentT> std::shared_ptr<T>
+SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
 {
     qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
@@ -209,15 +132,15 @@ SBIDManagerTemplate<T>::retrieve(QString key,open_flag openFlag)
         ptr->postInstantiate(ptr);
         if(openFlag==open_flag_foredit)
         {
-            _changes.append(ptr);
+            _addToChangedList(ptr);
             ptr->setChangedFlag();
         }
     }
     return ptr;
 }
 
-template <class T> QVector<std::shared_ptr<T>>
-SBIDManagerTemplate<T>::retrieveAll()
+template <class T, class parentT> QVector<std::shared_ptr<T>>
+SBIDManagerTemplate<T,parentT>::retrieveAll()
 {
     SBSqlQueryModel* qm=T::retrieveSQL();
 
@@ -279,8 +202,8 @@ SBIDManagerTemplate<T>::retrieveAll()
     return list;
 }
 
-template <class T> QVector<std::shared_ptr<T>>
-SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
+template <class T, class parentT> QVector<std::shared_ptr<T>>
+SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
 {
     bool showProgressDialogFlag=label.count()>1;
     const int rowCount=qm->rowCount();
@@ -340,14 +263,142 @@ SBIDManagerTemplate<T>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, con
     return list;
 }
 
-template <class T> void
-SBIDManagerTemplate<T>::rollbackChanges()
+//	Update
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer *dal, bool showProgressDialogFlag)
+{
+    bool successFlag=parentPtr->addDependent(childPtr);
+    if(successFlag)
+    {
+        if(dal)
+        {
+            successFlag=commit(parentPtr,dal,showProgressDialogFlag);
+        }
+        else
+        {
+            _addToChangedList(parentPtr);
+        }
+    }
+    return successFlag;
+}
+
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag)
+{
+    qDebug() << SB_DEBUG_INFO;
+    QList<std::shared_ptr<T>> list;
+
+    //	Collect SQL to update changes
+    QStringList SQL=ptr->updateSQL();
+
+    bool successFlag=0;
+    qDebug() << SB_DEBUG_INFO;
+    successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag);
+
+    if(successFlag)
+    {
+        _changes.clear();
+        ptr->isSaved();
+    }
+    return successFlag;
+}
+
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
+{
+    qDebug() << SB_DEBUG_INFO;
+    std::shared_ptr<T> ptr;
+    QStringList SQL;
+
+    //	Collect SQL for changes
+    for(int i=0;i<_changes.count();i++)
+    {
+        const QString key=_changes.at(i);
+        ptr=retrieve(key);
+        SQL.append(ptr->updateSQL());
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    bool successFlag=dal->executeBatch(SQL);
+    if(successFlag)
+    {
+        for(int i=0;i<_changes.count();i++)
+        {
+            const QString key=_changes.at(i);
+            ptr=retrieve(key);
+            ptr->isSaved();
+        }
+        _changes.clear();
+    }
+    return successFlag;
+}
+
+template <class T, class parentT> std::shared_ptr<T>
+SBIDManagerTemplate<T,parentT>::createInDB()
+{
+    std::shared_ptr<T> newT=T::createInDB();
+    QString key=newT->key();
+    _leMap[key]=newT;
+    return newT;
+}
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
+{
+    //	UNTESTED PROOF OF CONCEPT CODE!
+    fromPtr->mergeTo(toPtr);
+    fromPtr->setDeletedFlag();
+    toPtr->setChangedFlag();
+    _addToChangedList(fromPtr);
+    _addToChangedList(toPtr);
+    _leMap.remove(fromPtr->key());
+}
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)
+{
+    //	Find item in _leMap
+    if(_leMap.find(ptr->key())!=_leMap.end())
+    {
+        //	Remove from cache
+        ptr->setDeletedFlag();
+        _leMap.erase(_leMap.find(ptr->key()));
+        _addToChangedList(ptr);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "Item not found: " << ptr->text();
+    }
+}
+
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::removeDependent(const std::shared_ptr<T> ptr, int position, DataAccessLayer* dal, bool showProgressDialogFlag)
+{
+    bool successFlag=ptr->removeDependent(position);
+    if(successFlag)
+    {
+        if(dal)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            successFlag=commit(ptr,dal,showProgressDialogFlag);
+        }
+        else
+        {
+            _addToChangedList(ptr);
+        }
+    }
+    return successFlag;
+}
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::rollbackChanges1()
 {
     _changes.clear();
 }
 
-template <class T> void
-SBIDManagerTemplate<T>::debugShow(const QString text)
+///	Misc
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 {
     qDebug() << SB_DEBUG_INFO << text;
     qDebug() << SB_DEBUG_INFO << "start #=" << _leMap.count();
@@ -358,16 +409,25 @@ SBIDManagerTemplate<T>::debugShow(const QString text)
         std::shared_ptr<T> ptr=it.value();
         if(ptr)
         {
-            qDebug() << SB_DEBUG_INFO << it.key() << ptr->itemType();
-            qDebug() << SB_DEBUG_INFO << *ptr;
+            qDebug() << SB_DEBUG_INFO << it.key() << ptr->genericDescription();
         }
     }
 }
 
 ///	Private methods
-template <class T> void
-SBIDManagerTemplate<T>::_init()
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::_init()
 {
     _leMap.clear();
 }
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::_addToChangedList(const std::shared_ptr<T> ptr)
+{
+    if(!_changes.contains(ptr->key()))
+    {
+        _changes.append(ptr->key());
+    }
+}
+
 #endif // SBIDMANAGERTEMPLATE_H
