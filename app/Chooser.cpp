@@ -63,9 +63,10 @@ public:
         }
 
         QByteArray encodedData = data->data("application/vnd.text.list");
+        qDebug() << SB_DEBUG_INFO << encodedData.length();
         SBIDPtr ptr=SBIDBase::createPtr(encodedData);
 
-        if(_c && ptr->itemType()!=SBIDBase::sb_type_invalid)
+        if(_c && ptr && ptr->itemType()!=SBIDBase::sb_type_invalid)
         {
             _c->assignItem(parent,ptr);
             return 1;

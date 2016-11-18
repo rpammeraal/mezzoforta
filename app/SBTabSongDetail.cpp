@@ -394,7 +394,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,2);
+    rowCount=populateTableView(tv,tm,1);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_playlists,rowCount>0);
 
     //  populate tabSongDetailChartList

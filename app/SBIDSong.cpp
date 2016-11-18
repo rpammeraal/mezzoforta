@@ -12,17 +12,17 @@
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
 {
-    _lyrics                =c._lyrics;
-    _notes                 =c._notes;
-    _sb_song_id            =c._sb_song_id;
-    _sb_song_performer_id  =c._sb_song_performer_id;
-    _songTitle             =c._songTitle;
-    _year                  =c._year;
+    _lyrics                    =c._lyrics;
+    _notes                     =c._notes;
+    _sb_song_id                =c._sb_song_id;
+    _sb_song_performer_id      =c._sb_song_performer_id;
+    _songTitle                 =c._songTitle;
+    _year                      =c._year;
 
-    _performerPtr          =c._performerPtr;
+    _performerPtr              =c._performerPtr;
 
-    _performance2playlistID=c._performance2playlistID;
-    _performances          =c._performances;
+    _playlistKey2performanceKey=c._playlistKey2performanceKey;
+    _performances              =c._performances;
 }
 
 SBIDSong::~SBIDSong()
@@ -326,13 +326,13 @@ SBIDSong::numPerformances() const
 SBTableModel*
 SBIDSong::playlistList()
 {
-    if(!_performance2playlistID.count())
+    if(!_playlistKey2performanceKey.count())
     {
         //	Playlists may not be loaded -- retrieve again
         this->refreshDependents();
     }
     SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_performance2playlistID);
+    tm->populatePlaylists(_playlistKey2performanceKey);
     return tm;
 }
 
@@ -1106,7 +1106,7 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadPerformances();
     }
-    if(forcedFlag==1 || _performance2playlistID.count()==0)
+    if(forcedFlag==1 || _playlistKey2performanceKey.count()==0)
     {
         _loadPlaylists();
     }
@@ -1436,24 +1436,20 @@ SBIDSong::_loadPlaylists()
     )
         .arg(this->songID())
     ;
-
     qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));
 
-    SBIDPerformancePtr performancePtr;
-    _performance2playlistID.clear();
+    _playlistKey2performanceKey.clear();
     while(q1.next())
     {
-        performancePtr=performance(q1.value(1).toInt(),q1.value(2).toInt());
+        QString performanceKey=SBIDPerformance::createKey(q1.value(1).toInt(),q1.value(2).toInt());
+        QString playlistKey=SBIDPlaylist::createKey(q1.value(0).toInt());
 
-        if(performancePtr)
+        if(!_playlistKey2performanceKey.contains(playlistKey))
         {
-            if(!_performance2playlistID.contains(performancePtr))
-            {
-                _performance2playlistID[performancePtr]=q1.value(0).toInt();
-            }
+            _playlistKey2performanceKey[playlistKey]=performanceKey;
         }
     }
 }

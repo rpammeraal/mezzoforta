@@ -126,6 +126,7 @@ SBSqlQueryModel::flags(const QModelIndex &index) const
 QMimeData*
 SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
 {
+    qDebug() << SB_DEBUG_INFO;
     return SBModel::_mimeData(this,indexes);
 }
 

@@ -49,7 +49,7 @@ public slots:
     void handleAlbumURLDataFromMB(QNetworkReply* r);
     void handleImageDataNetwork(QNetworkReply* r);
     void handleMBIDNetwork(QNetworkReply* r);
-    void handlePerformerImageURLFromEN(QNetworkReply* r);
+    void handlePerformerImageURLFromWC(QNetworkReply* r);
     void handlePerformerNewsURLFromEN(QNetworkReply* r);
     void handlePerformerURLFromMB(QNetworkReply* r);
     void handleSongMetaDataFromMB(QNetworkReply* r);

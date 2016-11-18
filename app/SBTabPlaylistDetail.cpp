@@ -77,18 +77,24 @@ SBTabPlaylistDetail::deletePlaylistItem()
 void
 SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 {
+    qDebug() << SB_DEBUG_INFO << fromIDPtr->genericDescription() << row;
+
     _init();
+
     //	Determine current playlist
     SBIDPtr ptr=this->currentScreenItem().ptr();
 
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
     {
-        SBIDPlaylistPtr playlistPtr;
-
-        playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
+        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
         if(playlistPtr)
         {
-            playlistPtr->reorderItem(fromIDPtr,row);
+            qDebug() << SB_DEBUG_INFO;
+            bool successFlag=playlistPtr->moveItem(fromIDPtr,row);
+            if(!successFlag)
+            {
+                playlistPtr->refreshDependents(1,1);
+            }
         }
     }
     refreshTabIfCurrent(*ptr);

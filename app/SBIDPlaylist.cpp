@@ -132,11 +132,9 @@ SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
 SBTableModel*
 SBIDPlaylist::items() const
 {
-    qDebug() << SB_DEBUG_INFO << _items.count();
     if(_items.count()==0)
     {
         SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
-        qDebug() << SB_DEBUG_INFO;
         somewhere->refreshDependents();
     }
     SBTableModel* tm=new SBTableModel();
@@ -449,9 +447,28 @@ SBIDPlaylist::reorderItem(const SBIDPtr fID, const SBIDPtr tID) const
     */
 }
 
-void
-SBIDPlaylist::reorderItem(const SBIDPtr& fromPtr, int row) const
+bool
+SBIDPlaylist::moveItem(const SBIDPtr& fromPtr, int toPosition)
 {
+    //	Find out the current row of fromPtr
+    if(_items.count()==0)
+    {
+        this->refreshDependents();
+    }
+    int fromPosition=-1;
+    for(int i=0;i<_items.count() && fromPosition==-1;i++)
+    {
+        if(_items[i]->key()==fromPtr->key())
+        {
+            fromPosition=i;
+        }
+    }
+
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(this->playlistID());
+    return pmgr->moveDependent(playlistPtr,fromPosition,toPosition,dal);
+
     /*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -674,7 +691,6 @@ SBIDPlaylist::SBIDPlaylist():SBIDBase()
 
 SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
 {
-    qDebug() << SB_DEBUG_INFO;
     _init();
     _sb_playlist_id=itemID;
 }
@@ -772,6 +788,8 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     playlist._duration      =r.value(2).toString();
     playlist._num_items     =r.value(3).toInt();
 
+    playlist._reorderPlaylistPositions();
+
     //	Do *not* load dependents -- this will cause an infinite loop, as _loadItemsFromDB will
     //	include loading dependents from all items loaded. Doing this will cause playlists to be
     //	loaded as well.
@@ -789,6 +807,37 @@ void
 SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
 {
     Q_UNUSED(ptr);
+}
+
+bool
+SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
+{
+    toPosition=fromPosition<toPosition?toPosition-1:toPosition;
+
+    if(fromPosition==toPosition)
+    {
+        return 0;
+    }
+    SBIDPtr tmpPtr=_items[fromPosition];
+    if(toPosition>fromPosition)
+    {
+        for(int i=fromPosition;i<toPosition;i++)
+        {
+            _items[i]=_items[i+1];
+        }
+        _items[toPosition]=tmpPtr;
+    }
+    else
+    {
+        for(int i=fromPosition;i>toPosition;i--)
+        {
+            _items[i]=_items[i-1];
+        }
+        _items[toPosition]=tmpPtr;
+    }
+
+    setChangedFlag();
+    return 1;
 }
 
 bool
@@ -864,7 +913,6 @@ SBIDPlaylist::retrieveSQL(const QString& key)
 QStringList
 SBIDPlaylist::updateSQL() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
     QString q;
     if(deletedFlag())
@@ -898,141 +946,108 @@ SBIDPlaylist::updateSQL() const
         ;
         SQL.append(q);
 
-        //	Go through items and check if there are any changes
+        //	Assign all items in the database to a temporary position, so it will be
+        //	easier to deal with moving items
+        const int delta=10;
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist_performance "
+            "SET "
+                "playlist_position=playlist_position+%1 "
+            "WHERE "
+                "playlist_id=%2 "
+        )
+            .arg(delta)
+            .arg(this->playlistID())
+        ;
+        SQL.append(q);
+
+        q=QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist_composite "
+            "SET "
+                "playlist_position=playlist_position+%1 "
+            "WHERE "
+                "playlist_id=%2 "
+        )
+            .arg(delta)
+            .arg(this->playlistID())
+        ;
+        SQL.append(q);
+
+        //	Create reverse lookups of old and new
         QMap<int, SBIDPtr> oldItems=_loadItemsFromDB();
-        int count=oldItems.count();
-        count=_items.count()>count?_items.count():count;
-        for(int playlistPosition=0;playlistPosition<count;playlistPosition++)
+        QMap<QString,int> oldItemKeys;	//	key -> position in playlist
+        QMapIterator<int,SBIDPtr> oldItemsIt(oldItems);
+        while(oldItemsIt.hasNext())
         {
-            bool insertFlag=0;
-            bool deleteFlag=0;
-            const int playlistPositionDB=playlistPosition+1;	//	1-based stored in database
+            oldItemsIt.next();
+            oldItemKeys[oldItemsIt.value()->key()]=oldItemsIt.key()+delta;	//	We just moved everything <delta> up
+        }
 
-            if(_items.contains(playlistPosition) && oldItems.contains(playlistPosition))
+        QMap<QString,int> newItemKeys;	//	key -> position in playlist
+        QMapIterator<int,SBIDPtr> newItemsIt(_items);
+        while(newItemsIt.hasNext())
+        {
+            newItemsIt.next();
+            newItemKeys[newItemsIt.value()->key()]=newItemsIt.key();
+        }
+
+        //	Take care of removals first
+        qDebug() << SB_DEBUG_INFO << "Start finding removed items";
+        for(int playlistPosition=0;playlistPosition<oldItems.count();playlistPosition++)
+        {
+            QString currentOldKey=oldItems[playlistPosition]->key();
+            const int playlistPositionDB=oldItemKeys[currentOldKey]+1;	//	1-based stored in database
+
+            qDebug() << SB_DEBUG_INFO << currentOldKey << oldItemKeys[currentOldKey];
+
+            if(!newItemKeys.contains(currentOldKey))
             {
-                if(_items[playlistPosition]!=oldItems[playlistPosition])
-                {
-                    //	delete position i
-                    deleteFlag=1;
+                qDebug() << SB_DEBUG_INFO << "removed:";
+                //	Item has been removed
+                SQL.append(_generateSQLdeleteItem(this->playlistID(),playlistPositionDB));
+            }
+        }
 
-                    //	insert new item at i
-                    insertFlag=1;
+        //	Go through items and check if there are any changes
+        qDebug() << SB_DEBUG_INFO << "Start finding new/changed items";
+        for(int playlistPosition=0;playlistPosition<_items.count();playlistPosition++)
+        {
+            const int playlistPositionDB=playlistPosition+1;	//	1-based stored in database
+            int oldPlaylistPositionDB;
+            QString currentKey=_items[playlistPosition]->key();
+            bool moveFlag=0;
+            bool insertFlag=0;
+
+            qDebug() << SB_DEBUG_INFO << currentKey << "current at" << newItemKeys[currentKey];
+            if(oldItemKeys.contains(currentKey))
+            {
+                qDebug() << SB_DEBUG_INFO << "new position=" << newItemKeys[currentKey];
+                qDebug() << SB_DEBUG_INFO << "old position=" << oldItemKeys[currentKey];
+                //	Item exists, check if it has a position change
+                if(oldItemKeys[currentKey]!=newItemKeys[currentKey])
+                {
+                    qDebug() << SB_DEBUG_INFO << "moved";
+                    moveFlag=1;
+                    oldPlaylistPositionDB=oldItemKeys[currentKey]+1;
                 }
             }
-            else if(!_items.contains(playlistPosition) && oldItems.contains(playlistPosition))
+            else
             {
-                //	delete position i
-                deleteFlag=1;
-            }
-            else if(_items.contains(playlistPosition) && !oldItems.contains(playlistPosition))
-            {
-                //	insert new item at i
+                //	Item is new.
                 insertFlag=1;
             }
 
-            qDebug() << SB_DEBUG_INFO << playlistPosition << playlistPositionDB << deleteFlag << insertFlag;
-
-            if(deleteFlag)
-            {
-                SQL.append(QString
-                (
-                    "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
-                    "WHERE "
-                        "playlist_id=%1 AND "
-                        "playlist_position=%2 "
-                )
-                    .arg(this->playlistID())
-                    .arg(playlistPositionDB))
-                ;
-
-                SQL.append(QString
-                (
-                    "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
-                    "WHERE "
-                        "playlist_id=%1 AND "
-                        "playlist_position=%2 "
-                )
-                    .arg(this->playlistID())
-                    .arg(playlistPositionDB))
-                ;
-            }
             if(insertFlag)
             {
-                SBIDPtr ptr=_items[playlistPosition];
-                switch(ptr->itemType())
-                {
-                case SBIDBase::sb_type_song:
-                    qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
-                    qDebug() << SB_DEBUG_ERROR << *ptr;
-                    qDebug() << SB_DEBUG_ERROR << ptr->key();
-
-                    SBMessageBox::createSBMessageBox("Error: you should never see this...",
-                        "Assignment of song without album",
-                        QMessageBox::Warning,
-                        QMessageBox::Ok,
-                        QMessageBox::Ok,
-                        QMessageBox::Ok,
-                        0);
-                    break;
-
-                case SBIDBase::sb_type_performance:
-                {
-                    SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
-                    q=QString
-                    (
-                        "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
-                            "(playlist_id, playlist_position, song_id, artist_id, record_id, record_position, timestamp) "
-                        "SELECT "
-                            "%1, %2, %3, %4, %5, %6, %7 "
-                    )
-                        .arg(this->playlistID())
-                        .arg(playlistPositionDB)
-                        .arg(performancePtr->songID())
-                        .arg(performancePtr->songPerformerID())
-                        .arg(performancePtr->albumID())
-                        .arg(performancePtr->albumPosition())
-                        .arg(dal->getGetDate())
-                    ;
-                }
-                break;
-
-                case SBIDBase::sb_type_chart:
-                    break;
-
-                case SBIDBase::sb_type_playlist:
-                case SBIDBase::sb_type_performer:
-                case SBIDBase::sb_type_album:
-                    q=QString
-                      (
-                        "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
-                        "( "
-                            "playlist_id, "
-                            "playlist_position, "
-                            "timestamp, "
-                            "playlist_playlist_id, "
-                            "playlist_record_id, "
-                            "playlist_artist_id "
-                        ") "
-                        "SELECT "
-                            "%1, "
-                            "%2, "
-                            "%3, "
-                            "CASE WHEN %5=%6 THEN %4 ELSE NULL END,  "
-                            "CASE WHEN %5=%7 THEN %4 ELSE NULL END,  "
-                            "CASE WHEN %5=%8 THEN %4 ELSE NULL END  "
-                      )
-                        .arg(this->playlistID())
-                        .arg(playlistPositionDB)
-                        .arg(dal->getGetDate())
-                        .arg(ptr->itemID())
-                        .arg(ptr->itemType())
-                        .arg(SBIDBase::sb_type_playlist)
-                        .arg(SBIDBase::sb_type_album)
-                        .arg(SBIDBase::sb_type_performer)
-                    ;
-                    break;
-                }
-                SQL.append(q);
+                SQL.append(this->_generateSQLinsertItem(this->playlistID(),_items[playlistPosition],playlistPositionDB));
+            }
+            else if(moveFlag)
+            {
+                SQL.append(this->_generateSQLmoveItem(this->playlistID(),oldPlaylistPositionDB,playlistPositionDB));
             }
         }
     }
@@ -1040,11 +1055,6 @@ SBIDPlaylist::updateSQL() const
     if(SQL.count()==0)
     {
         SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
-    }
-
-    for(int i=0;i<SQL.count();i++)
-    {
-        qDebug() << SB_DEBUG_INFO << SQL[i];
     }
     return SQL;
 }
@@ -1216,10 +1226,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                         allPerformances.append(performancePtr);
                     }
                 }
-                qDebug() << SB_DEBUG_INFO;
                 if(progressDialog)
                 {
-                    qDebug() << SB_DEBUG_INFO;
                     progressDialog->setValue(progressDialog->value()+1);
                 }
             }
@@ -1380,7 +1388,6 @@ QMap<int,SBIDPtr>
 SBIDPlaylist::_loadItemsFromDB(bool showProgressDialogFlag) const
 {
     QMap<int,SBIDPtr> items;
-    qDebug() << SB_DEBUG_INFO << this->genericDescription() << this->key();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     int maxValue=0;
@@ -1419,7 +1426,6 @@ SBIDPlaylist::_loadItemsFromDB(bool showProgressDialogFlag) const
     {
         maxValue=countList.value(0).toInt();
     }
-    qDebug() << SB_DEBUG_INFO << maxValue;
 
     //	Retrieve detail
     q=QString
@@ -1529,7 +1535,6 @@ SBIDPlaylist::_loadItemsFromDB(bool showProgressDialogFlag) const
     {
         pd.setValue(maxValue);
     }
-    qDebug() << SB_DEBUG_INFO;
     return items;
 }
 
@@ -1632,7 +1637,6 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
     QList<SBIDPtr> compositesTraversed;
     QList<SBIDPerformancePtr> allPerformances;
     QMap<int,SBIDPerformancePtr> playList;
-    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,0);
 
     if(playlistPtr)
@@ -1667,4 +1671,151 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
         }
     }
     return playList;
+}
+
+QStringList
+SBIDPlaylist::_generateSQLdeleteItem(int playlistID, int playlistPositionDB) const
+{
+    QStringList SQL;
+
+    SQL.append(QString
+    (
+        "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position=%2 "
+    )
+        .arg(this->playlistID())
+        .arg(playlistPositionDB))
+    ;
+
+    SQL.append(QString
+    (
+        "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
+        "WHERE "
+            "playlist_id=%1 AND "
+            "playlist_position=%2 "
+    )
+        .arg(this->playlistID())
+        .arg(playlistPositionDB))
+    ;
+
+    return SQL;
+}
+
+QStringList
+SBIDPlaylist::_generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int playlistPositionDB) const
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QString q;
+
+    switch(itemPtr->itemType())
+    {
+    case SBIDBase::sb_type_song:
+        qDebug() << SB_DEBUG_ERROR << "assignment of song without album";
+        qDebug() << SB_DEBUG_ERROR << itemPtr->key();
+
+        SBMessageBox::createSBMessageBox("Error: you should never see this...",
+            "Assignment of song without album",
+            QMessageBox::Warning,
+            QMessageBox::Ok,
+            QMessageBox::Ok,
+            QMessageBox::Ok,
+            0);
+        break;
+
+    case SBIDBase::sb_type_performance:
+    {
+        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(itemPtr);
+        q=QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "
+                "(playlist_id, playlist_position, song_id, artist_id, record_id, record_position, timestamp) "
+            "SELECT "
+                "%1, %2, %3, %4, %5, %6, %7 "
+        )
+            .arg(playlistID)
+            .arg(playlistPositionDB)
+            .arg(performancePtr->songID())
+            .arg(performancePtr->songPerformerID())
+            .arg(performancePtr->albumID())
+            .arg(performancePtr->albumPosition())
+            .arg(dal->getGetDate())
+        ;
+    }
+    break;
+
+    case SBIDBase::sb_type_chart:
+        break;
+
+    case SBIDBase::sb_type_playlist:
+    case SBIDBase::sb_type_performer:
+    case SBIDBase::sb_type_album:
+        q=QString
+          (
+            "INSERT INTO ___SB_SCHEMA_NAME___playlist_composite "
+            "( "
+                "playlist_id, "
+                "playlist_position, "
+                "timestamp, "
+                "playlist_playlist_id, "
+                "playlist_record_id, "
+                "playlist_artist_id "
+            ") "
+            "SELECT "
+                "%1, "
+                "%2, "
+                "%3, "
+                "CASE WHEN %5=%6 THEN %4 ELSE NULL END,  "
+                "CASE WHEN %5=%7 THEN %4 ELSE NULL END,  "
+                "CASE WHEN %5=%8 THEN %4 ELSE NULL END  "
+          )
+            .arg(playlistID)
+            .arg(playlistPositionDB)
+            .arg(dal->getGetDate())
+            .arg(itemPtr->itemID())
+            .arg(itemPtr->itemType())
+            .arg(SBIDBase::sb_type_playlist)
+            .arg(SBIDBase::sb_type_album)
+            .arg(SBIDBase::sb_type_performer)
+        ;
+        break;
+    }
+
+    return QStringList(q);
+}
+
+QStringList
+SBIDPlaylist::_generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, int toPlaylistPosition) const
+{
+    QStringList SQL;
+    SQL.append(QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist_performance "
+            "SET "
+                "playlist_position=%3 "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "playlist_position=%2 "
+        )
+            .arg(playlistID)
+            .arg(fromPlaylistPositionDB)
+            .arg(toPlaylistPosition)
+    );
+    SQL.append(QString
+        (
+            "UPDATE "
+                "___SB_SCHEMA_NAME___playlist_composite "
+            "SET "
+                "playlist_position=%3 "
+            "WHERE "
+                "playlist_id=%1 AND "
+                "playlist_position=%2 "
+        )
+            .arg(playlistID)
+            .arg(fromPlaylistPositionDB)
+            .arg(toPlaylistPosition)
+    );
+    return SQL;
 }

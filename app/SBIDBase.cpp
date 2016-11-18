@@ -28,53 +28,6 @@ SBIDBase::SBIDBase(const SBIDBase &c)
     this->_wiki=c._wiki;
 }
 
-/*
-SBIDBase::SBIDBase(QByteArray encodedData)
-{
-    _init();
-    QString s=QString(encodedData);
-    if(!s.length())
-    {
-        qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
-        return;
-    }
-    QStringList sl=s.split('_');
-
-
-    _sb_item_type            =static_cast<sb_type>(sl[0].toInt());
-    _sb_song_id               =sl[1].toInt();
-    _sb_song_performer_id     =sl[2].toInt();
-    //_sb_album_id              =sl[3].toInt();
-    //_sb_album_performer_id    =sl[4].toInt();
-    _sb_performer_id          =sl[5].toInt();
-    //_sb_album_position        =sl[6].toInt();
-    _sb_chart_id              =sl[7].toInt();
-    _sb_playlist_id           =sl[8].toInt();
-    _sb_mbid                  =sl[9].replace("___SB_UNDERSCORE_123___","_");
-    _originalPerformerFlag  =sl[10].toInt();
-    _songPerformerName        =sl[11];
-    _albumPerformerName       =sl[12];
-    _performerName            =sl[13];
-    _albumTitle               =sl[14];
-    _songTitle                =sl[15];
-    _year                     =sl[16].toInt();
-    _path                     =sl[17];
-    _lyrics                   =sl[18];
-    _notes                    =sl[19];
-    _genre                    =sl[20];
-    _url                      =sl[21];
-    _wiki                     =sl[22];
-    _playlistName             =sl[23];
-    _count1                   =sl[24].toInt();
-    _count2                   =sl[25].toInt();
-    _duration.setDuration(sl[26].toInt());
-    _sb_play_position         =sl[27].toInt();
-    _sb_playlist_position     =sl[28].toInt();
-    _sb_model_position        =sl[29].toInt();
-    return;
-}
-*/
-
 SBIDBase::~SBIDBase()
 {
 }

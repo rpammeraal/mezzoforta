@@ -36,12 +36,12 @@ public:
     inline Duration duration() const { return _duration; }
     SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
-    inline int numItems() const;
+    int numItems() const;
     inline int playlistID() const { return _sb_playlist_id; }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
     bool removePlaylistItem(int playlistPosition) const;
-    void reorderItem(const SBIDPtr& fromPtr, int row) const;	//	CWIP:pmgr rewrite
+    bool moveItem(const SBIDPtr& fromPtr, int toRow);
     void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
@@ -70,6 +70,7 @@ protected:
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
+    bool moveDependent(int fromPosition, int toPosition);
     bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
@@ -90,6 +91,11 @@ private:
     QMap<int,SBIDPtr> _loadItemsFromDB(bool showProgressDialogFlag=1) const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
+
+    QStringList _generateSQLdeleteItem(int playlistID, int playlistPosition) const;
+    QStringList _generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int playlistPositionDB) const;
+    QStringList _generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, int toPlaylistPosition) const;
+
 };
 
 #endif // SBIDPLAYLIST_H

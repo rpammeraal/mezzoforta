@@ -103,6 +103,7 @@ SBStandardItemModel::insertRows(int row, int count, const QModelIndex &parent)
 QMimeData*
 SBStandardItemModel::mimeData(const QModelIndexList & indexes) const
 {
+    qDebug() << SB_DEBUG_INFO;
     return SBModel::_mimeData(this,indexes);
 }
 

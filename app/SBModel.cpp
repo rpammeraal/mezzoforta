@@ -200,6 +200,7 @@ SBModel::_init()
 QMimeData*
 SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexes) const
 {
+    qDebug() << SB_DEBUG_INFO;
     foreach (const QModelIndex &i, indexes)
     {
         if (i.isValid())

@@ -413,7 +413,7 @@ ExternalData::handleMBIDNetwork(QNetworkReply *r)
 }
 
 void
-ExternalData::handlePerformerImageURLFromEN(QNetworkReply *r)
+ExternalData::handlePerformerImageURLFromWC(QNetworkReply *r)
 {
     bool matchFound=0;
 
@@ -437,36 +437,43 @@ ExternalData::handlePerformerImageURLFromEN(QNetworkReply *r)
             {
                 QDomElement e = n.toElement();
 
-                if(!e.isNull() && e.tagName()=="images")
+                if(!e.isNull() && e.tagName()=="query")
                 {
                     for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                     {
                         QDomElement e = n.toElement();
 
-                        if(!e.isNull())
+                        if(!e.isNull() && e.tagName()=="pages")
                         {
                             for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                             {
                                 QDomElement e = n.toElement();
 
-                                if(e.tagName()=="url")
-                                {
-                                    urlString=e.text();
-                                }
-                                else if(!e.isNull())
+                                if(!e.isNull() && e.tagName()=="page")
                                 {
                                     for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
                                     {
                                         QDomElement e = n.toElement();
 
-                                        if(e.tagName()=="attribution" && e.text()!="myspace")
+                                        if(!e.isNull() && e.tagName()=="imageinfo")
                                         {
-                                            QNetworkAccessManager* m=new QNetworkAccessManager(this);
-                                            connect(m, SIGNAL(finished(QNetworkReply *)),
-                                                    this, SLOT(handleImageDataNetwork(QNetworkReply*)));
+                                            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
+                                            {
+                                                QDomElement e = n.toElement();
 
-                                            m->get(QNetworkRequest(QUrl(urlString)));
-                                            return;
+                                                if(!e.isNull() && e.tagName()=="ii")
+                                                {
+                                                    //	Found imagio!
+                                                    QString urlString=e.attribute("thumburl");
+
+                                                    QNetworkAccessManager* m=new QNetworkAccessManager(this);
+                                                    connect(m, SIGNAL(finished(QNetworkReply *)),
+                                                            this, SLOT(handleImageDataNetwork(QNetworkReply*)));
+
+                                                    m->get(QNetworkRequest(QUrl(urlString)));
+                                                    return;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -485,6 +492,36 @@ ExternalData::handlePerformerImageURLFromEN(QNetworkReply *r)
         messagebox.exec();
     }
 }
+
+//                        if(!e.isNull())
+//                        {
+//                            for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
+//                            {
+//                                QDomElement e = n.toElement();
+
+//                                if(e.tagName()=="url")
+//                                {
+//                                    urlString=e.text();
+//                                }
+//                                else if(!e.isNull())
+//                                {
+//                                    for(QDomNode n=e.firstChild();!n.isNull() && matchFound==0;n = n.nextSibling())
+//                                    {
+//                                        QDomElement e = n.toElement();
+
+//                                        if(e.tagName()=="attribution" && e.text()!="myspace")
+//                                        {
+//                                            QNetworkAccessManager* m=new QNetworkAccessManager(this);
+//                                            connect(m, SIGNAL(finished(QNetworkReply *)),
+//                                                    this, SLOT(handleImageDataNetwork(QNetworkReply*)));
+
+//                                            m->get(QNetworkRequest(QUrl(urlString)));
+//                                            return;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
 
 void
 ExternalData::handlePerformerNewsURLFromEN(QNetworkReply *r)
@@ -562,7 +599,6 @@ ExternalData::handlePerformerNewsURLFromEN(QNetworkReply *r)
 void
 ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(r->error()==QNetworkReply::NoError)
     {
         if(r->open(QIODevice::ReadOnly))
@@ -616,7 +652,18 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                 }
                                 else if(e.attribute("type")=="image")
                                 {
-                                    qDebug() << SB_DEBUG_INFO << e.text();
+                                    QNetworkAccessManager* mb=new QNetworkAccessManager(this);
+                                    connect(mb, SIGNAL(finished(QNetworkReply *)),
+                                            this, SLOT(handlePerformerImageURLFromWC(QNetworkReply*)));
+
+                                    QStringList parts=e.text().split(":");
+                                    QString imageFileName=parts[2];
+
+                                    QString urlString=QString("https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&redirects&format=xml&iiurlwidth=250&titles=File:%1")
+                                        .arg(imageFileName)
+                                    ;
+                                    qDebug() << SB_DEBUG_INFO << urlString;
+                                    mb->get(QNetworkRequest(QUrl(urlString)));
                                 }
                             }
                         }
@@ -819,7 +866,6 @@ ExternalData::_loadAlbumCoverAS()
 void
 ExternalData::_getMBIDAndMore()
 {
-    qDebug() << SB_DEBUG_INFO;
     QNetworkAccessManager* en;
     QString urlString;
     QNetworkAccessManager* mb;
@@ -863,23 +909,10 @@ ExternalData::_getMBIDAndMore()
             {
                 qDebug() << SB_DEBUG_WARNING << "Looks like we already have wiki and home page for performer";
             }
-            qDebug() << SB_DEBUG_INFO;
 
-//            //	2.	Artwork
-//            if(_artworkRetrievedFlag==0)
-//            {
-//                qDebug() << SB_DEBUG_INFO;
-//                //	Get performer image from echonest
-//                en=new QNetworkAccessManager(this);
-//                connect(en, SIGNAL(finished(QNetworkReply *)),
-//                        this, SLOT(handlePerformerImageURLFromEN(QNetworkReply *)));
+            //	2.	Artwork
+            //	Echnonest was used -- now using wikimedia commons
 
-//                urlString=QString("http://developer.echonest.com/api/v4/artist/images?api_key=BYNRSUS9LPOC2NYUI&id=musicbrainz:artist:%1&format=xml")
-//                    .arg(_currentPtr->MBID())
-//                ;
-//                qDebug() << SB_DEBUG_INFO << urlString;
-//                en->get(QNetworkRequest(QUrl(urlString)));
-//            }
 
             //	3.	Get news items from echonest
             en=new QNetworkAccessManager(this);

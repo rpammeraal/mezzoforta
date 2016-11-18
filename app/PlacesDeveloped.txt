@@ -671,20 +671,21 @@ X	playlists that song belongs to can be edited
 	-	creating/removing playlists works
 
 <current>
-*	Julie/Levellers: exists in 1989 and Empty year playlists. Only Empty Year shows up in song page.
-*	test drag/drop to playlists
-	*	drag/drop from other playlist contents breaks
-	*	test remove item from playlist
-*	SBTab::refreshTabIfCurrent(const SBIDBase& id): convert parameter to SBIDPtr
-*	player skips every other song
-    *	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
-*	no performer logos retrieved: echonest is offline (20161115)
+-	Julie/Levellers: exists in 1989 and Empty year playlists. Only Empty Year shows up in song page.
+-	test drag/drop to playlists
+    -	drag/drop from other playlist contents breaks
+	-	test remove item from playlist
+-	player skips every other song: not reproducable
+    -	drag/drop: use key() instead of dragging/dropping entire SBIDBase instances.
+-	no performer logos retrieved: echonest is offline (20161115). Now using wikimedia commons.
+-	Assign playlist to another playlist: crash
 
 <bugs>
+*	SBTab::refreshTabIfCurrent(const SBIDBase& id): convert parameter to SBIDPtr
+*	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
-*	Assign playlist to another playlist: crash
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 
 <near future>
@@ -762,6 +763,8 @@ X	playlists that song belongs to can be edited
 * 	check: start playing right away (flac, windows). prevent scrolling beyond loaded area.
 *	volume control
 *	song detail should indicate which versions of which albums are available
+*	loudspeaker icon wherever currently playing performance is displayed
+*	drag own image at image e.g. for performer and use this
 
 Installing ogg/vorbis:
 https://www.xiph.org/

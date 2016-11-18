@@ -53,6 +53,7 @@ public:
     bool commitAll1(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
     void merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
+    bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     void remove(std::shared_ptr<T> ptr);
     bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     void rollbackChanges1();
@@ -353,6 +354,26 @@ SBIDManagerTemplate<T,parentT>::merge1(std::shared_ptr<T>& fromPtr, std::shared_
     _addToChangedList(toPtr);
     _leMap.remove(fromPtr->key());
 }
+
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::moveDependent(const std::shared_ptr<T> ptr, int fromPosition, int toPosition, DataAccessLayer* dal, bool showProgressDialogFlag)
+{
+    bool successFlag=ptr->moveDependent(fromPosition,toPosition);
+    if(successFlag)
+    {
+        if(dal)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            successFlag=commit(ptr,dal,showProgressDialogFlag);
+        }
+        else
+        {
+            _addToChangedList(ptr);
+        }
+    }
+    return successFlag;
+}
+
 
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)

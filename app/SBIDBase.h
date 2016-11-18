@@ -34,7 +34,6 @@ public:
 
     SBIDBase();
     SBIDBase(const SBIDBase& c);
-    //SBIDBase(QByteArray encodedData);
     virtual ~SBIDBase();
     static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=0);
     static SBIDPtr createPtr(const QByteArray& encodedData);

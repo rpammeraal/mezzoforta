@@ -65,8 +65,9 @@ SBModelQueuedSongs::flags(const QModelIndex &index) const
 }
 
 QMimeData*
-SBModelQueuedSongs::mimeData(const QModelIndexList & indexes) const
+SBModelQueuedSongs::mimeData(const QModelIndexList& indexes) const
 {
+    qDebug() << SB_DEBUG_INFO;
     foreach (const QModelIndex &idx, indexes)
     {
         if (idx.isValid())

@@ -9,6 +9,37 @@ SBTableModel::SBTableModel()
 }
 
 ///	Inherited methods
+//QVariant
+//SBTableModel::data(const QModelIndex &item, int role) const
+//{
+//    if(role==Qt::FontRole)
+//    {
+//        return QVariant(QFont("Trebuchet MS",13));
+//    }
+//    QVariant v=QStandardItemModel::data(item,role);
+//    return v;
+//}
+
+//Qt::ItemFlags
+//SBTableModel::flags(const QModelIndex &index) const
+//{
+//    Q_UNUSED(index);
+//    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
+//}
+
+void
+SBTableModel::setDragableColumns(const QList<bool> &list)
+{
+    SBModel::setDragableColumns(list);
+}
+
+///	Inherited functions
+bool
+SBTableModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+{
+    return SBModel::_canDropMimeData(data,action,row,column,parent);
+}
+
 QVariant
 SBTableModel::data(const QModelIndex &item, int role) const
 {
@@ -16,21 +47,102 @@ SBTableModel::data(const QModelIndex &item, int role) const
     {
         return QVariant(QFont("Trebuchet MS",13));
     }
-    QVariant v=QStandardItemModel::data(item,role);
-    return v;
+    else if(role==Qt::TextAlignmentRole && item.column()==_positionColumn)
+    {
+        return Qt::AlignRight;
+    }
+    return QStandardItemModel::data(item,role);
+}
+
+bool
+SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
+{
+    qDebug() << SB_DEBUG_INFO << parent.row() << row << column;
+    //	Always -1 for drag/drop in editAlbum, maybe fine for other
+    //if(parent.row()==-1)
+    //{
+        //qDebug() << SB_DEBUG_INFO;
+        //return false;
+    //}
+
+    if (!canDropMimeData(data, action, row, column, parent))
+    {
+        qDebug() << SB_DEBUG_INFO;
+        return false;
+    }
+
+    if (action == Qt::IgnoreAction)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        return true;
+    }
+
+    QByteArray encodedData = data->data("application/vnd.text.list");
+    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData);
+    qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
+
+    const QModelIndex n=this->index(parent.row(),0);
+    qDebug() << SB_DEBUG_INFO << "idx=" << n;
+
+    SBIDPtr toIDPtr=determineSBID(n);
+
+    qDebug() << SB_DEBUG_INFO;
+    //emit assign(fromIDPtr,toIDPtr);
+    if(row>=0)
+    {
+        //	CWIP: is this always performance?
+        //	If yes: use the performance specific method
+        //	If no: propagate/instantiate playPosition back to SBIDBase
+//        if(fromIDPtr->playPosition()>row)
+//        {
+//            row+=1;
+//        }
+//        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
+    qDebug() << SB_DEBUG_INFO;
+        emit assign(fromIDPtr,row);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "row < 0" << row << "drag/drop abortée";
+    }
+    qDebug() << SB_DEBUG_INFO;
+    return 1;
 }
 
 Qt::ItemFlags
 SBTableModel::flags(const QModelIndex &index) const
 {
-    Q_UNUSED(index);
-    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
+    return SBModel::_flags(index, QStandardItemModel::flags(index));
+    //return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
 }
 
-void
-SBTableModel::setDragableColumns(const QList<bool> &list)
+QMimeData*
+SBTableModel::mimeData(const QModelIndexList & indexes) const
 {
-    SBModel::setDragableColumns(list);
+    qDebug() << SB_DEBUG_INFO;
+    return SBModel::_mimeData(this,indexes);
+}
+
+QStringList
+SBTableModel::mimeTypes() const
+{
+    return SBModel::_mimeTypes();
+}
+
+bool
+SBTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    Q_UNUSED(value);
+    QVector<int> v;
+    v.append(role);
+    emit dataChanged(index,index, v);
+    return 1;
+}
+
+Qt::DropActions
+SBTableModel::supportedDropActions() const
+{
+    return SBModel::_supportedDropActions();
 }
 
 ///	SBTableModel specific methods
@@ -165,7 +277,7 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performanc
 }
 
 void
-SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlistID)
+SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
 {
     _init();
 
@@ -181,16 +293,20 @@ SBTableModel::populatePlaylists(QMap<SBIDPerformancePtr,int> performance2playlis
     setHorizontalHeaderLabels(header);
 
     //	Populate data
-    QMapIterator<SBIDPerformancePtr,int> it(performance2playlistID);
+    QMapIterator<QString,QString> it(performance2playlistID);
     int i=0;
     while(it.hasNext())
     {
         it.next();
-        SBIDPerformancePtr performancePtr=it.key();
-        int playlistID=it.value();
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
+        SBIDPtr ptr;
 
-        if(playlistPtr)
+        ptr=SBIDBase::createPtr(it.key());
+        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
+
+        ptr=SBIDBase::createPtr(it.value());
+        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+
+        if(playlistPtr && performancePtr)
         {
             _setItem(i,0,playlistPtr->key());
             _setItem(i,1,playlistPtr->playlistName());
@@ -214,6 +330,7 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
     QStringList header;
     header.append("#");
     header.append("SB_ITEM_KEY");
+    _positionColumn=0;
     header.append("item");
     setHorizontalHeaderLabels(header);
 
@@ -271,6 +388,8 @@ SBTableModel::_init()
     QStandardItemModel::beginResetModel();
     QStandardItemModel::clear();
     QStandardItemModel::endResetModel();
+
+    _positionColumn=-1;	//	-1: impossible column
 }
 
 void

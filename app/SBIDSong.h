@@ -103,7 +103,7 @@ private:
     SBIDPerformerPtr             _performerPtr;
 
     //	Dependent attributes
-    QMap<SBIDPerformancePtr,int> _performance2playlistID;
+    QMap<QString,QString>        _playlistKey2performanceKey;
     QVector<SBIDPerformancePtr>  _performances;
 
     void _init();
