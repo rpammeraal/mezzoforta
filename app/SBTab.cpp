@@ -10,6 +10,7 @@
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBSortFilterProxyTableModel.h"
+#include "SBTableModel.h"
 
 
 ///	Public methods

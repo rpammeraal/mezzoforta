@@ -4,6 +4,7 @@
 #include "MainWindow.h"
 #include "SBIDAlbum.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
 {
