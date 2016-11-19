@@ -15,6 +15,9 @@
 #include "SBModelQueuedSongs.h"
 #include "SBIDAlbum.h"
 #include "SBIDManagerTemplate.h"
+#include "SBIDPerformance.h"
+#include "SBIDPerformer.h"
+#include "SBIDSong.h"
 #include "ScreenStack.h"
 
 class BackgroundThread;

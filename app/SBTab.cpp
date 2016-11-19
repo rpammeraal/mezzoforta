@@ -45,13 +45,12 @@ SBTab::getFirstEligibleSubtabID() const
 }
 
 void
-SBTab::refreshTabIfCurrent(const SBIDBase& id)
+SBTab::refreshTabIfCurrent(const SBIDPtr& ptr)
 {
     ScreenItem si=currentScreenItem();
 
-    if(*(si.ptr())==id)
+    if(si.ptr() && ptr && si.ptr()->key()==ptr->key())
     {
-        qDebug() << SB_DEBUG_INFO;
         populate(si);
     }
 }

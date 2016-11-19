@@ -42,6 +42,7 @@ public:
     ~SBIDManagerTemplate<T, parentT>();
 
     //	Retrieve
+    bool contains(const QString& key) const;
     int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
@@ -60,6 +61,10 @@ public:
 
     //	Misc
     void debugShow(const QString title="");
+
+protected:
+    friend class Preloader;
+    void addItem(std::shared_ptr<T> item);
 
 private:
     QList<QString>                   _changes;	//	Contains keys of objects changed
@@ -81,6 +86,12 @@ SBIDManagerTemplate<T,parentT>::~SBIDManagerTemplate()
 }
 
 ///	Retrieve
+template <class T, class parentT> bool
+SBIDManagerTemplate<T,parentT>::contains(const QString& key) const
+{
+    return _leMap.contains(key);
+}
+
 template <class T, class parentT> int
 SBIDManagerTemplate<T,parentT>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches,QString secondaryParameter)
 {
@@ -112,7 +123,8 @@ SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
 {
     qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
-    if(_leMap.contains(key))
+    //if(_leMap.contains(key))
+    if(contains(key))
     {
         ptr=_leMap[key];
     }
@@ -124,7 +136,7 @@ SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
         if(!r.isEmpty())
         {
             ptr=T::instantiate(r,openFlag==OpenFlags::open_flag_parentonly);
-            _leMap[key]=ptr;
+            addItem(ptr);
         }
     }
 
@@ -153,7 +165,7 @@ SBIDManagerTemplate<T,parentT>::retrieveAll()
         std::shared_ptr<T> oldT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
-        if(_leMap.contains(key))
+        if(contains(key))
         {
             oldT=_leMap[key];
         }
@@ -166,7 +178,7 @@ SBIDManagerTemplate<T,parentT>::retrieveAll()
         }
         else
         {
-            _leMap[key]=newT;
+            addItem(newT);
         }
     }
 
@@ -235,7 +247,7 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
         std::shared_ptr<T> oldT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
-        if(_leMap.contains(key))
+        if(contains(key))
         {
             oldT=_leMap[key];
         }
@@ -248,7 +260,7 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
         }
         else
         {
-            _leMap[key]=newT;
+            addItem(newT);
         }
         list.append(newT);
 
@@ -432,6 +444,20 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
         {
             qDebug() << SB_DEBUG_INFO << it.key() << ptr->genericDescription();
         }
+    }
+}
+
+///	Protected methods
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T> ptr)
+{
+    if(ptr && !contains(ptr->key()))
+    {
+        _leMap[ptr->key()]=ptr;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_ERROR << "NULL pointer parameter";
     }
 }
 

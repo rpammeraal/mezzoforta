@@ -188,16 +188,17 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
     QMap<int,SBIDPerformancePtr> list;
     SBIDPerformancePtr performancePtr;
 
-    if(_performances.count()==0)
+    if(_performances.count()==0 && !_performerPtr)
     {
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
 
     //	Send the first performance where orginalPerformerFlag is set.
+    int originalPerformerID=songPerformerID();
     for(int i=0;i<_performances.size() && list.count()==0;i++)
     {
         performancePtr=_performances.at(i);
-        if(performancePtr->originalPerformerFlag()==1 && performancePtr->path().length()>0)
+        if(performancePtr->songPerformerID()==originalPerformerID && performancePtr->path().length()>0)
         {
             list[list.count()]=performancePtr;
         }
@@ -1183,9 +1184,9 @@ SBIDSong::SBIDSong():SBIDBase()
 QString
 SBIDSong::createKey(int songID)
 {
-    return QString("%1:%2")
+    return songID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_song)
-        .arg(songID)
+        .arg(songID):QString()	//	return empty string if songID<0
     ;
 }
 

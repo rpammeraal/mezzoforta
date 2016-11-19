@@ -670,7 +670,7 @@ X	playlists that song belongs to can be edited
     -	need to check for dups
 	-	creating/removing playlists works
 
-<current>
+20161118:
 -	Julie/Levellers: exists in 1989 and Empty year playlists. Only Empty Year shows up in song page.
 -	test drag/drop to playlists
     -	drag/drop from other playlist contents breaks
@@ -680,8 +680,14 @@ X	playlists that song belongs to can be edited
 -	no performer logos retrieved: echonest is offline (20161115). Now using wikimedia commons.
 -	Assign playlist to another playlist: crash
 
+<current>
+-	Streamlined:
+    -	SBIDAlbum: _albumPerformerName removed.
+	-	SBIDPerformance: _isOriginalPerformerFlag removed.
+-	SBTab::refreshTabIfCurrent(const SBIDBase& id): convert parameter to SBIDPtr
+
 <bugs>
-*	SBTab::refreshTabIfCurrent(const SBIDBase& id): convert parameter to SBIDPtr
+*	Duration field op songtab not properly populated
 *	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped

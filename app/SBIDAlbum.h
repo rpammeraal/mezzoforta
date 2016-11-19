@@ -37,7 +37,7 @@ public:
     inline int albumID() const { return _sb_album_id; }
     inline int albumPerformerID() const { return _sb_album_performer_id; }
     inline QString albumTitle() const { return _albumTitle; }
-    inline QString albumPerformerName() const { return _albumPerformerName; }
+    QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
     inline QString genre() const { return _genre; }
     //SBSqlQueryModel* matchAlbum() const;
@@ -77,6 +77,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
 
     SBIDAlbum();
 
@@ -92,7 +93,6 @@ protected:
 
 private:
     QString                     _albumTitle;
-    QString                     _albumPerformerName;
     QString                     _genre;
     QString                     _notes;
     int                         _sb_album_id;

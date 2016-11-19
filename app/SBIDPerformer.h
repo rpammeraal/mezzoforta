@@ -40,8 +40,8 @@ public:
     void addRelatedPerformer(int performerID);
     void deleteRelatedPerformer(int performerID);
     inline QString notes() const { return _notes; }
-    inline int numAlbums() const { return _num_albums; }
-    inline int numSongs() const { return _num_songs; }
+    int numAlbums() const;
+    int numSongs() const;
     inline int performerID() const { return _sb_performer_id; }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
@@ -64,6 +64,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
 
     SBIDPerformer();
 

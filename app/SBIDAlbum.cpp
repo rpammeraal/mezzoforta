@@ -11,7 +11,6 @@
 SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
 {
     _albumTitle           =c._albumTitle;
-    _albumPerformerName   =c._albumPerformerName;
     _genre                =c._genre;
     _notes                =c._notes;
     _performerPtr         =c._performerPtr;
@@ -41,7 +40,7 @@ SBIDAlbum::commonPerformerName() const
 QString
 SBIDAlbum::genericDescription() const
 {
-    return "Album - "+this->text()+" by "+this->_albumPerformerName;
+    return "Album - "+this->text()+" by "+this->albumPerformerName();
 }
 
 QString
@@ -183,6 +182,15 @@ SBIDAlbum::type() const
 }
 
 ///	Album specific methods
+QString
+SBIDAlbum::albumPerformerName() const
+{
+    if(!_performerPtr)
+    {
+        const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
+    }
+    return _performerPtr->performerName();
+}
 
 //	either add to a list of songs in SBIDAlbum (preferred)
 //	or as saveSongToAlbum().
@@ -985,8 +993,8 @@ SBIDAlbum::setAlbumPerformerID(int albumPerformerID)
 void
 SBIDAlbum::setAlbumPerformerName(const QString &albumPerformerName)
 {
-    _albumPerformerName=albumPerformerName;
-    setChangedFlag();
+//    _albumPerformerName=albumPerformerName;
+//    setChangedFlag();
 }
 
 void
@@ -1246,7 +1254,7 @@ SBIDAlbum::performerPtr() const
 ///	Operators
 SBIDAlbum::operator QString() const
 {
-    QString albumPerformerName=this->_albumPerformerName.length() ? this->_albumPerformerName : "<N/A>";
+    QString albumPerformerName=this->_performerPtr ? this->albumPerformerName() : "<not loaded yet>";
     QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
     return QString("SBIDAlbum:%1:t=%2:p=%3 %4")
             .arg(this->_sb_album_id)
@@ -1315,9 +1323,9 @@ QString
 SBIDAlbum::createKey(int albumID,int unused)
 {
     Q_UNUSED(unused);
-    return QString("%1:%2")
+    return albumID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_album)
-        .arg(albumID)
+        .arg(albumID):QString()	//	Return empty string if albumID<0
     ;
 }
 
@@ -1455,10 +1463,9 @@ SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     album._sb_album_id          =r.value(0).toInt();
     album._albumTitle           =r.value(1).toString();
     album._sb_album_performer_id=r.value(2).toInt();
-    album._albumPerformerName   =r.value(3).toString();
-    album._year                 =r.value(5).toInt();
-    album._genre                =r.value(6).toString();
-    album._notes                =r.value(7).toString();
+    album._year                 =r.value(3).toInt();
+    album._genre                =r.value(4).toString();
+    album._notes                =r.value(5).toString();
 
     if(!noDependentsFlag)
     {
@@ -1491,22 +1498,11 @@ SBIDAlbum::retrieveSQL(const QString& key)
             "r.record_id, "
             "r.title, "
             "r.artist_id, "
-            "a.name,"
-            "r.media, "
             "r.year, "
             "r.genre, "
             "r.notes "
         "FROM "
                 "___SB_SCHEMA_NAME___record r "
-                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
-                        "r.artist_id=a.artist_id "
-                    "LEFT JOIN "
-                        "( "
-                            "SELECT r.record_id,COUNT(*) as song_count "
-                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
-                            "%1 "
-                            "GROUP BY r.record_id "
-                        ") s ON r.record_id=s.record_id "
         "%1 "
         "LIMIT 1 "
     )
@@ -1548,7 +1544,6 @@ SBIDAlbum::_init()
     _sb_album_id=-1;
     _sb_album_performer_id=-1;
     _albumTitle="";
-    _albumPerformerName="";
     _year=-1;
 }
 

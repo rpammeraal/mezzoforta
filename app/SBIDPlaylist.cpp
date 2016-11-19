@@ -3,6 +3,7 @@
 #include "SBIDPlaylist.h"
 
 #include "Context.h"
+#include "Preloader.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
@@ -661,7 +662,7 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     if(forcedFlag==1 || _items.count()>=0)
     {
-        _items=_loadItemsFromDB(showProgressDialogFlag);
+        _items=Preloader::playlistItems(this->playlistID(),showProgressDialogFlag);
     }
 }
 
@@ -670,9 +671,9 @@ QString
 SBIDPlaylist::createKey(int playlistID, int unused)
 {
     Q_UNUSED(unused);
-    return QString("%1:%2")
+    return playlistID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_playlist)
-        .arg(playlistID)
+        .arg(playlistID):QString()	//	Return empty string if playlistID<0
     ;
 }
 
@@ -790,7 +791,7 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     playlist._reorderPlaylistPositions();
 
-    //	Do *not* load dependents -- this will cause an infinite loop, as _loadItemsFromDB will
+    //	Do *not* load dependents -- this will cause an infinite loop, as loadItemsFromDB will
     //	include loading dependents from all items loaded. Doing this will cause playlists to be
     //	loaded as well.
     return std::make_shared<SBIDPlaylist>(playlist);
@@ -978,7 +979,7 @@ SBIDPlaylist::updateSQL() const
         SQL.append(q);
 
         //	Create reverse lookups of old and new
-        QMap<int, SBIDPtr> oldItems=_loadItemsFromDB();
+        QMap<int, SBIDPtr> oldItems=Preloader::playlistItems(this->playlistID(),1);
         QMap<QString,int> oldItemKeys;	//	key -> position in playlist
         QMapIterator<int,SBIDPtr> oldItemsIt(oldItems);
         while(oldItemsIt.hasNext())
@@ -1382,160 +1383,6 @@ SBIDPlaylist::_init()
 {
     _sb_item_type=SBIDBase::sb_type_playlist;
     _sb_playlist_id=-1;
-}
-
-QMap<int,SBIDPtr>
-SBIDPlaylist::_loadItemsFromDB(bool showProgressDialogFlag) const
-{
-    QMap<int,SBIDPtr> items;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    int maxValue=0;
-
-    QString q;
-
-    //	Retrieve number of items
-    q=QString
-    (
-        "SELECT SUM(cnt) "
-        "FROM "
-        "( "
-            "SELECT "
-                "COUNT(*) AS cnt "
-            "FROM "
-                "___SB_SCHEMA_NAME___playlist_composite pc "
-            "WHERE "
-                "pc.playlist_id=%1 "
-            "UNION "
-            "SELECT "
-                "COUNT(*) AS cnt "
-            "FROM "
-                "___SB_SCHEMA_NAME___playlist_performance pp  "
-            "WHERE "
-                "pp.playlist_id=%1 "
-        ") a "
-    )
-        .arg(this->playlistID())
-    ;
-
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery countList(q,db);
-    if(countList.next())
-    {
-        maxValue=countList.value(0).toInt();
-    }
-
-    //	Retrieve detail
-    q=QString
-    (
-        "SELECT "
-            "pc.playlist_position as \"#\", "
-            "CASE "
-                "WHEN pc.playlist_playlist_id IS NOT NULL THEN %2 "
-                "WHEN pc.playlist_chart_id    IS NOT NULL THEN %3 "
-                "WHEN pc.playlist_record_id   IS NOT NULL THEN %4 "
-                "WHEN pc.playlist_artist_id   IS NOT NULL THEN %5 "
-            "END AS SB_ITEM_TYPE, "
-            "COALESCE(pc.playlist_playlist_id,pc.playlist_chart_id,pc.playlist_record_id,pc.playlist_artist_id) AS SB_ITEM_ID, "
-            "0 AS SB_ALBUM_ID, "
-            "0 AS SB_POSITION_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist_composite pc "
-        "WHERE "
-            "pc.playlist_id=%1 "
-        "UNION "
-        "SELECT "
-            "pp.playlist_position, "
-            "%6, "
-            "pp.song_id, "	//	not used, only to indicate a performance
-            "pp.record_id AS SB_ALBUM_ID, "
-            "pp.record_position AS SB_POSITION_ID "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist_performance pp  "
-        "WHERE "
-            "pp.playlist_id=%1 "
-        "ORDER BY 1"
-    )
-            .arg(this->playlistID())
-            .arg(Common::sb_field_playlist_id)
-            .arg(Common::sb_field_chart_id)
-            .arg(Common::sb_field_album_id)
-            .arg(Common::sb_field_performer_id)
-            .arg(Common::sb_field_song_id)
-    ;
-
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    //	Set up progress dialog
-    QProgressDialog pd("Retrieving All Items",QString(),0,maxValue);
-    if(maxValue<=10)
-    {
-        showProgressDialogFlag=0;
-    }
-
-    int currentValue=0;
-    if(showProgressDialogFlag)
-    {
-        pd.setWindowModality(Qt::WindowModal);
-        pd.show();
-        pd.raise();
-        pd.activateWindow();
-        QCoreApplication::processEvents();
-    }
-
-    QSqlQuery queryList(q,db);
-    int playlistIndex=0;
-    items.clear();
-    while(queryList.next())
-    {
-        Common::sb_field itemType=static_cast<Common::sb_field>(queryList.value(1).toInt());
-        SBIDPtr itemPtr;
-
-        switch(itemType)
-        {
-        case Common::sb_field_playlist_id:
-        case Common::sb_field_chart_id:
-        case Common::sb_field_album_id:
-        case Common::sb_field_performer_id:
-            itemPtr=SBIDBase::createPtr(SBIDBase::convert(itemType),queryList.value(2).toInt(),1);
-            break;
-
-        case Common::sb_field_song_id:
-            if(queryList.value(3).isNull())
-            {
-                //	Item is a song
-                itemPtr=SBIDSong::retrieveSong(queryList.value(2).toInt(),0);
-            }
-            else
-            {
-                //	Item is a performance as we have album_id and album_position populated
-                itemPtr=SBIDPerformance::retrievePerformance(queryList.value(3).toInt(),queryList.value(4).toInt(),0);
-            }
-            break;
-
-        case Common::sb_field_invalid:
-        case Common::sb_field_album_position:
-            break;
-        }
-        if(itemPtr)
-        {
-            items[playlistIndex++]=itemPtr;
-        }
-        if(showProgressDialogFlag && (currentValue%10)==0)
-        {
-            QCoreApplication::processEvents();
-            pd.setValue(currentValue);
-        }
-        currentValue++;
-    }
-    if(showProgressDialogFlag)
-    {
-        pd.setValue(maxValue);
-    }
-    return items;
 }
 
 void

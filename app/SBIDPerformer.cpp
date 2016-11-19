@@ -108,13 +108,9 @@ SBTableModel*
 SBIDPerformer::albums() const
 {
     SBTableModel* tm=new SBTableModel();
-    if(_performances.count()==0)
+    if(_performances.count()==0 || _albums.count()==0)
     {
-        const_cast<SBIDPerformer *>(this)->_loadPerformances();
-    }
-    if(_albums.count()==0)
-    {
-        const_cast<SBIDPerformer *>(this)->_loadAlbums();
+        const_cast<SBIDPerformer *>(this)->refreshDependents();
     }
 
     tm->populateAlbumsByPerformer(_performances,_albums);
@@ -140,6 +136,45 @@ SBIDPerformer::deleteRelatedPerformer(int performerID)
 //        _relatedPerformerID.remove(_relatedPerformerID.indexOf(performerID));
 //        setChangedFlag();
 //    }
+}
+
+int
+SBIDPerformer::numAlbums() const
+{
+    if(_albums.count()==0 && _num_albums==0)
+    {
+        //	Nothing available, we need to load dependents
+        const_cast<SBIDPerformer *>(this)->refreshDependents();
+    }
+    if(_albums.count()==0)
+    {
+        //	_albums is not loaded yet -- use precalculated _num_albums
+        return _num_albums;
+    }
+    return _albums.count();
+}
+
+int
+SBIDPerformer::numSongs() const
+{
+    if(_performances.count()==0 && _num_songs==0)
+    {
+        //	Nothing available, we need to load dependents
+        const_cast<SBIDPerformer *>(this)->refreshDependents();
+    }
+    if(_performances.count()==0)
+    {
+        //	_performances is not loaded yet -- use precalculated _num_songs
+        return _num_songs;
+    }
+    //	At this point, we have performances loaded. Need to go through
+    //	performances and count unique songs
+    QMap<QString,int> uniqueSongs;	//	use map to count unique songs
+    for(int i=0;i<<_performances.count();i++)
+    {
+        uniqueSongs[_performances.at(i)->key()]=1;
+    }
+    return uniqueSongs.count();
 }
 
 QVector<SBIDPerformerPtr>
@@ -242,7 +277,7 @@ SBIDPerformer::songs() const
     SBTableModel* tm=new SBTableModel();
     if(_performances.count()==0)
     {
-        const_cast<SBIDPerformer *>(this)->_loadPerformances();
+        const_cast<SBIDPerformer *>(this)->refreshDependents();
     }
     tm->populateSongsByPerformer(_performances);
     return tm;
@@ -421,9 +456,9 @@ QString
 SBIDPerformer::createKey(int performerID,int unused)
 {
     Q_UNUSED(unused);
-    return QString("%1:%2")
+    return performerID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_performer)
-        .arg(performerID)
+        .arg(performerID):QString()	//	Return empty string if performerID<0
     ;
 }
 
@@ -919,6 +954,8 @@ SBIDPerformer::_init()
     _performerName="";
     _relatedPerformerID.clear();
     _sb_performer_id=-1;
+    _num_albums=0;
+    _num_songs=0;
 }
 
 void

@@ -61,7 +61,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
                 ptr=playlistPtr;
                 qDebug() << SB_DEBUG_INFO << playlistPtr->numItems();
             }
-            refreshTabIfCurrent(*ptr);
+            refreshTabIfCurrent(ptr);
             Context::instance()->getController()->updateStatusBarText(updateText);
 
             //	Repopulate the current screen
@@ -97,7 +97,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
             }
         }
     }
-    refreshTabIfCurrent(*ptr);
+    refreshTabIfCurrent(ptr);
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.playlistDetailSongList;

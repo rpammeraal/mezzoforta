@@ -63,6 +63,7 @@ protected:
     SBIDPlaylist(int itemID);
 
     template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     bool addDependent(SBIDPtr tobeAddedPtr);
@@ -88,7 +89,6 @@ private:
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
-    QMap<int,SBIDPtr> _loadItemsFromDB(bool showProgressDialogFlag=1) const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
 

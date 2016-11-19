@@ -41,7 +41,6 @@ public:
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
-    inline bool originalPerformerFlag() const { return _originalPerformerFlag; }
     inline QString path() const { return _path; }
     inline int playlistPosition() const { return _playlistPosition; }
     inline int playPosition() const { return _sb_play_position; }
@@ -78,6 +77,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
 
     SBIDPerformance();
 
@@ -94,7 +94,6 @@ private:
     int              _sb_performer_id;
     int              _sb_album_id;
     int              _sb_album_position;
-    bool             _originalPerformerFlag;
     QString          _path;
     int              _year;
 

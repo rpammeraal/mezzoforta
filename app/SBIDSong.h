@@ -77,6 +77,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
 
     SBIDSong();
 

@@ -15,7 +15,6 @@ SBIDPerformance::SBIDPerformance(const SBIDPerformance &p):SBIDBase(p)
     _sb_performer_id      =p._sb_performer_id;
     _sb_album_id          =p._sb_album_id;
     _sb_album_position    =p._sb_album_position;
-    _originalPerformerFlag=p._originalPerformerFlag;
     _path                 =p._path;
     _year                 =p._year;
 
@@ -250,10 +249,10 @@ SBIDPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 QString
 SBIDPerformance::createKey(int albumID, int albumPosition)
 {
-    return QString("%1:%2:%3")
+    return (albumID>=0||albumPosition>=0)?QString("%1:%2:%3")
         .arg(SBIDBase::sb_type_performance)
         .arg(albumID)
-        .arg(albumPosition)
+        .arg(albumPosition):QString()	//	Return empty string if one or both parameters<0
     ;
 }
 
@@ -448,19 +447,16 @@ SBIDPerformance::SBIDPerformance()
 SBIDPerformancePtr
 SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 {
-    qDebug() << SB_DEBUG_INFO << noDependentsFlag;
     SBIDPerformance performance;
     performance._sb_song_id           =Common::parseIntFieldDB(&r,0);
     performance._sb_album_id          =Common::parseIntFieldDB(&r,1);
     performance._sb_album_position    =Common::parseIntFieldDB(&r,2);
     performance._sb_performer_id      =Common::parseIntFieldDB(&r,3);
-    performance._originalPerformerFlag=r.value(4).toBool();
-    performance._duration             =r.value(5).toTime();
-    performance._year                 =r.value(6).toInt();
-    performance._notes                =Common::parseTextFieldDB(&r,7);
-    performance._path                 =Common::parseTextFieldDB(&r,8);
+    performance._duration             =r.value(4).toTime();
+    performance._year                 =r.value(5).toInt();
+    performance._notes                =Common::parseTextFieldDB(&r,6);
+    performance._path                 =Common::parseTextFieldDB(&r,7);
 
-    qDebug() << SB_DEBUG_INFO << performance._path;
     if(!noDependentsFlag)
     {
         performance.refreshDependents();
@@ -504,7 +500,6 @@ SBIDPerformance::retrieveSQL(const QString& key)
             "rp.record_id, "
             "rp.record_position, "
             "a.artist_id, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
             "rp.duration, "
             "p.year, "
             "rp.notes, "
@@ -543,7 +538,6 @@ SBIDPerformance::_init()
     _sb_performer_id=-1;
     _sb_album_id=-1;
     _sb_album_position=-1;
-    _originalPerformerFlag=0;
     _path="";
     _albumPtr=SBIDAlbumPtr();
     _performerPtr=SBIDPerformerPtr();

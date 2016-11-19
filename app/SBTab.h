@@ -28,7 +28,7 @@ public:
     int getFirstEligibleSubtabID() const;
     inline int currentSubtabID() const { return _currentSubtabID; }
     inline bool isEditTab() const { return _isEditTabFlag; }
-    void refreshTabIfCurrent(const SBIDBase &id);
+    void refreshTabIfCurrent(const SBIDPtr& ptr);
 
     //	Virtual UI
     virtual void handleDeleteKey();

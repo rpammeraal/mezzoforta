@@ -492,7 +492,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
         .arg(QChar(180));         //	3
     Context::instance()->getController()->updateStatusBarText(updateText);
 
-    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(*playlistPtr);
+    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(playlistPtr);
 }
 
 ///	PRIVATE
