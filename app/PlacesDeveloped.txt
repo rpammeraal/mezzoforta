@@ -680,15 +680,22 @@ X	playlists that song belongs to can be edited
 -	no performer logos retrieved: echonest is offline (20161115). Now using wikimedia commons.
 -	Assign playlist to another playlist: crash
 
-<current>
+20161119:
 -	Streamlined:
     -	SBIDAlbum: _albumPerformerName removed.
 	-	SBIDPerformance: _isOriginalPerformerFlag removed.
 -	SBTab::refreshTabIfCurrent(const SBIDBase& id): convert parameter to SBIDPtr
 
+20161121:
+-	Belgica: The Memories: does not display all songs (compare with songbase(www): not reproducable
+-	Duration field op songtab not properly populate: not reproducable
+-	If switched to different database -- clear all SBIDManagers
+-	U2/Albums: year released = 0
+-	Too many 'Retrieving'-dialog boxes when playing radio
+-	Using Preloader for retrieving album performances
+-	need to see duration and number of songs on album page
+
 <bugs>
-*	Duration field op songtab not properly populated
-*	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
@@ -732,6 +739,7 @@ X	playlists that song belongs to can be edited
 *	DataEntity::getDetail(): initialization of parameter to result should NOT happen.
 *	Add option to playlist to always play in order or randomly.
 *	SBID* classes: check on all executed database queries need to exists. SBAlbum::save() is example (calling SBMessageBox::databaseErrorMessageBox)
+*	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
 
 <future>
 *	Support aac format (look at libav.org)

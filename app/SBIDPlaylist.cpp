@@ -206,6 +206,8 @@ SBIDPlaylist::removePlaylistItem(int playlistPosition) const
 void
 SBIDPlaylist::reorderItem(const SBIDPtr fID, const SBIDPtr tID) const
 {
+    Q_UNUSED(fID);
+    Q_UNUSED(tID);
     /*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -681,7 +683,12 @@ SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-    return pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
+    SBIDPlaylistPtr playlistPtr;
+    if(playlistID>=0)
+    {
+        playlistPtr=pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
+    }
+    return playlistPtr;
 }
 
 ///	Protected methods
@@ -779,9 +786,8 @@ SBIDPlaylist::createInDB()
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+SBIDPlaylist::instantiate(const QSqlRecord &r)
 {
-    Q_UNUSED(noDependentsFlag);
     SBIDPlaylist playlist;
 
     playlist._sb_playlist_id=r.value(0).toInt();
@@ -791,9 +797,6 @@ SBIDPlaylist::instantiate(const QSqlRecord &r, bool noDependentsFlag)
 
     playlist._reorderPlaylistPositions();
 
-    //	Do *not* load dependents -- this will cause an infinite loop, as loadItemsFromDB will
-    //	include loading dependents from all items loaded. Doing this will cause playlists to be
-    //	loaded as well.
     return std::make_shared<SBIDPlaylist>(playlist);
 }
 
@@ -1009,7 +1012,7 @@ SBIDPlaylist::updateSQL() const
             {
                 qDebug() << SB_DEBUG_INFO << "removed:";
                 //	Item has been removed
-                SQL.append(_generateSQLdeleteItem(this->playlistID(),playlistPositionDB));
+                SQL.append(_generateSQLdeleteItem(playlistPositionDB));
             }
         }
 
@@ -1044,11 +1047,11 @@ SBIDPlaylist::updateSQL() const
 
             if(insertFlag)
             {
-                SQL.append(this->_generateSQLinsertItem(this->playlistID(),_items[playlistPosition],playlistPositionDB));
+                SQL.append(this->_generateSQLinsertItem(_items[playlistPosition],playlistPositionDB));
             }
             else if(moveFlag)
             {
-                SQL.append(this->_generateSQLmoveItem(this->playlistID(),oldPlaylistPositionDB,playlistPositionDB));
+                SQL.append(this->_generateSQLmoveItem(oldPlaylistPositionDB,playlistPositionDB));
             }
         }
     }
@@ -1183,7 +1186,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
             {
                 bool compositeFlag=allItems.value(0).toInt();
                 int playlistID=allItems.value(2).toInt();
-                int playlistPosition=allItems.value(1).toInt();
+                int playlistPosition=allItems.value(1).toInt(); Q_UNUSED(playlistPosition);
                 int chartID=allItems.value(3).toInt();
                 int albumID=allItems.value(4).toInt();
                 int performerID=allItems.value(5).toInt();
@@ -1521,7 +1524,7 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 }
 
 QStringList
-SBIDPlaylist::_generateSQLdeleteItem(int playlistID, int playlistPositionDB) const
+SBIDPlaylist::_generateSQLdeleteItem(int playlistPositionDB) const
 {
     QStringList SQL;
 
@@ -1551,7 +1554,7 @@ SBIDPlaylist::_generateSQLdeleteItem(int playlistID, int playlistPositionDB) con
 }
 
 QStringList
-SBIDPlaylist::_generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int playlistPositionDB) const
+SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QString q;
@@ -1581,7 +1584,7 @@ SBIDPlaylist::_generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int 
             "SELECT "
                 "%1, %2, %3, %4, %5, %6, %7 "
         )
-            .arg(playlistID)
+            .arg(this->playlistID())
             .arg(playlistPositionDB)
             .arg(performancePtr->songID())
             .arg(performancePtr->songPerformerID())
@@ -1617,7 +1620,7 @@ SBIDPlaylist::_generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int 
                 "CASE WHEN %5=%7 THEN %4 ELSE NULL END,  "
                 "CASE WHEN %5=%8 THEN %4 ELSE NULL END  "
           )
-            .arg(playlistID)
+            .arg(this->playlistID())
             .arg(playlistPositionDB)
             .arg(dal->getGetDate())
             .arg(itemPtr->itemID())
@@ -1633,7 +1636,7 @@ SBIDPlaylist::_generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int 
 }
 
 QStringList
-SBIDPlaylist::_generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, int toPlaylistPosition) const
+SBIDPlaylist::_generateSQLmoveItem(int fromPlaylistPositionDB, int toPlaylistPosition) const
 {
     QStringList SQL;
     SQL.append(QString
@@ -1646,7 +1649,7 @@ SBIDPlaylist::_generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, i
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
         )
-            .arg(playlistID)
+            .arg(this->playlistID())
             .arg(fromPlaylistPositionDB)
             .arg(toPlaylistPosition)
     );
@@ -1660,7 +1663,7 @@ SBIDPlaylist::_generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, i
                 "playlist_id=%1 AND "
                 "playlist_position=%2 "
         )
-            .arg(playlistID)
+            .arg(this->playlistID())
             .arg(fromPlaylistPositionDB)
             .arg(toPlaylistPosition)
     );

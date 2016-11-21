@@ -71,8 +71,8 @@ public:
     static SBIDPerformancePtr retrievePerformance(int albumID, int positionID, bool noDependentsFlag=0);
 
 	//	Helper methods for SBIDManagerTemplate
-    static SBSqlQueryModel* performancesByAlbum(int songID);
-    static SBSqlQueryModel* performancesByPerformer(int performerID);
+    static QString performancesByAlbum_Preloader(int songID);
+    static QString performancesByPerformer_Preloader(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
 
 protected:
@@ -81,8 +81,7 @@ protected:
 
     SBIDPerformance();
 
-
-    static SBIDPerformancePtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static SBIDPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID, int& albumPosition);
     void postInstantiate(SBIDPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");

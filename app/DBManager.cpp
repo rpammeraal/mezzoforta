@@ -1,6 +1,7 @@
 #include "DBManager.h"
 
 #include "Common.h"
+#include "Context.h"
 #include "DataAccessLayer.h"
 #include "DataAccessLayerPostgres.h"
 #include "DatabaseSelector.h"
@@ -192,6 +193,13 @@ DBManager::_openDatabase(struct DatabaseCredentials &dc)
 
         //	Create new DataAccessLayer
         _createDAL();
+
+        //	Clear caches
+        Context::instance()->getAlbumMgr()->clear();
+        Context::instance()->getPerformanceMgr()->clear();
+        Context::instance()->getPerformerMgr()->clear();
+        Context::instance()->getPlaylistMgr()->clear();
+        Context::instance()->getSongMgr()->clear();
     }
     return rc;
 }

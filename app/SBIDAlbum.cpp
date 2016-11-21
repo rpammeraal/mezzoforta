@@ -3,6 +3,7 @@
 #include "SBIDAlbum.h"
 
 #include "Context.h"
+#include "Preloader.h"
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
@@ -187,6 +188,7 @@ SBIDAlbum::albumPerformerName() const
 {
     if(!_performerPtr)
     {
+            qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
     }
     return _performerPtr->performerName();
@@ -197,6 +199,7 @@ SBIDAlbum::albumPerformerName() const
 QStringList
 SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
 {
+    Q_UNUSED(song);
     QStringList SQL;
 
 //    //	Insert performance if not exists
@@ -277,6 +280,21 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
     return SQL;
 }
 
+Duration
+SBIDAlbum::duration() const
+{
+    Duration duration;
+    if(_performances.count()==0)
+    {
+        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
+    }
+    for(int i=0;i<_performances.count();i++)
+    {
+        duration+=_performances.at(i)->duration();
+    }
+    return duration;
+}
+
 //SBSqlQueryModel*
 //SBIDAlbum::matchAlbum() const
 //{
@@ -320,6 +338,7 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
 QStringList
 SBIDAlbum::mergeAlbum(const SBIDBase& to) const
 {
+    Q_UNUSED(to);
     QStringList SQL;
     /*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -498,6 +517,8 @@ SBIDAlbum::postInstantiate(SBIDAlbumPtr &ptr)
 QStringList
 SBIDAlbum::mergeSongInAlbum(int newPosition, const SBIDBase& song) const
 {
+    Q_UNUSED(newPosition);
+    Q_UNUSED(song);
     QStringList SQL;
 
 //    //	Move any performances from merged song to alt table
@@ -887,6 +908,7 @@ SBIDAlbum::repositionSongOnAlbum(int fromPosition, int toPosition)
 bool
 SBIDAlbum::saveSongToAlbum(const SBIDSong &song) const
 {
+    Q_UNUSED(song);
 //    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 //    QStringList SQL;
 
@@ -993,6 +1015,7 @@ SBIDAlbum::setAlbumPerformerID(int albumPerformerID)
 void
 SBIDAlbum::setAlbumPerformerName(const QString &albumPerformerName)
 {
+    Q_UNUSED(albumPerformerName);
 //    _albumPerformerName=albumPerformerName;
 //    setChangedFlag();
 }
@@ -1014,10 +1037,14 @@ SBIDAlbum::setYear(int year)
 bool
 SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList &extraSQL,bool commitFlag)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    Q_UNUSED(orgAlbum);
+    Q_UNUSED(newAlbum);
+    Q_UNUSED(extraSQL);
+    Q_UNUSED(commitFlag);
+//    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 
-    QStringList allQueries;
-    QString q;
+//    QStringList allQueries;
+//    QString q;
     bool resultFlag=1;
 
     /*
@@ -1084,6 +1111,7 @@ SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbu
 QStringList
 SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
 {
+    Q_UNUSED(song);
     QStringList SQL;
 
 //    SQL.append
@@ -1157,6 +1185,7 @@ SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
 QStringList
 SBIDAlbum::updateSongOnAlbum(const SBIDSong &song)
 {
+    Q_UNUSED(song);
     QStringList SQL;
     /*
 
@@ -1246,6 +1275,7 @@ SBIDAlbum::performerPtr() const
 {
     if(!_performerPtr)
     {
+            qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
     }
     return _performerPtr;
@@ -1280,6 +1310,7 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadPerformances();
     }
+            qDebug() << SB_DEBUG_INFO;
     _setPerformerPtr();
 }
 
@@ -1293,8 +1324,6 @@ SBIDAlbum::albumsByPerformer(int performerID)
             "r.record_id, "
             "r.title, "
             "r.artist_id, "
-            "a.name,"
-            "r.media, "
             "r.year, "
             "r.genre, "
             "r.notes "
@@ -1333,7 +1362,12 @@ SBIDAlbumPtr
 SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    return amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_default));
+    SBIDAlbumPtr albumPtr;
+    if(albumID>=0)
+    {
+        albumPtr=amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_default));
+    }
+    return albumPtr;
 }
 
 ///	Protected methods
@@ -1382,7 +1416,8 @@ SBIDAlbum::createInDB()
 
     //	Find performer 'VARIOUS ARTISTS', create if not exists
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDPerformerPtr peptr=SBIDPerformer::retrievePerformer(1);
+            qDebug() << SB_DEBUG_INFO;
+    SBIDPerformerPtr peptr=SBIDPerformer::retrievePerformer(1,1);
     if(!peptr)
     {
         peptr=pemgr->createInDB();
@@ -1457,7 +1492,7 @@ SBIDAlbum::find(const QString& tobeFound,int excludeItemID,QString secondaryPara
 }
 
 SBIDAlbumPtr
-SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+SBIDAlbum::instantiate(const QSqlRecord &r)
 {
     SBIDAlbum album;
     album._sb_album_id          =r.value(0).toInt();
@@ -1467,10 +1502,7 @@ SBIDAlbum::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     album._genre                =r.value(4).toString();
     album._notes                =r.value(5).toString();
 
-    if(!noDependentsFlag)
-    {
-        album.refreshDependents(0,1);
-    }
+    qDebug() << SB_DEBUG_INFO;
     return std::make_shared<SBIDAlbum>(album);
 }
 
@@ -1550,17 +1582,12 @@ SBIDAlbum::_init()
 void
 SBIDAlbum::_loadPerformances()
 {
-    SBSqlQueryModel* qm=SBIDPerformance::performancesByAlbum(albumID());
-    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
-
-    //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default);
-
-    delete qm;
+    _performances=Preloader::performances(SBIDPerformance::performancesByAlbum_Preloader(this->albumID()),1);
 }
 
 void
 SBIDAlbum::_setPerformerPtr()
 {
+    qDebug() << SB_DEBUG_INFO;
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_album_performer_id,1);
 }

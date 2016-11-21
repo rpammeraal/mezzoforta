@@ -59,6 +59,8 @@ class QTableView;
 #define SB_OSX_KEY_SOUND_LOWER  1
 #define SB_OSX_KEY_SOUND_HIGHER 0
 
+static int ID=0;
+
 class Common
 {
 public:
@@ -86,6 +88,7 @@ public:
 
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
+    static int nextID() { return ++ID; }
     static int parseIntFieldDB(const QSqlRecord* sr, int index);
     static QString parseTextFieldDB(const QSqlRecord* sr, int index);
     static quint64 random(quint64 max);

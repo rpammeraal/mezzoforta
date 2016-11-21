@@ -577,9 +577,14 @@ SBIDSong::songPerformerName() const
 bool
 SBIDSong::updateExistingSong(const SBIDBase &oldSongID, SBIDSong &newSongID, const QStringList& extraSQL,bool commitFlag)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QStringList allQueries;
-    QString q;
+    Q_UNUSED(oldSongID);
+    Q_UNUSED(newSongID);
+    Q_UNUSED(extraSQL);
+    Q_UNUSED(commitFlag);
+
+    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    //QStringList allQueries;
+    //QString q;
     bool resultFlag=1;
 
     /*
@@ -1103,6 +1108,8 @@ SBIDSong::key() const
 void
 SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
+    Q_UNUSED(showProgressDialogFlag);
+
     if(forcedFlag==1 || _performances.count()>=0)
     {
         _loadPerformances();
@@ -1172,7 +1179,12 @@ SBIDSongPtr
 SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
 {
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-    return smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_default));
+    SBIDSongPtr songPtr;
+    if(songID>=0)
+    {
+        songPtr=smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_default));
+    }
+    return songPtr;
 }
 
 ///	Protected methods
@@ -1318,7 +1330,7 @@ SBIDSong::find(const QString &tobeFound, int excludeItemID, QString secondaryPar
 }
 
 SBIDSongPtr
-SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+SBIDSong::instantiate(const QSqlRecord &r)
 {
     SBIDSong song;
     song._sb_song_id           =r.value(0).toInt();
@@ -1327,11 +1339,6 @@ SBIDSong::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     song._sb_song_performer_id =r.value(3).toInt();
     song._year                 =r.value(4).toInt();
     song._lyrics               =r.value(5).toString();
-
-    if(!noDependentsFlag)
-    {
-        song.refreshDependents();
-    }
 
     return std::make_shared<SBIDSong>(song);
 }

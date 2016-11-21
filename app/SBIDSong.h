@@ -85,7 +85,7 @@ protected:
     static SBIDSongPtr createInDB();
     static QString createKey(int songID);
     static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
-    static SBIDSongPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDSongPtr& to);
     static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);

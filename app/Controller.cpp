@@ -325,6 +325,13 @@ Controller::setupUI()
     }
 
     qDebug() << SB_DEBUG_INFO << "playground";
+//    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
+//    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
+//    u2ptr1->refreshDependents();
+//    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
+//    SBIDPerformerPtr u2ptr2=SBIDPerformer::retrievePerformer(2078);
+//    qDebug() << SB_DEBUG_INFO << u2ptr2->genericDescription();
+
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }

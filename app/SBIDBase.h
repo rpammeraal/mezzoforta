@@ -62,6 +62,7 @@ public:
 
     //	Methods specific to SBIDBase
     QString errorMessage() const { return _errorMsg; }
+    QString ID() const { return QString("[ID=%1]").arg(_id); }
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
@@ -113,6 +114,7 @@ protected:
 private:
     bool        _changedFlag;
     bool        _newFlag;
+    int         _id;
     sb_type     _sb_item_type;
     QString     _sb_mbid;
     int         _sb_model_position;

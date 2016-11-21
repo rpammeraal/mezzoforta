@@ -53,29 +53,24 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
-    qDebug() << SB_DEBUG_INFO;
     //	Until we have a dedicated screen for SBIDBase::sb_type_performance,
     //	we need to convert this to a SBIDBase::sb_type_song
     SBIDPtr itemPtr;
     if(ptr->itemType()==SBIDBase::sb_type_performance)
     {
-    qDebug() << SB_DEBUG_INFO;
         SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
         itemPtr=performancePtr->songPtr();
     }
     else
     {
-    qDebug() << SB_DEBUG_INFO;
         itemPtr=ptr;
     }
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ScreenItem(itemPtr));
 }
 
 void
 Navigator::openScreen(const ScreenItem &si)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(!_threadPrioritySetFlag)
     {
         QThread::currentThread()->setPriority(QThread::LowestPriority);
@@ -402,14 +397,12 @@ Navigator::resetAllFiltersAndSelections()
 void
 Navigator::showCurrentPlaylist()
 {
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ScreenItem(ScreenItem::screen_type_current_playlist));
 }
 
 void
 Navigator::showSonglist()
 {
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ScreenItem(ScreenItem::screen_type_allsongs));
 }
 
@@ -449,7 +442,6 @@ Navigator::applySonglistFilter()
         return;
     }
 
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ScreenItem(filter));
 
     mw->ui.searchEdit->setFocus();
@@ -473,7 +465,6 @@ Navigator::editItem()
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si=st->currentScreen();
     si.setEditFlag(1);
-    qDebug() << SB_DEBUG_INFO;
     openScreen(si);
 }
 
@@ -483,8 +474,6 @@ Navigator::openItemFromCompleter(const QModelIndex& i)
     SBIDPtr ptr=SBIDBase::createPtr(
              static_cast<SBIDBase::sb_type>(i.sibling(i.row(), i.column()+2).data().toInt()),
              i.sibling(i.row(), i.column()+1).data().toInt());
-
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ptr);
 }
 
@@ -506,7 +495,6 @@ Navigator::openChooserItem(const QModelIndex &i)
         screenItem=ScreenItem(screenType);
     }
 
-    qDebug() << SB_DEBUG_INFO;
     openScreen(screenItem);
 }
 
@@ -514,7 +502,6 @@ void
 Navigator::openPerformer(const QString &itemID)
 {
     SBIDPtr ptr=SBIDBase::createPtr(SBIDBase::sb_type_performer,itemID.toInt());
-    qDebug() << SB_DEBUG_INFO;
     openScreen(ptr);
 }
 

@@ -220,6 +220,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                                 .arg(toBeAssignedToPtr->type()) //	5
                                 .arg(playlistPtr->type())       //	6
                             ;
+                            qDebug() << SB_DEBUG_INFO;
                             this->playlistChanged(playlistPtr->playlistID());
                         }
                         else
@@ -318,7 +319,7 @@ Chooser::newPlaylist()
 void
 Chooser::playlistChanged(int playlistID)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << playlistID;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
 
     for(int y=0;_cm && y<_cm->rowCount();y++)

@@ -382,7 +382,6 @@ PlayManager::_loadRadio()
             }
         }
 
-        qDebug() << SB_DEBUG_INFO;
         SBIDSongPtr songPtr=SBIDSong::retrieveSong(qm->record(idx).value(0).toInt());
         SBIDPerformancePtr performancePtr=songPtr->performance(qm->record(idx).value(4).toInt(),qm->record(idx).value(6).toInt());
 

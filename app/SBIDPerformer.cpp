@@ -4,6 +4,7 @@
 #include "SBIDPerformer.h"
 
 #include "Context.h"
+#include "Preloader.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDPerformance.h"
 #include "SBMessageBox.h"
@@ -15,12 +16,12 @@
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
+    _albums            =c._albums;
     _notes             =c._notes;
+    _performances      =c._performances;
     _performerName     =c._performerName;
     _sb_performer_id   =c._sb_performer_id;
     _relatedPerformerID=c._relatedPerformerID;
-    _performances      =c._performances;
-    _albums            =c._albums;
 
     _num_albums        =c._num_albums;
     _num_songs         =c._num_songs;
@@ -46,7 +47,7 @@ SBIDPerformer::commonPerformerName() const
 QString
 SBIDPerformer::genericDescription() const
 {
-    return "Performer - "+this->text();
+    return "Performer - "+this->text() + QString("[num performances: %1]").arg(_performances.count());
 }
 
 QString
@@ -121,6 +122,7 @@ SBIDPerformer::albums() const
 void
 SBIDPerformer::addRelatedPerformer(int performerID)
 {
+    Q_UNUSED(performerID);
 //    if(!_relatedPerformerID.contains(performerID))
 //    {
 //        _relatedPerformerID.append(performerID);
@@ -131,6 +133,7 @@ SBIDPerformer::addRelatedPerformer(int performerID)
 void
 SBIDPerformer::deleteRelatedPerformer(int performerID)
 {
+    Q_UNUSED(performerID);
 //    if(_relatedPerformerID.contains(performerID))
 //    {
 //        _relatedPerformerID.remove(_relatedPerformerID.indexOf(performerID));
@@ -190,7 +193,6 @@ SBIDPerformer::relatedPerformers()
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerID.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO;
         ptr=retrievePerformer(_relatedPerformerID.at(i),1);
         if(ptr)
         {
@@ -370,9 +372,13 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
-    qDebug() << SB_DEBUG_INFO << performerID << noDependentsFlag;
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    return pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default));
+    SBIDPerformerPtr performerPtr;
+    if(performerID>=0)
+    {
+        performerPtr=pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default));
+    }
+    return performerPtr;
 }
 
 ///	Protected methods
@@ -527,7 +533,7 @@ SBIDPerformer::find(const QString& tobeFound,int excludeItemID,QString secondary
 }
 
 SBIDPerformerPtr
-SBIDPerformer::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+SBIDPerformer::instantiate(const QSqlRecord &r)
 {
     SBIDPerformer performer;
 
@@ -539,17 +545,13 @@ SBIDPerformer::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performer._num_albums     =r.value(5).toInt();
     performer._num_songs      =r.value(6).toInt();
 
-    if(!noDependentsFlag)
-    {
-        performer.refreshDependents();
-    }
-
     return std::make_shared<SBIDPerformer>(performer);
 }
 
 void
 SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
 {
+    Q_UNUSED(to);
     //	Transfer related performers from `from' to `to' :)
 //    for(int i=0;i<_relatedPerformerID.count();i++)
 //    {
@@ -970,13 +972,7 @@ SBIDPerformer::_loadAlbums()
 void
 SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
 {
-    SBSqlQueryModel* qm=SBIDPerformance::performancesByPerformer(this->performerID());
-    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
-
-    //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default,showProgressDialogFlag==1?"Retrieving Songs":QString());
-
-    delete qm;
+    _performances=Preloader::performances(SBIDPerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
 }
 
 QVector<int>

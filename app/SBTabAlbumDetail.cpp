@@ -268,25 +268,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Populate record detail tab
     mw->ui.labelAlbumDetailAlbumTitle->setText(albumPtr->albumTitle());
-    QString genre=albumPtr->genre();
-    genre.replace("|",",");
-    QString details;
-    if(albumPtr->year()>0)
-    {
-        details=QString("Released %1").arg(albumPtr->year());
-    }
-    if(details.length()>0 && genre.length()>0)
-    {
-        //	8226 is el buleto
-        details=details+" "+QChar(8226)+" ";
-    }
-
-    if(genre.length()>0)
-    {
-        details+=genre.replace('|',", ");
-    }
-
-    mw->ui.labelAlbumDetailAlbumDetail->setText(details);
     mw->ui.labelAlbumDetailAlbumNotes->setText(albumPtr->notes());
 
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
@@ -308,6 +289,50 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
     populateTableView(tv,tm,0);
+
+    //	Populate details
+    QString genre=albumPtr->genre();
+    genre.replace("|",",");
+    QString details;
+
+    //	Details 1: release year
+    if(albumPtr->year()>0)
+    {
+        details=QString("Released: %1").arg(albumPtr->year());
+    }
+
+    //	Details 2: duration
+    if(details.length()>0)
+    {
+        //	8226 is el buleto
+        details=details+" "+QChar(8226)+" ";
+    }
+    details+=QString("Duration: %1").arg(albumPtr->duration().toString(Duration::sb_playlist_format));
+
+    //	Details 3: number of songs
+    if(details.length()>0)
+    {
+        //	8226 is el buleto
+        details=details+" "+QChar(8226)+" ";
+    }
+    details+=QString("%1 song%2").arg(tm->rowCount()).arg(tm->rowCount()==1?"":"s");
+
+    //	Details 4: genre
+    if(details.length()>0 && genre.length()>0)
+    {
+        //	8226 is el buleto
+        details=details+" "+QChar(8226)+" ";
+    }
+
+    if(genre.length()>0)
+    {
+        details+=genre.replace('|',", ");
+    }
+
+
+
+    //	Details: done
+    mw->ui.labelAlbumDetailAlbumDetail->setText(details);
 
     currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
     return currentScreenItem;

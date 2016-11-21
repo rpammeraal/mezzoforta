@@ -39,6 +39,7 @@ public:
     inline QString albumTitle() const { return _albumTitle; }
     QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
+    Duration duration() const;
     inline QString genre() const { return _genre; }
     //SBSqlQueryModel* matchAlbum() const;
     QStringList mergeAlbum(const SBIDBase& to) const;	//	CWIP: amgr
@@ -84,7 +85,7 @@ protected:
     //	Methods used by SBIDManager
     static SBIDAlbumPtr createInDB();
     static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
-    static SBIDAlbumPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDAlbumPtr& to);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);

@@ -216,6 +216,7 @@ SBIDBase::_init()
 
     //	Private
     _changedFlag=0;
+    _id=Common::nextID();
     _newFlag=0;
     _sb_item_type=sb_type_invalid;
     _sb_mbid=e;

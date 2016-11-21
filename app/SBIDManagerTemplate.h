@@ -60,11 +60,12 @@ public:
     void rollbackChanges1();
 
     //	Misc
+    void clear();
     void debugShow(const QString title="");
 
 protected:
     friend class Preloader;
-    void addItem(std::shared_ptr<T> item);
+    void addItem(const std::shared_ptr<T>& item);
 
 private:
     QList<QString>                   _changes;	//	Contains keys of objects changed
@@ -127,16 +128,22 @@ SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
     if(contains(key))
     {
         ptr=_leMap[key];
+        qDebug() << SB_DEBUG_INFO << "exists" << ptr->key() << ptr->ID() << ptr->genericDescription();
     }
     if(!ptr || openFlag==open_flag_refresh)
     {
+        qDebug() << SB_DEBUG_INFO << "does NOT exists";
         SBSqlQueryModel* qm=T::retrieveSQL(key);
         QSqlRecord r=qm->record(0);
 
         if(!r.isEmpty())
         {
-            ptr=T::instantiate(r,openFlag==OpenFlags::open_flag_parentonly);
+            ptr=T::instantiate(r);
             addItem(ptr);
+            if(openFlag!=OpenFlags::open_flag_parentonly)
+            {
+                ptr->refreshDependents();
+            }
         }
     }
 
@@ -242,7 +249,7 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
     for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newT=T::instantiate(r,openFlag==OpenFlags::open_flag_parentonly);
+        std::shared_ptr<T> newT=T::instantiate(r);
         const QString key=newT->key();
         std::shared_ptr<T> oldT;
 
@@ -261,6 +268,10 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
         else
         {
             addItem(newT);
+            if(openFlag!=OpenFlags::open_flag_parentonly)
+            {
+                newT->refreshDependents();
+            }
         }
         list.append(newT);
 
@@ -298,14 +309,12 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
     QList<std::shared_ptr<T>> list;
 
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
     bool successFlag=0;
-    qDebug() << SB_DEBUG_INFO;
     successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag);
 
     if(successFlag)
@@ -331,7 +340,6 @@ SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
         SQL.append(ptr->updateSQL());
     }
 
-    qDebug() << SB_DEBUG_INFO;
     bool successFlag=dal->executeBatch(SQL);
     if(successFlag)
     {
@@ -375,7 +383,6 @@ SBIDManagerTemplate<T,parentT>::moveDependent(const std::shared_ptr<T> ptr, int 
     {
         if(dal)
         {
-            qDebug() << SB_DEBUG_INFO;
             successFlag=commit(ptr,dal,showProgressDialogFlag);
         }
         else
@@ -412,7 +419,6 @@ SBIDManagerTemplate<T,parentT>::removeDependent(const std::shared_ptr<T> ptr, in
     {
         if(dal)
         {
-            qDebug() << SB_DEBUG_INFO;
             successFlag=commit(ptr,dal,showProgressDialogFlag);
         }
         else
@@ -430,6 +436,12 @@ SBIDManagerTemplate<T,parentT>::rollbackChanges1()
 }
 
 ///	Misc
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::clear()
+{
+    _init();
+}
+
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 {
@@ -449,15 +461,15 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 
 ///	Protected methods
 template <class T, class parentT> void
-SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T> ptr)
+SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
 {
-    if(ptr && !contains(ptr->key()))
+    if(ptr)
     {
-        _leMap[ptr->key()]=ptr;
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_ERROR << "NULL pointer parameter";
+        if(!contains(ptr->key()))
+        {
+            qDebug() << SB_DEBUG_INFO << ptr->key() << ptr->ID() << ptr->genericDescription();
+            _leMap[ptr->key()]=ptr;
+        }
     }
 }
 
@@ -466,6 +478,7 @@ template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::_init()
 {
     _leMap.clear();
+    _changes.clear();
 }
 
 template <class T, class parentT> void

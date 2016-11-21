@@ -198,8 +198,8 @@ SBDialogSelectItem::selectSongByPerformer(const SBIDSongPtr& songPtr, const QStr
     d->ui->setupUi(d);
 
     //	Populate choices
-    int lastSeenRank=0;
-    int currentRank=0;
+    //int lastSeenRank=0;
+    //int currentRank=0;
     QString title=QString("Who is the original performer");
     d->setTitle(title+"?");
     title="<FONT SIZE+=1><B>"+title+" for </B></FONT><B><I><FONT SIZE=+1>"+songPtr->songTitle()+"</FONT></I></B>";

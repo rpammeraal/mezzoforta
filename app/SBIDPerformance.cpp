@@ -320,58 +320,86 @@ SBIDPerformance::onlinePerformances(int limit)
     return new SBSqlQueryModel(q);
 }
 
-SBSqlQueryModel*
-SBIDPerformance::performancesByAlbum(int albumID)
+QString
+SBIDPerformance::performancesByAlbum_Preloader(int albumID)
 {
-    QString q=QString
+    return QString
     (
         "SELECT DISTINCT "
-            "s.song_id, "
-            "rp.record_id, "
-            "rp.record_position, "
+            "s.song_id, "     //	0
+            "s.title, "
+            "s.notes, "
             "p.artist_id, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
-            "rp.duration, "
             "p.year, "
+            "p.notes, "
+
+            "r.record_id, "   //	6
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+            "r.genre, "
+            "r.notes, "
+
+            "a.artist_id, "   //	12
+            "a.name, "
+            "a.www, "
+            "a.notes, "
+            "a.mbid, "
+
+            "rp.record_position, "  // 17
+            "rp.duration, "
             "rp.notes, "
             "op.path "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id "
+                    "s.song_id=p.song_id  "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
                     "p.song_id=rp.song_id AND "
                     "p.artist_id=rp.artist_id  "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id AND "
+                    "r.record_id=%1 "
                 "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
                     "rp.op_song_id=op.song_id AND "
                     "rp.op_artist_id=op.artist_id AND "
                     "rp.op_record_id=op.record_id AND "
                     "rp.op_record_position=op.record_position  "
-        "WHERE "
-            "rp.record_id=%1 "
-        "ORDER BY "
-            "rp.record_position "
     )
         .arg(albumID)
     ;
-
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
 }
 
-SBSqlQueryModel*
-SBIDPerformance::performancesByPerformer(int performerID)
+QString
+SBIDPerformance::performancesByPerformer_Preloader(int performerID)
 {
-    QString q=QString
+    return QString
     (
         "SELECT DISTINCT "
-            "s.song_id, "
-            "rp.record_id, "
-            "rp.record_position, "
+            "s.song_id, "     //	0
+            "s.title, "
+            "s.notes, "
             "p.artist_id, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
-            "rp.duration, "
             "p.year, "
+            "p.notes, "
+
+            "r.record_id, "   //	6
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+            "r.genre, "
+            "r.notes, "
+
+            "a.artist_id, "   //	12
+            "a.name, "
+            "a.www, "
+            "a.notes, "
+            "a.mbid, "
+
+            "rp.record_position, "  // 17
+            "rp.duration, "
             "rp.notes, "
             "op.path "
         "FROM "
@@ -379,9 +407,13 @@ SBIDPerformance::performancesByPerformer(int performerID)
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
                     "s.song_id=p.song_id  AND "
                     "p.artist_id=%1 "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
                     "p.song_id=rp.song_id AND "
                     "p.artist_id=rp.artist_id  "
+                "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
                     "rp.op_song_id=op.song_id AND "
                     "rp.op_artist_id=op.artist_id AND "
@@ -390,9 +422,6 @@ SBIDPerformance::performancesByPerformer(int performerID)
     )
         .arg(performerID)
     ;
-
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
 }
 
 SBSqlQueryModel*
@@ -405,7 +434,6 @@ SBIDPerformance::performancesBySong(int songID)
             "rp.record_id, "
             "rp.record_position, "
             "p.artist_id, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
             "rp.duration, "
             "p.year, "
             "rp.notes, "
@@ -435,7 +463,12 @@ SBIDPerformancePtr
 SBIDPerformance::retrievePerformance(int albumID, int positionID,bool noDependentsFlag)
 {
     SBIDPerformanceMgr* pfMgr=Context::instance()->getPerformanceMgr();
-    return pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default));
+    SBIDPerformancePtr performancePtr;
+    if(albumID>=0 && positionID>=0)
+    {
+        performancePtr=pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default));
+    }
+    return performancePtr;
 }
 
 ///	Protected methods
@@ -445,7 +478,7 @@ SBIDPerformance::SBIDPerformance()
 }
 
 SBIDPerformancePtr
-SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
+SBIDPerformance::instantiate(const QSqlRecord &r)
 {
     SBIDPerformance performance;
     performance._sb_song_id           =Common::parseIntFieldDB(&r,0);
@@ -457,10 +490,7 @@ SBIDPerformance::instantiate(const QSqlRecord &r, bool noDependentsFlag)
     performance._notes                =Common::parseTextFieldDB(&r,6);
     performance._path                 =Common::parseTextFieldDB(&r,7);
 
-    if(!noDependentsFlag)
-    {
-        performance.refreshDependents();
-    }
+    qDebug() << SB_DEBUG_INFO << performance.key() << r.value(7).toString() << performance._path;
     return std::make_shared<SBIDPerformance>(performance);
 }
 

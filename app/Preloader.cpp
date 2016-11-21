@@ -5,6 +5,174 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 
+QVector<SBIDPerformancePtr>
+Preloader::performances(QString query, bool showProgressDialogFlag)
+{
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDPerformanceMgr* pfmgr=Context::instance()->getPerformanceMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QVector<SBIDPerformancePtr> items;
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    dal->customize(query);
+    QSqlQuery queryList(query,db);
+    int maxValue=queryList.size();
+    qDebug() << SB_DEBUG_INFO << query << maxValue;
+    if(maxValue<0)
+    {
+        //	Count items
+        while(queryList.next())
+        {
+            maxValue++;
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << maxValue;
+
+    //	Set up progress dialog
+    QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
+    if(maxValue<=10)
+    {
+        showProgressDialogFlag=0;
+    }
+
+    int currentValue=0;
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+        QCoreApplication::processEvents();
+    }
+
+    items.clear();
+    queryList.first();
+    queryList.previous();
+            qDebug() << SB_DEBUG_INFO << queryList.size();
+    while(queryList.next())
+    {
+        qDebug() << SB_DEBUG_INFO << queryList.size();
+        QString key;
+        QSqlRecord r;
+        QSqlField f;
+        SBIDAlbumPtr albumPtr;
+        SBIDPerformancePtr performancePtr;
+        SBIDPerformerPtr performerPtr;
+        SBIDPlaylistPtr playlistPtr;
+        SBIDSongPtr songPtr;
+
+        if(!queryList.isNull(0))
+        {
+            key=SBIDSong::createKey(queryList.value(20).toInt());
+            if(key.length()>0 && !smgr->contains(key))
+            {
+                //	Instantiate song
+                r.clear();
+                f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value( 0).toInt());    r.append(f);
+                f=QSqlField("f2",QVariant::String); f.setValue(queryList.value( 1).toString()); r.append(f);
+                f=QSqlField("f3",QVariant::String); f.setValue(queryList.value( 2).toString()); r.append(f);
+                f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value( 3).toInt());    r.append(f);
+                f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value( 4).toInt());    r.append(f);
+                f=QSqlField("f6",QVariant::String); f.setValue(queryList.value( 5).toString()); r.append(f);
+
+                songPtr=SBIDSong::instantiate(r);
+                smgr->addItem(songPtr);
+                qDebug() << SB_DEBUG_INFO << songPtr->key() << songPtr->genericDescription();
+            }
+        }
+
+        //	Process album
+        if(!queryList.isNull(6))
+        {
+            key=SBIDAlbum::createKey(queryList.value(6).toInt());
+            if(key.length()>0 && !amgr->contains(key))
+            {
+                //	Instantiate album
+                r.clear();
+                f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value( 6).toInt());    r.append(f);
+                f=QSqlField("f2",QVariant::String); f.setValue(queryList.value( 7).toString()); r.append(f);
+                f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value( 8).toInt());    r.append(f);
+                f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value( 9).toInt());    r.append(f);
+                f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(10).toString()); r.append(f);
+                f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(11).toString()); r.append(f);
+                albumPtr=SBIDAlbum::instantiate(r);
+                amgr->addItem(albumPtr);
+                qDebug() << SB_DEBUG_INFO << albumPtr->key() << albumPtr->genericDescription();
+            }
+        }
+
+        //	Process performer
+        if(!queryList.isNull(12))
+        {
+            key=SBIDPerformer::createKey(queryList.value(12).toInt());
+            if(key.length()>0 && !pemgr->contains(key))
+            {
+                //	Instantiate performer
+                r.clear();
+                f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(12).toInt());    r.append(f);
+                f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(13).toString()); r.append(f);
+                f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(14).toString()); r.append(f);
+                f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(15).toString()); r.append(f);
+                f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(16).toString()); r.append(f);
+                performerPtr=SBIDPerformer::instantiate(r);
+                pemgr->addItem(performerPtr);
+                qDebug() << SB_DEBUG_INFO << performerPtr->key() << performerPtr->genericDescription();
+            }
+        }
+
+        //	Process performance
+        if(!queryList.isNull(6) && !queryList.isNull(17))
+        {
+            key=SBIDPerformance::createKey(queryList.value(6).toInt(),queryList.value(17).toInt());
+            qDebug() << SB_DEBUG_INFO << key;
+            if(key.length()>0 && !pfmgr->contains(key))
+            {
+                //	Instantiate performance
+                r.clear();
+                f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value( 0).toInt());    r.append(f);
+                f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value( 6).toInt());    r.append(f);
+                f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(17).toInt());    r.append(f);
+                f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(12).toInt());    r.append(f);
+                f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(18).toTime());   r.append(f);
+                f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value( 4).toInt());    r.append(f);
+                f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(19).toString()); r.append(f);
+                f=QSqlField("f8",QVariant::String); f.setValue(queryList.value(20).toString()); r.append(f);
+                performancePtr=SBIDPerformance::instantiate(r);
+                pfmgr->addItem(performancePtr);
+                qDebug() << SB_DEBUG_INFO << performancePtr->key() << performancePtr->genericDescription();
+            }
+            else
+            {
+                performancePtr=pfmgr->retrieve(key);
+            }
+        }
+
+        if(performancePtr)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            items.append(performancePtr);
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO;
+        }
+        if(showProgressDialogFlag && (currentValue%10)==0)
+        {
+            QCoreApplication::processEvents();
+            pd.setValue(currentValue);
+        }
+        currentValue++;
+    }
+    if(showProgressDialogFlag)
+    {
+        pd.setValue(maxValue);
+    }
+    qDebug() << SB_DEBUG_INFO << items.count() << currentValue;
+    return items;
+}
+
 QMap<int,SBIDPtr>
 Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
 {
@@ -214,7 +382,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f3",QVariant::String); f.setValue(queryList.value( 7).toString()); r.append(f);
                 f=QSqlField("f4",QVariant::String); f.setValue(queryList.value( 8).toString()); r.append(f);
                 f=QSqlField("f5",QVariant::String); f.setValue(queryList.value( 9).toString()); r.append(f);
-                performerPtr=SBIDPerformer::instantiate(r,1);
+                performerPtr=SBIDPerformer::instantiate(r);
                 pemgr->addItem(performerPtr);
                 qDebug() << SB_DEBUG_INFO << performerPtr->key() << performerPtr->genericDescription();
             }
@@ -234,7 +402,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(13).toInt());    r.append(f);
                 f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(14).toString()); r.append(f);
                 f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(15).toString()); r.append(f);
-                albumPtr=SBIDAlbum::instantiate(r,1);
+                albumPtr=SBIDAlbum::instantiate(r);
                 amgr->addItem(albumPtr);
                 qDebug() << SB_DEBUG_INFO << albumPtr->key() << albumPtr->genericDescription();
             }
@@ -252,7 +420,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(17).toString()); r.append(f);
                 f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(18).toString()); r.append(f);
                 f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(19).toInt());    r.append(f);
-                playlistPtr=SBIDPlaylist::instantiate(r,1);
+                playlistPtr=SBIDPlaylist::instantiate(r);
                 plmgr->addItem(playlistPtr);
                 qDebug() << SB_DEBUG_INFO << playlistPtr->key() << playlistPtr->genericDescription();
             }
@@ -262,7 +430,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         if(!queryList.isNull(2))
         {
             key=SBIDSong::createKey(queryList.value(20).toInt());
-            if(key.length()>0 && !plmgr->contains(key))
+            if(key.length()>0 && !smgr->contains(key))
             {
                 //	Instantiate song
                 r.clear();
@@ -273,7 +441,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(23).toInt());    r.append(f);
                 f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(24).toString()); r.append(f);
 
-                songPtr=SBIDSong::instantiate(r,1);
+                songPtr=SBIDSong::instantiate(r);
                 smgr->addItem(songPtr);
                 qDebug() << SB_DEBUG_INFO << songPtr->key() << songPtr->genericDescription();
             }
@@ -295,7 +463,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(26).toInt());    r.append(f);
                 f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(27).toString()); r.append(f);
                 f=QSqlField("f8",QVariant::String); f.setValue(queryList.value(28).toString()); r.append(f);
-                performancePtr=SBIDPerformance::instantiate(r,1);
+                performancePtr=SBIDPerformance::instantiate(r);
                 pfmgr->addItem(performancePtr);
                 qDebug() << SB_DEBUG_INFO << performancePtr->key() << performancePtr->genericDescription();
             }

@@ -68,7 +68,7 @@ protected:
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     bool addDependent(SBIDPtr tobeAddedPtr);
     static SBIDPlaylistPtr createInDB();
-    static SBIDPlaylistPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
     bool moveDependent(int fromPosition, int toPosition);
@@ -92,9 +92,9 @@ private:
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
 
-    QStringList _generateSQLdeleteItem(int playlistID, int playlistPosition) const;
-    QStringList _generateSQLinsertItem(int playlistID, const SBIDPtr itemPtr, int playlistPositionDB) const;
-    QStringList _generateSQLmoveItem(int playlistID, int fromPlaylistPositionDB, int toPlaylistPosition) const;
+    QStringList _generateSQLdeleteItem(int playlistPosition) const;
+    QStringList _generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const;
+    QStringList _generateSQLmoveItem(int fromPlaylistPositionDB, int toPlaylistPosition) const;
 
 };
 

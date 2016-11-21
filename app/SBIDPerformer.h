@@ -72,7 +72,7 @@ protected:
     static SBIDPerformerPtr createInDB();
     static QString createKey(int performerID,int unused=-1);
     static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
-    static SBIDPerformerPtr instantiate(const QSqlRecord& r,bool noDependentsFlag=0);
+    static SBIDPerformerPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDPerformerPtr& to);
     static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
