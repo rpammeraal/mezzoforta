@@ -54,8 +54,6 @@ public:
     QVector<int> performerIDList() const;
     SBTableModel* playlistList();
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
-    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void setSongTitle(const QString& songTitle);
     inline int songID() const { return _sb_song_id; }
     int songPerformerID() const;
     QString songPerformerName() const;
@@ -74,6 +72,7 @@ public:
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
     static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=0);
+    static QString iconResourceLocationStatic();
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -84,13 +83,14 @@ protected:
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB();
     static QString createKey(int songID);
-    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingAlbumPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDSongPtr& to);
     static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
+    static SBIDSongPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr);
 
 private:
     QString                      _lyrics;
@@ -111,6 +111,10 @@ private:
     void _loadPerformances();
     void _loadPlaylists();
     void _setPerformerPtr();
+
+    //	Internal setters
+    void _setSongTitle(const QString& songTitle);
+    void _setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
 };
 
 #endif // SBIDSONG_H

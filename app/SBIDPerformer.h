@@ -45,9 +45,6 @@ public:
     inline int performerID() const { return _sb_performer_id; }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
-    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
-    static bool selectSavePerformer(const QString& editedPerformerName,const SBIDPerformerPtr& existingPerformerPtr,SBIDPerformerPtr& selectedPerformerPtr,QLineEdit* field=NULL, bool saveNewPerformer=1);
     SBTableModel* songs() const;
 
     static void updateSoundexFields();
@@ -57,10 +54,12 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
+    static bool match(const QString& editedPerformerName,int skipID);
     virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
 
     //	Static methods
     static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0);
+    static SBIDPerformerPtr retrieveVariousArtists();
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -68,16 +67,16 @@ protected:
 
     SBIDPerformer();
 
-    //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPerformerPtr createInDB();
     static QString createKey(int performerID,int unused=-1);
-    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDPerformerPtr& to);
     static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
+    static SBIDPerformerPtr userMatch(const Common::sb_parameters& parameters, SBIDPerformerPtr existingPerformerPtr);
 
     //	Helper methods
     QString addRelatedPerformerSQL(int performerID) const;
@@ -100,6 +99,10 @@ private:
     void _loadAlbums();
     void _loadPerformances(bool showProgressDialogFlag=1);
     QVector<int> _loadRelatedPerformers() const;
+
+    //	Internal setters
+    void _setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void _setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)

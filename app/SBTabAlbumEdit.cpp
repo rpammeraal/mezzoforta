@@ -766,69 +766,69 @@ SBTabAlbumEdit::save() const
     //	A1.	[merge song with existing song by renaming original performer] Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
     //	A2.	Edit albums to correct performers.
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+//    const MainWindow* mw=Context::instance()->getMainWindow();
+//    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
 
-    //	A.	Initialization
-    QList<QString> performerList;               //	list of unique performers in songList
-    QMap<int,SBIDSong> songList;                //	<position:1,SBIDSong:song>
-    QMap<int,SBIDSong> orgSongList;             //	<position:1,SBIDSong:song>
-    QMap<int,bool> isRemovedMap;                //	<position:1,isRemoved>
-    QMap<int,bool> isRemovedMapOrg;             //	<position:1,isRemoved>
-    QMap<int,bool> isNewMap;                    //	<position:1,isNew>
-    QMap<int,bool> hasChangedMap;               //	<position:1,hasChanged>
-    QMap<int,bool> changedSongIsNewOriginalMap; //	<position:1,hasChanged>: if song is changed to a new original song
+//    //	A.	Initialization
+//    QList<QString> performerList;               //	list of unique performers in songList
+//    QMap<int,SBIDSong> songList;                //	<position:1,SBIDSong:song>
+//    QMap<int,SBIDSong> orgSongList;             //	<position:1,SBIDSong:song>
+//    QMap<int,bool> isRemovedMap;                //	<position:1,isRemoved>
+//    QMap<int,bool> isRemovedMapOrg;             //	<position:1,isRemoved>
+//    QMap<int,bool> isNewMap;                    //	<position:1,isNew>
+//    QMap<int,bool> hasChangedMap;               //	<position:1,hasChanged>
+//    QMap<int,bool> changedSongIsNewOriginalMap; //	<position:1,hasChanged>: if song is changed to a new original song
 
-    QMap<int,int> mergedTo;                     //	<position:1,mergedToIndex:1>
-    QMap<int,int> fromTo;                       //	<oldPosition:1,newPosition:1>
-    QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
-    QMutableMapIterator<int,SBIDSong> songListIt(songList); //	Common used iterator
+//    QMap<int,int> mergedTo;                     //	<position:1,mergedToIndex:1>
+//    QMap<int,int> fromTo;                       //	<oldPosition:1,newPosition:1>
+//    QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
+//    QMutableMapIterator<int,SBIDSong> songListIt(songList); //	Common used iterator
 
-    SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
-    SBIDAlbumPtr selectedAlbumPtr=orgAlbumPtr;
-    //SBIDAlbum newAlbum=orgAlbum;
-    //SBIDAlbum removedAlbum;
+//    SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
+//    SBIDAlbumPtr selectedAlbumPtr=orgAlbumPtr;
+//    //SBIDAlbum newAlbum=orgAlbum;
+//    //SBIDAlbum removedAlbum;
 
-    QString editAlbumTitle=mw->ui.albumEditTitle->text();
-    QString editAlbumPerformerName=mw->ui.albumEditPerformer->text();
-    int editAlbumYear=mw->ui.albumEditYear->text().toInt();
+//    QString editAlbumTitle=mw->ui.albumEditTitle->text();
+//    QString editAlbumPerformerName=mw->ui.albumEditPerformer->text();
+//    int editAlbumYear=mw->ui.albumEditYear->text().toInt();
 
-    //	B.	Validate album
-    QList<QList<SBIDAlbumPtr>> matches;
-    int count=amgr->find(orgAlbumPtr,editAlbumTitle,matches);//,orgAlbumPtr->performerName());
-    if(
-        (
-            orgAlbumPtr->albumTitle()!=editAlbumTitle ||
-            orgAlbumPtr->albumPerformerName()!=editAlbumPerformerName ||
-            orgAlbumPtr->year()!=editAlbumYear
-        ) &&
-        count>0)
-   {
-        //	Album has changed and there are multiple matches
+//    //	B.	Validate album
+//    QList<QList<SBIDAlbumPtr>> matches;
+//    int count=0;//amgr->find(orgAlbumPtr,editAlbumTitle,matches);//,orgAlbumPtr->performerName());
+//    if(
+//        (
+//            orgAlbumPtr->albumTitle()!=editAlbumTitle ||
+//            orgAlbumPtr->albumPerformerName()!=editAlbumPerformerName ||
+//            orgAlbumPtr->year()!=editAlbumYear
+//        ) &&
+//        count>0)
+//   {
+//        //	Album has changed and there are multiple matches
 
-        if(matches[0].count()==1)
-        {
-            selectedAlbumPtr=matches[0][1];
-        }
-        else if(matches[1].count()>=2)
-        {
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(orgAlbumPtr,matches);
-            pu->exec();
+//        if(matches[0].count()==1)
+//        {
+//            selectedAlbumPtr=matches[0][1];
+//        }
+//        else if(matches[1].count()>=2)
+//        {
+//            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(orgAlbumPtr,matches);
+//            pu->exec();
 
-            if(pu->hasSelectedItem()==0)
-            {
-                return;
-            }
-            else
-            {
-                SBIDPtr selected=pu->getSelected();
-                if(selected)
-                {
-                    selectedAlbumPtr=std::dynamic_pointer_cast<SBIDAlbum>(selected);
-                }
-            }
-        }
-    }
+//            if(pu->hasSelectedItem()==0)
+//            {
+//                return;
+//            }
+//            else
+//            {
+//                SBIDPtr selected=pu->getSelected();
+//                if(selected)
+//                {
+//                    selectedAlbumPtr=std::dynamic_pointer_cast<SBIDAlbum>(selected);
+//                }
+//            }
+//        }
+//    }
 
     //	From this point on, work with selectedAlbumPtr
 

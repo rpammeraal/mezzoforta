@@ -696,13 +696,19 @@ X	playlists that song belongs to can be edited
 -	need to see duration and number of songs on album page
 
 <bugs>
+*	Go to Exodus/Bob Marley record. Alt click logo start play. Plays different Bob Marley album.
+* 	search Me And Julio Down The Schoolyard, alt click song logo to play. Crash
+*	adding/removing from playlist: duration does not get updated
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
+*	remove SBID*::save() methods
 
 <near future>
+*	SBIDAlbum::retrieveUnknownAlbum(), SBIDPerformer::retrieveVariousArtists() should use ::find
 *	SBIDPlaylist::_getAllItemsByPlaylistRecursive(): should use _items.
+*   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
 *	Redesign/larger font 'now playing' in player section.
 *	performer search:
 	*	take care of article words in artist search.

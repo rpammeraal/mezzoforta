@@ -252,7 +252,7 @@ SBIDPerformance::createKey(int albumID, int albumPosition)
     return (albumID>=0||albumPosition>=0)?QString("%1:%2:%3")
         .arg(SBIDBase::sb_type_performance)
         .arg(albumID)
-        .arg(albumPosition):QString()	//	Return empty string if one or both parameters<0
+        .arg(albumPosition):QString("x:x")	//	Return invalid key if one or both parameters<0
     ;
 }
 

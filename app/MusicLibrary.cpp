@@ -41,8 +41,18 @@ MusicLibrary::rescanMusicLibrary()
 void
 MusicLibrary::_rescanMusicLibrary(const QString& schema)
 {
-    bool newPerformersSavedFlag=0;
-    qDebug() << SB_DEBUG_INFO << schema;
+    //	Important lists: all have `path' as key
+    QMap<QString,MLperformancePtr> pathToSong;
+    QMap<QString,MLentryPtr> foundPaths;
+    QVector<QString> newEntries;
+
+    QMap<QString,MLperformerPtr> performersFound; //	key:performerName
+    QMap<QString,MLalbumPtr> albumsFound;	//	key:album path	//	CWIP: shouldn't key be albumTitle, albumPerformerID
+    QMap<QString,MLsongPtr> songsFound;
+
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
 
     const QString schemaRoot=
         Context::instance()->getProperties()->musicLibraryDirectory()
@@ -55,8 +65,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Retrieve paths
     ///////////////////////////////////////////////////////////////////////////////////
-    QStringList entries;
-    QMap<QString,QString> lower2Upper;
+    //	QMap<QString,QString> lower2Upper;	use MLentry.path to get org path
     Controller* c=Context::instance()->getController();
     int numFiles=0;
     QDirIterator it(schemaRoot,
@@ -78,8 +87,10 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         {
             if(fi.size()>10*1024)
             {
-                entries.append(path.toLower());
-                lower2Upper[path.toLower()]=path;
+                path=path.mid(schemaRoot.length());
+                MLentry entry;
+                entry.path=path;
+                foundPaths[path.toLower()]=std::make_shared<MLentry>(entry);
                 numFiles++;
             }
             else
@@ -90,6 +101,15 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     }
     c->updateStatusBarText(QString("Found %1 files").arg(numFiles));
     QCoreApplication::processEvents();
+
+//    //	display entries
+//    QMapIterator<QString,MLentry> eIT(foundPaths);
+//    qDebug() << SB_DEBUG_INFO;
+//    while(eIT.hasNext())
+//    {
+//        eIT.next();
+//        qDebug() << SB_DEBUG_INFO << eIT.key();
+//    }
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Retrieve existing data
@@ -111,119 +131,290 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     pd.setLabelText("Retrieving existing songs...");
     QCoreApplication::processEvents();
 
-//    QHash<QString,SBIDSong> pathToSong;
-//    QHash<QString,bool> existingPath;
-//    for(int i=0;i<sqm->rowCount();i++)
-//    {
-//        SBIDSong song(sqm->data(sqm->index(i,0)).toInt());
-//        song.setSongPerformerID(sqm->data(sqm->index(i,1)).toInt());
-//        song.setAlbumID(sqm->data(sqm->index(i,2)).toInt());
-//        song.setAlbumPosition(sqm->data(sqm->index(i,3)).toInt());
-//        QString path=schemaRoot.toLower()+sqm->data(sqm->index(i,4)).toString().replace("\\","").toLower();
+    QMap<QString,bool> existingPath;
+    for(int i=0;i<sqm->rowCount();i++)
+    {
+        MLperformance performance;
+        performance.songID=sqm->data(sqm->index(i,0)).toInt();
+        performance.performerID=sqm->data(sqm->index(i,2)).toInt();
+        performance.albumID=sqm->data(sqm->index(i,4)).toInt();
+        performance.albumPosition=sqm->data(sqm->index(i,6)).toInt();
+        performance.path=sqm->data(sqm->index(i,7)).toString().replace("\\","");
+        QString path=performance.path.toLower();
 
 
-//        pathToSong[path]=song;
-//        existingPath[path]=0;
+        pathToSong[path]=std::make_shared<MLperformance>(performance);
+        existingPath[path]=0;
 
 //        if(path.contains("take on me"))
 //        {
 //            qDebug() << SB_DEBUG_INFO << path;
 //        }
 
-//        if((i%100)==0)
-//        {
-//            pd.setValue(i);
-//            QCoreApplication::processEvents();
-//        }
-//    }
+        if((i%100)==0)
+        {
+            pd.setValue(i);
+            QCoreApplication::processEvents();
+        }
+    }
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///	Creating data structures
-    ///////////////////////////////////////////////////////////////////////////////////
-
-    //	NEED TO RECREATE THIS AFTER IMPLEMENTATION OF SBIDMANAGERTEMPLATE
-
-//    QHash<SBIDPerformer,int> performerToTmpID;
-//    QHash<SBIDAlbumSimpleCompare,int> albumToTmpID;
-//    QList<SBIDSong> newEntries;
-//    QMap<QString,QString> errors;
-
-//    performerToTmpID.reserve(entries.count());
-//    albumToTmpID.reserve(entries.count());
-//    newEntries.reserve(entries.count());
-
-//    pd.setMaximum(sqm->rowCount());
-//    pd.setValue(0);
-//    pd.setLabelText("Processing new music");
-//    QCoreApplication::processEvents();
-
-//    QHashIterator<QString,bool> hi(existingPath);
-
-//    for(int i=0;i<entries.count();i++)
+//    QMapIterator<QString,MLperformancePtr> ptsIt(pathToSong);
+//    while(ptsIt.hasNext())
 //    {
-//        if(pathToSong.contains(entries.at(i)))
-//        {
-//            existingPath[entries.at(i)]=1;
-//        }
-//        else
-//        {
-//            qDebug() << SB_DEBUG_INFO << entries.at(i);
-
-//            //	Determine any attributes from each file.
-//            MetaData md(lower2Upper[entries.at(i)]);
-
-//            //	For each song, determine all tmp performers and albums
-//            SBIDSong song=md.parse();
-//            song.setPath(lower2Upper[entries.at(i)]);
-//            song.assignTmpItemID();
-//            qDebug() << SB_DEBUG_INFO << song << song.path();
-
-//            SBIDPerformer performer=song;
-//            performer.setTmpSongID(song.tmpItemID());
-//            if(performerToTmpID.contains(performer)==0)
-//            {
-//                performer.assignTmpItemID();
-//                performerToTmpID[performer]=performer.tmpItemID();
-//            }
-//            else
-//            {
-//                performer.setTmpItemID(performerToTmpID[performer]);
-//            }
-//            song.setTmpPerformerID(performer.tmpItemID());
-
-//            SBIDAlbumSimpleCompare album=song;
-//            ///	CWIP
-//            ///	NEED TO THINK ABOUT
-//            /// -	missing album performer name
-//            /// -	mixed album names in one directory
-//            album.setAlbumPerformerName(song.songPerformerName());
-
-//            album.setTmpSongID(song.tmpItemID());
-//            if(albumToTmpID.contains(album)==0)
-//            {
-//                album.assignTmpItemID();
-//                albumToTmpID[album]=album.tmpItemID();
-//            }
-//            else
-//            {
-//                album.setTmpItemID(albumToTmpID[album]);
-//            }
-//            song.setTmpAlbumID(album.tmpItemID());
-
-//            newEntries.append(song);
-//        }
-//        if((i%100)==0)
-//        {
-//            pd.setValue(i);
-//            QCoreApplication::processEvents();
-//            //qDebug() << i << entries.count() << performerToTmpID.count() << albumToTmpID.count();
-//        }
+//        ptsIt.next();
+//        qDebug() << SB_DEBUG_INFO << ptsIt.key();
 //    }
-//    SBIDBase::listTmpIDItems();
 
-//    ///////////////////////////////////////////////////////////////////////////////////
-//    ///	Validation
-//    ///////////////////////////////////////////////////////////////////////////////////
+    newEntries.reserve(foundPaths.count());
+
+    QMapIterator<QString,MLentryPtr> fpIT(foundPaths);
+    int i=0;
+    while(fpIT.hasNext())
+    {
+        fpIT.next();
+        const QString currentPath=fpIT.key();
+
+        if(pathToSong.contains(currentPath))
+        {
+            pathToSong[currentPath]->pathExists=1;
+        }
+        else
+        {
+            MLentryPtr entryPtr=fpIT.value();
+            qDebug() << SB_DEBUG_INFO << currentPath;
+
+            //	Determine any attributes from each file.
+            MetaData md(schemaRoot+entryPtr->path);
+
+            entryPtr->albumTitle=md.albumTitle();
+            entryPtr->albumPosition=md.albumPosition();
+            entryPtr->duration=md.duration();
+            entryPtr->genre=md.genre();
+            entryPtr->notes=md.notes();
+            entryPtr->songPerformerName=md.songPerformerName();
+            entryPtr->songTitle=md.songTitle();
+            entryPtr->year=md.year();
+
+            //	Update new performer data collection
+            if(!performersFound.contains(entryPtr->songPerformerName))
+            {
+                MLperformer performer;
+                performer.name=entryPtr->songPerformerName;
+                performer.paths.append(currentPath);
+                performersFound[entryPtr->songPerformerName]=std::make_shared<MLperformer>(performer);
+            }
+            else
+            {
+                MLperformerPtr performerPtr=performersFound[entryPtr->songPerformerName];
+                performerPtr->paths.append(currentPath);
+            }
+            newEntries.append(currentPath);
+        }
+        if((i%100)==0)
+        {
+            pd.setValue(i);
+            QCoreApplication::processEvents();
+            //qDebug() << i << foundPaths.count() << performerToTmpID.count() << albumToTmpID.count();
+        }
+    }
+
+//    //	newEntries
+//    for(int i=0;i<newEntries.count();i++)
+//    {
+//        QString path=newEntries.at(i);
+//        MLentryPtr entryPtr=foundPaths[path];
+//        qDebug() << SB_DEBUG_INFO << "found: " << path
+//                 << ":performer=" << entryPtr->songPerformerName
+//                 << ":songTitle=" << entryPtr->songTitle
+//                 << ":albumTitle=" << entryPtr->albumTitle
+//        ;
+//    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///	Iterating Validation
+    /// 	-	Validate performers first.
+    /// 	-	Based on this, validate albums.
+    /// 	-	Validate songs
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    //	A.	Validate performers
+    QMapIterator<QString,MLperformerPtr> npIT(performersFound);
+    while(npIT.hasNext())
+    {
+        npIT.next();
+        MLperformerPtr foundPerformerPtr=npIT.value();
+        Common::sb_parameters tobeMatched;
+        tobeMatched.performerName=foundPerformerPtr->name;
+        SBIDPerformerPtr selectedPerformerPtr=pemgr->userMatch(tobeMatched,SBIDPerformerPtr());
+        if(!selectedPerformerPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            return;
+        }
+        foundPerformerPtr->performerID=selectedPerformerPtr->performerID();
+
+        for(int i=0;i<foundPerformerPtr->paths.count();i++)
+        {
+            qDebug() << SB_DEBUG_INFO << foundPerformerPtr->name << foundPerformerPtr->performerID << foundPerformerPtr->paths[i];
+            //	Set performerID on new entries
+            foundPaths[foundPerformerPtr->paths[i]]->songPerformerID=selectedPerformerPtr->performerID();
+        }
+    }
+
+    //	B.	Validate albums
+
+    //	Collect all unique albumPaths
+    SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousArtists();
+    for(int i=0;i<newEntries.count();i++)
+    {
+        const QString currentPath=newEntries[i];
+        QFileInfo songFile=schemaRoot+'/'+currentPath;
+        MLentryPtr currentPtr=foundPaths[currentPath];
+        //	need to take currentPtr->albumTitle into account
+        currentPtr->dirName=currentPath.left(currentPath.length()-songFile.fileName().length()-1);
+
+        if(!albumsFound.contains(currentPtr->dirName))
+        {
+            MLalbum album;
+
+            album.path=currentPtr->dirName;
+            album.albumPerformerID=currentPtr->songPerformerID;	//	Assign songPerformerID initially
+            album.title=currentPtr->albumTitle;
+            album.paths.append(currentPath);
+
+            albumsFound[currentPtr->dirName]=std::make_shared<MLalbum>(album);
+        }
+        else
+        {
+            MLalbumPtr albumPtr=albumsFound[currentPtr->dirName];
+            albumPtr->paths.append(currentPath);
+            if(albumPtr->albumPerformerID!=currentPtr->songPerformerID)
+            {
+                albumPtr->albumPerformerID=variousPerformerPtr->performerID();	//	If existing does not match, overwrite with variousPerformers
+            }
+        }
+    }
+
+    //	Assign albumPerformerID to all foundPaths.
+    for(int i=0;i<newEntries.count();i++)
+    {
+        const QString currentPath=newEntries[i];
+        MLentryPtr currentPtr=foundPaths[currentPath];
+        currentPtr->albumPerformerID=albumsFound[currentPtr->dirName]->albumPerformerID;
+    }
+
+    //	Validate albums
+    QMapIterator<QString,MLalbumPtr> afIT(albumsFound);
+    qDebug() << SB_DEBUG_INFO;
+    while(afIT.hasNext())
+    {
+        afIT.next();
+        MLalbumPtr foundAlbumPtr=afIT.value();
+
+        Common::sb_parameters parameters;
+        parameters.albumTitle=foundAlbumPtr->title;
+        parameters.performerID=foundAlbumPtr->albumPerformerID;
+
+        SBIDAlbumPtr selectedAlbumPtr=amgr->userMatch(parameters,SBIDAlbumPtr());
+        if(!selectedAlbumPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            return;
+        }
+        qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->key() << selectedAlbumPtr->genericDescription();
+        foundAlbumPtr->albumID=selectedAlbumPtr->albumID();
+
+        for(int i=0;i<foundAlbumPtr->paths.count();i++)
+        {
+            //	Set album fields
+            MLentryPtr entryPtr=foundPaths[foundAlbumPtr->paths[i]];
+            entryPtr->albumID=selectedAlbumPtr->albumID();
+            entryPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
+        }
+    }
+
+    //	C.	Validate songs
+    for(int i=0;i<newEntries.count();i++)
+    {
+        const QString currentPath=newEntries[i];
+        MLentryPtr currentPtr=foundPaths[currentPath];
+
+        MLsong song;
+        song.performerID=currentPtr->songPerformerID;
+        song.songTitle=currentPtr->songTitle;
+        song.songPerformerName=currentPtr->songPerformerName;
+
+        QString key=song.key();
+
+        if(!songsFound.contains(key))
+        {
+            song.paths.append(currentPath);
+            songsFound[key]=std::make_shared<MLsong>(song);
+        }
+        else
+        {
+            MLsongPtr songPtr=songsFound[key];
+            songPtr->paths.append(currentPath);
+        }
+    }
+
+    QMapIterator<QString,MLsongPtr> sfIT(songsFound);
+    while(sfIT.hasNext())
+    {
+        sfIT.next();
+
+        MLsongPtr foundSongPtr=sfIT.value();
+
+        Common::sb_parameters parameters;
+        parameters.songTitle=foundSongPtr->songTitle;
+        parameters.performerID=foundSongPtr->performerID;
+        parameters.performerName=foundSongPtr->songPerformerName;
+
+        qDebug() << SB_DEBUG_INFO << sfIT.key() << foundSongPtr->songTitle << foundSongPtr->performerID;
+        SBIDSongPtr selectedSongPtr=smgr->userMatch(parameters,SBIDSongPtr());
+        if(!selectedSongPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            return;
+        }
+
+        foundSongPtr->songID=selectedSongPtr->songID();
+        foundSongPtr->performerID=selectedSongPtr->songPerformerID();
+
+        for(int i=0;i<foundSongPtr->paths.count();i++)
+        {
+            //	Set song fields
+            MLentryPtr entryPtr=foundPaths[foundSongPtr->paths[i]];
+            entryPtr->songID=selectedSongPtr->songID();
+            entryPtr->songPerformerID=selectedSongPtr->songPerformerID();
+        }
+    }
+
+    //	CWIP: need to merge new songs with existing songs on the same album based on matching on title *and* song position.
+    //	songs that cannot be merged, need to be *appended* at the end of the album and be assigned a new album position.
+
+    //	Sanity check
+    for(int i=0;i<newEntries.count();i++)
+    {
+        const QString currentPath=newEntries[i];
+        if(foundPaths.contains(currentPath))
+        {
+            MLentryPtr currentPtr=foundPaths[currentPath];
+            qDebug() << SB_DEBUG_INFO << currentPtr->path
+                     << currentPtr->songPerformerID
+                     << currentPtr->albumPerformerID
+                     << currentPtr->albumID
+                     << currentPtr->albumPosition
+                     << currentPtr->songID
+            ;
+        }
+        else
+        {
+            //	CWIP: error dialog box
+            qDebug() << SB_DEBUG_ERROR << "not found!" << currentPath;
+        }
+    }
+    return;
 
 //    qDebug() << SB_DEBUG_INFO << "L7";
 //    QMapIterator<QString,QString> shit(errors);
@@ -232,9 +423,9 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
 //        shit.next();
 //        qDebug() << SB_DEBUG_ERROR << shit.key() << ":" << shit.value();
 //    }
-//    qDebug() << SB_DEBUG_INFO << "total files found" << entries.count();
+//    qDebug() << SB_DEBUG_INFO << "total files found" << foundPaths.count();
 //    qDebug() << SB_DEBUG_INFO << "new files" << newEntries.count();
-//    /*
+
 //    QListIterator<SBIDSong> newEntriesIT(newEntries);
 //    while(newEntriesIT.hasNext())
 //    {
@@ -245,7 +436,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
 
 //    //	Deal with missing files
 //    int missingFiles=0;
-//    QHashIterator<QString,bool> pe_i(existingPath);
+//    QMapIterator<QString,bool> pe_i(existingPath);
 //    QMap<QString,int> missingFilesMap;	//	QMap provides sorting, the value is not used.
 
 //    while(pe_i.hasNext())
@@ -279,7 +470,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
 
 //    //	Lookup performers based on performer name, create if not exist.
 //    qDebug() << SB_DEBUG_INFO << performerToTmpID.count();
-//    QHashIterator<SBIDPerformer,int> performerToTmpIDIT(performerToTmpID);
+//    QMapIterator<SBIDPerformer,int> performerToTmpIDIT(performerToTmpID);
 //    performerToTmpIDIT.toFront();
 //    while(performerToTmpIDIT.hasNext())
 //    {
@@ -297,7 +488,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
 //    }
 
 //    //	Lookup albums
-//    QHashIterator<SBIDAlbumSimpleCompare,int> albumToTmpIDIT(albumToTmpID);
+//    QMapIterator<SBIDAlbumSimpleCompare,int> albumToTmpIDIT(albumToTmpID);
 //    albumToTmpIDIT.toFront();
 //    QMap<int,SBIDAlbum> savedAlbums;
 //    while(albumToTmpIDIT.hasNext())

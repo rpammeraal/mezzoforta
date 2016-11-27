@@ -86,6 +86,15 @@ public:
         sb_field_key
     };
 
+    struct sb_parameters
+    {
+        int performerID;
+
+        QString albumTitle;
+        QString performerName;
+        QString songTitle;
+    };
+
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return ++ID; }

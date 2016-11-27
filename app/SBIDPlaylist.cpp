@@ -675,7 +675,7 @@ SBIDPlaylist::createKey(int playlistID, int unused)
     Q_UNUSED(unused);
     return playlistID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_playlist)
-        .arg(playlistID):QString()	//	Return empty string if playlistID<0
+        .arg(playlistID):QString("x:x")	//	Return invalid key if playlistID<0
     ;
 }
 

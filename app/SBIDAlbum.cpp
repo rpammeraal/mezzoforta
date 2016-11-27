@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "Preloader.h"
+#include "SBDialogSelectItem.h"
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
@@ -1021,13 +1022,6 @@ SBIDAlbum::setAlbumPerformerName(const QString &albumPerformerName)
 }
 
 void
-SBIDAlbum::setAlbumTitle(const QString &albumTitle)
-{
-    _albumTitle=albumTitle;
-    setChangedFlag();
-}
-
-void
 SBIDAlbum::setYear(int year)
 {
     _year=year;
@@ -1354,7 +1348,7 @@ SBIDAlbum::createKey(int albumID,int unused)
     Q_UNUSED(unused);
     return albumID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_album)
-        .arg(albumID):QString()	//	Return empty string if albumID<0
+        .arg(albumID):QString("x:x")	//	Return invalid key if albumID<0
     ;
 }
 
@@ -1368,6 +1362,21 @@ SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
         albumPtr=amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_default));
     }
     return albumPtr;
+}
+
+SBIDAlbumPtr
+SBIDAlbum::retrieveUnknownAlbum()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDAlbumMgr* pemgr=Context::instance()->getAlbumMgr();
+    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(0,1);	//	CWIP: use ::find
+    if(!albumPtr)
+    {
+        albumPtr=pemgr->createInDB();
+        albumPtr->_setAlbumTitle("UNKNOWN ALBUM");
+        pemgr->commit(albumPtr,dal,0);
+    }
+    return  albumPtr;
 }
 
 ///	Protected methods
@@ -1414,16 +1423,8 @@ SBIDAlbum::createInDB()
     }
     album._albumTitle=QString("New Album%1").arg(maxNum);
 
-    //	Find performer 'VARIOUS ARTISTS', create if not exists
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-            qDebug() << SB_DEBUG_INFO;
-    SBIDPerformerPtr peptr=SBIDPerformer::retrievePerformer(1,1);
-    if(!peptr)
-    {
-        peptr=pemgr->createInDB();
-        peptr->setPerformerName("VARIOUS ARTISTS");
-        pemgr->commit(peptr,dal,0);
-    }
+    //	Find performer 'VARIOUS ARTISTS'
+    SBIDPerformerPtr peptr=SBIDPerformer::retrieveVariousArtists();
 
     //	Insert
     q=QString
@@ -1457,35 +1458,58 @@ SBIDAlbum::createInDB()
 }
 
 SBSqlQueryModel*
-SBIDAlbum::find(const QString& tobeFound,int excludeItemID,QString secondaryParameter)
+SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    qDebug() << SB_DEBUG_INFO << tobeFound.albumTitle;
+    qDebug() << SB_DEBUG_INFO << tobeFound.performerID;
+
+    int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
 
     //	MatchRank:
     //	0	-	exact match with specified artist (0 or 1 in data set).
-    //	1	-	exact match with any other artist (0 or more in data set).
+    //	2	-	exact match with any other artist (0 or more in data set).
     QString q=QString
     (
         "SELECT "
-            "CASE WHEN a.artist_id=%3 THEN 0 ELSE 1 END AS matchRank, "
+            "CASE WHEN a.artist_id=%2 THEN 0 ELSE 2 END AS matchRank, "
             "p.record_id, "
             "p.title, "
             "a.artist_id, "
-            "a.name "
+            "p.year, "
+            "p.genre, "
+            "p.notes "
         "FROM "
             "___SB_SCHEMA_NAME___record p "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
             "REPLACE(LOWER(p.title),' ','') = REPLACE(LOWER('%1'),' ','') AND "
-            "p.record_id!=%2 "
+            "p.record_id!=(%3) "
+        "UNION "
+        "SELECT "
+            "CASE WHEN a.artist_id=%2 THEN 1 ELSE 3 END AS matchRank, "
+            "p.record_id, "
+            "p.title, "
+            "a.artist_id, "
+            "p.year, "
+            "p.genre, "
+            "p.notes "
+        "FROM "
+            "___SB_SCHEMA_NAME___record p "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id, "
+            "article aa "
+        "WHERE "
+            "LOWER(p.title)!=LOWER(regexp_replace(p.title,E'^'||aa.word,'','i')) AND "
+            "LOWER(regexp_replace(p.title,E'^'||aa.word,'','i'))=LOWER('%4') AND "
+            "p.record_id!=(%3) "
         "ORDER BY "
             "1 "
     )
-        .arg(Common::escapeSingleQuotes(Common::removeAccents(tobeFound)))
-        .arg(secondaryParameter.toInt())
-        .arg(excludeItemID)
+        .arg(Common::escapeSingleQuotes(Common::removeAccents(tobeFound.albumTitle)))
+        .arg(tobeFound.performerID)
+        .arg(excludeID)
+        .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.albumTitle)))
     ;
 
     return new SBSqlQueryModel(q);
@@ -1567,6 +1591,61 @@ SBIDAlbum::updateSQL() const
 
     return SQL;
 }
+
+SBIDAlbumPtr
+SBIDAlbum::userMatch(const Common::sb_parameters &tobeMatched, SBIDAlbumPtr existingAlbumPtr)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDAlbumPtr selectedAlbumPtr;
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    bool resultCode=1;
+    QMap<int,QList<SBIDAlbumPtr>> matches;
+
+    int findCount=amgr->find(tobeMatched,existingAlbumPtr,matches);
+
+    if(findCount)
+    {
+        if(matches[0].count()==1)
+        {
+            //	Dataset indicates an exact match if the 2nd record identifies an exact match.
+            selectedAlbumPtr=matches[0][0];
+            resultCode=1;
+        }
+        else
+        {
+            //	Dataset has at least two records, of which the 2nd one is an soundex match,
+            //	display pop-up
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(tobeMatched,existingAlbumPtr,matches);
+            pu->exec();
+
+            //	Go back to screen if no item has been selected
+            if(pu->hasSelectedItem()==0)
+            {
+                qDebug() << SB_DEBUG_INFO << "none selected";
+                return selectedAlbumPtr;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO;
+                SBIDPtr selected=pu->getSelected();
+                if(selected)
+                {
+                    //	Existing performer is choosen
+                    selectedAlbumPtr=std::dynamic_pointer_cast<SBIDAlbum>(selected);
+                }
+                else
+                {
+                    //	New performer has been choosen -- create.
+                    selectedAlbumPtr=amgr->createInDB();
+                    selectedAlbumPtr->_setAlbumTitle(tobeMatched.performerName);
+                    amgr->commit(selectedAlbumPtr,dal,0);
+                }
+            }
+        }
+    }
+    return selectedAlbumPtr;
+}
+
 
 ///	Private methods
 void

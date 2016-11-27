@@ -19,7 +19,6 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     dal->customize(query);
     QSqlQuery queryList(query,db);
     int maxValue=queryList.size();
-    qDebug() << SB_DEBUG_INFO << query << maxValue;
     if(maxValue<0)
     {
         //	Count items
@@ -28,7 +27,6 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
             maxValue++;
         }
     }
-    qDebug() << SB_DEBUG_INFO << maxValue;
 
     //	Set up progress dialog
     QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
@@ -50,10 +48,8 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     items.clear();
     queryList.first();
     queryList.previous();
-            qDebug() << SB_DEBUG_INFO << queryList.size();
     while(queryList.next())
     {
-        qDebug() << SB_DEBUG_INFO << queryList.size();
         QString key;
         QSqlRecord r;
         QSqlField f;
@@ -126,7 +122,6 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
         if(!queryList.isNull(6) && !queryList.isNull(17))
         {
             key=SBIDPerformance::createKey(queryList.value(6).toInt(),queryList.value(17).toInt());
-            qDebug() << SB_DEBUG_INFO << key;
             if(key.length()>0 && !pfmgr->contains(key))
             {
                 //	Instantiate performance
@@ -151,12 +146,7 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
 
         if(performancePtr)
         {
-            qDebug() << SB_DEBUG_INFO;
             items.append(performancePtr);
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO;
         }
         if(showProgressDialogFlag && (currentValue%10)==0)
         {
@@ -169,7 +159,6 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     {
         pd.setValue(maxValue);
     }
-    qDebug() << SB_DEBUG_INFO << items.count() << currentValue;
     return items;
 }
 
@@ -505,6 +494,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
 
         case Common::sb_field_invalid:
         case Common::sb_field_album_position:
+        case Common::sb_field_key:
             break;
         }
         if(itemPtr)

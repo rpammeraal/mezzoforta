@@ -54,7 +54,6 @@ public:
     bool saveSongToAlbum(const SBIDSong& song) const;	//	CWIP: amgr
     void setAlbumPerformerID(int albumPerformerID);
     void setAlbumPerformerName(const QString& albumPerformerName);
-    void setAlbumTitle(const QString& albumTitle);
     void setYear(int year);
     static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
     QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);  //	CWIP: cmp with
@@ -75,6 +74,7 @@ public:
     static SBSqlQueryModel* albumsByPerformer(int performerID);
     static QString createKey(int albumID,int unused=-1);
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
+    static SBIDAlbumPtr retrieveUnknownAlbum();
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -84,13 +84,14 @@ protected:
 
     //	Methods used by SBIDManager
     static SBIDAlbumPtr createInDB();
-    static SBSqlQueryModel* find(const QString& tobeFound,int excludeItemID,QString secondaryParameter);
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDAlbumPtr& to);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key);
     QStringList updateSQL() const;
+    static SBIDAlbumPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDAlbumPtr existingSongPtr);
 
 private:
     QString                     _albumTitle;
@@ -108,6 +109,9 @@ private:
     void _init();
     void _loadPerformances();
     void _setPerformerPtr();
+
+    //	Internal setters
+    void _setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
 };
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)

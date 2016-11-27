@@ -8,6 +8,7 @@
 #include <QProgressDialog>
 #include <QSqlRecord>
 
+#include "Common.h"
 #include "DataAccessLayer.h"
 #include "SBSqlQueryModel.h"
 
@@ -43,7 +44,7 @@ public:
 
     //	Retrieve
     bool contains(const QString& key) const;
-    int find(std::shared_ptr<T> currentT, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches, QString secondaryParameter=QString());
+    int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
@@ -58,6 +59,7 @@ public:
     void remove(std::shared_ptr<T> ptr);
     bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     void rollbackChanges1();
+    std::shared_ptr<T> userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr);
 
     //	Misc
     void clear();
@@ -94,28 +96,61 @@ SBIDManagerTemplate<T,parentT>::contains(const QString& key) const
 }
 
 template <class T, class parentT> int
-SBIDManagerTemplate<T,parentT>::find(std::shared_ptr<T> currentPtr, const QString& tobeFound, QList<QList<std::shared_ptr<T>>>& matches,QString secondaryParameter)
+SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches)
 {
     int count=0;
-    SBSqlQueryModel* qm=T::find(tobeFound,currentPtr->itemID(),secondaryParameter);
+    SBSqlQueryModel* qm=T::find(tobeFound,excludePtr);
+    QVector<QString> processedKeys;
     matches.clear();
+    std::shared_ptr<T> currentPtr;
 
+    //	Init buckets
+    for(int i=0;i<5;i++)
+    {
+        matches[i]=QList<std::shared_ptr<T>>();
+    }
     for(int i=0;i<qm->rowCount();i++)
     {
         QSqlRecord r=qm->record(i);
 
         int bucket=r.value(0).toInt();
-        int k1=r.value(1).toInt();
-        int k2=r.value(2).toInt();
-        QString key=T::createKey(k1,k2);
-        if(currentPtr->key()!=key)
+        //int k1=r.value(1).toInt();
+        //int k2=r.value(2).toInt();
+        //QString key=T::createKey(k1,k2);
+        r.remove(0);
+        currentPtr=T::instantiate(r);
+        addItem(currentPtr);
+        QString key=currentPtr->key();
+        qDebug() << SB_DEBUG_INFO << i << bucket << currentPtr->key() << currentPtr->genericDescription();
+
+        if(!processedKeys.contains(key))
         {
-            //	Retrieve and store
-            std::shared_ptr<T> ptr=this->retrieve(key);
-            matches[bucket].append(ptr);
-            count++;
+            qDebug() << SB_DEBUG_INFO << "not found yet";
+            if(!excludePtr || (excludePtr && excludePtr->key()==key))
+            {
+                //	Retrieve and store
+                qDebug() << SB_DEBUG_INFO << "added to bucket" << bucket;
+                matches[bucket].append(currentPtr);
+                count++;
+
+            }
+            processedKeys.append(key);
         }
     }
+
+    qDebug() << SB_DEBUG_INFO;
+    for(int i=0;i<matches.count();i++)
+    {
+        if(matches.contains(i))
+        {
+            qDebug() << SB_DEBUG_INFO << i << matches[i].count();
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << i << "not populated";
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
     return count;
 }
 
@@ -128,11 +163,9 @@ SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
     if(contains(key))
     {
         ptr=_leMap[key];
-        qDebug() << SB_DEBUG_INFO << "exists" << ptr->key() << ptr->ID() << ptr->genericDescription();
     }
     if(!ptr || openFlag==open_flag_refresh)
     {
-        qDebug() << SB_DEBUG_INFO << "does NOT exists";
         SBSqlQueryModel* qm=T::retrieveSQL(key);
         QSqlRecord r=qm->record(0);
 
@@ -328,7 +361,6 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
 {
-    qDebug() << SB_DEBUG_INFO;
     std::shared_ptr<T> ptr;
     QStringList SQL;
 
@@ -435,6 +467,19 @@ SBIDManagerTemplate<T,parentT>::rollbackChanges1()
     _changes.clear();
 }
 
+template <class T, class parentT> std::shared_ptr<T>
+SBIDManagerTemplate<T,parentT>::userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr)
+{
+    qDebug() << SB_DEBUG_INFO << tobeMatched.songTitle << tobeMatched.performerID;
+    std::shared_ptr<T> ptr=T::userMatch(tobeMatched,excludedPtr);
+    if(ptr && !contains(ptr->key()))
+    {
+        addItem(ptr);
+    }
+    return ptr;
+}
+
+
 ///	Misc
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::clear()
@@ -467,7 +512,6 @@ SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
     {
         if(!contains(ptr->key()))
         {
-            qDebug() << SB_DEBUG_INFO << ptr->key() << ptr->ID() << ptr->genericDescription();
             _leMap[ptr->key()]=ptr;
         }
     }

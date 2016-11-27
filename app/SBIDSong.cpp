@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBDialogSelectItem.h"
 #include "SBIDPerformance.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
@@ -55,7 +56,7 @@ SBIDSong::genericDescription() const
 QString
 SBIDSong::iconResourceLocation() const
 {
-    return QString(":/images/SongIcon.png");
+    return iconResourceLocationStatic();
 }
 
 int
@@ -550,13 +551,6 @@ SBIDSong::performerIDList() const
 //    _sb_playlist_position=playlistPosition;
 //    setChangedFlag();
 //}
-
-void
-SBIDSong::setSongTitle(const QString &songTitle)
-{
-    _songTitle=songTitle;
-    setChangedFlag();
-}
 
 int
 SBIDSong::songPerformerID() const
@@ -1187,6 +1181,12 @@ SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
     return songPtr;
 }
 
+QString
+SBIDSong::iconResourceLocationStatic()
+{
+    return QString(":/images/SongIcon.png");
+}
+
 ///	Protected methods
 SBIDSong::SBIDSong():SBIDBase()
 {
@@ -1198,7 +1198,7 @@ SBIDSong::createKey(int songID)
 {
     return songID>=0?QString("%1:%2")
         .arg(SBIDBase::sb_type_song)
-        .arg(songID):QString()	//	return empty string if songID<0
+        .arg(songID):QString("x:x")	//	return invalid key if songID<0
     ;
 }
 
@@ -1216,14 +1216,13 @@ SBIDSong::createInDB()
     QSqlQuery qID(q,db);
     qID.next();
 
-    //	Instantiate
-    SBIDSong song;
-    song._sb_song_id=qID.value(0).toInt();
-    song._songTitle="Song1";
-
-    //	Give new playlist unique name
+    //	Give new song unique name
     int maxNum=1;
-    q=QString("SELECT title FROM ___SB_SCHEMA_NAME___song WHERE name %1 \"New Song%\"").arg(dal->getILike());
+    QString newSongTitle="New Song";
+    q=QString("SELECT title FROM ___SB_SCHEMA_NAME___song WHERE name %1 \"%2%\"")
+        .arg(dal->getILike())
+        .arg(newSongTitle)
+    ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qName(q,db);
@@ -1231,17 +1230,27 @@ SBIDSong::createInDB()
     while(qName.next())
     {
         QString existing=qName.value(0).toString();
-        existing.replace("New Song","");
+        existing.replace(newSongTitle,"");
         int i=existing.toInt();
         if(i>=maxNum)
         {
             maxNum=i+1;
         }
     }
-    song._songTitle=QString("New Song%1").arg(maxNum);
+
+    //	Instantiate
+    SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousArtists();
+    SBIDSong song;
+    song._sb_song_id=qID.value(0).toInt();
+    song._songTitle=QString("%1%2").arg(newSongTitle).arg(maxNum);
+    song._sb_song_performer_id=variousPerformerPtr->performerID();
+    song._year=QDate(QDate::currentDate()).year();
+    song._notes="Inserted by us!";
+
+    QStringList SQL;
 
     //	Insert
-    q=QString
+    SQL.append(QString
     (
         "INSERT INTO ___SB_SCHEMA_NAME___song "
         "( "
@@ -1252,65 +1261,97 @@ SBIDSong::createInDB()
         ") "
         "SELECT "
             "%1, "
-            "%2, "
-            "'', "
-            "'%3' "
+            "'%2', "
+            "'%3', "
+            "'%4' "
     )
         .arg(song._sb_song_id)
         .arg(song._songTitle)
+        .arg(song._notes)
         .arg(Common::soundex(song._songTitle))
-    ;
+    );
+
+    SQL.append(QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___performance "
+        "( "
+            "song_id, "
+            "artist_id, "
+            "role_id, "
+            "year, "
+            "notes "
+        ") "
+        "SELECT "
+            "%1 as song_id, "
+            "%2 as artist_id, "
+            "0 as role_id, "
+            "%3 as year, "
+            "CAST(E'%4' AS VARCHAR) as notes "
+    )
+        .arg(song._sb_song_id)
+        .arg(song._sb_song_performer_id)
+        .arg(song._year)
+        .arg(Common::escapeSingleQuotes(song._notes))
+    );
 
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 
-    //	Done
-    return std::make_shared<SBIDSong>(song);
+    bool successFlag=dal->executeBatch(SQL);
+    if(successFlag)
+    {
+        return std::make_shared<SBIDSong>(song);
+    }
+    return SBIDSongPtr();
 }
 
 SBSqlQueryModel*
-SBIDSong::find(const QString &tobeFound, int excludeItemID, QString secondaryParameter)
+SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr)
 {
-    QString newSoundex=Common::soundex(tobeFound);
+    QString newSoundex=Common::soundex(tobeFound.songTitle);
+    int excludeID=(existingSongPtr?existingSongPtr->songID():-1);
 
     //	MatchRank:
-    //	0	-	edited value (always one in data set).
-    //	1	-	exact match with specified artist (0 or 1 in data set).
-    //	2	-	exact match with any other artist (0 or more in data set).
-    //	3	-	soundex match with any other artist (0 or more in data set).
+    //	0	-	exact match with specified artist (0 or 1 in data set).
+    //	1	-	exact match with any other artist (0 or more in data set).
+    //	2	-	soundex match with any other artist (0 or more in data set).
     QString q=QString
     (
         "SELECT "
-            "CASE WHEN a.artist_id=%2 THEN 1 ELSE 2 END AS matchRank, "
+            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
             "s.song_id, "
             "s.title, "
-            "a.artist_id, "
-            "a.name "
+            "s.notes, "
+            "p.artist_id, "
+            "p.year, "
+            "l.lyrics "
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
                     "p.song_id=s.song_id "
                     "%4 "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
         "WHERE "
             "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
         "UNION "
         "SELECT "
-            "3 AS matchRank, "
+            "2 AS matchRank, "
             "s.song_id, "
             "s.title, "
-            "a.artist_id, "
-            "a.name "
+            "s.notes, "
+            "p.artist_id, "
+            "p.year, "
+            "l.lyrics "
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
                     "p.song_id=s.song_id "
                     "%4 "
-                "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
         "WHERE "
             "p. role_id=0 AND "
             "( "
@@ -1321,10 +1362,10 @@ SBIDSong::find(const QString &tobeFound, int excludeItemID, QString secondaryPar
             "1,3 "
 
     )
-        .arg(Common::simplified(tobeFound))
-        .arg(secondaryParameter.toInt())
+        .arg(Common::simplified(tobeFound.songTitle))
+        .arg(tobeFound.performerID)
         .arg(newSoundex)
-        .arg(excludeItemID==-1?"":QString(" AND s.song_id=%1").arg(excludeItemID))
+        .arg(excludeID==-1?"":QString(" AND s.song_id=%1").arg(excludeID))
     ;
     return new SBSqlQueryModel(q);
 }
@@ -1400,7 +1441,94 @@ SBIDSong::updateSQL() const
 {
     QStringList SQL;
 
+    if(changedFlag())
+    {
+        SQL.append(QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___song "
+            "SET "
+                "title='%2', "
+                "notes='%3' "
+            "WHERE "
+                "song_id=%1 "
+        )
+            .arg(this->songID()))
+        ;
+
+        SQL.append(QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___performance "
+            "SET "
+                "year=%3, "
+                "notes='%4' "
+            "WHERE "
+                "song_id=%1 AND "
+                "artist_id=%2 "
+        )
+            .arg(this->songID())
+            .arg(this->songPerformerID())
+        );
+    }
+
     return SQL;
+}
+
+SBIDSongPtr
+SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr)
+{
+    qDebug() << SB_DEBUG_INFO << tobeMatched.songTitle << tobeMatched.performerID;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDSongPtr selectedSongPtr;
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    bool resultCode=1;
+    QMap<int,QList<SBIDSongPtr>> matches;
+
+    int findCount=smgr->find(tobeMatched,existingSongPtr,matches);
+
+    if(findCount)
+    {
+        if(matches[0].count()==1)
+        {
+            //	Dataset indicates an exact match if the 2nd record identifies an exact match.
+            selectedSongPtr=matches[0][0];
+            resultCode=1;
+        }
+        else
+        {
+            //	Dataset has at least two records, of which the 2nd one is an soundex match,
+            //	display pop-up
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(tobeMatched,existingSongPtr,matches);
+            pu->exec();
+
+            //	Go back to screen if no item has been selected
+            if(pu->hasSelectedItem()==0)
+            {
+                qDebug() << SB_DEBUG_INFO << "none selected";
+                return selectedSongPtr;
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_INFO;
+                SBIDPtr selected=pu->getSelected();
+                if(selected)
+                {
+                    //	Existing song is choosen
+                    qDebug() << SB_DEBUG_INFO << "EXISTING";
+                    selectedSongPtr=std::dynamic_pointer_cast<SBIDSong>(selected);
+                }
+                else
+                {
+                    //	New song has been choosen -- create.
+                    qDebug() << SB_DEBUG_INFO << "NEW";
+                    selectedSongPtr=smgr->createInDB();
+                    selectedSongPtr->_setSongTitle(tobeMatched.performerName);
+                    selectedSongPtr->_setNotes("populated by us");
+                    smgr->commit(selectedSongPtr,dal,0);
+                }
+            }
+        }
+    }
+    return selectedSongPtr;
 }
 
 ///	Private methods
@@ -1466,4 +1594,11 @@ void
 SBIDSong::_setPerformerPtr()
 {
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_song_performer_id,1);
+}
+
+void
+SBIDSong::_setSongTitle(const QString &songTitle)
+{
+    _songTitle=songTitle;
+    setChangedFlag();
 }

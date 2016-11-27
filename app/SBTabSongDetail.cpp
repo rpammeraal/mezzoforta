@@ -70,7 +70,6 @@ SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOn
         }
         else
         {
-
             qDebug() << SB_DEBUG_INFO << "none";
         }
 

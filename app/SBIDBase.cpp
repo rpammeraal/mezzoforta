@@ -193,6 +193,7 @@ SBIDBase::convert(Common::sb_field f)
         t=SBIDBase::sb_type_playlist;
         break;
 
+    case Common::sb_field_key:
     case Common::sb_field_album_position:
         qDebug() << SB_DEBUG_ERROR << "Not able to translate Common::sb_field_album_position to SBIDBase::sb_type!";
         t=SBIDBase::sb_type_invalid;
