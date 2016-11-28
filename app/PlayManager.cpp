@@ -211,7 +211,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     _setCurrentPlayID(playlistIndex);
 
     //	CWIP: change to SBIDSong
-    SBIDPerformancePtr performancePtr=_performanceAt(currentPlayID());
+    SBIDAlbumPerformancePtr performancePtr=_performanceAt(currentPlayID());
 
     if(!performancePtr)
     {
@@ -321,7 +321,7 @@ PlayManager::_loadRadio()
     bool firstBatchLoaded=false;
     _radioModeFlag=1;
 
-    QMap<int,SBIDPerformancePtr> playList;
+    QMap<int,SBIDAlbumPerformancePtr> playList;
     QList<int> indexCovered;
 
     int progressStep=0;
@@ -334,7 +334,7 @@ PlayManager::_loadRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=SBIDPerformance::onlinePerformances(100);
+    SBSqlQueryModel* qm=SBIDAlbumPerformance::onlinePerformances(100);
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 
@@ -383,7 +383,7 @@ PlayManager::_loadRadio()
         }
 
         SBIDSongPtr songPtr=SBIDSong::retrieveSong(qm->record(idx).value(0).toInt());
-        SBIDPerformancePtr performancePtr=songPtr->performance(qm->record(idx).value(4).toInt(),qm->record(idx).value(6).toInt());
+        SBIDAlbumPerformancePtr performancePtr=songPtr->performance(qm->record(idx).value(4).toInt(),qm->record(idx).value(6).toInt());
 
         playList[nextOpenSlotIndex++]=performancePtr;
 
@@ -435,11 +435,11 @@ PlayManager::_resetCurrentPlayID()
     _setCurrentPlayID(-1);
 }
 
-SBIDPerformancePtr
+SBIDAlbumPerformancePtr
 PlayManager::_performanceAt(int index) const
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    return mqs?mqs->performanceAt(index):SBIDPerformancePtr();
+    return mqs?mqs->performanceAt(index):SBIDAlbumPerformancePtr();
 }
 
 void

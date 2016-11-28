@@ -1,4 +1,4 @@
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 
 #include "Common.h"
 #include "Context.h"
@@ -7,62 +7,32 @@
 #include "SBIDPerformer.h"
 
 ///	Ctors, dtors
-SBIDPerformance::SBIDPerformance(const SBIDPerformance &p):SBIDBase(p)
+SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDSongPerformance(p)
 {
     _duration             =p._duration;
-    _notes                =p._notes;
-    _sb_song_id           =p._sb_song_id;
-    _sb_performer_id      =p._sb_performer_id;
     _sb_album_id          =p._sb_album_id;
     _sb_album_position    =p._sb_album_position;
     _path                 =p._path;
-    _year                 =p._year;
 
     _albumPtr             =p._albumPtr;
-    _performerPtr         =p._performerPtr;
-    _songPtr              =p._songPtr;
 
     _sb_play_position     =p._sb_play_position;
     _playlistPosition     =p._playlistPosition;
 }
 
-SBIDPerformance::~SBIDPerformance()
+SBIDAlbumPerformance::~SBIDAlbumPerformance()
 {
 }
 
 //	Inherited methods
-int
-SBIDPerformance::commonPerformerID() const
-{
-    return this->songPerformerID();
-}
-
-QString
-SBIDPerformance::commonPerformerName() const
-{
-    return this->songPerformerName();
-}
-
-QString
-SBIDPerformance::iconResourceLocation() const
-{
-    return QString(":/images/SongIcon.png");
-}
-
-int
-SBIDPerformance::itemID() const
-{
-    return -1;
-}
-
 SBIDBase::sb_type
-SBIDPerformance::itemType() const
+SBIDAlbumPerformance::itemType() const
 {
-    return SBIDBase::sb_type_performance;
+    return SBIDBase::sb_type_album_performance;
 }
 
 QString
-SBIDPerformance::genericDescription() const
+SBIDAlbumPerformance::genericDescription() const
 {
     return QString("Song - %1 [%2] / %3 - %4")
         .arg(this->text())
@@ -73,81 +43,41 @@ SBIDPerformance::genericDescription() const
 }
 
 void
-SBIDPerformance::sendToPlayQueue(bool enqueueFlag)
+SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDPerformancePtr> list;
-    const SBIDPerformancePtr performancePtr=SBIDPerformance::retrievePerformance(_sb_album_id,_sb_album_position,1);
+    QMap<int,SBIDAlbumPerformancePtr> list;
+    const SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_sb_album_id,_sb_album_position,1);
 
     if(performancePtr->path().length()>0)
     {
-        list[0]=SBIDPerformance::retrievePerformance(_sb_album_id,_sb_album_position,1);
+        list[0]=SBIDAlbumPerformance::retrieveAlbumPerformance(_sb_album_id,_sb_album_position,1);
     }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 }
-
 QString
-SBIDPerformance::text() const
+SBIDAlbumPerformance::type() const
 {
-    //	UGLY! But it works...
-    SBIDPerformance* somewhere=const_cast<SBIDPerformance *>(this);
-    return somewhere->songTitle();
+    return QString("song performance");
 }
 
-QString
-SBIDPerformance::type() const
-{
-    return QString("performance");
-}
 
-///	Public methods
+///	SBIDAlbumPerformance specific methods
 int
-SBIDPerformance::albumID() const
+SBIDAlbumPerformance::albumID() const
 {
     return _sb_album_id;
 }
 
 QString
-SBIDPerformance::albumTitle() const
+SBIDAlbumPerformance::albumTitle() const
 {
-    return this->albumPtr()?this->albumPtr()->albumTitle():"SBIDPerformance::albumTitle()::albumPtr null";
-}
-
-int
-SBIDPerformance::songID() const
-{
-    return _sb_song_id;
-}
-
-int
-SBIDPerformance::songPerformerID() const
-{
-    return _sb_performer_id;
-}
-
-QString
-SBIDPerformance::songPerformerName() const
-{
-    if(!_performerPtr)
-    {
-        const_cast<SBIDPerformance *>(this)->refreshDependents();
-    }
-    return _performerPtr?_performerPtr->performerName():"SBIDPerformance::songPerformerName()::performerPtr null";
-}
-
-QString
-SBIDPerformance::songTitle() const
-{
-    if(!_songPtr)
-    {
-        const_cast<SBIDPerformance *>(this)->refreshDependents();
-    }
-    return _songPtr?_songPtr->songTitle():"SBIDPerformance::songTitle():_songPtr null";
+    return this->albumPtr()?this->albumPtr()->albumTitle():"SBIDAlbumPerformance::albumTitle()::albumPtr null";
 }
 
 bool
-SBIDPerformance::updateLastPlayDate()
+SBIDAlbumPerformance::updateLastPlayDate()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -181,44 +111,25 @@ SBIDPerformance::updateLastPlayDate()
 
 ///	Pointers
 SBIDAlbumPtr
-SBIDPerformance::albumPtr() const
+SBIDAlbumPerformance::albumPtr() const
 {
     if(!_albumPtr)
     {
-        const_cast<SBIDPerformance *>(this)->refreshDependents();
+        const_cast<SBIDAlbumPerformance *>(this)->refreshDependents();
     }
     return _albumPtr;
 }
 
-SBIDPerformerPtr
-SBIDPerformance::performerPtr() const
-{
-    if(!_performerPtr)
-    {
-        const_cast<SBIDPerformance *>(this)->refreshDependents();
-    }
-    return _performerPtr;
-}
-
-SBIDSongPtr
-SBIDPerformance::songPtr() const
-{
-    if(!_songPtr)
-    {
-        const_cast<SBIDPerformance *>(this)->_setSongPtr();
-    }
-    return _songPtr;
-}
-
 ///	Operators
-SBIDPerformance::operator QString()
+SBIDAlbumPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=_songPtr?this->songTitle():"not retrieved yet";
-    QString songPerformerName=_performerPtr?this->songPerformerName():"not retrieved yet";
+    QString songTitle=songPtr()?this->songTitle():"not retrieved yet";
+    QString songPerformerName=performerPtr()?this->songPerformerName():"not retrieved yet";
     QString albumTitle=_albumPtr?this->albumTitle():"not retrieved yet";
 
-    return QString("SBIDPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
+    return QString("SBIDAlbumPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
+            .arg(this->songID())
             .arg(songTitle)
             .arg(songPerformerName)
             .arg(this->songPerformerID())
@@ -229,35 +140,34 @@ SBIDPerformance::operator QString()
 
 //	Methods required by SBIDManagerTemplate
 QString
-SBIDPerformance::key() const
+SBIDAlbumPerformance::key() const
 {
     return createKey(_sb_album_id,_sb_album_position);
 }
 
 void
-SBIDPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 
+    SBIDSongPerformance::refreshDependents(showProgressDialogFlag,forcedFlag);
     _setAlbumPtr();
-    _setPerformerPtr();
-    _setSongPtr();
 }
 
 //	Static methods
 QString
-SBIDPerformance::createKey(int albumID, int albumPosition)
+SBIDAlbumPerformance::createKey(int albumID, int albumPosition)
 {
     return (albumID>=0||albumPosition>=0)?QString("%1:%2:%3")
-        .arg(SBIDBase::sb_type_performance)
+        .arg(SBIDBase::sb_type_album_performance)
         .arg(albumID)
         .arg(albumPosition):QString("x:x")	//	Return invalid key if one or both parameters<0
     ;
 }
 
 SBSqlQueryModel*
-SBIDPerformance::onlinePerformances(int limit)
+SBIDAlbumPerformance::onlinePerformances(int limit)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 
@@ -321,7 +231,7 @@ SBIDPerformance::onlinePerformances(int limit)
 }
 
 QString
-SBIDPerformance::performancesByAlbum_Preloader(int albumID)
+SBIDAlbumPerformance::performancesByAlbum_Preloader(int albumID)
 {
     return QString
     (
@@ -373,7 +283,7 @@ SBIDPerformance::performancesByAlbum_Preloader(int albumID)
 }
 
 QString
-SBIDPerformance::performancesByPerformer_Preloader(int performerID)
+SBIDAlbumPerformance::performancesByPerformer_Preloader(int performerID)
 {
     return QString
     (
@@ -425,7 +335,7 @@ SBIDPerformance::performancesByPerformer_Preloader(int performerID)
 }
 
 SBSqlQueryModel*
-SBIDPerformance::performancesBySong(int songID)
+SBIDAlbumPerformance::performancesBySong(int songID)
 {
     QString q=QString
     (
@@ -459,49 +369,49 @@ SBIDPerformance::performancesBySong(int songID)
     return new SBSqlQueryModel(q);
 }
 
-SBIDPerformancePtr
-SBIDPerformance::retrievePerformance(int albumID, int positionID,bool noDependentsFlag)
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::retrieveAlbumPerformance(int albumID, int positionID,bool noDependentsFlag)
 {
-    SBIDPerformanceMgr* pfMgr=Context::instance()->getPerformanceMgr();
-    SBIDPerformancePtr performancePtr;
+    SBIDAlbumPerformanceMgr* pfMgr=Context::instance()->getAlbumPerformanceMgr();
+    SBIDAlbumPerformancePtr performancePtr;
     if(albumID>=0 && positionID>=0)
     {
-        performancePtr=pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default));
+        performancePtr=pfMgr->retrieve(createKey(albumID,positionID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default));
     }
     return performancePtr;
 }
 
 ///	Protected methods
-SBIDPerformance::SBIDPerformance()
+SBIDAlbumPerformance::SBIDAlbumPerformance()
 {
     _init();
 }
 
-SBIDPerformancePtr
-SBIDPerformance::instantiate(const QSqlRecord &r)
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDPerformance performance;
-    performance._sb_song_id           =Common::parseIntFieldDB(&r,0);
+    SBIDAlbumPerformance performance;
+    performance.setSongID(             Common::parseIntFieldDB(&r,0));
     performance._sb_album_id          =Common::parseIntFieldDB(&r,1);
     performance._sb_album_position    =Common::parseIntFieldDB(&r,2);
-    performance._sb_performer_id      =Common::parseIntFieldDB(&r,3);
+    performance.setPerformerID(        Common::parseIntFieldDB(&r,3));
     performance._duration             =r.value(4).toTime();
-    performance._year                 =r.value(5).toInt();
-    performance._notes                =Common::parseTextFieldDB(&r,6);
+    performance.setYear(               r.value(5).toInt());
+    performance.setNotes(              Common::parseTextFieldDB(&r,6));
     performance._path                 =Common::parseTextFieldDB(&r,7);
 
     qDebug() << SB_DEBUG_INFO << performance.key() << r.value(7).toString() << performance._path;
-    return std::make_shared<SBIDPerformance>(performance);
+    return std::make_shared<SBIDAlbumPerformance>(performance);
 }
 
 void
-SBIDPerformance::postInstantiate(SBIDPerformancePtr &ptr)
+SBIDAlbumPerformance::postInstantiate(SBIDAlbumPerformancePtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 void
-SBIDPerformance::openKey(const QString& key, int& albumID, int& albumPosition)
+SBIDAlbumPerformance::openKey(const QString& key, int& albumID, int& albumPosition)
 {
     QStringList l=key.split(":");
     if(l.count()==3)
@@ -517,7 +427,7 @@ SBIDPerformance::openKey(const QString& key, int& albumID, int& albumPosition)
 }
 
 SBSqlQueryModel*
-SBIDPerformance::retrieveSQL(const QString& key)
+SBIDAlbumPerformance::retrieveSQL(const QString& key)
 {
     int albumID=-1;
     int albumPosition=-1;
@@ -561,37 +471,17 @@ SBIDPerformance::retrieveSQL(const QString& key)
 
 //	Private methods
 void
-SBIDPerformance::_init()
+SBIDAlbumPerformance::_init()
 {
-    _notes="";
-    _sb_song_id=-1;
-    _sb_performer_id=-1;
     _sb_album_id=-1;
     _sb_album_position=-1;
     _path="";
     _albumPtr=SBIDAlbumPtr();
-    _performerPtr=SBIDPerformerPtr();
-    _songPtr=SBIDSongPtr();
 }
 
 void
-SBIDPerformance::_setAlbumPtr()
+SBIDAlbumPerformance::_setAlbumPtr()
 {
     //	From the performance level, do NOT load any dependents
     _albumPtr=SBIDAlbum::retrieveAlbum(_sb_album_id,1);
-}
-
-void
-SBIDPerformance::_setPerformerPtr()
-{
-    //	From the performance level, do NOT load any dependents
-        qDebug() << SB_DEBUG_INFO;
-    _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,1);
-}
-
-void
-SBIDPerformance::_setSongPtr()
-{
-    //	From the performance level, do NOT load any dependents
-    _songPtr=SBIDSong::retrieveSong(_sb_song_id,1);
 }

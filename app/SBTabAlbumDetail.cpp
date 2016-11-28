@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 ///	Public methods
 SBTabAlbumDetail::SBTabAlbumDetail(): SBTab()

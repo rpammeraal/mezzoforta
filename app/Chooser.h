@@ -4,6 +4,8 @@
 #include <QList>
 #include <QObject>
 
+class Chooser;
+
 #include "SBIDPlaylist.h"
 
 class QAction;

@@ -87,10 +87,10 @@ private:
     QMap<int,SBIDPtr> _items;
 
     //	Methods
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDAlbumPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
+    static QMap<int,SBIDAlbumPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
 
     QStringList _generateSQLdeleteItem(int playlistPosition) const;
     QStringList _generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const;

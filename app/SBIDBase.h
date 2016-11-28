@@ -29,7 +29,8 @@ public:
         sb_type_album=3,
         sb_type_chart=4,
         sb_type_playlist=5,
-        sb_type_performance=6
+        sb_type_song_performance=6,
+        sb_type_album_performance=7
     };
 
     SBIDBase();

@@ -37,9 +37,9 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr ptr=SBIDBase::createPtr(encodedData);
-    if(ptr->itemType()==SBIDBase::sb_type_performance)
+    if(ptr->itemType()==SBIDBase::sb_type_album_performance)
     {
-        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+        SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
         QList<QStandardItem *> newRow=createRecord(performancePtr,performancePtr->playPosition());
 
         //	Add record
@@ -264,14 +264,14 @@ SBModelQueuedSongs::sort(int column, Qt::SortOrder order)
 }
 
 //	Methods related to playlists
-QList<SBIDPerformancePtr>
+QList<SBIDAlbumPerformancePtr>
 SBModelQueuedSongs::getAllPerformances()
 {
-    QList<SBIDPerformancePtr> list;
+    QList<SBIDAlbumPerformancePtr> list;
 
     for(int i=0;i<playlistCount();i++)
     {
-        SBIDPerformancePtr item=performanceAt(i);
+        SBIDAlbumPerformancePtr item=performanceAt(i);
         list.append(item);
     }
     return list;
@@ -284,7 +284,7 @@ SBModelQueuedSongs::getAllPerformances()
 /// 	-	first batch (a small set of records) is immediately loaded, displayed and music starts to play
 ///		-	second batch (with the remainder) is loaded while playing music.
 void
-SBModelQueuedSongs::populate(QMap<int,SBIDPerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag)
+SBModelQueuedSongs::populate(QMap<int,SBIDAlbumPerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag)
 {
     this->debugShow("populate:start");
     int offset=0;
@@ -307,7 +307,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDPerformancePtr> newPlaylist,bool first
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
         }
-        SBIDPerformancePtr performancePtr=newPlaylist[i];
+        SBIDAlbumPerformancePtr performancePtr=newPlaylist[i];
         record=createRecord(performancePtr,i+offset+1);
         _totalDuration+=performancePtr->duration();
 
@@ -339,11 +339,11 @@ SBModelQueuedSongs::populate(QMap<int,SBIDPerformancePtr> newPlaylist,bool first
     emit listChanged();
 }
 
-SBIDPerformancePtr
+SBIDAlbumPerformancePtr
 SBModelQueuedSongs::performanceAt(int playlistIndex) const
 {
     QStandardItem* item;
-    SBIDPerformancePtr performancePtr;
+    SBIDAlbumPerformancePtr performancePtr;
     SBIDSongPtr songPtr;
 
     if(playlistIndex<0 || playlistIndex>=playlistCount())
@@ -394,7 +394,7 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
     if(songID!=-1)
     {
         qDebug() << SB_DEBUG_INFO << songID << albumID << albumPosition;
-        performancePtr=SBIDPerformance::retrievePerformance(albumID,albumPosition);
+        performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(albumID,albumPosition);
         performancePtr->setPlaylistPosition(playlistPosition);
     }
 
@@ -660,7 +660,7 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
 
 /// Private methods
 QList<QStandardItem *>
-SBModelQueuedSongs::createRecord(const SBIDPerformancePtr& performancePtr,int playPosition) const
+SBModelQueuedSongs::createRecord(const SBIDAlbumPerformancePtr& performancePtr,int playPosition) const
 {
     QStandardItem* item;
     QList<QStandardItem *>record;

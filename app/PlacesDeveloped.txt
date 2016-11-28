@@ -695,6 +695,10 @@ X	playlists that song belongs to can be edited
 -	Using Preloader for retrieving album performances
 -	need to see duration and number of songs on album page
 
+20161127:
+-	Split up SBIDPerformance into SongSBIDPerformance and SBIDRecordPerformance, which inherits the former
+*	Can we get rid of itemID()? No!
+
 <bugs>
 *	Go to Exodus/Bob Marley record. Alt click logo start play. Plays different Bob Marley album.
 * 	search Me And Julio Down The Schoolyard, alt click song logo to play. Crash

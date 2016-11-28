@@ -7,6 +7,7 @@
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
 {
@@ -64,7 +65,7 @@ SBIDPlaylist::itemType() const
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDPerformancePtr> list;
+    QMap<int,SBIDAlbumPerformancePtr> list;
     list=_retrievePlaylistItems(this->playlistID(),1);
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -158,7 +159,7 @@ void
 SBIDPlaylist::recalculatePlaylistDuration()
 {
     QList<SBIDPtr> compositesTraversed;
-    QList<SBIDPerformancePtr> allPerformances;
+    QList<SBIDAlbumPerformancePtr> allPerformances;
 
     //	Get all songs
     compositesTraversed.clear();
@@ -1086,7 +1087,7 @@ SBIDPlaylist::operator QString() const
 
 ///	Private methods
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDPerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
+SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDAlbumPerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
 {
     SBIDPlaylistPtr playlistPtr;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
@@ -1224,7 +1225,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 }
                 else
                 {
-                    SBIDPerformancePtr performancePtr=SBIDPerformance::retrievePerformance(albumID,allItems.value(7).toInt(),0);
+                    SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(albumID,allItems.value(7).toInt(),0);
                     if(performancePtr)
                     {
                         allPerformances.append(performancePtr);
@@ -1351,7 +1352,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
             ;
         break;
 
-    case SBIDBase::sb_type_performance:
+    case SBIDBase::sb_type_song_performance:
+    case SBIDBase::sb_type_album_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_song:
         break;
@@ -1369,7 +1371,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 int albumID=querySong.value(2).toInt();
                 int albumPosition=querySong.value(3).toInt();
 
-                SBIDPerformancePtr performancePtr=songPtr->performance(albumID,albumPosition);
+                SBIDAlbumPerformancePtr performancePtr=songPtr->performance(albumID,albumPosition);
                 if(performancePtr &&  allPerformances.contains(performancePtr)==0)
                 {
                     allPerformances.append(performancePtr);
@@ -1481,12 +1483,12 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
     }
 }
 
-QMap<int,SBIDPerformancePtr>
+QMap<int,SBIDAlbumPerformancePtr>
 SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 {
     QList<SBIDPtr> compositesTraversed;
-    QList<SBIDPerformancePtr> allPerformances;
-    QMap<int,SBIDPerformancePtr> playList;
+    QList<SBIDAlbumPerformancePtr> allPerformances;
+    QMap<int,SBIDAlbumPerformancePtr> playList;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,0);
 
     if(playlistPtr)
@@ -1512,7 +1514,7 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
         int index=0;
         for(int i=0;i<allPerformances.count();i++)
         {
-            const SBIDPerformancePtr performancePtr=allPerformances.at(i);
+            const SBIDAlbumPerformancePtr performancePtr=allPerformances.at(i);
             if(performancePtr->path().length()>0)
             {
                 playList[index++]=performancePtr;
@@ -1574,9 +1576,9 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
             0);
         break;
 
-    case SBIDBase::sb_type_performance:
+    case SBIDBase::sb_type_album_performance:
     {
-        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(itemPtr);
+        SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(itemPtr);
         q=QString
         (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_performance "

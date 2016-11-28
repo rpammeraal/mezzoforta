@@ -6,7 +6,7 @@
 #include "Context.h"
 #include "Preloader.h"
 #include "SBDialogSelectItem.h"
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
@@ -71,7 +71,7 @@ SBIDPerformer::itemType() const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDPerformancePtr> list;
+    QMap<int,SBIDAlbumPerformancePtr> list;
 
     if(_performances.count()==0)
     {
@@ -81,7 +81,7 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
     int index=0;
     for(int i=0;i<_performances.count();i++)
     {
-        const SBIDPerformancePtr performancePtr=_performances.at(i);
+        const SBIDAlbumPerformancePtr performancePtr=_performances.at(i);
         if(performancePtr->path().length()>0)
         {
             list[index++]=performancePtr;
@@ -982,7 +982,7 @@ SBIDPerformer::_loadAlbums()
 void
 SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
 {
-    _performances=Preloader::performances(SBIDPerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
+    _performances=Preloader::performances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
 }
 
 QVector<int>

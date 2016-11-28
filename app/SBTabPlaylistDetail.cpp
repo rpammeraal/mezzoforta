@@ -8,6 +8,7 @@
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
 #include "SBSortFilterProxyTableModel.h"
+#include "SBTableModel.h"
 
 SBTabPlaylistDetail::SBTabPlaylistDetail(QWidget* parent) : SBTab(parent,0)
 {

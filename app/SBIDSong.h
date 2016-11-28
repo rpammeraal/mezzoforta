@@ -4,7 +4,6 @@
 #include <QSqlRecord>
 
 #include "SBIDBase.h"
-#include "SBTableModel.h"
 
 class SBSqlQueryModel;
 class SBTableModel;
@@ -21,7 +20,7 @@ class SBTableModel;
 class SBIDSong;
 typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 #include "SBIDPlaylist.h"
 
 class SBIDSong : public SBIDBase
@@ -45,12 +44,12 @@ public:
 
     //	Song specific methods
     SBTableModel* albums() const;
-    QVector<SBIDPerformancePtr> allPerformances() const;
+    QVector<SBIDAlbumPerformancePtr> allPerformances() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
     int numPerformances() const;
-    SBIDPerformancePtr performance(int albumID, int albumPosition) const;
+    SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlistList();
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
@@ -93,19 +92,19 @@ protected:
     static SBIDSongPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr);
 
 private:
-    QString                      _lyrics;
-    QString                      _notes;
-    int                          _sb_song_id;
-    int                          _sb_song_performer_id;
-    QString                      _songTitle;
-    int                          _year;
+    QString                           _lyrics;
+    QString                           _notes;
+    int                               _sb_song_id;
+    int                               _sb_song_performer_id;
+    QString                           _songTitle;
+    int                               _year;
 
     //	Attributes derived from core attributes
-    SBIDPerformerPtr             _performerPtr;
+    SBIDPerformerPtr                  _performerPtr;
 
     //	Dependent attributes
-    QMap<QString,QString>        _playlistKey2performanceKey;
-    QVector<SBIDPerformancePtr>  _performances;
+    QMap<QString,QString>             _playlistKey2performanceKey;
+    QVector<SBIDAlbumPerformancePtr> _performances;
 
     void _init();
     void _loadPerformances();

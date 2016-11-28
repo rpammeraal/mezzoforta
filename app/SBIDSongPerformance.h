@@ -1,11 +1,93 @@
-#ifndef SBIDPERFORMANCE_H
-#define SBIDPERFORMANCE_H
+#ifndef SBIDSONGPERFORMANCE_H
+#define SBIDSONGPERFORMANCE_H
 
+#include "SBIDBase.h"
 
-class SBIDPerformance
+class SBIDSongPerformance;
+typedef std::shared_ptr<SBIDSongPerformance> SBIDSongPerformancePtr;
+
+class SBIDAlbumPerformance;
+typedef std::shared_ptr<SBIDAlbumPerformance> SBIDAlbumPerformancePtr;
+
+class SBIDAlbum;
+typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
+
+class SBIDPerformer;
+typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
+
+class SBIDSong;
+typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
+
+class SBIDSongPerformance : public SBIDBase
 {
 public:
-    SBIDPerformance();
+    //	Ctors, dtors
+    SBIDSongPerformance(const SBIDSongPerformance& p);
+    //~SBIDSongPerformance();
+
+    //	Inherited methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
+    virtual QString iconResourceLocation() const;
+    virtual int itemID() const;
+    virtual SBIDBase::sb_type itemType() const;
+    virtual QString genericDescription() const;
+    virtual void sendToPlayQueue(bool enqueueFlag=0);
+    virtual QString text() const;
+    virtual QString type() const;
+
+    //	SBIDSongPerformance specific methods
+    inline QString notes() const { return _notes; }
+    int songID() const;
+    int songPerformerID() const;
+    QString songPerformerName() const;
+    QString songTitle() const;
+    inline int year() const { return _year; }
+
+    //	Pointers
+    SBIDSongPtr songPtr() const;
+    SBIDPerformerPtr performerPtr() const;
+
+    //	Operators
+    virtual operator QString();
+
+    //	Methods required by SBIDManagerTemplate
+    virtual QString key() const;
+    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
+
+    //	Static methods
+    static QString createKey(int songID, int performerID);
+    static SBIDSongPerformancePtr retrieveSongPerformance(int songID, int performerID,bool noDependentsFlag=0);
+
+protected:
+    template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
+
+    SBIDSongPerformance();
+
+    static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
+    void postInstantiate(SBIDSongPerformancePtr& ptr);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
+
+    //	Setters to accomodate SBIDAlbumPerformance
+    void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; }
+    void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; }
+    void setYear(int year) { _year=year; }
+    void setNotes(const QString& notes) { _notes=notes; }
+
+private:
+    QString          _notes;
+    int              _sb_song_id;
+    int              _sb_performer_id;
+    int              _year;
+
+    //	Attributes derived from core attributes
+    SBIDPerformerPtr _performerPtr;
+    SBIDSongPtr      _songPtr;
+
+    void _init();
+    void _setPerformerPtr();
+    void _setSongPtr();
 };
 
-#endif // SBIDPERFORMANCE_H
+#endif // SBIDSONGPERFORMANCE_H

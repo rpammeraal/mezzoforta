@@ -9,6 +9,7 @@
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
 {
@@ -150,7 +151,7 @@ SBIDAlbum::save()
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDPerformancePtr> list;
+    QMap<int,SBIDAlbumPerformancePtr> list;
 
     if(_performances.count()==0)
     {
@@ -160,7 +161,7 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     int index=0;
     for(int i=0;i<_performances.count();i++)
     {
-        const SBIDPerformancePtr performancePtr=_performances.at(i);
+        const SBIDAlbumPerformancePtr performancePtr=_performances.at(i);
         if(performancePtr->path().length()>0)
         {
             list[index++]=performancePtr;
@@ -1661,7 +1662,7 @@ SBIDAlbum::_init()
 void
 SBIDAlbum::_loadPerformances()
 {
-    _performances=Preloader::performances(SBIDPerformance::performancesByAlbum_Preloader(this->albumID()),1);
+    _performances=Preloader::performances(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),1);
 }
 
 void

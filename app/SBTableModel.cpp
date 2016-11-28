@@ -153,7 +153,7 @@ SBTableModel::determineSBID(const QModelIndex &idx) const
 }
 
 void
-SBTableModel::populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums)
+SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums)
 {
     _init();
     QStringList header;
@@ -187,10 +187,10 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& album
     }
 
     //	Go through all albums referred to in performances
-    QVectorIterator<SBIDPerformancePtr> itap(albumPerformances);
+    QVectorIterator<SBIDAlbumPerformancePtr> itap(albumPerformances);
     while(itap.hasNext())
     {
-        SBIDPerformancePtr performancePtr=itap.next();
+        SBIDAlbumPerformancePtr performancePtr=itap.next();
 
         if(performancePtr)
         {
@@ -212,7 +212,7 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& album
 }
 
 void
-SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
+SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances)
 {
     _init();
 
@@ -229,7 +229,7 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
     //	Populate data
     for(int i=0;i<performances.count();i++)
     {
-        SBIDPerformancePtr performancePtr=performances.at(i);
+        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
 
         qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription() << performancePtr->albumID();
         if(performancePtr && performancePtr->albumID()>=0)
@@ -245,7 +245,7 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDPerformancePtr> performances)
 }
 
 void
-SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances)
+SBTableModel::populatePerformancesByAlbum(QVector<SBIDAlbumPerformancePtr> performances)
 {
     _init();
 
@@ -261,7 +261,7 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performanc
     //	Populate data
     for(int i=0;i<performances.count();i++)
     {
-        SBIDPerformancePtr performancePtr=performances.at(i);
+        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
 
         if(performancePtr)
         {
@@ -304,7 +304,7 @@ SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
 
         ptr=SBIDBase::createPtr(it.value());
-        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+        SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
 
         if(playlistPtr && performancePtr)
         {
@@ -353,7 +353,7 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
 }
 
 void
-SBTableModel::populateSongsByPerformer(const QVector<SBIDPerformancePtr>& performances)
+SBTableModel::populateSongsByPerformer(const QVector<SBIDAlbumPerformancePtr>& performances)
 {
     _init();
 
@@ -368,7 +368,7 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDPerformancePtr>& perfor
     int index=0;
     for(int i=0;i<performances.count();i++)
     {
-        SBIDPerformancePtr performancePtr=performances.at(i);
+        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
 
         if(performancePtr && !songID.contains(performancePtr->songID()))
         {

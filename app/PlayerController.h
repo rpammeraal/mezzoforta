@@ -44,7 +44,7 @@ public:
 
     explicit PlayerController(QObject *parent = 0);
 
-    inline SBIDPerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
+    inline SBIDAlbumPerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
     inline PlayerController::sb_player_state playState() const { return _state; }
 
 signals:
@@ -65,7 +65,7 @@ protected:
     friend class PlayManager;
     friend class Context;
     void doInit();	//	Init done by Context::
-    bool playSong(SBIDPerformancePtr& performancePtr);
+    bool playSong(SBIDAlbumPerformancePtr& performancePtr);
 
 protected slots:
     bool playerPlay();
@@ -75,7 +75,7 @@ protected slots:
 private:
     static const int                  _maxPlayerID=2;
     int                               _currentPlayerID;
-    SBIDPerformancePtr                _currentPerformancePlayingPtr;
+    SBIDAlbumPerformancePtr           _currentPerformancePlayingPtr;
     Duration                          _durationTime[_maxPlayerID];
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];

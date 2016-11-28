@@ -196,7 +196,7 @@ DBManager::_openDatabase(struct DatabaseCredentials &dc)
 
         //	Clear caches
         Context::instance()->getAlbumMgr()->clear();
-        Context::instance()->getPerformanceMgr()->clear();
+        Context::instance()->getAlbumPerformanceMgr()->clear();
         Context::instance()->getPerformerMgr()->clear();
         Context::instance()->getPlaylistMgr()->clear();
         Context::instance()->getSongMgr()->clear();

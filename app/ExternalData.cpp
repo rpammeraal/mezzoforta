@@ -13,6 +13,7 @@
 #include "ExternalData.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
+#include "SBIDSong.h"
 
 #include <QMessageBox>
 

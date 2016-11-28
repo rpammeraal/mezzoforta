@@ -110,7 +110,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
 SBDialogSelectItem*
 SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool playableOnlyFlag, QWidget *parent)
 {
-    QVector<SBIDPerformancePtr> performanceList=songPtr->allPerformances();
+    QVector<SBIDAlbumPerformancePtr> performanceList=songPtr->allPerformances();
     SBDialogSelectItem* dialog=new SBDialogSelectItem(songPtr,parent);
     dialog->ui->setupUi(dialog);
 
@@ -119,7 +119,7 @@ SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool p
     dialog->setTitle(title);
     for(int i=0;i<performanceList.size();i++)
     {
-        SBIDPerformancePtr currentPerformancePtr=performanceList.at(i);
+        SBIDAlbumPerformancePtr currentPerformancePtr=performanceList.at(i);
 
         if(playableOnlyFlag==0 || (playableOnlyFlag==1 && currentPerformancePtr->path().length()>0))
         {

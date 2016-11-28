@@ -12,7 +12,7 @@ class QLineEdit;
 class SBIDPerformer;
 typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
 
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 
 class SBTableModel;
 
@@ -83,16 +83,16 @@ protected:
     QString deleteRelatedPerformerSQL(int performerID) const;
 
 private:
-    QVector<SBIDAlbumPtr>        _albums;
-    QString                      _notes;
-    QVector<SBIDPerformancePtr>  _performances;
-    QString                      _performerName;
-    int                          _sb_performer_id;
-    QVector<int>                 _relatedPerformerID;
+    QVector<SBIDAlbumPtr>             _albums;
+    QString                           _notes;
+    QVector<SBIDAlbumPerformancePtr>  _performances;
+    QString                           _performerName;
+    int                               _sb_performer_id;
+    QVector<int>                      _relatedPerformerID;
 
     //	Not instantiated
-    int                          _num_albums;
-    int                          _num_songs;
+    int                               _num_albums;
+    int                               _num_songs;
 
     //	Methods
     void _init();

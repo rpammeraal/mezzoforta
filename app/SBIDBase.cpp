@@ -56,7 +56,8 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag
         ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_performance:
+    case SBIDBase::sb_type_song_performance:
+    case SBIDBase::sb_type_album_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_chart:
         break;
@@ -107,8 +108,8 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         itemPtr=SBIDPlaylist::retrievePlaylist(list[1].toInt(),noDependentsFlag);
         break;
 
-    case sb_type_performance:
-        itemPtr=SBIDPerformance::retrievePerformance(list[1].toInt(),list[2].toInt(),1);
+    case sb_type_album_performance:
+        itemPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(list[1].toInt(),list[2].toInt(),1);
         break;
 
     case sb_type_chart:

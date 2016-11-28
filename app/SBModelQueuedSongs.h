@@ -55,10 +55,10 @@ public:
     //	Methods related to playlists
     inline int currentPlayID() const { return _currentPlayID; }	//	index of song in playlist
     int playlistCount() const { return this->rowCount(); }
-    QList<SBIDPerformancePtr> getAllPerformances();
+    QList<SBIDAlbumPerformancePtr> getAllPerformances();
     inline int numSongs() const { return this->rowCount(); }
-    void populate(QMap<int,SBIDPerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag=0);
-    SBIDPerformancePtr performanceAt(int playlistIndex) const;
+    void populate(QMap<int,SBIDAlbumPerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag=0);
+    SBIDAlbumPerformancePtr performanceAt(int playlistIndex) const;
     inline Duration totalDuration() const { return _totalDuration; }
 
     void reorderItems();
@@ -84,7 +84,7 @@ private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager
     Duration _totalDuration;
 
-    QList<QStandardItem *> createRecord(const SBIDPerformancePtr& idPtr,int playPosition) const;
+    QList<QStandardItem *> createRecord(const SBIDAlbumPerformancePtr& idPtr,int playPosition) const;
     QString _formatPlaylistPosition(int playlistPositionID) const;
     void _populateHeader();
     QMap<int,int> _populateMapPlaylistPosition2ViewPosition();

@@ -240,14 +240,14 @@ public:
 
     void populate()
     {
-        QVector<SBIDPerformancePtr> performanceList=_albumPtr->performanceList();
+        QVector<SBIDAlbumPerformancePtr> performanceList=_albumPtr->performanceList();
         QList<QStandardItem *>column;
         QStandardItem* item;
 
         //for(int i=0;i<qm->rowCount();i++)
         for(int i=0;i<performanceList.count();i++)
         {
-            SBIDPerformancePtr performancePtr=performanceList.at(i);
+            SBIDAlbumPerformancePtr performancePtr=performanceList.at(i);
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_deleteflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_newflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_mergedtoindex

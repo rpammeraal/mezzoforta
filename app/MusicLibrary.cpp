@@ -124,7 +124,7 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
     pd.activateWindow();
 
     //	1.	Retrieve existing paths
-    SBSqlQueryModel* sqm=SBIDPerformance::onlinePerformances();
+    SBSqlQueryModel* sqm=SBIDAlbumPerformance::onlinePerformances();
 
     pd.setMaximum(sqm->rowCount());
     pd.setValue(0);

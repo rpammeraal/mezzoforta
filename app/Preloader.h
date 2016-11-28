@@ -2,12 +2,12 @@
 #define PRELOADER_H
 
 #include "SBIDBase.h"
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 
 class Preloader
 {
 public:
-    static QVector<SBIDPerformancePtr> performances(QString query, bool showProgressDialogFlag);
+    static QVector<SBIDAlbumPerformancePtr> performances(QString query, bool showProgressDialogFlag);
     static QMap<int,SBIDPtr> playlistItems(int playlistID,bool showProgressDialogFlag);
 };
 

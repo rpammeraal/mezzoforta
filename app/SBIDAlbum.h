@@ -8,6 +8,8 @@
 #include "SBIDBase.h"
 #include "SBIDSong.h"
 
+class SBTableModel;
+
 class SBIDAlbum;
 typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
 
@@ -47,7 +49,7 @@ public:
     inline QString notes() const { return _notes; }
     int numPerformances() const;
     SBTableModel* performances() const;
-    QVector<SBIDPerformancePtr> performanceList() const { return _performances; }
+    QVector<SBIDAlbumPerformancePtr> performanceList() const { return _performances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
@@ -94,17 +96,17 @@ protected:
     static SBIDAlbumPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDAlbumPtr existingSongPtr);
 
 private:
-    QString                     _albumTitle;
-    QString                     _genre;
-    QString                     _notes;
-    int                         _sb_album_id;
-    int                         _sb_album_performer_id;
-    int                         _year;
+    QString                           _albumTitle;
+    QString                           _genre;
+    QString                           _notes;
+    int                               _sb_album_id;
+    int                               _sb_album_performer_id;
+    int                               _year;
 
     //	Attributes derived from core attributes
-    SBIDPerformerPtr            _performerPtr;
+    SBIDPerformerPtr                  _performerPtr;
 
-    QVector<SBIDPerformancePtr> _performances;
+    QVector<SBIDAlbumPerformancePtr>  _performances;
 
     void _init();
     void _loadPerformances();

@@ -6,6 +6,7 @@
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 SBTabSongDetail::SBTabSongDetail(QWidget* parent) : SBTab(parent,0)
 {
@@ -41,10 +42,10 @@ SBTabSongDetail::tabWidget() const
     return mw->ui.tabSongDetailLists;
 }
 
-SBIDPerformancePtr
+SBIDAlbumPerformancePtr
 SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOnlyFlag)
 {
-    SBIDPerformancePtr selectedPerformancePtr;
+    SBIDAlbumPerformancePtr selectedPerformancePtr;
     if(songPtr->numPerformances()==0)
     {
         //	Can't assign -- does not exist on an album
@@ -73,7 +74,7 @@ SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOn
             qDebug() << SB_DEBUG_INFO << "none";
         }
 
-        selectedPerformancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+        selectedPerformancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
     }
         qDebug() << SB_DEBUG_INFO << selectedPerformancePtr->key();
     return selectedPerformancePtr;
@@ -280,9 +281,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
             songPtr=std::dynamic_pointer_cast<SBIDSong>(si.ptr());
         }
-        else if(si.ptr()->itemType()==SBIDBase::sb_type_performance)
+        else if(si.ptr()->itemType()==SBIDBase::sb_type_album_performance)
         {
-            SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(si.ptr());
+            SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(si.ptr());
             songPtr=performancePtr->songPtr();
         }
     }

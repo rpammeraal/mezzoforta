@@ -53,12 +53,12 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
-    //	Until we have a dedicated screen for SBIDBase::sb_type_performance,
+    //	Until we have a dedicated screen for SBIDBase::sb_type_record_performance,
     //	we need to convert this to a SBIDBase::sb_type_song
     SBIDPtr itemPtr;
-    if(ptr->itemType()==SBIDBase::sb_type_performance)
+    if(ptr->itemType()==SBIDBase::sb_type_album_performance)
     {
-        SBIDPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDPerformance>(ptr);
+        SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
         itemPtr=performancePtr->songPtr();
     }
     else
@@ -608,7 +608,8 @@ Navigator::_activateScreen()
             ptr=si.ptr();
             switch(ptr->itemType())
             {
-            case SBIDBase::sb_type_performance:
+            case SBIDBase::sb_type_song_performance:
+            case SBIDBase::sb_type_album_performance:
             case SBIDBase::sb_type_song:
                 if(editFlag)
                 {

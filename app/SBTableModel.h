@@ -5,7 +5,7 @@
 #include <QVector>
 
 #include "Common.h"
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 #include "SBIDPlaylist.h"
 #include "SBModel.h"
 
@@ -30,12 +30,12 @@ public:
 
     //	SBTableModel specific methods
     SBIDPtr determineSBID(const QModelIndex &idx) const;
-    void populateAlbumsByPerformer(const QVector<SBIDPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
-    void populateAlbumsBySong(QVector<SBIDPerformancePtr> performances);
-    void populatePerformancesByAlbum(QVector<SBIDPerformancePtr> performances);
+    void populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
+    void populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances);
+    void populatePerformancesByAlbum(QVector<SBIDAlbumPerformancePtr> performances);
     void populatePlaylists(QMap<QString,QString> performanceKey2playlistKey);
     void populatePlaylistContent(const QMap<int,SBIDPtr>& items);
-    void populateSongsByPerformer(const QVector<SBIDPerformancePtr>& performances);
+    void populateSongsByPerformer(const QVector<SBIDAlbumPerformancePtr>& performances);
 
 signals:
     void assign(const SBIDPtr& fromPtr, const SBIDPtr& toIDPtr) const;

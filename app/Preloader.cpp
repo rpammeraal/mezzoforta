@@ -4,16 +4,17 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBIDAlbumPerformance.h"
 
-QVector<SBIDPerformancePtr>
+QVector<SBIDAlbumPerformancePtr>
 Preloader::performances(QString query, bool showProgressDialogFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDPerformanceMgr* pfmgr=Context::instance()->getPerformanceMgr();
+    SBIDAlbumPerformanceMgr* pfmgr=Context::instance()->getAlbumPerformanceMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QVector<SBIDPerformancePtr> items;
+    QVector<SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     dal->customize(query);
@@ -54,7 +55,7 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
         QSqlRecord r;
         QSqlField f;
         SBIDAlbumPtr albumPtr;
-        SBIDPerformancePtr performancePtr;
+        SBIDAlbumPerformancePtr performancePtr;
         SBIDPerformerPtr performerPtr;
         SBIDPlaylistPtr playlistPtr;
         SBIDSongPtr songPtr;
@@ -121,7 +122,7 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
         //	Process performance
         if(!queryList.isNull(6) && !queryList.isNull(17))
         {
-            key=SBIDPerformance::createKey(queryList.value(6).toInt(),queryList.value(17).toInt());
+            key=SBIDAlbumPerformance::createKey(queryList.value(6).toInt(),queryList.value(17).toInt());
             if(key.length()>0 && !pfmgr->contains(key))
             {
                 //	Instantiate performance
@@ -134,7 +135,7 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
                 f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value( 4).toInt());    r.append(f);
                 f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(19).toString()); r.append(f);
                 f=QSqlField("f8",QVariant::String); f.setValue(queryList.value(20).toString()); r.append(f);
-                performancePtr=SBIDPerformance::instantiate(r);
+                performancePtr=SBIDAlbumPerformance::instantiate(r);
                 pfmgr->addItem(performancePtr);
                 qDebug() << SB_DEBUG_INFO << performancePtr->key() << performancePtr->genericDescription();
             }
@@ -167,7 +168,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDPerformanceMgr* pfmgr=Context::instance()->getPerformanceMgr();
+    SBIDAlbumPerformanceMgr* pfmgr=Context::instance()->getAlbumPerformanceMgr();
     SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     QMap<int,SBIDPtr> items;
@@ -353,7 +354,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         QSqlField f;
         QString key;
         SBIDAlbumPtr albumPtr;
-        SBIDPerformancePtr performancePtr;
+        SBIDAlbumPerformancePtr performancePtr;
         SBIDPerformerPtr performerPtr;
         SBIDPlaylistPtr playlistPtr;
         SBIDSongPtr songPtr;
@@ -439,7 +440,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         //	Process performance
         if(!queryList.isNull(3) && !queryList.isNull(4))
         {
-            key=SBIDPerformance::createKey(queryList.value(3).toInt(),queryList.value(4).toInt());
+            key=SBIDAlbumPerformance::createKey(queryList.value(3).toInt(),queryList.value(4).toInt());
             if(key.length()>0 && !pfmgr->contains(key))
             {
                 //	Instantiate performance
@@ -452,7 +453,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(26).toInt());    r.append(f);
                 f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(27).toString()); r.append(f);
                 f=QSqlField("f8",QVariant::String); f.setValue(queryList.value(28).toString()); r.append(f);
-                performancePtr=SBIDPerformance::instantiate(r);
+                performancePtr=SBIDAlbumPerformance::instantiate(r);
                 pfmgr->addItem(performancePtr);
                 qDebug() << SB_DEBUG_INFO << performancePtr->key() << performancePtr->genericDescription();
             }

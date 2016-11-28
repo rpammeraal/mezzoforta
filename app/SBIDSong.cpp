@@ -6,9 +6,10 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBDialogSelectItem.h"
-#include "SBIDPerformance.h"
+#include "SBIDAlbumPerformance.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
+#include "SBTableModel.h"
 
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
@@ -186,8 +187,8 @@ SBIDSong::save()
 void
 SBIDSong::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDPerformancePtr> list;
-    SBIDPerformancePtr performancePtr;
+    QMap<int,SBIDAlbumPerformancePtr> list;
+    SBIDAlbumPerformancePtr performancePtr;
 
     if(_performances.count()==0 && !_performerPtr)
     {
@@ -249,7 +250,7 @@ SBIDSong::albums() const
     return tm;
 }
 
-QVector<SBIDPerformancePtr>
+QVector<SBIDAlbumPerformancePtr>
 SBIDSong::allPerformances() const
 {
     if(_performances.count()==0)
@@ -338,10 +339,10 @@ SBIDSong::playlistList()
     return tm;
 }
 
-SBIDPerformancePtr
+SBIDAlbumPerformancePtr
 SBIDSong::performance(int albumID, int albumPosition) const
 {
-    SBIDPerformancePtr null;
+    SBIDAlbumPerformancePtr null;
 
     if(_performances.count()==0)
     {
@@ -565,7 +566,7 @@ SBIDSong::songPerformerName() const
     {
         const_cast<SBIDSong *>(this)->_setPerformerPtr();
     }
-    return _performerPtr?_performerPtr->performerName():"SBIDPerformance::songPerformerName()::performerPtr null";
+    return _performerPtr?_performerPtr->performerName():"SBIDAlbumPerformance::songPerformerName()::performerPtr null";
 }
 
 bool
@@ -1161,7 +1162,7 @@ SBIDSong::retrieveAllSongs()
             ") a "
         "ORDER BY 4,7,10 "
     )
-        .arg(SBIDBase::sb_type_performance)
+        .arg(SBIDBase::sb_type_album_performance)
         .arg(SBIDBase::sb_type_performer)
         .arg(SBIDBase::sb_type_album)
     ;
@@ -1543,11 +1544,11 @@ SBIDSong::_init()
 void
 SBIDSong::_loadPerformances()
 {
-    SBSqlQueryModel* qm=SBIDPerformance::performancesBySong(songID());
-    SBIDPerformanceMgr* pemgr=Context::instance()->getPerformanceMgr();
+    SBSqlQueryModel* qm=SBIDAlbumPerformance::performancesBySong(songID());
+    SBIDAlbumPerformanceMgr* pemgr=Context::instance()->getAlbumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDPerformance,SBIDBase>::open_flag_default);
+    _performances=pemgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
 
     delete qm;
 }
@@ -1580,7 +1581,7 @@ SBIDSong::_loadPlaylists()
     _playlistKey2performanceKey.clear();
     while(q1.next())
     {
-        QString performanceKey=SBIDPerformance::createKey(q1.value(1).toInt(),q1.value(2).toInt());
+        QString performanceKey=SBIDAlbumPerformance::createKey(q1.value(1).toInt(),q1.value(2).toInt());
         QString playlistKey=SBIDPlaylist::createKey(q1.value(0).toInt());
 
         if(!_playlistKey2performanceKey.contains(playlistKey))

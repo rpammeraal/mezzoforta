@@ -15,7 +15,8 @@
 #include "SBModelQueuedSongs.h"
 #include "SBIDAlbum.h"
 #include "SBIDManagerTemplate.h"
-#include "SBIDPerformance.h"
+#include "SBIDSongPerformance.h"
+#include "SBIDAlbumPerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
 #include "ScreenStack.h"
@@ -29,10 +30,11 @@ class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
 typedef SBIDManagerTemplate<SBIDAlbum,SBIDBase> SBIDAlbumMgr;
+typedef SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase> SBIDAlbumPerformanceMgr;
 typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
 typedef SBIDManagerTemplate<SBIDPerformer,SBIDBase> SBIDPerformerMgr;
-typedef SBIDManagerTemplate<SBIDPerformance,SBIDBase> SBIDPerformanceMgr;
 typedef SBIDManagerTemplate<SBIDSong,SBIDBase> SBIDSongMgr;
+typedef SBIDManagerTemplate<SBIDSongPerformance,SBIDBase> SBIDSongPerformanceMgr;
 
 class Context
 {
@@ -46,6 +48,7 @@ public:
     }
 
     inline SBIDAlbumMgr* getAlbumMgr() { return &_albumMgr; }
+    inline SBIDAlbumPerformanceMgr* getAlbumPerformanceMgr() { return &_albumPerformanceMgr; }
     inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
     inline Chooser* getChooser() { return &_lcc; }
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
@@ -56,13 +59,13 @@ public:
     inline Navigator* getNavigator() { return &_nav; }
     inline PlayerController* getPlayerController() { return &_pc; }
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
-    inline SBIDPerformanceMgr* getPerformanceMgr() { return &_performanceMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
     inline SBModelQueuedSongs* getSBModelQueuedSongs() { return &_mqs; }
     inline SBIDSongMgr* getSongMgr() { return &_songMgr; }
+    inline SBIDSongPerformanceMgr* getSongPerformanceMgr() { return &_songPerformanceMgr; }
     inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
     inline SBTabQueuedSongs* getTabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
 
@@ -95,10 +98,11 @@ private:
     Properties _p;
     SBModelQueuedSongs _mqs;
     SBIDAlbumMgr _albumMgr;
+    SBIDAlbumPerformanceMgr _albumPerformanceMgr;
     SBIDPerformerMgr _performerMgr;
-    SBIDPerformanceMgr _performanceMgr;
     SBIDPlaylistMgr _playlistMgr;
     SBIDSongMgr _songMgr;
+    SBIDSongPerformanceMgr _songPerformanceMgr;
     ScreenStack _st;
 
     Context();

@@ -180,7 +180,7 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBIDPerformancePtr& performancePtr)
+PlayerController::playSong(SBIDAlbumPerformancePtr& performancePtr)
 {
     Properties* p=Context::instance()->getProperties();
     Controller* c=Context::instance()->getController();
@@ -201,8 +201,7 @@ PlayerController::playSong(SBIDPerformancePtr& performancePtr)
         _updatePlayState(PlayerController::sb_player_state_stopped);
         performancePtr->setErrorMessage(errorMsg);
         qDebug() << SB_DEBUG_INFO << "returning 0";
-        SBIDPerformancePtr null;
-        _currentPerformancePlayingPtr=null;
+        _currentPerformancePlayingPtr=SBIDAlbumPerformancePtr();
         return 0;
     }
 
@@ -220,7 +219,7 @@ void
 PlayerController::_init()
 {
     _currentPlayerID=0;
-    SBIDPerformancePtr null;
+    SBIDAlbumPerformancePtr null;
     _currentPerformancePlayingPtr=null;
     _state=PlayerController::sb_player_state_stopped;
 
