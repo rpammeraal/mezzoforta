@@ -381,7 +381,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
+    qDebug() << SB_DEBUG_INFO;
     tm=songPtr->albums();
+    qDebug() << SB_DEBUG_INFO;
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     tm->setDragableColumns(dragableColumns);
@@ -390,7 +392,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
+    qDebug() << SB_DEBUG_INFO;
     tm=songPtr->playlistList();
+    qDebug() << SB_DEBUG_INFO;
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);

@@ -83,6 +83,14 @@ Controller::refreshModels()
         c, SIGNAL(activated(QString)),
         mw->ui.searchEdit, SLOT(clear()),
         Qt::QueuedConnection);	//	this will clear the search box
+
+    //	Clear caches
+    Context::instance()->getAlbumMgr()->clear();
+    Context::instance()->getAlbumPerformanceMgr()->clear();
+    Context::instance()->getPerformerMgr()->clear();
+    Context::instance()->getPlaylistMgr()->clear();
+    Context::instance()->getSongMgr()->clear();
+    Context::instance()->getSongPerformanceMgr()->clear();
 }
 
 ///	Public slots:
@@ -325,6 +333,9 @@ Controller::setupUI()
     }
 
     qDebug() << SB_DEBUG_INFO << "playground";
+
+    qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
+
 //    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
 //    u2ptr1->refreshDependents();

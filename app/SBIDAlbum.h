@@ -41,6 +41,7 @@ public:
     inline QString albumTitle() const { return _albumTitle; }
     QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
+    SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
     Duration duration() const;
     inline QString genre() const { return _genre; }
     //SBSqlQueryModel* matchAlbum() const;
@@ -49,7 +50,7 @@ public:
     inline QString notes() const { return _notes; }
     int numPerformances() const;
     SBTableModel* performances() const;
-    QVector<SBIDAlbumPerformancePtr> performanceList() const { return _performances; }
+    QMap<int,SBIDAlbumPerformancePtr> performanceList() const { return _albumPerformances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
@@ -95,6 +96,9 @@ protected:
     QStringList updateSQL() const;
     static SBIDAlbumPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDAlbumPtr existingSongPtr);
 
+    //	Inherited protected from SBIDBase
+    virtual void clearChangedFlag();
+
 private:
     QString                           _albumTitle;
     QString                           _genre;
@@ -106,14 +110,21 @@ private:
     //	Attributes derived from core attributes
     SBIDPerformerPtr                  _performerPtr;
 
-    QVector<SBIDAlbumPerformancePtr>  _performances;
+    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;
 
     void _init();
-    void _loadPerformances();
+    void _loadAlbumPerformances();
     void _setPerformerPtr();
 
     //	Internal setters
     void _setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
+    void _setAlbumPerformerID(int performerID) { _sb_album_performer_id=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
+    void _setYear(int year) { _year=year; setChangedFlag(); }
+    void _setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
+
+    //	Aux helper methods
+    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
+    QStringList _updateSQLAlbumPerformances() const;
 };
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)

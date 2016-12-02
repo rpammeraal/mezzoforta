@@ -695,21 +695,45 @@ X	playlists that song belongs to can be edited
 -	Using Preloader for retrieving album performances
 -	need to see duration and number of songs on album page
 
-20161127:
+20161201 - Happy Birthday Emily! - initial import works: one performer albums with either new or existing songs.
 -	Split up SBIDPerformance into SongSBIDPerformance and SBIDRecordPerformance, which inherits the former
-*	Can we get rid of itemID()? No!
+-	Can we get rid of itemID()? No!
+-	updateSQL() should reset changedFlag. Done thru SBIDManager, calls clearChangedFlag after commit().
+-	SBIDSong::updateSQL(): model like SBIDAlbum::updateSQL()
+-	Create database restore point.
+-	Playing flac files is not robust -- init() did not initialize all variables. Fixed.
+-	Incomplete Belgica: The Memories, following this sequence
+    0 ScreenItem:AllSongs :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+	1 ScreenItem:SBIDBase ["SBIDPerformer:2078:n=U2 [#related=10]"] :subtabID=1 :sortColumn=2147483647 :editFlag=false subtabID= 1 isEditFlag: false sortColumn: 2147483647
+	2 ScreenItem:SBIDBase ["SBIDPlaylist:129:n=000Jamming with DJ RoaM"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+	3 ScreenItem:SBIDBase ["SBIDPlaylist:130:n=1Rockin With DJ RoaM"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+	4 ScreenItem:SBIDBase ["SBIDPlaylist:141:n=Belgica: The Memories"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag:
+	Preloader would only load items that were not previously in cache. Fixed.
+-	Go to Exodus/Bob Marley record. Alt click logo start play. Plays different Bob Marley album. Not a bug. Correct album starts playing. Smoke something different next time.
+-	Search Exodus/Bob Marley record. Clock One Love/People Get Ready. Too many things gets cached.
+- 	search Me And Julio Down The Schoolyard, alt click song logo to play. Crash. SBAlbumPerformance tried to load unexisting albumPerformances. Fixed.
+
+SBIDAlbum edit:
+*	need to properly assign new albumPositions to *all* albumPerformances if one (or more) aP's get removed
+*	if aP gets removed, need to set isDeletedFlag
+*	if aP gets reordered, need to set isChangedFLag
+*	need to somehow update SBIDManager when aP's are removed/inserted/changed. Maybe a simple reload will suffice (this reload will go to screenstack and handle screenItems that references removed items properly).
 
 <bugs>
-*	Go to Exodus/Bob Marley record. Alt click logo start play. Plays different Bob Marley album.
-* 	search Me And Julio Down The Schoolyard, alt click song logo to play. Crash
+false sortColumn: 2147483647
 *	adding/removing from playlist: duration does not get updated
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 *	remove SBID*::save() methods
+*	ignore files with unknown extension
+*	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
+*	need to trim down list of alternatives shown for song
+*	albumtitle from metadata not taken into account
 
 <near future>
+*	Include feature to stop asking for user input during file import.
 *	SBIDAlbum::retrieveUnknownAlbum(), SBIDPerformer::retrieveVariousArtists() should use ::find
 *	SBIDPlaylist::_getAllItemsByPlaylistRecursive(): should use _items.
 *   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem

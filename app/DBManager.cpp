@@ -200,6 +200,7 @@ DBManager::_openDatabase(struct DatabaseCredentials &dc)
         Context::instance()->getPerformerMgr()->clear();
         Context::instance()->getPlaylistMgr()->clear();
         Context::instance()->getSongMgr()->clear();
+        Context::instance()->getSongPerformanceMgr()->clear();
     }
     return rc;
 }

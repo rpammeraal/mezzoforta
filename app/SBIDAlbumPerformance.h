@@ -24,6 +24,7 @@ public:
     inline int albumPosition() const { return _sb_album_position; }
     inline Duration duration() const { return _duration; }
     inline QString path() const { return _path; }
+    inline int orgAlbumPosition() const { return _org_sb_album_position; }
     inline int playlistPosition() const { return _playlistPosition; }
     inline int playPosition() const { return _sb_play_position; }
     void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
@@ -56,10 +57,15 @@ protected:
 
     SBIDAlbumPerformance();
 
+    //	Methods used by SBIDManager
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID, int& albumPosition);
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    QStringList updateSQL() const;
+
+    friend class SBIDAlbum;
+    static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
 
 private:
     Duration         _duration;
@@ -73,6 +79,7 @@ private:
     //	Not instantiated
     int              _sb_play_position;	//	current position in SBTabQueuedSongs
     int              _playlistPosition;
+    int              _org_sb_album_position; //	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
 
     void _init();
     void _setAlbumPtr();

@@ -21,11 +21,19 @@ SBIDBase::SBIDBase(const SBIDBase &c)
 {
     _init();
 
-    this->_sb_item_type=c._sb_item_type;
-    this->_sb_mbid=c._sb_mbid;
-    this->_sb_model_position=c._sb_model_position;
-    this->_url=c._url;
-    this->_wiki=c._wiki;
+
+    _errorMsg=c._errorMsg;
+    _deletedFlag=c._deletedFlag;
+    _mergedWithID=c._mergedWithID;
+
+    _changedFlag=c._changedFlag;
+    _id=c._id;
+    _newFlag=c._newFlag;
+    _sb_item_type=c._sb_item_type;
+    _sb_mbid=c._sb_mbid;
+    _sb_model_position=c._sb_model_position;
+    _url=c._url;
+    _wiki=c._wiki;
 }
 
 SBIDBase::~SBIDBase()
@@ -76,7 +84,7 @@ SBIDBase::createPtr(const QByteArray& encodedData)
         return SBIDPtr();
     }
     qDebug() << SB_DEBUG_INFO << s;
-    ptr=SBIDBase::createPtr(s);
+    ptr=SBIDBase::createPtr(s,1);
 
     return ptr;
 }
@@ -205,7 +213,7 @@ SBIDBase::convert(Common::sb_field f)
 
 ///	Protected
 void
-SBIDBase::isSaved()
+SBIDBase::clearChangedFlag()
 {
     _changedFlag=0;
 }

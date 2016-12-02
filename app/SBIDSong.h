@@ -44,6 +44,7 @@ public:
 
     //	Song specific methods
     SBTableModel* albums() const;
+    SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
     QVector<SBIDAlbumPerformancePtr> allPerformances() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
@@ -82,7 +83,7 @@ protected:
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB();
     static QString createKey(int songID);
-    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingAlbumPtr);
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDSongPtr& to);
     static void openKey(const QString& key, int& songID);
@@ -90,6 +91,9 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
     static SBIDSongPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr);
+
+    //	Inherited protected from SBIDBase
+    virtual void clearChangedFlag();
 
 private:
     QString                           _lyrics;
@@ -100,20 +104,27 @@ private:
     int                               _year;
 
     //	Attributes derived from core attributes
-    SBIDPerformerPtr                  _performerPtr;
+    SBIDPerformerPtr                  _songPerformerPtr;
 
     //	Dependent attributes
     QMap<QString,QString>             _playlistKey2performanceKey;
-    QVector<SBIDAlbumPerformancePtr> _performances;
+    QMap<int,SBIDSongPerformancePtr>  _songPerformances; //	key:performerID
+    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
 
     void _init();
-    void _loadPerformances();
+    void _loadAlbumPerformances();
+    void _loadSongPerformances();
     void _loadPlaylists();
-    void _setPerformerPtr();
+    void _setSongPerformerPtr();
 
     //	Internal setters
     void _setSongTitle(const QString& songTitle);
     void _setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void _setSongPerformerID(int performerID);
+
+    //	Aux helper methods
+    QMap<int,SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
+    QStringList _updateSQLSongPerformances() const;
 };
 
 #endif // SBIDSONG_H

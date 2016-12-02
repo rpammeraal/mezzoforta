@@ -6,6 +6,8 @@
 
 #include "Common.h"
 #include "Duration.h"
+#include "SBIDAlbum.h"
+#include "SBIDSong.h"
 
 class MusicLibrary : public QObject
 {
@@ -49,13 +51,15 @@ class MusicLibrary : public QObject
         QString dirName;
 
         //	keys assigned
-        int songPerformerID;
-        int albumPerformerID;
-        int albumID;
-        int songID;
+        int albumPerformerID;	//	only used to determine albumID
+
+        //	Ptrs assigned
+        SBIDAlbumPtr albumPtr;
+        SBIDPerformerPtr performerPtr;
+        SBIDSongPtr songPtr;
 
     private:
-        void _init() { songPerformerID=-1; albumPerformerID=-1;  albumPosition=-1; albumID=-1; songID=-1; }
+        void _init() { albumPerformerID=-1;  albumPosition=-1; albumPtr=SBIDAlbumPtr(); performerPtr=SBIDPerformerPtr(); songPtr=SBIDSongPtr(); }
     };
 
     class MLperformer
@@ -80,20 +84,28 @@ class MusicLibrary : public QObject
         int albumPerformerID;
         QString path;
         QString title;
+        int year;
+        QString genre;
+
+        int offset; //	if there any existing performances on the album, need to add offset to albumPosition
 
         QVector<QString> paths;
+
+        SBIDAlbumPtr albumPtr;
     private:
-        void _init() { albumID=-1; albumPerformerID=-1; }
+        void _init() { albumID=-1; albumPerformerID=-1; offset=0; year=1900; albumPtr=SBIDAlbumPtr(); }
     };
 
-    class MLsong
+    class MLsongPerformance
     {
     public:
-        MLsong() { _init(); }
+        MLsongPerformance() { _init(); }
         int songID;
         int performerID;
         QString songTitle;
         QString songPerformerName;
+        int year;
+        QString notes;
 
         QString key() const { return QString("%1:%2").arg(Common::simplified(songTitle)).arg(performerID); }
         QVector<QString> paths;
@@ -105,7 +117,7 @@ class MusicLibrary : public QObject
     typedef std::shared_ptr<MLentry> MLentryPtr;
     typedef std::shared_ptr<MLperformer> MLperformerPtr;
     typedef std::shared_ptr<MLalbum> MLalbumPtr;
-    typedef std::shared_ptr<MLsong> MLsongPtr;
+    typedef std::shared_ptr<MLsongPerformance> MLsongPerformancePtr;
 
 public:
     explicit MusicLibrary(QObject *parent = 0);

@@ -53,8 +53,6 @@ AudioDecoderFlacReader::backFill()
         }
     }
 
-    //	Now prepare for exit.
-    _ad->_exit();
     qDebug() << SB_DEBUG_INFO << "end";
     emit QThread::currentThread()->exit();
 }

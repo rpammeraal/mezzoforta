@@ -33,6 +33,8 @@ public:
         sb_type_album_performance=7
     };
 
+    static size_t sb_type_count() { return 8; }
+
     SBIDBase();
     SBIDBase(const SBIDBase& c);
     virtual ~SBIDBase();
@@ -102,20 +104,19 @@ protected:
 
     //	Used by SBIDManager*:: and SBID*:: classes
     inline bool changedFlag() const { return _changedFlag; }
-    inline void clearChangedFlag() { _changedFlag=0; }
+    virtual void clearChangedFlag();
     inline bool deletedFlag() const { return _deletedFlag; }
     inline bool mergedFlag() const { qDebug() << SB_DEBUG_INFO << _mergedWithID; return _mergedWithID!=-1; }
     inline int mergeWithID() const { return _mergedWithID; }
+	inline int newFlag() const { return _newFlag; }
     inline void setChangedFlag() { _changedFlag=1; }
     inline void setDeletedFlag() { _deletedFlag=1; }
-
-    //	Used by SBIDManager*:: and SBID*:: classes
-    virtual void isSaved();
+    inline void setNewFlag() { _newFlag=1; }
 
 private:
     bool        _changedFlag;
-    bool        _newFlag;
     int         _id;
+    bool        _newFlag;
     sb_type     _sb_item_type;
     QString     _sb_mbid;
     int         _sb_model_position;

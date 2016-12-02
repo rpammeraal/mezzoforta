@@ -125,6 +125,8 @@ SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool p
         {
             QLabel* l=new QLabel;
             SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
+            qDebug() << SB_DEBUG_INFO << currentPerformancePtr->albumID();
+            SB_DEBUG_IF_NULL(currentAlbumPtr);
 
             l->setWindowFlags(Qt::FramelessWindowHint);
             l->setTextFormat(Qt::RichText);
@@ -200,7 +202,6 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                 currentKey=currentPerformerPtr->key();
                 currentPerformerName=currentPerformerPtr->performerName();
             }
-            qDebug() << SB_DEBUG_INFO << i << j << currentKey << currentPerformerName;
 
             QLabel* l=new QLabel;
             l->setWindowFlags(Qt::FramelessWindowHint);
@@ -424,7 +425,7 @@ SBDialogSelectItem::OK(const QString& i)
     _hasSelectedItemFlag=1;
     if(i!="x:x")
     {
-        _currentPtr=SBIDBase::createPtr(i);
+        _currentPtr=SBIDBase::createPtr(i,1);
     }
     this->close();
 }

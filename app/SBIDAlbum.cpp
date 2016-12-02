@@ -153,15 +153,17 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDAlbumPerformancePtr> list;
 
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
 
     int index=0;
-    for(int i=0;i<_performances.count();i++)
+    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
+    while(pIT.hasNext())
     {
-        const SBIDAlbumPerformancePtr performancePtr=_performances.at(i);
+        pIT.next();
+        const SBIDAlbumPerformancePtr performancePtr=pIT.value();
         if(performancePtr->path().length()>0)
         {
             list[index++]=performancePtr;
@@ -190,7 +192,6 @@ SBIDAlbum::albumPerformerName() const
 {
     if(!_performerPtr)
     {
-            qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
     }
     return _performerPtr->performerName();
@@ -282,17 +283,44 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
     return SQL;
 }
 
+SBIDAlbumPerformancePtr
+SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes)
+{
+    SBIDAlbumPerformancePtr albumPerformancePtr;
+    if(_albumPerformances.count()==0)
+    {
+        _loadAlbumPerformances();
+    }
+
+    if(!_albumPerformances.contains(albumPosition))
+    {
+        setChangedFlag();
+        albumPerformancePtr=SBIDAlbumPerformance::createNew(songID, performerID, this->albumID(), albumPosition, year, path, duration, notes);
+
+        _albumPerformances[albumPosition]=albumPerformancePtr;
+    }
+    else
+    {
+        albumPerformancePtr=_albumPerformances[albumPosition];
+    }
+    return albumPerformancePtr;
+}
+
 Duration
 SBIDAlbum::duration() const
 {
     Duration duration;
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
-    for(int i=0;i<_performances.count();i++)
+
+    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
+    while(pIT.hasNext())
     {
-        duration+=_performances.at(i)->duration();
+        pIT.next();
+        const SBIDAlbumPerformancePtr performancePtr=pIT.value();
+        duration+=performancePtr->duration();
     }
     return duration;
 }
@@ -622,22 +650,22 @@ SBIDAlbum::mergeSongInAlbum(int newPosition, const SBIDBase& song) const
 int
 SBIDAlbum::numPerformances() const
 {
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
-    return _performances.count();
+    return _albumPerformances.count();
 }
 
 SBTableModel*
 SBIDAlbum::performances() const
 {
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
     SBTableModel* tm=new SBTableModel();
-    tm->populatePerformancesByAlbum(_performances);
+    tm->populatePerformancesByAlbum(_albumPerformances);
     return tm;
 }
 
@@ -1270,7 +1298,6 @@ SBIDAlbum::performerPtr() const
 {
     if(!_performerPtr)
     {
-            qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_setPerformerPtr();
     }
     return _performerPtr;
@@ -1301,11 +1328,10 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
 
-    if(forcedFlag==1 || _performances.count()>=0)
+    if(forcedFlag==1 || _albumPerformances.count()>=0)
     {
-        _loadPerformances();
+        _loadAlbumPerformances();
     }
-            qDebug() << SB_DEBUG_INFO;
     _setPerformerPtr();
 }
 
@@ -1462,8 +1488,6 @@ SBSqlQueryModel*
 SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr)
 {
     qDebug() << SB_DEBUG_INFO << tobeFound.albumTitle;
-    qDebug() << SB_DEBUG_INFO << tobeFound.performerID;
-
     int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
 
     //	MatchRank:
@@ -1527,7 +1551,6 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._genre                =r.value(4).toString();
     album._notes                =r.value(5).toString();
 
-    qDebug() << SB_DEBUG_INFO;
     return std::make_shared<SBIDAlbum>(album);
 }
 
@@ -1575,14 +1598,38 @@ SBIDAlbum::updateSQL() const
 {
     QStringList SQL;
 
-    if(deletedFlag())
+    qDebug() << SB_DEBUG_INFO << deletedFlag() << newFlag() << changedFlag() << mergedFlag();
+
+    if(deletedFlag() && !newFlag())
     {
 
     }
-
-    if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(newFlag() && !deletedFlag())
     {
 
+    }
+    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    {
+        SQL.append(QString(
+            "UPDATE ___SB_SCHEMA_NAME___record "
+            "SET "
+                "artist_id=%2, "
+                "title='%3', "
+                "year=%4, "
+                "notes='%5', "
+                "genre='%6' "
+            "WHERE "
+                "record_id=%1 "
+        )
+            .arg(this->albumID())
+            .arg(this->albumPerformerID())
+            .arg(Common::escapeSingleQuotes(this->albumTitle()))
+            .arg(this->year())
+            .arg(Common::escapeSingleQuotes(this->notes()))
+            .arg(Common::escapeSingleQuotes(this->genre()))
+        );
+
+        SQL.append(_updateSQLAlbumPerformances());
     }
 
     if(SQL.count()==0)
@@ -1601,6 +1648,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &tobeMatched, SBIDAlbumPtr exis
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     bool resultCode=1;
     QMap<int,QList<SBIDAlbumPtr>> matches;
+    bool createNewFlag=0;
 
     int findCount=amgr->find(tobeMatched,existingAlbumPtr,matches);
 
@@ -1627,26 +1675,42 @@ SBIDAlbum::userMatch(const Common::sb_parameters &tobeMatched, SBIDAlbumPtr exis
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO;
                 SBIDPtr selected=pu->getSelected();
                 if(selected)
                 {
-                    //	Existing performer is choosen
+                    //	Existing album is choosen
                     selectedAlbumPtr=std::dynamic_pointer_cast<SBIDAlbum>(selected);
+                    selectedAlbumPtr->refreshDependents();	//	May need performances data later on
                 }
                 else
                 {
-                    //	New performer has been choosen -- create.
-                    selectedAlbumPtr=amgr->createInDB();
-                    selectedAlbumPtr->_setAlbumTitle(tobeMatched.performerName);
-                    amgr->commit(selectedAlbumPtr,dal,0);
+                    createNewFlag=1;
                 }
             }
         }
     }
+    if(findCount==0 || createNewFlag)
+    {
+        selectedAlbumPtr=amgr->createInDB();
+        selectedAlbumPtr->_setAlbumTitle(tobeMatched.albumTitle);
+        selectedAlbumPtr->_setAlbumPerformerID(tobeMatched.performerID);
+        selectedAlbumPtr->_setYear(tobeMatched.year);
+        selectedAlbumPtr->_setGenre(tobeMatched.genre);
+        amgr->commit(selectedAlbumPtr,dal,0);
+    }
     return selectedAlbumPtr;
 }
 
+void
+SBIDAlbum::clearChangedFlag()
+{
+    SBIDBase::clearChangedFlag();
+    foreach(SBIDAlbumPerformancePtr performancePtr,_albumPerformances)
+    {
+        performancePtr->clearChangedFlag();
+    }
+    //	AlbumPerformances are owned by SBIDAlbum -- don't clear these
+}
 
 ///	Private methods
 void
@@ -1660,14 +1724,35 @@ SBIDAlbum::_init()
 }
 
 void
-SBIDAlbum::_loadPerformances()
+SBIDAlbum::_loadAlbumPerformances()
 {
-    _performances=Preloader::performances(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),1);
+    //	Silly. Consistent with SBIDSong/SBIDSongPerformance.
+    _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
 void
 SBIDAlbum::_setPerformerPtr()
 {
-    qDebug() << SB_DEBUG_INFO;
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_album_performer_id,1);
+}
+
+QMap<int,SBIDAlbumPerformancePtr>
+SBIDAlbum::_loadAlbumPerformancesFromDB() const
+{
+    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),1);
+}
+
+QStringList
+SBIDAlbum::_updateSQLAlbumPerformances() const
+{
+    QStringList SQL;
+
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    while(apIT.hasNext())
+    {
+        apIT.next();
+
+        SQL.append(apIT.value()->updateSQL());
+    }
+    return SQL;
 }

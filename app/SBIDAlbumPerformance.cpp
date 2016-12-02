@@ -18,6 +18,7 @@ SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDSo
 
     _sb_play_position     =p._sb_play_position;
     _playlistPosition     =p._playlistPosition;
+    _org_sb_album_position=p._org_sb_album_position;
 }
 
 SBIDAlbumPerformance::~SBIDAlbumPerformance()
@@ -350,9 +351,9 @@ SBIDAlbumPerformance::performancesBySong(int songID)
             "op.path "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
-                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
                     "s.song_id=p.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
                     "p.song_id=rp.song_id AND "
                     "p.artist_id=rp.artist_id  "
                 "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
@@ -399,6 +400,8 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     performance.setYear(               r.value(5).toInt());
     performance.setNotes(              Common::parseTextFieldDB(&r,6));
     performance._path                 =Common::parseTextFieldDB(&r,7);
+
+    performance._org_sb_album_position=performance._sb_album_position;
 
     qDebug() << SB_DEBUG_INFO << performance.key() << r.value(7).toString() << performance._path;
     return std::make_shared<SBIDAlbumPerformance>(performance);
@@ -469,6 +472,122 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
     return new SBSqlQueryModel(q);
 }
 
+QStringList
+SBIDAlbumPerformance::updateSQL() const
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QStringList SQL;
+
+    qDebug() << SB_DEBUG_INFO << deletedFlag() << newFlag();
+    if(deletedFlag() && !newFlag())
+    {
+        SQL.append(QString
+        (
+            "DELETE FROM ___SB_SCHEMA_NAME___record_performance "
+            "WHERE record_id=%1 AND record_position=%2 "
+        )
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_album_position)
+        );
+    }
+    else if(newFlag() && !deletedFlag())
+    {
+        //	Insert with NULL values for op_fields
+        SQL.append(QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___record_performance "
+                "(song_id,artist_id,record_id,record_position,duration,notes) "
+            "VALUES "
+                "(%1, %2, %3, %4, '%5', '%6') "
+        )
+            .arg(this->songID())
+            .arg(this->songPerformerID())
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_album_position)
+            .arg(this->_duration.toString(Duration::sb_full_hhmmss_format))
+            .arg(this->notes())
+        );
+
+        //	Now insert the online_performance record
+        const QStringList t=_path.split('.');
+        qDebug() << SB_DEBUG_INFO << t << t.length() << t.size();
+        const QString extension=t[t.length()-1];
+        qDebug() << SB_DEBUG_INFO << _path << extension;
+
+        SQL.append(QString
+        (
+            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
+                "(format_id,song_id,artist_id,record_id,record_position,path,source_id,insert_order ) "
+            "SELECT "
+                "df.format_id, "
+                "%2, "
+                "%3, "
+                "%4, "
+                "%5, "
+                "'%6', "
+                "%7,  "
+                "%8(MAX(insert_order),-1)+1 "
+            "FROM "
+                "digital_format df, "
+                "___SB_SCHEMA_NAME___online_performance op "
+            "WHERE "
+                "df.extension='%1' "
+            "GROUP BY "
+                "df.format_id "
+        )
+            .arg(extension)
+            .arg(this->songID())
+            .arg(this->songPerformerID())
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_album_position)
+            .arg(Common::escapeSingleQuotes(this->_path))
+            .arg(0)
+            .arg(dal->getIsNull())
+        );
+
+        //	Now update the op_fields in record_performance
+        SQL.append(QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "op_song_id=song_id, "
+                "op_artist_id=artist_id, "
+                "op_record_id=record_id, "
+                "op_record_position=record_position "
+            "WHERE "
+                "record_id=%1 AND "
+                "record_position=%2 "
+        )
+            .arg(this->_sb_album_id)
+            .arg(this->_sb_album_position)
+        );
+    }
+
+    return SQL;
+}
+
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int albumPosition, int year, const QString &path, const Duration &duration, const QString& notes)
+{
+    SBIDAlbumPerformance albumPerformance;
+
+    albumPerformance._duration=duration;
+    albumPerformance._sb_album_id=albumID;
+    albumPerformance._sb_album_position=albumPosition;
+    albumPerformance._path=path;
+
+    albumPerformance.setSongID(songID);
+    albumPerformance.setPerformerID(performerID);
+    albumPerformance.setYear(year);
+    albumPerformance.setNotes(notes);
+
+    albumPerformance.setNewFlag();
+
+    qDebug() << SB_DEBUG_INFO << albumPerformance.newFlag();
+
+    return std::make_shared<SBIDAlbumPerformance>(albumPerformance);
+}
+
 //	Private methods
 void
 SBIDAlbumPerformance::_init()
@@ -477,6 +596,9 @@ SBIDAlbumPerformance::_init()
     _sb_album_position=-1;
     _path="";
     _albumPtr=SBIDAlbumPtr();
+    _sb_play_position=-1;
+    _playlistPosition=-1;
+    _org_sb_album_position=-1;
 }
 
 void

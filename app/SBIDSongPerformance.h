@@ -59,24 +59,36 @@ public:
     static QString createKey(int songID, int performerID);
     static SBIDSongPerformancePtr retrieveSongPerformance(int songID, int performerID,bool noDependentsFlag=0);
 
+    //	Helper methods for SBIDManagerTemplate
+    static SBSqlQueryModel* performancesBySong(int songID);
+
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
 
     SBIDSongPerformance();
 
+    //	Methods used by SBIDManager
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr);
     static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
+    static void openKey(const QString& key, int& songID, int& performerID);
     void postInstantiate(SBIDSongPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    QStringList updateSQL() const;
 
     //	Setters to accomodate SBIDAlbumPerformance
-    void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; }
-    void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; }
-    void setYear(int year) { _year=year; }
-    void setNotes(const QString& notes) { _notes=notes; }
+    void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; setChangedFlag(); }
+    void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
+    void setYear(int year) { _year=year; setChangedFlag(); }
+    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void setOriginalPerformerFlag(bool originalPerformerFlag);
+
+    friend class SBIDSong;
+    static SBIDSongPerformancePtr createNew(int songID,int performerID,int year,const QString& notes);
 
 private:
     QString          _notes;
+    bool             _originalPerformerFlag;
     int              _sb_song_id;
     int              _sb_performer_id;
     int              _year;

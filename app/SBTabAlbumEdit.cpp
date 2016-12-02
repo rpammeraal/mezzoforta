@@ -240,14 +240,17 @@ public:
 
     void populate()
     {
-        QVector<SBIDAlbumPerformancePtr> performanceList=_albumPtr->performanceList();
+        QMap<int,SBIDAlbumPerformancePtr> performanceList=_albumPtr->performanceList();
         QList<QStandardItem *>column;
         QStandardItem* item;
 
         //for(int i=0;i<qm->rowCount();i++)
-        for(int i=0;i<performanceList.count();i++)
+        QMapIterator<int,SBIDAlbumPerformancePtr> pIT(performanceList);
+        int i=0;
+        while(pIT.hasNext())
         {
-            SBIDAlbumPerformancePtr performancePtr=performanceList.at(i);
+            pIT.next();
+            SBIDAlbumPerformancePtr performancePtr=pIT.value();
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_deleteflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_newflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_mergedtoindex
@@ -259,6 +262,7 @@ public:
             item=new QStandardItem(QString("%1").arg(performancePtr->songPerformerName())); column.append(item); //	sb_column_performername
             item=new QStandardItem(""); column.append(item);                                                     //	sb_column_notes
             this->appendRow(column); column.clear();
+            i++;
         }
 
         int columnIndex=0;

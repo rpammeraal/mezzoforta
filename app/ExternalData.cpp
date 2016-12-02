@@ -100,11 +100,13 @@ ExternalData::getCachePath(const SBIDPtr& ptr)
     p.replace("!","");
     QDir d;
     d.mkpath(p);
-    QString f=QString("%1/%2.%3")
+    SB_DEBUG_IF_NULL(ptr);
+    QString f=ptr?QString("%1/%2.%3")
         .arg(p)
         .arg(ptr->type())
-        .arg(ptr->itemID())
+        .arg(ptr->itemID()):QString();
     ;
+    qDebug() << SB_DEBUG_INFO << f;
     return f;
 }
 

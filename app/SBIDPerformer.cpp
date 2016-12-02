@@ -295,6 +295,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     bool resultCode=1;
     QMap<int,QList<SBIDPerformerPtr>> matches;
+    bool createNewFlag=0;
 
     int findCount=pemgr->find(tobeMatched,existingPerformerPtr,matches);
 
@@ -330,13 +331,16 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
                 }
                 else
                 {
-                    //	New performer has been choosen -- create.
-                    selectedPerformerPtr=pemgr->createInDB();
-                    selectedPerformerPtr->_setPerformerName(tobeMatched.performerName);
-                    pemgr->commit(selectedPerformerPtr,dal,0);
+                    createNewFlag=1;
                 }
             }
         }
+    }
+    if(findCount==0 || createNewFlag)
+    {
+        selectedPerformerPtr=pemgr->createInDB();
+        selectedPerformerPtr->_setPerformerName(tobeMatched.performerName);
+        pemgr->commit(selectedPerformerPtr,dal,0);
     }
     return selectedPerformerPtr;
 }
@@ -477,6 +481,7 @@ SBIDPerformer::createKey(int performerID,int unused)
 SBSqlQueryModel*
 SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr)
 {
+    qDebug() << SB_DEBUG_INFO << tobeFound.performerName;
     QString newSoundex=Common::soundex(tobeFound.performerName);
     int excludeID=(existingPerformerPtr?existingPerformerPtr->performerID():-1);
 

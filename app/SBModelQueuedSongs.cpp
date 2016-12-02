@@ -36,7 +36,7 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr ptr=SBIDBase::createPtr(encodedData);
+    SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
     if(ptr->itemType()==SBIDBase::sb_type_album_performance)
     {
         SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);

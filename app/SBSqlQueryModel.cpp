@@ -89,7 +89,7 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData);
+    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
     qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
 
     const QModelIndex n=this->index(parent.row(),0);

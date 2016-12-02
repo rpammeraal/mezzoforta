@@ -123,7 +123,7 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
     }
     else
     {
-        ptr=SBIDBase::createPtr(selected.key);
+        ptr=SBIDBase::createPtr(selected.key,1);
     }
     if(ptr)
     {

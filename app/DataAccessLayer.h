@@ -39,7 +39,9 @@ public:
     DataAccessLayer(const DataAccessLayer& c);
     ~DataAccessLayer();
 
-    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,bool showProgressDialogFlag=1);
+    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,bool showProgressDialogFlag=1) const;
+    QString createRestorePoint() const;
+    bool restore(const QString& restorePoint) const;
 
     DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);

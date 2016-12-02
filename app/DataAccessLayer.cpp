@@ -45,7 +45,7 @@ DataAccessLayer::~DataAccessLayer()
 }
 
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,bool showProgressDialogFlag)
+DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,bool showProgressDialogFlag) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -109,6 +109,213 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     }
     qDebug() << SB_DEBUG_INFO << "SuccessFlag:" << successFlag;
     return successFlag;
+}
+
+QString
+DataAccessLayer::createRestorePoint() const
+{
+    QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
+    QStringList ID;
+    ID.append("restorepoint");
+
+    for(size_t i=0;i<SBIDBase::sb_type_count();i++)
+    {
+        QString q;
+        switch((SBIDBase::sb_type)i)
+        {
+        case SBIDBase::sb_type_song:
+            q=QString("SELECT MAX(song_id) FROM ___SB_SCHEMA_NAME___song");
+            break;
+
+        case SBIDBase::sb_type_performer:
+            q=QString("SELECT MAX(artist_id) FROM ___SB_SCHEMA_NAME___artist");
+            break;
+
+        case SBIDBase::sb_type_album:
+            q=QString("SELECT MAX(record_id) FROM ___SB_SCHEMA_NAME___record");
+            break;
+
+        case SBIDBase::sb_type_chart:
+            q=QString("SELECT MAX(chart_id) FROM ___SB_SCHEMA_NAME___chart");
+            break;
+
+        case SBIDBase::sb_type_playlist:
+            q=QString("SELECT MAX(playlist_id) FROM ___SB_SCHEMA_NAME___playlist");
+            break;
+
+        case SBIDBase::sb_type_song_performance:
+        case SBIDBase::sb_type_album_performance:
+        case SBIDBase::sb_type_invalid:
+            break;
+        }
+        if(q.length()>0)
+        {
+            this->customize(q);
+            QSqlQuery qID(q,db);
+            qID.next();
+            ID.append(qID.value(0).toString());
+        }
+    }
+    return ID.join(':');
+}
+
+bool
+DataAccessLayer::restore(const QString &restorePoint) const
+{
+    qDebug() << SB_DEBUG_INFO << restorePoint;
+    QStringList IDs=restorePoint.split(':');
+    if(restorePoint.length()==0 || IDs.count()!=6 || IDs[0]!="restorepoint")
+    {
+        qDebug() << SB_DEBUG_ERROR << "Invalid restorepoint:" << restorePoint;
+    }
+    qDebug() << SB_DEBUG_INFO << IDs;
+    int songID=IDs[1].toInt()+1;
+    int performerID=IDs[2].toInt()+1;
+    int albumID=IDs[3].toInt()+1;
+    int chartID=IDs[4].toInt()+1;
+    int playlistID=IDs[5].toInt()+1;
+
+    QStringList SQL;
+
+    //	Charts
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 OR "
+            "chart_id>=%3"
+    )
+        .arg(songID)
+        .arg(performerID)
+        .arg(chartID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___chart "
+        "WHERE "
+            "chart_id>=%1"
+    )
+        .arg(chartID)
+    );
+
+    //	Playlists
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___playlist_performance "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 OR "
+            "record_id>=%3 OR "
+            "playlist_id>=%4"
+    )
+        .arg(songID)
+        .arg(performerID)
+        .arg(albumID)
+        .arg(playlistID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___playlist_composite "
+        "WHERE "
+            "playlist_id>=%1 OR "
+            "playlist_playlist_id>=%1 OR "
+            "playlist_chart_id>=%2 OR "
+            "playlist_record_id>=%3 OR "
+            "playlist_artist_id>=%4 "
+    )
+        .arg(playlistID)
+        .arg(chartID)
+        .arg(albumID)
+        .arg(performerID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___playlist "
+        "WHERE "
+            "playlist_id>=%1"
+    )
+        .arg(playlistID)
+    );
+
+    //	Records
+    SQL.append(QString(
+        "UPDATE ___SB_SCHEMA_NAME___record_performance "
+        "SET "
+            "op_song_id=NULL, "
+            "op_artist_id=NULL, "
+            "op_record_id=NULL, "
+            "op_record_position=NULL "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 OR "
+            "record_id>=%3 "
+    )
+        .arg(songID)
+        .arg(performerID)
+        .arg(albumID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___online_performance "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 OR "
+            "record_id>=%3 "
+    )
+        .arg(songID)
+        .arg(performerID)
+        .arg(albumID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___record_performance "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 OR "
+            "record_id>=%3 "
+    )
+        .arg(songID)
+        .arg(performerID)
+        .arg(albumID)
+    );
+
+    //	Performances, songs
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___performance "
+        "WHERE "
+            "song_id>=%1 OR "
+            "artist_id>=%2 "
+    )
+        .arg(songID)
+        .arg(performerID)
+    );
+
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___song "
+        "WHERE "
+            "song_id>=%1 "
+    )
+        .arg(songID)
+    );
+
+    //	Album
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___record "
+        "WHERE "
+            "record_id>=%1 "
+    )
+        .arg(albumID)
+    );
+
+    //	Performer
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___artist "
+        "WHERE "
+            "artist_id>=%1 "
+    )
+        .arg(performerID)
+    );
+
+    return executeBatch(SQL);
 }
 
 DataAccessLayer&

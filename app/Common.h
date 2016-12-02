@@ -93,6 +93,9 @@ public:
         QString albumTitle;
         QString performerName;
         QString songTitle;
+        QString notes;
+        int year;
+        QString genre;
     };
 
     static QString escapeSingleQuotes(const QString &);

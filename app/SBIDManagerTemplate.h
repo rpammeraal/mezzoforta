@@ -48,10 +48,11 @@ public:
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
+    QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
 
     //	Update
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1,bool errorOnNoChanges=0);
     bool commitAll1(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
     void merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
@@ -121,15 +122,12 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
         currentPtr=T::instantiate(r);
         addItem(currentPtr);
         QString key=currentPtr->key();
-        qDebug() << SB_DEBUG_INFO << i << bucket << currentPtr->key() << currentPtr->genericDescription();
 
         if(!processedKeys.contains(key))
         {
-            qDebug() << SB_DEBUG_INFO << "not found yet";
             if(!excludePtr || (excludePtr && excludePtr->key()==key))
             {
                 //	Retrieve and store
-                qDebug() << SB_DEBUG_INFO << "added to bucket" << bucket;
                 matches[bucket].append(currentPtr);
                 count++;
 
@@ -138,7 +136,6 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
         }
     }
 
-    qDebug() << SB_DEBUG_INFO;
     for(int i=0;i<matches.count();i++)
     {
         if(matches.contains(i))
@@ -150,7 +147,6 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
             qDebug() << SB_DEBUG_INFO << i << "not populated";
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return count;
 }
 
@@ -320,6 +316,72 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
     return list;
 }
 
+//	First field of qm contains int to be used for key in QMap<int,std::shared_ptr<T>>
+template <class T, class parentT> QMap<int,std::shared_ptr<T>>
+SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
+{
+    bool showProgressDialogFlag=label.count()>1;
+    const int rowCount=qm->rowCount();
+    int currentRowIndex=0;
+    QProgressDialog pd(label,QString(),0,rowCount);
+
+    qDebug() << SB_DEBUG_INFO << label << rowCount;
+    if(rowCount<=20)
+    {
+        showProgressDialogFlag=0;
+    }
+
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+        QCoreApplication::processEvents();
+    }
+
+    QMap<int,std::shared_ptr<T>> map;
+    for(int i=0;i<rowCount;i++)
+    {
+        QSqlRecord r=qm->record(i);
+        std::shared_ptr<T> newT=T::instantiate(r);
+        const QString key=newT->key();
+        std::shared_ptr<T> oldT;
+
+        //	Find if pointer exist -- Qt may have allocated slots for these
+        if(contains(key))
+        {
+            oldT=_leMap[key];
+        }
+
+        //	If pointer is not empty, assign new object to existing object,
+        //	otherwise, set pointer
+        if(oldT)
+        {
+            *oldT=*newT;
+        }
+        else
+        {
+            addItem(newT);
+            if(openFlag!=OpenFlags::open_flag_parentonly)
+            {
+                newT->refreshDependents();
+            }
+        }
+        map[r.value(0).toInt()]=newT;
+
+        //	Take care of progress dialog
+        if(showProgressDialogFlag && (currentRowIndex%10)==0)
+        {
+            QCoreApplication::processEvents();
+            pd.setValue(currentRowIndex);
+        }
+        currentRowIndex++;
+    }
+    pd.setValue(rowCount);
+    return map;
+}
+
 //	Update
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer *dal, bool showProgressDialogFlag)
@@ -340,12 +402,18 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag)
+SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag,bool errorOnNoChangesFlag)
 {
     QList<std::shared_ptr<T>> list;
 
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
+
+    if(SQL.count()==0 && errorOnNoChangesFlag==1)
+    {
+        qDebug() << SB_DEBUG_ERROR << "No changes. Erroring out (errorOnNoChangesFlag=" << errorOnNoChangesFlag << ")";
+        return 0;
+    }
 
     bool successFlag=0;
     successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag);
@@ -353,7 +421,7 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
     if(successFlag)
     {
         _changes.clear();
-        ptr->isSaved();
+        ptr->clearChangedFlag();
     }
     return successFlag;
 }
@@ -379,7 +447,7 @@ SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
         {
             const QString key=_changes.at(i);
             ptr=retrieve(key);
-            ptr->isSaved();
+            ptr->clearChangedFlag();
         }
         _changes.clear();
     }
@@ -470,7 +538,6 @@ SBIDManagerTemplate<T,parentT>::rollbackChanges1()
 template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr)
 {
-    qDebug() << SB_DEBUG_INFO << tobeMatched.songTitle << tobeMatched.performerID;
     std::shared_ptr<T> ptr=T::userMatch(tobeMatched,excludedPtr);
     if(ptr && !contains(ptr->key()))
     {

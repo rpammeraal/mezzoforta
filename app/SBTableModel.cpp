@@ -78,7 +78,7 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData);
+    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
     qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
 
     const QModelIndex n=this->index(parent.row(),0);
@@ -242,10 +242,11 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
             _setItem(i,5,performancePtr->songPerformerName());
         }
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
-SBTableModel::populatePerformancesByAlbum(QVector<SBIDAlbumPerformancePtr> performances)
+SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances)
 {
     _init();
 
@@ -259,9 +260,12 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDAlbumPerformancePtr> perfo
     setHorizontalHeaderLabels(header);
 
     //	Populate data
-    for(int i=0;i<performances.count();i++)
+    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(performances);
+    int i=0;
+    while(pIT.hasNext())
     {
-        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
+        pIT.next();
+        SBIDAlbumPerformancePtr performancePtr=pIT.value();
 
         if(performancePtr)
         {
@@ -272,6 +276,7 @@ SBTableModel::populatePerformancesByAlbum(QVector<SBIDAlbumPerformancePtr> perfo
             _setItem(i, 4,performancePtr->performerPtr()->key());
             _setItem(i, 5,performancePtr->songPerformerName());
             qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription();
+            i++;
         }
     }
 }
@@ -300,10 +305,10 @@ SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
         it.next();
         SBIDPtr ptr;
 
-        ptr=SBIDBase::createPtr(it.key());
+        ptr=SBIDBase::createPtr(it.key(),1);
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
 
-        ptr=SBIDBase::createPtr(it.value());
+        ptr=SBIDBase::createPtr(it.value(),1);
         SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
 
         if(playlistPtr && performancePtr)

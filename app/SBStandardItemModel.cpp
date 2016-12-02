@@ -69,7 +69,7 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr ptr=SBIDBase::createPtr(encodedData);
+    SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
     qDebug() << SB_DEBUG_INFO << "Dropping " << *ptr;
 
     //const QModelIndex n=this->index(parent.row(),parent.column());
