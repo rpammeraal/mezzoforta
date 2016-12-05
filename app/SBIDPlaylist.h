@@ -52,11 +52,11 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
-    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
+    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
     static QString createKey(int playlistID,int unused=-1);
-    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=0);
+    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
 
 protected:
     SBIDPlaylist();
@@ -90,7 +90,7 @@ private:
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDAlbumPerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDAlbumPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=1);
+    static QMap<int,SBIDAlbumPerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=0);
 
     QStringList _generateSQLdeleteItem(int playlistPosition) const;
     QStringList _generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const;

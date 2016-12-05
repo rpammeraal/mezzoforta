@@ -663,8 +663,10 @@ SBIDPlaylist::key() const
 void
 SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    if(forcedFlag==1 || _items.count()>=0)
+    qDebug() << SB_DEBUG_INFO << this->key() << showProgressDialogFlag << forcedFlag << _items.count();
+    if(forcedFlag==1 || _items.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         _items=Preloader::playlistItems(this->playlistID(),showProgressDialogFlag);
     }
 }
@@ -681,13 +683,16 @@ SBIDPlaylist::createKey(int playlistID, int unused)
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
+SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag,bool showProgressDialogFlag)
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr playlistPtr;
     if(playlistID>=0)
     {
-        playlistPtr=pmgr->retrieve(createKey(playlistID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
+        playlistPtr=pmgr->retrieve(
+                        createKey(playlistID),
+                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default),
+                        showProgressDialogFlag);
     }
     return playlistPtr;
 }

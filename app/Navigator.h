@@ -58,6 +58,7 @@ public slots:
     void setFocus();
     void tabBackward();
     void tabForward();
+    void textChanged(const QString& textChanged);
 
 protected:
     friend class Context;

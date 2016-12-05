@@ -67,7 +67,6 @@ SBModelQueuedSongs::flags(const QModelIndex &index) const
 QMimeData*
 SBModelQueuedSongs::mimeData(const QModelIndexList& indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
     foreach (const QModelIndex &idx, indexes)
     {
         if (idx.isValid())
@@ -159,14 +158,9 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
     case SBModelQueuedSongs::sb_column_songtitle:
     case SBModelQueuedSongs::sb_column_duration:
         {
-            //	CWIP:performance
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_songid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-        qDebug() << SB_DEBUG_INFO;
             SBIDSongPtr songPtr=SBIDSong::retrieveSong(itemID);
-
-            //item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
-            //int song.setSongPerformerID((item!=NULL)?item->text().toInt():-1);
 
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
             int albumID=((item!=NULL)?item->text().toInt():-1);
@@ -174,18 +168,6 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_position);
             int albumPosition=((item!=NULL)?item->text().toInt():-1);
 
-//            //	Fill in text attributes
-//            item=this->item(idx.row(),SBModelQueuedSongs::sb_column_songtitle);
-//            song.setSongTitle((item!=NULL)?item->text():QString());
-
-//            item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
-//            song.setSongPerformerName((item!=NULL)?item->text():QString());
-
-//            item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
-//            song.setAlbumTitle((item!=NULL)?item->text():QString());
-
-            //	CWIP:performance
-            //	songPtr->setCurrentPerformanceByAlbumPosition(albumID,albumPosition);
             ptr=songPtr;
         }
         break;
@@ -393,7 +375,6 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
 
     if(songID!=-1)
     {
-        qDebug() << SB_DEBUG_INFO << songID << albumID << albumPosition;
         performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(albumID,albumPosition);
         performancePtr->setPlaylistPosition(playlistPosition);
     }

@@ -248,7 +248,6 @@ SBIDSong::albums() const
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
     tm->populateAlbumsBySong(_albumPerformances);
-    qDebug() << SB_DEBUG_INFO;
     return tm;
 }
 
@@ -277,7 +276,6 @@ SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
     {
         songPerformancePtr=_songPerformances[performerID];
     }
-    qDebug() << SB_DEBUG_INFO << _songPerformances.count();
     return songPerformancePtr;
 }
 
@@ -360,18 +358,13 @@ SBIDSong::numPerformances() const
 SBTableModel*
 SBIDSong::playlistList()
 {
-        qDebug() << SB_DEBUG_INFO;
     if(!_playlistKey2performanceKey.count())
     {
         //	Playlists may not be loaded -- retrieve again
-        qDebug() << SB_DEBUG_INFO;
         this->refreshDependents();
     }
-        qDebug() << SB_DEBUG_INFO;
     SBTableModel* tm=new SBTableModel();
-        qDebug() << SB_DEBUG_INFO;
     tm->populatePlaylists(_playlistKey2performanceKey);
-        qDebug() << SB_DEBUG_INFO;
     return tm;
 }
 
@@ -1141,7 +1134,7 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
 
-    if(forcedFlag==1 || _albumPerformances.count()>=0)
+    if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
     }
@@ -1475,7 +1468,6 @@ SBIDSong::updateSQL() const
 SBIDSongPtr
 SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr)
 {
-    qDebug() << SB_DEBUG_INFO << tobeMatched.songTitle << tobeMatched.performerID;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     SBIDSongPtr selectedSongPtr;
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
@@ -1508,12 +1500,10 @@ SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existi
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO;
                 SBIDPtr selected=pu->getSelected();
                 if(selected)
                 {
                     //	Existing song is choosen
-                    qDebug() << SB_DEBUG_INFO << "EXISTING";
                     selectedSongPtr=std::dynamic_pointer_cast<SBIDSong>(selected);
                 }
                 else
@@ -1525,7 +1515,6 @@ SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existi
     }
     if(findCount==0 || createNewFlag)
     {
-        qDebug() << SB_DEBUG_INFO << "NEW";
         selectedSongPtr=smgr->createInDB();
         selectedSongPtr->_setSongTitle(tobeMatched.songTitle);
         selectedSongPtr->_setNotes("populated by us");
@@ -1595,7 +1584,6 @@ SBIDSong::_loadPlaylists()
     )
         .arg(this->songID())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));

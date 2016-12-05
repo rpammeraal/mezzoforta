@@ -75,7 +75,7 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 
     if(_performances.count()==0)
     {
-        this->_loadPerformances();
+        this->_loadPerformances(0);
     }
 
     int index=0;
@@ -172,10 +172,12 @@ SBIDPerformer::numSongs() const
     }
     //	At this point, we have performances loaded. Need to go through
     //	performances and count unique songs
-    QMap<QString,int> uniqueSongs;	//	use map to count unique songs
-    for(int i=0;i<<_performances.count();i++)
+    QSet<QString> uniqueSongs;	//	use map to count unique songs
+    QVectorIterator<SBIDAlbumPerformancePtr> pIT(_performances);
+    while(pIT.hasNext())
     {
-        uniqueSongs[_performances.at(i)->key()]=1;
+        SBIDAlbumPerformancePtr performancePtr=pIT.next();
+        uniqueSongs.insert(performancePtr->key());
     }
     return uniqueSongs.count();
 }
@@ -322,7 +324,6 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO;
                 SBIDPtr selected=pu->getSelected();
                 if(selected)
                 {
@@ -364,13 +365,16 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 
 //	Static methods
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
+SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag,bool showProgressDialogFlag)
 {
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBIDPerformerPtr performerPtr;
     if(performerID>=0)
     {
-        performerPtr=pemgr->retrieve(createKey(performerID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default));
+        performerPtr=pemgr->retrieve(
+            createKey(performerID),
+            (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default),
+            showProgressDialogFlag);
     }
     return performerPtr;
 }
@@ -481,7 +485,6 @@ SBIDPerformer::createKey(int performerID,int unused)
 SBSqlQueryModel*
 SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr)
 {
-    qDebug() << SB_DEBUG_INFO << tobeFound.performerName;
     QString newSoundex=Common::soundex(tobeFound.performerName);
     int excludeID=(existingPerformerPtr?existingPerformerPtr->performerID():-1);
 

@@ -16,6 +16,7 @@ public:
     AudioDecoderFactory();
     ~AudioDecoderFactory();
 
+    static bool fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder** newAudioDecoder=NULL);
     AudioDecoder* openFile(const QString& fileName);
 
     QString error() const { return _error; }

@@ -411,7 +411,6 @@ void
 SBIDSongPerformance::_setPerformerPtr()
 {
     //	From the performance level, do NOT load any dependents
-        qDebug() << SB_DEBUG_INFO;
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,1);
 }
 

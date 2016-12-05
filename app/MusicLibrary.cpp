@@ -3,6 +3,7 @@
 
 #include "MusicLibrary.h"
 
+#include "AudioDecoderFactory.h"
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
@@ -92,11 +93,18 @@ MusicLibrary::_rescanMusicLibrary(const QString& schema)
         {
             if(fi.size()>10*1024)
             {
-                path=path.mid(schemaRoot.length());
-                MLentry entry;
-                entry.path=path;
-                foundPaths[path.toLower()]=std::make_shared<MLentry>(entry);
-                numFiles++;
+                if(AudioDecoderFactory::fileSupportedFlag(fi))
+                {
+                    path=path.mid(schemaRoot.length());
+                    MLentry entry;
+                    entry.path=path;
+                    foundPaths[path.toLower()]=std::make_shared<MLentry>(entry);
+                    numFiles++;
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_WARNING << "Unsupported file extension:" << path;
+                }
             }
             else
             {

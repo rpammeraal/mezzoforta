@@ -1,5 +1,4 @@
 #include "SBTabAlbumDetail.h"
-
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
@@ -125,6 +124,7 @@ SBTabAlbumDetail::refreshAlbumReviews()
         mw->ui.tabAlbumDetailLists->setTabEnabled(1,1);
         mw->ui.albumDetailReviews->setHtml(html);
     }
+    mw->ui.searchEdit->setFocus();
 }
 
 void
@@ -146,6 +146,7 @@ SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
     const MainWindow* mw=Context::instance()->getMainWindow();
     mw->ui.albumDetailsWikipediaPage->setUrl(url);
     mw->ui.tabAlbumDetailLists->setTabEnabled(2,1);
+    mw->ui.searchEdit->setFocus();
 
     //	CWIP: save to database
 }
@@ -239,9 +240,9 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Get detail
     SBIDAlbumPtr albumPtr;
-    if(si.ptr())
+    if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_album)
     {
-        albumPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
+        albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(si.ptr());
     }
     if(!albumPtr)
     {
@@ -261,7 +262,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumImage(QPixmap)));
     connect(ed, SIGNAL(albumWikipediaPageAvailable(QString)),
             this, SLOT(setAlbumWikipediaPage(QString)));
-    connect(ed, SIGNAL(albumReviewsAvailable(QList<QString>)),
+    connect(ed, SIGNAL(albumReviewsAvailble(QList<QString>)),
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
@@ -286,7 +287,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     tv=mw->ui.albumDetailAlbumContents;
     tm=albumPtr->performances();
     dragableColumns.clear();
-    qDebug() << SB_DEBUG_INFO << tm->rowCount();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
     populateTableView(tv,tm,0);
@@ -329,8 +329,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     {
         details+=genre.replace('|',", ");
     }
-
-
 
     //	Details: done
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);

@@ -362,7 +362,6 @@ SBTab::sortOrderChanged(int column)
 void
 SBTab::tabBarClicked(int index)
 {
-    qDebug() << SB_DEBUG_INFO << index;
     _currentSubtabID=index;
     ScreenStack* st=Context::instance()->getScreenStack();
 
@@ -430,7 +429,6 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
         }
         if(ptr)
         {
-    qDebug() << SB_DEBUG_INFO;
             Context::instance()->getNavigator()->openScreen(ptr);
         }
     }
@@ -456,7 +454,6 @@ SBTab::_hideContextMenu()
 void
 SBTab::_setSubtab(const ScreenItem& si)
 {
-    qDebug() << SB_DEBUG_INFO << _currentSubtabID << si;
     QTabWidget* tw=tabWidget();
     if(tw)
     {
@@ -481,5 +478,4 @@ SBTab::_setSubtab(const ScreenItem& si)
             ctv->sortByColumn(abs(si.sortColumn()),(si.sortColumn()>0?Qt::AscendingOrder:Qt::DescendingOrder));
         }
     }
-    qDebug() << SB_DEBUG_INFO << _currentSubtabID;
 }

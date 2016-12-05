@@ -12,6 +12,7 @@
 #include "Navigator.h"
 
 #include "Common.h"
+#include "CompleterFactory.h"
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
@@ -47,7 +48,36 @@ Navigator::~Navigator()
 void
 Navigator::clearSearchFilter()
 {
-    Context::instance()->getMainWindow()->ui.searchEdit->setText(tr(""));
+    QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+    QCompleter* completer=lineEdit->completer();
+    if(completer)
+    {
+        completer->setCurrentRow(0);
+        lineEdit->setCompleter(NULL);
+    }
+    lineEdit->clear();
+    lineEdit->setPlaceholderText("Search:");
+    lineEdit->setText("");
+    QCoreApplication::processEvents();
+
+    Navigator* navigator=Context::instance()->getNavigator();
+    completer=CompleterFactory::getCompleterAll();
+    lineEdit->setCompleter(completer);
+
+    connect(
+        completer, SIGNAL(activated(const QModelIndex&)),
+        navigator, SLOT(openItemFromCompleter(const QModelIndex&)));
+    connect(
+        lineEdit, SIGNAL(returnPressed()),
+        navigator, SLOT(applySonglistFilter()));
+    connect(
+        completer, SIGNAL(activated(QString)),
+        lineEdit, SLOT(clear()),
+        Qt::QueuedConnection);	//	this will clear the search box
+    connect(
+        lineEdit, SIGNAL(textChanged(QString)),
+        navigator, SLOT(textChanged(QString)));
+    navigator->textChanged(QString());	//	set to italics
 }
 
 void
@@ -446,6 +476,7 @@ Navigator::applySonglistFilter()
 
     mw->ui.searchEdit->setFocus();
     mw->ui.searchEdit->selectAll();
+    clearSearchFilter();
 }
 
 void
@@ -475,6 +506,7 @@ Navigator::openItemFromCompleter(const QModelIndex& i)
              static_cast<SBIDBase::sb_type>(i.sibling(i.row(), i.column()+2).data().toInt()),
              i.sibling(i.row(), i.column()+1).data().toInt());
     openScreen(ptr);
+    clearSearchFilter();
 }
 
 void
@@ -485,8 +517,8 @@ Navigator::openChooserItem(const QModelIndex &i)
     ScreenItem screenItem;
     if(screenType==ScreenItem::screen_type_sbidbase)
     {
-        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
-
+        //	OPen without dependents, so we can explicitly force a progress box when loading dependents
+        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt(),0,1);
         screenItem=ScreenItem(ptr);
 
     }
@@ -552,6 +584,22 @@ void
 Navigator::tabForward()
 {
     _moveFocusToScreen(1);
+}
+
+void
+Navigator::textChanged(const QString &textChanged)
+{
+    QLineEdit* searchEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+    QFont font=searchEdit->font();
+    if(textChanged.length()==0)
+    {
+        font.setItalic(1);
+    }
+    else
+    {
+        font.setItalic(0);
+    }
+    searchEdit->setFont(font);
 }
 
 ///	PROTECTED

@@ -65,18 +65,8 @@ SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOn
 
         ssa->exec();
         SBIDPtr ptr=ssa->getSelected();
-        if(ptr)
-        {
-            qDebug() << SB_DEBUG_INFO << ptr->key();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << "none";
-        }
-
         selectedPerformancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
     }
-        qDebug() << SB_DEBUG_INFO << selectedPerformancePtr->key();
     return selectedPerformancePtr;
 }
 
@@ -381,9 +371,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    qDebug() << SB_DEBUG_INFO;
     tm=songPtr->albums();
-    qDebug() << SB_DEBUG_INFO;
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     tm->setDragableColumns(dragableColumns);
@@ -392,9 +380,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    qDebug() << SB_DEBUG_INFO;
     tm=songPtr->playlistList();
-    qDebug() << SB_DEBUG_INFO;
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);

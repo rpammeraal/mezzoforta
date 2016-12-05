@@ -1328,7 +1328,7 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
 
-    if(forcedFlag==1 || _albumPerformances.count()>=0)
+    if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
     }
@@ -1487,7 +1487,6 @@ SBIDAlbum::createInDB()
 SBSqlQueryModel*
 SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr)
 {
-    qDebug() << SB_DEBUG_INFO << tobeFound.albumTitle;
     int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
 
     //	MatchRank:
@@ -1597,8 +1596,6 @@ QStringList
 SBIDAlbum::updateSQL() const
 {
     QStringList SQL;
-
-    qDebug() << SB_DEBUG_INFO << deletedFlag() << newFlag() << changedFlag() << mergedFlag();
 
     if(deletedFlag() && !newFlag())
     {

@@ -26,7 +26,6 @@ SBTabPlaylistDetail::subtabID2TableView(int subtabID) const
 void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
-    qDebug() << SB_DEBUG_INFO;
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
     PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
@@ -36,7 +35,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
         if(playlistPtr)
         {
             bool successFlag=playlistPtr->removePlaylistItem(selected.playlistPosition);
-            qDebug() << SB_DEBUG_INFO << successFlag;
             QString updateText;
             if(successFlag)
             {
@@ -56,11 +54,9 @@ SBTabPlaylistDetail::deletePlaylistItem()
                     .arg(playlistPtr->text())  //	4
                     .arg(playlistPtr->type()); //	5
                 SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-                qDebug() << SB_DEBUG_INFO << playlistPtr->numItems();
                 playlistPtr->refreshDependents(1,1);
                 playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDPlaylistMgr::open_flag_refresh);
                 ptr=playlistPtr;
-                qDebug() << SB_DEBUG_INFO << playlistPtr->numItems();
             }
             refreshTabIfCurrent(ptr);
             Context::instance()->getController()->updateStatusBarText(updateText);
@@ -78,8 +74,6 @@ SBTabPlaylistDetail::deletePlaylistItem()
 void
 SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 {
-    qDebug() << SB_DEBUG_INFO << fromIDPtr->genericDescription() << row;
-
     _init();
 
     //	Determine current playlist
@@ -90,7 +84,6 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
         if(playlistPtr)
         {
-            qDebug() << SB_DEBUG_INFO;
             bool successFlag=playlistPtr->moveItem(fromIDPtr,row);
             if(!successFlag)
             {

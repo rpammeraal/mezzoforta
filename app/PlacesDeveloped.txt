@@ -713,6 +713,12 @@ X	playlists that song belongs to can be edited
 -	Search Exodus/Bob Marley record. Clock One Love/People Get Ready. Too many things gets cached.
 - 	search Me And Julio Down The Schoolyard, alt click song logo to play. Crash. SBAlbumPerformance tried to load unexisting albumPerformances. Fixed.
 
+<current>
+-	Melissa Etheridge: 0 songs. Fixed.
+-	Set default on showProgressBarFlag to 0, modify parameter where needed.
+-	ignore files with unknown extension
+-	After search, search field does not get cleared.
+
 SBIDAlbum edit:
 *	need to properly assign new albumPositions to *all* albumPerformances if one (or more) aP's get removed
 *	if aP gets removed, need to set isDeletedFlag
@@ -720,14 +726,16 @@ SBIDAlbum edit:
 *	need to somehow update SBIDManager when aP's are removed/inserted/changed. Maybe a simple reload will suffice (this reload will go to screenstack and handle screenItems that references removed items properly).
 
 <bugs>
-false sortColumn: 2147483647
+*	MusicLibrary:
+    -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
+	-	if existing performance is selected, rock.performance gets inserted with role_id=0. Should be 1.
+*	SongDetail: main performer in bold. Example: Happy Xmas (War Is Over)
 *	adding/removing from playlist: duration does not get updated
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 *	remove SBID*::save() methods
-*	ignore files with unknown extension
 *	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
 *	need to trim down list of alternatives shown for song
 *	albumtitle from metadata not taken into account

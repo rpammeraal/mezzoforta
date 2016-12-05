@@ -66,7 +66,7 @@ Controller::refreshModels()
     n->resetAllFiltersAndSelections();
 
     //	Completers
-    mw->ui.searchEdit->setCompleter(CompleterFactory::getCompleterAll());
+    //	mw->ui.searchEdit: taken care of in Navigator::clearSearchFilter
     mw->ui.songEditTitle->setCompleter(CompleterFactory::getCompleterSong());
     mw->ui.songEditPerformerName->setCompleter(CompleterFactory::getCompleterPerformer());
     mw->ui.performerEditName->setCompleter(CompleterFactory::getCompleterPerformer());
@@ -333,8 +333,6 @@ Controller::setupUI()
     }
 
     qDebug() << SB_DEBUG_INFO << "playground";
-
-    qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
 
 //    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();

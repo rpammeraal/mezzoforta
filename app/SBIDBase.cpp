@@ -41,7 +41,7 @@ SBIDBase::~SBIDBase()
 }
 
 SBIDPtr
-SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag)
+SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag,bool showProgressDialogFlag)
 {
     SBIDPtr ptr;
     switch(itemType)
@@ -51,7 +51,6 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag
         break;
 
     case SBIDBase::sb_type_performer:
-        qDebug() << SB_DEBUG_INFO;
         ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
@@ -60,8 +59,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType, int itemID,bool noDependentsFlag
         break;
 
     case SBIDBase::sb_type_playlist:
-    qDebug() << SB_DEBUG_INFO;
-        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
+        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag,showProgressDialogFlag);
         break;
 
     case SBIDBase::sb_type_song_performance:
@@ -83,14 +81,13 @@ SBIDBase::createPtr(const QByteArray& encodedData)
         qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
         return SBIDPtr();
     }
-    qDebug() << SB_DEBUG_INFO << s;
     ptr=SBIDBase::createPtr(s,1);
 
     return ptr;
 }
 
 SBIDPtr
-SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
+SBIDBase::createPtr(const QString &key,bool noDependentsFlag,bool showProgressDialogFlag)
 {
     QStringList list=key.split(":");
     SBIDBase::sb_type itemID=static_cast<SBIDBase::sb_type>(list[0].toInt());
@@ -103,8 +100,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         break;
 
     case sb_type_performer:
-        qDebug() << SB_DEBUG_INFO;
-        itemPtr=SBIDPerformer::retrievePerformer(list[1].toInt(),noDependentsFlag);
+        itemPtr=SBIDPerformer::retrievePerformer(list[1].toInt(),noDependentsFlag,showProgressDialogFlag);
         break;
 
     case sb_type_album:
@@ -112,8 +108,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
         break;
 
     case sb_type_playlist:
-    qDebug() << SB_DEBUG_INFO << noDependentsFlag;
-        itemPtr=SBIDPlaylist::retrievePlaylist(list[1].toInt(),noDependentsFlag);
+        itemPtr=SBIDPlaylist::retrievePlaylist(list[1].toInt(),noDependentsFlag,showProgressDialogFlag);
         break;
 
     case sb_type_album_performance:

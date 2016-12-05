@@ -55,10 +55,10 @@ public:
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
     static bool match(const QString& editedPerformerName,int skipID);
-    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
+    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0);
+    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
     static SBIDPerformerPtr retrieveVariousArtists();
 
 protected:
@@ -97,7 +97,7 @@ private:
     //	Methods
     void _init();
     void _loadAlbums();
-    void _loadPerformances(bool showProgressDialogFlag=1);
+    void _loadPerformances(bool showProgressDialogFlag=0);
     QVector<int> _loadRelatedPerformers() const;
 
     //	Internal setters

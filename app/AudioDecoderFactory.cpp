@@ -20,34 +20,56 @@ AudioDecoderFactory::~AudioDecoderFactory()
 
 }
 
-AudioDecoder*
-AudioDecoderFactory::openFile(const QString &fileName)
+bool
+AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder **newAudioDecoder)
 {
-    //	Flensburg - Neumuenster
-    QFileInfo fi(fileName);
-    QString extension=fi.suffix();
-    AudioDecoder* ad=NULL;
-
+    QString extension=fileInfo.suffix();
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderWave(fileName);
+        if(newAudioDecoder)
+        {
+            *newAudioDecoder=new AudioDecoderWave(fileInfo.absoluteFilePath());
+        }
+        return true;
     }
     else if(AudioDecoderOggVorbis::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderOggVorbis(fileName);
+        if(newAudioDecoder)
+        {
+            *newAudioDecoder=new AudioDecoderOggVorbis(fileInfo.absoluteFilePath());
+        }
+        return true;
     }
     else if(AudioDecoderMP3::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderMP3(fileName);
+        if(newAudioDecoder)
+        {
+            *newAudioDecoder=new AudioDecoderMP3(fileInfo.absoluteFilePath());
+        }
+        return true;
     }
 #ifdef Q_OS_UNIX
     else if(AudioDecoderFlac::supportFileExtension(extension)==1)
     {
-        ad=new AudioDecoderFlac(fileName);
+        if(newAudioDecoder)
+        {
+            *newAudioDecoder=new AudioDecoderFlac(fileInfo.absoluteFilePath());
+        }
+        return true;
     }
 #endif
 
-    if(ad)
+    return false;
+}
+
+AudioDecoder*
+AudioDecoderFactory::openFile(const QString &fileName)
+{
+    //	Flensburg - Neumuenster
+    AudioDecoder* ad=NULL;
+
+    QFileInfo fi(fileName);
+    if(fileSupportedFlag(fi,&ad))
     {
         if(ad->error().length()!=0)
         {

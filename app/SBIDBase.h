@@ -38,9 +38,9 @@ public:
     SBIDBase();
     SBIDBase(const SBIDBase& c);
     virtual ~SBIDBase();
-    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=0);
+    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
     static SBIDPtr createPtr(const QByteArray& encodedData);
-    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=0);
+    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
 
     //	Public methods
     virtual QByteArray encode() const;
@@ -81,7 +81,7 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const=0;
-    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1)=0;
+    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0)=0;
 
     //	Aux methods
     static SBIDBase::sb_type convert(Common::sb_field f);

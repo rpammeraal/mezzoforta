@@ -52,16 +52,13 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     int itemID=-1;
     bool dragableColumnFlag=0;
 
-    qDebug() << SB_DEBUG_INFO;
     if((_dragableColumnList.count()>0) && (idx.column()>=0) && (idx.column()<_dragableColumnList.count()))
     {
         dragableColumnFlag=_dragableColumnList.at(idx.column());
     }
 
-    qDebug() << SB_DEBUG_INFO << dragableColumnFlag;
     if(_dragableColumnList.count()==0)
     {
-    qDebug() << SB_DEBUG_INFO;
         //	Determine sbid by going through all columns.
 
         for(int i=0;i<aim->columnCount();i++)
@@ -74,7 +71,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if(header=="sb_item_key")
             {
-                ptr=SBIDBase::createPtr(v.toString(),1);
+                ptr=SBIDBase::createPtr(v.toString(),0,1);
                 return ptr;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
@@ -103,14 +100,13 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
-                ptr=SBIDBase::createPtr(itemType,itemID,1);
+                ptr=SBIDBase::createPtr(itemType,itemID,0,1);
                 return ptr;
             }
         }
     }
     else if(dragableColumnFlag==1)
     {
-    qDebug() << SB_DEBUG_INFO;
         //	Determine sbid from relatively from actual column that is clicked
         QModelIndex n;
 
@@ -120,8 +116,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if((!ptr) && key.length())
         {
-            qDebug() << SB_DEBUG_INFO << key;
-            ptr=SBIDBase::createPtr(key,1);
+            ptr=SBIDBase::createPtr(key,0,1);
             return ptr;
         }
     }
@@ -130,7 +125,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         qDebug() << SB_DEBUG_ERROR << "dragableColumn missing";
     }
 
-    qDebug() << SB_DEBUG_INFO;
     //	Populate secundairy fields. This can be done for both modes.
     for(int i=0;i<aim->columnCount();i++)
     {
@@ -154,11 +148,10 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
-            ptr=SBIDBase::createPtr(itemType,itemID,1);
+            ptr=SBIDBase::createPtr(itemType,itemID,0,1);
             return ptr;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 
@@ -200,7 +193,6 @@ SBModel::_init()
 QMimeData*
 SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
     foreach (const QModelIndex &i, indexes)
     {
         if (i.isValid())

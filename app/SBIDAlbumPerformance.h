@@ -39,7 +39,7 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
-    virtual void refreshDependents(bool showProgressDialogFlag=1,bool forcedFlag=1);
+    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
     static QString createKey(int albumID, int albumPosition);

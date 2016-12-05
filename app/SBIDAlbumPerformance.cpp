@@ -403,7 +403,6 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 
     performance._org_sb_album_position=performance._sb_album_position;
 
-    qDebug() << SB_DEBUG_INFO << performance.key() << r.value(7).toString() << performance._path;
     return std::make_shared<SBIDAlbumPerformance>(performance);
 }
 
@@ -478,7 +477,6 @@ SBIDAlbumPerformance::updateSQL() const
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
 
-    qDebug() << SB_DEBUG_INFO << deletedFlag() << newFlag();
     if(deletedFlag() && !newFlag())
     {
         SQL.append(QString
@@ -510,9 +508,7 @@ SBIDAlbumPerformance::updateSQL() const
 
         //	Now insert the online_performance record
         const QStringList t=_path.split('.');
-        qDebug() << SB_DEBUG_INFO << t << t.length() << t.size();
         const QString extension=t[t.length()-1];
-        qDebug() << SB_DEBUG_INFO << _path << extension;
 
         SQL.append(QString
         (
@@ -582,8 +578,6 @@ SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int al
     albumPerformance.setNotes(notes);
 
     albumPerformance.setNewFlag();
-
-    qDebug() << SB_DEBUG_INFO << albumPerformance.newFlag();
 
     return std::make_shared<SBIDAlbumPerformance>(albumPerformance);
 }
