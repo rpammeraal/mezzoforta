@@ -44,6 +44,7 @@ SBMediaPlayer::assignID(int playerID)
 bool
 SBMediaPlayer::setMedia(const QString &fileName)
 {
+    qDebug() << SB_DEBUG_INFO << fileName;
     closeStream();
     QString fn=QString(fileName).replace("\\","");
 
@@ -62,11 +63,13 @@ SBMediaPlayer::setMedia(const QString &fileName)
     }
     if(_ad->error().length())
     {
+        qDebug() << SB_DEBUG_ERROR << _ad->error();
         setErrorMsg(_ad->error());
         return 0;
     }
     portAudioOpen(_ad);
 
+    qDebug() << SB_DEBUG_INFO << "success" << fileName;
     return 1;
 }
 
@@ -160,6 +163,7 @@ SBMediaPlayer::position() const
 void
 SBMediaPlayer::play()
 {
+    qDebug() << SB_DEBUG_INFO << "start";
     _paError=Pa_StartStream(_stream);
     if( _paError != paNoError )
     {

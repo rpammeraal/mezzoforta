@@ -11,9 +11,10 @@
 #include "DataAccessLayerSQLite.h"
 #include "DBManager.h"
 
-SetupWizard::SetupWizard(DBManager* dbm,QWidget *parent) :
+//SetupWizard::SetupWizard(DBManager* dbm,QWidget *parent) :
+SetupWizard::SetupWizard(QWidget *parent) :
     QDialog(parent),
-    _dbm(dbm),
+    //_dbm(dbm),
     _ui(new Ui::SetupWizard)
 {
     _ui->setupUi(this);
@@ -25,42 +26,49 @@ SetupWizard::~SetupWizard()
 }
 
 bool
-SetupWizard::start()
+SetupWizard::start(bool firstRunFlag)
 {
     bool successFlag=1;
-    int i=this->exec();
-    if(i==0)
+    if(firstRunFlag)
     {
-        return 0;
+        if(this->exec()==0)
+        {
+            return 0;
+        }
+
+        //	Select between new or open existing database.
+        qDebug() << SB_DEBUG_INFO << firstRunFlag;
+        QDialogButtonBox* newOpenDBB=new QDialogButtonBox();
+
+        QPushButton* newButton=new QPushButton(tr("&New"));
+        newButton->setDefault(1);
+        newButton->setAutoDefault(1);
+        connect(newButton, SIGNAL(clicked(bool)),
+                this, SLOT(openOrNewClickNew()));
+        newOpenDBB->addButton(newButton,QDialogButtonBox::AcceptRole);
+
+        QPushButton* openButton=new QPushButton(tr("&Open"));
+        newOpenDBB->addButton(openButton,QDialogButtonBox::YesRole);
+        connect(openButton, SIGNAL(clicked(bool)),
+                this, SLOT(openOrNewClickOpen()));
+
+        _newOrOpenDialog=new QDialog;
+        QVBoxLayout* vbl=new QVBoxLayout();
+        QLabel* txt=new QLabel();
+        txt->setText("In the next step, we'll create a new database. If you have an existing database, click 'Open'");
+        txt->setFont(QFont("Trebuchet MS",13));
+        vbl->addWidget(txt);
+        vbl->addWidget(newOpenDBB);
+        _newOrOpenDialog->setLayout(vbl);
+        _newOrOpenDialog->show();
+        _newOrOpenDialog->exec();
+    }
+    else
+    {
+        _createNewDBFlag=1;
     }
 
-    //	Select between new or open existing database.
-    QDialogButtonBox* newOpenDBB=new QDialogButtonBox();
-
-    QPushButton* newButton=new QPushButton(tr("&New"));
-    newButton->setDefault(1);
-    newButton->setAutoDefault(1);
-    connect(newButton, SIGNAL(clicked(bool)),
-            this, SLOT(openOrNewClickNew()));
-    newOpenDBB->addButton(newButton,QDialogButtonBox::AcceptRole);
-
-    QPushButton* openButton=new QPushButton(tr("&Open"));
-    newOpenDBB->addButton(openButton,QDialogButtonBox::YesRole);
-    connect(openButton, SIGNAL(clicked(bool)),
-            this, SLOT(openOrNewClickOpen()));
-
-    _newOrOpenDialog=new QDialog;
-    QVBoxLayout* vbl=new QVBoxLayout();
-    QLabel* txt=new QLabel();
-    txt->setText("In the next step, we'll create a new database. If you have an existing database, click 'Open'");
-    txt->setFont(QFont("Trebuchet MS",13));
-    vbl->addWidget(txt);
-    vbl->addWidget(newOpenDBB);
-    _newOrOpenDialog->setLayout(vbl);
-    _newOrOpenDialog->show();
-    _newOrOpenDialog->exec();
-
-    if(_newOrOpenDialog->result())
+    if(_newOrOpenDialog->result() || firstRunFlag==0)
     {
         qDebug() << SB_DEBUG_INFO << _newOrOpenDialog->result() << _createNewDBFlag << _openExistingDBFlag;
         if(_createNewDBFlag)
@@ -79,14 +87,23 @@ SetupWizard::start()
                 QString databasePath=fdSaveDB.selectedFiles().first();
                 //	CWIP: check if file exists.
 
-                //	Select music directory
+                //	Dialog to the next step
                 QMessageBox mb;
-                mb.setText("Great! Now we need to locate where your music is stored.");
+                if(firstRunFlag)
+                {
+                    mb.setText("Great! Now we need to locate where your music is stored.");
+                }
+                else
+                {
+                    mb.setText("Please select your music library next.");
+
+                }
                 mb.setFont(QFont("Trebuchet MS",13));
                 mb.addButton("OK",QMessageBox::AcceptRole);
                 mb.exec();
 
-                QFileDialog fdSelectMusicLibrary(this,"Save Songbase Database:");
+                //	Select music directory
+                QFileDialog fdSelectMusicLibrary(this,"Select Music Library Location:");
                 fdSelectMusicLibrary.setFileMode(QFileDialog::Directory);
                 fdSelectMusicLibrary.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MusicLocation).last());
                 fdSelectMusicLibrary.setAcceptMode(QFileDialog::AcceptOpen);
@@ -119,7 +136,9 @@ SetupWizard::start()
         else if(_openExistingDBFlag)
         {
             //	Open database
-            _dbm->userOpenDatabase();
+            DBManager* dbm=Context::instance()->getDBManager();
+            //_dbm->userOpenDatabase();
+            dbm->userOpenDatabase();
             qDebug() << SB_DEBUG_INFO;
         }
         successFlag=1;
@@ -156,7 +175,7 @@ void
 SetupWizard::_init()
 {
     _createNewDBFlag=0;
-    _dbm=NULL;
+    //_dbm=NULL;
     _newOrOpenDialog=NULL;
     _openExistingDBFlag=0;
 }

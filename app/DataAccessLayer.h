@@ -17,6 +17,7 @@
 #define ___SB_SQL_QUERY_PLAYLIST_JOIN___ ___SB_SQL_QUERY_PLAYLIST_JOIN___
 #define ___SB_SQL_QUERY_GENRE_JOIN___ ___SB_SQL_QUERY_GENRE_JOIN___
 
+
 class QDebug;
 class QStringList;
 class QSqlQueryModel;

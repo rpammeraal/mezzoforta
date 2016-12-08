@@ -28,6 +28,11 @@
      <height>32</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Trebuchet MS</family>
+    </font>
+   </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
@@ -47,6 +52,11 @@
      <height>361</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Trebuchet MS</family>
+    </font>
+   </property>
    <property name="currentIndex">
     <number>1</number>
    </property>
@@ -55,7 +65,7 @@
      <bool>true</bool>
     </property>
     <attribute name="title">
-     <string>Internal</string>
+     <string>Local</string>
     </attribute>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0">
@@ -64,8 +74,13 @@
         <layout class="QHBoxLayout" name="horizontalLayout1">
          <item>
           <widget class="QLabel" name="l_SQLITEPath">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
-            <string>Select Sqlite path:</string>
+            <string>Select Songbase database:</string>
            </property>
           </widget>
          </item>
@@ -78,6 +93,11 @@
          </item>
          <item>
           <widget class="QPushButton" name="SQLITEBrowseButton">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Browse...</string>
            </property>
@@ -113,6 +133,11 @@
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
           <widget class="QLabel" name="l_PSQLDatabaseName">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Database Name</string>
            </property>
@@ -127,6 +152,11 @@
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="l_PSQLHostName">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Host Name:</string>
            </property>
@@ -141,6 +171,11 @@
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="l_PSQLPort">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Port:</string>
            </property>
@@ -155,6 +190,11 @@
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="l_PSQLUserName">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Username:</string>
            </property>
@@ -169,6 +209,11 @@
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="l_PSQLPassword">
+           <property name="font">
+            <font>
+             <family>Trebuchet MS</family>
+            </font>
+           </property>
            <property name="text">
             <string>Password:</string>
            </property>
@@ -187,16 +232,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="sam">
-    <attribute name="title">
-     <string>SAM</string>
-    </attribute>
-    <layout class="QGridLayout" name="gridLayout_5">
-     <item row="0" column="0">
-      <layout class="QGridLayout" name="tab3"/>
-     </item>
-    </layout>
-   </widget>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -207,8 +242,13 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Trebuchet MS</family>
+    </font>
+   </property>
    <property name="text">
-    <string>Select database:</string>
+    <string>Select Songbase:</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

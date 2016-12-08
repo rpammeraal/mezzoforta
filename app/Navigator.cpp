@@ -50,15 +50,17 @@ Navigator::clearSearchFilter()
 {
     QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
     QCompleter* completer=lineEdit->completer();
-    if(completer)
+    if(completer!=NULL && lineEdit!=NULL)
     {
         completer->setCurrentRow(0);
         lineEdit->setCompleter(NULL);
     }
-    lineEdit->clear();
-    lineEdit->setPlaceholderText("Search:");
-    lineEdit->setText("");
-    QCoreApplication::processEvents();
+    if(lineEdit!=NULL)
+    {
+        lineEdit->clear();
+        lineEdit->setPlaceholderText("Search:");
+        lineEdit->setText("");
+    }
 
     Navigator* navigator=Context::instance()->getNavigator();
     completer=CompleterFactory::getCompleterAll();

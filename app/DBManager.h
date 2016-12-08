@@ -65,9 +65,10 @@ public:
     struct DatabaseCredentials DatabaseCredentials() const { return _dc; }
     inline bool databaseOpened() const { return _databaseOpenFlag; }
     QString databaseName() const { return _dc.databaseName; }
-    void debugShow(const struct DatabaseCredentials& dc,const QString& title) const;
+    static void debugShow(const struct DatabaseCredentials& dc,const QString& title) ;
+    bool openDatabase(const struct DatabaseCredentials& dc);
     bool openDefaultDatabase(); //	attempts to open default database
-    bool openDatabase(); //	let user select different database
+    bool userOpenDatabase(); //	let user select different database
 
 protected:
     friend class Context;
@@ -83,7 +84,6 @@ private:
 
     void _createDAL();
     void _init();
-    bool _openDatabase(struct DatabaseCredentials& dc);
     bool _openPostgresql(struct DatabaseCredentials& dc);
     bool _openSqliteDB(struct DatabaseCredentials& dc);
     void _updateDatabaseCredentials(const struct DatabaseCredentials& dc) ;

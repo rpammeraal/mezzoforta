@@ -4569,6 +4569,7 @@ Click on 'All Songs' to continue.</string>
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="menuNewDatabase"/>
     <addaction name="menuOpenDatabase"/>
     <addaction name="menuSetMusicLibrary"/>
    </widget>
@@ -4647,6 +4648,11 @@ Click on 'All Songs' to continue.</string>
   <action name="menuRecalculateAllPlaylistDurations">
    <property name="text">
     <string>Recalculate All Playlist Durations</string>
+   </property>
+  </action>
+  <action name="menuNewDatabase">
+   <property name="text">
+    <string>&amp;New Database</string>
    </property>
   </action>
  </widget>

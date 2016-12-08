@@ -14,10 +14,11 @@ class SetupWizard : public QDialog
     Q_OBJECT
 
 public:
-    explicit SetupWizard(DBManager* dbm,QWidget *parent = 0);
+    //explicit SetupWizard(DBManager* dbm,QWidget *parent = 0);
+    explicit SetupWizard(QWidget *parent = 0);
     ~SetupWizard();
 
-    bool start();
+    bool start(bool firstRunFlag=1);
 
 private slots:
     void openOrNewClickNew();
@@ -26,7 +27,7 @@ private slots:
 private:
     //	Attributes
     bool             _createNewDBFlag;
-    DBManager*       _dbm;
+    //DBManager*       _dbm;
     QDialog*         _newOrOpenDialog;
     bool             _openExistingDBFlag;
     Ui::SetupWizard* _ui;

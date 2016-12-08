@@ -9,7 +9,8 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include <SBSqlQueryModel.h>
+#include "DBManager.h"
+#include "SBSqlQueryModel.h"
 
 //	Singleton
 int dalCOUNT;
@@ -31,7 +32,6 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setIsNull("IFNULL");
     setGetDate("DATE('now')");
     setGetDateTime("DATETIME('now')");
-    addMissingDatabaseItems();	//	CWIP: already called if postgres. Need to find more elegant way to call this.
 }
 
 DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()

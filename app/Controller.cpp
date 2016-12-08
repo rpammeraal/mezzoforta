@@ -28,6 +28,7 @@
 #include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
 #include "ScreenStack.h"
+#include "SetupWizard.h"
 
 class I : public QThread
 {
@@ -94,6 +95,13 @@ Controller::refreshModels()
 }
 
 ///	Public slots:
+void
+Controller::newDatabase()
+{
+    SetupWizard sw;
+    sw.start(0);
+}
+
 void
 Controller::openDatabase()
 {
@@ -186,16 +194,25 @@ Controller::openMainWindow(bool appStartUpFlag)
     DBManager* dbm=Context::instance()->getDBManager();
     if(appStartUpFlag)
     {
-        dbm->openDefaultDatabase();
+        bool openedFlag=dbm->openDefaultDatabase();
+        if(!openedFlag)
+        {
+            //	Start wizard
+            qDebug() << SB_DEBUG_INFO << "start wizard";
+
+            //	1.	Open 'Hi!' dialog
+            SetupWizard sw;
+            sw.start();
+        }
     }
     else
     {
-        dbm->openDatabase();
+        dbm->userOpenDatabase();
     }
 
     if(appStartUpFlag==0 && dbm->databaseChanged()==0)
     {
-        //	no database opened upin appStartUpFlag.
+        //	no database opened upon appStartUpFlag.
         return 0;
     }
     if(dbm->databaseOpened()==0)
@@ -334,6 +351,8 @@ Controller::setupUI()
 
     qDebug() << SB_DEBUG_INFO << "playground";
 
+    qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
+
 //    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
 //    u2ptr1->refreshDependents();
@@ -365,7 +384,12 @@ Controller::configureMenuItems(const QList<QAction *>& list)
     {
         i=(*it);
         const QString& itemName=(*it)->objectName();
-        if(itemName=="menuOpenDatabase")
+        if(itemName=="menuNewDatabase")
+        {
+            connect(i,SIGNAL(triggered()),
+                    this,SLOT(newDatabase()));
+        }
+        else if(itemName=="menuOpenDatabase")
         {
             connect(i,SIGNAL(triggered()),
                     this,SLOT(openDatabase()));

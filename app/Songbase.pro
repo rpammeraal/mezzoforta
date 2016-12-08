@@ -66,7 +66,9 @@ HEADERS     = \
     SBSortFilterProxyTableModel.h \
     Preloader.h \
     SBIDAlbumPerformance.h \
-    SBIDSongPerformance.h
+    SBIDSongPerformance.h \
+    SetupWizard.h \
+    DataAccessLayerSQLite.h
 
 SOURCES     = \
     main.cpp \
@@ -133,7 +135,9 @@ SOURCES     = \
     SBSortFilterProxyTableModel.cpp \
     Preloader.cpp \
     SBIDAlbumPerformance.cpp \
-    SBIDSongPerformance.cpp
+    SBIDSongPerformance.cpp \
+    SetupWizard.cpp \
+    DataAccessLayerSQLite.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
@@ -146,7 +150,8 @@ FORMS += \
     MainWindow.ui \
     DatabaseSelector.ui \
     SBDialogRenamePlaylist.ui \
-    SBDialogSelectItem.ui
+    SBDialogSelectItem.ui \
+    SetupWizard.ui
 
 RESOURCES += \
     resource.qrc

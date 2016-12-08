@@ -19,22 +19,26 @@ public:
     DatabaseSelector(const struct DBManager::DatabaseCredentials& dc,QWidget* parent=0);
     ~DatabaseSelector();
 
-    inline struct DBManager::DatabaseCredentials databaseCredentials() const { return _dc; }
+    bool result(struct DBManager::DatabaseCredentials& dc);
 
 protected:
 
 private:
     Ui::DatabaseSelector* ui;
+    bool _cancelFlag;
+    struct DBManager::DatabaseCredentials _dc;
     bool _sqliteDriverAvailable;
     bool _postgresDriverAvailable;
-    struct DBManager::DatabaseCredentials _dc;
 
     void _populateUI(const struct DBManager::DatabaseCredentials& dc);
     void _determineAvailableDBTypes();
 
 private slots:
-    void _browseFile();
+
     void _acceptInput();
+    void _browseFile();
+    void _cancel();
+    void _init();
 };
 
 #endif // DATABASESELECTOR_H

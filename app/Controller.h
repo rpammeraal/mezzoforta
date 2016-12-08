@@ -41,6 +41,7 @@ signals:
 
 public slots:
     //	MENU::FILE
+    void newDatabase();
     void openDatabase();
     void setMusicLibraryDirectory();
 

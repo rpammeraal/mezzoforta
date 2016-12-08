@@ -4,6 +4,7 @@
 
 #include "Common.h"
 #include "Context.h"
+#include "SBMessageBox.h"
 
 DataAccessLayerSQLite::DataAccessLayerSQLite()
 {
@@ -284,9 +285,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("CREATE INDEX idx_toplay_op ON toplay (song_id, artist_id, record_id, record_position); ");
             SQL.append("CREATE INDEX idx_toplay_po ON toplay (play_order); ");
 
-            errorFlag=!dal.executeBatch(SQL,1,0,1);
-            if(!errorFlag)
+            if(dal.executeBatch(SQL,1,0,1)==0)
             {
+                errorFlag=1;
                 errorString="Unable to create database";
             }
         }
@@ -302,6 +303,10 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             qDebug() << SB_DEBUG_INFO << dbm->databaseOpened();
         }
         qDebug() << SB_DEBUG_INFO;
+    }
+    if(errorFlag)
+    {
+
     }
     qDebug() << SB_DEBUG_INFO << errorFlag;
     return errorFlag;

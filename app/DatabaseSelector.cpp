@@ -17,6 +17,8 @@ DatabaseSelector::DatabaseSelector(const struct DBManager::DatabaseCredentials& 
     QDialog(parent),
     ui(new Ui::DatabaseSelector)
 {
+    _init();
+
     _dc=dc;
     this->ui->setupUi(this);
 
@@ -27,6 +29,17 @@ DatabaseSelector::DatabaseSelector(const struct DBManager::DatabaseCredentials& 
 
 DatabaseSelector::~DatabaseSelector()
 {
+}
+
+bool
+DatabaseSelector::result(struct DBManager::DatabaseCredentials& dc)
+{
+    if(!_cancelFlag)
+    {
+        dc=_dc;
+        return 1;
+    }
+    return  0;
 }
 
 ///	Private methods
@@ -55,6 +68,7 @@ DatabaseSelector::_populateUI(const struct DBManager::DatabaseCredentials& dc)
     //	Set connections
     connect(ui->SQLITEBrowseButton, SIGNAL(clicked()), this, SLOT(_browseFile()));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(_acceptInput()));
+    connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(_cancel()));
 }
 
 void
@@ -76,17 +90,6 @@ DatabaseSelector::_determineAvailableDBTypes()
 }
 
 void
-DatabaseSelector::_browseFile()
-{
-    const QString newPath=QFileDialog::getOpenFileName(NULL,tr("Open SQLite Database"),_dc.sqlitePath,"*.sqlite");
-    if(newPath.length()!=0)
-    {
-        ui->SQLITEPath->setText(newPath);
-        _dc.sqlitePath=newPath;
-    }
-}
-
-void
 DatabaseSelector::_acceptInput()
 {
     _dc.databaseType=static_cast<DBManager::DatabaseType>(ui->tabWidget->currentIndex()+1);
@@ -98,4 +101,30 @@ DatabaseSelector::_acceptInput()
     _dc.psqlPort=        ui->PSQLPort->text().toInt();
     _dc.psqlUserName=    ui->PSQLUserName->text();
     _dc.psqlPassword=    ui->PSQLPassword->text();
+
+    DBManager::debugShow(_dc,"DatabaseSelector::_acceptInput");
+}
+
+void
+DatabaseSelector::_browseFile()
+{
+    const QString newPath=QFileDialog::getOpenFileName(NULL,tr("Open SQLite Database"),_dc.sqlitePath,"*.sqlite");
+    if(newPath.length()!=0)
+    {
+        ui->SQLITEPath->setText(newPath);
+        _dc.sqlitePath=newPath;
+    }
+}
+
+void
+DatabaseSelector::_cancel()
+{
+    qDebug() << SB_DEBUG_INFO;
+    _cancelFlag=1;
+}
+
+void
+DatabaseSelector::_init()
+{
+    _cancelFlag=0;
 }

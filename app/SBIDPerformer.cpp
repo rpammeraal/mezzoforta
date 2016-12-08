@@ -154,7 +154,16 @@ SBIDPerformer::numAlbums() const
         //	_albums is not loaded yet -- use precalculated _num_albums
         return _num_albums;
     }
-    return _albums.count();
+    //	Count albums that are created by the current performer.
+    int numAlbums=0;
+    QVectorIterator<SBIDAlbumPtr> aIT(_albums);
+    while(aIT.hasNext())
+    {
+        SBIDAlbumPtr albumPtr=aIT.next();
+        numAlbums+=(albumPtr->albumPerformerID()==this->performerID()?1:0);
+    }
+
+    return numAlbums;
 }
 
 int
@@ -609,6 +618,7 @@ SBIDPerformer::retrieveSQL(const QString& key)
                     "( "
                         "SELECT r.artist_id,COUNT(*) as record_count "
                         "FROM ___SB_SCHEMA_NAME___record r  "
+                        "%2 "
                         "GROUP BY r.artist_id "
                     ") r ON a.artist_id=r.artist_id "
                 "LEFT JOIN "
@@ -622,6 +632,7 @@ SBIDPerformer::retrieveSQL(const QString& key)
             "a.name "
     )
         .arg(key.length()==0?"":QString("WHERE a.artist_id=%1").arg(performerID))
+        .arg(key.length()==0?"":QString("WHERE r.artist_id=%1").arg(performerID))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;

@@ -186,6 +186,7 @@ PlayerController::playSong(SBIDAlbumPerformancePtr& performancePtr)
     Controller* c=Context::instance()->getController();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    qDebug() << SB_DEBUG_INFO << performancePtr->path();
 
     QString path=QString("%1/%2")
                 .arg(p->musicLibraryDirectorySchema())
