@@ -12,6 +12,7 @@
 class MusicLibrary : public QObject
 {
     Q_OBJECT
+
     //	Represents entry as it already exists in the database
     class MLperformance
     {
@@ -82,76 +83,6 @@ class MusicLibrary : public QObject
     };
     typedef std::shared_ptr<MLentity> MLentityPtr;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //	Represents what has been found on the file system
-    class MLentry
-    {
-    public:
-        MLentry() { _init(); }
-
-        //	Found at following path
-        QString path;
-
-        //	Retrieved from meta data from file at path
-        QString albumTitle;
-        int albumPosition;
-        Duration duration;
-        QString genre;
-        QString notes;
-        QString songPerformerName;
-        QString songTitle;
-        int year;
-
-        //	Calculated attributes
-        QString dirName;
-
-        //	keys assigned
-        int albumPerformerID;	//	only used to determine albumID
-
-        //	Ptrs assigned
-        SBIDAlbumPtr albumPtr;
-        SBIDPerformerPtr performerPtr;
-        SBIDSongPtr songPtr;
-
-        bool validFlag() const { return albumTitle.length()>0 && (albumPosition==-2 || albumPosition>0) && songPerformerName.length()>0 && songTitle.length()>0 ? 1: 0; }
-    private:
-        void _init() { albumPerformerID=-1;  albumPosition=-1; albumPtr=SBIDAlbumPtr(); performerPtr=SBIDPerformerPtr(); songPtr=SBIDSongPtr(); }
-    };
-    typedef std::shared_ptr<MLentry> MLentryPtr;
-
-
-
-
-
-
-
-    class MLperformer
-    {
-    public:
-        MLperformer() { _init(); }
-
-        QString name;
-        int performerID;
-        QVector<QString> paths;
-
-    private:
-        void _init() { performerID=-1; }
-    };
-    typedef std::shared_ptr<MLperformer> MLperformerPtr;
-
     class MLalbumPath
     {
     public:
@@ -166,52 +97,9 @@ class MusicLibrary : public QObject
     };
     typedef std::shared_ptr<MLalbumPath> MLalbumPathPtr;
 
-    class MLalbum
-    {
-    public:
-        MLalbum() { _init() ; }
-
-        int albumID;
-        int albumPerformerID;
-        QString path;
-        QString title;
-        int year;
-        QString genre;
-
-        int offset; //	if there any existing performances on the album, need to add offset to albumPosition
-        bool artificiallyCreatedFlag;
-        int maxPosition;
-
-        QVector<QString> paths;
-
-        SBIDAlbumPtr albumPtr;
-    private:
-        void _init() { albumID=-1; albumPerformerID=-1; offset=0; year=1900; artificiallyCreatedFlag=1; maxPosition=-1; albumPtr=SBIDAlbumPtr(); }
-    };
-    typedef std::shared_ptr<MLalbum> MLalbumPtr;
-
-    class MLsongPerformance
-    {
-    public:
-        MLsongPerformance() { _init(); }
-        int songID;
-        int performerID;
-        QString songTitle;
-        QString songPerformerName;
-        int year;
-        QString notes;
-
-        QString key() const { return QString("%1:%2").arg(Common::simplified(songTitle)).arg(performerID); }
-        QVector<QString> paths;
-    private:
-        void _init() { songID=-1; performerID=-1; }
-    };
-    typedef std::shared_ptr<MLsongPerformance> MLsongPerformancePtr;
-
 public:
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary();
-    void rescanMusicLibrary_v2();
 
 signals:
 
