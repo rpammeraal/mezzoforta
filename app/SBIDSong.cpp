@@ -1124,6 +1124,15 @@ SBIDSong::operator QString() const
 
 //	Methods required by SBIDManagerTemplate
 QString
+SBIDSong::createKey(int songID)
+{
+    return songID>=0?QString("%1:%2")
+        .arg(SBIDBase::sb_type_song)
+        .arg(songID):QString("x:x")	//	return invalid key if songID<0
+    ;
+}
+
+QString
 SBIDSong::key() const
 {
     return createKey(this->songID());
@@ -1223,15 +1232,6 @@ SBIDSong::SBIDSong():SBIDBase()
     _init();
 }
 
-QString
-SBIDSong::createKey(int songID)
-{
-    return songID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_song)
-        .arg(songID):QString("x:x")	//	return invalid key if songID<0
-    ;
-}
-
 SBIDSongPtr
 SBIDSong::createInDB()
 {
@@ -1269,7 +1269,7 @@ SBIDSong::createInDB()
     }
 
     //	Instantiate
-    SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousArtists();
+    SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
     SBIDSong song;
     song._sb_song_id=qID.value(0).toInt();
     song._songTitle=QString("%1%2").arg(newSongTitle).arg(maxNum);

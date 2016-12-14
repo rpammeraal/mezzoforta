@@ -275,7 +275,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
             _setItem(i, 3,performancePtr->duration().toString(Duration::sb_hhmmss_format));
             _setItem(i, 4,performancePtr->performerPtr()->key());
             _setItem(i, 5,performancePtr->songPerformerName());
-            qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription();
+            qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription() << performancePtr->duration();
             i++;
         }
     }

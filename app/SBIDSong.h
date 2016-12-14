@@ -66,6 +66,7 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
+    static QString createKey(int songID);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
@@ -82,7 +83,6 @@ protected:
 
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB();
-    static QString createKey(int songID);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDSongPtr& to);

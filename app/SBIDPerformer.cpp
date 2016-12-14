@@ -389,11 +389,13 @@ SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag,bool show
 }
 
 SBIDPerformerPtr
-SBIDPerformer::retrieveVariousArtists()
+SBIDPerformer::retrieveVariousPerformers()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(1,1);
+    Properties* properties=Context::instance()->getProperties();
+    int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
+    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID,1);
     if(!performerPtr)
     {
         performerPtr=pemgr->createInDB();
@@ -522,12 +524,26 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
             "a.mbid "
         "FROM "
             "___SB_SCHEMA_NAME___artist a, "
-            "article aa "
+            "article t "
         "WHERE "
-            "a.artist_id!=(%2) AND "
-            "LOWER(a.name)!=LOWER(regexp_replace(a.name,E'^'||aa.word,'','i')) AND "
-            "LOWER(regexp_replace(a.name,E'^'||aa.word,'','i'))=LOWER('%4') "
+            //"LOWER(a.name)!=LOWER(regexp_replace(a.name,E'^'||aa.word,'','i')) AND "
+            //"LOWER(regexp_replace(a.name,E'^'||aa.word,'','i'))=LOWER('%4') "
             //"LOWER(SUBSTR(a.name,LENGTH(aa.word || ' ')+1,LENGTH(a.name))) = LOWER('%4') "
+            "( "
+                "a.artist_id!=(%2) AND "
+                "LENGTH(a.name)>LENGTH(t.word) AND "
+                "LOWER(SUBSTR(a.name,1,LENGTH(t.word))) || ' '= t.word || ' ' AND "
+                "LOWER(SUBSTR(a.name,LENGTH(t.word)+2))=LOWER('%4') "
+            ") "
+            "OR "
+            "( "
+                "LENGTH(a.name)>LENGTH(t.word) AND "
+                "LOWER(SUBSTR(a.name,1,LENGTH('%4')))=LOWER('%4') AND "
+                "( "
+                    "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=' '||LOWER(t.word) OR "
+                    "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=','||LOWER(t.word)  "
+                ") "
+            ") "
         "UNION "
         "SELECT DISTINCT "
             "2 AS matchRank, "
@@ -869,7 +885,7 @@ SBIDPerformer::updateSQL() const
              )
                 .arg(this->performerID())
                 .arg(Common::escapeSingleQuotes(this->performerName()))
-                .arg(sortName)
+                .arg(Common::escapeSingleQuotes(sortName))
                 .arg(Common::escapeSingleQuotes(this->notes()))
                 .arg(Common::escapeSingleQuotes(this->url()))
                 .arg(Common::escapeSingleQuotes(this->MBID()))

@@ -68,7 +68,9 @@ HEADERS     = \
     SBIDAlbumPerformance.h \
     SBIDSongPerformance.h \
     SetupWizard.h \
-    DataAccessLayerSQLite.h
+    DataAccessLayerSQLite.h \
+    Network.h \
+    Configuration.h
 
 SOURCES     = \
     main.cpp \
@@ -137,7 +139,9 @@ SOURCES     = \
     SBIDAlbumPerformance.cpp \
     SBIDSongPerformance.cpp \
     SetupWizard.cpp \
-    DataAccessLayerSQLite.cpp
+    DataAccessLayerSQLite.cpp \
+    Network.cpp \
+    Configuration.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

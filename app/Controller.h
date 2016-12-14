@@ -34,6 +34,7 @@ public:
     explicit Controller(int argc, char* argv[], QApplication* napp);
     ~Controller();
     bool initSuccessFull() const;
+    void preloadAllSongs() const;
     void refreshModels();
 
 signals:

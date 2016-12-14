@@ -8,7 +8,7 @@ class DataAccessLayerSQLite : public DataAccessLayer
 public:
     DataAccessLayerSQLite();
 
-    static bool createDatabase(const struct DBManager::DatabaseCredentials& credentials);
+    static bool createDatabase(const struct DBManager::DatabaseCredentials& credentials,const QString& musicLibraryPath);
 };
 
 #endif // DATAACCESSLAYERSQLITE_H

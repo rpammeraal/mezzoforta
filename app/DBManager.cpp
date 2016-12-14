@@ -346,24 +346,17 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
     //	Now close tmp
     if(QSqlDatabase::contains(SB_TEMPORARY_CONNECTION_NAME))
     {
-    qDebug() << SB_DEBUG_INFO;
         {
-    qDebug() << SB_DEBUG_INFO;
             QSqlDatabase currentlyOpen=QSqlDatabase::database(SB_TEMPORARY_CONNECTION_NAME);
-    qDebug() << SB_DEBUG_INFO;
             currentlyOpen.commit();
-    qDebug() << SB_DEBUG_INFO;
             currentlyOpen.close();
-    qDebug() << SB_DEBUG_INFO;
         }
-    qDebug() << SB_DEBUG_INFO;
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);
-    qDebug() << SB_DEBUG_INFO;
     }
-    qDebug() << SB_DEBUG_INFO;
 
     //	Set database name and persist
-    dc.databaseName=f.baseName();
+    //dc.databaseName=f.baseName();
+    dc.databaseName=f.absoluteFilePath();
 
     qDebug() << SB_DEBUG_INFO << "Success";
     return 1;

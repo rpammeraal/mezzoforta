@@ -396,7 +396,7 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     performance._sb_album_id          =Common::parseIntFieldDB(&r,1);
     performance._sb_album_position    =Common::parseIntFieldDB(&r,2);
     performance.setPerformerID(        Common::parseIntFieldDB(&r,3));
-    performance._duration             =r.value(4).toTime();
+    performance._duration             =r.value(4).toString();
     performance.setYear(               r.value(5).toInt());
     performance.setNotes(              Common::parseTextFieldDB(&r,6));
     performance._path                 =Common::parseTextFieldDB(&r,7);
@@ -503,7 +503,7 @@ SBIDAlbumPerformance::updateSQL() const
             .arg(this->_sb_album_id)
             .arg(this->_sb_album_position)
             .arg(this->_duration.toString(Duration::sb_full_hhmmss_format))
-            .arg(this->notes())
+            .arg(Common::escapeSingleQuotes(this->notes()))
         );
 
         //	Now insert the online_performance record
@@ -524,8 +524,9 @@ SBIDAlbumPerformance::updateSQL() const
                 "%7,  "
                 "%8(MAX(insert_order),-1)+1 "
             "FROM "
-                "digital_format df, "
-                "___SB_SCHEMA_NAME___online_performance op "
+                "digital_format df "
+                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "1=1 "
             "WHERE "
                 "df.extension='%1' "
             "GROUP BY "

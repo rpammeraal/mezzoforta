@@ -1035,28 +1035,6 @@ SBIDAlbum::saveSongToAlbum(const SBIDSong &song) const
     return 0;
 }
 
-void
-SBIDAlbum::setAlbumPerformerID(int albumPerformerID)
-{
-    _sb_album_performer_id=albumPerformerID;
-    setChangedFlag();
-}
-
-void
-SBIDAlbum::setAlbumPerformerName(const QString &albumPerformerName)
-{
-    Q_UNUSED(albumPerformerName);
-//    _albumPerformerName=albumPerformerName;
-//    setChangedFlag();
-}
-
-void
-SBIDAlbum::setYear(int year)
-{
-    _year=year;
-    setChangedFlag();
-}
-
 bool
 SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList &extraSQL,bool commitFlag)
 {
@@ -1394,13 +1372,16 @@ SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 SBIDAlbumPtr
 SBIDAlbum::retrieveUnknownAlbum()
 {
+    Properties* properties=Context::instance()->getProperties();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     SBIDAlbumMgr* pemgr=Context::instance()->getAlbumMgr();
-    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(0,1);	//	CWIP: use ::find
+    int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();
+    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(albumID,1);
+
     if(!albumPtr)
     {
         albumPtr=pemgr->createInDB();
-        albumPtr->_setAlbumTitle("UNKNOWN ALBUM");
+        albumPtr->setAlbumTitle("UNKNOWN ALBUM");
         pemgr->commit(albumPtr,dal,0);
     }
     return  albumPtr;
@@ -1451,7 +1432,7 @@ SBIDAlbum::createInDB()
     album._albumTitle=QString("New Album%1").arg(maxNum);
 
     //	Find performer 'VARIOUS ARTISTS'
-    SBIDPerformerPtr peptr=SBIDPerformer::retrieveVariousArtists();
+    SBIDPerformerPtr peptr=SBIDPerformer::retrieveVariousPerformers();
 
     //	Insert
     q=QString
@@ -1522,11 +1503,26 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
             "___SB_SCHEMA_NAME___record p "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id, "
-            "article aa "
+            "article t "
         "WHERE "
-            "LOWER(p.title)!=LOWER(regexp_replace(p.title,E'^'||aa.word,'','i')) AND "
-            "LOWER(regexp_replace(p.title,E'^'||aa.word,'','i'))=LOWER('%4') AND "
-            "p.record_id!=(%3) "
+            //"LOWER(p.title)!=LOWER(regexp_replace(p.title,'^'||aa.word,'','i')) AND "
+            //"LOWER(regexp_replace(p.title,'^'||aa.word,'','i'))=LOWER('%4') AND "
+            "p.record_id!=(%3) AND "
+            "( "
+                "p.title!=(%2) AND "
+                "LENGTH(p.title)>LENGTH(t.word) AND "
+                "LOWER(SUBSTR(p.title,1,LENGTH(t.word))) || ' '= t.word || ' ' AND "
+                "LOWER(SUBSTR(p.title,LENGTH(t.word)+2))=LOWER('%4') "
+            ") "
+            "OR "
+            "( "
+                "LENGTH(p.title)>LENGTH(t.word) AND "
+                "LOWER(SUBSTR(p.title,1,LENGTH('%4')))=LOWER('%4') AND "
+                "( "
+                    "LOWER(SUBSTR(p.title,LENGTH(a.name)-LENGTH(t.word)+0))=' '||LOWER(t.word) OR "
+                    "LOWER(SUBSTR(p.title,LENGTH(a.name)-LENGTH(t.word)+0))=','||LOWER(t.word)  "
+                ") "
+            ") "
         "ORDER BY "
             "1 "
     )
@@ -1689,10 +1685,10 @@ SBIDAlbum::userMatch(const Common::sb_parameters &tobeMatched, SBIDAlbumPtr exis
     if(findCount==0 || createNewFlag)
     {
         selectedAlbumPtr=amgr->createInDB();
-        selectedAlbumPtr->_setAlbumTitle(tobeMatched.albumTitle);
-        selectedAlbumPtr->_setAlbumPerformerID(tobeMatched.performerID);
-        selectedAlbumPtr->_setYear(tobeMatched.year);
-        selectedAlbumPtr->_setGenre(tobeMatched.genre);
+        selectedAlbumPtr->setAlbumTitle(tobeMatched.albumTitle);
+        selectedAlbumPtr->setAlbumPerformerID(tobeMatched.performerID);
+        selectedAlbumPtr->setYear(tobeMatched.year);
+        selectedAlbumPtr->setGenre(tobeMatched.genre);
         amgr->commit(selectedAlbumPtr,dal,0);
     }
     return selectedAlbumPtr;

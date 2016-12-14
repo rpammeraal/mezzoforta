@@ -20,6 +20,7 @@
 #include "MainWindow.h"
 #include "MusicLibrary.h"
 #include "Navigator.h"
+#include "Network.h"
 #include "PlayerController.h"
 #include "Properties.h"
 #include "SBIDBase.h"
@@ -58,6 +59,15 @@ Controller::initSuccessFull() const
 }
 
 void
+Controller::preloadAllSongs() const
+{
+    MainWindow* mw=Context::instance()->getMainWindow();
+    SBTabSongsAll* tsa=mw->ui.tabAllSongs;
+    qDebug() << SB_DEBUG_INFO;
+    tsa->preload();
+}
+
+void
 Controller::refreshModels()
 {
     //	Allows some data models to be refreshed
@@ -92,6 +102,7 @@ Controller::refreshModels()
     Context::instance()->getPlaylistMgr()->clear();
     Context::instance()->getSongMgr()->clear();
     Context::instance()->getSongPerformanceMgr()->clear();
+    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Public slots:
@@ -136,7 +147,7 @@ Controller::openDatabase()
 void
 Controller::setMusicLibraryDirectory()
 {
-    Context::instance()->getProperties()->setMusicLibraryDirectory();
+    Context::instance()->getProperties()->userSetMusicLibraryDirectory();
 }
 
 void
@@ -280,7 +291,7 @@ Controller::setupUI()
     //	Frequently used pointers
     MainWindow* mw=Context::instance()->getMainWindow();
 
-    qDebug() << "Controller:setupUI:start";
+    qDebug() << SB_DEBUG_INFO << "Controller:setupUI:start";
 
     ///	Statusbar
     mw->ui.statusBar->setReadOnly(true);
@@ -315,8 +326,7 @@ Controller::setupUI()
     mw->ui.searchEdit->setFocus();
 
     //	Have SBTabSongsAll start populating
-    SBTabSongsAll* tsa=mw->ui.tabAllSongs;
-    tsa->preload();
+    this->preloadAllSongs();
 
     //	Set up schema dropdown box
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -348,10 +358,16 @@ Controller::setupUI()
         mw->ui.labelSchema->setVisible(0);
         mw->ui.frSchema->setVisible(0);
     }
+    Properties* properties=Context::instance()->getProperties();
+    properties->debugShow("Configuration");
 
     qDebug() << SB_DEBUG_INFO << "playground";
 
     qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
+    QString p="Bbe";
+    qDebug() << SB_DEBUG_INFO << Common::removeArticles(p);
+
+
 
 //    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
@@ -359,6 +375,14 @@ Controller::setupUI()
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
 //    SBIDPerformerPtr u2ptr2=SBIDPerformer::retrievePerformer(2078);
 //    qDebug() << SB_DEBUG_INFO << u2ptr2->genericDescription();
+
+    //	Kick off impor
+    if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
+    {
+        MusicLibrary ml;
+        ml.rescanMusicLibrary();
+    }
+    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"0");
 
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;

@@ -40,7 +40,7 @@ public:
     DataAccessLayer(const DataAccessLayer& c);
     ~DataAccessLayer();
 
-    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,bool showProgressDialogFlag=1) const;
+    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,bool showProgressDialogFlag=0) const;
     QString createRestorePoint() const;
     bool restore(const QString& restorePoint) const;
 

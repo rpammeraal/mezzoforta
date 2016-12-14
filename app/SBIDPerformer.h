@@ -59,7 +59,7 @@ public:
 
     //	Static methods
     static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
-    static SBIDPerformerPtr retrieveVariousArtists();
+    static SBIDPerformerPtr retrieveVariousPerformers();
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

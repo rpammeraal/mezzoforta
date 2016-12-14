@@ -722,13 +722,30 @@ X	playlists that song belongs to can be edited
 20161208:
 -	Initial wizard done.
 
-SBIDAlbum edit:
+20161214:
+-	Dialog to proceed to import of music files
+-	SBIDAlbum::retrieveUnknownAlbum(), SBIDPerformer::retrieveVariousArtists() should use ::find
+    -	Create config table entry to identify VARIOUS ARTISTS record and unknownAlbum record
+-	Songduration in album views is off.
+-	Too many progress bars displayed
+-	Use unknown album if album can't be determined: not needed, will take name of parent directory
+
+<CURRENT>
+<to be fixed before next beta release>
+*	List all files that did not get imported.
+*	Validate album positions
+
+<beta 2>
+*	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.
+
+<SBIDAlbum edit>
 *	need to properly assign new albumPositions to *all* albumPerformances if one (or more) aP's get removed
 *	if aP gets removed, need to set isDeletedFlag
 *	if aP gets reordered, need to set isChangedFLag
 *	need to somehow update SBIDManager when aP's are removed/inserted/changed. Maybe a simple reload will suffice (this reload will go to screenstack and handle screenItems that references removed items properly).
 
 <bugs>
+*	Any link between digital_format and formats maintained by songbase?
 *	Postgres credentials are lost when creating new database
 *	Creating new database does not make songbase switch to this database.
 *	MusicLibrary:
@@ -748,7 +765,6 @@ SBIDAlbum edit:
 
 <near future>
 *	Include feature to stop asking for user input during file import.
-*	SBIDAlbum::retrieveUnknownAlbum(), SBIDPerformer::retrieveVariousArtists() should use ::find
 *	SBIDPlaylist::_getAllItemsByPlaylistRecursive(): should use _items.
 *   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
 *	Redesign/larger font 'now playing' in player section.

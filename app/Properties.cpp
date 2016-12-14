@@ -9,13 +9,47 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "Network.h"
 #include "SBMessageBox.h"
+
+///	Ctors
+Properties::Properties(DataAccessLayer* dal):_dal(dal)
+{
+}
 
 ///	Public methods
 QString
-Properties::localHostName() const
+Properties::configValue(sb_configurable keyword) const
 {
-    return QHostInfo::localHostName();
+    if(_configuration.count()==0)
+    {
+        const_cast<Properties *>(this)->doInit();
+    }
+
+    QString value;
+    if(_configuration.contains(keyword))
+    {
+        value=_configuration[keyword];
+    }
+    return value;
+}
+
+void
+Properties::debugShow(const QString &title)
+{
+    if(_configuration.count()==0)
+    {
+        doInit();
+    }
+    qDebug() << SB_DEBUG_INFO << title;
+    QMapIterator<sb_configurable,QString> cIT(_configuration);
+    while(cIT.hasNext())
+    {
+        cIT.next();
+        qDebug() << SB_DEBUG_INFO << _enumToKeyword[cIT.key()] << "=" << _configuration[cIT.key()];
+    }
+
+    qDebug() << SB_DEBUG_INFO << title << "end";
 }
 
 QString
@@ -26,7 +60,7 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
 
     do
     {
-        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+        DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
         QString q=QString
         (
@@ -37,7 +71,7 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
             "WHERE "
                 "hostname='%1' "
         )
-            .arg(Common::escapeSingleQuotes(Properties::localHostName()));
+            .arg(Common::escapeSingleQuotes(Network::hostName()));
         ;
         dal->customize(q);
         QSqlQuery query(q,db);
@@ -69,7 +103,7 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
                     exit(-1);
                 }
             }
-            Properties::setMusicLibraryDirectory();
+            Properties::userSetMusicLibraryDirectory();
         }
     }
     while(musicLibraryDirectory.length()==0 && interactiveFlag==1);
@@ -79,40 +113,71 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
 QString
 Properties::musicLibraryDirectorySchema()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
     return QString("%1/%2")
                 .arg(Context::instance()->getProperties()->musicLibraryDirectory())
                 .arg(dal->schema());
 }
 
 void
-Properties::setMusicLibraryDirectory()
+Properties::setConfigValue(sb_configurable keyword, const QString &value)
 {
-    QString musicLibraryDirectory;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    if(_configuration.count()==0)
+    {
+        doInit();
+    }
+
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString current=Properties::musicLibraryDirectory(0);
     QString q;
 
-    if(current.length()==0)
+    if(!_configuration.contains(keyword))
     {
-        QStringList l;
-        l=QStandardPaths::standardLocations(QStandardPaths::MusicLocation);
-        musicLibraryDirectory=l[0];
+        //	Insert in db
+        q=QString
+        (
+            "INSERT INTO configuration "
+            "( "
+                "keyword, "
+                "value "
+            ") "
+            "VALUES "
+            "( "
+                "'%1', "
+                "'%2' "
+            ")"
+        )
+            .arg(_enumToKeyword[keyword])
+            .arg(value)
+        ;
+    }
+    else
+    {
+        //	Update in db
+        q=QString
+        (
+            "UPDATE configuration "
+            "SET value='%2' "
+            "WHERE keyword='%1' "
+        )
+            .arg(_enumToKeyword[keyword])
+            .arg(value)
+        ;
     }
 
-    QFileDialog dialog;
-    dialog.setDirectory(musicLibraryDirectory);
-    dialog.setFileMode(QFileDialog::Directory);
-    dialog.setViewMode(QFileDialog::Detail);
-    dialog.setLabelText(QFileDialog::LookIn,"LabelText");
-    QString newPath;
-    if(dialog.exec())
-    {
-        QStringList l=dialog.selectedFiles();
-        musicLibraryDirectory=l[0];
-    }
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery upsert(q,db);
+    Q_UNUSED(upsert);
 
+    _configuration[keyword]=value;
+}
+
+void
+Properties::setMusicLibraryDirectory(const QString musicLibraryDirectory)
+{
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
     if(_getHostID()>=0)
     {
         q=QString
@@ -125,7 +190,7 @@ Properties::setMusicLibraryDirectory()
                 "hostname='%2' "
         )
             .arg(Common::escapeSingleQuotes(musicLibraryDirectory))
-            .arg(Common::escapeSingleQuotes(Properties::localHostName()))
+            .arg(Common::escapeSingleQuotes(Network::hostName()))
         ;
     }
     else
@@ -148,7 +213,7 @@ Properties::setMusicLibraryDirectory()
                 "config_host "
         )
             .arg(dal->getIsNull())
-            .arg(Common::escapeSingleQuotes(Properties::localHostName()))
+            .arg(Common::escapeSingleQuotes(Network::hostName()))
             .arg(Common::escapeSingleQuotes(musicLibraryDirectory))
         ;
 
@@ -161,7 +226,6 @@ Properties::setMusicLibraryDirectory()
 
     if(_getHostID()<0)
     {
-
         SBMessageBox::createSBMessageBox("Critical error saving data"+ QString("%1 %2 %3").arg(__FILE__).arg(__FUNCTION__).arg(__LINE__),
                                          err.text(),
                                          QMessageBox::Critical,
@@ -177,22 +241,76 @@ Properties::setMusicLibraryDirectory()
     }
 }
 
+void
+Properties::userSetMusicLibraryDirectory()
+{
+    QString musicLibraryDirectory;
+    QString current=Properties::musicLibraryDirectory(0);
+
+    if(current.length()==0)
+    {
+        QStringList l;
+        l=QStandardPaths::standardLocations(QStandardPaths::MusicLocation);
+        musicLibraryDirectory=l[0];
+    }
+
+    QFileDialog dialog;
+    dialog.setDirectory(musicLibraryDirectory);
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setLabelText(QFileDialog::LookIn,"LabelText");
+    if(dialog.exec())
+    {
+        QStringList l=dialog.selectedFiles();
+        musicLibraryDirectory=l[0];
+    }
+    setMusicLibraryDirectory(musicLibraryDirectory);
+}
+
 ///	Protected methods
 void
 Properties::doInit()
 {
+    _enumToKeyword[sb_version]=QString("version_qt");
+    _enumToKeyword[sb_default_schema]=QString("default_schema");
+    _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
+    _enumToKeyword[sb_unknown_album_id]=QString("unknown_album_id");
+    _enumToKeyword[sb_performer_album_directory_structure_flag]=QString("performer_album_directory_structure_flag");
+    _enumToKeyword[sb_run_import_on_startup_flag]=QString("run_import_on_startup_flag");
+
+    QMapIterator<sb_configurable,QString> etkIT(_enumToKeyword);
+    while(etkIT.hasNext())
+    {
+        etkIT.next();
+        _keywordToEnum[etkIT.value()]=etkIT.key();
+    }
+
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    //	Load configuration from table
+    QString q="SELECT keyword,value FROM configuration";
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qID(q,db);
+    while(qID.next())
+    {
+        QString keyword=qID.value(0).toString();
+        QString value=qID.value(1).toString();
+
+        if(_keywordToEnum.contains(keyword))
+        {
+            sb_configurable key=_keywordToEnum[keyword];
+            _configuration[key]=value;
+        }
+    }
 }
 
 ///	Private methods
-Properties::Properties()
-{
-}
-
 int
 Properties::_getHostID() const
 {
     int hostID=-1;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q=QString
     (
@@ -203,7 +321,7 @@ Properties::_getHostID() const
         "WHERE "
             "hostname='%1' "
     )
-        .arg(Common::escapeSingleQuotes(Properties::localHostName()));
+        .arg(Common::escapeSingleQuotes(Network::hostName()));
     ;
     dal->customize(q);
     QSqlQuery query(q,db);

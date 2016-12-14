@@ -37,7 +37,7 @@ Common::hideColumns(QTableView* tv)
     const QAbstractItemModel* m=tv->model();
     if(m==NULL)
     {
-        qDebug() << SB_DEBUG_NPTR << "m";
+        SB_DEBUG_IF_NULL(m);
         return;
     }
     for(int i=0;i<m->columnCount();i++)
@@ -156,21 +156,21 @@ Common::removeArticles(const QString &s)
 
         //	Match on end with ,<space>
         as=", "+a;
-        if(t.indexOf(as)==t.length()-as.length())
+        if(t.indexOf(as)>=0 && t.indexOf(as)==t.length()-as.length())
         {
             t.remove(t.length()-as.length(),as.length());
         }
 
         //	Match on end with ,<nospace>
         as=","+a;
-        if(t.indexOf(as)==t.length()-as.length())
+        if(t.indexOf(as)>=0 && t.indexOf(as)==t.length()-as.length())
         {
             t.remove(t.length()-as.length(),as.length());
         }
 
         //	Match on end with <word><space><article>
         as=a;
-        if(t.indexOf(as)==t.length()-as.length())
+        if(t.indexOf(as)>=0 && t.indexOf(as)==t.length()-as.length())
         {
             t.remove(t.length()-as.length(),as.length());
         }

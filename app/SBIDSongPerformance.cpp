@@ -320,12 +320,12 @@ SBIDSongPerformance::updateSQL() const
                 "%2 as artist_id, "
                 "%3 as role_id, "
                 "%4 as year, "
-                "CAST(E'%5' AS VARCHAR) as notes "
+                "CAST('%5' AS VARCHAR) as notes "
         )
             .arg(_sb_song_id)
             .arg(_sb_performer_id)
             .arg(_originalPerformerFlag==1?0:1)
-            .arg(_year)
+            .arg(_year<1900?1900:_year)
             .arg(Common::escapeSingleQuotes(_notes))
         );
     }

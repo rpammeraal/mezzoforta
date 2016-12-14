@@ -55,13 +55,16 @@ public:
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
     bool saveSongToAlbum(const SBIDSong& song) const;	//	CWIP: amgr
-    void setAlbumPerformerID(int albumPerformerID);
-    void setAlbumPerformerName(const QString& albumPerformerName);
-    void setYear(int year);
     static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
     QStringList updateSongOnAlbumWithNewOriginal(const SBIDSong& song);  //	CWIP: cmp with
     QStringList updateSongOnAlbum(const SBIDSong& song);                 //	CWIP: this one, possible merge, otherwise rename
     inline int year() const { return _year; }
+
+    //	Setters
+    void setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
+    void setAlbumPerformerID(int performerID) { _sb_album_performer_id=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
+    void setYear(int year) { _year=year; setChangedFlag(); }
+    void setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;
@@ -115,12 +118,6 @@ private:
     void _init();
     void _loadAlbumPerformances();
     void _setPerformerPtr();
-
-    //	Internal setters
-    void _setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
-    void _setAlbumPerformerID(int performerID) { _sb_album_performer_id=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
-    void _setYear(int year) { _year=year; setChangedFlag(); }
-    void _setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
 
     //	Aux helper methods
     QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;

@@ -3,7 +3,9 @@
 #include "DataAccessLayerSQLite.h"
 
 #include "Common.h"
+#include "Configuration.h"
 #include "Context.h"
+#include "Network.h"
 #include "SBMessageBox.h"
 
 DataAccessLayerSQLite::DataAccessLayerSQLite()
@@ -11,7 +13,7 @@ DataAccessLayerSQLite::DataAccessLayerSQLite()
 }
 
 bool
-DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredentials& credentials)
+DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredentials& credentials,const QString& musicLibraryPath)
 {
     //	Check parameters
     QString errorString;
@@ -285,11 +287,85 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("CREATE INDEX idx_toplay_op ON toplay (song_id, artist_id, record_id, record_position); ");
             SQL.append("CREATE INDEX idx_toplay_po ON toplay (play_order); ");
 
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE config_host \n"
+                "( \n"
+                    "host_id integer NOT NULL, \n"
+                    "hostname varchar NOT NULL, \n"
+                    "local_data_path integer NOT NULL, \n"
+                    "CONSTRAINT pk_config_host PRIMARY KEY(host_id) \n"
+                "); \n"
+            ));
+
+            SQL.append(QString(
+                "INSERT INTO config_host "
+                "( "
+                    "host_id, "
+                    "hostname, "
+                    "local_data_path "
+                ") "
+                "VALUES "
+                "( "
+                    "0, "
+                    "'%1', "
+                    "'%2' "
+                ")"
+            )
+                .arg(Common::escapeSingleQuotes(Network::hostName()))
+                .arg(Common::escapeSingleQuotes(musicLibraryPath))
+            );
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE configuration \n"
+                "( \n"
+                    "keyword varchar NOT NULL, \n"
+                    "value varchar NOT NULL, \n"
+                    "CONSTRAINT pk_config_host PRIMARY KEY(keyword,value) \n"
+                "); \n"
+            ));
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE article \n"
+                "( \n"
+                    "word varchar NOT NULL, \n"
+                    "CONSTRAINT pk_article PRIMARY KEY(word) \n"
+                "); \n"
+            ));
+
+            SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
+
+            //	Ideally, go thru regular path to have this done.
+            SQL.append("INSERT INTO ___SB_SCHEMA_NAME___artist (artist_id,name,sort_name) VALUES(0,'VARIOUS ARTISTS','VARIOUS ARTISTS')");
+            SQL.append("INSERT INTO ___SB_SCHEMA_NAME___record (record_id,artist_id,title,media) VALUES(0,0,'UNKNOWN ALBUM','UNKNOWN ALBUM')");
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE digital_format \n"
+                "( \n"
+                    "format_id int NOT NULL, \n"
+                    "name varchar NOT NULL, \n"
+                    "extension varchar NOT NULL, \n"
+                    "CONSTRAINT pk_digital_format PRIMARY KEY(format_id) \n"
+                "); \n"
+            ));
+
+            SQL.append("INSERT INTO digital_format VALUES (0,'MP3 format','mp3')");
+            SQL.append("INSERT INTO digital_format VALUES (1,'Wave format','wav')");
+            SQL.append("INSERT INTO digital_format VALUES (2,'Ogg/Vorbis','ogg')");
+            SQL.append("INSERT INTO digital_format VALUES (4,'Flac','flac')");
+
             if(dal.executeBatch(SQL,1,0,1)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";
             }
+
+            Properties properties(&dal);
+            properties.debugShow("createDatabase");
+            properties.setConfigValue(Properties::sb_version,"20170101");
+            properties.setConfigValue(Properties::sb_various_performer_id,"0");
+            properties.setConfigValue(Properties::sb_unknown_album_id,"0");
+            properties.setConfigValue(Properties::sb_performer_album_directory_structure_flag,"1");
+            properties.setMusicLibraryDirectory(musicLibraryPath);
         }
 
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);

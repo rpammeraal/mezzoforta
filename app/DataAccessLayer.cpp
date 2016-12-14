@@ -136,7 +136,7 @@ DataAccessLayer::createRestorePoint() const
             break;
 
         case SBIDBase::sb_type_chart:
-            q=QString("SELECT MAX(chart_id) FROM ___SB_SCHEMA_NAME___chart");
+            //q=QString("SELECT MAX(chart_id) FROM ___SB_SCHEMA_NAME___chart");
             break;
 
         case SBIDBase::sb_type_playlist:
@@ -164,7 +164,7 @@ DataAccessLayer::restore(const QString &restorePoint) const
 {
     qDebug() << SB_DEBUG_INFO << restorePoint;
     QStringList IDs=restorePoint.split(':');
-    if(restorePoint.length()==0 || IDs.count()!=6 || IDs[0]!="restorepoint")
+    if(restorePoint.length()==0 || IDs.count()!=5 || IDs[0]!="restorepoint")
     {
         qDebug() << SB_DEBUG_ERROR << "Invalid restorepoint:" << restorePoint;
     }
@@ -172,31 +172,31 @@ DataAccessLayer::restore(const QString &restorePoint) const
     int songID=IDs[1].toInt()+1;
     int performerID=IDs[2].toInt()+1;
     int albumID=IDs[3].toInt()+1;
-    int chartID=IDs[4].toInt()+1;
-    int playlistID=IDs[5].toInt()+1;
+    int chartID=-1;	//	IDs[4].toInt()+1;	//	TEST THIS IF CHARTS ARE ADDED
+    int playlistID=IDs[4].toInt()+1;
 
     QStringList SQL;
 
-    //	Charts
-    SQL.append(QString(
-        "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
-        "WHERE "
-            "song_id>=%1 OR "
-            "artist_id>=%2 OR "
-            "chart_id>=%3"
-    )
-        .arg(songID)
-        .arg(performerID)
-        .arg(chartID)
-    );
+//    //	Charts
+//    SQL.append(QString(
+//        "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
+//        "WHERE "
+//            "song_id>=%1 OR "
+//            "artist_id>=%2 OR "
+//            "chart_id>=%3"
+//    )
+//        .arg(songID)
+//        .arg(performerID)
+//        .arg(chartID)
+//    );
 
-    SQL.append(QString(
-        "DELETE FROM ___SB_SCHEMA_NAME___chart "
-        "WHERE "
-            "chart_id>=%1"
-    )
-        .arg(chartID)
-    );
+//    SQL.append(QString(
+//        "DELETE FROM ___SB_SCHEMA_NAME___chart "
+//        "WHERE "
+//            "chart_id>=%1"
+//    )
+//        .arg(chartID)
+//    );
 
     //	Playlists
     SQL.append(QString(

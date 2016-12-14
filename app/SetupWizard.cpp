@@ -109,9 +109,10 @@ SetupWizard::start(bool firstRunFlag)
                 fdSelectMusicLibrary.setAcceptMode(QFileDialog::AcceptOpen);
                 fdSelectMusicLibrary.setLabelText(QFileDialog::Accept,"Open");
                 fdSelectMusicLibrary.setViewMode(QFileDialog::List);
+                QString musicLibraryPath;
                 if(fdSelectMusicLibrary.exec())
                 {
-                    QString musicLibraryPath=fdSelectMusicLibrary.selectedFiles().first();
+                    musicLibraryPath=fdSelectMusicLibrary.selectedFiles().first();
                     qDebug() << SB_DEBUG_INFO << musicLibraryPath;
                 }
 
@@ -121,11 +122,23 @@ SetupWizard::start(bool firstRunFlag)
                 dc.databaseName="Songbase";
                 dc.sqlitePath=databasePath;
 
-                successFlag=DataAccessLayerSQLite::createDatabase(dc);
+                successFlag=DataAccessLayerSQLite::createDatabase(dc,musicLibraryPath);
 
-                //	Somehow:
-                //	-	create placeholder for Various artist, unknown album
-                //	-	update the several configuration tables (needs to be added)
+                //	Ask music library layout
+                QMessageBox musicFormatChoice;
+                musicFormatChoice.setText("Is your music library organized by album?");
+                musicFormatChoice.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                musicFormatChoice.setDefaultButton(QMessageBox::Yes);
+                int keyPressed=musicFormatChoice.exec();
+
+                Properties* properties=Context::instance()->getProperties();
+                properties->setConfigValue(
+                    Properties::sb_performer_album_directory_structure_flag,
+                    keyPressed==QMessageBox::Yes?"1":"0");
+                qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_performer_album_directory_structure_flag);
+
+                //	Start import
+                properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"1");
             }
             else
             {

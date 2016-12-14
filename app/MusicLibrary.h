@@ -27,6 +27,74 @@ class MusicLibrary : public QObject
     private:
         void _init() { pathExists=0; }
     };
+    typedef std::shared_ptr<MLperformance> MLperformancePtr;
+
+    //	A single class that does it all
+    class MLentity
+    {
+    public:
+        MLentity() { _init(); }
+
+        //	File attributes
+        QString filePath;
+        QString parentDirectoryName;
+        QString parentDirectoryPath;
+        QString extension;
+
+        //	Primary meta data attributes (need to exist)
+        int albumPosition;
+        QString albumTitle;
+        QString songPerformerName;
+        QString songTitle;
+
+        //	Secondary meta data attributes (optional)
+        QString albumPerformerName;
+        Duration duration;
+        QString genre;
+        QString notes;
+        int year;
+
+        //	Songbase ids
+        int songID;
+        int songPerformerID;
+        int albumID;
+        int albumPerformerID;
+
+        //	Helper attributes
+        bool createArtificialAlbumFlag;
+        QString errorMsg;
+
+        inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
+        inline bool isValid() const
+        {
+            return
+                (
+                    errorFlag()==0  &&
+                    (albumPosition>=0 || createArtificialAlbumFlag==1) &&
+                    albumTitle.length()>0 &&
+                    songPerformerName.length()>0 &&
+                    songTitle.length()>0
+                )?1:0;
+        }
+
+    private:
+        void _init() { songID=-1; songPerformerID=-1; albumID=-1; albumPosition=-1; albumPerformerID=-1; createArtificialAlbumFlag=0; }
+    };
+    typedef std::shared_ptr<MLentity> MLentityPtr;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //	Represents what has been found on the file system
     class MLentry
@@ -58,9 +126,17 @@ class MusicLibrary : public QObject
         SBIDPerformerPtr performerPtr;
         SBIDSongPtr songPtr;
 
+        bool validFlag() const { return albumTitle.length()>0 && (albumPosition==-2 || albumPosition>0) && songPerformerName.length()>0 && songTitle.length()>0 ? 1: 0; }
     private:
         void _init() { albumPerformerID=-1;  albumPosition=-1; albumPtr=SBIDAlbumPtr(); performerPtr=SBIDPerformerPtr(); songPtr=SBIDSongPtr(); }
     };
+    typedef std::shared_ptr<MLentry> MLentryPtr;
+
+
+
+
+
+
 
     class MLperformer
     {
@@ -74,6 +150,21 @@ class MusicLibrary : public QObject
     private:
         void _init() { performerID=-1; }
     };
+    typedef std::shared_ptr<MLperformer> MLperformerPtr;
+
+    class MLalbumPath
+    {
+    public:
+        MLalbumPath() { _init(); }
+
+        int maxPosition;
+        QVector<QString> uniqueAlbumTitles;
+
+    private:
+        void _init() { maxPosition=0; }
+
+    };
+    typedef std::shared_ptr<MLalbumPath> MLalbumPathPtr;
 
     class MLalbum
     {
@@ -88,13 +179,16 @@ class MusicLibrary : public QObject
         QString genre;
 
         int offset; //	if there any existing performances on the album, need to add offset to albumPosition
+        bool artificiallyCreatedFlag;
+        int maxPosition;
 
         QVector<QString> paths;
 
         SBIDAlbumPtr albumPtr;
     private:
-        void _init() { albumID=-1; albumPerformerID=-1; offset=0; year=1900; albumPtr=SBIDAlbumPtr(); }
+        void _init() { albumID=-1; albumPerformerID=-1; offset=0; year=1900; artificiallyCreatedFlag=1; maxPosition=-1; albumPtr=SBIDAlbumPtr(); }
     };
+    typedef std::shared_ptr<MLalbum> MLalbumPtr;
 
     class MLsongPerformance
     {
@@ -112,23 +206,18 @@ class MusicLibrary : public QObject
     private:
         void _init() { songID=-1; performerID=-1; }
     };
-
-    typedef std::shared_ptr<MLperformance> MLperformancePtr;
-    typedef std::shared_ptr<MLentry> MLentryPtr;
-    typedef std::shared_ptr<MLperformer> MLperformerPtr;
-    typedef std::shared_ptr<MLalbum> MLalbumPtr;
     typedef std::shared_ptr<MLsongPerformance> MLsongPerformancePtr;
 
 public:
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary();
+    void rescanMusicLibrary_v2();
 
 signals:
 
 public slots:
 
 private:
-    void _rescanMusicLibrary(const QString& schema);
 };
 
 #endif // MUSICLIBRARY_H

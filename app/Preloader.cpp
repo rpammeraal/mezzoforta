@@ -139,6 +139,7 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     QStringList albumPerformanceFields; albumPerformanceFields << "0" << "6" << "17" << "12" << "18" << "4" << "19" << "20";
 
     dal->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
     QSqlQuery queryList(query,db);
     int maxValue=queryList.size();
     if(maxValue<0)
@@ -591,7 +592,7 @@ Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QS
     f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
     f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
     f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toTime());   r.append(f);
+    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
     f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(fields.at(5).toInt()).toInt());    r.append(f);
     f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(fields.at(6).toInt()).toString()); r.append(f);
     f=QSqlField("f8",QVariant::String); f.setValue(queryList.value(fields.at(7).toInt()).toString()); r.append(f);

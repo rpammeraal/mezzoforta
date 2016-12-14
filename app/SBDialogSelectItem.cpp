@@ -162,12 +162,13 @@ SBDialogSelectItem*
 SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPtr& existingPerformerPtr, const QMap<int,QList<SBIDPerformerPtr>>& matches, QWidget *parent)
 {
     //	Used by MusicLibrary to import songs
+    qDebug() << SB_DEBUG_INFO << newPerformerName;
 
     SBDialogSelectItem* d=new SBDialogSelectItem(existingPerformerPtr,parent);
     d->ui->setupUi(d);
 
     //	Populate choices
-    QString title=QString("Choose Performer ");
+    QString title=QString("Choose Correct Name for: %1").arg(newPerformerName);
     d->setTitle(title);
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
@@ -185,10 +186,10 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
             if(i==-1)
             {
                 //	Process new performerName
-                SBIDPerformerPtr tmpPtr=SBIDPerformer::retrieveVariousArtists();
+                SBIDPerformerPtr tmpPtr=SBIDPerformer::retrieveVariousPerformers();
                 imagePath=tmpPtr->iconResourceLocation();
                 currentKey="x:x";
-                currentPerformerName=newPerformerName;
+                currentPerformerName=QString("Use as is: %1").arg(newPerformerName);
             }
             else
             {
@@ -200,7 +201,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                     imagePath=currentPerformerPtr->iconResourceLocation();
                 }
                 currentKey=currentPerformerPtr->key();
-                currentPerformerName=currentPerformerPtr->performerName();
+                currentPerformerName=QString("Existing Performer: %1").arg(currentPerformerPtr->performerName());
             }
 
             QLabel* l=new QLabel;
