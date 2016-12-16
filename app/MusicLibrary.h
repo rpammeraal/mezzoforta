@@ -64,19 +64,9 @@ class MusicLibrary : public QObject
         //	Helper attributes
         bool createArtificialAlbumFlag;
         QString errorMsg;
+        int ID;
 
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
-        inline bool isValid() const
-        {
-            return
-                (
-                    errorFlag()==0  &&
-                    (albumPosition>=0 || createArtificialAlbumFlag==1) &&
-                    albumTitle.length()>0 &&
-                    songPerformerName.length()>0 &&
-                    songTitle.length()>0
-                )?1:0;
-        }
 
     private:
         void _init() { songID=-1; songPerformerID=-1; albumID=-1; albumPosition=-1; albumPerformerID=-1; createArtificialAlbumFlag=0; }
@@ -90,7 +80,9 @@ class MusicLibrary : public QObject
 
         int maxPosition;
         QVector<QString> uniqueAlbumTitles;
+        QVector<int> uniqueSongPerformerIDs;
 
+        bool multipleEntriesFlag() const { return (uniqueAlbumTitles.count()>1 || uniqueSongPerformerIDs.count()>1)?1:0; }
     private:
         void _init() { maxPosition=0; }
 

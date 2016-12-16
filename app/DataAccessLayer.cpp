@@ -45,7 +45,7 @@ DataAccessLayer::~DataAccessLayer()
 }
 
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,bool showProgressDialogFlag) const
+DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,const QString& progressDialogTitle) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -55,8 +55,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     QString q;
     int currentValue=0;
     int maxValue=allQueries.count()+1;
-    QProgressDialog pd("Saving",QString(),0,maxValue);
-    if(showProgressDialogFlag)
+    QProgressDialog pd(progressDialogTitle,QString(),0,maxValue);
+    if(progressDialogTitle.length()!=0)
     {
         pd.setWindowModality(Qt::WindowModal);
         pd.show();

@@ -730,10 +730,20 @@ X	playlists that song belongs to can be edited
 -	Too many progress bars displayed
 -	Use unknown album if album can't be determined: not needed, will take name of parent directory
 
-<CURRENT>
+20161216:
+-	Import on startup: logo needs to disappear.
+-	List all files that did not get imported.
+
 <to be fixed before next beta release>
-*	List all files that did not get imported.
+*	Duplicate song entries in 'All Songs'
+*	Dialogbox needed at additional places during import
 *	Validate album positions
+*	Import songbase directory:
+    *	Asks for N.w.a: too many choices offered
+	*	The War On Drugs: one option is War On Drugs, The. This should be automatically accepted.
+	*	Doobie Brothers: The Doobie Brothers
+	*	It should not mix: The Specials and De Specials
+	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
 
 <beta 2>
 *	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.

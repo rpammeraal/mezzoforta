@@ -276,11 +276,19 @@ Controller::openMainWindow(bool appStartUpFlag)
     {
         splash.finish(mw);
     }
+
     mw->show();
-
-
-
     Context::instance()->getNavigator()->openOpener();
+
+    //	Kick off import
+    Properties* properties=Context::instance()->getProperties();
+    properties->debugShow("Configuration");
+    if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
+    {
+        MusicLibrary ml;
+        ml.rescanMusicLibrary();
+    }
+    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"0");
 
     return 1;
 }
@@ -358,8 +366,6 @@ Controller::setupUI()
         mw->ui.labelSchema->setVisible(0);
         mw->ui.frSchema->setVisible(0);
     }
-    Properties* properties=Context::instance()->getProperties();
-    properties->debugShow("Configuration");
 
     qDebug() << SB_DEBUG_INFO << "playground";
 
@@ -376,13 +382,6 @@ Controller::setupUI()
 //    SBIDPerformerPtr u2ptr2=SBIDPerformer::retrievePerformer(2078);
 //    qDebug() << SB_DEBUG_INFO << u2ptr2->genericDescription();
 
-    //	Kick off impor
-    if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
-    {
-        MusicLibrary ml;
-        ml.rescanMusicLibrary();
-    }
-    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"0");
 
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;

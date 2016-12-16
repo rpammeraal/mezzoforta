@@ -21,7 +21,6 @@ MetaData::_parse()
 
     if(_f.audioProperties()==NULL)
     {
-        qDebug() << SB_DEBUG_INFO << "None";
         return;
     }
     _albumTitle=Common::sanitize(TStringToQString(_f.tag()->album()));

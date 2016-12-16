@@ -353,7 +353,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("INSERT INTO digital_format VALUES (2,'Ogg/Vorbis','ogg')");
             SQL.append("INSERT INTO digital_format VALUES (4,'Flac','flac')");
 
-            if(dal.executeBatch(SQL,1,0,1)==0)
+            if(dal.executeBatch(SQL,1,0,"Creating Database")==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";

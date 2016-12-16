@@ -70,7 +70,8 @@ HEADERS     = \
     SetupWizard.h \
     DataAccessLayerSQLite.h \
     Network.h \
-    Configuration.h
+    Configuration.h \
+    MusicImportResult.h
 
 SOURCES     = \
     main.cpp \
@@ -141,7 +142,8 @@ SOURCES     = \
     SetupWizard.cpp \
     DataAccessLayerSQLite.cpp \
     Network.cpp \
-    Configuration.cpp
+    Configuration.cpp \
+    MusicImportResult.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
@@ -155,7 +157,8 @@ FORMS += \
     DatabaseSelector.ui \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
-    SetupWizard.ui
+    SetupWizard.ui \
+    MusicImportResult.ui
 
 RESOURCES += \
     resource.qrc

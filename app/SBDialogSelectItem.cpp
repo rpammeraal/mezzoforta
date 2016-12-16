@@ -42,6 +42,8 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
     d->ui->lHeader->setText(title+':');
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 
+    qDebug() << SB_DEBUG_INFO << newAlbum.albumTitle << newAlbum.performerName;
+
     for(int i=-2;i<matches.count(); i++)
     {
         int numMatches=(i<0?1:matches[i].count());	//	allow for newPerformerName to be shown
@@ -63,7 +65,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 currentAlbumTitle=newAlbum.albumTitle;
                 currentAlbumPerformerName=newAlbum.performerName;
             }
-            if(i==-1)
+            else if(i==-1)
             {
                 l=new QLabel;
                 l->setText("alt label");
@@ -71,6 +73,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
             }
             else
             {
+                qDebug() << SB_DEBUG_INFO << i << j;
                 SBIDAlbumPtr currentAlbumPtr=matches[i][j];
                 imagePath=ExternalData::getCachePath(currentAlbumPtr);
                 QFile imageFile(imagePath);

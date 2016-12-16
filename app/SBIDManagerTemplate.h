@@ -53,7 +53,7 @@ public:
     //	Update
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1,bool errorOnNoChanges=0);
-    bool commitAll1(DataAccessLayer* dal);
+    bool commitAll(DataAccessLayer* dal,const QString& progressDialogTitle=QString());
     std::shared_ptr<T> createInDB();
     void merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
@@ -416,7 +416,7 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
     }
 
     bool successFlag=0;
-    successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag);
+    successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag?"Saving":"");
 
     if(successFlag)
     {
@@ -427,7 +427,7 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
+SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal,const QString& progressDialogTitle)
 {
     std::shared_ptr<T> ptr;
     QStringList SQL;
@@ -440,7 +440,7 @@ SBIDManagerTemplate<T,parentT>::commitAll1(DataAccessLayer* dal)
         SQL.append(ptr->updateSQL());
     }
 
-    bool successFlag=dal->executeBatch(SQL);
+    bool successFlag=dal->executeBatch(SQL,1,0,progressDialogTitle);
     if(successFlag)
     {
         for(int i=0;i<_changes.count();i++)
