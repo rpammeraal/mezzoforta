@@ -5,6 +5,7 @@
 #include "QSqlRecord"
 
 #include "Common.h"
+#include "MusicLibrary.h"
 #include "SBIDBase.h"
 #include "SBIDSong.h"
 
@@ -50,6 +51,7 @@ public:
     inline QString notes() const { return _notes; }
     int numPerformances() const;
     SBTableModel* performances() const;
+    void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
     QMap<int,SBIDAlbumPerformancePtr> performanceList() const { return _albumPerformances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
@@ -113,6 +115,7 @@ private:
     //	Attributes derived from core attributes
     SBIDPerformerPtr                  _performerPtr;
 
+    //	CWIP: make this a vector. Will solve a lot of headaches
     QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;
 
     void _init();
@@ -122,6 +125,7 @@ private:
     //	Aux helper methods
     QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QStringList _updateSQLAlbumPerformances() const;
+    void _showAlbumPerformances(const QString& title) const;
 };
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)

@@ -172,7 +172,7 @@ ScreenStack::removeScreen(const ScreenItem &id, bool editOnlyFlag)
     for(int i=_stack.count()-1;i>=0;i--)
     {
         const ScreenItem& currentID=_stack.at(i);
-        if(currentID==id)
+        if(currentID.compare(id,1))
         {
             if(
                 (editOnlyFlag==0) ||

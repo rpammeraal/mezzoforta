@@ -30,13 +30,13 @@ private slots:
     void relatedPerformerSelected(const QModelIndex& i);
 
 private:
-    QCompleter*   _addNewRelatedPerformerCompleter;
-    QList<int>    _allRelatedPerformers;
-    bool          _relatedPerformerBeingAddedFlag;
-    bool          _relatedPerformerBeingDeletedFlag;
-    bool          _relatedPerformerHasChanged;
-    QLineEdit*    _relatedPerformerLineEdit;
-    bool          _removeRelatedPerformerButtonMaybeEnabledFlag;
+    QCompleter*    _addNewRelatedPerformerCompleter;
+    QList<QString> _allRelatedPerformers;	//	Key
+    bool           _relatedPerformerBeingAddedFlag;
+    bool           _relatedPerformerBeingDeletedFlag;
+    bool           _relatedPerformerHasChanged;
+    QLineEdit*     _relatedPerformerLineEdit;
+    bool           _removeRelatedPerformerButtonMaybeEnabledFlag;
 
     void _addItemToRelatedPerformerList(const SBIDPerformerPtr& pptr) const;
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }

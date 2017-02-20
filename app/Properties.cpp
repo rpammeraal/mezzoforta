@@ -199,18 +199,12 @@ Properties::setMusicLibraryDirectory(const QString musicLibraryDirectory)
         (
             "INSERT INTO config_host "
             "( "
-                "host_id, "
                 "hostname, "
-                "local_data_path, "
-                "is_music_player "
+                "local_data_path "
             ") "
             "SELECT "
-                "%1(MAX(host_id)+1,0), "
                 "'%2', "
-                "'%3', "
-                "CAST(1 AS boolean) "
-            "FROM "
-                "config_host "
+                "'%3' "
         )
             .arg(dal->getIsNull())
             .arg(Common::escapeSingleQuotes(Network::hostName()))
@@ -315,7 +309,7 @@ Properties::_getHostID() const
     QString q=QString
     (
         "SELECT "
-            "host_id "
+            "config_host_id "
         "FROM "
             "config_host "
         "WHERE "

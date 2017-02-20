@@ -67,9 +67,9 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
             }
             else if(i==-1)
             {
-                l=new QLabel;
-                l->setText("alt label");
-                d->ui->vlAlbumList->addWidget(l);
+//                l=new QLabel;
+//                l->setText("alt label");
+//                d->ui->vlAlbumList->addWidget(l);
             }
             else
             {
@@ -236,43 +236,98 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
     SBDialogSelectItem* d=new SBDialogSelectItem(existingSongPtr,parent);
     d->ui->setupUi(d);
 
+    //	matches contains the following lists:
+    //	0:	0 or 1 exact matches. If count==1, this method shouldn't be called,
+    //		so ignore
+    //	1:	0 or more exact matches on title, but with different performers.
+    //	2:	0 or more soundex matches.
+    bool foundExactMatchesFlag=(matches[1].count()>=1?1:0);
+    bool foundSoundexMatchesFlag=(matches[2].count()>=1?1:0);
+
     //	Populate choices
-    QString title=QString("Select song ");
-    d->setTitle(title);
+    QString title;
+
+    if(foundExactMatchesFlag)
+    {
+        title=QString("Select Original Performer for song <I>'%1'</I> performed by <B>'%2'</B>").arg(newSong.songTitle).arg(newSong.performerName);
+    }
+    else
+    {
+        title=QString("Select possible alternative for song <I>'%1'</I>").arg(newSong.songTitle);
+    }
+    d->setTitle("Select Original Performer");
     d->ui->lHeader->setText(title+':');
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 
-    for(int i=-2;i<matches.count(); i++)
+    qDebug() << SB_DEBUG_INFO << foundExactMatchesFlag << matches[1].count();
+    qDebug() << SB_DEBUG_INFO << foundSoundexMatchesFlag << matches[2].count();
+    qDebug() << SB_DEBUG_INFO << matches.count();
+
+    for(int i=0;i<matches.count(); i++)
     {
-        int numMatches=(i<0?1:matches[i].count());	//	allow for newPerformerName to be shown
+        int numMatches=(i==0?1:matches[i].count());
+        qDebug() << SB_DEBUG_INFO << i << numMatches << matches[i].count();
 
         for(int j=0;j<numMatches;j++)
         {
+            qDebug() << SB_DEBUG_INFO << i << j;
             QString imagePath;
             QString currentKey;
             QString currentSongTitle;
             QString currentSongPerformerName;
 
-            QLabel* l;
-            if(i==-2)
+            QLabel* l=new QLabel;
+            l->setWindowFlags(Qt::FramelessWindowHint);
+            l->setTextFormat(Qt::RichText);
+            l->setFont(QFont("Trebuchet MS",13));
+
+            if(i==0)
             {
-                qDebug() << SB_DEBUG_INFO << newSong.songTitle << newSong.performerName;
-                //	Process new performerName
-                imagePath=SBIDSong::iconResourceLocationStatic();
                 currentKey="x:x";
-                currentSongTitle=newSong.songTitle;
                 currentSongPerformerName=newSong.performerName;
+
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <B>%2</B></a></font></body></html>")
+                           .arg(currentKey)
+                           .arg(currentSongPerformerName)
+                );
             }
-            else if(i==-1)
+            else if(i==1)
             {
-                l=new QLabel;
-                l->setText("alt label");
-                d->ui->vlAlbumList->addWidget(l);
+                SBIDSongPtr currentSongPtr=matches[i][j];
+                SBIDPerformerPtr currentPerformerPtr=currentSongPtr->songPerformerPtr();
+                qDebug() << SB_DEBUG_INFO << currentPerformerPtr->key();
+                imagePath=ExternalData::getCachePath(currentPerformerPtr);
+                QFile imageFile(imagePath);
+                if(imageFile.exists()==0)
+                {
+                    imagePath=currentPerformerPtr->iconResourceLocation();
+                }
+                currentKey=currentSongPtr->key();
+                currentSongPerformerName=currentPerformerPtr->performerName();
+
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <B>%2</B></a></font></body></html>")
+                           .arg(currentKey)
+                           .arg(currentSongPerformerName)
+                );
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO << i << j;
+                qDebug() << SB_DEBUG_INFO << i << j << foundSoundexMatchesFlag;
+                if(j==0 && foundSoundexMatchesFlag)
+                {
+                    qDebug() << SB_DEBUG_INFO;
+                    QLabel* l=new QLabel;
+                    l->setText("Or, select one of the following songs below:");
+                    l->setFont(QFont("Trebuchet MS",13));
+                    d->ui->vlAlbumList->addWidget(l);
+                }
+
                 SBIDSongPtr currentSongPtr=matches[i][j];
+                qDebug() << SB_DEBUG_INFO << currentSongPtr->key();
                 imagePath=ExternalData::getCachePath(currentSongPtr);
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
@@ -282,20 +337,17 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 currentKey=currentSongPtr->key();
                 currentSongTitle=currentSongPtr->songTitle();
                 currentSongPerformerName=currentSongPtr->songPerformerName();
+
+                l->setText(QString("<html><head><style type=text/css> "
+                                   "a:link {color:black; text-decoration:none;} "
+                                   "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
+                           .arg(currentKey)
+                           .arg(currentSongTitle)
+                           .arg(currentSongPerformerName)
+                );
             }
+            qDebug() << SB_DEBUG_INFO << i << j;
 
-            l=new QLabel;
-            l->setWindowFlags(Qt::FramelessWindowHint);
-            l->setTextFormat(Qt::RichText);
-            l->setFont(QFont("Trebuchet MS",13));
-
-            l->setText(QString("<html><head><style type=text/css> "
-                               "a:link {color:black; text-decoration:none;} "
-                               "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
-                       .arg(currentKey)
-                       .arg(currentSongTitle)
-                       .arg(currentSongPerformerName)
-            );
 
             l->setStyleSheet( ":hover{ background-color: darkgrey; }");
             connect(l, SIGNAL(linkActivated(QString)),

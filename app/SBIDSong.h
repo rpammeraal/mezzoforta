@@ -62,6 +62,9 @@ public:
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
     inline int year() const { return _year; }
 
+    //	Pointers
+    SBIDPerformerPtr songPerformerPtr() const;
+
     //	Operators
     virtual operator QString() const;
 

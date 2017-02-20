@@ -904,7 +904,7 @@ SBIDSong::updateExistingSong(const SBIDBase &oldSongID, SBIDSong &newSongID, con
         performanceTable.append("chart_performance");
         performanceTable.append("collection_performance");
         performanceTable.append("online_performance");
-        performanceTable.append("playlist_performance");
+        //performanceTable.append("playlist_performance");
 
         for(int i=0;i<performanceTable.size();i++)
         {
@@ -1108,6 +1108,18 @@ SBIDSong::updateSoundexFields()
     }
 }
 
+///	Pointers
+SBIDPerformerPtr
+SBIDSong::songPerformerPtr() const
+{
+    if(!_songPerformerPtr)
+    {
+        const_cast<SBIDSong *>(this)->_setSongPerformerPtr();
+    }
+    return _songPerformerPtr;
+}
+
+
 ///	Operators
 SBIDSong::operator QString() const
 {
@@ -1165,7 +1177,7 @@ SBIDSong::retrieveAllSongs()
         "SELECT DISTINCT "
             "SB_KEYWORDS, "
             "-1 AS SB_ITEM_TYPE1, "
-            "CAST(%1 AS VARCHAR)||':'||CAST(SB_ALBUM_ID AS VARCHAR)||':'||CAST(SB_POSITION_ID AS VARCHAR) AS SB_ITEM_KEY1, "
+            "CAST(%1 AS VARCHAR)||':'||CAST(SB_ALBUM_PERFORMANCE_ID AS VARCHAR) AS SB_ITEM_KEY1, "
             "songTitle AS \"song title\", "
             "-1 AS SB_ITEM_TYPE2, "
             "CAST(%2 AS VARCHAR)||':'||CAST(SB_PERFORMER_ID AS VARCHAR) AS SB_ITEM_KEY2, "
@@ -1183,20 +1195,20 @@ SBIDSong::retrieveAllSongs()
                     "r.record_id AS SB_ALBUM_ID, "
                     "r.title AS recordTitle, "
                     "rp.record_position AS SB_POSITION_ID, "
-                    "s.title || ' ' || a.name || ' ' || r.title  AS SB_KEYWORDS "
+                    "s.title || ' ' || a.name || ' ' || r.title  AS SB_KEYWORDS, "
+                    "rp.record_performance_id SB_ALBUM_PERFORMANCE_ID "
                 "FROM "
                     "___SB_SCHEMA_NAME___record_performance rp  "
-                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
-                            "rp.artist_id=a.artist_id "
                         "JOIN ___SB_SCHEMA_NAME___record r ON  "
                             "rp.record_id=r.record_id "
+                        "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                            "rp.performance_id=p.performance_id "
+                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
+                            "p.artist_id=a.artist_id "
                         "JOIN ___SB_SCHEMA_NAME___song s ON  "
-                            "rp.song_id=s.song_id "
+                            "p.song_id=s.song_id "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "rp.op_song_id=op.song_id AND "
-                            "rp.op_artist_id=op.artist_id AND "
-                            "rp.op_record_id=op.record_id AND "
-                            "rp.op_record_position=op.record_position "
+                            "rp.record_performance_id=op.record_performance_id "
             ") a "
         "ORDER BY 4,7,10 "
     )
@@ -1242,7 +1254,6 @@ SBIDSong::createInDB()
     //	Get next ID available
     q=QString("SELECT %1(MAX(song_id),0)+1 FROM ___SB_SCHEMA_NAME___song ").arg(dal->getIsNull());
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qID(q,db);
     qID.next();
 
@@ -1254,7 +1265,6 @@ SBIDSong::createInDB()
         .arg(Common::escapeSingleQuotes(newSongTitle))
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qName(q,db);
 
     while(qName.next())
@@ -1359,7 +1369,8 @@ SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPt
             "( "
                 "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
                 "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
-            ") "
+            ") AND "
+            "length(s.soundex)<= 2*length('%3') "
         "ORDER BY "
             "1,3 "
 
@@ -1575,23 +1586,27 @@ SBIDSong::_loadPlaylists()
     (
         "SELECT DISTINCT "
             "pp.playlist_id, "
-            "pp.record_id, "
-            "pp.record_position "
+            "pp.record_performance_id "
         "FROM "
-            "___SB_SCHEMA_NAME___playlist_performance pp "
+            "___SB_SCHEMA_NAME___playlist_detail pp "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "pp.record_performance_id=rp.record_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "rp.performance_id=p.performance_id "
         "WHERE "
-            "pp.song_id=%4 "
+            "p.song_id=%1 "
     )
         .arg(this->songID())
     ;
 
+    qDebug() << SB_DEBUG_INFO << dal->customize(q);
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));
 
     _playlistKey2performanceKey.clear();
     while(q1.next())
     {
-        QString performanceKey=SBIDAlbumPerformance::createKey(q1.value(1).toInt(),q1.value(2).toInt());
+        QString performanceKey=SBIDAlbumPerformance::createKey(q1.value(1).toInt());
         QString playlistKey=SBIDPlaylist::createKey(q1.value(0).toInt());
 
         if(!_playlistKey2performanceKey.contains(playlistKey))

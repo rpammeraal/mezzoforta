@@ -55,11 +55,12 @@ public:
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1,bool errorOnNoChanges=0);
     bool commitAll(DataAccessLayer* dal,const QString& progressDialogTitle=QString());
     std::shared_ptr<T> createInDB();
-    void merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
+    void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     void remove(std::shared_ptr<T> ptr);
     bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     void rollbackChanges1();
+    void setChanged(std::shared_ptr<T> ptr);
     std::shared_ptr<T> userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr);
 
     //	Misc
@@ -133,18 +134,6 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
 
             }
             processedKeys.append(key);
-        }
-    }
-
-    for(int i=0;i<matches.count();i++)
-    {
-        if(matches.contains(i))
-        {
-            qDebug() << SB_DEBUG_INFO << i << matches[i].count();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << i << "not populated";
         }
     }
     return count;
@@ -325,7 +314,6 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
     int currentRowIndex=0;
     QProgressDialog pd(label,QString(),0,rowCount);
 
-    qDebug() << SB_DEBUG_INFO << label << rowCount;
     if(rowCount<=20)
     {
         showProgressDialogFlag=0;
@@ -433,6 +421,7 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal,const QString& pr
     QStringList SQL;
 
     //	Collect SQL for changes
+    qDebug() << SB_DEBUG_INFO << _changes.count();
     for(int i=0;i<_changes.count();i++)
     {
         const QString key=_changes.at(i);
@@ -448,6 +437,12 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal,const QString& pr
             const QString key=_changes.at(i);
             ptr=retrieve(key);
             ptr->clearChangedFlag();
+
+            if(ptr->deletedFlag())
+            {
+                qDebug() << SB_DEBUG_INFO;
+                _leMap.remove(ptr->key());
+            }
         }
         _changes.clear();
     }
@@ -464,15 +459,13 @@ SBIDManagerTemplate<T,parentT>::createInDB()
 }
 
 template <class T, class parentT> void
-SBIDManagerTemplate<T,parentT>::merge1(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
+SBIDManagerTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
 {
-    //	UNTESTED PROOF OF CONCEPT CODE!
     fromPtr->mergeTo(toPtr);
     fromPtr->setDeletedFlag();
     toPtr->setChangedFlag();
     _addToChangedList(fromPtr);
     _addToChangedList(toPtr);
-    _leMap.remove(fromPtr->key());
 }
 
 template <class T, class parentT> bool
@@ -533,6 +526,12 @@ template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::rollbackChanges1()
 {
     _changes.clear();
+}
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::setChanged(std::shared_ptr<T> ptr)
+{
+    _addToChangedList(ptr);
 }
 
 template <class T, class parentT> std::shared_ptr<T>
@@ -597,6 +596,7 @@ SBIDManagerTemplate<T,parentT>::_addToChangedList(const std::shared_ptr<T> ptr)
 {
     if(!_changes.contains(ptr->key()))
     {
+    qDebug() << SB_DEBUG_INFO;
         _changes.append(ptr->key());
     }
 }

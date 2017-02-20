@@ -153,6 +153,7 @@ SBTabQueuedSongs::setViewLayout()
     tv->setColumnHidden(6,1);	//	sb_column_playlistpositionid
     tv->setColumnHidden(7,1);	//	sb_column_position
     tv->setColumnHidden(8,1);	//	sb_column_path
+    tv->setColumnHidden(9,1);	//	sb_column_album_performance_id
 
     //	4.	Set headers.
     QHeaderView* hv=NULL;
@@ -182,7 +183,6 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
         SBIDPtr ptr=mqs->selectedItem(sourceIDX);
-    qDebug() << SB_DEBUG_INFO;
         Context::instance()->getNavigator()->openScreen(ptr);
     }
 }

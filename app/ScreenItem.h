@@ -21,15 +21,16 @@ public:
     ScreenItem(ScreenItem::screen_type screenType);
     ~ScreenItem();
 
+    bool compare(const ScreenItem& i, bool ignoreEditFlag=0) const;
     inline bool editFlag() const { return _editFlag; }
     inline ScreenItem::screen_type screenType() const { return _screenType; }
     inline QString searchCriteria() const { return _searchCriteria; }
-    void setEditFlag(bool editFlag) { _editFlag=editFlag; }
-    void setSortColumn(int sortColumn) { _sortColumn=sortColumn; }
-    void setSubtabID(int subtabID) { _subtabID=subtabID; }
+    inline void setEditFlag(bool editFlag) { _editFlag=editFlag; }
+    inline void setSortColumn(int sortColumn) { _sortColumn=sortColumn; }
+    inline void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    SBIDPtr ptr() const { return _ptr; }
+    inline SBIDPtr ptr() const { return _ptr; }
     void updateSBIDBase(const SBIDPtr& ptr);	//	CWIP: rename to updateSBIDPtr
 
     bool operator==(const ScreenItem& i) const;

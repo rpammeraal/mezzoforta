@@ -1,18 +1,20 @@
 #ifndef MUSICLIBRARY_H
 #define MUSICLIBRARY_H
 
+#include <memory>
+
 #include <QObject>
 #include <QVector>
 
 #include "Common.h"
 #include "Duration.h"
-#include "SBIDAlbum.h"
-#include "SBIDSong.h"
+
+class QProgressDialog;
 
 class MusicLibrary : public QObject
 {
     Q_OBJECT
-
+public:
     //	Represents entry as it already exists in the database
     class MLperformance
     {
@@ -55,6 +57,11 @@ class MusicLibrary : public QObject
         QString notes;
         int year;
 
+        //	Used for editing albums
+        int mergedToAlbumPosition;
+        int orgAlbumPosition;
+        bool removedFlag;
+
         //	Songbase ids
         int songID;
         int songPerformerID;
@@ -66,10 +73,10 @@ class MusicLibrary : public QObject
         QString errorMsg;
         int ID;
 
+        inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
-
     private:
-        void _init() { songID=-1; songPerformerID=-1; albumID=-1; albumPosition=-1; albumPerformerID=-1; createArtificialAlbumFlag=0; }
+        void _init() { songID=-1; songPerformerID=-1; albumID=-1; albumPosition=-1; albumPerformerID=-1; createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; }
     };
     typedef std::shared_ptr<MLentity> MLentityPtr;
 
@@ -89,15 +96,17 @@ class MusicLibrary : public QObject
     };
     typedef std::shared_ptr<MLalbumPath> MLalbumPathPtr;
 
-public:
+    //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary();
+    bool validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* progressDialog=NULL);
 
 signals:
 
 public slots:
 
 private:
+    QStringList _greatestHitsAlbums() const;
 };
 
 #endif // MUSICLIBRARY_H

@@ -24,6 +24,7 @@
 #include "PlayerController.h"
 #include "Properties.h"
 #include "SBIDBase.h"
+#include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
@@ -370,10 +371,65 @@ Controller::setupUI()
     qDebug() << SB_DEBUG_INFO << "playground";
 
     qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
-    QString p="Bbe";
-    qDebug() << SB_DEBUG_INFO << Common::removeArticles(p);
 
 
+//    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+
+//    QMap<int,QList<SBIDSongPtr>> matches;
+//    QList<SBIDSongPtr> l;
+
+//    matches[0]=QList<SBIDSongPtr>();
+
+//    l.clear();
+//    l.append(SBIDSong::retrieveSong(31404));
+//    l.append(SBIDSong::retrieveSong(31396));
+//    l.append(SBIDSong::retrieveSong(31385));
+//    matches[1]=l;
+
+//    l.clear();
+//    l.append(SBIDSong::retrieveSong(31404));
+//    l.append(SBIDSong::retrieveSong(31396));
+//    l.append(SBIDSong::retrieveSong(31385));
+//    matches[2]=l;
+
+//    QMapIterator<int,QList<SBIDSongPtr>> mIT(matches);
+//    while(mIT.hasNext())
+//    {
+//        mIT.next();
+//        QList<SBIDSongPtr> a=mIT.value();
+//        QListIterator<SBIDSongPtr> aIT(a);
+//        while(aIT.hasNext())
+//        {
+//            qDebug() << SB_DEBUG_INFO << mIT.key() << *(aIT.next());
+//        }
+//    }
+//    qDebug() << SB_DEBUG_INFO << matches[1].count();
+//    qDebug() << SB_DEBUG_INFO << matches[2].count();
+
+//    Common::sb_parameters parameters;
+//    parameters.songTitle="I suck";
+//    parameters.performerName="The Suckers";
+
+//    SBDialogSelectItem* i=SBDialogSelectItem::selectSong(parameters,SBIDSongPtr(),matches);
+//    i->exec();
+
+//    if(i->hasSelectedItem())
+//    {
+//        SBIDPtr ptr=i->getSelected();
+//        if(ptr)
+//        {
+//            qDebug() << SB_DEBUG_INFO << "SELECTED=" << *ptr;
+//        }
+//        else
+//        {
+//            qDebug() << SB_DEBUG_INFO << "SELECTED NEW";
+//        }
+
+//    }
+//    else
+//    {
+//        qDebug() << SB_DEBUG_INFO << "NONE SELECTED";
+//    }
 
 //    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
 //    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
@@ -431,6 +487,11 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         {
             connect(i,SIGNAL(triggered()),
                     Context::instance()->getChooser(), SLOT(renamePlaylist()));
+        }
+        else if(itemName=="menuRecalculatePlaylist")
+        {
+            connect(i,SIGNAL(triggered()),
+                    Context::instance()->getChooser(), SLOT(recalculateDuration()));
         }
         else if(itemName=="menuSetMusicLibrary")
         {

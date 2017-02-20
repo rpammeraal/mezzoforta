@@ -175,6 +175,13 @@ Common::removeArticles(const QString &s)
             t.remove(t.length()-as.length(),as.length());
         }
     }
+
+    //	If t is empty, revert back to the original parameter, as the original parameter
+    //	is an article. This function should not return empty strings.
+    if(t.length()==0)
+    {
+        t=s;
+    }
     return sanitize(t);
 }
 
@@ -292,6 +299,16 @@ Common::ParseChar(QChar c)
 void
 Common::toTitleCase(QString &s)
 {
+    if(s.length()<=3)
+    {
+        //	For words with length less than 3,
+        //	if the first character is already uppercased, leave alone.
+        if(s[0]==s[0].toUpper())
+        {
+            return;
+        }
+    }
+
     for(int i=0;i<s.length();i++)
     {
         if(i==0)
@@ -302,11 +319,16 @@ Common::toTitleCase(QString &s)
         {
             s[i]=s[i].toLower();
         }
-        else if(s.at(i).isSpace()==1)
+        else if(s.at(i).isLetter()==0)
         {
-            i++;
-            s[i]=s[i].toUpper();
-            i++;
+            while(i<s.length() && s.at(i).isLetter()==0)
+            {
+                i++;
+            }
+            if(i<s.length() && s.at(i).isLetter())
+            {
+                s[i]=s[i].toUpper();
+            }
         }
     }
 }

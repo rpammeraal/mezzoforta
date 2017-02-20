@@ -65,27 +65,28 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist \n"
                 "( \n"
-                    "artist_id integer NOT NULL, \n"
-                    "name character varying NOT NULL, \n"
-                    "sort_name character varying NOT NULL, \n"
-                    "www text, \n"
-                    "notes text, \n"
-                    "mbid character varying, \n"
-                    "soundex character varying, \n"
+                    //"artist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "artist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "name      CHARACTER VARYING NOT NULL, \n"
+                    "sort_name CHARACTER VARYING NOT NULL, \n"
+                    "www       TEXT, \n"
+                    "notes     TEXT, \n"
+                    "mbid      CHARACTER VARYING, \n"
+                    "soundex   CHARACTER VARYING, \n"
                     "CONSTRAINT cc_artist_artist_id_check CHECK ((artist_id >= 0)), \n"
-                    "CONSTRAINT cc_artist_name_check CHECK (((name) <> '')), \n"
-                    "CONSTRAINT pk_artist PRIMARY KEY(artist_id) \n"
+                    "CONSTRAINT cc_artist_name_check CHECK (((name) <> '')) \n"
                 ");\n"
             ));
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_rel \n"
                 "( \n"
-                    "artist1_id integer NOT NULL, \n"
-                    "artist2_id integer NOT NULL, \n"
+                    //"artist_rel_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "artist_rel_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "artist1_id    INTEGER NOT NULL, \n"
+                    "artist2_id    INTEGER NOT NULL, \n"
                     "CONSTRAINT fk_artist_rel_artist1_id_artist_artist_id FOREIGN KEY (artist1_id) REFERENCES artist(artist_id), \n"
-                    "CONSTRAINT fk_artist_rel_artist2_id_artist_artist_id FOREIGN KEY (artist2_id) REFERENCES artist(artist_id), \n"
-                    "CONSTRAINT pk_artist_rel PRIMARY KEY(artist1_id,artist2_id) \n"
+                    "CONSTRAINT fk_artist_rel_artist2_id_artist_artist_id FOREIGN KEY (artist2_id) REFERENCES artist(artist_id) \n"
                 "); \n"
             ));
             SQL.append("CREATE INDEX idx_artist_rel_a1 ON artist_rel   (artist1_id); ");
@@ -94,213 +95,166 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE song \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "title character varying NOT NULL, \n"
-                    "notes text, \n"
-                    "soundex character varying, \n"
+                    //"song_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "song_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "title   CHARACTER VARYING NOT NULL, \n"
+                    "notes   TEXT, \n"
+                    "soundex CHARACTER VARYING, \n"
                     "CONSTRAINT cc_song_song_id_check CHECK ((song_id >= 0)), \n"
-                    "CONSTRAINT cc_song_title_check CHECK (((title) <> '')), \n"
-                    "CONSTRAINT pk_song PRIMARY KEY(song_id) \n"
+                    "CONSTRAINT cc_song_title_check CHECK (((title) <> '')) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_song_title ON song   (title  ); ");
+            SQL.append("CREATE INDEX idx_song_title ON song (title); ");
+            SQL.append("CREATE INDEX idx_song_soundex ON song (soundex); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE lyrics \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "lyrics text, \n"
-                    "CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES song(song_id), \n"
-                    "CONSTRAINT pk_lyrics PRIMARY KEY(song_id) \n"
+                    "song_id INTEGER PRIMARY KEY NOT NULL, \n"
+                    "lyrics  TEXT, \n"
+                    "CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES song(song_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_lyrics_song_id ON lyrics   (song_id); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE performance \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "role_id smallint NOT NULL, \n"
-                    "year integer, \n"
-                    "notes text, \n"
+                    //"performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "song_id        INTEGER NOT NULL, \n"
+                    "artist_id      INTEGER NOT NULL, \n"
+                    "role_id        SMALLINT NOT NULL, \n"
+                    "year           INTEGER, \n"
+                    "notes          TEXT, \n"
                     "CONSTRAINT cc_performance_role_id_check CHECK (((role_id >= 0) AND (role_id <= 1))), \n"
                     "CONSTRAINT cc_performance_year_check CHECK (((year IS NULL) OR (year >= 1900))), \n"
-                    "CONSTRAINT fk_performance_song_id_song_song_id FOREIGN KEY (song_id) REFERENCES song(song_id),"
-                    "CONSTRAINT fk_performance_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id),"
-                    "CONSTRAINT pk_performance PRIMARY KEY(song_id,artist_id) \n"
+                    "CONSTRAINT fk_performance_song_id_song_song_id FOREIGN KEY (song_id) REFERENCES song(song_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_performance_artist_id ON performance (artist_id); ");
-            SQL.append("CREATE INDEX idx_performance_song_id ON performance (song_id); ");
-            SQL.append("CREATE INDEX idx_performance_year ON performance (year); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record \n"
                 "( \n"
-                    "record_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "title character varying NOT NULL, \n"
-                    "media character varying(10) NOT NULL, \n"
-                    "year integer, \n"
-                    "genre character varying, \n"
-                    "cddb_id character(8), \n"
-                    "cddb_category character varying(20), \n"
-                    "notes text, \n"
+                    //"record_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "record_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "artist_id     INTEGER NOT NULL, \n"
+                    "title         CHARACTER VARYING NOT NULL, \n"
+                    "media         CHARACTER VARYING(10) NOT NULL, \n"
+                    "year          INTEGER, \n"
+                    "genre         CHARACTER VARYING, \n"
+                    "cddb_id       CHARACTER(8), \n"
+                    "cddb_category CHARACTER VARYING(20), \n"
+                    "notes         TEXT, \n"
                     "CONSTRAINT cc_record_media_check CHECK (((media) <> '')), \n"
                     "CONSTRAINT cc_record_record_id_check CHECK ((record_id >= 0)), \n"
                     "CONSTRAINT cc_record_title_check CHECK (((title) <> '')), \n"
-                    "CONSTRAINT fk_record_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id), \n"
-                    "CONSTRAINT pk_record PRIMARY KEY(record_id) \n"
+                    "CONSTRAINT fk_record_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_record_artist_id ON record   (artist_id); ");
-            SQL.append("CREATE INDEX idx_record_genre ON record   (genre  ); ");
+            SQL.append("CREATE INDEX idx_record_title ON record (title); ");
+            SQL.append("CREATE INDEX idx_record_genre ON record (genre); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record_performance \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "record_id integer NOT NULL, \n"
-                    "record_position smallint NOT NULL, \n"
-                    "op_song_id integer, \n"
-                    "op_artist_id integer, \n"
-                    "op_record_id integer, \n"
-                    "op_record_position smallint, \n"
-                    "duration time without time zone NOT NULL, \n"
-                    "notes text, \n"
-                    "CONSTRAINT cc_record_performance_song_id_check CHECK (((op_song_id = NULL) OR (op_song_id = song_id))), \n"
-                    "CONSTRAINT cc_record_performance_artist_idcheck CHECK (((op_artist_id = NULL) OR (op_artist_id = artist_id))), \n"
+                    //"record_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "record_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "performance_id        INTEGER NOT NULL, \n"
+                    "record_id             INTEGER NOT NULL, \n"
+                    "record_position       SMALLINT NOT NULL, \n"
+                    "duration              TIME WITHOUT TIME ZONE NOT NULL, \n"
+                    "notes                 TEXT, \n"
                     "CONSTRAINT cc_record_performance_record_position_check CHECK ((record_position >= 0)), \n"
-                    "CONSTRAINT cc_record_performance_song_id_song_song_id FOREIGN KEY (song_id) REFERENCES song(song_id), \n"
-                    "CONSTRAINT fk_record_performance_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id), \n"
-                    "CONSTRAINT fk_record_performance_record_id_record_record_id FOREIGN KEY (record_id) REFERENCES record(record_id), \n"
-
-                    "CONSTRAINT fk_record_performance_record_performance FOREIGN KEY (op_song_id,op_artist_id,op_record_id,op_record_position) REFERENCES record_performance(song_id,artist_id,record_id,record_position), \n"
-                    "CONSTRAINT fk_record_performance_online_performance FOREIGN KEY (op_song_id,op_artist_id,op_record_id,op_record_position) REFERENCES online_performance(song_id,artist_id,record_id,record_position), \n"
-                    "CONSTRAINT pk_record_performance PRIMARY KEY(song_id,artist_id,record_id,record_position) \n"
+                    "CONSTRAINT fk_record_performance_record_id_record_record_id FOREIGN KEY (record_id) REFERENCES record(record_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_record_performance_artist_id ON record_performance (artist_id); ");
-            SQL.append("CREATE INDEX idx_record_performance_record_id ON record_performance (record_id); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE online_performance \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "record_id integer NOT NULL, \n"
-                    "record_position smallint NOT NULL, \n"
-                    "format_id integer NOT NULL, \n"
-                    "path character varying NOT NULL, \n"
-                    "source_id integer NOT NULL, \n"
-                    "last_play_date timestamp without time zone, \n"
-                    "play_order integer, \n"
-                    "insert_order integer NOT NULL, \n"
-                    "CONSTRAINT cc_online_performance_record_position_check CHECK ((record_position >= 0)), \n"
-                    "CONSTRAINT fk_online_performance_online_performance FOREIGN KEY (song_id,artist_id,record_id,record_position) REFERENCES record_performance(song_id,artist_id,record_id,record_position), \n"
-                    "CONSTRAINT pk_online_performance PRIMARY KEY(song_id,artist_id,record_id,record_position) \n"
+                    //"online_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "online_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "record_performance_id INTEGER NOT NULL, \n"
+                    "format_id             INTEGER NOT NULL, \n"
+                    "path                  CHARACTER VARYING NOT NULL, \n"
+                    "source_id             INTEGER NOT NULL, \n"
+                    "last_play_date        TIMESTAMP without time zone, \n"
+                    "play_order            INTEGER, \n"
+                    "insert_order          INTEGER NOT NULL, \n"
+                    "CONSTRAINT fk_online_performance_record_performance_id_record_performance_record_performance_id FOREIGN KEY (record_performance_id) REFERENCES record_performance(record_performance_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_online_performance ON online_performance   (song_id, artist_id); ");
-            SQL.append("CREATE INDEX idx_online_performance_a ON online_performance   (artist_id); ");
-            SQL.append("CREATE INDEX idx_online_performance_a_lpd ON online_performance   (artist_id, last_play_date); ");
-            SQL.append("CREATE UNIQUE INDEX idx_online_performance_io ON online_performance   (insert_order); ");
-            SQL.append("CREATE INDEX idx_online_performance_lpd ON online_performance   (last_play_date); ");
-            SQL.append("CREATE INDEX idx_online_performance_p ON online_performance   (path  ); ");
-            SQL.append("CREATE INDEX idx_online_performance_po ON online_performance   (play_order); ");
-            SQL.append("CREATE INDEX idx_online_performance_ri ON online_performance   (record_id); ");
-            SQL.append("CREATE INDEX idx_online_performance_s ON online_performance   (song_id); ");
+            SQL.append("CREATE UNIQUE INDEX idx_online_performance_insert_order ON online_performance (insert_order); ");
+            SQL.append("CREATE INDEX idx_online_performance_last_play_date ON online_performance (last_play_date); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist \n"
                 "( \n"
-                    "playlist_id integer NOT NULL, \n"
-                    "name character varying NOT NULL, \n"
-                    "notes text, \n"
-                    "created date NOT NULL, \n"
-                    "duration interval, \n"
-                    "updated date, \n"
-                    "play_mode integer NOT NULL, \n"
+                    //"playlist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "playlist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "name        CHARACTER VARYING NOT NULL, \n"
+                    "notes       TEXT, \n"
+                    "created     DATE NOT NULL, \n"
+                    "duration    INTERVAL, \n"
+                    "updated     DATE, \n"
+                    "play_mode   INTEGER NOT NULL, \n"
                     "CONSTRAINT cc_playlist_play_mode_check CHECK (((play_mode >= 0) AND (play_mode <= 2))), \n"
-                    "CONSTRAINT cc_playlist_playlist_id_check CHECK ((playlist_id >= 0)), \n"
-                    "CONSTRAINT pk_playlist PRIMARY KEY(playlist_id) \n"
+                    "CONSTRAINT cc_playlist_playlist_id_check CHECK ((playlist_id >= 0)) \n"
                 "); \n"
             ));
 
             SQL.append(Common::escapeSingleQuotes(
-                "CREATE TABLE playlist_composite \n"
+                "CREATE TABLE playlist_detail \n"
                 "( \n"
-                    "playlist_id integer, \n"
-                    "playlist_position integer, \n"
-                    "timestamp date NOT NULL, \n"
-                    "notes text, \n"
-                    "playlist_playlist_id integer, \n"
-                    "playlist_chart_id integer, \n"
-                    "playlist_record_id integer, \n"
-                    "playlist_artist_id integer, \n"
-                    "CONSTRAINT cc_playlist_composite_check CHECK ((playlist_playlist_id <> playlist_id)), \n"
-                    "CONSTRAINT cc_playlist_composite_playlist_position_check CHECK ((playlist_position > 0)), \n"
-                    "CONSTRAINT fk_playlist_composite_playlist_playlist_id FOREIGN KEY(playlist_id) REFERENCES playlist(playlist_id), \n"
-                    "CONSTRAINT pk_playlist_composite PRIMARY KEY(playlist_id,playlist_position) \n"
+                    //"playlist_detail_id    INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "playlist_detail_id    INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "playlist_id           INTEGER NOT NULL, \n"
+                    "playlist_position     INTEGER NOT NULL, \n"
+                    "record_performance_id INTEGER NULL, \n"
+                    "child_playlist_id     INTEGER NULL, \n"
+                    "chart_id              INTEGER NULL, \n"
+                    "record_id             INTEGER NULL, \n"
+                    "artist_id             INTEGER NULL, \n"
+                    "collection_id         INTEGER, \n"
+                    "c_position            SMALLINT, \n"
+                    "timestamp             DATE NOT NULL, \n"
+                    "notes                 TEXT, \n"
+                    "CONSTRAINT cc_playlist_detail_playlist_position_check CHECK ((playlist_position > 0)) \n"
+                    "CONSTRAINT fk_playlist_detail_playlist_playlist_id FOREIGN KEY(playlist_id) REFERENCES playlist(playlist_id), \n"
+                    "CONSTRAINT fk_playlist_detail_record_performance_record_performance_id FOREIGN KEY (record_performance_id) REFERENCES record_performance(record_performance_id), \n"
+                    "CONSTRAINT fk_playlist_detail_playlist_child_playlist_id FOREIGN KEY(child_playlist_id) REFERENCES playlist(playlist_id), \n"
+                    "CONSTRAINT fk_playlist_detail_record_record_id FOREIGN KEY (record_id) REFERENCES record(record_id), \n"
+                    "CONSTRAINT fk_playlist_detail_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id) \n"
                 "); \n"
             ));
-
-            SQL.append(Common::escapeSingleQuotes(
-                "CREATE TABLE playlist_performance \n"
-                "( \n"
-                    "playlist_id integer, \n"
-                    "playlist_position integer, \n"
-                    "song_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "record_id integer, \n"
-                    "record_position smallint, \n"
-                    "collection_id integer, \n"
-                    "c_position smallint, \n"
-                    "timestamp date NOT NULL, \n"
-                    "notes text, \n"
-                    "CONSTRAINT cc_playlist_performance_playlist_position_check CHECK ((playlist_position > 0)) \n"
-                    "CONSTRAINT fk_playlist_performance_playlist_playlist_id FOREIGN KEY(playlist_id) REFERENCES playlist(playlist_id), \n"
-                    "CONSTRAINT fk_playlist_performance_record_performance FOREIGN KEY (song_id,artist_id,record_id,record_position) REFERENCES record_performance(song_id,artist_id,record_id,record_position), \n"
-                    "CONSTRAINT pk_playlist_performance PRIMARY KEY(playlist_id,playlist_position) \n"
-                "); \n"
-            ));
-            SQL.append("CREATE INDEX idx_playlist_performance_song_id ON playlist_performance   (song_id); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE toplay \n"
                 "( \n"
-                    "song_id integer NOT NULL, \n"
-                    "artist_id integer NOT NULL, \n"
-                    "record_id integer NOT NULL, \n"
-                    "record_position smallint NOT NULL, \n"
-                    "insert_order integer NOT NULL, \n"
-                    "play_order integer, \n"
-                    "last_play_date timestamp without time zone, \n"
-                    "CONSTRAINT fk_toplay_record_performance FOREIGN KEY (song_id,artist_id,record_id,record_position) REFERENCES record_performance(song_id,artist_id,record_id,record_position), \n"
-                    "CONSTRAINT pk_toplay PRIMARY KEY(song_id,artist_id,record_id,record_position) \n"
+                    //"toplay_detail_id      INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "toplay_id             INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "online_performance_id INTEGER NOT NULL, \n"
+                    "insert_order          INTEGER NOT NULL, \n"
+                    "play_order            INTEGER, \n"
+                    "last_play_date        TIMESTAMP WITHOUT TIME ZONE, \n"
+                    "CONSTRAINT fk_toplay_online_performance_online_performance_id FOREIGN KEY (online_performance_id) REFERENCES online_performance(online_performance_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE INDEX idx_toplay_a ON toplay (artist_id); ");
-            SQL.append("CREATE INDEX idx_toplay_lpd ON toplay (last_play_date); ");
-            SQL.append("CREATE INDEX idx_toplay_op ON toplay (song_id, artist_id, record_id, record_position); ");
-            SQL.append("CREATE INDEX idx_toplay_po ON toplay (play_order); ");
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE config_host \n"
                 "( \n"
-                    "host_id integer NOT NULL, \n"
-                    "hostname varchar NOT NULL, \n"
-                    "local_data_path integer NOT NULL, \n"
-                    "CONSTRAINT pk_config_host PRIMARY KEY(host_id) \n"
+                    //"config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "hostname        VARCHAR NOT NULL, \n"
+                    "local_data_path INTEGER NOT NULL \n"
                 "); \n"
             ));
 
             SQL.append(QString(
                 "INSERT INTO config_host "
                 "( "
-                    "host_id, "
+                    "config_host_id, "
                     "hostname, "
                     "local_data_path "
                 ") "
@@ -341,10 +295,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE digital_format \n"
                 "( \n"
-                    "format_id int NOT NULL, \n"
-                    "name varchar NOT NULL, \n"
-                    "extension varchar NOT NULL, \n"
-                    "CONSTRAINT pk_digital_format PRIMARY KEY(format_id) \n"
+                    "digital_format_id INTEGER PRIMARY KEY NOT NULL, \n"
+                    "name              VARCHAR NOT NULL, \n"
+                    "extension         VARCHAR NOT NULL \n"
                 "); \n"
             ));
 
@@ -352,6 +305,26 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("INSERT INTO digital_format VALUES (1,'Wave format','wav')");
             SQL.append("INSERT INTO digital_format VALUES (2,'Ogg/Vorbis','ogg')");
             SQL.append("INSERT INTO digital_format VALUES (4,'Flac','flac')");
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE greatest_hits_record \n"
+                "( \n"
+                    "greatest_hits_record_id INTEGER PRIMARY KEY NOT NULL, \n"
+                    "title                   VARCHAR NOT NULL \n"
+                "); \n"
+            ));
+
+            SQL.append("INSERT INTO greatest_hits_record VALUES (0,'Greatest Hits')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (1,'The Best Of')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (2,'Best Of')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (3,'The Very Best Of')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (4,'Het Beste Van')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (5,'The Ultimate Collection')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (6,'Ultimate Collection')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (7,'Gold')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (8,'Unplugged')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (9,'Collection')");
+            SQL.append("INSERT INTO greatest_hits_record VALUES (10,'The Singles')");
 
             if(dal.executeBatch(SQL,1,0,"Creating Database")==0)
             {

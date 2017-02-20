@@ -37,8 +37,6 @@ public:
 
     //	Methods unique to SBIDPerformer
     SBTableModel* albums() const;
-    void addRelatedPerformer(int performerID);
-    void deleteRelatedPerformer(int performerID);
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;
@@ -47,12 +45,20 @@ public:
     QVector<SBIDPerformerPtr> relatedPerformers();
     SBTableModel* songs() const;
 
+    //	Setters
+    void addRelatedPerformer(const QString& performerKey);
+    void deleteRelatedPerformer(const QString& performerKey);
+    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag() ;}
+
+    //	Static methods
     static void updateSoundexFields();
 
     //	Operators
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
+    static QString createKey(int performerID,int unused=-1);
     virtual QString key() const;
     static bool match(const QString& editedPerformerName,int skipID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
@@ -68,7 +74,6 @@ protected:
     SBIDPerformer();
 
     static SBIDPerformerPtr createInDB();
-    static QString createKey(int performerID,int unused=-1);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDPerformerPtr& to);
@@ -79,16 +84,16 @@ protected:
     static SBIDPerformerPtr userMatch(const Common::sb_parameters& parameters, SBIDPerformerPtr existingPerformerPtr);
 
     //	Helper methods
-    QString addRelatedPerformerSQL(int performerID) const;
-    QString deleteRelatedPerformerSQL(int performerID) const;
+    QString addRelatedPerformerSQL(const QString& key) const;
+    QString deleteRelatedPerformerSQL(const QString& key) const;
 
 private:
     QVector<SBIDAlbumPtr>             _albums;
     QString                           _notes;
     QVector<SBIDAlbumPerformancePtr>  _performances;
     QString                           _performerName;
+    QVector<QString>                  _relatedPerformerKey;
     int                               _sb_performer_id;
-    QVector<int>                      _relatedPerformerID;
 
     //	Not instantiated
     int                               _num_albums;
@@ -98,11 +103,7 @@ private:
     void _init();
     void _loadAlbums();
     void _loadPerformances(bool showProgressDialogFlag=0);
-    QVector<int> _loadRelatedPerformers() const;
-
-    //	Internal setters
-    void _setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void _setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag(); }
+    QVector<QString> _loadRelatedPerformers() const;
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)

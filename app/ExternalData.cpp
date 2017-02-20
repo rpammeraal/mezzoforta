@@ -106,7 +106,6 @@ ExternalData::getCachePath(const SBIDPtr& ptr)
         .arg(ptr->type())
         .arg(ptr->itemID()):QString();
     ;
-    qDebug() << SB_DEBUG_INFO << f;
     return f;
 }
 

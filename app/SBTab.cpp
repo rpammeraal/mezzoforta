@@ -1,3 +1,4 @@
+#include <QApplication>
 #include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
@@ -76,17 +77,19 @@ SBTab::handleEnterKey()
 bool
 SBTab::handleEscapeKey()
 {
-    bool closeTab=1;
+    bool closeTabFlag=1;
     if(isEditTab()==1 && hasEdits()==1)
     {
-        closeTab=(SBMessageBox::createSBMessageBox("Discard Changes?",
+        closeTabFlag=(SBMessageBox::createSBMessageBox("Discard Changes?",
                                                    "",
                                                    QMessageBox::Question,
                                                    QMessageBox::Yes | QMessageBox::No,
                                                    QMessageBox::No,
-                                                   QMessageBox::No )==QMessageBox::No)?0:1;
+                                                   QMessageBox::No,
+                                                   1)==QMessageBox::No)?0:1;
+        QApplication::processEvents();
     }
-    return closeTab;	//	Assuming a non-edit tab, default to close tab
+    return closeTabFlag;	//	Assuming a non-edit tab, default to close tab
 }
 
 void

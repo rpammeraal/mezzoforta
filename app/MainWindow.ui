@@ -4562,7 +4562,7 @@ Click on 'All Songs' to continue.</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -4580,6 +4580,7 @@ Click on 'All Songs' to continue.</string>
     <addaction name="menuNewPlaylist"/>
     <addaction name="menuDeletePlaylist"/>
     <addaction name="menuRenamePlaylist"/>
+    <addaction name="menuRecalculatePlaylist"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -4653,6 +4654,11 @@ Click on 'All Songs' to continue.</string>
   <action name="menuNewDatabase">
    <property name="text">
     <string>&amp;New Database</string>
+   </property>
+  </action>
+  <action name="menuRecalculatePlaylist">
+   <property name="text">
+    <string>Recalculate Playlist</string>
    </property>
   </action>
  </widget>

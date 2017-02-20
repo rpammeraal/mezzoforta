@@ -448,9 +448,27 @@ Chooser::showContextMenu(const QPoint &p)
 void
 Chooser::recalculateDuration()
 {
-        qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     playlistPtr->recalculatePlaylistDuration();
+
+    //	Now get the playlist detail screen to refresh (if it is current).
+    ScreenStack* sst=Context::instance()->getScreenStack();
+    if(!sst)
+    {
+        return;
+    }
+
+    ScreenItem si=sst->currentScreen();
+    SBIDPtr ptr=si.ptr();
+    if(!ptr)
+    {
+        return;
+    }
+
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTabPlaylistDetail* tabPlaylistDetail=mw->ui.tabPlaylistDetail;
+    tabPlaylistDetail->refreshTabIfCurrent(ptr);
+
 }
 
 ///	PROTECTED METHODS

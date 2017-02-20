@@ -20,8 +20,9 @@ public:
 
     //	SBIDAlbumPerformance specific methods
     int albumID() const;
-    QString albumTitle() const;
+    inline int albumPerformanceID() const { return _albumPerformanceID; }
     inline int albumPosition() const { return _sb_album_position; }
+    QString albumTitle() const;
     inline Duration duration() const { return _duration; }
     inline QString path() const { return _path; }
     inline int orgAlbumPosition() const { return _org_sb_album_position; }
@@ -30,6 +31,9 @@ public:
     void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
     void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
     bool updateLastPlayDate();
+
+    //	Setters
+    void setAlbumPosition(int position);
 
     //	Pointers
     SBIDAlbumPtr albumPtr() const;
@@ -42,12 +46,12 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static QString createKey(int albumID, int albumPosition);
+    static QString createKey(int albumPerformanceID);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
-    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumID, int positionID, bool noDependentsFlag=0);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=0);
 
 	//	Helper methods for SBIDManagerTemplate
-    static QString performancesByAlbum_Preloader(int songID);
+    static QString performancesByAlbum_Preloader(int albumID);
     static QString performancesByPerformer_Preloader(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
 
@@ -59,7 +63,7 @@ protected:
 
     //	Methods used by SBIDManager
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& key, int& albumID, int& albumPosition);
+    static void openKey(const QString& key, int& albumPerformanceID);
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
@@ -68,6 +72,7 @@ protected:
     static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
 
 private:
+    int              _albumPerformanceID;
     Duration         _duration;
     int              _sb_album_id;
     int              _sb_album_position;

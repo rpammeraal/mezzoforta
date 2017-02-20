@@ -83,6 +83,7 @@ public:
         sb_field_chart_id,
         sb_field_playlist_id,
         sb_field_album_position,
+        sb_field_album_performance_id,
         sb_field_key
     };
 

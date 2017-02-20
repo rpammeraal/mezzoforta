@@ -34,15 +34,15 @@ public:
     //	Methods specific to SBIDPlaylist
     bool addPlaylistItem(SBIDPtr ptr);
     inline Duration duration() const { return _duration; }
-    SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
+    //SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
     int numItems() const;
     inline int playlistID() const { return _sb_playlist_id; }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
-    bool removePlaylistItem(int playlistPosition) const;
+    bool removePlaylistItem(int playlistPosition);
     bool moveItem(const SBIDPtr& fromPtr, int toRow);
-    void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
+    //void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
     void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 

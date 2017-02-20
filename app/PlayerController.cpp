@@ -107,7 +107,6 @@ PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
     SBIDPtr ptr=SBIDBase::createPtr(static_cast<SBIDBase::sb_type>(l[0].toInt()),l[1].toInt(),1);
-    qDebug() << SB_DEBUG_INFO;
     Context::instance()->getNavigator()->openScreen(ptr);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
@@ -201,7 +200,6 @@ PlayerController::playSong(SBIDAlbumPerformancePtr& performancePtr)
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
         performancePtr->setErrorMessage(errorMsg);
-        qDebug() << SB_DEBUG_INFO << "returning 0";
         _currentPerformancePlayingPtr=SBIDAlbumPerformancePtr();
         return 0;
     }

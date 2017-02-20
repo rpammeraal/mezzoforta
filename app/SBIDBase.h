@@ -30,7 +30,8 @@ public:
         sb_type_chart=4,
         sb_type_playlist=5,
         sb_type_song_performance=6,
-        sb_type_album_performance=7
+        sb_type_album_performance=7,
+        sb_type_playlist_detail=8
     };
 
     static size_t sb_type_count() { return 8; }
@@ -60,17 +61,17 @@ public:
     inline QString url() const { return _url; }
     inline QString wiki() const { return _wiki; }
 
-    //	Setters
-    void setURL(const QString& url) { _url=url; }	//	CWIPneed to save this in DB instantly
-
     //	Methods specific to SBIDBase
     QString errorMessage() const { return _errorMsg; }
     QString ID() const { return QString("[ID=%1]").arg(_id); }
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
+
+    //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
     void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
+    void setURL(const QString& url) { _url=url; setChangedFlag(); }	//	CWIPneed to save this in DB instantly
 
     void showDebug(const QString& title) const;
 
@@ -106,12 +107,13 @@ protected:
     inline bool changedFlag() const { return _changedFlag; }
     virtual void clearChangedFlag();
     inline bool deletedFlag() const { return _deletedFlag; }
-    inline bool mergedFlag() const { qDebug() << SB_DEBUG_INFO << _mergedWithID; return _mergedWithID!=-1; }
-    inline int mergeWithID() const { return _mergedWithID; }
+    inline bool mergedFlag() const { return _mergedWithID!=-1; }
+    inline int mergedWithID() const { return _mergedWithID; }
 	inline int newFlag() const { return _newFlag; }
     inline void setChangedFlag() { _changedFlag=1; }
     inline void setDeletedFlag() { _deletedFlag=1; }
     inline void setNewFlag() { _newFlag=1; }
+    inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
 
 private:
     bool        _changedFlag;

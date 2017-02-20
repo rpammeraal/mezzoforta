@@ -18,6 +18,10 @@ SBTabSongDetail::subtabID2TableView(int subtabID) const
     MainWindow* mw=Context::instance()->getMainWindow();
     switch(subtabID)
     {
+    default:
+        qDebug() << SB_DEBUG_ERROR << "Unhandled subtabID " << subtabID;
+        qDebug() << SB_DEBUG_ERROR << "Reverting to first tab";
+
     case 0:
     case INT_MAX:
         return mw->ui.songDetailAlbums;
@@ -26,12 +30,7 @@ SBTabSongDetail::subtabID2TableView(int subtabID) const
     case 1:
         return mw->ui.songDetailPlaylists;
         break;
-
-    default:
-        qDebug() << SB_DEBUG_ERROR << "Unhandled subtabID " << subtabID;
-
     }
-
     return NULL;
 }
 

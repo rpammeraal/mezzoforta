@@ -35,6 +35,39 @@ ScreenItem::~ScreenItem()
 {
 }
 
+///	Public methods
+bool
+ScreenItem::compare(const ScreenItem &i, bool ignoreEditFlag) const
+{
+    if(this->_screenType!=i._screenType)
+    {
+        return 0;
+    }
+    else
+    {
+        switch(this->_screenType)
+        {
+        case ScreenItem::screen_type_invalid:
+        case ScreenItem::screen_type_allsongs:
+        case ScreenItem::screen_type_current_playlist:
+            return 1;
+
+        case ScreenItem::screen_type_sbidbase:
+            if(ignoreEditFlag)
+            {
+                return (*(this->_ptr)==*(i._ptr));
+            }
+            return (*(this->_ptr)==*(i._ptr)) && (this->_editFlag==i._editFlag);
+
+        case ScreenItem::screen_type_songsearch:
+            return this->_searchCriteria==i._searchCriteria;
+        }
+    }
+
+    return 0;
+
+}
+
 void
 ScreenItem::updateSBIDBase(const SBIDPtr &ptr)
 {
@@ -52,34 +85,13 @@ ScreenItem::updateSBIDBase(const SBIDPtr &ptr)
 bool
 ScreenItem::operator ==(const ScreenItem& i) const
 {
-    if(this->_screenType!=i._screenType)
-    {
-        return 0;
-    }
-    else
-    {
-        switch(this->_screenType)
-        {
-        case ScreenItem::screen_type_invalid:
-        case ScreenItem::screen_type_allsongs:
-        case ScreenItem::screen_type_current_playlist:
-            return 1;
-
-        case ScreenItem::screen_type_sbidbase:
-            return (*(this->_ptr)==*(i._ptr)) && (this->_editFlag==i._editFlag);
-
-        case ScreenItem::screen_type_songsearch:
-            return this->_searchCriteria==i._searchCriteria;
-        }
-    }
-
-    return 0;
+    return this->compare(i);
 }
 
 bool
 ScreenItem::operator !=(const ScreenItem& i) const
 {
-    return !(this->operator ==(i));
+    return !(this->compare(i));
 }
 
 QDebug

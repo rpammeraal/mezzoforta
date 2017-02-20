@@ -24,6 +24,7 @@ Dublin, Ireland
 Luik, Belgie
 Diest, Belgie
 Berkel-Enschot, N-Brabant
+Enroute: LAX-KEF
 
 
 
@@ -733,6 +734,7 @@ X	playlists that song belongs to can be edited
 20161216:
 -	Import on startup: logo needs to disappear.
 -	List all files that did not get imported.
+-	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.
 
 <to be fixed before next beta release>
 *	Duplicate song entries in 'All Songs'
@@ -745,10 +747,18 @@ X	playlists that song belongs to can be edited
 	*	It should not mix: The Specials and De Specials
 	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
 
+<current>
+*	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.
+*	Miscellaneous problems with TitleCase.
+
 <beta 2>
-*	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.
 
 <SBIDAlbum edit>
+*	may need to think about
+	*	allowing multiple songs with the same positionID
+	*	forget drag/drop of songs in album edit. With songs missing, it is impossible to determine new position:
+		*	Use UI to assign new position IDs.
+		*	Generate warnig if multiple songs with same position exist, allow to override
 *	need to properly assign new albumPositions to *all* albumPerformances if one (or more) aP's get removed
 *	if aP gets removed, need to set isDeletedFlag
 *	if aP gets reordered, need to set isChangedFLag
@@ -832,6 +842,7 @@ X	playlists that song belongs to can be edited
 *	Currently playing: disable scrollTo if user is navigating in current playlist (disable for x seconds)
 *	Convert duration:timestamp to duration:duration: later if songbase(wwww) is withdrawn. Works fine with sqlite
 *	only update last_played_date once after song has been listened to for 5s.
+*	many places where toplay, online_performance records are deleted. Need to be merged to one place
 
 -	check when reordering playlist item on drag on itself.
 -	charts

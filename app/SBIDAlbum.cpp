@@ -289,18 +289,23 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     SBIDAlbumPerformancePtr albumPerformancePtr;
     if(_albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         _loadAlbumPerformances();
     }
 
     if(!_albumPerformances.contains(albumPosition))
     {
+        qDebug() << SB_DEBUG_INFO;
         setChangedFlag();
         albumPerformancePtr=SBIDAlbumPerformance::createNew(songID, performerID, this->albumID(), albumPosition, year, path, duration, notes);
 
+        setChangedFlag();
         _albumPerformances[albumPosition]=albumPerformancePtr;
     }
     else
     {
+        qDebug() << SB_DEBUG_INFO;
+        setChangedFlag();
         albumPerformancePtr=_albumPerformances[albumPosition];
     }
     return albumPerformancePtr;
@@ -669,6 +674,180 @@ SBIDAlbum::performances() const
     return tm;
 }
 
+void
+SBIDAlbum::processNewSongList(QVector<MusicLibrary::MLentityPtr> &newSongList)
+{
+
+    QVector<MusicLibrary::MLentityPtr> orgSongList(_albumPerformances.count()+1); //	<position:1>
+    QVector<QString> changedSongs;                  //	contains keys <unsorted>
+    QMap<QString,QString> mergedTo;                 //	<songID:songPerformerID,mergedToIndex:1>
+    QMap<QString,int> orgKeyToPositionMap;          //	<songID:songPerformerID,position:1>
+    QMap<QString,int> newKeyToPositionMap;          //	<songID:songPerformerID,position:1>
+    QVector<QString> allKeys;                       //	Contains all MLEntityPtr::keys
+    int maxPosition=0;                              //	maxPosition:1
+
+    //	A.	Create data structures
+    //		1.	original list of songs
+    qDebug() << SB_DEBUG_INFO;
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    while(apIT.hasNext())
+    {
+        apIT.next();
+        qDebug() << SB_DEBUG_INFO;
+        SBIDAlbumPerformancePtr albumPerformancePtr=apIT.value();
+
+        qDebug() << SB_DEBUG_INFO;
+        if(albumPerformancePtr)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            MusicLibrary::MLentity orgSong;
+            orgSong.songTitle=albumPerformancePtr->songTitle();
+            orgSong.songID=albumPerformancePtr->songID();
+            orgSong.songPerformerName=albumPerformancePtr->songPerformerName();
+            orgSong.songPerformerID=albumPerformancePtr->songPerformerID();
+            orgSong.albumTitle=this->albumTitle();
+            orgSong.albumID=this->albumID();
+            orgSong.albumPosition=albumPerformancePtr->albumPosition();
+            orgSong.albumPerformerName=albumPerformancePtr->performerPtr()->performerName();
+            orgSong.albumPerformerID=albumPerformancePtr->performerPtr()->performerID();
+
+            const QString key=QString("%1:%2").arg(orgSong.songID).arg(orgSong.songPerformerID);
+            qDebug() << SB_DEBUG_INFO << orgSong.albumPosition;
+            orgSongList[orgSong.albumPosition]=std::make_shared<MusicLibrary::MLentity>(orgSong);
+            qDebug() << SB_DEBUG_INFO;
+            orgKeyToPositionMap[key]=orgSong.albumPosition;
+            maxPosition=(orgSong.albumPosition>maxPosition)?orgSong.albumPosition:maxPosition;
+
+            qDebug() << SB_DEBUG_INFO;
+            if(!allKeys.contains(key))
+            {
+            qDebug() << SB_DEBUG_INFO;
+                allKeys.append(key);
+            }
+            qDebug() << SB_DEBUG_INFO;
+        }
+    }
+
+    //		2.	process list of songs
+    QVectorIterator<MusicLibrary::MLentityPtr> nslIT(newSongList);
+    qDebug() << SB_DEBUG_INFO;
+    while(nslIT.hasNext())
+    {
+        MusicLibrary::MLentityPtr newPtr=nslIT.next();
+
+        if(newPtr)
+        {
+            qDebug() << SB_DEBUG_INFO
+                     << newPtr->songTitle
+                     << newPtr->albumPosition
+                     << newPtr->songID
+                     << newPtr->songPerformerID
+                     << newPtr->albumID
+                     << newPtr->albumPosition
+            ;
+
+            const QString key=QString("%1:%2").arg(newPtr->songID).arg(newPtr->songPerformerID);
+
+            if(newPtr->mergedToAlbumPosition!=0)
+            {
+                qDebug() << SB_DEBUG_INFO << newPtr->mergedToAlbumPosition;
+                MusicLibrary::MLentityPtr mergedToPtr=newSongList.at(newPtr->mergedToAlbumPosition);
+                if(mergedToPtr)
+                {
+                    const QString mergedToKey=QString("%1:%2").arg(mergedToPtr->songID).arg(mergedToPtr->songPerformerID);
+
+                    mergedTo[key]=mergedToKey;
+                }
+            }
+            newKeyToPositionMap[key]=newPtr->albumPosition;
+
+            //	Determine new, changed
+            if(orgKeyToPositionMap.contains(key))
+            {
+                int position=orgKeyToPositionMap[key];
+                MusicLibrary::MLentityPtr orgPtr=orgSongList[position];
+
+                SB_DEBUG_IF_NULL(orgPtr);
+                if(!(orgPtr->compareID(*newPtr)))
+                {
+                    changedSongs.append(key);
+                }
+            }
+            maxPosition=(newPtr->albumPosition>maxPosition)?newPtr->albumPosition:maxPosition;
+
+            if(!allKeys.contains(key))
+            {
+                if(key!="-1:-1")
+                {
+                    //	Removed songs has their id's set to -1. Don't add removed songs.
+                    allKeys.append(key);
+                }
+            }
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    _showAlbumPerformances("before");
+    QVectorIterator<QString> akIT(allKeys);
+    while(akIT.hasNext())
+    {
+        const QString currentKey=akIT.next();
+        MusicLibrary::MLentityPtr orgSong;
+        MusicLibrary::MLentityPtr newSong;
+
+        int orgPosition=-1;
+        if(orgKeyToPositionMap.contains(currentKey))
+        {
+            orgPosition=orgKeyToPositionMap[currentKey];
+            orgSong=orgSongList.at(orgPosition);
+        }
+        int newPosition=-1;
+        if(newKeyToPositionMap.contains(currentKey))
+        {
+            newPosition=newKeyToPositionMap[currentKey];
+            newSong=newSongList.at(newPosition);
+        }
+
+        bool removedFlag=0;
+        if(!(newSong) || (newSong && newSong->removedFlag))
+        {
+            removedFlag=1;
+        }
+        bool addFlag=0;
+        if(!orgSong)
+        {
+            addFlag=1;
+        }
+
+        qDebug() << SB_DEBUG_INFO
+                 << currentKey
+                 << (removedFlag?"DEL":(addFlag?"ADD":"---"))
+                 << (orgSong?orgSong->songTitle:newSong->songTitle)
+                 << (mergedTo.contains(currentKey)?mergedTo[currentKey]:QString("-"))
+                 << orgPosition
+                 << newPosition
+        ;
+
+        if(removedFlag)
+        {
+
+        }
+        else if(addFlag)
+        {
+
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << orgPosition << newPosition;
+            //newAlbumPerformances[newPosition]=_albumPerformances[orgPosition];
+            //newAlbumPerformances[newPosition]->setAlbumPosition(newPosition);
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
+    _showAlbumPerformances("after");
+    return;
+}
+
 QStringList
 SBIDAlbum::removeAlbum()
 {
@@ -680,23 +859,6 @@ SBIDAlbum::removeAlbum()
         (
             "DELETE FROM "
                 "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "record_id=%1 "
-        )
-            .arg(this->albumID())
-    );
-
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "op_song_id=NULL, "
-                "op_artist_id=NULL, "
-                "op_record_id=NULL, "
-                "op_record_position=NULL "
             "WHERE "
                 "record_id=%1 "
         )
@@ -732,7 +894,7 @@ SBIDAlbum::removeAlbum()
         QString
         (
             "DELETE FROM "
-                "___SB_SCHEMA_NAME___playlist_performance "
+                "___SB_SCHEMA_NAME___playlist_detail "
             "WHERE "
                 "record_id=%1 "
         )
@@ -777,30 +939,19 @@ SBIDAlbum::removeSongFromAlbum(int position)
     (
         QString
         (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "op_song_id=NULL, "
-                "op_artist_id=NULL, "
-                "op_record_id=NULL, "
-                "op_record_position=NULL "
-            "WHERE "
-                "record_id=%1 AND "
-                "record_position=%2 "
-        )
-            .arg(this->albumID())
-            .arg(position)
-    );
-
-    SQL.append
-    (
-        QString
-        (
             "DELETE FROM "
                 "___SB_SCHEMA_NAME___online_performance "
             "WHERE "
-                "record_id=%1 AND "
-                "record_position=%2 "
+                "record_performance IN "
+                "( "
+                    "SELECT "
+                        "record_performance_id "
+                    "FROM"
+                        "___SB_SCHEMA_NAME___record_performance "
+                    "WHERE "
+                        "record_id=%1 AND "
+                        "record_position=%2 "
+                ") "
         )
             .arg(this->albumID())
             .arg(position)
@@ -825,10 +976,18 @@ SBIDAlbum::removeSongFromAlbum(int position)
         QString
         (
             "DELETE FROM "
-                "___SB_SCHEMA_NAME___playlist_performance "
+                "___SB_SCHEMA_NAME___playlist_detail "
             "WHERE "
-                "record_id=%1 AND "
-                "record_position=%2 "
+                "record_performance_id IN "
+                    "( "
+                        "SELECT "
+                            "record_performance_id "
+                        "FROM "
+                            "___SB_SCHEMA_NAME___record_performance rp"
+                        "WHERE "
+                            "record_id=%1 AND "
+                            "record_position=%2 "
+                    ") "
         )
             .arg(this->albumID())
             .arg(position)
@@ -842,85 +1001,13 @@ SBIDAlbum::repositionSongOnAlbum(int fromPosition, int toPosition)
 {
     QStringList SQL;
 
-    //	Update rock_performance.non_op fields
+    //	Update rock_performance fields
     SQL.append
     (
         QString
         (
             "UPDATE "
                 "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "op_record_position=%1 "
-            "WHERE "
-                "op_record_id=%2 AND "
-                "op_record_position=%3 "
-        )
-            .arg(toPosition)
-            .arg(this->albumID())
-            .arg(fromPosition)
-    );
-
-    //	Update rock_performance.op fields
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "record_position=%1 "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(toPosition)
-            .arg(this->albumID())
-            .arg(fromPosition)
-    );
-
-    //	Update online_performance
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___online_performance "
-            "SET "
-                "record_position=%1 "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(toPosition)
-            .arg(this->albumID())
-            .arg(fromPosition)
-    );
-
-    //	Update toplay
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___toplay "
-            "SET "
-                "record_position=%1 "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(toPosition)
-            .arg(this->albumID())
-            .arg(fromPosition)
-    );
-
-    //	Update playlist_performance
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___playlist_performance "
             "SET "
                 "record_position=%1 "
             "WHERE "
@@ -1470,6 +1557,11 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
 {
     int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
 
+    qDebug() << SB_DEBUG_INFO
+             << tobeFound.albumTitle
+             << tobeFound.performerID
+    ;
+
     //	MatchRank:
     //	0	-	exact match with specified artist (0 or 1 in data set).
     //	2	-	exact match with any other artist (0 or more in data set).
@@ -1509,7 +1601,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
             //"LOWER(regexp_replace(p.title,'^'||aa.word,'','i'))=LOWER('%4') AND "
             "p.record_id!=(%3) AND "
             "( "
-                "p.title!=(%2) AND "
+                "p.title!=('%5') AND "
                 "LENGTH(p.title)>LENGTH(t.word) AND "
                 "LOWER(SUBSTR(p.title,1,LENGTH(t.word))) || ' '= t.word || ' ' AND "
                 "LOWER(SUBSTR(p.title,LENGTH(t.word)+2))=LOWER('%4') "
@@ -1530,8 +1622,8 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
         .arg(tobeFound.performerID)
         .arg(excludeID)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.albumTitle)))
+        .arg(Common::escapeSingleQuotes(tobeFound.albumTitle))
     ;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -1592,6 +1684,13 @@ QStringList
 SBIDAlbum::updateSQL() const
 {
     QStringList SQL;
+
+    qDebug() << SB_DEBUG_INFO
+             << deletedFlag()
+             << newFlag()
+             << mergedFlag()
+             << changedFlag()
+    ;
 
     if(deletedFlag() && !newFlag())
     {
@@ -1743,9 +1842,29 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
     QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
     while(apIT.hasNext())
     {
+        qDebug() << SB_DEBUG_INFO;
         apIT.next();
 
         SQL.append(apIT.value()->updateSQL());
     }
     return SQL;
+}
+
+void
+SBIDAlbum::_showAlbumPerformances(const QString& title) const
+{
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    qDebug() << SB_DEBUG_INFO << title;
+    while(apIT.hasNext())
+    {
+        apIT.next();
+        int albumPosition=apIT.key();
+        SBIDAlbumPerformancePtr albumPerformancePtr=apIT.value();
+
+        qDebug() << SB_DEBUG_INFO
+                 << albumPosition
+                 << albumPerformancePtr->songTitle()
+                 << albumPerformancePtr->albumPosition()
+        ;
+    }
 }

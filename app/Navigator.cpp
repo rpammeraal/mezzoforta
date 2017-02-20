@@ -110,7 +110,7 @@ Navigator::openScreen(const ScreenItem &si)
     }
 
     ScreenStack* st=Context::instance()->getScreenStack();
-    st->debugShow("openScreen:81");
+    st->debugShow("openScreen:113");
     SBIDPtr ptr;
 
     //	Check for valid parameter
@@ -153,7 +153,7 @@ Navigator::openScreen(const ScreenItem &si)
     {
         st->pushScreen(si);
     }
-    st->debugShow("openScreen:118");
+    st->debugShow("openScreen:156");
     if(_activateScreen()==0)
     {
         st->removeScreen(si);
@@ -165,7 +165,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
 {
     SBTab* tab=Context::instance()->getTab();
     ScreenStack* st=Context::instance()->getScreenStack();
-    bool closeTab=0;
+    bool closeTabFlag=0;
 
     if(event==NULL)
     {
@@ -235,7 +235,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
         {
             if(tab)
             {
-                closeTab=tab->handleEscapeKey();
+                closeTabFlag=tab->handleEscapeKey();
             }
         }
     }
@@ -250,7 +250,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
     else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && Qt::ControlModifier)
     {
         navigateDetailTab((eventKey==Qt::Key_PageDown)?1:-1);
-        closeTab=0;
+        closeTabFlag=0;
     }
     else if(eventKey==Qt::Key_Asterisk)
     {
@@ -271,86 +271,10 @@ Navigator::keyPressEvent(QKeyEvent *event)
     {
         Context::instance()->getPlayManager()->playerPrevious();
     }
-    if(closeTab==1)
+    if(closeTabFlag==1)
     {
         _moveFocusToScreen(-1);
     }
-
-
-    /*
-    qDebug() << SB_DEBUG_INFO << "**************************************************************************";
-    SBIDSong song;
-    song.setText("this is a song");
-    qDebug() << SB_DEBUG_INFO << song.text();
-
-    std::shared_ptr<SBIDSong> ptr=std::make_shared<SBIDSong>(song);
-    qDebug() << SB_DEBUG_INFO << ptr->text();
-    qDebug() << SB_DEBUG_INFO << song;
-    qDebug() << SB_DEBUG_INFO << *ptr;
-
-
-    //std::shared_ptr<SBIDBase> ptrb=ptr;
-    std::shared_ptr<SBIDBase> ptrb=std::make_shared<SBIDSong>(song);
-    ptrb->setText("new text");
-    qDebug() << SB_DEBUG_INFO << song;
-    qDebug() << SB_DEBUG_INFO << *ptrb;
-    qDebug() << SB_DEBUG_INFO << ptrb->text();
-
-    SBIDPerformer performer=SBIDPerformer(5);
-    performer.setText("this is an performer");
-    qDebug() << SB_DEBUG_INFO << performer.text();
-
-    SBIDPtr pptr=std::make_shared<SBIDPerformer>(performer);
-    pptr->setText("new performer");
-    qDebug() << SB_DEBUG_INFO << performer;
-    qDebug() << SB_DEBUG_INFO << *pptr;
-    qDebug() << SB_DEBUG_INFO << pptr->text();
-    */
-
-//    SBIDManagerTemplate<SBIDPlaylist> pmm;
-//    int itemID=444;
-//    std::shared_ptr<SBIDPlaylist> single=pmm.retrieve(itemID);
-//    qDebug() << SB_DEBUG_INFO;
-//    if(single)
-//    {
-//        qDebug() << SB_DEBUG_INFO << "After single:" << *single;
-//    }
-//    else
-//    {
-//        qDebug() << SB_DEBUG_INFO << "single empty";
-//    }
-
-//    pmm.debugShow("After single retrieval");
-    //single->setPlaylistName("COmpletely new playlist name");
-    //pmm.debugShow("After rename");
-
-
-    /*
-    QList<std::shared_ptr<SBIDPlaylist>> list=pmm.retrieveAll();
-    qDebug() << SB_DEBUG_INFO << "List of playlist";
-    for(int i=0;i<list.count();i++)
-    {
-        std::shared_ptr<SBIDPlaylist> ptr=list[i];
-        if(ptr)
-        {
-            qDebug() << SB_DEBUG_INFO << i << ptr->i << ptr->playlistID() << ptr->playlistName();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << i << "empty ptr";
-        }
-    }
-
-    qDebug() << SB_DEBUG_INFO << "RESTART!";
-    list=pmm.retrieveAll();
-    qDebug() << SB_DEBUG_INFO << "List of playlists";
-    for(int i=0;i<list.count();i++)
-    {
-        std::shared_ptr<SBIDPlaylist> ptr=list[i];
-        qDebug() << SB_DEBUG_INFO << ptr->i << ptr->playlistID() << ptr->playlistName();
-    }
-    */
-
 }
 
 void
@@ -486,7 +410,6 @@ Navigator::closeCurrentTab()
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeCurrentScreen();
-    ScreenItem si=st->currentScreen();
     _activateScreen();
 }
 
@@ -806,14 +729,6 @@ Navigator::_checkOutstandingEdits() const
         {
             hasOutstandingEdits=1;
         }
-//        else
-//        {
-//            ScreenStack* st=Context::instance()->getScreenStack();
-//            if(st)
-//            {
-//                st->removeScreen(st->currentScreen(),1);
-//            }
-//        }
     }
     return hasOutstandingEdits;
 }
@@ -878,11 +793,6 @@ Navigator::_moveFocusToScreen(int direction)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     ScreenItem si;
-    //SBIDBase id;
-    if(_checkOutstandingEdits()==1)
-    {
-        return;
-    }
     if(direction>0)
     {
         si=st->nextScreen();
@@ -891,7 +801,6 @@ Navigator::_moveFocusToScreen(int direction)
     {
         si=st->previousScreen();
     }
-
     _activateScreen();
 }
 
