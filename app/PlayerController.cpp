@@ -12,6 +12,7 @@
 #include "SBMediaPlayer.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
+#include "SBIDOnlinePerformance.h"
 
 
 PlayerController::PlayerController(QObject *parent) : QObject(parent)
@@ -179,7 +180,7 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBIDAlbumPerformancePtr& performancePtr)
+PlayerController::playSong(SBIDOnlinePerformancePtr& performancePtr)
 {
     Properties* p=Context::instance()->getProperties();
     Controller* c=Context::instance()->getController();

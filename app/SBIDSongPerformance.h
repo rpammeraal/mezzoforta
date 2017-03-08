@@ -9,6 +9,9 @@ typedef std::shared_ptr<SBIDSongPerformance> SBIDSongPerformancePtr;
 class SBIDAlbumPerformance;
 typedef std::shared_ptr<SBIDAlbumPerformance> SBIDAlbumPerformancePtr;
 
+class SBIDOnlinePerformance;
+typedef std::shared_ptr<SBIDOnlinePerformance> SBIDOnlinePerformancePtr;
+
 class SBIDAlbum;
 typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
 

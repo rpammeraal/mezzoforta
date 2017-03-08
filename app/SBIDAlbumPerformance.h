@@ -24,7 +24,6 @@ public:
     inline int albumPosition() const { return _sb_album_position; }
     QString albumTitle() const;
     inline Duration duration() const { return _duration; }
-    inline QString path() const { return _path; }
     inline int orgAlbumPosition() const { return _org_sb_album_position; }
     inline int playlistPosition() const { return _playlistPosition; }
     inline int playPosition() const { return _sb_play_position; }
@@ -69,14 +68,13 @@ protected:
     QStringList updateSQL() const;
 
     friend class SBIDAlbum;
-    static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
+    static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
 
 private:
     int              _albumPerformanceID;
     Duration         _duration;
     int              _sb_album_id;
     int              _sb_album_position;
-    QString          _path;
 
     //	Attributes derived from core attributes
     SBIDAlbumPtr     _albumPtr;

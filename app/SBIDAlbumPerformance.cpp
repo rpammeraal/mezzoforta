@@ -13,7 +13,6 @@ SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDSo
     _duration             =p._duration;
     _sb_album_id          =p._sb_album_id;
     _sb_album_position    =p._sb_album_position;
-    _path                 =p._path;
 
     _albumPtr             =p._albumPtr;
 
@@ -51,11 +50,11 @@ SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
     qDebug() << SB_DEBUG_INFO << _albumPerformanceID;
     const SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_albumPerformanceID,1);
 
-    if(performancePtr->path().length()>0)
-    {
-        //list[0]=SBIDAlbumPerformance::retrieveAlbumPerformance(_sb_album_id,_sb_album_position,1);
-        list[0]=SBIDAlbumPerformance::retrieveAlbumPerformance(_albumPerformanceID,1);
-    }
+    //	CWIP: SBIDOnlinePerformance
+//    if(performancePtr->path().length()>0)
+//    {
+//        list[0]=SBIDAlbumPerformance::retrieveAlbumPerformance(_albumPerformanceID,1);
+//    }
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
@@ -412,7 +411,6 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     performance._duration             =r.value(i++).toString();
     performance.setYear(               r.value(i++).toInt());
     performance.setNotes(              Common::parseTextFieldDB(&r,i++));
-    performance._path                 =Common::parseTextFieldDB(&r,i++);
 
     performance._org_sb_album_position=performance._sb_album_position;
 
@@ -567,45 +565,46 @@ SBIDAlbumPerformance::updateSQL() const
             .arg(Common::escapeSingleQuotes(this->notes()))
         );
 
-        //	Now insert the online_performance record
-        const QStringList t=_path.split('.');
-        const QString extension=t[t.length()-1];
+        //	CWIP:	SBIDOnlinePerformance
+//        //	Now insert the online_performance record
+//        const QStringList t=_path.split('.');
+//        const QString extension=t[t.length()-1];
 
-        SQL.append(QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
-                "(record_performance_id,format_id,path,source_id,insert_order ) "
-            "SELECT "
-                "rp.record_performance_id, "
-                "df.format_id, "
-                "'%6', "
-                "%7, "
-                "%8(MAX(op.insert_order),-1)+1 "
-            "FROM "
-                "digital_format df "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "p.song_id=%1 AND "
-                    "p.artist_id=%2 "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "p.performance_id=rp.performance_id AND "
-                    "rp.record_id=%3 AND "
-                    "rp.record_position=%4 "
-                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "1=1 "	//	only used to get max(insert order)
-            "WHERE "
-                "df.extension='%5' "
-            "GROUP BY "
-                "df.format_id "
-        )
-            .arg(this->songID())
-            .arg(this->songPerformerID())
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_album_position)
-            .arg(extension)
-            .arg(Common::escapeSingleQuotes(this->_path))
-            .arg(0)
-            .arg(dal->getIsNull())
-        );
+//        SQL.append(QString
+//        (
+//            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
+//                "(record_performance_id,format_id,path,source_id,insert_order ) "
+//            "SELECT "
+//                "rp.record_performance_id, "
+//                "df.format_id, "
+//                "'%6', "
+//                "%7, "
+//                "%8(MAX(op.insert_order),-1)+1 "
+//            "FROM "
+//                "digital_format df "
+//                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+//                    "p.song_id=%1 AND "
+//                    "p.artist_id=%2 "
+//                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+//                    "p.performance_id=rp.performance_id AND "
+//                    "rp.record_id=%3 AND "
+//                    "rp.record_position=%4 "
+//                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+//                    "1=1 "	//	only used to get max(insert order)
+//            "WHERE "
+//                "df.extension='%5' "
+//            "GROUP BY "
+//                "df.format_id "
+//        )
+//            .arg(this->songID())
+//            .arg(this->songPerformerID())
+//            .arg(this->_sb_album_id)
+//            .arg(this->_sb_album_position)
+//            .arg(extension)
+//            .arg(Common::escapeSingleQuotes(this->_path))
+//            .arg(0)
+//            .arg(dal->getIsNull())
+//        );
     }
 
     qDebug() << SB_DEBUG_INFO << SQL;
@@ -613,14 +612,13 @@ SBIDAlbumPerformance::updateSQL() const
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int albumPosition, int year, const QString &path, const Duration &duration, const QString& notes)
+SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration &duration, const QString& notes)
 {
     SBIDAlbumPerformance albumPerformance;
 
     albumPerformance._duration=duration;
     albumPerformance._sb_album_id=albumID;
     albumPerformance._sb_album_position=albumPosition;
-    albumPerformance._path=path;
 
     albumPerformance.setSongID(songID);
     albumPerformance.setPerformerID(performerID);
@@ -643,7 +641,6 @@ SBIDAlbumPerformance::_init()
     _albumPerformanceID=-1;
     _sb_album_id=-1;
     _sb_album_position=-1;
-    _path="";
     _albumPtr=SBIDAlbumPtr();
     _sb_play_position=-1;
     _playlistPosition=-1;

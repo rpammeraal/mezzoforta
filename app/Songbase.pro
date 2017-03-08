@@ -71,7 +71,8 @@ HEADERS     = \
     DataAccessLayerSQLite.h \
     Network.h \
     Configuration.h \
-    MusicImportResult.h
+    MusicImportResult.h \
+    SBIDOnlinePerformance.h
 
 SOURCES     = \
     main.cpp \
@@ -143,7 +144,8 @@ SOURCES     = \
     DataAccessLayerSQLite.cpp \
     Network.cpp \
     Configuration.cpp \
-    MusicImportResult.cpp
+    MusicImportResult.cpp \
+    SBIDOnlinePerformance.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

@@ -65,7 +65,7 @@ protected:
     friend class PlayManager;
     friend class Context;
     void doInit();	//	Init done by Context::
-    bool playSong(SBIDAlbumPerformancePtr& performancePtr);
+    bool playSong(SBIDOnlinePerformancePtr& performancePtr);
 
 protected slots:
     bool playerPlay();

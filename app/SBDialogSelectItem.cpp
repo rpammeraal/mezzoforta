@@ -124,38 +124,39 @@ SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool p
     {
         SBIDAlbumPerformancePtr currentPerformancePtr=performanceList.at(i);
 
-        if(playableOnlyFlag==0 || (playableOnlyFlag==1 && currentPerformancePtr->path().length()>0))
-        {
-            QLabel* l=new QLabel;
-            SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
-            qDebug() << SB_DEBUG_INFO << currentPerformancePtr->albumID();
-            SB_DEBUG_IF_NULL(currentAlbumPtr);
+        //	CWIP: SBIDOnlinePerformance
+//        if(playableOnlyFlag==0 || (playableOnlyFlag==1 && currentPerformancePtr->path().length()>0))
+//        {
+//            QLabel* l=new QLabel;
+//            SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
+//            qDebug() << SB_DEBUG_INFO << currentPerformancePtr->albumID();
+//            SB_DEBUG_IF_NULL(currentAlbumPtr);
 
-            l->setWindowFlags(Qt::FramelessWindowHint);
-            l->setTextFormat(Qt::RichText);
-            QString imagePath=ExternalData::getCachePath(currentAlbumPtr);
-            QFile imageFile(imagePath);
+//            l->setWindowFlags(Qt::FramelessWindowHint);
+//            l->setTextFormat(Qt::RichText);
+//            QString imagePath=ExternalData::getCachePath(currentAlbumPtr);
+//            QFile imageFile(imagePath);
 
-            if(imageFile.exists()==0)
-            {
-                imagePath=songPtr->iconResourceLocation();
-            }
-            l->setText(QString("<html><head><style type=text/css> "
-                               "a:link {color:black; text-decoration:none;} "
-                               "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
-                       //	set args correctly
-                       .arg(imagePath)
-                       .arg(currentPerformancePtr->key())
-                       .arg(currentAlbumPtr->albumTitle())
-                       .arg(currentPerformancePtr->songPerformerName())
-                       .arg(currentPerformancePtr->duration().toString(Duration::sb_hhmmss_format)));
+//            if(imageFile.exists()==0)
+//            {
+//                imagePath=songPtr->iconResourceLocation();
+//            }
+//            l->setText(QString("<html><head><style type=text/css> "
+//                               "a:link {color:black; text-decoration:none;} "
+//                               "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
+//                       //	set args correctly
+//                       .arg(imagePath)
+//                       .arg(currentPerformancePtr->key())
+//                       .arg(currentAlbumPtr->albumTitle())
+//                       .arg(currentPerformancePtr->songPerformerName())
+//                       .arg(currentPerformancePtr->duration().toString(Duration::sb_hhmmss_format)));
 
-            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-            connect(l, SIGNAL(linkActivated(QString)),
-                    dialog, SLOT(OK(QString)));
+//            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+//            connect(l, SIGNAL(linkActivated(QString)),
+//                    dialog, SLOT(OK(QString)));
 
-            dialog->ui->vlAlbumList->addWidget(l);
-        }
+//            dialog->ui->vlAlbumList->addWidget(l);
+//        }
     }
     dialog->updateGeometry();
     return dialog;
