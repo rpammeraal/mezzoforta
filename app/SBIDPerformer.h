@@ -90,7 +90,8 @@ protected:
 private:
     QVector<SBIDAlbumPtr>             _albums;
     QString                           _notes;
-    QVector<SBIDAlbumPerformancePtr>  _performances;
+    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
+    QVector<SBIDOnlinePerformancePtr> _onlinePerformances;
     QString                           _performerName;
     QVector<QString>                  _relatedPerformerKey;
     int                               _sb_performer_id;
@@ -102,7 +103,8 @@ private:
     //	Methods
     void _init();
     void _loadAlbums();
-    void _loadPerformances(bool showProgressDialogFlag=0);
+    void _loadAlbumPerformances(bool showProgressDialogFlag=0);
+    void _loadOnlinePerformances(bool showProgressDialogFlag=0);
     QVector<QString> _loadRelatedPerformers() const;
 };
 

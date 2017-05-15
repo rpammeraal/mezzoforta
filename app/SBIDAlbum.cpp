@@ -151,7 +151,7 @@ SBIDAlbum::save()
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDAlbumPerformancePtr> list;
+    QMap<int,SBIDOnlinePerformancePtr> list;
 
     if(_albumPerformances.count()==0)
     {
@@ -159,14 +159,13 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     }
 
     int index=0;
-    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
+    QVectorIterator<SBIDOnlinePerformancePtr> pIT(_albumPerformances);
     while(pIT.hasNext())
     {
-        pIT.next();
-        const SBIDAlbumPerformancePtr performancePtr=pIT.value();
-        if(performancePtr->path().length()>0)
+        const SBIDOnlinePerformancePtr opPtr=pIT.next();
+        if(opPtr->path().length()>0)
         {
-            list[index++]=performancePtr;
+            list[index++]=opPtr;
         }
     }
 
@@ -287,27 +286,27 @@ SBIDAlbumPerformancePtr
 SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes)
 {
     SBIDAlbumPerformancePtr albumPerformancePtr;
-    if(_albumPerformances.count()==0)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        _loadAlbumPerformances();
-    }
+//    if(_albumPerformances.count()==0)
+//    {
+//        qDebug() << SB_DEBUG_INFO;
+//        _loadAlbumPerformances();
+//    }
 
-    if(!_albumPerformances.contains(albumPosition))
-    {
-        qDebug() << SB_DEBUG_INFO;
-        setChangedFlag();
-        albumPerformancePtr=SBIDAlbumPerformance::createNew(songID, performerID, this->albumID(), albumPosition, year, path, duration, notes);
+//    if(!_albumPerformances.contains(albumPosition))
+//    {
+//        qDebug() << SB_DEBUG_INFO;
+//        setChangedFlag();
+//        albumPerformancePtr=SBIDAlbumPerformance::createNew(songID, performerID, this->albumID(), albumPosition, year, path, duration, notes);
 
-        setChangedFlag();
-        _albumPerformances[albumPosition]=albumPerformancePtr;
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO;
-        setChangedFlag();
-        albumPerformancePtr=_albumPerformances[albumPosition];
-    }
+//        setChangedFlag();
+//        _albumPerformances[albumPosition]=albumPerformancePtr;
+//    }
+//    else
+//    {
+//        qDebug() << SB_DEBUG_INFO;
+//        setChangedFlag();
+//        albumPerformancePtr=_albumPerformances[albumPosition];
+//    }
     return albumPerformancePtr;
 }
 
@@ -320,12 +319,11 @@ SBIDAlbum::duration() const
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
 
-    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
-    while(pIT.hasNext())
+    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
+    while(opIT.hasNext())
     {
-        pIT.next();
-        const SBIDAlbumPerformancePtr performancePtr=pIT.value();
-        duration+=performancePtr->duration();
+        const SBIDOnlinePerformancePtr opPtr=opIT.next();
+        duration+=opPtr->duration();
     }
     return duration;
 }
@@ -670,7 +668,7 @@ SBIDAlbum::performances() const
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
     SBTableModel* tm=new SBTableModel();
-    tm->populatePerformancesByAlbum(_albumPerformances);
+    //	CWIP: now a vector tm->populatePerformancesByAlbum(_albumPerformances);
     return tm;
 }
 
@@ -689,27 +687,26 @@ SBIDAlbum::processNewSongList(QVector<MusicLibrary::MLentityPtr> &newSongList)
     //	A.	Create data structures
     //		1.	original list of songs
     qDebug() << SB_DEBUG_INFO;
-    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    QVectorIterator<SBIDOnlinePerformancePtr> apIT(_albumPerformances);
     while(apIT.hasNext())
     {
-        apIT.next();
         qDebug() << SB_DEBUG_INFO;
-        SBIDAlbumPerformancePtr albumPerformancePtr=apIT.value();
+        SBIDOnlinePerformancePtr opPtr=apIT.next();
 
         qDebug() << SB_DEBUG_INFO;
-        if(albumPerformancePtr)
+        if(opPtr)
         {
             qDebug() << SB_DEBUG_INFO;
             MusicLibrary::MLentity orgSong;
-            orgSong.songTitle=albumPerformancePtr->songTitle();
-            orgSong.songID=albumPerformancePtr->songID();
-            orgSong.songPerformerName=albumPerformancePtr->songPerformerName();
-            orgSong.songPerformerID=albumPerformancePtr->songPerformerID();
+            orgSong.songTitle=opPtr->songTitle();
+            orgSong.songID=opPtr->songID();
+            orgSong.songPerformerName=opPtr->songPerformerName();
+            orgSong.songPerformerID=opPtr->songPerformerID();
             orgSong.albumTitle=this->albumTitle();
             orgSong.albumID=this->albumID();
-            orgSong.albumPosition=albumPerformancePtr->albumPosition();
-            orgSong.albumPerformerName=albumPerformancePtr->performerPtr()->performerName();
-            orgSong.albumPerformerID=albumPerformancePtr->performerPtr()->performerID();
+            orgSong.albumPosition=opPtr->albumPosition();
+            orgSong.albumPerformerName=opPtr->performerPtr()->performerName();
+            orgSong.albumPerformerID=opPtr->performerPtr()->performerID();
 
             const QString key=QString("%1:%2").arg(orgSong.songID).arg(orgSong.songPerformerID);
             qDebug() << SB_DEBUG_INFO << orgSong.albumPosition;
@@ -1818,8 +1815,17 @@ SBIDAlbum::_init()
 void
 SBIDAlbum::_loadAlbumPerformances()
 {
-    //	Silly. Consistent with SBIDSong/SBIDSongPerformance.
-    _albumPerformances=_loadAlbumPerformancesFromDB();
+    QMap<int,SBIDOnlinePerformancePtr> onlinePerformances=this->_loadAlbumOnlinePerformancesFromDB();
+
+    //	Now create AlbumPerformances out of onlinePerformances
+    //	CWIP
+    foreach(SBIDOnlinePerformancePtr opPtr,onlinePerformances)
+    {
+        if(_albumPerformances[opPtr->albumPosition()]!=SBIDOnlinePerformancePtr())
+        {
+            _albumPerformances[opPtr->albumPosition()]=opPtr;
+        }
+    }
 }
 
 void
@@ -1828,10 +1834,10 @@ SBIDAlbum::_setPerformerPtr()
     _performerPtr=SBIDPerformer::retrievePerformer(_sb_album_performer_id,1);
 }
 
-QMap<int,SBIDAlbumPerformancePtr>
-SBIDAlbum::_loadAlbumPerformancesFromDB() const
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDAlbum::_loadAlbumOnlinePerformancesFromDB() const
 {
-    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),1);
+    return Preloader::performanceMap(SBIDOnlinePerformance::performancesByAlbum_Preloader(this->albumID()),1);
 }
 
 QStringList
@@ -1839,13 +1845,12 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
 {
     QStringList SQL;
 
-    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
-    while(apIT.hasNext())
+    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
+    while(opIT.hasNext())
     {
         qDebug() << SB_DEBUG_INFO;
-        apIT.next();
 
-        SQL.append(apIT.value()->updateSQL());
+        SQL.append(opIT.next()->updateSQL());
     }
     return SQL;
 }
@@ -1853,18 +1858,16 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
 void
 SBIDAlbum::_showAlbumPerformances(const QString& title) const
 {
-    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    QVectorIterator<SBIDOnlinePerformancePtr> apIT(_albumPerformances);
     qDebug() << SB_DEBUG_INFO << title;
     while(apIT.hasNext())
     {
-        apIT.next();
-        int albumPosition=apIT.key();
-        SBIDAlbumPerformancePtr albumPerformancePtr=apIT.value();
+        const SBIDAlbumPerformancePtr apPtr=apIT.next();
 
         qDebug() << SB_DEBUG_INFO
-                 << albumPosition
-                 << albumPerformancePtr->songTitle()
-                 << albumPerformancePtr->albumPosition()
+                 << apPtr->albumPosition()
+                 << apPtr->songTitle()
+                 << apPtr->albumPosition()
         ;
     }
 }

@@ -31,6 +31,7 @@ class SBTabQueuedSongs;	//	CWIP: remove
 
 typedef SBIDManagerTemplate<SBIDAlbum,SBIDBase> SBIDAlbumMgr;
 typedef SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase> SBIDAlbumPerformanceMgr;
+typedef SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase> SBIDOnlinePerformanceMgr;
 typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
 typedef SBIDManagerTemplate<SBIDPerformer,SBIDBase> SBIDPerformerMgr;
 typedef SBIDManagerTemplate<SBIDSong,SBIDBase> SBIDSongMgr;
@@ -47,8 +48,6 @@ public:
         return &_instance;
     }
 
-    inline SBIDAlbumMgr* getAlbumMgr() { return &_albumMgr; }
-    inline SBIDAlbumPerformanceMgr* getAlbumPerformanceMgr() { return &_albumPerformanceMgr; }
     inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
     inline Chooser* getChooser() { return &_lcc; }
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
@@ -58,6 +57,9 @@ public:
     inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
     inline Navigator* getNavigator() { return &_nav; }
     inline PlayerController* getPlayerController() { return &_pc; }
+    inline SBIDAlbumMgr* getAlbumMgr() { return &_albumMgr; }
+    inline SBIDAlbumPerformanceMgr* getAlbumPerformanceMgr() { return &_albumPerformanceMgr; }
+    inline SBIDOnlinePerformanceMgr* getOnlinePerformanceMgr() { return &_onlinePerformanceMgr; }
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline PlayManager* getPlayManager() { return &_pm; }
@@ -99,6 +101,7 @@ private:
     SBModelQueuedSongs _mqs;
     SBIDAlbumMgr _albumMgr;
     SBIDAlbumPerformanceMgr _albumPerformanceMgr;
+    SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
     SBIDSongMgr _songMgr;

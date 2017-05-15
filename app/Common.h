@@ -84,7 +84,8 @@ public:
         sb_field_playlist_id,
         sb_field_album_position,
         sb_field_album_performance_id,
-        sb_field_key
+        sb_field_key,
+        sb_field_online_performance_id
     };
 
     struct sb_parameters

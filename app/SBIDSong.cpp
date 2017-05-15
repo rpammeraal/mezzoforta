@@ -7,6 +7,7 @@
 #include "DataAccessLayer.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDAlbumPerformance.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
@@ -14,18 +15,20 @@
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
 {
-    _lyrics                    =c._lyrics;
-    _notes                     =c._notes;
-    _sb_song_id                =c._sb_song_id;
-    _sb_song_performer_id      =c._sb_song_performer_id;
-    _songTitle                 =c._songTitle;
-    _year                      =c._year;
+    _lyrics                       =c._lyrics;
+    _notes                        =c._notes;
+    _sb_song_id                   =c._sb_song_id;
+    _sb_song_performer_id         =c._sb_song_performer_id;
+    _sb_online_performance_id     =c._sb_online_performance_id;
+    _songTitle                    =c._songTitle;
+    _year                         =c._year;
 
-    _songPerformerPtr          =c._songPerformerPtr;
+    _songPerformerPtr             =c._songPerformerPtr;
+    _preferredOnlinePerformancePtr=c._preferredOnlinePerformancePtr;
 
-    _playlistKey2performanceKey=c._playlistKey2performanceKey;
-    _albumPerformances         =c._albumPerformances;
-    _songPerformances          =c._songPerformances;
+    _playlistKey2performanceKey   =c._playlistKey2performanceKey;
+    _albumPerformances            =c._albumPerformances;
+    _songPerformances             =c._songPerformances;
 }
 
 SBIDSong::~SBIDSong()
@@ -188,41 +191,46 @@ SBIDSong::save()
 void
 SBIDSong::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDAlbumPerformancePtr> list;
-    SBIDAlbumPerformancePtr performancePtr;
+    qDebug() << SB_DEBUG_INFO << "PURPOSELY COMMENTED OUT -- TOO MUCH AMBIGUITY TO SEND SONG TO PLAYQUEUE";
 
-    if(_albumPerformances.count()==0 && !_songPerformerPtr)
-    {
-        const_cast<SBIDSong *>(this)->refreshDependents();
-    }
+    //	CWIP: calling this needs to display a pop-up in which an actual performance can be shown.
 
-    //	Send the first performance where orginalPerformerFlag is set.
-    int originalPerformerID=songPerformerID();
-    for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
-    {
-        performancePtr=_albumPerformances.at(i);
-        if(performancePtr->songPerformerID()==originalPerformerID && performancePtr->path().length()>0)
-        {
-            list[list.count()]=performancePtr;
-        }
-    }
+//    QMap<int,SBIDAlbumPerformancePtr> list;
+//    SBIDAlbumPerformancePtr albumPerformancePtr;
 
-    //	If still empty, take the first available performance
-    if(list.count()==0)
-    {
-        for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
-        {
-            performancePtr=_albumPerformances.at(i);
-            if(performancePtr->path().length()>0)
-            {
-                list[list.count()]=performancePtr;
-            }
-        }
-    }
+//    if(_albumPerformances.count()==0 && !_songPerformerPtr)
+//    {
+//        const_cast<SBIDSong *>(this)->refreshDependents();
+//    }
 
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SB_DEBUG_IF_NULL(mqs);
-    mqs->populate(list,enqueueFlag);
+//    //	Send the first performance where orginalPerformerFlag is set.
+//    int originalPerformerID=songPerformerID();
+//    for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
+//    {
+//        albumPerformancePtr=_albumPerformances.at(i);
+//        if(albumPerformancePtr->songPerformerID()==originalPerformerID)
+//        {
+//            //	Now find the 1st onlinePerformance.
+//            //list[list.count()]=performancePtr;
+//        }
+//    }
+
+//    //	If still empty, take the first available performance
+//    if(list.count()==0)
+//    {
+//        for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
+//        {
+//            performancePtr=_albumPerformances.at(i);
+//            if(performancePtr->path().length()>0)
+//            {
+//                list[list.count()]=performancePtr;
+//            }
+//        }
+//    }
+
+//    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+//    SB_DEBUG_IF_NULL(mqs);
+//    mqs->populate(list,enqueueFlag);
 }
 
 QString
@@ -1163,7 +1171,14 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadPlaylists();
     }
-    _setSongPerformerPtr();
+    if(forcedFlag==1 || !_preferredOnlinePerformancePtr)
+    {
+        _setPreferredOnlinePerformancePtr();
+    }
+    if(forcedFlag==1 || !_songPerformerPtr)
+    {
+        _setSongPerformerPtr();
+    }
 }
 
 
@@ -1387,12 +1402,13 @@ SBIDSongPtr
 SBIDSong::instantiate(const QSqlRecord &r)
 {
     SBIDSong song;
-    song._sb_song_id           =r.value(0).toInt();
-    song._songTitle            =r.value(1).toString();
-    song._notes                =r.value(2).toString();
-    song._sb_song_performer_id =r.value(3).toInt();
-    song._year                 =r.value(4).toInt();
-    song._lyrics               =r.value(5).toString();
+    song._sb_song_id              =r.value(0).toInt();
+    song._songTitle               =r.value(1).toString();
+    song._notes                   =r.value(2).toString();
+    song._sb_song_performer_id    =r.value(3).toInt();
+    song._sb_online_performance_id=r.value(4).toInt();
+    song._year                    =r.value(5).toInt();
+    song._lyrics                  =r.value(6).toString();
 
     return std::make_shared<SBIDSong>(song);
 }
@@ -1560,6 +1576,7 @@ SBIDSong::_init()
 void
 SBIDSong::_loadAlbumPerformances()
 {
+    /*
     SBSqlQueryModel* qm=SBIDAlbumPerformance::performancesBySong(songID());
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
 
@@ -1567,6 +1584,7 @@ SBIDSong::_loadAlbumPerformances()
     _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
 
     delete qm;
+    */
 }
 
 void
@@ -1614,6 +1632,12 @@ SBIDSong::_loadPlaylists()
             _playlistKey2performanceKey[playlistKey]=performanceKey;
         }
     }
+}
+
+void
+SBIDSong::_setPreferredOnlinePerformancePtr()
+{
+    _preferredOnlinePerformancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(_sb_online_performance_id,1);
 }
 
 void

@@ -6,7 +6,7 @@
 #include "Context.h"
 #include "Preloader.h"
 #include "SBDialogSelectItem.h"
-#include "SBIDAlbumPerformance.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
@@ -18,7 +18,8 @@ SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
     _albums             =c._albums;
     _notes              =c._notes;
-    _performances       =c._performances;
+    _albumPerformances  =c._albumPerformances;
+    _onlinePerformances =c._onlinePerformances;
     _performerName      =c._performerName;
     _sb_performer_id    =c._sb_performer_id;
     _relatedPerformerKey=c._relatedPerformerKey;
@@ -47,7 +48,7 @@ SBIDPerformer::commonPerformerName() const
 QString
 SBIDPerformer::genericDescription() const
 {
-    return "Performer - "+this->text() + QString("[num performances: %1]").arg(_performances.count());
+    return "Performer - "+this->text() + QString("[num performances: %1]").arg(_albumPerformances.count());
 }
 
 QString
@@ -71,17 +72,17 @@ SBIDPerformer::itemType() const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDAlbumPerformancePtr> list;
+    QMap<int,SBIDOnlinePerformancePtr> list;
 
-    if(_performances.count()==0)
+    if(_onlinePerformances.count()==0)
     {
-        this->_loadPerformances(0);
+        this->_loadOnlinePerformances(0);
     }
 
     int index=0;
-    for(int i=0;i<_performances.count();i++)
+    for(int i=0;i<_onlinePerformances.count();i++)
     {
-        const SBIDAlbumPerformancePtr performancePtr=_performances.at(i);
+        const SBIDOnlinePerformancePtr performancePtr=_onlinePerformances.at(i);
         if(performancePtr->path().length()>0)
         {
             list[index++]=performancePtr;
@@ -109,12 +110,12 @@ SBTableModel*
 SBIDPerformer::albums() const
 {
     SBTableModel* tm=new SBTableModel();
-    if(_performances.count()==0 || _albums.count()==0)
+    if(_albumPerformances.count()==0 || _albums.count()==0)
     {
         const_cast<SBIDPerformer *>(this)->refreshDependents();
     }
 
-    tm->populateAlbumsByPerformer(_performances,_albums);
+    tm->populateAlbumsByPerformer(_albumPerformances,_albums);
 
     return tm;
 }
@@ -147,20 +148,20 @@ SBIDPerformer::numAlbums() const
 int
 SBIDPerformer::numSongs() const
 {
-    if(_performances.count()==0 && _num_songs==0)
+    if(_albumPerformances.count()==0 && _num_songs==0)
     {
         //	Nothing available, we need to load dependents
         const_cast<SBIDPerformer *>(this)->refreshDependents();
     }
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
-        //	_performances is not loaded yet -- use precalculated _num_songs
+        //	_albumPerformances is not loaded yet -- use precalculated _num_songs
         return _num_songs;
     }
     //	At this point, we have performances loaded. Need to go through
     //	performances and count unique songs
     QSet<QString> uniqueSongs;	//	use map to count unique songs
-    QVectorIterator<SBIDAlbumPerformancePtr> pIT(_performances);
+    QVectorIterator<SBIDAlbumPerformancePtr> pIT(_albumPerformances);
     while(pIT.hasNext())
     {
         SBIDAlbumPerformancePtr performancePtr=pIT.next();
@@ -196,12 +197,13 @@ SBIDPerformer::relatedPerformers()
 SBTableModel*
 SBIDPerformer::songs() const
 {
+    //	CWIP: using _onlinePerformances will save a conversion from _onlinePerformances to songs
     SBTableModel* tm=new SBTableModel();
-    if(_performances.count()==0)
+    if(_albumPerformances.count()==0)
     {
         const_cast<SBIDPerformer *>(this)->refreshDependents();
     }
-    tm->populateSongsByPerformer(_performances);
+    tm->populateSongsByPerformer(_albumPerformances);
     return tm;
 }
 
@@ -375,9 +377,13 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
 void
 SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 {
-    if(forcedFlag || _performances.count()==0)
+    if(forcedFlag || _albumPerformances.count()==0)
     {
-        _loadPerformances(showProgressDialogFlag);
+        _loadAlbumPerformances(showProgressDialogFlag);
+    }
+    if(forcedFlag || _onlinePerformances.count()==0)
+    {
+        _loadOnlinePerformances(showProgressDialogFlag);
     }
     if(forcedFlag || _relatedPerformerKey.count()==0)
     {
@@ -1088,10 +1094,36 @@ SBIDPerformer::_loadAlbums()
 }
 
 void
-SBIDPerformer::_loadPerformances(bool showProgressDialogFlag)
+SBIDPerformer::_loadAlbumPerformances(bool showProgressDialogFlag)
 {
     qDebug() << SB_DEBUG_INFO;
-    _performances=Preloader::performances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
+    if(_onlinePerformances.count()==0)
+    {
+        _loadOnlinePerformances(showProgressDialogFlag);
+    }
+
+    //	Construct unique albumPerformances out of list of online performances
+    QSet<QString> uniqueAlbumPerformances;	//	Use map to track unique albumPerformances
+    QVectorIterator<SBIDOnlinePerformancePtr> pIT(_onlinePerformances);
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    while(pIT.hasNext())
+    {
+        SBIDOnlinePerformancePtr opPtr=pIT.next();
+        const QString albumPerformanceKey=std::dynamic_pointer_cast<SBIDAlbumPerformance>(opPtr)->key();
+        if(!(uniqueAlbumPerformances.contains(albumPerformanceKey)))
+        {
+            SBIDAlbumPerformancePtr apPtr=apmgr->retrieve(albumPerformanceKey);
+            _albumPerformances.append(apPtr);
+            uniqueAlbumPerformances.insert(albumPerformanceKey);
+        }
+    }
+}
+
+void
+SBIDPerformer::_loadOnlinePerformances(bool showProgressDialogFlag)
+{
+    qDebug() << SB_DEBUG_INFO;
+    _onlinePerformances=Preloader::performances(SBIDOnlinePerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
 }
 
 QVector<QString>

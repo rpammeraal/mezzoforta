@@ -241,17 +241,16 @@ public:
 
     void populate()
     {
-        QMap<int,SBIDAlbumPerformancePtr> performanceList=_albumPtr->performanceList();
+        /*
         QList<QStandardItem *>column;
         QStandardItem* item;
 
         //for(int i=0;i<qm->rowCount();i++)
-        QMapIterator<int,SBIDAlbumPerformancePtr> pIT(performanceList);
+        QVectorIterator<SBIDAlbumPerformancePtr> pIT(_albumPtr->performanceList());
         int i=0;
         while(pIT.hasNext())
         {
-            pIT.next();
-            SBIDAlbumPerformancePtr performancePtr=pIT.value();
+            SBIDAlbumPerformancePtr performancePtr=pIT.next();
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_deleteflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_newflag
             item=new QStandardItem("0"); column.append(item);                                                    //	sb_column_mergedtoindex
@@ -279,6 +278,7 @@ public:
         item=new QStandardItem("Notes"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_notes
 
         debugShow("end of populate");
+        */
     }
 
     void debugShow(const QString& title=QString())

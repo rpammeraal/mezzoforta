@@ -7,6 +7,7 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayerController.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
@@ -210,8 +211,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     bool isPlayingFlag=0;
     _setCurrentPlayID(playlistIndex);
 
-    //	CWIP: change to SBIDSong
-    SBIDAlbumPerformancePtr performancePtr=_performanceAt(currentPlayID());
+    SBIDOnlinePerformancePtr performancePtr=_performanceAt(currentPlayID());
 
     if(!performancePtr)
     {
@@ -321,7 +321,7 @@ PlayManager::_loadRadio()
     bool firstBatchLoaded=false;
     _radioModeFlag=1;
 
-    QMap<int,SBIDAlbumPerformancePtr> playList;
+    QMap<int,SBIDOnlinePerformancePtr> playList;
     QList<int> indexCovered;
 
     int progressStep=0;
@@ -334,7 +334,7 @@ PlayManager::_loadRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=SBIDAlbumPerformance::onlinePerformances(100);
+    SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(100);
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 
@@ -383,7 +383,7 @@ PlayManager::_loadRadio()
         }
 
         SBIDSongPtr songPtr=SBIDSong::retrieveSong(qm->record(idx).value(0).toInt());
-        SBIDAlbumPerformancePtr performancePtr=songPtr->performance(qm->record(idx).value(4).toInt(),qm->record(idx).value(6).toInt());
+        SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(qm->record(idx).value(10).toInt());
 
         playList[nextOpenSlotIndex++]=performancePtr;
 
@@ -435,11 +435,11 @@ PlayManager::_resetCurrentPlayID()
     _setCurrentPlayID(-1);
 }
 
-SBIDAlbumPerformancePtr
+SBIDOnlinePerformancePtr
 PlayManager::_performanceAt(int index) const
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    return mqs?mqs->performanceAt(index):SBIDAlbumPerformancePtr();
+    return mqs?mqs->performanceAt(index):SBIDOnlinePerformancePtr();
 }
 
 void

@@ -27,7 +27,7 @@ public:
         sb_column_playlistpositionid=6,
         sb_column_position=7,
         sb_column_path=8,
-        sb_column_album_performance_id=9,
+        sb_column_online_performance_id=9,
 
         sb_column_startofdata=10,
         sb_column_songtitle=10,
@@ -56,10 +56,10 @@ public:
     //	Methods related to playlists
     inline int currentPlayID() const { return _currentPlayID; }	//	index of song in playlist
     int playlistCount() const { return this->rowCount(); }
-    QList<SBIDAlbumPerformancePtr> getAllPerformances();
+    QList<SBIDOnlinePerformancePtr> getAllPerformances();
     inline int numSongs() const { return this->rowCount(); }
-    void populate(QMap<int,SBIDAlbumPerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag=0);
-    SBIDAlbumPerformancePtr performanceAt(int playlistIndex) const;
+    void populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag=0);
+    SBIDOnlinePerformancePtr performanceAt(int playlistIndex) const;
     inline Duration totalDuration() const { return _totalDuration; }
 
     void reorderItems();
@@ -85,7 +85,7 @@ private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager
     Duration _totalDuration;
 
-    QList<QStandardItem *> createRecord(const SBIDAlbumPerformancePtr& idPtr,int playPosition) const;
+    QList<QStandardItem *> createRecord(const SBIDOnlinePerformancePtr& performancePtr,int playPosition) const;
     QString _formatPlaylistPosition(int playlistPositionID) const;
     void _populateHeader();
     QMap<int,int> _populateMapPlaylistPosition2ViewPosition();

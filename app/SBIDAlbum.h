@@ -52,7 +52,7 @@ public:
     int numPerformances() const;
     SBTableModel* performances() const;
     void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
-    QMap<int,SBIDAlbumPerformancePtr> performanceList() const { return _albumPerformances; }
+    QVector<SBIDOnlinePerformancePtr> performanceList() const { return _albumPerformances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
@@ -116,14 +116,14 @@ private:
     SBIDPerformerPtr                  _performerPtr;
 
     //	CWIP: make this a vector. Will solve a lot of headaches
-    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;
+    QVector<SBIDOnlinePerformancePtr> _albumPerformances;	//	1:based, index is record position
 
     void _init();
     void _loadAlbumPerformances();
     void _setPerformerPtr();
 
     //	Aux helper methods
-    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
+    QMap<int,SBIDOnlinePerformancePtr> _loadAlbumOnlinePerformancesFromDB() const;
     QStringList _updateSQLAlbumPerformances() const;
     void _showAlbumPerformances(const QString& title) const;
 };

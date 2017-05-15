@@ -57,7 +57,7 @@ private:
     void _init();
     void _loadRadio();
     void _resetCurrentPlayID();
-    SBIDAlbumPerformancePtr _performanceAt(int index) const;
+    SBIDOnlinePerformancePtr _performanceAt(int index) const;
     void _setCurrentPlayID(int currentPlayID);
 };
 

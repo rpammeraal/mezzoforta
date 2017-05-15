@@ -25,7 +25,7 @@ Luik, Belgie
 Diest, Belgie
 Berkel-Enschot, N-Brabant
 Enroute: LAX-KEF
-
+Zoetermeer
 
 
 Crown Princess Demo (20150407):
@@ -736,7 +736,28 @@ X	playlists that song belongs to can be edited
 -	List all files that did not get imported.
 -	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.
 
+Classes:
+-	SBIDAlbum
+-		Contains: list of SBIDAlbumPerformance. As many as there are on the album.
+-			SBIDAlbumPerformances: contains list of 0,1 or more SBIDOnlinePerformances. One of them is the preferred one (usually the first one added).
+-	classes can implement a method that depends on a lower class. Eg.: AlbumPerformance.path() returns the preferred OnlinePerformance.path()
+<immediate to do>
+-	make everything compile:
+	V	create album performances out of online performances
+	V	add preferred flag to online performance in database
+	V	instantiate OnlinePerformance should populate attributes of superclasses (e.g. AlbumPerformance).
+
+<current>
+::	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the
+    same song.
+::	Modify  SBIDOnlinePerformance::performancesByAlbum_Preloader(int albumID) to:
+    -
+*	sendToPlayQueue: take advantage of preferredOnlinePerformance in song
+    -	SBIDAlbum
+
 <to be fixed before next beta release>
+*	SBIDPerformer::songs(): now using __albumPerformances, which gets derived/populated from
+	_onlinePerformances. Better to use _onlinePerformances in the call to tm->populateSongsByPerformer.
 *	Duplicate song entries in 'All Songs'
 *	Dialogbox needed at additional places during import
 *	Validate album positions
@@ -763,9 +784,11 @@ X	playlists that song belongs to can be edited
 *	if aP gets removed, need to set isDeletedFlag
 *	if aP gets reordered, need to set isChangedFLag
 *	need to somehow update SBIDManager when aP's are removed/inserted/changed. Maybe a simple reload will suffice (this reload will go to screenstack and handle screenItems that references removed items properly).
+*	added online_performance_id to song table. This needs to be properly populated when online_performances for that song become available.
 
 <bugs>
 *	Any link between digital_format and formats maintained by songbase?
+*	load reggae playlist. not recursive -- songs from Cafe Jamaica/Reggae 12" are not loaded
 *	Postgres credentials are lost when creating new database
 *	Creating new database does not make songbase switch to this database.
 *	MusicLibrary:
@@ -864,6 +887,24 @@ X	playlists that song belongs to can be edited
 *	song detail should indicate which versions of which albums are available
 *	loudspeaker icon wherever currently playing performance is displayed
 *	drag own image at image e.g. for performer and use this
+
+Library check:
+*	quite a number of songs without any performance
+        select
+		  s.song_id,
+		  s.title,
+		  r.title,
+		  a.name
+		FROM
+		  rock.song s
+		    JOIN rock.performance p USING (song_id)
+			JOIN rock.artist a USING(artist_id)
+			JOIN rock.record_performance rp USING(performance_id)
+			JOIN rock.record r USING(record_id)
+
+        WHERE
+		    s.online_performance_id IS NULL
+		ORDER BY a.name,r.title,s.title
 
 Installing ogg/vorbis:
 https://www.xiph.org/

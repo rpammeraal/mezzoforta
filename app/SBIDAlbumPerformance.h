@@ -31,6 +31,9 @@ public:
     void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
     bool updateLastPlayDate();
 
+    //	Implemented methods forwarded to lower classes
+    QString path();
+
     //	Setters
     void setAlbumPosition(int position);
 
@@ -50,8 +53,6 @@ public:
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=0);
 
 	//	Helper methods for SBIDManagerTemplate
-    static QString performancesByAlbum_Preloader(int albumID);
-    static QString performancesByPerformer_Preloader(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
 
 protected:
@@ -71,18 +72,20 @@ protected:
     static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
 
 private:
-    int              _albumPerformanceID;
-    Duration         _duration;
-    int              _sb_album_id;
-    int              _sb_album_position;
+    int                               _albumPerformanceID;
+    Duration                          _duration;
+    int                               _sb_album_id;
+    int                               _sb_album_position;
 
     //	Attributes derived from core attributes
-    SBIDAlbumPtr     _albumPtr;
+    SBIDAlbumPtr                      _albumPtr;
+    QVector<SBIDOnlinePerformancePtr> _onlinePerformances;	//	CWIP: to be loaded
+    int                               _preferredOnlinePerformanceID;	//	CWIP: to be loaded
 
     //	Not instantiated
-    int              _sb_play_position;	//	current position in SBTabQueuedSongs
-    int              _playlistPosition;
-    int              _org_sb_album_position; //	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
+    int                               _sb_play_position;	//	current position in SBTabQueuedSongs
+    int                               _playlistPosition;
+    int                               _org_sb_album_position; //	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
 
     void _init();
     void _setAlbumPtr();

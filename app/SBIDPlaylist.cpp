@@ -65,7 +65,7 @@ SBIDPlaylist::itemType() const
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDAlbumPerformancePtr> list;
+    QMap<int,SBIDOnlinePerformancePtr> list;
     list=_retrievePlaylistItems(this->playlistID(),1);
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
@@ -161,7 +161,7 @@ void
 SBIDPlaylist::recalculatePlaylistDuration()
 {
     QList<SBIDPtr> compositesTraversed;
-    QList<SBIDAlbumPerformancePtr> allPerformances;
+    QList<SBIDOnlinePerformancePtr> allPerformances;
 
     //	Get all songs
     compositesTraversed.clear();
@@ -1075,7 +1075,7 @@ SBIDPlaylist::operator QString() const
 
 ///	Private methods
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDAlbumPerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
+SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
 {
     SBIDPlaylistPtr playlistPtr;
     qDebug() << SB_DEBUG_INFO;
@@ -1114,22 +1114,14 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         q=QString
             (
                 "SELECT "
-                    "0 AS composite_flag, "    //	0
+                    "0 AS composite_flag, "     //	0
                     "pld.playlist_position, "
                     "0 AS playlist_id, "
                     "0 AS chart_id, "
                     "rp.record_id, "
 
-                    "a.artist_id, "           //	5
-                    "s.song_id, "
-                    "rp.record_position, "
-                    "op.path, "
-                    "s.title, "
-
-                    "a.name, "                 //	10
-                    "r.title, "
-                    "rp.duration, "
-                    "rp.record_performance_id "
+                    "a.artist_id, "             //	5
+                    "op.online_performance_id "
                 "FROM "
                     "___SB_SCHEMA_NAME___playlist_detail pld "
                         "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -1153,15 +1145,9 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                     "%1(child_playlist_id,0) AS playlist_id, "
                     "0 AS chart_id, "
                     "%1(record_id,0) AS record_id, "
+
                     "%1(artist_id,0) AS artist_id, "
-                    "0 AS song_id, "
-                    "0 AS record_position, "
-                    "'' AS path, "
-                    "'' AS song_title, "
-                    "'' AS performer_name, "
-                    "'' AS record_title, "
-                    "NULL AS duration, "
-                    "NULL AS record_performance_id "
+                    "NULL AS online_performance_id "
                 "FROM "
                     "___SB_SCHEMA_NAME___playlist_detail pc "
                 "WHERE "
@@ -1221,10 +1207,10 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 }
                 else
                 {
-                    SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::retrieveAlbumPerformance(allItems.value(13).toInt(),0);
-                    if(performancePtr)
+                    SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(allItems.value(13).toInt(),0);
+                    if(opPtr)
                     {
-                        allPerformances.append(performancePtr);
+                        allPerformances.append(opPtr);
                     }
                 }
                 if(progressDialog)
@@ -1285,27 +1271,13 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         q=QString
             (
                 "SELECT "
-                    "rp.artist_id, "
-                    "rp.song_id, "
-                    "rp.record_id, "
-                    "rp.record_position, "
-                    "rp.duration, "
-                    "s.title, "
-                    "a.name, "
-                    "r.title, "
-                    "op.path "
+                    "op.online_performance_id "
                 "FROM "
                     "___SB_SCHEMA_NAME___record_performance rp "
                         "JOIN ___SB_SCHEMA_NAME___record r ON "
                             "rp.record_id=r.record_id "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.record_performance_id=rp.record_performance_Id "
-                        "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                            "rp.performance_id=p.performance_id "
-                        "JOIN ___SB_SCHEMA_NAME___song s ON "
-                            "p.song_id=s.song_id "
-                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                            "p.artist_id=a.artist_id "
+                            "op.online_performance_id=rp.preferred_online_performance_id "
                 "WHERE "
                     "rp.record_id=%1 "
                 "ORDER BY "
@@ -1320,27 +1292,11 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         q=QString
             (
                 "SELECT "
-                    "rp.artist_id, "
-                    "rp.song_id, "
-                    "rp.record_id, "
-                    "rp.record_position, "
-                    "rp.duration, "
-                    "s.title, "
-                    "a.name, "
-                    "r.title, "
-                    "op.path "
+                    "op.online_performance_id "
                 "FROM "
                     "___SB_SCHEMA_NAME___record_performance rp "
-                        "JOIN ___SB_SCHEMA_NAME___record r ON "
-                            "rp.record_id=r.record_id "
                         "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.record_performance_id=rp.record_performance_id "
-                        "JOIN ___SB_SCHEMA_NAME___performance p "
-                            "p.performance_id=rp.performance_id "
-                        "JOIN ___SB_SCHEMA_NAME___song s ON "
-                            "p.song_id=s.song_id "
-                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
-                            "p.artist_id=a.artist_id "
+                            "op.online_performance_id=rp.preferred_online_performance_id "
                 "WHERE "
                     "rp.artist_id=%2"
             )
@@ -1365,19 +1321,11 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         while(querySong.next())
         {
     qDebug() << SB_DEBUG_INFO;
-            SBIDSongPtr songPtr=SBIDSong::retrieveSong(querySong.value(1).toInt());
-            if(songPtr)
+            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(querySong.value(0).toInt());
+            if(opPtr)
             {
     qDebug() << SB_DEBUG_INFO;
-                int albumID=querySong.value(2).toInt();
-                int albumPosition=querySong.value(3).toInt();
-
-                SBIDAlbumPerformancePtr performancePtr=songPtr->performance(albumID,albumPosition);
-                if(performancePtr &&  allPerformances.contains(performancePtr)==0)
-                {
-    qDebug() << SB_DEBUG_INFO;
-                    allPerformances.append(performancePtr);
-                }
+                allPerformances.append(opPtr);
             }
         }
     }
@@ -1457,12 +1405,12 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
     }
 }
 
-QMap<int,SBIDAlbumPerformancePtr>
+QMap<int,SBIDOnlinePerformancePtr>
 SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 {
     QList<SBIDPtr> compositesTraversed;
-    QList<SBIDAlbumPerformancePtr> allPerformances;
-    QMap<int,SBIDAlbumPerformancePtr> playList;
+    QList<SBIDOnlinePerformancePtr> allPerformances;
+    QMap<int,SBIDOnlinePerformancePtr> playList;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,0);
 
     if(playlistPtr)
@@ -1488,10 +1436,10 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
         int index=0;
         for(int i=0;i<allPerformances.count();i++)
         {
-            const SBIDAlbumPerformancePtr performancePtr=allPerformances.at(i);
-            if(performancePtr->path().length()>0)
+            const SBIDOnlinePerformancePtr opPtr=allPerformances.at(i);
+            if(opPtr->path().length()>0)
             {
-                playList[index++]=performancePtr;
+                playList[index++]=opPtr;
             }
 
         }

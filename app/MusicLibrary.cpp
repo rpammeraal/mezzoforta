@@ -23,6 +23,7 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 void
 MusicLibrary::rescanMusicLibrary()
 {
+    /*
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
     const QString schema=dal->schema();
@@ -137,7 +138,7 @@ MusicLibrary::rescanMusicLibrary()
     importProgressDialog.raise();
     importProgressDialog.activateWindow();
 
-    SBSqlQueryModel* sqm=SBIDAlbumPerformance::onlinePerformances();
+    SBSqlQueryModel* sqm=SBIDOnlinePerformance::retrieveAllOnlinePerformances();
     importProgressDialog.setMaximum(sqm->rowCount());
 
     importProgressDialog.setValue(0);
@@ -381,6 +382,7 @@ MusicLibrary::rescanMusicLibrary()
 
     qDebug() << SB_DEBUG_INFO << "Finished";
     return;
+    */
 }
 
 bool
