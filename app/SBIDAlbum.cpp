@@ -196,6 +196,40 @@ SBIDAlbum::albumPerformerName() const
     return _performerPtr->performerName();
 }
 
+SBSqlQueryModel*
+SBIDAlbum::albumsByPerformer(int performerID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "r.record_id, "
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+            "r.genre, "
+            "r.notes "
+        "FROM "
+                "___SB_SCHEMA_NAME___record r "
+                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                        "r.artist_id=a.artist_id "
+                    "LEFT JOIN "
+                        "( "
+                            "SELECT r.record_id,COUNT(*) as song_count "
+                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
+                            "GROUP BY r.record_id "
+                        ") s ON r.record_id=s.record_id "
+        "WHERE "
+            "r.artist_id=%1 "
+    )
+        .arg(performerID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+
+}
+
+
 //	either add to a list of songs in SBIDAlbum (preferred)
 //	or as saveSongToAlbum().
 QStringList
@@ -705,8 +739,8 @@ SBIDAlbum::processNewSongList(QVector<MusicLibrary::MLentityPtr> &newSongList)
             orgSong.albumTitle=this->albumTitle();
             orgSong.albumID=this->albumID();
             orgSong.albumPosition=opPtr->albumPosition();
-            orgSong.albumPerformerName=opPtr->performerPtr()->performerName();
-            orgSong.albumPerformerID=opPtr->performerPtr()->performerID();
+            orgSong.albumPerformerName=opPtr->albumPerformerName();
+            orgSong.albumPerformerID=opPtr->albumPerformerID();
 
             const QString key=QString("%1:%2").arg(orgSong.songID).arg(orgSong.songPerformerID);
             qDebug() << SB_DEBUG_INFO << orgSong.albumPosition;
@@ -1380,6 +1414,16 @@ SBIDAlbum::operator QString() const
 
 //	Methods required by SBIDManagerTemplate
 QString
+SBIDAlbum::createKey(int albumID,int unused)
+{
+    Q_UNUSED(unused);
+    return albumID>=0?QString("%1:%2")
+        .arg(SBIDBase::sb_type_album)
+        .arg(albumID):QString("x:x")	//	Return invalid key if albumID<0
+    ;
+}
+
+QString
 SBIDAlbum::key() const
 {
     return createKey(this->albumID());
@@ -1398,49 +1442,6 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 //	Static methods
-SBSqlQueryModel*
-SBIDAlbum::albumsByPerformer(int performerID)
-{
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "r.record_id, "
-            "r.title, "
-            "r.artist_id, "
-            "r.year, "
-            "r.genre, "
-            "r.notes "
-        "FROM "
-                "___SB_SCHEMA_NAME___record r "
-                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
-                        "r.artist_id=a.artist_id "
-                    "LEFT JOIN "
-                        "( "
-                            "SELECT r.record_id,COUNT(*) as song_count "
-                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
-                            "GROUP BY r.record_id "
-                        ") s ON r.record_id=s.record_id "
-        "WHERE "
-            "r.artist_id=%1 "
-    )
-        .arg(performerID)
-    ;
-
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-
-}
-
-QString
-SBIDAlbum::createKey(int albumID,int unused)
-{
-    Q_UNUSED(unused);
-    return albumID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_album)
-        .arg(albumID):QString("x:x")	//	Return invalid key if albumID<0
-    ;
-}
-
 SBIDAlbumPtr
 SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 {
@@ -1793,11 +1794,12 @@ SBIDAlbum::userMatch(const Common::sb_parameters &tobeMatched, SBIDAlbumPtr exis
 void
 SBIDAlbum::clearChangedFlag()
 {
-    SBIDBase::clearChangedFlag();
-    foreach(SBIDAlbumPerformancePtr performancePtr,_albumPerformances)
-    {
-        performancePtr->clearChangedFlag();
-    }
+    //	CWIP: unsure how to handle this (restructuring @ SBIDOnlinePerformance 5/15)
+//    SBIDBase::clearChangedFlag();
+//    foreach(SBIDAlbumPerformancePtr performancePtr,_albumPerformances)
+//    {
+//        performancePtr->clearChangedFlag();
+//    }
     //	AlbumPerformances are owned by SBIDAlbum -- don't clear these
 }
 
@@ -1845,29 +1847,29 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
 {
     QStringList SQL;
 
-    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
-    while(opIT.hasNext())
-    {
-        qDebug() << SB_DEBUG_INFO;
+//    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
+//    while(opIT.hasNext())
+//    {
+//        qDebug() << SB_DEBUG_INFO;
 
-        SQL.append(opIT.next()->updateSQL());
-    }
+//        SQL.append(opIT.next()->updateSQL());
+//    }
     return SQL;
 }
 
 void
 SBIDAlbum::_showAlbumPerformances(const QString& title) const
 {
-    QVectorIterator<SBIDOnlinePerformancePtr> apIT(_albumPerformances);
+    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
     qDebug() << SB_DEBUG_INFO << title;
-    while(apIT.hasNext())
+    while(opIT.hasNext())
     {
-        const SBIDAlbumPerformancePtr apPtr=apIT.next();
+        const SBIDOnlinePerformancePtr opPtr=opIT.next();
 
         qDebug() << SB_DEBUG_INFO
-                 << apPtr->albumPosition()
-                 << apPtr->songTitle()
-                 << apPtr->albumPosition()
+                 << opPtr->albumPosition()
+                 << opPtr->songTitle()
+                 << opPtr->albumPosition()
         ;
     }
 }

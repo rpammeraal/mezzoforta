@@ -5,7 +5,7 @@
 
 #include "SBIDSongPerformance.h"
 
-class SBIDAlbumPerformance : public SBIDSongPerformance
+class SBIDAlbumPerformance : public SBIDBase
 {
 public:
     //	Ctors, dtors
@@ -13,23 +13,27 @@ public:
     ~SBIDAlbumPerformance();
 
     //	Inherited methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
+    virtual QString iconResourceLocation() const;
+    virtual int itemID() const;
     virtual SBIDBase::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
+    virtual QString text() const;
     virtual QString type() const;
 
     //	SBIDAlbumPerformance specific methods
     int albumID() const;
     inline int albumPerformanceID() const { return _albumPerformanceID; }
-    inline int albumPosition() const { return _sb_album_position; }
-    QString albumTitle() const;
+    inline int albumPosition() const { return _albumPosition; }
     inline Duration duration() const { return _duration; }
-    inline int orgAlbumPosition() const { return _org_sb_album_position; }
-    inline int playlistPosition() const { return _playlistPosition; }
-    inline int playPosition() const { return _sb_play_position; }
-    void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
-    void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
-    bool updateLastPlayDate();
+    inline QString notes() const { return _notes; }
+    inline int orgAlbumPosition() const { return _orgAlbumPosition; }
+    //inline int playlistPosition() const { return _playlistPosition; }
+    //inline int playPosition() const { return _sb_play_position; }
+    //void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
+    //void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
 
     //	Implemented methods forwarded to lower classes
     QString path();
@@ -39,6 +43,20 @@ public:
 
     //	Pointers
     SBIDAlbumPtr albumPtr() const;
+    SBIDSongPerformancePtr songPerformancePtr() const;
+    SBIDOnlinePerformancePtr onlinePerformancePtr() const;
+
+    //	Redirectors
+    int albumPerformerID() const;
+    QString albumPerformerName() const;
+    QString albumTitle() const;
+    int songID() const;
+    int songPerformerID() const;
+    QString songPerformerKey() const;
+    SBIDSongPtr songPtr() const;
+    QString songTitle() const;
+    QString songPerformerName() const;
+    int year() const;
 
     //	Operators
     virtual operator QString();
@@ -69,26 +87,31 @@ protected:
     QStringList updateSQL() const;
 
     friend class SBIDAlbum;
-    static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
+    //static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
 
 private:
+    //	Attributes
     int                               _albumPerformanceID;
+    int                               _songPerformanceID;
+    int                               _albumID;
+    int                               _albumPosition;
     Duration                          _duration;
-    int                               _sb_album_id;
-    int                               _sb_album_position;
+    QString                           _notes;
+    int                               _preferredOnlinePerformanceID;
 
-    //	Attributes derived from core attributes
-    SBIDAlbumPtr                      _albumPtr;
-    QVector<SBIDOnlinePerformancePtr> _onlinePerformances;	//	CWIP: to be loaded
-    int                               _preferredOnlinePerformanceID;	//	CWIP: to be loaded
+    //	Loaded on demand
+    SBIDAlbumPtr                      _aPtr;
+    SBIDSongPerformancePtr            _spPtr;
+    SBIDOnlinePerformancePtr          _prefOPPtr;
 
-    //	Not instantiated
-    int                               _sb_play_position;	//	current position in SBTabQueuedSongs
-    int                               _playlistPosition;
-    int                               _org_sb_album_position; //	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
+    //	Not stored in database
+    int                               _orgAlbumPosition;	//	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
 
     void _init();
-    void _setAlbumPtr();
+
+    void _loadAlbumPtr();
+    void _loadSongPerformancePtr();
+    void _loadPreferredOnlinePerformancePtr();
 };
 
 #endif // SBIDALBUMPERFORMANCE_H

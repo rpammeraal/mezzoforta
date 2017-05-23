@@ -3,25 +3,47 @@
 
 #include "SBIDAlbumPerformance.h"
 
-class SBIDOnlinePerformance : public SBIDAlbumPerformance
+class SBIDOnlinePerformance : public SBIDBase
 {
 public:
     SBIDOnlinePerformance(const SBIDOnlinePerformance& p);
     ~SBIDOnlinePerformance();
 
     //	Inherited methods
+    virtual int commonPerformerID() const;
+    virtual QString commonPerformerName() const;
+    virtual int itemID() const;
     virtual SBIDBase::sb_type itemType() const;
     virtual QString genericDescription() const;
+    virtual QString iconResourceLocation() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
+    virtual QString text() const;
     virtual QString type() const;
 
     //	SBIDOnlinePerformance specific methods
-    inline int onlinePerformanceID() const { return _onlinePerformanceID; }
     inline QString path() const { return _path; }
+    inline int onlinePerformanceID() const { return _onlinePerformanceID; }
+    inline int playPosition() const { return _playPosition; }
+    void setPlayPosition(int playPosition) { _playPosition=playPosition; }
+    bool updateLastPlayDate();
 
     //	Setters
 
     //	Pointers
+    SBIDAlbumPerformancePtr albumPerformancePtr() const;
+    SBIDSongPtr songPtr() const;
+
+    //	Redirectors
+    int albumID() const;
+    int albumPerformerID() const;
+    QString albumPerformerName() const;
+    int albumPosition() const;
+    QString albumTitle() const;
+    Duration duration() const;
+    int songID() const;
+    int songPerformerID() const;
+    QString songPerformerName() const;
+    QString songTitle() const;
 
     //	Operators
     virtual operator QString();
@@ -49,17 +71,27 @@ protected:
 
     //	Methods used by SBIDManager
 
-    static SBIDOnlinePerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes, const QString& path);
-    static SBIDOnlinePerformancePtr instantiate(const QSqlRecord& r);	// CWIP: to be created
+    //static SBIDOnlinePerformancePtr createNew(int songID, int performerID, int albumID, int albumPerformanceID, int onlinePerformanceID, const Duration& duration, const QString& path);
+    static SBIDOnlinePerformancePtr instantiate(const QSqlRecord& r);
+    static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDOnlinePerformancePtr& ptr);
+    static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    QStringList updateSQL() const;
 
 private:
-    int              _onlinePerformanceID;
-    Duration         _duration;
-    QString          _path;
-    bool             _isPreferredFlag;
+    //	Attributes
+    int                     _onlinePerformanceID;	//	PK
+    int                     _albumPerformanceID;	//	FK
+    QString                 _path;
+
+    //	Loaded on demand
+    SBIDAlbumPerformancePtr _apPtr;
+
+    //	Not stored in database
+    int                     _playPosition; //	current position in current playlist
 
     void _init();
+    void _loadAlbumPerformancePtr();
 };
 
 #endif // SBIDONLINEPERFORMANCE_H

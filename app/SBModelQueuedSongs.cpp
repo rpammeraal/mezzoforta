@@ -383,7 +383,7 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
     if(onlinePerformanceID!=-1)
     {
         performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
-        performancePtr->setPlaylistPosition(playlistPosition);
+        //	performancePtr->setPlaylistPosition(playlistPosition);	CWIP: not sure in which context opPtr should have playlist position -- examine this method
     }
     return performancePtr;
 }

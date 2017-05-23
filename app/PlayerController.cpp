@@ -180,19 +180,19 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBIDOnlinePerformancePtr& performancePtr)
+PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 {
     Properties* p=Context::instance()->getProperties();
     Controller* c=Context::instance()->getController();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-    qDebug() << SB_DEBUG_INFO << performancePtr->path();
+    qDebug() << SB_DEBUG_INFO << opPtr->path();
 
     QString path=QString("%1/%2")
                 .arg(p->musicLibraryDirectorySchema())
-                .arg(performancePtr->path())
+                .arg(opPtr->path())
     ;
-    emit setRowVisible(performancePtr->playPosition());	//	changed to here, so we can continue in case of error of playing a song.
+    emit setRowVisible(opPtr->playPosition());	//	changed to here, so we can continue in case of error of playing a song.
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
     {
@@ -200,13 +200,13 @@ PlayerController::playSong(SBIDOnlinePerformancePtr& performancePtr)
         c->updateStatusBarText(errorMsg);
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         _updatePlayState(PlayerController::sb_player_state_stopped);
-        performancePtr->setErrorMessage(errorMsg);
-        _currentPerformancePlayingPtr=SBIDAlbumPerformancePtr();
+        opPtr->setErrorMessage(errorMsg);
+        _currentPerformancePlayingPtr=SBIDOnlinePerformancePtr();
         return 0;
     }
 
     //	Instruct player to play
-    _currentPerformancePlayingPtr=performancePtr;
+    _currentPerformancePlayingPtr=opPtr;
     _playerInstance[_currentPlayerID].play();
     _updatePlayState(PlayerController::sb_player_state_play);
 
@@ -219,8 +219,7 @@ void
 PlayerController::_init()
 {
     _currentPlayerID=0;
-    SBIDAlbumPerformancePtr null;
-    _currentPerformancePlayingPtr=null;
+    _currentPerformancePlayingPtr=SBIDOnlinePerformancePtr();
     _state=PlayerController::sb_player_state_stopped;
 
     const MainWindow* mw=Context::instance()->getMainWindow();

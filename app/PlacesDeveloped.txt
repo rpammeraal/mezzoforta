@@ -746,6 +746,11 @@ Classes:
 	V	create album performances out of online performances
 	V	add preferred flag to online performance in database
 	V	instantiate OnlinePerformance should populate attributes of superclasses (e.g. AlbumPerformance).
+-	check retrieveSQL fields with instantiate fields
+-	check key method: should now be 1 integer -- maybe get rid of key replace with int
+-	check Preloader assignments
+-	take template in SBIDSongPerformance to load dependent pointers: _performerPtr(), _loadPerformerPtr(). 
+-	refreshDependents: take forcedFlag into account (see SBIDSong).
 
 <current>
 ::	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the
@@ -756,6 +761,7 @@ Classes:
     -	SBIDAlbum
 
 <to be fixed before next beta release>
+*	<schema>.playlist can only contain record_performance_id. This should be changed to online_performance_id. code in Preloader::playlistItems() reflects this.
 *	SBIDPerformer::songs(): now using __albumPerformances, which gets derived/populated from
 	_onlinePerformances. Better to use _onlinePerformances in the call to tm->populateSongsByPerformer.
 *	Duplicate song entries in 'All Songs'

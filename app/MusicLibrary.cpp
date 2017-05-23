@@ -788,7 +788,7 @@ qDebug() << SB_DEBUG_INFO;
                 entityPtr->songID=selectedSongPtr->songID();
 
                 //	Add performance
-                if(entityPtr->songPerformerID!=selectedSongPtr->songPerformerID())
+                if(entityPtr->songPerformerID!=selectedSongPtr->songOriginalPerformerID())
                 {
                     selectedSongPtr->addSongPerformance(entityPtr->songPerformerID,entityPtr->year,entityPtr->notes);
                     qDebug() << SB_DEBUG_INFO;

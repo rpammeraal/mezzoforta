@@ -4,14 +4,15 @@
 
 SBIDSongPerformance::SBIDSongPerformance(const SBIDSongPerformance &p):SBIDBase(p)
 {
-    _notes                =p._notes;
+    _songPerformanceID    =p._songPerformanceID;
+    _songID               =p._songID;
+    _performerID          =p._performerID;
     _originalPerformerFlag=p._originalPerformerFlag;
-    _sb_song_id           =p._sb_song_id;
-    _sb_performer_id      =p._sb_performer_id;
     _year                 =p._year;
+    _notes                =p._notes;
 
-    _performerPtr         =p._performerPtr;
-    _songPtr              =p._songPtr;
+    _pPtr         =p._pPtr;
+    _sPtr              =p._sPtr;
 }
 
 //	Inherited methods
@@ -73,65 +74,57 @@ SBIDSongPerformance::type() const
 }
 
 ///	SBIDSongPerformance specific methods
-int
-SBIDSongPerformance::songID() const
-{
-    return _sb_song_id;
-}
-
-int
-SBIDSongPerformance::songPerformerID() const
-{
-    return _sb_performer_id;
-}
-
-QString
-SBIDSongPerformance::songPerformerName() const
-{
-    if(!_performerPtr)
-    {
-        const_cast<SBIDSongPerformance *>(this)->refreshDependents();
-    }
-    return _performerPtr?_performerPtr->performerName():"SBIDSongPerformance::songPerformerName()::performerPtr null";
-}
-
-QString
-SBIDSongPerformance::songTitle() const
-{
-    if(!_songPtr)
-    {
-        const_cast<SBIDSongPerformance *>(this)->refreshDependents();
-    }
-    return _songPtr?_songPtr->songTitle():"SBIDSongPerformance::songTitle():_songPtr null";
-}
 
 ///	Pointers
 SBIDPerformerPtr
 SBIDSongPerformance::performerPtr() const
 {
-    if(!_performerPtr)
+    if(!_pPtr && _performerID>=0)
     {
-        const_cast<SBIDSongPerformance *>(this)->refreshDependents();
+        const_cast<SBIDSongPerformance *>(this)->_loadPerformerPtr();
     }
-    return _performerPtr;
+    return _pPtr;
 }
 
 SBIDSongPtr
 SBIDSongPerformance::songPtr() const
 {
-    if(!_songPtr)
+    if(!_sPtr && _songID>=0)
     {
-        const_cast<SBIDSongPerformance *>(this)->_setSongPtr();
+        const_cast<SBIDSongPerformance *>(this)->_loadSongPtr();
     }
-    return _songPtr;
+    return _sPtr;
 }
+
+///	Redirectors
+QString
+SBIDSongPerformance::songPerformerName() const
+{
+    SBIDPerformerPtr pPtr=performerPtr();
+    return (pPtr?pPtr->performerName():QString());
+}
+
+QString
+SBIDSongPerformance::songPerformerKey() const
+{
+    SBIDPerformerPtr pPtr=performerPtr();
+    return (pPtr?pPtr->key():QString());
+}
+
+QString
+SBIDSongPerformance::songTitle() const
+{
+    SBIDSongPtr sPtr=songPtr();
+    return (sPtr?sPtr->songTitle():QString());
+}
+
 
 ///	Operators
 SBIDSongPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=_songPtr?this->songTitle():"not retrieved yet";
-    QString songPerformerName=_performerPtr?this->songPerformerName():"not retrieved yet";
+    QString songTitle=_sPtr?this->songTitle():"not retrieved yet";
+    QString songPerformerName=_pPtr?this->songPerformerName():"not retrieved yet";
 
     return QString("SBIDSongPerformance:%1:t=%2:p=%3 %4")
             .arg(this->songID())
@@ -143,9 +136,18 @@ SBIDSongPerformance::operator QString()
 
 //	Methods required by SBIDManagerTemplate
 QString
+SBIDSongPerformance::createKey(int songPerformanceID)
+{
+    return songPerformanceID>=0?QString("%1:%2")
+        .arg(SBIDBase::sb_type_song_performance)
+        .arg(songPerformanceID):QString("x:x")	//	return invalid key if songID<0
+    ;
+}
+
+QString
 SBIDSongPerformance::key() const
 {
-    return createKey(_sb_song_id,_sb_performer_id);
+    return createKey(_songPerformanceID);
 }
 
 void
@@ -154,31 +156,21 @@ SBIDSongPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFl
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 
-    _setPerformerPtr();
-    _setSongPtr();
+    performerPtr();
+    songPtr();
 }
 
 //	Static methods
-QString
-SBIDSongPerformance::createKey(int songID, int performerID)
-{
-    return (songID>=0||performerID>=0)?QString("%1:%2:%3")
-        .arg(SBIDBase::sb_type_song_performance)
-        .arg(songID)
-        .arg(performerID):QString("x:x")	//	Return invalid key if one or both parameters<0
-    ;
-}
-
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformance(int songID, int performerID,bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
 {
-    SBIDSongPerformanceMgr* pfMgr=Context::instance()->getSongPerformanceMgr();
-    SBIDSongPerformancePtr performancePtr;
-    if(songID>=0 && performerID>=0)
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    SBIDSongPerformancePtr spPtr;
+    if(songPerformanceID>=0)
     {
-        performancePtr=pfMgr->retrieve(createKey(songID,performerID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default));
+        spPtr=spMgr->retrieve(createKey(songPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default));
     }
-    return performancePtr;
+    return spPtr;
 }
 
 SBSqlQueryModel*
@@ -266,25 +258,42 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
 SBIDSongPerformancePtr
 SBIDSongPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDSongPerformance songPerformance;
+    SBIDSongPerformance sP;
+    int i=0;
 
-    songPerformance._sb_song_id           =Common::parseIntFieldDB(&r,0);
-    songPerformance._sb_performer_id      =Common::parseIntFieldDB(&r,1);
-    songPerformance._notes                =Common::parseTextFieldDB(&r,2);
-    songPerformance._year                 =Common::parseIntFieldDB(&r,3);
-    songPerformance._originalPerformerFlag=r.value(4).toBool();
+    sP._songPerformanceID    =Common::parseIntFieldDB(&r,i++);
+    sP._songID               =Common::parseIntFieldDB(&r,i++);
+    sP._performerID          =Common::parseIntFieldDB(&r,i++);
+    sP._originalPerformerFlag=r.value(i++).toBool();
+    sP._year                 =Common::parseIntFieldDB(&r,i++);
+    sP._notes                =Common::parseTextFieldDB(&r,i++);
 
-
-    return std::make_shared<SBIDSongPerformance>(songPerformance);
+    return std::make_shared<SBIDSongPerformance>(sP);
 }
 
 SBSqlQueryModel*
 SBIDSongPerformance::retrieveSQL(const QString &key)
 {
-    Q_UNUSED(key);
-    SBSqlQueryModel* qm=NULL;
+    int sID=-1;
+    openKey(key,sID);
 
-    return qm;
+    QString q=QString
+    (
+        "SELECT "
+            "p.performance_id, "
+            "p.song_id, "
+            "p.artist_id, "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
+            "p.year, "
+            "p.notes "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance p "
+        "%1 "
+    )
+        .arg(key.length()==0?"":QString("WHERE p.performance_id=%1").arg(sID))
+    ;
+
+    return new SBSqlQueryModel(q);
 }
 
 QStringList
@@ -299,8 +308,8 @@ SBIDSongPerformance::updateSQL() const
             "DELETE FROM ___SB_SCHEMA_NAME___performance "
             "WHERE song_id=%1 AND artist_id=%2 "
         )
-            .arg(this->_sb_song_id)
-            .arg(this->_sb_performer_id)
+            .arg(this->_songID)
+            .arg(this->_performerID)
         );
     }
     else if(newFlag() && !deletedFlag())
@@ -322,8 +331,8 @@ SBIDSongPerformance::updateSQL() const
                 "%4 as year, "
                 "CAST('%5' AS VARCHAR) as notes "
         )
-            .arg(_sb_song_id)
-            .arg(_sb_performer_id)
+            .arg(_songID)
+            .arg(_performerID)
             .arg(_originalPerformerFlag==1?0:1)
             .arg(_year<1900?1900:_year)
             .arg(Common::escapeSingleQuotes(_notes))
@@ -359,8 +368,8 @@ SBIDSongPerformance::createNew(int songID, int performerID, int year, const QStr
 {
     SBIDSongPerformance songPerformance;
 
-    songPerformance._sb_song_id=songID;
-    songPerformance._sb_performer_id=performerID;
+    songPerformance._songID=songID;
+    songPerformance._performerID=performerID;
     songPerformance._year=year;
     songPerformance._notes=notes;
 
@@ -373,22 +382,20 @@ SBIDSongPerformance::createNew(int songID, int performerID, int year, const QStr
 void
 SBIDSongPerformance::_init()
 {
-    _notes="";
+    _songPerformanceID=-1;
+    _songID=-1;
+    _performerID=-1;
     _originalPerformerFlag=0;
-    _sb_song_id=-1;
-    _sb_performer_id=-1;
-    _performerPtr=SBIDPerformerPtr();
-    _songPtr=SBIDSongPtr();
+    _year=-1;
+    _notes="";
 }
 
 void
-SBIDSongPerformance::openKey(const QString &key, int& songID, int& performerID)
+SBIDSongPerformance::openKey(const QString &key, int& songPerformanceID)
 {
     QStringList l=key.split(":");
-    songID=l.count()==3?l[1].toInt():-1;
-    performerID=l.count()==3?l[2].toInt():-1;
+    songPerformanceID=l.count()==2?l[1].toInt():-1;
 }
-
 
 void
 SBIDSongPerformance::postInstantiate(SBIDSongPerformancePtr &ptr)
@@ -408,15 +415,13 @@ SBIDSongPerformance::setOriginalPerformerFlag(bool originalPerformerFlag)
 
 ///	Private methods
 void
-SBIDSongPerformance::_setPerformerPtr()
+SBIDSongPerformance::_loadPerformerPtr()
 {
-    //	From the performance level, do NOT load any dependents
-    _performerPtr=SBIDPerformer::retrievePerformer(_sb_performer_id,1);
+    _pPtr=SBIDPerformer::retrievePerformer(_performerID,1);
 }
 
 void
-SBIDSongPerformance::_setSongPtr()
+SBIDSongPerformance::_loadSongPtr()
 {
-    //	From the performance level, do NOT load any dependents
-    _songPtr=SBIDSong::retrieveSong(_sb_song_id,1);
+    _sPtr=SBIDSong::retrieveSong(_songID,1);
 }

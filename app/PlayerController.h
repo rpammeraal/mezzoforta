@@ -44,7 +44,7 @@ public:
 
     explicit PlayerController(QObject *parent = 0);
 
-    inline SBIDAlbumPerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
+    inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
     inline PlayerController::sb_player_state playState() const { return _state; }
 
 signals:
@@ -75,7 +75,7 @@ protected slots:
 private:
     static const int                  _maxPlayerID=2;
     int                               _currentPlayerID;
-    SBIDAlbumPerformancePtr           _currentPerformancePlayingPtr;
+    SBIDOnlinePerformancePtr          _currentPerformancePlayingPtr;
     Duration                          _durationTime[_maxPlayerID];
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];

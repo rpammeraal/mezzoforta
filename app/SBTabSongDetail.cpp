@@ -5,6 +5,7 @@
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
@@ -272,8 +273,13 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         }
         else if(si.ptr()->itemType()==SBIDBase::sb_type_album_performance)
         {
-            SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(si.ptr());
-            songPtr=performancePtr->songPtr();
+            SBIDAlbumPerformancePtr apPtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(si.ptr());
+            songPtr=apPtr->songPtr();
+        }
+        else if(si.ptr()->itemType()==SBIDBase::sb_type_online_performance)
+        {
+            SBIDOnlinePerformancePtr opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(si.ptr());
+            songPtr=opPtr->songPtr();
         }
     }
 
@@ -282,9 +288,11 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         return ScreenItem();
     }
 
+    //	Update the currentScreenItem with the original pointer as provided.
+    //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(songPtr);
-    mw->ui.labelSongDetailIcon->setPtr(songPtr);
+    currentScreenItem.updateSBIDBase(si.ptr());	//	Update with original pointer --
+    mw->ui.labelSongDetailIcon->setPtr(si.ptr());
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),
@@ -324,9 +332,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
         case -1:
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
-                .arg(songPtr->songPerformerID())
-                .arg(songPtr->songPerformerName());
-            processedPerformerIDs.append(songPtr->songPerformerID());
+                .arg(songPtr->songOriginalPerformerID())
+                .arg(songPtr->songOriginalPerformerName());
+            processedPerformerIDs.append(songPtr->songOriginalPerformerID());
             break;
 
         default:
@@ -354,7 +362,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
 
     //	Populate song details
-    cs=QString("<B>Released:</B> %1").arg(songPtr->year());
+    cs=QString("<B>Released:</B> %1").arg(songPtr->songOriginalYear());
     if(songPtr->notes().length())
     {
         cs+=QString(" %1 <B>Notes:</B> %2").arg(QChar(8226)).arg(songPtr->notes());

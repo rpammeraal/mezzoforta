@@ -29,8 +29,8 @@ SBTabSongEdit::hasEdits() const
     {
         SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(ptr);
         if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
-            songPtr->songPerformerName()!=mw->ui.songEditPerformerName->text() ||
-            songPtr->year()!=mw->ui.songEditYearOfRelease->text().toInt() ||
+            songPtr->songOriginalPerformerName()!=mw->ui.songEditPerformerName->text() ||
+            songPtr->songOriginalYear()!=mw->ui.songEditYearOfRelease->text().toInt() ||
             songPtr->notes()!=mw->ui.songEditNotes->text() ||
             songPtr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
         )
@@ -294,8 +294,8 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     //SBTab::_setCurrentScreenItem(currentScreenItem);
 
     mw->ui.songEditTitle->setText(songPtr->songTitle());
-    mw->ui.songEditPerformerName->setText(songPtr->songPerformerName());
-    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(songPtr->year()));
+    mw->ui.songEditPerformerName->setText(songPtr->songOriginalPerformerName());
+    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(songPtr->songOriginalYear()));
     mw->ui.songEditNotes->setText(songPtr->notes());
     mw->ui.songEditLyrics->setText(songPtr->lyrics());
 

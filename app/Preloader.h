@@ -16,6 +16,7 @@ public:
 
 private:
     static SBIDAlbumPtr _instantiateAlbum(SBIDAlbumMgr* amgr,const QStringList& fields, const QSqlQuery& queryList);
+    static SBIDSongPerformancePtr _instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDAlbumPerformancePtr _instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDOnlinePerformancePtr _instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDPerformerPtr _instantiatePerformer(SBIDPerformerMgr* pemgr,const QStringList& fields, const QSqlQuery& queryList);

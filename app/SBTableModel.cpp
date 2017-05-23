@@ -149,6 +149,7 @@ SBTableModel::supportedDropActions() const
 SBIDPtr
 SBTableModel::determineSBID(const QModelIndex &idx) const
 {
+    qDebug() << SB_DEBUG_INFO;
     return SBModel::_determineSBID(this,idx);
 }
 
@@ -229,17 +230,17 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
     //	Populate data
     for(int i=0;i<performances.count();i++)
     {
-        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
+        SBIDAlbumPerformancePtr apPtr=performances.at(i);
 
-        qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription() << performancePtr->albumID();
-        if(performancePtr && performancePtr->albumID()>=0)
+        qDebug() << SB_DEBUG_INFO << apPtr->genericDescription() << apPtr->albumID();
+        if(apPtr && apPtr->albumID()>=0)
         {
-            _setItem(i,0,performancePtr->albumPtr()->key());
-            _setItem(i,1,performancePtr->albumTitle());
-            _setItem(i,2,performancePtr->duration().toString(Duration::sb_hhmmss_format));
-            _setItem(i,3,QString("%1").arg(performancePtr->year()));
-            _setItem(i,4,performancePtr->performerPtr()->key());
-            _setItem(i,5,performancePtr->songPerformerName());
+            _setItem(i,0,apPtr->albumPtr()->key());
+            _setItem(i,1,apPtr->albumTitle());
+            _setItem(i,2,apPtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i,3,QString("%1").arg(apPtr->year()));
+            _setItem(i,4,apPtr->songPerformerKey());
+            _setItem(i,5,apPtr->songPerformerName());
         }
     }
     qDebug() << SB_DEBUG_INFO;
@@ -273,7 +274,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
             _setItem(i, 1,performancePtr->key());
             _setItem(i, 2,performancePtr->songTitle());
             _setItem(i, 3,performancePtr->duration().toString(Duration::sb_hhmmss_format));
-            _setItem(i, 4,performancePtr->performerPtr()->key());
+            _setItem(i, 4,performancePtr->songPerformerKey());
             _setItem(i, 5,performancePtr->songPerformerName());
             qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription() << performancePtr->duration();
             i++;
@@ -315,7 +316,7 @@ SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
         {
             _setItem(i,0,playlistPtr->key());
             _setItem(i,1,playlistPtr->playlistName());
-            _setItem(i,2,performancePtr->performerPtr()->key());
+            _setItem(i,2,performancePtr->songPerformerKey());
             _setItem(i,3,performancePtr->songPerformerName());
             _setItem(i,4,performancePtr->duration().toString(Duration::sb_hhmmss_format));
             _setItem(i,5,performancePtr->albumPtr()->key());

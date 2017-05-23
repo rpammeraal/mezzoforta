@@ -26,7 +26,6 @@ class SBIDSongPerformance : public SBIDBase
 public:
     //	Ctors, dtors
     SBIDSongPerformance(const SBIDSongPerformance& p);
-    //~SBIDSongPerformance();
 
     //	Inherited methods
     virtual int commonPerformerID() const;
@@ -41,26 +40,31 @@ public:
 
     //	SBIDSongPerformance specific methods
     inline QString notes() const { return _notes; }
-    int songID() const;
-    int songPerformerID() const;
-    QString songPerformerName() const;
-    QString songTitle() const;
+    inline int songID() const { return _songID; }
+    inline int songPerformerID() const { return _performerID; }
     inline int year() const { return _year; }
 
+    //	Setters
+
     //	Pointers
-    SBIDSongPtr songPtr() const;
     SBIDPerformerPtr performerPtr() const;
+    SBIDSongPtr songPtr() const;
+
+    //	Redirectors
+    QString songPerformerName() const;
+    QString songPerformerKey() const;
+    QString songTitle() const;
 
     //	Operators
     virtual operator QString();
 
     //	Methods required by SBIDManagerTemplate
+    static QString createKey(int songPerformanceID);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static QString createKey(int songID, int performerID);
-    static SBIDSongPerformancePtr retrieveSongPerformance(int songID, int performerID,bool noDependentsFlag=0);
+    static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
@@ -74,35 +78,38 @@ protected:
     //	Methods used by SBIDManager
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr);
     static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& key, int& songID, int& performerID);
+    static void openKey(const QString& key, int& songPerformanceID);
     void postInstantiate(SBIDSongPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     QStringList updateSQL() const;
 
     //	Setters to accomodate SBIDAlbumPerformance
-    void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; setChangedFlag(); }
-    void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
-    void setYear(int year) { _year=year; setChangedFlag(); }
-    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    //void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; setChangedFlag(); }
+    //void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
+    //void setYear(int year) { _year=year; setChangedFlag(); }
+    //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
     void setOriginalPerformerFlag(bool originalPerformerFlag);
 
     friend class SBIDSong;
     static SBIDSongPerformancePtr createNew(int songID,int performerID,int year,const QString& notes);
 
 private:
-    QString          _notes;
+    //	Attributes
+    int              _songPerformanceID;
+    int              _songID;
+    int              _performerID;
     bool             _originalPerformerFlag;
-    int              _sb_song_id;
-    int              _sb_performer_id;
     int              _year;
+    QString          _notes;
 
-    //	Attributes derived from core attributes
-    SBIDPerformerPtr _performerPtr;
-    SBIDSongPtr      _songPtr;
+    //	Loaded on demand
+    SBIDPerformerPtr _pPtr;
+    SBIDSongPtr      _sPtr;
 
     void _init();
-    void _setPerformerPtr();
-    void _setSongPtr();
+
+    void _loadPerformerPtr();
+    void _loadSongPtr();
 };
 
 #endif // SBIDSONGPERFORMANCE_H

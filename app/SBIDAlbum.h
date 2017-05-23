@@ -39,6 +39,7 @@ public:
     //	Album specific methods
     inline int albumID() const { return _sb_album_id; }
     inline int albumPerformerID() const { return _sb_album_performer_id; }
+    static SBSqlQueryModel* albumsByPerformer(int performerID);
     inline QString albumTitle() const { return _albumTitle; }
     QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
@@ -75,12 +76,11 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
+    static QString createKey(int albumID,int unused=-1);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
-    static SBSqlQueryModel* albumsByPerformer(int performerID);
-    static QString createKey(int albumID,int unused=-1);
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
     static SBIDAlbumPtr retrieveUnknownAlbum();
 

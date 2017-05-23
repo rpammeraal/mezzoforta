@@ -26,7 +26,8 @@ SBTabSongsAll::preload()
     SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs();
     QList<bool> dragableColumns;
     dragableColumns.clear();
-    dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1;
+    //	dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1;
+    dragableColumns << 0 << 0 << 1 << 0 << 1 << 0 << 1;
     sm->setDragableColumns(dragableColumns);
 
     slP=new QSortFilterProxyModel();
@@ -34,7 +35,7 @@ SBTabSongsAll::preload()
     mw->ui.allSongsList->setModel(slP);
 
     mw->ui.allSongsList->setSortingEnabled(1);
-    mw->ui.allSongsList->sortByColumn(3,Qt::AscendingOrder);
+    mw->ui.allSongsList->sortByColumn(2,Qt::AscendingOrder);
     mw->ui.allSongsList->setSelectionMode(QAbstractItemView::SingleSelection);
     mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
     mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
@@ -44,7 +45,7 @@ SBTabSongsAll::preload()
 
     //	horizontal header
     hv=mw->ui.allSongsList->horizontalHeader();
-    hv->setSortIndicator(3,Qt::AscendingOrder);
+    hv->setSortIndicator(2,Qt::AscendingOrder);
     hv->setSortIndicatorShown(1);
     hv->setSectionResizeMode(QHeaderView::Stretch);
 

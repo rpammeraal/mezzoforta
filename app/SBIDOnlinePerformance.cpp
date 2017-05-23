@@ -5,11 +5,15 @@
 #include "SBSqlQueryModel.h"
 
 ///	Ctors, dtors
-SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBIDAlbumPerformance(p)
+SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBIDBase(p)
 {
     _onlinePerformanceID=p._onlinePerformanceID;
-    _duration           =p._duration;
+    _albumPerformanceID =p._albumPerformanceID;
     _path               =p._path;
+
+    _apPtr              =p._apPtr;
+
+    _playPosition       =p._playPosition;
 }
 
 SBIDOnlinePerformance::~SBIDOnlinePerformance()
@@ -17,18 +21,54 @@ SBIDOnlinePerformance::~SBIDOnlinePerformance()
 }
 
 //	Inherited methods
-SBIDBase::sb_type
-SBIDOnlinePerformance::itemType() const
+int
+SBIDOnlinePerformance::commonPerformerID() const
 {
-    return SBIDBase::sb_type_online_performance;
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    if(apPtr)
+    {
+        return apPtr->commonPerformerID();
+    }
+    return -1;
+}
+
+QString
+SBIDOnlinePerformance::commonPerformerName() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    if(apPtr)
+    {
+        return apPtr->commonPerformerName();
+    }
+    return QString();
 }
 
 QString
 SBIDOnlinePerformance::genericDescription() const
 {
-    return QString("Online Performance - %1")
-    	.arg(this->_path)
+    return QString("Online Song - %1 by %2 on '%3'")
+        .arg(this->songTitle())
+        .arg(this->songPerformerName())
+        .arg(this->albumTitle())
     ;
+}
+
+QString
+SBIDOnlinePerformance::iconResourceLocation() const
+{
+    return QString("n/a");
+}
+
+int
+SBIDOnlinePerformance::itemID() const
+{
+    return _onlinePerformanceID;
+}
+
+SBIDBase::sb_type
+SBIDOnlinePerformance::itemType() const
+{
+    return SBIDBase::sb_type_online_performance;
 }
 
 void
@@ -42,25 +82,155 @@ SBIDOnlinePerformance::sendToPlayQueue(bool enqueueFlag)
 }
 
 QString
+SBIDOnlinePerformance::text() const
+{
+    return this->songTitle();
+}
+
+QString
 SBIDOnlinePerformance::type() const
 {
     return QString("online performance");
+}
+
+//	SBIDOnlinePerformance specific methods
+bool
+SBIDOnlinePerformance::updateLastPlayDate()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    QString q=QString
+    (
+        "UPDATE "
+            "___SB_SCHEMA_NAME___online_performance "
+        "SET "
+            "last_play_date=%1 "
+        "WHERE "
+            "song_id=%2 AND "
+            "artist_id=%3 AND "
+            "record_id=%4 AND "
+            "record_position=%5 "
+    )
+        .arg(dal->getGetDateTime())
+        .arg(this->songID())
+        .arg(this->songPerformerID())
+        .arg(this->albumID())
+        .arg(this->albumPosition())
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+    query.exec();
+
+    return 1;	//	CWIP: need proper error handling
+}
+
+//	Pointers
+SBIDAlbumPerformancePtr
+SBIDOnlinePerformance::albumPerformancePtr() const
+{
+    if(!_apPtr && _albumPerformanceID>=0)
+    {
+        const_cast<SBIDOnlinePerformance *>(this)->_loadAlbumPerformancePtr();
+    }
+    return _apPtr;
+}
+
+SBIDSongPtr
+SBIDOnlinePerformance::songPtr() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    SBIDSongPtr sPtr;
+    if(apPtr)
+    {
+        sPtr=apPtr->songPtr();
+    }
+    return sPtr;
+}
+
+
+///	Redirectors
+int
+SBIDOnlinePerformance::albumID() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumID():-1);
+}
+
+int
+SBIDOnlinePerformance::albumPerformerID() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumPerformerID():-1);
+}
+
+QString
+SBIDOnlinePerformance::albumPerformerName() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumPerformerName():QString("n/a"));
+}
+
+int
+SBIDOnlinePerformance::albumPosition() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumPosition():-1);
+}
+
+QString
+SBIDOnlinePerformance::albumTitle() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumTitle():QString("n/a"));
+}
+
+Duration
+SBIDOnlinePerformance::duration() const
+{
+    //	CWIP: base duration directly of file length --or-- store duration when file is imported.
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->duration():QString("n/a"));
+}
+
+int
+SBIDOnlinePerformance::songID() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songID():-1);
+}
+
+int
+SBIDOnlinePerformance::songPerformerID() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songPerformerID():-1);
+}
+
+QString
+SBIDOnlinePerformance::songPerformerName() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songPerformerName():QString("n/a"));
+}
+
+QString
+SBIDOnlinePerformance::songTitle() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songTitle():QString("n/a"));
 }
 
 ///	Operators
 SBIDOnlinePerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=songPtr()?this->songTitle():"not retrieved yet";
-    QString songPerformerName=performerPtr()?this->songPerformerName():"not retrieved yet";
+    QString str=_apPtr?_apPtr->operator QString():QString("not retrieved yet");
 
-    return QString("SBIDAlbumPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
-            .arg(this->songID())
-            .arg(songTitle)
-            .arg(songPerformerName)
-            .arg(this->songPerformerID())
-            .arg("not implemented")
-            .arg(-1)
+    return QString("SBIdOnlinePerformance:%1")
+        .arg(str)
     ;
 }
 
@@ -192,7 +362,10 @@ SBIDOnlinePerformance::performancesByAlbum_Preloader(int albumID)
             "rp.record_performance_id, "
             "l.lyrics, "
             "s.online_performance_id, "
-            "op.preferred_online_performance_id " //	24
+            "op.preferred_online_performance_id, "
+
+            "p.performance_id, "                  //	25
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -247,7 +420,10 @@ SBIDOnlinePerformance::performancesByPerformer_Preloader(int performerID)
             "rp.record_performance_id, "
             "l.lyrics, "
             "s.online_performance_id, "
-            "op.preferred_online_performance_id " //	24
+            "op.preferred_online_performance_id, "
+
+            "p.performance_id, "                   //	25
+            "rp.notes "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -311,6 +487,8 @@ SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forced
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
+
+    _loadAlbumPerformancePtr();
 }
 
 ///	Protected methods
@@ -326,16 +504,18 @@ SBIDOnlinePerformance::instantiate(const QSqlRecord& r)
     int i=0;
 
     op._onlinePerformanceID=Common::parseIntFieldDB(&r,i++);
-    op.setSongID(           Common::parseIntFieldDB(&r,i++));
-    i++; //op.setAlbumID(          Common::parseIntFieldDB(&r,i++));
-    op.setAlbumPosition(    Common::parseIntFieldDB(&r,i++));
-    op.setPerformerID(      Common::parseIntFieldDB(&r,i++));
-    op._duration           =r.value(i++).toString();
-    op.setYear(             Common::parseIntFieldDB(&r,i++));
-    i++; //op.setNotes(            Common::parseIntFieldDB(&r,i++));
+    op._albumPerformanceID =Common::parseIntFieldDB(&r,i++);
+
     op._path               =r.value(i++).toString();
 
     return std::make_shared<SBIDOnlinePerformance>(op);
+}
+
+void
+SBIDOnlinePerformance::openKey(const QString &key, int& onlinePerformanceID)
+{
+    QStringList l=key.split(":");
+    onlinePerformanceID=l.count()==2?l[1].toInt():-1;
 }
 
 void
@@ -344,9 +524,47 @@ SBIDOnlinePerformance::postInstantiate(SBIDOnlinePerformancePtr& ptr)
     Q_UNUSED(ptr);
 }
 
+SBSqlQueryModel*
+SBIDOnlinePerformance::retrieveSQL(const QString &key)
+{
+    int opID=-1;
+    openKey(key,opID);
+
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "op.online_performance_id, "
+            "op.record_performance_id, "
+            "rp.duration, "
+            "op.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance op "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp USING (record_performance_id) "
+        "%1  "
+    )
+        .arg(key.length()==0?"":QString("WHERE op.online_performance_id=%1").arg(opID))
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+QStringList
+SBIDOnlinePerformance::updateSQL() const
+{
+    return QStringList();
+}
+
+///	Private methods
 void
 SBIDOnlinePerformance::_init()
 {
     _onlinePerformanceID=-1;
-    _isPreferredFlag=0;
+    _albumPerformanceID=-1;
+    _playPosition=-1;
+}
+
+void
+SBIDOnlinePerformance::_loadAlbumPerformancePtr()
+{
+    _apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_albumPerformanceID,1);
 }

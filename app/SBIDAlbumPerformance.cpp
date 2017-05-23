@@ -8,27 +8,55 @@
 #include "SBIDOnlinePerformance.h"
 
 ///	Ctors, dtors
-SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDSongPerformance(p)
+SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDBase(p)
 {
-    _albumPerformanceID          =p._albumPerformanceID;
-    _duration                    =p._duration;
-    _sb_album_id                 =p._sb_album_id;
-    _sb_album_position           =p._sb_album_position;
+    _albumPerformanceID           =p._albumPerformanceID;
+    _songPerformanceID            =p._songPerformanceID;
+    _albumID                      =p._albumID;
+    _albumPosition                =p._albumPosition;
+    _duration                     =p._duration;
+    _notes                        =p._notes;
+    _preferredOnlinePerformanceID =p._preferredOnlinePerformanceID;
 
-    _albumPtr                    =p._albumPtr;
-    _onlinePerformances          =p._onlinePerformances;
-    _preferredOnlinePerformanceID=p._preferredOnlinePerformanceID;
+    _aPtr                         =p._aPtr;
+    _spPtr                        =p._spPtr;
+    _prefOPPtr                    =p._prefOPPtr;
 
-    _sb_play_position            =p._sb_play_position;
-    _playlistPosition            =p._playlistPosition;
-    _org_sb_album_position       =p._org_sb_album_position;
+    _orgAlbumPosition             =p._orgAlbumPosition;
+
+    //_sb_play_position            =p._sb_play_position;	CWIP DELETE
+    //_playlistPosition            =p._playlistPosition;
 }
 
 SBIDAlbumPerformance::~SBIDAlbumPerformance()
 {
 }
 
-//	Inherited methods
+///	Inherited methods
+int
+SBIDAlbumPerformance::commonPerformerID() const
+{
+    return this->songPerformerID();
+}
+
+QString
+SBIDAlbumPerformance::commonPerformerName() const
+{
+    return this->songPerformerName();
+}
+
+QString
+SBIDAlbumPerformance::iconResourceLocation() const
+{
+    return QString(":/images/SongIcon.png");
+}
+
+int
+SBIDAlbumPerformance::itemID() const
+{
+    return this->_albumPerformanceID;
+}
+
 SBIDBase::sb_type
 SBIDAlbumPerformance::itemType() const
 {
@@ -62,6 +90,13 @@ SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 }
+
+QString
+SBIDAlbumPerformance::text() const
+{
+    return this->songTitle();
+}
+
 QString
 SBIDAlbumPerformance::type() const
 {
@@ -73,53 +108,14 @@ SBIDAlbumPerformance::type() const
 int
 SBIDAlbumPerformance::albumID() const
 {
-    return _sb_album_id;
-}
-
-QString
-SBIDAlbumPerformance::albumTitle() const
-{
-    return this->albumPtr()?this->albumPtr()->albumTitle():"SBIDAlbumPerformance::albumTitle()::albumPtr null";
-}
-
-bool
-SBIDAlbumPerformance::updateLastPlayDate()
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-    QString q=QString
-    (
-        "UPDATE "
-            "___SB_SCHEMA_NAME___online_performance "
-        "SET "
-            "last_play_date=%1 "
-        "WHERE "
-            "song_id=%2 AND "
-            "artist_id=%3 AND "
-            "record_id=%4 AND "
-            "record_position=%5 "
-    )
-        .arg(dal->getGetDateTime())
-        .arg(this->songID())
-        .arg(this->songPerformerID())
-        .arg(this->albumID())
-        .arg(this->albumPosition())
-    ;
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-    query.exec();
-
-    return 1;	//	CWIP: need proper error handling
+    return _albumID;
 }
 
 ///	Setters
 void
 SBIDAlbumPerformance::setAlbumPosition(int position)
 {
-    _sb_album_position=position;
+    _albumPosition=position;
     setChangedFlag();
 }
 
@@ -127,20 +123,112 @@ SBIDAlbumPerformance::setAlbumPosition(int position)
 SBIDAlbumPtr
 SBIDAlbumPerformance::albumPtr() const
 {
-    if(!_albumPtr)
+    if(!_aPtr && _albumPerformanceID>=0)
     {
-        const_cast<SBIDAlbumPerformance *>(this)->refreshDependents();
+        const_cast<SBIDAlbumPerformance *>(this)->_loadAlbumPtr();
     }
-    return _albumPtr;
+    return _aPtr;
 }
+
+SBIDSongPerformancePtr
+SBIDAlbumPerformance::songPerformancePtr() const
+{
+    if(!_spPtr && _songPerformanceID>=0)
+    {
+        const_cast<SBIDAlbumPerformance *>(this)->_loadSongPerformancePtr();
+    }
+    return _spPtr;
+}
+
+SBIDOnlinePerformancePtr
+SBIDAlbumPerformance::onlinePerformancePtr() const
+{
+    if(!_prefOPPtr && _preferredOnlinePerformanceID>=0)
+    {
+        const_cast<SBIDAlbumPerformance *>(this)->_loadPreferredOnlinePerformancePtr();
+    }
+    return _prefOPPtr;
+}
+
+///	Redirectors
+int
+SBIDAlbumPerformance::albumPerformerID() const
+{
+    SBIDAlbumPtr aPtr=albumPtr();
+    return (aPtr?aPtr->albumPerformerID():-1);
+}
+
+QString
+SBIDAlbumPerformance::albumPerformerName() const
+{
+    SBIDAlbumPtr aPtr=albumPtr();
+    return (aPtr?aPtr->albumPerformerName():QString());
+}
+
+QString
+SBIDAlbumPerformance::albumTitle() const
+{
+    SBIDAlbumPtr aPtr=albumPtr();
+    return (aPtr?aPtr->albumTitle():QString());
+}
+
+int
+SBIDAlbumPerformance::songID() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songID():-1);
+}
+
+int
+SBIDAlbumPerformance::songPerformerID() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songPerformerID():-1);
+}
+
+QString
+SBIDAlbumPerformance::songPerformerKey() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songPerformerKey():QString());
+}
+
+SBIDSongPtr
+SBIDAlbumPerformance::songPtr() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songPtr():SBIDSongPtr());
+}
+
+QString
+SBIDAlbumPerformance::songTitle() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songTitle():QString());
+}
+
+QString
+SBIDAlbumPerformance::songPerformerName() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songPerformerName():QString());
+}
+
+int
+SBIDAlbumPerformance::year() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->year():-1);
+}
+
 
 ///	Operators
 SBIDAlbumPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=songPtr()?this->songTitle():"not retrieved yet";
-    QString songPerformerName=performerPtr()?this->songPerformerName():"not retrieved yet";
-    QString albumTitle=_albumPtr?this->albumTitle():"not retrieved yet";
+    QString songTitle=_spPtr?this->songTitle():"not retrieved yet";
+    QString songPerformerName=_spPtr?this->songPerformerName():"not retrieved yet";
+    QString albumTitle=_aPtr?this->albumTitle():"not retrieved yet";
 
     return QString("SBIDAlbumPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
             .arg(this->songID())
@@ -164,9 +252,9 @@ SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
-
-    SBIDSongPerformance::refreshDependents(showProgressDialogFlag,forcedFlag);
-    _setAlbumPtr();
+    _loadAlbumPtr();
+    _loadSongPerformancePtr();
+    _loadPreferredOnlinePerformancePtr();
 }
 
 //	Static methods
@@ -202,22 +290,20 @@ SBIDAlbumPerformance::SBIDAlbumPerformance()
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDAlbumPerformance performance;
+    SBIDAlbumPerformance ap;
     int i=0;
 
     //	CWIP: apid
-    performance._albumPerformanceID   =Common::parseIntFieldDB(&r,i++);
-    performance.setSongID(             Common::parseIntFieldDB(&r,i++));
-    performance._sb_album_id          =Common::parseIntFieldDB(&r,i++);
-    performance._sb_album_position    =Common::parseIntFieldDB(&r,i++);
-    performance.setPerformerID(        Common::parseIntFieldDB(&r,i++));
-    performance._duration             =r.value(i++).toString();
-    performance.setYear(               r.value(i++).toInt());
-    performance.setNotes(              Common::parseTextFieldDB(&r,i++));
+    ap._albumPerformanceID=Common::parseIntFieldDB(&r,i++);
+    ap._songPerformanceID =Common::parseIntFieldDB(&r,i++);
+    ap._albumID           =Common::parseIntFieldDB(&r,i++);
+    ap._albumPosition     =Common::parseIntFieldDB(&r,i++);
+    ap._duration          =r.value(i++).toString();
+    ap._notes             =r.value(i++).toString();
 
-    performance._org_sb_album_position=performance._sb_album_position;
+    ap._orgAlbumPosition=ap._albumPosition;
 
-    return std::make_shared<SBIDAlbumPerformance>(performance);
+    return std::make_shared<SBIDAlbumPerformance>(ap);
 }
 
 void
@@ -308,8 +394,8 @@ SBIDAlbumPerformance::updateSQL() const
                                 "rp.record_position=%2 "
                 ") "
         )
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_album_position)
+            .arg(this->_albumID)
+            .arg(this->_albumPosition)
         );
 
         SQL.append(QString
@@ -328,8 +414,8 @@ SBIDAlbumPerformance::updateSQL() const
                        "record_position=%2 "
                 ") "
         )
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_album_position)
+            .arg(this->_albumID)
+            .arg(this->_albumPosition)
         );
 
         SQL.append(QString
@@ -337,8 +423,8 @@ SBIDAlbumPerformance::updateSQL() const
             "DELETE FROM ___SB_SCHEMA_NAME___record_performance "
             "WHERE record_id=%1 AND record_position=%2 "
         )
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_album_position)
+            .arg(this->_albumID)
+            .arg(this->_albumPosition)
         );
     }
     else if(newFlag() && !deletedFlag())
@@ -362,8 +448,8 @@ SBIDAlbumPerformance::updateSQL() const
         )
             .arg(this->songID())
             .arg(this->songPerformerID())
-            .arg(this->_sb_album_id)
-            .arg(this->_sb_album_position)
+            .arg(this->_albumID)
+            .arg(this->_albumPosition)
             .arg(this->_duration.toString(Duration::sb_full_hhmmss_format))
             .arg(Common::escapeSingleQuotes(this->notes()))
         );
@@ -401,8 +487,8 @@ SBIDAlbumPerformance::updateSQL() const
 //        )
 //            .arg(this->songID())
 //            .arg(this->songPerformerID())
-//            .arg(this->_sb_album_id)
-//            .arg(this->_sb_album_position)
+//            .arg(this->_albumID)
+//            .arg(this->_albumPosition)
 //            .arg(extension)
 //            .arg(Common::escapeSingleQuotes(this->_path))
 //            .arg(0)
@@ -414,46 +500,56 @@ SBIDAlbumPerformance::updateSQL() const
     return SQL;
 }
 
-SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration &duration, const QString& notes)
-{
-    SBIDAlbumPerformance albumPerformance;
+//SBIDAlbumPerformancePtr
+//SBIDAlbumPerformance::createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration &duration, const QString& notes)
+//{
+//    SBIDAlbumPerformance albumPerformance;
 
-    albumPerformance._duration=duration;
-    albumPerformance._sb_album_id=albumID;
-    albumPerformance._sb_album_position=albumPosition;
+//    albumPerformance._duration=duration;
+//    albumPerformance._albumID=albumID;
+//    albumPerformance._albumPosition=albumPosition;
 
-    albumPerformance.setSongID(songID);
-    albumPerformance.setPerformerID(performerID);
-    albumPerformance.setYear(year);
-    albumPerformance.setNotes(notes);
+//    albumPerformance.setSongID(songID);
+//    albumPerformance.setPerformerID(performerID);
+//    albumPerformance.setYear(year);
+//    albumPerformance.setNotes(notes);
 
-    albumPerformance.setNewFlag();
-    qDebug() << SB_DEBUG_INFO << albumPerformance.newFlag();
+//    albumPerformance.setNewFlag();
+//    qDebug() << SB_DEBUG_INFO << albumPerformance.newFlag();
 
-    SBIDAlbumPerformancePtr ptr=std::make_shared<SBIDAlbumPerformance>(albumPerformance);
+//    SBIDAlbumPerformancePtr ptr=std::make_shared<SBIDAlbumPerformance>(albumPerformance);
 
-    qDebug() << SB_DEBUG_INFO << ptr->newFlag();
-    return ptr;
-}
+//    qDebug() << SB_DEBUG_INFO << ptr->newFlag();
+//    return ptr;
+//}
 
 //	Private methods
 void
 SBIDAlbumPerformance::_init()
 {
     _albumPerformanceID=-1;
-    _sb_album_id=-1;
-    _sb_album_position=-1;
-    _albumPtr=SBIDAlbumPtr();
+    _songPerformanceID=-1;
+    _albumID=-1;
+    _albumPosition=-1;
     _preferredOnlinePerformanceID=-1;
-    _sb_play_position=-1;
-    _playlistPosition=-1;
-    _org_sb_album_position=-1;
+    //_playlistPosition=-1;	CWIP delete
+    //_orgAlbumPosition=-1;
 }
 
 void
-SBIDAlbumPerformance::_setAlbumPtr()
+SBIDAlbumPerformance::_loadAlbumPtr()
 {
-    //	From the performance level, do NOT load any dependents
-    _albumPtr=SBIDAlbum::retrieveAlbum(_sb_album_id,1);
+    _aPtr=SBIDAlbum::retrieveAlbum(_albumID,1);
+}
+
+void
+SBIDAlbumPerformance::_loadSongPerformancePtr()
+{
+    _spPtr=SBIDSongPerformance::retrieveSongPerformance(_songPerformanceID,1);
+}
+
+void
+SBIDAlbumPerformance::_loadPreferredOnlinePerformancePtr()
+{
+    _prefOPPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(_preferredOnlinePerformanceID,1);
 }

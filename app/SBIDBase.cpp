@@ -8,6 +8,7 @@
 #include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
 #include "SBIDManagerTemplate.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"
 
@@ -66,6 +67,10 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID,noDependentsFlag);
         break;
 
+    case SBIDBase::sb_type_online_performance:
+        ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
+        break;
+
     case SBIDBase::sb_type_song_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_chart:
@@ -77,53 +82,27 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
 SBIDPtr
 SBIDBase::createPtr(const QByteArray& encodedData)
 {
-    SBIDPtr ptr;
     QString s=QString(encodedData);
     if(s.length()==0)
     {
         qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
         return SBIDPtr();
     }
-    ptr=SBIDBase::createPtr(s,1);
-
-    return ptr;
+    return SBIDBase::createPtr(s,1);
 }
 
 SBIDPtr
 SBIDBase::createPtr(const QString &key,bool noDependentsFlag,bool showProgressDialogFlag)
 {
-    QStringList list=key.split(":");
-    SBIDBase::sb_type itemID=static_cast<SBIDBase::sb_type>(list[0].toInt());
-    SBIDPtr itemPtr;
-
-    switch(itemID)
+    qDebug() << SB_DEBUG_INFO;
+    if(key.length())
     {
-    case sb_type_song:
-        itemPtr=SBIDSong::retrieveSong(list[1].toInt(),noDependentsFlag);
-        break;
-
-    case sb_type_performer:
-        itemPtr=SBIDPerformer::retrievePerformer(list[1].toInt(),noDependentsFlag,showProgressDialogFlag);
-        break;
-
-    case sb_type_album:
-        itemPtr=SBIDAlbum::retrieveAlbum(list[1].toInt(),noDependentsFlag);
-        break;
-
-    case sb_type_playlist:
-        itemPtr=SBIDPlaylist::retrievePlaylist(list[1].toInt(),noDependentsFlag,showProgressDialogFlag);
-        break;
-
-    case sb_type_album_performance:
-        itemPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(list[1].toInt(),1);
-        break;
-
-    case sb_type_chart:
-    case sb_type_invalid:
-        break;
+        const QStringList list=key.split(":");
+        const SBIDBase::sb_type itemType=static_cast<SBIDBase::sb_type>(list[0].toInt());
+        const int itemID=list[1].toInt();
+        return SBIDBase::createPtr(itemType,itemID,noDependentsFlag,showProgressDialogFlag);
     }
-
-    return itemPtr;
+    return SBIDPtr();
 }
 
 ///	Public methods

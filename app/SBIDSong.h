@@ -54,16 +54,18 @@ public:
     QVector<int> performerIDList() const;
     SBTableModel* playlistList();
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
-    inline int songID() const { return _sb_song_id; }
-    int songPerformerID() const;
-    QString songPerformerName() const;
+    inline int songID() const { return _songID; }
     inline QString songTitle() const { return _songTitle; }
     static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
-    inline int year() const { return _year; }
 
     //	Pointers
-    SBIDPerformerPtr songPerformerPtr() const;
+    SBIDSongPerformancePtr originalSongPerformancePtr() const;
+
+    //	Redirectors
+    QString songOriginalPerformerName() const;
+    int songOriginalPerformerID() const;
+    int songOriginalYear() const;
 
     //	Operators
     virtual operator QString() const;
@@ -99,30 +101,26 @@ protected:
     virtual void clearChangedFlag();
 
 private:
-    QString                           _lyrics;
-    QString                           _notes;
-    int                               _sb_song_id;
-    int                               _sb_song_performer_id;
-    int                               _sb_online_performance_id;
+    int                               _songID;
     QString                           _songTitle;
-    int                               _year;
+    QString                           _notes;
+    QString                           _lyrics;
+    int                               _originalPerformanceID;
+    int                               _preferredOnlinePerformanceID;
 
     //	Attributes derived from core attributes
-    SBIDPerformerPtr                  _songPerformerPtr;
-    SBIDOnlinePerformancePtr          _preferredOnlinePerformancePtr;
-
-    //	Dependent attributes
-    QMap<QString,QString>             _playlistKey2performanceKey;
-    QMap<int,SBIDSongPerformancePtr>  _songPerformances; //	key:performerID
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
-    QVector<SBIDOnlinePerformancePtr> _onlinePerformances;
+    QMap<QString,QString>             _playlistKey2performanceKey;
+    SBIDSongPerformancePtr            _orgSPPtr;
+    SBIDOnlinePerformancePtr          _prefOPPtr;
+    QMap<int,SBIDSongPerformancePtr>  _songPerformances; //	key:performerID
 
     void _init();
     void _loadAlbumPerformances();
-    void _loadSongPerformances();
     void _loadPlaylists();
-    void _setPreferredOnlinePerformancePtr();
-    void _setSongPerformerPtr();
+    void _loadOriginalSongPerformancePtr();
+    void _loadPreferredOnlinePerformancePtr();
+    void _loadSongPerformances();
 
     //	Internal setters
     void _setSongTitle(const QString& songTitle);
