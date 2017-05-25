@@ -15,20 +15,16 @@
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
 {
-    _songID                        =c._songID;
-    _songTitle                     =c._songTitle;
-    _notes                         =c._notes;
-    _preferredOnlinePerformanceID  =c._preferredOnlinePerformanceID;
-    _lyrics                        =c._lyrics;
-    _orgSPPtr                      =c._orgSPPtr;
-    _prefOPPtr                     =c._prefOPPtr;
-    //_sb_song_performer_id         =c._sb_song_performer_id;
+    _songID                    =c._songID;
+    _songTitle                 =c._songTitle;
+    _notes                     =c._notes;
+    _lyrics                    =c._lyrics;
+    _originalPerformanceID     =c._originalPerformanceID;
+    _orgSPPtr                  =c._orgSPPtr;
 
-    //_songPerformerPtr             =c._songPerformerPtr;
-
-    _playlistKey2performanceKey   =c._playlistKey2performanceKey;
-    _albumPerformances            =c._albumPerformances;
-    _songPerformances             =c._songPerformances;
+    _playlistKey2performanceKey=c._playlistKey2performanceKey;
+    _albumPerformances         =c._albumPerformances;
+    _songPerformances          =c._songPerformances;
 }
 
 SBIDSong::~SBIDSong()
@@ -405,14 +401,18 @@ SBIDSong::performerIDList() const
 {
     QVector<int> list;
 
-    if(_albumPerformances.count()==0)
+    if(_songPerformances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->refreshDependents();
+        const_cast<SBIDSong *>(this)->_loadSongPerformances();
     }
 
-    for(int i=0;i<_albumPerformances.size();i++)
+    QMapIterator<int,SBIDSongPerformancePtr> _spIT(_songPerformances);
+    while(_spIT.hasNext())
     {
-        int performerID=_albumPerformances.at(i)->songPerformerID();
+        _spIT.next();
+        const int performerID=_spIT.key();
+        const SBIDSongPerformancePtr spPtr=_spIT.value();
+        qDebug() << SB_DEBUG_INFO << performerID << spPtr->songPerformanceID();
         if(!list.contains(performerID))
         {
             list.append(performerID);
@@ -1110,6 +1110,7 @@ SBIDSong::updateSoundexFields()
 SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
+    qDebug() << SB_DEBUG_INFO << _songID << _originalPerformanceID;
     if(!_orgSPPtr && _originalPerformanceID>=0)
     {
         const_cast<SBIDSong *>(this)->_loadOriginalSongPerformancePtr();
@@ -1184,10 +1185,6 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     if(forcedFlag==1 || !_orgSPPtr)
     {
         _loadOriginalSongPerformancePtr();
-    }
-    if(forcedFlag==1 || !_prefOPPtr)
-    {
-        _loadPreferredOnlinePerformancePtr();
     }
     if(forcedFlag==1 || _songPerformances.count()==0)
     {
@@ -1344,48 +1341,46 @@ SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPt
     //	2	-	soundex match with any other artist (0 or more in data set).
     QString q=QString
     (
-        "SELECT "
-            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
-            "s.song_id, "
-            "s.title, "
-            "s.notes, "
-            "p.artist_id, "
-            "p.year, "
-            "l.lyrics "
-        "FROM "
-            "___SB_SCHEMA_NAME___performance p "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "p.song_id=s.song_id "
-                    "%4 "
-                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-                    "s.song_id=l.song_id "
-        "WHERE "
-            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
-        "UNION "
-        "SELECT "
-            "2 AS matchRank, "
-            "s.song_id, "
-            "s.title, "
-            "s.notes, "
-            "p.artist_id, "
-            "p.year, "
-            "l.lyrics "
-        "FROM "
-            "___SB_SCHEMA_NAME___performance p "
-                "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "p.song_id=s.song_id "
-                    "%4 "
-                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-                    "s.song_id=l.song_id "
-        "WHERE "
-            "p. role_id=0 AND "
-            "( "
-                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
-                "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
-            ") AND "
-            "length(s.soundex)<= 2*length('%3') "
-        "ORDER BY "
-            "1,3 "
+//        "SELECT "
+//            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
+//            "s.song_id, "
+//            "s.title, "
+//            "s.notes, "
+//            "l.lyrics "
+//        "FROM "
+//        	"___SB_SCHEMA_NAME___song s "
+//            	"LEFT JOIN ___SB_SCHEMA_NAME___performance p "
+//                    "p.song_id=s.song_id "
+//                    "%4 "
+//                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+//                    "s.song_id=l.song_id "
+//        "WHERE "
+//            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
+//        "UNION "
+//        "SELECT "
+//            "2 AS matchRank, "
+//            "s.song_id, "
+//            "s.title, "
+//            "s.notes, "
+//            "p.artist_id, "
+//            "p.year, "
+//            "l.lyrics "
+//        "FROM "
+//            "___SB_SCHEMA_NAME___performance p "
+//                "JOIN ___SB_SCHEMA_NAME___song s ON "
+//                    "p.song_id=s.song_id "
+//                    "%4 "
+//                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+//                    "s.song_id=l.song_id "
+//        "WHERE "
+//            "p. role_id=0 AND "
+//            "( "
+//                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
+//                "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
+//            ") AND "
+//            "length(s.soundex)<= 2*length('%3') "
+//        "ORDER BY "
+//            "1,3 "
 
     )
         .arg(Common::escapeSingleQuotes(tobeFound.songTitle.toLower()))
@@ -1400,12 +1395,19 @@ SBIDSongPtr
 SBIDSong::instantiate(const QSqlRecord &r)
 {
     SBIDSong song;
-    song._songID              =r.value(0).toInt();
-    song._songTitle               =r.value(1).toString();
-    song._notes                   =r.value(2).toString();
-    //song._sb_song_performer_id    =r.value(3).toInt();
-    song._preferredOnlinePerformanceID=r.value(4).toInt();
-    song._lyrics                  =r.value(6).toString();
+    song._songID                      =r.value(0).toInt();
+    song._songTitle                   =r.value(1).toString();
+    song._notes                       =r.value(2).toString();
+    song._lyrics                      =r.value(3).toString();
+    song._originalPerformanceID       =r.value(4).toInt();
+
+    qDebug() << SB_DEBUG_INFO
+             << song._songID
+             << song._songTitle
+             << song._notes
+             << song._lyrics
+             << song._originalPerformanceID
+    ;
 
     return std::make_shared<SBIDSong>(song);
 }
@@ -1441,9 +1443,8 @@ SBIDSong::retrieveSQL(const QString& key)
             "s.song_id,"
             "s.title, "
             "s.notes, "
-            "p.artist_id, "
-            "p.year, "
-            "l.lyrics "
+            "l.lyrics, "
+            "COALESCE(p.performance_id,-1) AS performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -1566,13 +1567,17 @@ SBIDSong::_init()
 {
     _sb_item_type=SBIDBase::sb_type_song;
     _songID=-1;
+    _songTitle=QString();
+    _lyrics=QString();
+    _notes=QString();
+    _originalPerformanceID=-1;
+
     _albumPerformances.clear();
 }
 
 void
 SBIDSong::_loadAlbumPerformances()
 {
-    /*
     SBSqlQueryModel* qm=SBIDAlbumPerformance::performancesBySong(songID());
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
 
@@ -1580,7 +1585,6 @@ SBIDSong::_loadAlbumPerformances()
     _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
 
     delete qm;
-    */
 }
 
 void
@@ -1627,13 +1631,8 @@ SBIDSong::_loadPlaylists()
 void
 SBIDSong::_loadOriginalSongPerformancePtr()
 {
+    qDebug() << SB_DEBUG_INFO << _originalPerformanceID;
     _orgSPPtr=SBIDSongPerformance::retrieveSongPerformance(_originalPerformanceID);
-}
-
-void
-SBIDSong::_loadPreferredOnlinePerformancePtr()
-{
-    _prefOPPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(_preferredOnlinePerformanceID,1);
 }
 
 void

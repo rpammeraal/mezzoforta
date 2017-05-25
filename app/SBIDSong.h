@@ -106,20 +106,18 @@ private:
     QString                           _notes;
     QString                           _lyrics;
     int                               _originalPerformanceID;
-    int                               _preferredOnlinePerformanceID;
 
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
     QMap<QString,QString>             _playlistKey2performanceKey;
     SBIDSongPerformancePtr            _orgSPPtr;
-    SBIDOnlinePerformancePtr          _prefOPPtr;
     QMap<int,SBIDSongPerformancePtr>  _songPerformances; //	key:performerID
 
     void _init();
     void _loadAlbumPerformances();
     void _loadPlaylists();
     void _loadOriginalSongPerformancePtr();
-    void _loadPreferredOnlinePerformancePtr();
+    void _loadPreferredAlbumPerformancePtr();
     void _loadSongPerformances();
 
     //	Internal setters

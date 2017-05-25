@@ -332,6 +332,7 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
     for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
+        int intKey=r.value(0).toInt(); r.remove(0);	//	get key, remove 1st field
         std::shared_ptr<T> newT=T::instantiate(r);
         const QString key=newT->key();
         std::shared_ptr<T> oldT;
@@ -356,7 +357,7 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
                 newT->refreshDependents();
             }
         }
-        map[r.value(0).toInt()]=newT;
+        map[intKey]=newT;
 
         //	Take care of progress dialog
         if(showProgressDialogFlag && (currentRowIndex%10)==0)

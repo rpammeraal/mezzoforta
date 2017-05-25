@@ -95,14 +95,15 @@ SBIDPtr
 SBIDBase::createPtr(const QString &key,bool noDependentsFlag,bool showProgressDialogFlag)
 {
     qDebug() << SB_DEBUG_INFO;
+    SBIDPtr ptr=SBIDPtr();
     if(key.length())
     {
         const QStringList list=key.split(":");
         const SBIDBase::sb_type itemType=static_cast<SBIDBase::sb_type>(list[0].toInt());
         const int itemID=list[1].toInt();
-        return SBIDBase::createPtr(itemType,itemID,noDependentsFlag,showProgressDialogFlag);
+        ptr=SBIDBase::createPtr(itemType,itemID,noDependentsFlag,showProgressDialogFlag);
     }
-    return SBIDPtr();
+    return ptr;
 }
 
 ///	Public methods

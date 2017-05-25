@@ -41,6 +41,7 @@ public:
     //	SBIDSongPerformance specific methods
     inline QString notes() const { return _notes; }
     inline int songID() const { return _songID; }
+    inline int songPerformanceID() const { return _songPerformanceID; }
     inline int songPerformerID() const { return _performerID; }
     inline int year() const { return _year; }
 

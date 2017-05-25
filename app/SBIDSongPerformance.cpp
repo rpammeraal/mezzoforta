@@ -179,11 +179,13 @@ SBIDSongPerformance::performancesBySong(int songID)
     QString q=QString
     (
         "SELECT "
+            "p.artist_id, "
+            "p.performance_id, "
             "p.song_id, "
             "p.artist_id, "
-            "p.notes, "
+            "p.role_id, "
             "p.year, "
-            "p.role_id "
+            "p.notes "
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
         "WHERE "

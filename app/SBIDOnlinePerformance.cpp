@@ -365,7 +365,8 @@ SBIDOnlinePerformance::performancesByAlbum_Preloader(int albumID)
             "op.preferred_online_performance_id, "
 
             "p.performance_id, "                  //	25
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -381,6 +382,9 @@ SBIDOnlinePerformance::performancesByAlbum_Preloader(int albumID)
                     "op.record_performance_id=rp.preferred_online_performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p_o ON"
+                    "s.song_id=p_o.song_id AND "
+                    "p_o.role_id=0 "
     )
         .arg(albumID)
     ;
@@ -423,7 +427,8 @@ SBIDOnlinePerformance::performancesByPerformer_Preloader(int performerID)
             "op.preferred_online_performance_id, "
 
             "p.performance_id, "                   //	25
-            "rp.notes "
+            "rp.notes, "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -439,6 +444,9 @@ SBIDOnlinePerformance::performancesByPerformer_Preloader(int performerID)
                     "rp.record_performance_id=op.record_performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p_o ON "
+                    "s.song_id=p_o.song_id AND "
+                    "p_o.role_id=0 "
     )
         .arg(performerID)
     ;

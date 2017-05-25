@@ -751,6 +751,7 @@ Classes:
 -	check Preloader assignments
 -	take template in SBIDSongPerformance to load dependent pointers: _performerPtr(), _loadPerformerPtr(). 
 -	refreshDependents: take forcedFlag into account (see SBIDSong).
+0170523: find out why UB40 & CHrissie Hynde show up as performers for "40".
 
 <current>
 ::	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the

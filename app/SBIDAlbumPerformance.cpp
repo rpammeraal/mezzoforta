@@ -268,6 +268,35 @@ SBIDAlbumPerformance::createKey(int albumPerformanceID)
     return key;
 }
 
+SBSqlQueryModel*
+SBIDAlbumPerformance::performancesBySong(int songID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "rp.record_performance_id, "
+            "p.performance_id, "
+            "rp.record_id, "
+            "rp.record_position, "
+            "rp.duration, "
+            "p.year, "
+            "rp.notes, "
+            "rp.preferred_online_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
+                    "s.song_id=p.song_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
+                    "p.performance_id=rp.performance_id "
+        "WHERE s.song_id=%1 "
+    )
+        .arg(songID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+
+}
 
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)

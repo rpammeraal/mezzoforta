@@ -39,7 +39,6 @@ public:
     //	Album specific methods
     inline int albumID() const { return _sb_album_id; }
     inline int albumPerformerID() const { return _sb_album_performer_id; }
-    static SBSqlQueryModel* albumsByPerformer(int performerID);
     inline QString albumTitle() const { return _albumTitle; }
     QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
@@ -83,6 +82,9 @@ public:
     //	Helper methods for SBIDManagerTemplate
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
     static SBIDAlbumPtr retrieveUnknownAlbum();
+
+    //	Static methods
+    static SBSqlQueryModel* albumsByPerformer(int performerID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

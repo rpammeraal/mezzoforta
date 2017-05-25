@@ -17,10 +17,9 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDOnlinePerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields << "0" << "1" << "2" << "3" << "23" << "4" << "22";
+    QStringList songFields; songFields << "0" << "1" << "2" << "22" << "27";
     QStringList albumFields; albumFields << "6" << "7" << "8" << "9" << "10" << "11";
     QStringList performerFields; performerFields << "12" << "13" << "14" << "15" << "16";
-    //QStringList albumPerformanceFields; albumPerformanceFields << "21" << "0" << "6" << "17" << "12" << "18" << "4" << "19";
     QStringList albumPerformanceFields; albumPerformanceFields << "21" << "25" << "6" << "17" << "18" << "26" << "24";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
@@ -153,7 +152,7 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<int,SBIDOnlinePerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields << "0" << "1" << "2" << "3" << "23" << "4" << "22";
+    QStringList songFields; songFields << "0" << "1" << "2" << "22" << "27";
     QStringList albumFields; albumFields << "6" << "7" << "8" << "9" << "10" << "11";
     QStringList performerFields; performerFields << "12" << "13" << "14" << "15" << "16";
     QStringList songPerformanceFields; songPerformanceFields << "25" << "0" << "12" << "26" << "4" << "5";
@@ -302,7 +301,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     int maxValue=0;
-    QStringList songFields; songFields << "2" << "20" << "21" << "22" << "30" << "23" << "24";
+    QStringList songFields; songFields << "29" << "20" << "21" << "24" << "37";
     QStringList albumFields; albumFields << "10" << "11" << "12" << "13" << "14" << "15";
     QStringList performerFields; performerFields << "5" << "6" << "7" << "8" << "9";
     QStringList songPerformanceFields; songPerformanceFields << "32" << "29" << "5" << "35" << "26" << "36";
@@ -445,7 +444,8 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
             "COALESCE(rp.preferred_online_performance_id,-1), "
 
             "CASE WHEN p.role_id=1 THEN 0 ELSE 1 END,  "             //	35
-            "p.notes "
+            "p.notes, "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id  "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pp  "
@@ -464,6 +464,9 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                     "p.song_id=s.song_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p_o ON"
+                    "s.song_id=p_o.song_id AND "
+                    "p_o.role_id=0 "
         "WHERE "
             "pp.record_performance_id IS NOT NULL AND "
             "pp.playlist_id=%1 "
@@ -711,9 +714,7 @@ Preloader::_instantiateSong(SBIDSongMgr* smgr, const QStringList& fields, const 
     f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
     f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
     f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
-    f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
-    f=QSqlField("f7",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
+    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
 
     SBIDSongPtr songPtr=SBIDSong::instantiate(r);
     smgr->addItem(songPtr);

@@ -196,40 +196,6 @@ SBIDAlbum::albumPerformerName() const
     return _performerPtr->performerName();
 }
 
-SBSqlQueryModel*
-SBIDAlbum::albumsByPerformer(int performerID)
-{
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "r.record_id, "
-            "r.title, "
-            "r.artist_id, "
-            "r.year, "
-            "r.genre, "
-            "r.notes "
-        "FROM "
-                "___SB_SCHEMA_NAME___record r "
-                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
-                        "r.artist_id=a.artist_id "
-                    "LEFT JOIN "
-                        "( "
-                            "SELECT r.record_id,COUNT(*) as song_count "
-                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
-                            "GROUP BY r.record_id "
-                        ") s ON r.record_id=s.record_id "
-        "WHERE "
-            "r.artist_id=%1 "
-    )
-        .arg(performerID)
-    ;
-
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-
-}
-
-
 //	either add to a list of songs in SBIDAlbum (preferred)
 //	or as saveSongToAlbum().
 QStringList
@@ -1441,7 +1407,6 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     _setPerformerPtr();
 }
 
-//	Static methods
 SBIDAlbumPtr
 SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 {
@@ -1470,6 +1435,39 @@ SBIDAlbum::retrieveUnknownAlbum()
         pemgr->commit(albumPtr,dal,0);
     }
     return  albumPtr;
+}
+
+///	Static methods
+SBSqlQueryModel*
+SBIDAlbum::albumsByPerformer(int performerID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "r.record_id, "
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+            "r.genre, "
+            "r.notes "
+        "FROM "
+                "___SB_SCHEMA_NAME___record r "
+                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                        "r.artist_id=a.artist_id "
+//                    "LEFT JOIN "
+//                        "( "
+//                            "SELECT r.record_id,COUNT(*) as song_count "
+//                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
+//                            "GROUP BY r.record_id "
+//                        ") s ON r.record_id=s.record_id "
+        "WHERE "
+            "r.artist_id=%1 "
+    )
+        .arg(performerID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
 }
 
 ///	Protected methods
