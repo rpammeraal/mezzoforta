@@ -298,6 +298,64 @@ SBIDAlbumPerformance::performancesBySong(int songID)
 
 }
 
+QString
+SBIDAlbumPerformance::performancesByAlbum_Preloader(int albumID)
+{
+    //	Only returns preferred online performances for each record performance.
+    return QString
+    (
+        "SELECT DISTINCT "
+            "s.song_id, "                         //	0
+            "s.title, "
+            "s.notes, "
+            "p.artist_id, "
+            "p.year, "
+
+            "p.notes, "                           //	5
+            "r.record_id, "
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+
+            "r.genre, "                           //	10
+            "r.notes, "
+            "a.artist_id, "
+            "a.name, "
+            "a.www, "
+
+            "a.notes, "                           //	15
+            "a.mbid, "
+            "rp.record_position, "
+            "rp.duration, "
+            "rp.notes, "
+
+            "rp.record_performance_id, "          //	20
+            "l.lyrics, "
+            "p.performance_id, "
+            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id  "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "rp.performance_id=p.performance_id "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id AND "
+                    "r.record_id=%1 "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p_o ON "
+                    "s.song_id=p_o.song_id AND "
+                    "p_o.role_id=0 "
+    )
+        .arg(albumID)
+    ;
+}
+
+
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
 {

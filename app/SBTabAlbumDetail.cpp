@@ -262,7 +262,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumImage(QPixmap)));
     connect(ed, SIGNAL(albumWikipediaPageAvailable(QString)),
             this, SLOT(setAlbumWikipediaPage(QString)));
-    connect(ed, SIGNAL(albumReviewsAvailble(QList<QString>)),
+    connect(ed, SIGNAL(albumReviewsAvailable(QList<QString>)),
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image

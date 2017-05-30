@@ -60,7 +60,6 @@ public:
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
 
-    static QString performancesByAlbum_Preloader(int albumID);
     static QString performancesByPerformer_Preloader(int performerID);
 
 protected:

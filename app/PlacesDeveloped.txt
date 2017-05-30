@@ -894,6 +894,8 @@ Classes:
 *	song detail should indicate which versions of which albums are available
 *	loudspeaker icon wherever currently playing performance is displayed
 *	drag own image at image e.g. for performer and use this
+*	be smart about album duration. Populate albumPerformance.duration from actual music file as soon
+    as the preferred_online_performance_id gets set/changed.
 
 Library check:
 *	quite a number of songs without any performance

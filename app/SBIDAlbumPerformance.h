@@ -50,6 +50,7 @@ public:
     int albumPerformerID() const;
     QString albumPerformerName() const;
     QString albumTitle() const;
+    QString path() const;
     int songID() const;
     int songPerformerID() const;
     QString songPerformerKey() const;
@@ -68,6 +69,7 @@ public:
     //	Static methods
     static QString createKey(int albumPerformanceID);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
+    static QString performancesByAlbum_Preloader(int albumID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=0);
 
 	//	Helper methods for SBIDManagerTemplate

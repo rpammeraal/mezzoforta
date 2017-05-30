@@ -11,7 +11,7 @@ class Preloader
 {
 public:
     static QVector<SBIDOnlinePerformancePtr> performances(QString query, bool showProgressDialogFlag);
-    static QMap<int,SBIDOnlinePerformancePtr> performanceMap(QString query, bool showProgressDialogFlag);
+    static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query, bool showProgressDialogFlag);
     static QMap<int,SBIDPtr> playlistItems(int playlistID,bool showProgressDialogFlag);
 
 private:

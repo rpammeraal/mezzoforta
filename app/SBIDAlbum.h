@@ -37,10 +37,9 @@ public:
     virtual QString type() const;
 
     //	Album specific methods
-    inline int albumID() const { return _sb_album_id; }
-    inline int albumPerformerID() const { return _sb_album_performer_id; }
+    inline int albumID() const { return _albumID; }
+    inline int albumPerformerID() const { return _performerID; }
     inline QString albumTitle() const { return _albumTitle; }
-    QString albumPerformerName() const;
     QStringList addSongToAlbum(const SBIDSong& song) const;
     SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
     Duration duration() const;
@@ -52,7 +51,7 @@ public:
     int numPerformances() const;
     SBTableModel* performances() const;
     void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
-    QVector<SBIDOnlinePerformancePtr> performanceList() const { return _albumPerformances; }
+    QMap<int,SBIDAlbumPerformancePtr> performanceList() const { return _albumPerformances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
@@ -64,12 +63,15 @@ public:
 
     //	Setters
     void setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
-    void setAlbumPerformerID(int performerID) { _sb_album_performer_id=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
+    void setAlbumPerformerID(int performerID) { _performerID=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
     void setYear(int year) { _year=year; setChangedFlag(); }
     void setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;
+
+    //	Redirectors
+    QString albumPerformerName() const;
 
     //	Operators
     virtual operator QString() const;
@@ -107,25 +109,25 @@ protected:
     virtual void clearChangedFlag();
 
 private:
+    int                               _albumID;
+    int                               _performerID;
     QString                           _albumTitle;
     QString                           _genre;
     QString                           _notes;
-    int                               _sb_album_id;
-    int                               _sb_album_performer_id;
     int                               _year;
 
     //	Attributes derived from core attributes
     SBIDPerformerPtr                  _performerPtr;
 
     //	CWIP: make this a vector. Will solve a lot of headaches
-    QVector<SBIDOnlinePerformancePtr> _albumPerformances;	//	1:based, index is record position
+    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;	//	1:based, index is record position
 
     void _init();
     void _loadAlbumPerformances();
-    void _setPerformerPtr();
+    void _loadPerformerPtr();
 
     //	Aux helper methods
-    QMap<int,SBIDOnlinePerformancePtr> _loadAlbumOnlinePerformancesFromDB() const;
+    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QStringList _updateSQLAlbumPerformances() const;
     void _showAlbumPerformances(const QString& title) const;
 };
