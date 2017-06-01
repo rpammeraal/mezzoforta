@@ -123,11 +123,11 @@ private:
     QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;	//	1:based, index is record position
 
     void _init();
-    void _loadAlbumPerformances();
+    void _loadAlbumPerformances(bool showProgressDialogFlag=0);
     void _loadPerformerPtr();
 
     //	Aux helper methods
-    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
+    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const;
     QStringList _updateSQLAlbumPerformances() const;
     void _showAlbumPerformances(const QString& title) const;
 };

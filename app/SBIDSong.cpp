@@ -1401,14 +1401,6 @@ SBIDSong::instantiate(const QSqlRecord &r)
     song._lyrics                      =r.value(3).toString();
     song._originalPerformanceID       =r.value(4).toInt();
 
-    qDebug() << SB_DEBUG_INFO
-             << song._songID
-             << song._songTitle
-             << song._notes
-             << song._lyrics
-             << song._originalPerformanceID
-    ;
-
     return std::make_shared<SBIDSong>(song);
 }
 

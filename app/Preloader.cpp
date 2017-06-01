@@ -6,7 +6,7 @@
 #include "DataAccessLayer.h"
 #include "SBIDAlbumPerformance.h"
 
-QVector<SBIDOnlinePerformancePtr>
+QVector<SBIDAlbumPerformancePtr>
 Preloader::performances(QString query, bool showProgressDialogFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
@@ -15,9 +15,9 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QVector<SBIDOnlinePerformancePtr> items;
+    QVector<SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields << "0" << "1" << "2" << "21" << "27";
+    QStringList songFields; songFields << "0" << "1" << "2" << "22" << "27";
     QStringList albumFields; albumFields << "6" << "8" << "7" << "10" << "11" << "9";
     QStringList performerFields; performerFields << "12" << "13" << "14" << "15" << "16";
     QStringList albumPerformanceFields; albumPerformanceFields << "21" << "25" << "6" << "17" << "18" << "26" << "24";
@@ -121,9 +121,9 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
             }
         }
 
-        if(onlinePerformancePtr)
+        if(albumPerformancePtr)
         {
-            items.append(onlinePerformancePtr);
+            items.append(albumPerformancePtr);
         }
 
         if(showProgressDialogFlag && (currentValue%10)==0)

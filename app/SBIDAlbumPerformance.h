@@ -44,7 +44,7 @@ public:
     //	Pointers
     SBIDAlbumPtr albumPtr() const;
     SBIDSongPerformancePtr songPerformancePtr() const;
-    SBIDOnlinePerformancePtr onlinePerformancePtr() const;
+    SBIDOnlinePerformancePtr preferredOnlinePerformancePtr() const;
 
     //	Redirectors
     int albumPerformerID() const;
@@ -70,6 +70,7 @@ public:
     static QString createKey(int albumPerformanceID);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
     static QString performancesByAlbum_Preloader(int albumID);
+    static QString performancesByPerformer_Preloader(int performerID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=0);
 
 	//	Helper methods for SBIDManagerTemplate

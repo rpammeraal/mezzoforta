@@ -60,8 +60,6 @@ public:
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
 
-    static QString performancesByPerformer_Preloader(int performerID);
-
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;

@@ -88,24 +88,23 @@ protected:
     QString deleteRelatedPerformerSQL(const QString& key) const;
 
 private:
-    QVector<SBIDAlbumPtr>             _albums;
     QString                           _notes;
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
-    QVector<SBIDOnlinePerformancePtr> _onlinePerformances;
     QString                           _performerName;
     QVector<QString>                  _relatedPerformerKey;
     int                               _sb_performer_id;
 
-    //	Not instantiated
-    int                               _num_albums;
-    int                               _num_songs;
+    //	Attributes derived from core attributes
+    QVector<SBIDAlbumPtr>             _albumList;
 
     //	Methods
     void _init();
-    void _loadAlbums();
+    void _loadAlbums(bool showProgressDialogFlag=0);
     void _loadAlbumPerformances(bool showProgressDialogFlag=0);
-    void _loadOnlinePerformances(bool showProgressDialogFlag=0);
     QVector<QString> _loadRelatedPerformers() const;
+
+    QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const;
+    QVector<SBIDAlbumPtr> _loadAlbumsFromDB(bool showProgressDialogFlag) const;
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)

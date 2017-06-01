@@ -142,7 +142,7 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
 template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag,bool showProgressDialogFlag)
 {
-    qDebug() << SB_DEBUG_INFO << key << openFlag;
+    qDebug() << SB_DEBUG_INFO << key << openFlag << showProgressDialogFlag;
     std::shared_ptr<T> ptr;
     //if(_leMap.contains(key))
     if(contains(key))

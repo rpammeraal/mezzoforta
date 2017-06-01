@@ -166,7 +166,7 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     {
         pIT.next();
         const SBIDAlbumPerformancePtr apPtr=pIT.value();
-        const SBIDOnlinePerformancePtr opPtr=apPtr->onlinePerformancePtr();
+        const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
         if(opPtr && opPtr->path().length()>0)
         {
             list[index++]=opPtr;
@@ -1406,7 +1406,7 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
-        _loadAlbumPerformances();
+        _loadAlbumPerformances(showProgressDialogFlag);
     }
     if(forcedFlag==1 || !_performerPtr)
     {
@@ -1452,21 +1452,15 @@ SBIDAlbum::albumsByPerformer(int performerID)
     (
         "SELECT DISTINCT "
             "r.record_id, "
-            "r.title, "
             "r.artist_id, "
-            "r.year, "
+            "r.title, "
             "r.genre, "
-            "r.notes "
+            "r.notes, "
+            "r.year "
         "FROM "
                 "___SB_SCHEMA_NAME___record r "
                     "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
                         "r.artist_id=a.artist_id "
-//                    "LEFT JOIN "
-//                        "( "
-//                            "SELECT r.record_id,COUNT(*) as song_count "
-//                            "FROM ___SB_SCHEMA_NAME___record_performance r  "
-//                            "GROUP BY r.record_id "
-//                        ") s ON r.record_id=s.record_id "
         "WHERE "
             "r.artist_id=%1 "
     )
@@ -1820,15 +1814,15 @@ SBIDAlbum::_init()
 }
 
 void
-SBIDAlbum::_loadAlbumPerformances()
+SBIDAlbum::_loadAlbumPerformances(bool showProgressDialogFlag)
 {
-    _albumPerformances=_loadAlbumPerformancesFromDB();
+    _albumPerformances=_loadAlbumPerformancesFromDB(showProgressDialogFlag);
 }
 
 QMap<int,SBIDAlbumPerformancePtr>
-SBIDAlbum::_loadAlbumPerformancesFromDB() const
+SBIDAlbum::_loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const
 {
-    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),1);
+    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),showProgressDialogFlag);
 }
 
 void

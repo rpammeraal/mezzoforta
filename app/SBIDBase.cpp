@@ -52,7 +52,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         break;
 
     case SBIDBase::sb_type_performer:
-        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
+        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag,showProgressDialogFlag);
         break;
 
     case SBIDBase::sb_type_song:
