@@ -647,30 +647,35 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
 
 /// Private methods
 QList<QStandardItem *>
-SBModelQueuedSongs::createRecord(const SBIDOnlinePerformancePtr& performancePtr,int playPosition) const
+SBModelQueuedSongs::createRecord(const SBIDOnlinePerformancePtr& opPtr,int playPosition) const
 {
-    qDebug() << SB_DEBUG_INFO << playPosition;
     QStandardItem* item;
     QList<QStandardItem *>record;
 
     item=new QStandardItem("0"); record.append(item);                                                             //	sb_column_deleteflag
     item=new QStandardItem(""); record.append(item);                                                              //	sb_column_playflag
-    item=new QStandardItem(QString("%1").arg(performancePtr->albumID())); record.append(item);                    //	sb_column_albumid
+     item=new QStandardItem(QString("%1").arg(opPtr->albumID())); record.append(item);                    //	sb_column_albumid
     item=new QStandardItem(formatDisplayPlayID(playPosition)); record.append(item);                               //	sb_column_displayplaylistpositionid
     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
-    item=new QStandardItem(QString("%1").arg(performancePtr->songID())); record.append(item);                     //	sb_column_songid
-    item=new QStandardItem(QString("%1").arg(performancePtr->songPerformerID())); record.append(item);	          //	sb_column_performerid
-    item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);                           //	sb_column_playlistpositionid
-    item=new QStandardItem(QString("%1").arg(performancePtr->albumPosition())); record.append(item);              //	sb_column_position
-    item=new QStandardItem(performancePtr->path()); record.append(item);                                          //	sb_column_path
-    item=new QStandardItem(QString("%1").arg(performancePtr->onlinePerformanceID())); record.append(item);        //	sb_column_online_performance_id
+     item=new QStandardItem(QString("%1").arg(opPtr->songID())); record.append(item);                     //	sb_column_songid
+     item=new QStandardItem(QString("%1").arg(opPtr->songPerformerID())); record.append(item);	          //	sb_column_performerid
+     item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);                           //	sb_column_playlistpositionid
+     item=new QStandardItem(QString("%1").arg(opPtr->albumPosition())); record.append(item);              //	sb_column_position
+    item=new QStandardItem(opPtr->path()); record.append(item);                                          //	sb_column_path
+     item=new QStandardItem(QString("%1").arg(opPtr->onlinePerformanceID())); record.append(item);        //	sb_column_online_performance_id
 
-    item=new QStandardItem(performancePtr->songTitle()); record.append(item);                                     //	sb_column_songtitle
-    item=new QStandardItem(performancePtr->duration().toString(Duration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
-    item=new QStandardItem(performancePtr->songPerformerName()); record.append(item);                             //	sb_column_performername
-    item=new QStandardItem(performancePtr->albumTitle()); record.append(item);                                    //	sb_column_albumtitle
+     item=new QStandardItem(opPtr->songTitle()); record.append(item);                                     //	sb_column_songtitle
+     item=new QStandardItem(opPtr->duration().toString(Duration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
+     item=new QStandardItem(opPtr->songPerformerName()); record.append(item);                             //	sb_column_performername
+     item=new QStandardItem(opPtr->albumTitle()); record.append(item);                                    //	sb_column_albumtitle
 
+    qDebug() << SB_DEBUG_INFO
+             << opPtr->onlinePerformanceID()
+             << opPtr->songTitle()
+             << opPtr->albumTitle()
+             << opPtr->songPerformerName()
+    ;
     return record;
 }
 

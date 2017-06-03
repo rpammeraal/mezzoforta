@@ -418,11 +418,9 @@ SBIDOnlinePerformance::retrieveSQL(const QString &key)
         "SELECT DISTINCT "
             "op.online_performance_id, "
             "op.record_performance_id, "
-            "rp.duration, "
             "op.path "
         "FROM "
             "___SB_SCHEMA_NAME___online_performance op "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp USING (record_performance_id) "
         "%1  "
     )
         .arg(key.length()==0?"":QString("WHERE op.online_performance_id=%1").arg(opID))

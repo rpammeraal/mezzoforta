@@ -1107,6 +1107,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     compositesTraversed.append(rootPtr);
 
     //	If *rootPtr is a playlist, traverse trough all items within this playlist, recurse when neccessary.
+    //	CWIP: once playlist detail can consists of a song, performance, album performance or online performance
+    //			this query need to change
     switch(rootPtr->itemType())
     {
     case SBIDBase::sb_type_playlist:
@@ -1124,12 +1126,12 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                     "op.online_performance_id "
                 "FROM "
                     "___SB_SCHEMA_NAME___playlist_detail pld "
+                        "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "pld.online_performance_id=op.online_performance_id "
                         "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                            "pld.record_performance_id=rp.record_performance_id "
+                            "op.record_performance_id=rp.record_performance_id "
                         "JOIN ___SB_SCHEMA_NAME___record r ON "
                             "rp.record_id=r.record_id "
-                        "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                            "op.record_performance_id=rp.record_performance_id "
                         "JOIN ___SB_SCHEMA_NAME___performance p ON "
                             "rp.performance_id=p.performance_id "
                         "JOIN ___SB_SCHEMA_NAME___song s ON "
@@ -1137,7 +1139,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                         "JOIN ___SB_SCHEMA_NAME___artist a ON "
                             "p.artist_id=a.artist_id "
                 "WHERE "
-                    "pld.playlist_id=%2 "
+                    "pld.playlist_id=%2 AND "
+                    "pld.online_performance_id IS NOT NULL "
                 "UNION "
                 "SELECT "
                     "1 AS composite_flag,"
@@ -1151,7 +1154,13 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 "FROM "
                     "___SB_SCHEMA_NAME___playlist_detail pc "
                 "WHERE "
-                    "pc.playlist_id=%2 "
+                    "pc.playlist_id=%2 AND "
+                    "pc.online_performance_id IS NULL AND "
+                    "( "
+                        "pc.child_playlist_id IS NOT NULL OR "
+                        "pc.record_id IS NOT NULL OR "
+                        "pc.artist_id IS NOT NULL "
+                    ") "
                 "ORDER BY "
                     "2 "
             )
@@ -1168,11 +1177,12 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
             {
     qDebug() << SB_DEBUG_INFO;
                 bool compositeFlag=allItems.value(0).toInt();
-                int playlistID=allItems.value(2).toInt();
                 int playlistPosition=allItems.value(1).toInt(); Q_UNUSED(playlistPosition);
+                int playlistID=allItems.value(2).toInt();
                 int chartID=allItems.value(3).toInt();
                 int albumID=allItems.value(4).toInt();
                 int performerID=allItems.value(5).toInt();
+                int onlinePerformanceID=allItems.value(6).toInt();
 
                 if(compositeFlag)
                 {
@@ -1207,7 +1217,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                 }
                 else
                 {
-                    SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(allItems.value(13).toInt(),0);
+                    SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID,0);
                     if(opPtr)
                     {
                         allPerformances.append(opPtr);
@@ -1493,13 +1503,14 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
         q=QString
         (
             "INSERT INTO ___SB_SCHEMA_NAME___playlist_detail "
-                "(playlist_id, playlist_position, record_performance_id, timestamp) "
+                "(playlist_id, playlist_position, online_performance_id, timestamp) "
             "SELECT "
-                "%1, %2, rp.record_performance_id, %3 "
+                "%1, %2, rp.preferred_online_performance_id, %3 "
             "FROM "
                 "___SB_SCHEMA_NAME___record_performance rp "
             "WHERE "
-                "rp.record_performance_id=%4 "
+                "rp.record_performance_id=%4 AND "
+                "rp.preferred_online_performance_id IS NOT NULL "
         )
             .arg(this->playlistID())
             .arg(playlistPositionDB)

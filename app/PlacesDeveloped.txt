@@ -774,6 +774,7 @@ Classes:
 	*	Doobie Brothers: The Doobie Brothers
 	*	It should not mix: The Specials and De Specials
 	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
+*	double check sqlite database schema is the same as postgres database schema
 
 <current>
 *	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.

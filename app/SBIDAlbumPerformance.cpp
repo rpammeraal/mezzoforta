@@ -422,12 +422,12 @@ SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
 {
     SBIDAlbumPerformanceMgr* pfMgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDAlbumPerformancePtr performancePtr;
+    SBIDAlbumPerformancePtr apPtr;
     if(albumPerformanceID>=0)
     {
-        performancePtr=pfMgr->retrieve(createKey(albumPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default));
+        apPtr=pfMgr->retrieve(createKey(albumPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default));
     }
-    return performancePtr;
+    return apPtr;
 }
 
 ///	Protected methods
@@ -484,27 +484,14 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
     QString q=QString
     (
         "SELECT DISTINCT "
-            "rp.record_performance_id, "	//	CWIP: apid
-            "s.song_id, "
+            "rp.record_performance_id, "
+            "rp.performance_id, "
             "rp.record_id, "
             "rp.record_position, "
-            "a.artist_id, "
             "rp.duration, "
-            "p.year, "
-            "rp.notes, "
-            "op.path "
+            "rp.notes "
         "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "p.performance_id=rp.performance_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "rp.record_performance_id=op.record_performance_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "p.artist_id=a.artist_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-                    "s.song_id=l.song_id "
+            "___SB_SCHEMA_NAME___record_performance rp "
         "%1 "
     )
         .arg(key.length()==0?"":QString("WHERE rp.record_performance_id=%1").arg(albumPerformanceID))

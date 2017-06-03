@@ -382,10 +382,10 @@ PlayManager::_loadRadio()
             }
         }
 
-        SBIDSongPtr songPtr=SBIDSong::retrieveSong(qm->record(idx).value(0).toInt());
-        SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(qm->record(idx).value(10).toInt());
+        int onlinePerformanceID=qm->record(idx).value(10).toInt();
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID,1);
 
-        playList[nextOpenSlotIndex++]=performancePtr;
+        playList[nextOpenSlotIndex++]=opPtr;
 
         if(index%songInterval==0 || index+1==numPerformances)
         {
