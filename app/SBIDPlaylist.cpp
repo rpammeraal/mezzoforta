@@ -1078,30 +1078,21 @@ void
 SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
 {
     SBIDPlaylistPtr playlistPtr;
-    qDebug() << SB_DEBUG_INFO;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
     {
         playlistPtr=retrievePlaylist(rootPtr->itemID());
         if(playlistPtr)
         {
-    qDebug() << SB_DEBUG_INFO;
             playlistPtr->_reorderPlaylistPositions();
         }
-    }
-    else
-    {
-    qDebug() << SB_DEBUG_INFO;
-        return;
     }
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    qDebug() << SB_DEBUG_INFO;
     if(compositesTraversed.contains(rootPtr))
     {
-    qDebug() << SB_DEBUG_INFO;
         return;
     }
     compositesTraversed.append(rootPtr);
@@ -1112,7 +1103,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     switch(rootPtr->itemType())
     {
     case SBIDBase::sb_type_playlist:
-    qDebug() << SB_DEBUG_INFO;
         q=QString
             (
                 "SELECT "
@@ -1169,13 +1159,12 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
             ;
 
         dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
+        qDebug() << SB_DEBUG_INFO << q;
         {
             QSqlQuery allItems(q,db);
 
             while(allItems.next())
             {
-    qDebug() << SB_DEBUG_INFO;
                 bool compositeFlag=allItems.value(0).toInt();
                 int playlistPosition=allItems.value(1).toInt(); Q_UNUSED(playlistPosition);
                 int playlistID=allItems.value(2).toInt();
@@ -1277,7 +1266,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         break;
 
     case SBIDBase::sb_type_album:
-    qDebug() << SB_DEBUG_INFO;
         q=QString
             (
                 "SELECT "
@@ -1298,7 +1286,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     break;
 
     case SBIDBase::sb_type_performer:
-    qDebug() << SB_DEBUG_INFO;
         q=QString
             (
                 "SELECT "
@@ -1318,28 +1305,22 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     case SBIDBase::sb_type_album_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_song:
-    qDebug() << SB_DEBUG_INFO;
         break;
     }
 
-    qDebug() << SB_DEBUG_INFO;
     if(q.length())
     {
-    qDebug() << SB_DEBUG_INFO;
         dal->customize(q);
         QSqlQuery querySong(q,db);
         while(querySong.next())
         {
-    qDebug() << SB_DEBUG_INFO;
             SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(querySong.value(0).toInt());
             if(opPtr)
             {
-    qDebug() << SB_DEBUG_INFO;
                 allPerformances.append(opPtr);
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return;
 }
 

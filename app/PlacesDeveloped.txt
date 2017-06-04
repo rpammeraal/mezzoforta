@@ -736,7 +736,7 @@ X	playlists that song belongs to can be edited
 -	List all files that did not get imported.
 -	ask if music directory is organized like <performer>/<album>. If not, always take album title from meta data. If yes, only take album meta data if not exist. Make this configurable.
 
-Classes:
+Between 20161215 and 20170604:
 -	SBIDAlbum
 -		Contains: list of SBIDAlbumPerformance. As many as there are on the album.
 -			SBIDAlbumPerformances: contains list of 0,1 or more SBIDOnlinePerformances. One of them is the preferred one (usually the first one added).
@@ -751,23 +751,40 @@ Classes:
 -	check Preloader assignments
 -	take template in SBIDSongPerformance to load dependent pointers: _performerPtr(), _loadPerformerPtr(). 
 -	refreshDependents: take forcedFlag into account (see SBIDSong).
-0170523: find out why UB40 & CHrissie Hynde show up as performers for "40".
-
-<current>
+-	find out why UB40 & CHrissie Hynde show up as performers for "40".
 -	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the
     same song.
 -	playlist performances not loading
 -	enqueueing performer not working
-*	enqueuing playlist Moose!Music not fully working.
+-	Duplicate song entries in 'All Songs'
+-	<schema>.playlist can only contain record_performance_id. This should be changed to online_performance_id. code in Preloader::playlistItems() reflects this.
+-	SBIDPerformer::songs(): now using __albumPerformances, which gets derived/populated from
+    _onlinePerformances. Better to use _onlinePerformances in the call to tm->populateSongsByPerformer.
+-	SongDetail: main performer in bold. Example: Happy Xmas (War Is Over)
+-	Click Radio. Shuffle. Song #1 is gone.
+-	add duration to album tab
 
-<to be fixed before next beta release>
+20170604:
+-	enqueuing playlist Moose!Music not fully working.
+    -	load reggae playlist. not recursive -- songs from Cafe Jamaica/Reggae 12" are not loaded
+
+Todo:
+*	streamline population of database new style
+*	Test drag & drop.
+*	Edit.
+*	Import.
+
+Bugs that need to be fixed:
+*	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
+
+Near future:
 *	Change sendToPlayQueue() to return number of actual items queued:
     *	at SBIDSong: if spPtr->sendToPlayQueue() returns 0, find other items to play.
 	*	repeat at all levels (SBIDSongPerformance, SBIDAlbumPerformance, SBIDOnlinePerformance)
-*	<schema>.playlist can only contain record_performance_id. This should be changed to online_performance_id. code in Preloader::playlistItems() reflects this.
-*	SBIDPerformer::songs(): now using __albumPerformances, which gets derived/populated from
-	_onlinePerformances. Better to use _onlinePerformances in the call to tm->populateSongsByPerformer.
-*	Duplicate song entries in 'All Songs'
+*	Playlist should be able to contain songs, performances, record performances, online performances.
+*	Find out where we need to offer a choice of what online performance to play if a song is to be played/queud.
+
+Import bugs/features/missing:
 *	Dialogbox needed at additional places during import
 *	Validate album positions
 *	Import songbase directory:
@@ -777,12 +794,14 @@ Classes:
 	*	It should not mix: The Specials and De Specials
 	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
 *	double check sqlite database schema is the same as postgres database schema
-
-<current>
 *	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.
-*	Miscellaneous problems with TitleCase.
-
-<beta 2>
+*	MusicLibrary:
+    -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
+	-	if existing performance is selected, rock.performance gets inserted with role_id=0. Should be 1.
+*	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
+*	need to trim down list of alternatives shown for song
+*	albumtitle from metadata not taken into account
+*	enable saving last played to online_performance (not sure if this works) -- this should be implemented as an explicit non-interruptible save.
 
 <SBIDAlbum edit>
 *	may need to think about
@@ -798,23 +817,14 @@ Classes:
 
 <bugs>
 *	Any link between digital_format and formats maintained by songbase?
-*	load reggae playlist. not recursive -- songs from Cafe Jamaica/Reggae 12" are not loaded
 *	Postgres credentials are lost when creating new database
 *	Creating new database does not make songbase switch to this database.
-*	MusicLibrary:
-    -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
-	-	if existing performance is selected, rock.performance gets inserted with role_id=0. Should be 1.
-*	SongDetail: main performer in bold. Example: Happy Xmas (War Is Over)
 *	adding/removing from playlist: duration does not get updated
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
 *	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 *	remove SBID*::save() methods
-*	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
-*	need to trim down list of alternatives shown for song
-*	albumtitle from metadata not taken into account
-*	Click Radio. Shuffle. Song #1 is gone.
 
 <near future>
 *	Include feature to stop asking for user input during file import.
@@ -837,7 +847,6 @@ Classes:
 *	 radio mode: at end of 100th song, refill radio list (whether running to the end or skip to next song)
 *	clear out 'shuffle' when less than 3 songs in queue.
 *	when edit song, call SBIDSong::deleteIfOrphanized() for every performer performing that song.
-*	add duration to album tab
 *	Album: edit notes
 *	Playlist: set sort order
 
