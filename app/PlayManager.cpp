@@ -382,7 +382,7 @@ PlayManager::_loadRadio()
             }
         }
 
-        int onlinePerformanceID=qm->record(idx).value(10).toInt();
+        int onlinePerformanceID=qm->record(idx).value(0).toInt();
         SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID,1);
 
         playList[nextOpenSlotIndex++]=opPtr;

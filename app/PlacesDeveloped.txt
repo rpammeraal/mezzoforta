@@ -754,14 +754,16 @@ Classes:
 0170523: find out why UB40 & CHrissie Hynde show up as performers for "40".
 
 <current>
-::	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the
+-	song table has onlinePerformanceID. May need to create one on the album_performance table, in case there are multiple song files for the
     same song.
-::	Modify  SBIDOnlinePerformance::performancesByAlbum_Preloader(int albumID) to:
-    -
-*	sendToPlayQueue: take advantage of preferredOnlinePerformance in song
-    -	SBIDAlbum
+-	playlist performances not loading
+-	enqueueing performer not working
+*	enqueuing playlist Moose!Music not fully working.
 
 <to be fixed before next beta release>
+*	Change sendToPlayQueue() to return number of actual items queued:
+    *	at SBIDSong: if spPtr->sendToPlayQueue() returns 0, find other items to play.
+	*	repeat at all levels (SBIDSongPerformance, SBIDAlbumPerformance, SBIDOnlinePerformance)
 *	<schema>.playlist can only contain record_performance_id. This should be changed to online_performance_id. code in Preloader::playlistItems() reflects this.
 *	SBIDPerformer::songs(): now using __albumPerformances, which gets derived/populated from
 	_onlinePerformances. Better to use _onlinePerformances in the call to tm->populateSongsByPerformer.

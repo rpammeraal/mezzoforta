@@ -18,7 +18,7 @@ protected:
 
     void debugShow(const QString& header=QString("none")) const;
     virtual bool _canDropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
-    SBIDPtr _determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) const;
+    SBIDPtr _determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, bool showProgressDialogFlag=0) const;
     Qt::ItemFlags _flags(const QModelIndex &index, Qt::ItemFlags defaultFlags) const;
     virtual QMimeData * _mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexes) const;
     virtual QStringList _mimeTypes() const;

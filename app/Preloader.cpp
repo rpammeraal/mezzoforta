@@ -11,16 +11,18 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
     SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields << "0" << "1" << "2" << "22" << "27";
-    QStringList albumFields; albumFields << "6" << "8" << "7" << "10" << "11" << "9";
-    QStringList performerFields; performerFields << "12" << "13" << "14" << "15" << "16";
-    QStringList albumPerformanceFields; albumPerformanceFields << "21" << "25" << "6" << "17" << "18" << "26" << "24";
+    QStringList songFields; songFields                           << "0"  << "1"  << "2"  << "22" << "27";
+    QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" << "11" << "9";
+    QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" << "4"  << "5"  << "28";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
@@ -63,6 +65,7 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
         QSqlRecord r;
         QSqlField f;
         SBIDAlbumPtr albumPtr;
+        SBIDSongPerformancePtr spPtr;
         SBIDAlbumPerformancePtr albumPerformancePtr;
         SBIDOnlinePerformancePtr onlinePerformancePtr;
         SBIDPerformerPtr performerPtr;
@@ -96,6 +99,16 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
             if(key.length()>0)
             {
                 performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
+        }
+
+        //	Process song performance
+        if(!queryList.isNull(25))
+        {
+            key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
+            if(key.length()>0)
+            {
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
             }
         }
 
@@ -147,7 +160,6 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<int,SBIDAlbumPerformancePtr> items;
@@ -155,8 +167,8 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     QStringList songFields; songFields                         << "0"  << "1"  << "2"  << "21" << "24";
     QStringList albumFields; albumFields                       << "6"  << "8"  << "7"  << "10" << "11" << "9";
     QStringList performerFields; performerFields               << "12" << "13" << "14" << "15" << "16";
-    QStringList songPerformanceFields; songPerformanceFields   << "22" << "0"  << "3"  << "23" << "4"  << "5";
-    QStringList albumPerformanceFields; albumPerformanceFields << "20" << "22" << "6"  << "17" << "18" << "19";
+    QStringList songPerformanceFields; songPerformanceFields   << "22" << "0"  << "3"  << "23" << "4"  << "5"  << "25";
+    QStringList albumPerformanceFields; albumPerformanceFields << "20" << "22" << "6"  << "17" << "18" << "19" << "26";
 
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;
@@ -294,7 +306,7 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     QStringList songFields; songFields                           << "29" << "20" << "21" << "24" << "36";
     QStringList albumFields; albumFields                         << "10" << "12" << "11" << "14" << "15" << "13";
     QStringList performerFields; performerFields                 << "5"  << "6"  << "7"  << "8"  << "9";
-    QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "34" << "26" << "35";
+    QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "34" << "26" << "35" << "37";
     QStringList albumPerformanceFields; albumPerformanceFields   << "30" << "31" << "3"  << "4"  << "25" << "32" << "33";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "2"  << "30" << "28";
 
@@ -370,14 +382,15 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
             "NULL AS path, "
             "NULL AS song_id, "
 
-            "NULL AS online_performance_id, "                      //	30
-            "NULL AS record_performance_id, "
+            "NULL AS recod_performance_id, "                      //	30
             "NULL AS performance_id, "
             "NULL AS notes, "
             "NULL AS preferred_online_performance_id, "
+            "NULL AS role_id, "
 
-            "NULL AS role, "                                       //	35
-            "NULL AS notes "
+            "NULL AS notes1, "                                       //	35
+            "NULL AS original_performance_id, "
+            "NULL AS preferred_record_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -434,7 +447,8 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
             "CASE WHEN p.role_id=1 THEN 0 ELSE 1 END,  "
 
             "p.notes, "                                            //	35
-            "COALESCE(p_o.performance_id,-1) AS original_performance_id  "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id,  "
+            "p.preferred_record_performance_id "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pp  "
@@ -631,8 +645,9 @@ Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStr
     f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
     f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
     f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
+    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
+    f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
+    f=QSqlField("f7",QVariant::Int);    f.setValue(queryList.value(fields.at(6).toInt()).toInt());    r.append(f);
 
     SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(r);
     spmgr->addItem(performancePtr);
@@ -651,6 +666,7 @@ Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QS
     f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
     f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
     f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
+    f=QSqlField("f7",QVariant::Int);    f.setValue(queryList.value(fields.at(6).toInt()).toInt());    r.append(f);
 
     SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::instantiate(r);
     apmgr->addItem(performancePtr);

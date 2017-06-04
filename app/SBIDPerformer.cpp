@@ -16,11 +16,12 @@
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
-    _albumList             =c._albumList;
-    _notes              =c._notes;
-    _albumPerformances  =c._albumPerformances;
+    _performerID        =c._performerID;
     _performerName      =c._performerName;
-    _sb_performer_id    =c._sb_performer_id;
+    _notes              =c._notes;
+
+    _albumList          =c._albumList;
+    _albumPerformances  =c._albumPerformances;
     _relatedPerformerKey=c._relatedPerformerKey;
 }
 
@@ -56,7 +57,7 @@ SBIDPerformer::iconResourceLocation() const
 int
 SBIDPerformer::itemID() const
 {
-    return _sb_performer_id;
+    return performerID();
 }
 
 SBIDBase::sb_type
@@ -69,11 +70,12 @@ void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
+    QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
 
     int index=0;
-    for(int i=0;i<_albumPerformances.count();i++)
+    for(int i=0;i<albumPerformances.count();i++)
     {
-        const SBIDOnlinePerformancePtr opPtr=_albumPerformances.at(i)->preferredOnlinePerformancePtr();
+        const SBIDOnlinePerformancePtr opPtr=albumPerformances.at(i)->preferredOnlinePerformancePtr();
         if(opPtr && opPtr->path().length()>0)
         {
             list[index++]=opPtr;
@@ -101,13 +103,32 @@ SBTableModel*
 SBIDPerformer::albums() const
 {
     SBTableModel* tm=new SBTableModel();
-    if(_albumPerformances.count()==0 || _albumList.count()==0)
-    {
-        const_cast<SBIDPerformer *>(this)->refreshDependents();
-    }
-    tm->populateAlbumsByPerformer(_albumPerformances,_albumList);
+    QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
+    QVector<SBIDAlbumPtr> albumList=this->albumList();
+
+    tm->populateAlbumsByPerformer(albumPerformances,albumList);
 
     return tm;
+}
+
+QVector<SBIDAlbumPtr>
+SBIDPerformer::albumList() const
+{
+    if(_albumList.count()==0)
+    {
+        const_cast<SBIDPerformer *>(this)->_loadAlbumPerformances();
+    }
+    return _albumList;
+}
+
+QVector<SBIDAlbumPerformancePtr>
+SBIDPerformer::albumPerformances() const
+{
+    if(_albumPerformances.count()==0)
+    {
+        const_cast<SBIDPerformer *>(this)->_loadAlbumPerformances();
+    }
+    return _albumPerformances;
 }
 
 int
@@ -138,14 +159,10 @@ SBIDPerformer::numSongs() const
     //	CWIP: CHART
     //	If charts are implemented, need to load actual SongPtr.
     //	Song may exist in chart, but not in album.
-    if(_albumPerformances.count()==0)
-    {
-        //	Nothing available, we need to load dependents
-        const_cast<SBIDPerformer *>(this)->_loadAlbumPerformances();
-    }
+    QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
 
     QSet<int> uniqueSongs;	//	use map to count unique songs
-    QVectorIterator<SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    QVectorIterator<SBIDAlbumPerformancePtr> apIT(albumPerformances);
     while(apIT.hasNext())
     {
         SBIDAlbumPerformancePtr apPtr=apIT.next();
@@ -185,11 +202,8 @@ SBTableModel*
 SBIDPerformer::songs() const
 {
     SBTableModel* tm=new SBTableModel();
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDPerformer *>(this)->refreshDependents();
-    }
-    tm->populateSongsByPerformer(_albumPerformances);
+    QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
+    tm->populateSongsByPerformer(albumPerformances);
     return tm;
 }
 
@@ -267,7 +281,7 @@ SBIDPerformer::operator QString() const
 {
     QString performerName=this->_performerName.length() ? this->_performerName : "<N/A>";
     return QString("SBIDPerformer:%1:n=%2 [#related=%4]")
-            .arg(this->_sb_performer_id)
+            .arg(this->_performerID)
             .arg(performerName)
             .arg(_relatedPerformerKey.count())
     ;
@@ -434,7 +448,7 @@ SBIDPerformer::createInDB()
 
     //	Instantiate
     SBIDPerformer performer;
-    performer._sb_performer_id=qID.value(0).toInt();
+    performer._performerID=qID.value(0).toInt();
     performer._performerName="Artist1";
 
     //	Give new playlist unique name
@@ -472,7 +486,7 @@ SBIDPerformer::createInDB()
             "'%3', "
             "'%4' "
     )
-        .arg(performer._sb_performer_id)
+        .arg(performer._performerID)
         .arg(Common::escapeSingleQuotes(performer._performerName))
         .arg(Common::escapeSingleQuotes(Common::removeArticles(Common::removeAccents(performer._performerName))))
         .arg(newSoundex)
@@ -569,11 +583,11 @@ SBIDPerformer::instantiate(const QSqlRecord &r)
 {
     SBIDPerformer performer;
 
-    performer._sb_performer_id=r.value(0).toInt();
-    performer._performerName  =r.value(1).toString();
-    performer._url            =r.value(2).toString();
-    performer._notes          =r.value(3).toString();
-    performer._sb_mbid        =r.value(4).toString();
+    performer._performerID  =r.value(0).toInt();
+    performer._performerName=r.value(1).toString();
+    performer._url          =r.value(2).toString();
+    performer._notes        =r.value(3).toString();
+    performer._sb_mbid      =r.value(4).toString();
 
     return std::make_shared<SBIDPerformer>(performer);
 }
@@ -1037,10 +1051,10 @@ void
 SBIDPerformer::_init()
 {
     _sb_item_type=SBIDBase::sb_type_performer;
-    _notes="";
+    _performerID=-1;
     _performerName="";
+    _notes="";
     _relatedPerformerKey.clear();
-    _sb_performer_id=-1;
 }
 
 void

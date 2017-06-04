@@ -19,7 +19,7 @@ SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
     _songTitle                 =c._songTitle;
     _notes                     =c._notes;
     _lyrics                    =c._lyrics;
-    _originalPerformanceID     =c._originalPerformanceID;
+    _originalSongPerformanceID =c._originalSongPerformanceID;
     _orgSPPtr                  =c._orgSPPtr;
 
     _playlistKey2performanceKey=c._playlistKey2performanceKey;
@@ -187,46 +187,12 @@ SBIDSong::save()
 void
 SBIDSong::sendToPlayQueue(bool enqueueFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "PURPOSELY COMMENTED OUT -- TOO MUCH AMBIGUITY TO SEND SONG TO PLAYQUEUE";
-
-    //	CWIP: calling this needs to display a pop-up in which an actual performance can be shown.
-
-//    QMap<int,SBIDAlbumPerformancePtr> list;
-//    SBIDAlbumPerformancePtr albumPerformancePtr;
-
-//    if(_albumPerformances.count()==0 && !_songPerformerPtr)
-//    {
-//        const_cast<SBIDSong *>(this)->refreshDependents();
-//    }
-
-//    //	Send the first performance where orginalPerformerFlag is set.
-//    int originalPerformerID=songPerformerID();
-//    for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
-//    {
-//        albumPerformancePtr=_albumPerformances.at(i);
-//        if(albumPerformancePtr->songPerformerID()==originalPerformerID)
-//        {
-//            //	Now find the 1st onlinePerformance.
-//            //list[list.count()]=performancePtr;
-//        }
-//    }
-
-//    //	If still empty, take the first available performance
-//    if(list.count()==0)
-//    {
-//        for(int i=0;i<_albumPerformances.size() && list.count()==0;i++)
-//        {
-//            performancePtr=_albumPerformances.at(i);
-//            if(performancePtr->path().length()>0)
-//            {
-//                list[list.count()]=performancePtr;
-//            }
-//        }
-//    }
-
-//    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-//    SB_DEBUG_IF_NULL(mqs);
-//    mqs->populate(list,enqueueFlag);
+    const SBIDSongPerformancePtr spPtr=originalSongPerformancePtr();
+    if(spPtr)
+    {
+        spPtr->sendToPlayQueue(enqueueFlag);
+    }
+    //	CWIP: if !spPtr, find other songPerformance that can be played
 }
 
 QString
@@ -1110,8 +1076,7 @@ SBIDSong::updateSoundexFields()
 SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
-    qDebug() << SB_DEBUG_INFO << _songID << _originalPerformanceID;
-    if(!_orgSPPtr && _originalPerformanceID>=0)
+    if(!_orgSPPtr && _originalSongPerformanceID>=0)
     {
         const_cast<SBIDSong *>(this)->_loadOriginalSongPerformancePtr();
     }
@@ -1399,7 +1364,7 @@ SBIDSong::instantiate(const QSqlRecord &r)
     song._songTitle                   =r.value(1).toString();
     song._notes                       =r.value(2).toString();
     song._lyrics                      =r.value(3).toString();
-    song._originalPerformanceID       =r.value(4).toInt();
+    song._originalSongPerformanceID   =r.value(4).toInt();
 
     return std::make_shared<SBIDSong>(song);
 }
@@ -1562,7 +1527,7 @@ SBIDSong::_init()
     _songTitle=QString();
     _lyrics=QString();
     _notes=QString();
-    _originalPerformanceID=-1;
+    _originalSongPerformanceID=-1;
 
     _albumPerformances.clear();
 }
@@ -1623,8 +1588,7 @@ SBIDSong::_loadPlaylists()
 void
 SBIDSong::_loadOriginalSongPerformancePtr()
 {
-    qDebug() << SB_DEBUG_INFO << _originalPerformanceID;
-    _orgSPPtr=SBIDSongPerformance::retrieveSongPerformance(_originalPerformanceID);
+    _orgSPPtr=SBIDSongPerformance::retrieveSongPerformance(_originalSongPerformanceID);
 }
 
 void

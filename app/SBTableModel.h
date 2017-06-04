@@ -29,7 +29,7 @@ public:
     virtual Qt::DropActions supportedDropActions() const;
 
     //	SBTableModel specific methods
-    SBIDPtr determineSBID(const QModelIndex &idx) const;
+    SBIDPtr determineSBID(const QModelIndex &idx, bool showProgressDialogFlag=0) const;
     void populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
     void populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances);
     void populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances);

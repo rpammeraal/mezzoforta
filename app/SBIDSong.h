@@ -105,7 +105,7 @@ private:
     QString                           _songTitle;
     QString                           _notes;
     QString                           _lyrics;
-    int                               _originalPerformanceID;
+    int                               _originalSongPerformanceID;
 
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;

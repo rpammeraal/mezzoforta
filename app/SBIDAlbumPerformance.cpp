@@ -78,17 +78,11 @@ void
 SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
-    qDebug() << SB_DEBUG_INFO << _albumPerformanceID;
-    const SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(_preferredOnlinePerformanceID);
-
-    //	CWIP: SBIDOnlinePerformance
-    if(opPtr && opPtr->path().length()>0)
+    const SBIDOnlinePerformancePtr opPtr=preferredOnlinePerformancePtr();
+    if(opPtr)
     {
-        list[0]=opPtr;
+        opPtr->sendToPlayQueue(enqueueFlag);
     }
-
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    mqs->populate(list,enqueueFlag);
 }
 
 QString
@@ -275,11 +269,10 @@ SBIDAlbumPerformance::performancesBySong(int songID)
     (
         "SELECT DISTINCT "
             "rp.record_performance_id, "
-            "p.performance_id, "
+            "rp.performance_id, "
             "rp.record_id, "
             "rp.record_position, "
             "rp.duration, "
-            "p.year, "
             "rp.notes, "
             "rp.preferred_online_performance_id "
         "FROM "
@@ -333,7 +326,10 @@ SBIDAlbumPerformance::performancesByAlbum_Preloader(int albumID)
             "l.lyrics, "
             "p.performance_id, "
             "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
-            "COALESCE(p_o.performance_id,-1) AS original_performance_id "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id, "
+
+            "p.preferred_record_performance_id, "  //	25
+            "rp.preferred_online_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -393,7 +389,9 @@ SBIDAlbumPerformance::performancesByPerformer_Preloader(int performerID)
 
             "p.performance_id, "                   //	25
             "rp.notes, "
-            "COALESCE(p_o.performance_id,-1) AS original_performance_id "
+            "COALESCE(p_o.performance_id,-1) AS original_performance_id, "
+            "p.preferred_record_performance_id, "
+            "CASE WHEN p.role_id=1 THEN 0 ELSE 1 END  "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -443,15 +441,17 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     int i=0;
 
     //	CWIP: apid
-    ap._albumPerformanceID=Common::parseIntFieldDB(&r,i++);
-    ap._songPerformanceID =Common::parseIntFieldDB(&r,i++);
-    ap._albumID           =Common::parseIntFieldDB(&r,i++);
-    ap._albumPosition     =Common::parseIntFieldDB(&r,i++);
-    ap._duration          =r.value(i++).toString();
-    ap._notes             =r.value(i++).toString();
+    ap._albumPerformanceID          =Common::parseIntFieldDB(&r,i++);
+    ap._songPerformanceID           =Common::parseIntFieldDB(&r,i++);
+    ap._albumID                     =Common::parseIntFieldDB(&r,i++);
+    ap._albumPosition               =Common::parseIntFieldDB(&r,i++);
+    ap._duration                    =r.value(i++).toString();
+    ap._notes                       =r.value(i++).toString();
+    ap._preferredOnlinePerformanceID=Common::parseIntFieldDB(&r,i++);
 
     ap._orgAlbumPosition=ap._albumPosition;
 
+    qDebug() << SB_DEBUG_INFO << ap._albumPerformanceID << ap._preferredOnlinePerformanceID;
     return std::make_shared<SBIDAlbumPerformance>(ap);
 }
 
@@ -489,7 +489,8 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
             "rp.record_id, "
             "rp.record_position, "
             "rp.duration, "
-            "rp.notes "
+            "rp.notes, "
+            "rp.preferred_online_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___record_performance rp "
         "%1 "
@@ -668,8 +669,6 @@ SBIDAlbumPerformance::_init()
     _albumID=-1;
     _albumPosition=-1;
     _preferredOnlinePerformanceID=-1;
-    //_playlistPosition=-1;	CWIP delete
-    //_orgAlbumPosition=-1;
 }
 
 void

@@ -4,15 +4,17 @@
 
 SBIDSongPerformance::SBIDSongPerformance(const SBIDSongPerformance &p):SBIDBase(p)
 {
-    _songPerformanceID    =p._songPerformanceID;
-    _songID               =p._songID;
-    _performerID          =p._performerID;
-    _originalPerformerFlag=p._originalPerformerFlag;
-    _year                 =p._year;
-    _notes                =p._notes;
+    _songPerformanceID          =p._songPerformanceID;
+    _songID                     =p._songID;
+    _performerID                =p._performerID;
+    _originalPerformerFlag      =p._originalPerformerFlag;
+    _year                       =p._year;
+    _notes                      =p._notes;
+    _preferredAlbumPerformanceID=p._preferredAlbumPerformanceID;
 
-    _pPtr         =p._pPtr;
-    _sPtr              =p._sPtr;
+    _pPtr                       =p._pPtr;
+    _sPtr                       =p._sPtr;
+    _prefAPPtr                  =p._prefAPPtr;
 }
 
 //	Inherited methods
@@ -58,7 +60,11 @@ SBIDSongPerformance::genericDescription() const
 void
 SBIDSongPerformance::sendToPlayQueue(bool enqueueFlag)
 {
-    Q_UNUSED(enqueueFlag);
+    const SBIDAlbumPerformancePtr apPtr=preferredAlbumPerformancePtr();
+    if(apPtr)
+    {
+        apPtr->sendToPlayQueue(enqueueFlag);
+    }
 }
 
 QString
@@ -84,6 +90,17 @@ SBIDSongPerformance::performerPtr() const
         const_cast<SBIDSongPerformance *>(this)->_loadPerformerPtr();
     }
     return _pPtr;
+}
+
+SBIDAlbumPerformancePtr
+SBIDSongPerformance::preferredAlbumPerformancePtr() const
+{
+    qDebug() << SB_DEBUG_INFO << _songPerformanceID << _preferredAlbumPerformanceID;
+    if(!_prefAPPtr && _preferredAlbumPerformanceID>=0)
+    {
+        const_cast<SBIDSongPerformance *>(this)->_loadPreferredAlbumPerformancePtr();
+    }
+    return _prefAPPtr;
 }
 
 SBIDSongPtr
@@ -185,7 +202,8 @@ SBIDSongPerformance::performancesBySong(int songID)
             "p.artist_id, "
             "p.role_id, "
             "p.year, "
-            "p.notes "
+            "p.notes, "
+            "p.preferred_record_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
         "WHERE "
@@ -263,12 +281,15 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     SBIDSongPerformance sP;
     int i=0;
 
-    sP._songPerformanceID    =Common::parseIntFieldDB(&r,i++);
-    sP._songID               =Common::parseIntFieldDB(&r,i++);
-    sP._performerID          =Common::parseIntFieldDB(&r,i++);
-    sP._originalPerformerFlag=r.value(i++).toBool();
-    sP._year                 =Common::parseIntFieldDB(&r,i++);
-    sP._notes                =Common::parseTextFieldDB(&r,i++);
+    sP._songPerformanceID          =Common::parseIntFieldDB(&r,i++);
+    sP._songID                     =Common::parseIntFieldDB(&r,i++);
+    sP._performerID                =Common::parseIntFieldDB(&r,i++);
+    sP._originalPerformerFlag      =r.value(i++).toBool();
+    sP._year                       =Common::parseIntFieldDB(&r,i++);
+    sP._notes                      =Common::parseTextFieldDB(&r,i++);
+    sP._preferredAlbumPerformanceID=Common::parseIntFieldDB(&r,i++);
+
+    qDebug() << SB_DEBUG_INFO << sP._songPerformanceID << sP._preferredAlbumPerformanceID;
 
     return std::make_shared<SBIDSongPerformance>(sP);
 }
@@ -287,7 +308,8 @@ SBIDSongPerformance::retrieveSQL(const QString &key)
             "p.artist_id, "
             "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
             "p.year, "
-            "p.notes "
+            "p.notes, "
+            "p.preferred_record_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
         "%1 "
@@ -420,6 +442,12 @@ void
 SBIDSongPerformance::_loadPerformerPtr()
 {
     _pPtr=SBIDPerformer::retrievePerformer(_performerID,1);
+}
+
+void
+SBIDSongPerformance::_loadPreferredAlbumPerformancePtr()
+{
+    _prefAPPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_preferredAlbumPerformanceID,1);
 }
 
 void

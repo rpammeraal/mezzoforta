@@ -95,7 +95,7 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     const QModelIndex n=this->index(parent.row(),0);
     qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
-    SBIDPtr toIDPtr=determineSBID(n);
+    SBIDPtr toIDPtr=determineSBID(n,0);
 
     emit assign(fromIDPtr,toIDPtr);
     if(row>=0)
@@ -154,9 +154,9 @@ SBSqlQueryModel::supportedDropActions() const
 
 ///	NATIVE METHODS
 SBIDPtr
-SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
+SBSqlQueryModel::determineSBID(const QModelIndex &idx, bool showProgressDialogFlag) const
 {
-    return SBModel::_determineSBID(this,idx);
+    return SBModel::_determineSBID(this,idx, showProgressDialogFlag);
 }
 
 void

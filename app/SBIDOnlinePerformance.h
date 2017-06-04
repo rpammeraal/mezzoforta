@@ -53,7 +53,6 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
-    static SBSqlQueryModel* performancesBySong(int songID);
 
     //	Static methods
     static QString createKey(int onlinePerformanceID);

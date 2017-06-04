@@ -278,84 +278,18 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
     QString q=QString
     (
         "SELECT DISTINCT "
-            "SB_SONG_ID, "
-            "songTitle AS \"song title\", "
-            "SB_PERFORMER_ID, "
-            "artistName AS \"performer\", "
-            "SB_ALBUM_ID, "
-            "recordTitle AS \"album title\", "
-            "SB_POSITION_ID, "
-            "SB_PATH, "
-            "duration, "
-            "SB_PLAY_ORDER, "
-            "SB_ONLINE_PERFORMANCE_ID "
+            "op.online_performance_id, "
+            "%1(op.last_play_date,'1/1/1900') AS SB_PLAY_ORDER "
         "FROM "
-            "( "
-                "SELECT "
-                    "s.song_id AS SB_SONG_ID, "
-                    "s.title AS songTitle, "
-                    "a.artist_id AS SB_PERFORMER_ID, "
-                    "a.name AS artistName, "
-                    "r.record_id AS SB_ALBUM_ID, "
-                    "r.title AS recordTitle, "
-                    "rp.record_position AS SB_POSITION_ID, "
-                    "op.path AS SB_PATH, "
-                    "rp.duration, "
-                    "%1(op.last_play_date,'1/1/1900') AS SB_PLAY_ORDER, "
-                    "op.online_performance_id AS SB_ONLINE_PERFORMANCE_ID "
-                "FROM "
-                    "___SB_SCHEMA_NAME___online_performance op "
-                        "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                            "op.record_performance_id=rp.record_performance_id "
-                        "JOIN ___SB_SCHEMA_NAME___record r ON  "
-                            "rp.record_id=r.record_id "
-                        "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                            "rp.performance_id=p.performance_id "
-                        "JOIN ___SB_SCHEMA_NAME___artist a ON  "
-                            "p.artist_id=a.artist_id "
-                        "JOIN ___SB_SCHEMA_NAME___song s ON  "
-                            "p.song_id=s.song_id "
-            ") a "
+            "___SB_SCHEMA_NAME___online_performance op "
         "ORDER BY "
-            "SB_PLAY_ORDER "
+            "2 "
         "%2 "
     )
             .arg(dal->getIsNull())
             .arg(limitClause)
     ;
 
-    return new SBSqlQueryModel(q);
-}
-
-SBSqlQueryModel*
-SBIDOnlinePerformance::performancesBySong(int songID)
-{
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "rp.record_performance_id, "
-            "s.song_id, "
-            "rp.record_id, "
-            "rp.record_position, "
-            "p.artist_id, "
-            "rp.duration, "
-            "p.year, "
-            "rp.notes, "
-            "op.path "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
-                    "s.song_id=p.song_id "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
-                    "p.performance_id=rp.performance_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "rp.record_performance_id=op.record_performance_id "
-        "WHERE s.song_id=%1 "
-    )
-        .arg(songID)
-    ;
-
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

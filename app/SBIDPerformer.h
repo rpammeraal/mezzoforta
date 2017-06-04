@@ -37,10 +37,12 @@ public:
 
     //	Methods unique to SBIDPerformer
     SBTableModel* albums() const;
+    QVector<SBIDAlbumPtr> albumList() const;
+    QVector<SBIDAlbumPerformancePtr> albumPerformances() const;
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;
-    inline int performerID() const { return _sb_performer_id; }
+    inline int performerID() const { return _performerID; }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
     SBTableModel* songs() const;
@@ -88,14 +90,14 @@ protected:
     QString deleteRelatedPerformerSQL(const QString& key) const;
 
 private:
-    QString                           _notes;
-    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
+    int                               _performerID;
     QString                           _performerName;
-    QVector<QString>                  _relatedPerformerKey;
-    int                               _sb_performer_id;
+    QString                           _notes;
 
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPtr>             _albumList;
+    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
+    QVector<QString>                  _relatedPerformerKey;
 
     //	Methods
     void _init();

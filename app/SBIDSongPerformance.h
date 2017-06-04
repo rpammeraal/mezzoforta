@@ -49,6 +49,7 @@ public:
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;
+    SBIDAlbumPerformancePtr preferredAlbumPerformancePtr() const;
     SBIDSongPtr songPtr() const;
 
     //	Redirectors
@@ -96,20 +97,23 @@ protected:
 
 private:
     //	Attributes
-    int              _songPerformanceID;
-    int              _songID;
-    int              _performerID;
-    bool             _originalPerformerFlag;
-    int              _year;
-    QString          _notes;
+    int                     _songPerformanceID;
+    int                     _songID;
+    int                     _performerID;
+    bool                    _originalPerformerFlag;
+    int                     _year;
+    QString                 _notes;
+    int                     _preferredAlbumPerformanceID;
 
     //	Loaded on demand
-    SBIDPerformerPtr _pPtr;
-    SBIDSongPtr      _sPtr;
+    SBIDPerformerPtr        _pPtr;
+    SBIDSongPtr             _sPtr;
+    SBIDAlbumPerformancePtr _prefAPPtr;
 
     void _init();
 
     void _loadPerformerPtr();
+    void _loadPreferredAlbumPerformancePtr();
     void _loadSongPtr();
 };
 
