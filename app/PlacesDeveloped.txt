@@ -768,6 +768,10 @@ Between 20161215 and 20170604:
 -	enqueuing playlist Moose!Music not fully working.
     -	load reggae playlist. not recursive -- songs from Cafe Jamaica/Reggae 12" are not loaded
 
+20170607:
+-	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
+    -	playlist only to support SBIDOnlinePerformance as song
+
 Todo:
 *	streamline population of database new style
 *	Test drag & drop.
@@ -775,7 +779,6 @@ Todo:
 *	Import.
 
 Bugs that need to be fixed:
-*	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
 
 Near future:
 *	Change sendToPlayQueue() to return number of actual items queued:
@@ -885,6 +888,7 @@ Import bugs/features/missing:
 *	Convert duration:timestamp to duration:duration: later if songbase(wwww) is withdrawn. Works fine with sqlite
 *	only update last_played_date once after song has been listened to for 5s.
 *	many places where toplay, online_performance records are deleted. Need to be merged to one place
+*	playlists to consists of SBIDSong, SBIDPerformance, SBIDAlbumPerformance in addition to SBIDONlinePerformance
 
 -	check when reordering playlist item on drag on itself.
 -	charts

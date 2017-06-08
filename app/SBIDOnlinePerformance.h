@@ -36,11 +36,13 @@ public:
     //	Redirectors
     int albumID() const;
     int albumPerformerID() const;
+    QString albumKey() const;
     QString albumPerformerName() const;
     int albumPosition() const;
     QString albumTitle() const;
     Duration duration() const;
     int songID() const;
+    QString songPerformerKey() const;
     int songPerformerID() const;
     QString songPerformerName() const;
     QString songTitle() const;

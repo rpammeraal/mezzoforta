@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "SBModel.h"
 #include "SBIDPlaylist.h"
+#include "SBIDOnlinePerformance.h"
 
 SBTableModel::SBTableModel()
 {
@@ -231,7 +232,6 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
     {
         SBIDAlbumPerformancePtr apPtr=performances.at(i);
 
-        qDebug() << SB_DEBUG_INFO << apPtr->genericDescription() << apPtr->albumID();
         if(apPtr && apPtr->albumID()>=0)
         {
             _setItem(i,0,apPtr->albumPtr()->key());
@@ -242,7 +242,6 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
             _setItem(i,5,apPtr->songPerformerName());
         }
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -275,14 +274,13 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
             _setItem(i, 3,performancePtr->duration().toString(Duration::sb_hhmmss_format));
             _setItem(i, 4,performancePtr->songPerformerKey());
             _setItem(i, 5,performancePtr->songPerformerName());
-            qDebug() << SB_DEBUG_INFO << performancePtr->genericDescription() << performancePtr->duration();
             i++;
         }
     }
 }
 
 void
-SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
+SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> list)
 {
     _init();
 
@@ -297,33 +295,55 @@ SBTableModel::populatePlaylists(QMap<QString,QString> performance2playlistID)
     header.append("title");
     setHorizontalHeaderLabels(header);
 
+        SBIDSong::PlaylistOnlinePerformance r;
+
+    if(list.count()>0)
+    {
+        r=list.at(list.count()-1);
+        if(!r.plPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "plPtr NOT defined\n";
+        }
+        if(!r.opPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined\n";
+        }
+    }
     //	Populate data
-    QMapIterator<QString,QString> it(performance2playlistID);
+    QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(list);
     int i=0;
+    qDebug() << SB_DEBUG_INFO;
     while(it.hasNext())
     {
-        it.next();
-        SBIDPtr ptr;
+        SBIDSong::PlaylistOnlinePerformance pop=it.next();
 
-        ptr=SBIDBase::createPtr(it.key(),1);
-        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
+        SBIDPlaylistPtr plPtr=pop.plPtr;
+        SBIDOnlinePerformancePtr opPtr=pop.opPtr;
 
-        ptr=SBIDBase::createPtr(it.value(),1);
-        SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
-
-        if(playlistPtr && performancePtr)
+        if(!plPtr)
         {
-            _setItem(i,0,playlistPtr->key());
-            _setItem(i,1,playlistPtr->playlistName());
-            _setItem(i,2,performancePtr->songPerformerKey());
-            _setItem(i,3,performancePtr->songPerformerName());
-            _setItem(i,4,performancePtr->duration().toString(Duration::sb_hhmmss_format));
-            _setItem(i,5,performancePtr->albumPtr()->key());
-            _setItem(i,6,performancePtr->albumTitle());
+            qDebug() << SB_DEBUG_INFO << "plPtr NOT defined!";
+        }
+        if(!opPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined!";
+        }
+
+        if(plPtr && opPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << plPtr->playlistID() << opPtr->onlinePerformanceID();
+            _setItem(i,0,plPtr->key());
+            _setItem(i,1,plPtr->playlistName());
+            _setItem(i,2,opPtr->songPerformerKey());
+            _setItem(i,3,opPtr->songPerformerName());
+            _setItem(i,4,opPtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i,5,opPtr->albumKey());
+            _setItem(i,6,opPtr->albumTitle());
 
             i++;
         }
     }
+    qDebug() << SB_DEBUG_INFO << i;
 }
 
 void

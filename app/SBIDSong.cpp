@@ -22,7 +22,7 @@ SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
     _originalSongPerformanceID =c._originalSongPerformanceID;
     _orgSPPtr                  =c._orgSPPtr;
 
-    _playlistKey2performanceKey=c._playlistKey2performanceKey;
+    _playlistOnlinePerformanceList=c._playlistOnlinePerformanceList;
     _albumPerformances         =c._albumPerformances;
     _songPerformances          =c._songPerformances;
 }
@@ -326,15 +326,15 @@ SBIDSong::numPerformances() const
 }
 
 SBTableModel*
-SBIDSong::playlistList()
+SBIDSong::playlists()
 {
-    if(!_playlistKey2performanceKey.count())
+    if(!_playlistOnlinePerformanceList.count())
     {
         //	Playlists may not be loaded -- retrieve again
-        this->refreshDependents();
+        this->_loadPlaylists();
     }
     SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_playlistKey2performanceKey);
+    tm->populatePlaylists(_playlistOnlinePerformanceList);
     return tm;
 }
 
@@ -378,7 +378,6 @@ SBIDSong::performerIDList() const
         _spIT.next();
         const int performerID=_spIT.key();
         const SBIDSongPerformancePtr spPtr=_spIT.value();
-        qDebug() << SB_DEBUG_INFO << performerID << spPtr->songPerformanceID();
         if(!list.contains(performerID))
         {
             list.append(performerID);
@@ -1143,7 +1142,7 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadAlbumPerformances();
     }
-    if(forcedFlag==1 || _playlistKey2performanceKey.count()==0)
+    if(forcedFlag==1 || _playlistOnlinePerformanceList.count()==0)
     {
         _loadPlaylists();
     }
@@ -1547,42 +1546,10 @@ SBIDSong::_loadAlbumPerformances()
 void
 SBIDSong::_loadPlaylists()
 {
-    //	Create a map between performance and playlist where this performance exists.
-    //	This will not be put in SBIDManagerTemplate
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "pp.playlist_id, "
-            "pp.record_performance_id "
-        "FROM "
-            "___SB_SCHEMA_NAME___playlist_detail pp "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                    "pp.record_performance_id=rp.record_performance_id "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "rp.performance_id=p.performance_id "
-        "WHERE "
-            "p.song_id=%1 "
-    )
-        .arg(this->songID())
-    ;
+    _playlistOnlinePerformanceList=_loadPlaylistOnlinePerformanceListFromDB();
 
-    qDebug() << SB_DEBUG_INFO << dal->customize(q);
-    QSqlQuery q1(db);
-    q1.exec(dal->customize(q));
+        SBIDSong::PlaylistOnlinePerformance r;
 
-    _playlistKey2performanceKey.clear();
-    while(q1.next())
-    {
-        QString performanceKey=SBIDAlbumPerformance::createKey(q1.value(1).toInt());
-        QString playlistKey=SBIDPlaylist::createKey(q1.value(0).toInt());
-
-        if(!_playlistKey2performanceKey.contains(playlistKey))
-        {
-            _playlistKey2performanceKey[playlistKey]=performanceKey;
-        }
-    }
 }
 
 void
@@ -1627,6 +1594,51 @@ SBIDSong::_setSongPerformerID(int performerID)
 }
 
 ///	Aux methods
+QVector<SBIDSong::PlaylistOnlinePerformance>
+SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
+{
+    QVector<SBIDSong::PlaylistOnlinePerformance> playlistOnlinePerformanceList;
+
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "pp.playlist_id, "
+            "op.online_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_detail pp "
+                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "pp.online_performance_id=op.online_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "op.record_performance_id=rp.record_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "rp.performance_id=p.performance_id "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "p.song_id=s.song_id "
+        "WHERE "
+            "p.song_id=%1 "
+    )
+        .arg(this->songID())
+    ;
+
+    QSqlQuery q1(db);
+    q1.exec(dal->customize(q));
+
+    while(q1.next())
+    {
+        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(q1.value(0).toInt(),1);
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(q1.value(1).toInt(),1);
+
+        SBIDSong::PlaylistOnlinePerformance r;
+        r.plPtr=plPtr;
+        r.opPtr=opPtr;
+
+        playlistOnlinePerformanceList.append(r);
+    }
+    return playlistOnlinePerformanceList;
+}
+
 QMap<int,SBIDSongPerformancePtr>
 SBIDSong::_loadSongPerformancesFromDB() const
 {

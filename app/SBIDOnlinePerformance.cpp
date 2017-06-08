@@ -167,6 +167,13 @@ SBIDOnlinePerformance::albumPerformerID() const
 }
 
 QString
+SBIDOnlinePerformance::albumKey() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumKey():QString());
+}
+
+QString
 SBIDOnlinePerformance::albumPerformerName() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
@@ -200,6 +207,14 @@ SBIDOnlinePerformance::songID() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
     return (apPtr?apPtr->songID():-1);
+}
+
+QString
+SBIDOnlinePerformance::songPerformerKey() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songPerformerKey():QString());
+
 }
 
 int

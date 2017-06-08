@@ -145,6 +145,13 @@ SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 }
 
 ///	Redirectors
+QString
+SBIDAlbumPerformance::albumKey() const
+{
+    SBIDAlbumPtr aPtr=albumPtr();
+    return (aPtr?aPtr->key():QString());
+}
+
 int
 SBIDAlbumPerformance::albumPerformerID() const
 {

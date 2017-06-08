@@ -47,6 +47,7 @@ public:
     SBIDOnlinePerformancePtr preferredOnlinePerformancePtr() const;
 
     //	Redirectors
+    QString albumKey() const;
     int albumPerformerID() const;
     QString albumPerformerName() const;
     QString albumTitle() const;

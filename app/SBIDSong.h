@@ -26,6 +26,12 @@ typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 class SBIDSong : public SBIDBase
 {
 public:
+    struct PlaylistOnlinePerformance
+    {
+        SBIDPlaylistPtr          plPtr;
+        SBIDOnlinePerformancePtr opPtr;
+    };
+
     //	Ctors, dtors
     SBIDSong(const SBIDSong& c);
     ~SBIDSong();
@@ -52,7 +58,7 @@ public:
     int numPerformances() const;
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
-    SBTableModel* playlistList();
+    SBTableModel* playlists();
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
     inline int songID() const { return _songID; }
     inline QString songTitle() const { return _songTitle; }
@@ -101,17 +107,17 @@ protected:
     virtual void clearChangedFlag();
 
 private:
-    int                               _songID;
-    QString                           _songTitle;
-    QString                           _notes;
-    QString                           _lyrics;
-    int                               _originalSongPerformanceID;
+    int                                _songID;
+    QString                            _songTitle;
+    QString                            _notes;
+    QString                            _lyrics;
+    int                                _originalSongPerformanceID;
 
     //	Attributes derived from core attributes
-    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
-    QMap<QString,QString>             _playlistKey2performanceKey;
-    SBIDSongPerformancePtr            _orgSPPtr;
-    QMap<int,SBIDSongPerformancePtr>  _songPerformances; //	key:performerID
+    QVector<SBIDAlbumPerformancePtr>   _albumPerformances;
+    QVector<PlaylistOnlinePerformance> _playlistOnlinePerformanceList;
+    SBIDSongPerformancePtr             _orgSPPtr;
+    QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
 
     void _init();
     void _loadAlbumPerformances();
@@ -126,6 +132,7 @@ private:
     void _setSongPerformerID(int performerID);
 
     //	Aux helper methods
+    QVector<SBIDSong::PlaylistOnlinePerformance> _loadPlaylistOnlinePerformanceListFromDB() const;
     QMap<int,SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
     QStringList _updateSQLSongPerformances() const;
 };

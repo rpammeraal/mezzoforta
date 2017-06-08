@@ -387,7 +387,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    tm=songPtr->playlistList();
+    tm=songPtr->playlists();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
