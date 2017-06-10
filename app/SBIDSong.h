@@ -55,7 +55,8 @@ public:
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
-    int numPerformances() const;
+    int numAlbumPerformances() const;
+    int numOnlinePerformances() const;
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlists();

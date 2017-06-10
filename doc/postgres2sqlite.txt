@@ -1,6 +1,0 @@
-#	Remotely:
-pg_dump songbase -p 22500 -U wwwrun --schema-only -n rock -h songbase | sed 's/\:\:integer//g' | sed 's/\:\:text//g' > schema.sql
-( echo "BEGIN ;" ; pg_dump songbase -p 22500 -U wwwrun -h songbase --data-only --inserts -n rock ; echo "END;" ) | grep -v '^SET' |grep -v '^INSERT INTO index'|sed 's/, false)/, 0)/' > data.sql
-
-#	Locally
-rm -f songbase.sqlite ;cat schema.sql |sqlite3 songbase.sqlite ;cat data.sql | sqlite3 songbase.sqlite

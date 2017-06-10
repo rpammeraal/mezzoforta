@@ -316,13 +316,30 @@ SBIDSong::deleteIfOrphanized()
 }
 
 int
-SBIDSong::numPerformances() const
+SBIDSong::numAlbumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->refreshDependents();
+        const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
     }
     return _albumPerformances.count();
+}
+
+int
+SBIDSong::numOnlinePerformances() const
+{
+    int count=0;
+    if(_albumPerformances.count()==0)
+    {
+        const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
+    }
+    QVectorIterator<SBIDAlbumPerformancePtr> apPTRit(_albumPerformances);
+    while(apPTRit.hasNext())
+    {
+        SBIDAlbumPerformancePtr apPtr=apPTRit.next();
+        count+=apPtr->numOnlinePerformances();
+    }
+    return count;
 }
 
 SBTableModel*
