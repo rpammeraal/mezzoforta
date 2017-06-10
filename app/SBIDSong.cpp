@@ -337,7 +337,7 @@ SBIDSong::numOnlinePerformances() const
     while(apPTRit.hasNext())
     {
         SBIDAlbumPerformancePtr apPtr=apPTRit.next();
-        count+=apPtr->numOnlinePerformances();
+        //count+=apPtr->numOnlinePerformances();
     }
     return count;
 }

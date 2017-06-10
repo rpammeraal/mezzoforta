@@ -46,7 +46,7 @@ SBIDAlbumPerformancePtr
 SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOnlyFlag)
 {
     SBIDAlbumPerformancePtr selectedPerformancePtr;
-    if(songPtr->numPerformances()==0)
+    if(songPtr->numAlbumPerformances()==0)
     {
         //	Can't assign -- does not exist on an album
         QMessageBox mb;
@@ -54,7 +54,7 @@ SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOn
         mb.setInformativeText("Songs that do not appear on an album cannot be used.");
         mb.exec();
     }
-    else if(songPtr->numPerformances()==1)
+    else if(songPtr->numAlbumPerformances()==1)
     {
         selectedPerformancePtr=songPtr->allPerformances().at(0);
     }
