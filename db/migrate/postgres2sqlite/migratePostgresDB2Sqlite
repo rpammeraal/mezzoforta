@@ -1,0 +1,114 @@
+#!/bin/sh
+
+if [ $# -eq 0 ]
+  then
+	echo Usage 'backupPostgresForMigration <dbname> <schema>'
+	exit;
+fi
+
+DB=$1
+SCHEMA=$2
+PORT=22500
+HOST=mars
+TEMPDB=tempdb
+
+echo copying source database
+dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
+createdb --host=$HOST --port=$PORT $TEMPDB
+
+echo backup temp database
+./backupPostgresForCopy $1 > /dev/null
+psql -h $HOST -p $PORT $TEMPDB --quiet -f /tmp/$DB.dump
+psql -h $HOST -p $PORT $TEMPDB --quiet << END
+	ALTER SEQUENCE password_userid_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.artist_artist_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.artist_rel_artist_rel_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.song_song_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.performance_performance_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.record_record_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.record_performance_record_performance_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.online_performance_online_performance_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.playlist_playlist_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.playlist_detail_playlist_detail_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.chart_chart_id_seq OWNED BY none;
+	ALTER SEQUENCE $SCHEMA.chart_performance_chart_performance_id_seq OWNED BY none;
+END
+
+echo dump temp database
+echo "BEGIN;" > /tmp/$TEMPDB.out
+
+pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
+	--no-owner \
+	--no-privileges \
+	--column-inserts \
+	--inserts \
+	--no-security-labels \
+	--section=pre-data \
+	--section=data \
+	-t article                     \
+	-t config_daemon               \
+	-t config_host                 \
+	-t config_host_digital_format  \
+	-t configuration               \
+	-t digital_format              \
+	-t genre                       \
+	-t namespace                   \
+	-t password                    \
+	-t search_result               \
+	-t source                      \
+	-t status                      \
+	-T public.password_userid_seq  \
+	-t $SCHEMA.artist              \
+	-t $SCHEMA.artist_rel          \
+	-t $SCHEMA.song                \
+	-t $SCHEMA.category            \
+	-t $SCHEMA.category_index      \
+	-t $SCHEMA.performance         \
+	-t $SCHEMA.record              \
+	-t $SCHEMA.record_performance  \
+	-t $SCHEMA.online_performance  \
+	-t $SCHEMA.playlist            \
+	-t $SCHEMA.playlist_detail     \
+	-t $SCHEMA.chart               \
+	-t $SCHEMA.chart_performance   \
+| grep -v '^SET'  \
+| sed "s/DEFAULT now()//" \
+| sed "s/::text//g" \
+| sed "s/, false/, 'f'/g" \
+| sed "s/, true/, 't'/g" \
+| sed "s/DEFAULT nextval('password_userid_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('artist_artist_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('artist_rel_artist_rel_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('song_song_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('performance_performance_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('record_record_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('record_performance_record_performance_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('online_performance_online_performance_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('playlist_playlist_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('playlist_detail_playlist_detail_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('chart_chart_id_seq'::regclass)//" \
+| sed "s/DEFAULT nextval('chart_performance_chart_performance_id_seq'::regclass)//" \
+>> /tmp/$TEMPDB.out
+
+pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
+	--no-owner \
+	--no-privileges \
+	--column-inserts \
+	--inserts \
+	--no-security-labels \
+	--section=pre-data \
+	--section=data \
+	-t $SCHEMA.lyrics     \
+| grep -v '^SET'  \
+| sed "s/DEFAULT now()//" \
+| sed "s/::text//g" \
+>> /tmp/$TEMPDB.out
+echo "COMMIT;" >> /tmp/$TEMPDB.out
+
+rm -f /tmp/$SCHEMA.sqlite
+
+echo build sqlite database
+cat /tmp/$TEMPDB.out | sqlite3 /tmp/$SCHEMA.sqlite
+dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
+
+echo sqlite database available at /tmp/$SCHEMA.sqlite

@@ -1,8 +1,8 @@
 BEGIN ;
 
-ALTER TABLE rock.song RENAME TO song_old;
+ALTER TABLE ---SQL_SCHEMA_NAME---song RENAME TO song_old;
 
-CREATE TABLE rock.song 
+CREATE TABLE ---SQL_SCHEMA_NAME---song 
 ( 
 	song_id SERIAL PRIMARY KEY NOT NULL, 
 	title   CHARACTER VARYING NOT NULL, 
@@ -12,10 +12,10 @@ CREATE TABLE rock.song
 	CONSTRAINT cc_song_title_check CHECK (((title) <> '')) 
 ); 
 
-CREATE INDEX idx_song_title ON rock.song (title);
-CREATE INDEX idx_song_soundex ON rock.song (soundex); 
+CREATE INDEX idx_song_title ON ---SQL_SCHEMA_NAME---song (title);
+CREATE INDEX idx_song_soundex ON ---SQL_SCHEMA_NAME---song (soundex); 
 
-INSERT INTO rock.song
+INSERT INTO ---SQL_SCHEMA_NAME---song
 (
 	song_id,
 	title,
@@ -28,10 +28,12 @@ SELECT
 	notes,
 	soundex
 FROM
-	rock.song_old;
+	---SQL_SCHEMA_NAME---song_old
+;
 
-SELECT COUNT(*) FROM rock.song_old;
-SELECT COUNT(*) FROM rock.song;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---song_old;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---song;
+SELECT COUNT(DISTINCT song_id) FROM conversion;
 
 COMMIT;
 

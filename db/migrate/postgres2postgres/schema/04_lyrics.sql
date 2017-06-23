@@ -1,19 +1,27 @@
 BEGIN;
 
-ALTER TABLE classical.lyrics RENAME TO lyrics_old;
+ALTER TABLE ---SQL_SCHEMA_NAME---lyrics RENAME TO lyrics_old;
 
-CREATE TABLE classical.lyrics 
+CREATE TABLE ---SQL_SCHEMA_NAME---lyrics 
 ( 
 	song_id INT PRIMARY KEY NOT NULL, 
 	lyrics  TEXT, 
-	CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES classical.song(song_id) 
+	CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES ---SQL_SCHEMA_NAME---song(song_id) 
 ); 
 
 
-INSERT INTO classical.lyrics (song_id,lyrics)
-SELECT * FROM classical.lyrics_old;
+INSERT INTO ---SQL_SCHEMA_NAME---lyrics 
+(
+	song_id,
+	lyrics
+)
+SELECT 
+	song_id,
+	lyrics
+FROM 
+	---SQL_SCHEMA_NAME---lyrics_old;
 
-SELECT COUNT(*) FROM classical.lyrics_old;
-SELECT COUNT(*) FROM classical.lyrics;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---lyrics_old;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---lyrics;
 
 COMMIT;

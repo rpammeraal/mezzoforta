@@ -1,10 +1,10 @@
 BEGIN;
 
-ALTER TABLE rock.artist RENAME TO artist_old;
+ALTER TABLE ---SQL_SCHEMA_NAME---artist RENAME TO artist_old;
 
-CREATE TABLE rock.artist 
+CREATE TABLE ---SQL_SCHEMA_NAME---artist 
 ( 
-	artist_id SERIAL PRIMARY KEY NOT NULL, 
+	artist_id ---AUTOID--- PRIMARY KEY NOT NULL, 
 	name      CHARACTER VARYING NOT NULL, 
 	sort_name CHARACTER VARYING NOT NULL, 
 	www       TEXT, 
@@ -15,10 +15,29 @@ CREATE TABLE rock.artist
 	CONSTRAINT cc_artist_name_check CHECK (((name) <> '')) 
 );
 
-INSERT INTO rock.artist (artist_id,name,sort_name,www,notes,mbid,soundex)
-SELECT artist_id,name,sort_name,www,notes,mbid,soundex FROM rock.artist_old;
+INSERT INTO ---SQL_SCHEMA_NAME---artist 
+(
+	artist_id,
+	name,
+	sort_name,
+	www,
+	notes,
+	mbid,
+	soundex)
+SELECT 
+	artist_id,
+	name,
+	sort_name,
+	www,
+	notes,
+	mbid,
+	soundex 
+FROM 
+	---SQL_SCHEMA_NAME---artist_old
+;
 
-SELECT COUNT(*) FROM rock.artist_old;
-SELECT COUNT(*) FROM rock.artist;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---artist_old;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---artist;
+SELECT COUNT(DISTINCT artist_id) FROM conversion;
 
 COMMIT;

@@ -1,10 +1,10 @@
 BEGIN;
 
-ALTER TABLE rock.record RENAME TO record_old;
+ALTER TABLE ---SQL_SCHEMA_NAME---record RENAME TO record_old;
 
-CREATE TABLE rock.record 
+CREATE TABLE ---SQL_SCHEMA_NAME---record 
 ( 
-	record_id     SERIAL PRIMARY KEY NOT NULL, 
+	record_id     ---AUTOID--- PRIMARY KEY NOT NULL, 
 	artist_id     INT NOT NULL, 
 	title         CHARACTER VARYING NOT NULL, 
 	media         CHARACTER VARYING(10) NOT NULL, 
@@ -16,13 +16,14 @@ CREATE TABLE rock.record
 	CONSTRAINT cc_record_media_check CHECK (((media) <> '')), 
 	CONSTRAINT cc_record_record_id_check CHECK ((record_id >= 0)), 
 	CONSTRAINT cc_record_title_check CHECK (((title) <> '')), 
-	CONSTRAINT fk_record_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES rock.artist(artist_id) 
+	CONSTRAINT fk_record_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES ---SQL_SCHEMA_NAME---artist(artist_id) 
 ); 
 
-INSERT INTO rock.record (record_id,artist_id,title,media,year,genre,cddb_id,cddb_category,notes)
-SELECT record_id,artist_id,title,media,year,genre,cddb_id,cddb_category,notes FROM rock.record_old;
+INSERT INTO ---SQL_SCHEMA_NAME---record (record_id,artist_id,title,media,year,genre,cddb_id,cddb_category,notes)
+SELECT record_id,artist_id,title,media,year,genre,cddb_id,cddb_category,notes FROM ---SQL_SCHEMA_NAME---record_old;
 
-SELECT COUNT(*) FROM rock.record;
-SELECT COUNT(*) FROM rock.record_old;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_old;
+SELECT COUNT(DISTINCT record_id) FROM conversion;
 
 COMMIT;

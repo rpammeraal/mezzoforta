@@ -1,10 +1,10 @@
 BEGIN;
 
-ALTER TABLE rock.playlist RENAME TO playlist_old;
+ALTER TABLE ---SQL_SCHEMA_NAME---playlist RENAME TO playlist_old;
 
-CREATE TABLE rock.playlist 
+CREATE TABLE ---SQL_SCHEMA_NAME---playlist 
 ( 
-	playlist_id SERIAL PRIMARY KEY NOT NULL, 
+	playlist_id ---AUTOID--- PRIMARY KEY NOT NULL, 
 	name        CHARACTER VARYING NOT NULL, 
 	notes       TEXT, 
 	created     DATE NOT NULL, 
@@ -15,10 +15,29 @@ CREATE TABLE rock.playlist
 	CONSTRAINT cc_playlist_playlist_id_check CHECK ((playlist_id >= 0))
 ); 
 
-INSERT INTO rock.playlist (playlist_id,name,notes,created,duration,updated,play_mode)
-SELECT  playlist_id,name,notes,created,duration,updated,play_mode FROM rock.playlist_old;
+INSERT INTO ---SQL_SCHEMA_NAME---playlist 
+(
+	playlist_id,
+	name,
+	notes,
+	created,
+	duration,
+	updated,
+	play_mode
+)
+SELECT  
+	playlist_id,
+	name,
+	notes,
+	created,
+	duration,
+	updated,
+	play_mode 
+FROM 
+	---SQL_SCHEMA_NAME---playlist_old;
 
-SELECT COUNT(*) FROM rock.playlist_old;
-SELECT COUNT(*) FROM rock.playlist;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---playlist_old;
+SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---playlist;
+
 
 COMMIT;
