@@ -27,6 +27,7 @@ SBIDBase::SBIDBase(const SBIDBase &c)
     _deletedFlag=c._deletedFlag;
     _mergedWithID=c._mergedWithID;
 
+
     _changedFlag=c._changedFlag;
     _id=c._id;
     _newFlag=c._newFlag;
@@ -71,9 +72,12 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
         break;
 
+    case SBIDBase::sb_type_chart:
+        ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
+        break;
+
     case SBIDBase::sb_type_song_performance:
     case SBIDBase::sb_type_invalid:
-    case SBIDBase::sb_type_chart:
         break;
     }
     return ptr;

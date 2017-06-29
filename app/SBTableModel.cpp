@@ -245,6 +245,40 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
 }
 
 void
+SBTableModel::populateChartContent(const QMap<int, SBIDSongPerformancePtr> &items)
+{
+    _init();
+
+    //	Populate header
+    QStringList header;
+    header.append("#");
+    header.append("SB_ITEM_KEY");
+    header.append("song");
+    header.append("SB_ITEM_KEY");
+    header.append("performer");
+    _positionColumn=0;
+    setHorizontalHeaderLabels(header);
+
+    QMapIterator<int,SBIDSongPerformancePtr> it(items);
+    int i=0;
+    while(it.hasNext())
+    {
+        it.next();
+        SBIDSongPerformancePtr spPtr=it.value();
+
+        if(spPtr)
+        {
+            _setItem(i,0,QString("%1").arg(it.key()));
+            _setItem(i,1,QString("%1").arg(spPtr->songKey()));
+            _setItem(i,2,QString("%1").arg(spPtr->songTitle()));
+            _setItem(i,3,QString("%1").arg(spPtr->songPerformerKey()));
+            _setItem(i,4,QString("%1").arg(spPtr->songPerformerName()));
+            i++;
+        }
+    }
+}
+
+void
 SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances)
 {
     _init();

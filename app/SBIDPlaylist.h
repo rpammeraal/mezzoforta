@@ -89,6 +89,8 @@ private:
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
     void _init();
+    void _loadPlaylistItems(bool showProgressDialogFlag=0);
+    QMap<int,SBIDPtr> _loadPlaylistItemsFromDB(bool showProgressDialogFlag=0) const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=0);
 

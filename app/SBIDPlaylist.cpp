@@ -27,7 +27,6 @@ SBIDPlaylist::~SBIDPlaylist()
 int
 SBIDPlaylist::commonPerformerID() const
 {
-    qDebug() << SB_DEBUG_ERROR << "NOT IMPLEMENTED!";
     return -1;
 }
 
@@ -676,7 +675,7 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     if(forcedFlag==1 || _items.count()==0)
     {
         qDebug() << SB_DEBUG_INFO;
-        _items=Preloader::playlistItems(this->playlistID(),showProgressDialogFlag);
+        _loadPlaylistItems();
     }
 }
 
@@ -1087,14 +1086,15 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         }
     }
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
     if(compositesTraversed.contains(rootPtr))
     {
         return;
     }
+
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
     compositesTraversed.append(rootPtr);
 
     //	If *rootPtr is a playlist, traverse trough all items within this playlist, recurse when neccessary.
@@ -1226,43 +1226,25 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         break;
 
     case SBIDBase::sb_type_chart:
-//        q=QString
-//            (
-//                "SELECT "
-//                    "pp.artist_id, "
-//                    "pp.song_id, "
-//                    "pp.record_id, "
-//                    "pp.record_position, "
-//                    "rp.duration, "
-//                    "s.title, "
-//                    "a.name, "
-//                    "r.title, "
-//                    "op.path "
-//                "FROM "
-//                    "___SB_SCHEMA_NAME___chart_performance pp "
-//                        "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-//                            "pp.artist_id=rp.artist_id AND "
-//                            "pp.song_id=rp.song_id AND "
-//                            "pp.record_id=rp.record_id AND "
-//                            "pp.record_position=rp.record_position "
-//                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-//                            "op.artist_id=rp.op_artist_id AND "
-//                            "op.song_id=rp.op_song_id AND "
-//                            "op.record_id=rp.op_record_id AND "
-//                            "op.record_position=rp.op_record_position "
-//                        "JOIN ___SB_SCHEMA_NAME___song s ON "
-//                            "pp.song_id=s.song_id "
-//                        "JOIN ___SB_SCHEMA_NAME___artist a ON "
-//                            "pp.artist_id=a.artist_id "
-//                        "JOIN ___SB_SCHEMA_NAME___record r ON "
-//                            "pp.record_id=r.record_id "
-//                "WHERE "
-//                    "pp.chart_id=%1 "
-//                "ORDER BY "
-//                    "pp.chart_position "
-//            )
-//                .arg(rootPtr->playlistID())
-//            ;
+        q=QString
+            (
+                "SELECT "
+                    "op.online_performance_id "
+                "FROM "
+                    "___SB_SCHEMA_NAME___chart_performance cp "
+                        "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                            "op.performance_id=p.performance_id "
+                        "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                            "p.preferred_record_performance_id=rp.record_performance_id "
+                        "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                            "p.preferred_online_performance_id=rp.online_performance_id "
+                "WHERE "
+                    "cp.chart_id=%1 "
+                "ORDER BY "
+                    "cp.chart_position "
+            )
+                .arg(rootPtr->itemID())
+            ;
         break;
 
     case SBIDBase::sb_type_album:
@@ -1324,12 +1306,23 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     return;
 }
 
-
 void
 SBIDPlaylist::_init()
 {
     _sb_item_type=SBIDBase::sb_type_playlist;
     _sb_playlist_id=-1;
+}
+
+void
+SBIDPlaylist::_loadPlaylistItems(bool showProgressDialogFlag)
+{
+    _items=_loadPlaylistItemsFromDB(showProgressDialogFlag);
+}
+
+QMap<int,SBIDPtr>
+SBIDPlaylist::_loadPlaylistItemsFromDB(bool showProgressDialogFlag) const
+{
+    return Preloader::playlistItems(playlistID(),showProgressDialogFlag);
 }
 
 void
@@ -1502,8 +1495,6 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
     break;
 
     case SBIDBase::sb_type_chart:
-        break;
-
     case SBIDBase::sb_type_playlist:
     case SBIDBase::sb_type_performer:
     case SBIDBase::sb_type_album:
@@ -1515,6 +1506,7 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
                 "playlist_position, "
                 "timestamp, "
                 "child_playlist_id, "
+                "chart_id, "
                 "record_id, "
                 "artist_id "
             ") "
@@ -1523,6 +1515,7 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
                 "%2, "
                 "%3, "
                 "CASE WHEN %5=%6 THEN %4 ELSE NULL END,  "
+                "CASE WHEN %5=%9 THEN %4 ELSE NULL END,  "
                 "CASE WHEN %5=%7 THEN %4 ELSE NULL END,  "
                 "CASE WHEN %5=%8 THEN %4 ELSE NULL END  "
           )
@@ -1534,6 +1527,7 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
             .arg(SBIDBase::sb_type_playlist)
             .arg(SBIDBase::sb_type_album)
             .arg(SBIDBase::sb_type_performer)
+            .arg(SBIDBase::sb_type_chart)
         ;
         break;
     }

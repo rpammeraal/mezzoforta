@@ -129,6 +129,13 @@ SBIDSongPerformance::songPerformerKey() const
 }
 
 QString
+SBIDSongPerformance::songKey() const
+{
+    SBIDSongPtr sPtr=songPtr();
+    return (sPtr?sPtr->key():QString());
+}
+
+QString
 SBIDSongPerformance::songTitle() const
 {
     SBIDSongPtr sPtr=songPtr();
@@ -288,8 +295,6 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     sP._year                       =Common::parseIntFieldDB(&r,i++);
     sP._notes                      =Common::parseTextFieldDB(&r,i++);
     sP._preferredAlbumPerformanceID=Common::parseIntFieldDB(&r,i++);
-
-    qDebug() << SB_DEBUG_INFO << sP._songPerformanceID << sP._preferredAlbumPerformanceID;
 
     return std::make_shared<SBIDSongPerformance>(sP);
 }

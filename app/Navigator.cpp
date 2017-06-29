@@ -611,8 +611,12 @@ Navigator::_activateScreen()
                 canBeEditedFlag=0;
                 break;
 
-            case SBIDBase::sb_type_invalid:
             case SBIDBase::sb_type_chart:
+                tab=mw->ui.tabChartDetail;
+                canBeEditedFlag=0;
+                break;
+
+            case SBIDBase::sb_type_invalid:
                 break;
             }
         break;

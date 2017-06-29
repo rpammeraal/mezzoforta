@@ -14,6 +14,7 @@
 #include "Properties.h"
 #include "SBModelQueuedSongs.h"
 #include "SBIDAlbum.h"
+#include "SBIDChart.h"
 #include "SBIDManagerTemplate.h"
 #include "SBIDSongPerformance.h"
 #include "SBIDAlbumPerformance.h"
@@ -30,6 +31,7 @@ class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
 
 typedef SBIDManagerTemplate<SBIDAlbum,SBIDBase> SBIDAlbumMgr;
+typedef SBIDManagerTemplate<SBIDChart,SBIDBase> SBIDChartMgr;
 typedef SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase> SBIDAlbumPerformanceMgr;
 typedef SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase> SBIDOnlinePerformanceMgr;
 typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
@@ -59,6 +61,7 @@ public:
     inline PlayerController* getPlayerController() { return &_pc; }
     inline SBIDAlbumMgr* getAlbumMgr() { return &_albumMgr; }
     inline SBIDAlbumPerformanceMgr* getAlbumPerformanceMgr() { return &_albumPerformanceMgr; }
+    inline SBIDChartMgr* getChartMgr() { return &_chartMgr; }
     inline SBIDOnlinePerformanceMgr* getOnlinePerformanceMgr() { return &_onlinePerformanceMgr; }
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
@@ -101,6 +104,7 @@ private:
     SBModelQueuedSongs _mqs;
     SBIDAlbumMgr _albumMgr;
     SBIDAlbumPerformanceMgr _albumPerformanceMgr;
+    SBIDChartMgr _chartMgr;
     SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;

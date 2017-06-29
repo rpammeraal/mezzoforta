@@ -142,7 +142,6 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
 template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag,bool showProgressDialogFlag)
 {
-    qDebug() << SB_DEBUG_INFO << key << openFlag << showProgressDialogFlag;
     std::shared_ptr<T> ptr;
     //if(_leMap.contains(key))
     if(contains(key))
@@ -248,7 +247,6 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
     int currentRowIndex=0;
     QProgressDialog pd(label,QString(),0,rowCount);
 
-    qDebug() << SB_DEBUG_INFO << label << rowCount;
     if(rowCount<=20)
     {
         showProgressDialogFlag=0;

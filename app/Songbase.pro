@@ -72,7 +72,10 @@ HEADERS     = \
     Network.h \
     Configuration.h \
     MusicImportResult.h \
-    SBIDOnlinePerformance.h
+    SBIDOnlinePerformance.h \
+    SBIDChart.h \
+    SBTabChartDetail.h \
+    SBTabChooser.h
 
 SOURCES     = \
     main.cpp \
@@ -145,7 +148,10 @@ SOURCES     = \
     Network.cpp \
     Configuration.cpp \
     MusicImportResult.cpp \
-    SBIDOnlinePerformance.cpp
+    SBIDOnlinePerformance.cpp \
+    SBIDChart.cpp \
+    SBTabChartDetail.cpp \
+    SBTabChooser.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

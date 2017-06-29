@@ -8,6 +8,7 @@
         <file alias="AllSongs.png">resources/AllSongs.png</file>
         <file alias="moose7.2.png">resources/moose7.2.png</file>
         <file alias="playing.png">resources/playing.png</file>
+        <file alias="ChartIcon.png">resources/ChartIcon.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file alias="default">resources/default.qss</file>

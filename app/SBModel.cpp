@@ -42,7 +42,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
     //	-	positional: a row contains multiple items that can be dragged -- allSongs is one example. In
     //		this type, each column is preceded with an sb_item_id and sb_item_type.
     //	Populate _dragableColumnList with setDragableColumn to get the latter behavior.
-    //	See also SBTabPlaylistDetail::getSBIDSelected()
+    //	See also SBTabChooser::getSBIDSelected()
     QVariant v;
     QString header;
     SBIDPtr ptr;
@@ -70,6 +70,8 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
             header=aim->headerData(i,Qt::Horizontal).toString().toLower();
             n=aim->index(idx.row(),i);
             v=aim->data(n, Qt::DisplayRole);
+
+            qDebug() << SB_DEBUG_INFO << header;
 
             if(header=="sb_item_key")
             {

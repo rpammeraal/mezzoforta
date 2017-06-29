@@ -10,7 +10,7 @@
 #include "SBSortFilterProxyTableModel.h"
 #include "SBTableModel.h"
 
-SBTabPlaylistDetail::SBTabPlaylistDetail(QWidget* parent) : SBTab(parent,0)
+SBTabPlaylistDetail::SBTabPlaylistDetail(QWidget* parent) : SBTabChooser(parent)
 {
 }
 
@@ -28,7 +28,8 @@ SBTabPlaylistDetail::deletePlaylistItem()
 {
     _init();
     SBIDPtr ptr=this->currentScreenItem().ptr();
-    PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    SBTabChooser::PlaylistItem selected=_getSelectedItem(mw->ui.playlistDetailSongList->model(),_lastClickedIndex);
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.playlistPosition>=0)
     {
         SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
@@ -106,7 +107,8 @@ void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
-    PlaylistItem selected=_getSelectedItem(_lastClickedIndex);
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    PlaylistItem selected=_getSelectedItem(mw->ui.playlistDetailSongList->model(),_lastClickedIndex);
     SBIDPtr ptr;
 
     if(selected.key.length()==0)
@@ -123,66 +125,6 @@ SBTabPlaylistDetail::playNow(bool enqueueFlag)
         PlayManager* pmgr=Context::instance()->getPlayManager();
         pmgr?pmgr->playItemNow(ptr,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
-    }
-}
-
-void
-SBTabPlaylistDetail::showContextMenuLabel(const QPoint &p)
-{
-    if(_allowPopup(p)==0)
-    {
-        return;
-    }
-
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
-    _lastClickedIndex=QModelIndex();
-
-    _menu=new QMenu(NULL);
-
-    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
-
-    _menu->addAction(_playNowAction);
-    _menu->addAction(_enqueueAction);
-    _menu->exec(p);
-    _recordLastPopup(p);
-}
-
-void
-SBTabPlaylistDetail::showContextMenuView(const QPoint& p)
-{
-    if(_allowPopup(p)==0)
-    {
-        return;
-    }
-
-    _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QModelIndex idx=mw->ui.playlistDetailSongList->indexAt(p);
-
-    PlaylistItem selected=_getSelectedItem(idx);
-
-    //	title etc not populated
-    if(selected.key.length()>0)
-    {
-        _lastClickedIndex=idx;
-
-        QPoint gp = mw->ui.playlistDetailSongList->mapToGlobal(p);
-
-        if(_menu)
-        {
-            delete _menu;
-        }
-        _menu=new QMenu(NULL);
-
-        _playNowAction->setText(QString("Play '%1' Now").arg(selected.text));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected.text));
-
-        _menu->addAction(_playNowAction);
-        _menu->addAction(_enqueueAction);
-        _menu->addAction(_deletePlaylistItemAction);
-        _menu->exec(gp);
-        _recordLastPopup(p);
     }
 }
 
@@ -236,47 +178,6 @@ SBTabPlaylistDetail::_init()
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
     }
-}
-
-//	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
-//	This one is geared more for the lists that appears for each item (song, artist, etc).
-//	NOTE:
-//	A resultSet is assumed to contain the following columns (in random order):
-//	-	'#'	position (optional)
-//	-	SB_ITEM_TYPE
-//	-	SB_ITEM_ID
-//	The next field after this is assumed to contain the main item (e.g.: song title, album name, etc).
-SBTabPlaylistDetail::PlaylistItem
-SBTabPlaylistDetail::_getSelectedItem(const QModelIndex &idx)
-{
-    PlaylistItem currentPlaylistItem;
-
-    _init();
-
-    MainWindow* mw=Context::instance()->getMainWindow();
-    QAbstractItemModel* aim=mw->ui.playlistDetailSongList->model();
-
-    for(int i=0; i<aim->columnCount();i++)
-    {
-        QString header=aim->headerData(i, Qt::Horizontal).toString();
-        header=header.toLower();
-        QModelIndex idy=idx.sibling(idx.row(),i);
-
-        if(header=="sb_item_key")
-        {
-            currentPlaylistItem.key=aim->data(idy).toString();
-        }
-        else if(header=="#")
-        {
-            currentPlaylistItem.playlistPosition=aim->data(idy).toInt();
-        }
-        else if(currentPlaylistItem.text.length()==0)
-        {
-            currentPlaylistItem.text=aim->data(idy).toString();
-        }
-    }
-
-    return currentPlaylistItem;
 }
 
 ScreenItem

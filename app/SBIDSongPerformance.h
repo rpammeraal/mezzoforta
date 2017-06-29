@@ -55,6 +55,7 @@ public:
     //	Redirectors
     QString songPerformerName() const;
     QString songPerformerKey() const;
+    QString songKey() const;
     QString songTitle() const;
 
     //	Operators

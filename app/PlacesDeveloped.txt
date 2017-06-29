@@ -1,4 +1,4 @@
-San Diego, CA
+GSan Diego, CA
 On board: San Pedro - Puerto Vallarta - Mazatlan - Cabo San Lucas - San Pedro
 Enroute: LAX - DFW
 Waco, TX
@@ -772,6 +772,11 @@ Between 20161215 and 20170604:
 -	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
     -	playlist only to support SBIDOnlinePerformance as song
 
+20170626:
+*	add original_song_performance_id to song
+	-	code
+	-	db migration scripts
+
 Todo:
 *	streamline population of database new style
 *	Test drag & drop.
@@ -941,3 +946,14 @@ http://www.freeorion.org/index.php/Compile_In_Mac_OS_X_10.5_or_earlier
 https://github.com/dwrensha/aione/tree/master/functioning/OSX/Frameworks/SDL_mixer.framework/Versions/A/Frameworks/Vorbis.framework
 https://code.google.com/p/hedgewars/wiki/BuildingOnMac
 https://musescore.org/en/developers-handbook/compilation/compile-instructions-windows-mingw-git
+
+--- here you can type.
+
+--- star date 20170724071300
+lets play hangman
+its out of 6 x's
+
+nose  hair
+
+incorrect:
+bckdl

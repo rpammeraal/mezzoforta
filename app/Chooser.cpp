@@ -111,6 +111,23 @@ public:
         item1 = new QStandardItem("");
         parentItem->appendRow(item1);
 
+        item1 = new QStandardItem("Charts");
+        this->appendRow(item1);
+        _chartRoot=item1;
+
+        SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
+        QVector<SBIDChartPtr> chartList=cmgr->retrieveAll();
+        for(int i=0;i<chartList.count();i++)
+        {
+            SBIDChartPtr ptr=chartList[i];
+
+            record=createNode(ptr->chartName(),ptr->chartID(),ScreenItem::screen_type_sbidbase,SBIDBase::sb_type_chart);
+            item1->appendRow(record);
+        }
+
+        item1 = new QStandardItem("");
+        parentItem->appendRow(item1);
+
         item1 = new QStandardItem("Playlists");
         this->appendRow(item1);
         _playlistRoot=item1;
@@ -133,6 +150,7 @@ public:
 
 private:
     QStandardItem* _playlistRoot;
+    QStandardItem* _chartRoot;
     Chooser* _c;
 
     QList<QStandardItem *> createNode(

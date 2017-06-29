@@ -6,6 +6,162 @@
 #include "DataAccessLayer.h"
 #include "SBIDAlbumPerformance.h"
 
+QMap<int,SBIDSongPerformancePtr>
+Preloader::chartItems(int chartID, bool showProgressDialogFlag)
+{
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QMap<int,SBIDSongPerformancePtr> items;
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QStringList songFields; songFields                         << "3"  << "9"  << "10" << "11" << "12";
+    QStringList performerFields; performerFields               << "4"  << "13" << "14" << "15" << "16";
+    QStringList songPerformanceFields; songPerformanceFields   << "2"  << "3"  << "4"  << "5"  << "7"  << "10"  << "8";
+    QString q;
+
+    q=QString
+    (
+        "SELECT "
+            "cp.chart_position, "             //	0
+            "cp.notes, "
+            "p.performance_id, "
+            "p.song_id, "
+            "p.artist_id, "
+            "p.role_id, "                     //	5
+            "p.year, "
+            "p.notes, "
+            "p.preferred_record_performance_id , "
+            "s.title, "
+            "s.notes, "                       //	10
+            "l.lyrics, "
+            "-1 AS original_song_performance_id, "
+            "a.name, "
+            "a.www, "
+            "a.notes, "                       //	15
+            "a.mbid "
+        "FROM "
+            "___SB_SCHEMA_NAME___chart_performance cp "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "cp.performance_id=p.performance_id "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "p.song_id=s.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+        "WHERE "
+            "cp.chart_id=%1 "
+        "ORDER BY "
+            "cp.chart_position, "
+            "s.title, "
+            "a.name "
+    )
+        .arg(chartID)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery queryList(q,db);
+    int maxValue=queryList.size();
+    if(maxValue<0)
+    {
+        //	Count items
+        while(queryList.next())
+        {
+            maxValue++;
+        }
+    }
+
+    //	Set up progress dialog
+    QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
+    if(maxValue<=10)
+    {
+        showProgressDialogFlag=0;
+    }
+
+    int currentValue=0;
+    if(showProgressDialogFlag)
+    {
+        pd.setWindowModality(Qt::WindowModal);
+        pd.show();
+        pd.raise();
+        pd.activateWindow();
+        QCoreApplication::processEvents();
+    }
+
+    items.clear();
+    queryList.first();
+    queryList.previous();
+    int chartPosition=0;
+    while(queryList.next())
+    {
+        QString key;
+        QSqlRecord r;
+        QSqlField f;
+        SBIDAlbumPtr albumPtr;
+        SBIDSongPerformancePtr songPerformancePtr;
+        SBIDAlbumPerformancePtr albumPerformancePtr;
+        SBIDOnlinePerformancePtr onlinePerformancePtr;
+        SBIDPerformerPtr performerPtr;
+        SBIDPlaylistPtr playlistPtr;
+        SBIDSongPtr songPtr;
+
+        //	Chart position
+        chartPosition++;
+
+        //	Process song
+        if(!queryList.isNull(3))
+        {
+            key=SBIDSong::createKey(queryList.value(3).toInt());
+            if(key.length()>0)
+            {
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+            }
+        }
+
+        //	Process performer
+        if(!queryList.isNull(4))
+        {
+            key=SBIDPerformer::createKey(queryList.value(4).toInt());
+            if(key.length()>0)
+            {
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
+        }
+
+        //	Process song performance
+        if(!queryList.isNull(2))
+        {
+            key=SBIDSongPerformance::createKey(queryList.value(2).toInt());
+            if(key.length()>0)
+            {
+                //	checked on albumPerformanceID
+                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+            }
+        }
+
+        if(songPerformancePtr)
+        {
+            items[chartPosition]=songPerformancePtr;
+        }
+
+
+        if(showProgressDialogFlag && (currentValue%10)==0)
+        {
+            QCoreApplication::processEvents();
+            pd.setValue(currentValue);
+        }
+        currentValue++;
+    }
+    if(showProgressDialogFlag)
+    {
+        pd.setValue(maxValue);
+    }
+    qDebug() << SB_DEBUG_INFO << items.count();
+    return items;
+}
+
 QVector<SBIDAlbumPerformancePtr>
 Preloader::performances(QString query, bool showProgressDialogFlag)
 {
@@ -302,7 +458,6 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     QMap<int,SBIDPtr> items;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    int maxValue=0;
     QStringList songFields; songFields                           << "29" << "20" << "21" << "24" << "36";
     QStringList albumFields; albumFields                         << "10" << "12" << "11" << "14" << "15" << "13";
     QStringList performerFields; performerFields                 << "5"  << "6"  << "7"  << "8"  << "9";
@@ -311,32 +466,6 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     QStringList onlinePerformanceFields; onlinePerformanceFields << "2"  << "30" << "28";
 
     QString q;
-
-    //	Retrieve number of items
-    q=QString
-    (
-        "SELECT SUM(cnt) "
-        "FROM "
-        "( "
-            "SELECT "
-                "COUNT(*) AS cnt "
-            "FROM "
-                "___SB_SCHEMA_NAME___playlist_detail pc "
-            "WHERE "
-                "pc.playlist_id=%1 "
-        ") a "
-    )
-        .arg(playlistID)
-    ;
-
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery countList(q,db);
-    if(countList.next())
-    {
-        maxValue=countList.value(0).toInt();
-    }
 
     //	Retrieve detail
     q=QString
@@ -483,9 +612,12 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     ;
 
     dal->customize(q);
+    QSqlQuery queryList(q,db);
+
     qDebug() << SB_DEBUG_INFO << q;
 
     //	Set up progress dialog
+    int maxValue=queryList.size();
     QProgressDialog pd("Retrieving All Items",QString(),0,maxValue);
     if(maxValue<=10)
     {
@@ -502,7 +634,6 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         QCoreApplication::processEvents();
     }
 
-    QSqlQuery queryList(q,db);
     int playlistIndex=0;
     items.clear();
     while(queryList.next())

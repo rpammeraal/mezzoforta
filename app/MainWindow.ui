@@ -514,7 +514,7 @@
            </font>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -705,6 +705,199 @@
               <attribute name="horizontalHeaderDefaultSectionSize">
                <number>80</number>
               </attribute>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="SBTabChartDetail" name="tabChartDetail">
+           <attribute name="title">
+            <string>Chart</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="horizontalLayout_05">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="hlChartDetail">
+              <item>
+               <widget class="QFrame" name="frChartDetailIcon">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="lineWidth">
+                 <number>0</number>
+                </property>
+                <layout class="QGridLayout" name="glChartDetailIcon">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="SBLabel" name="labelChartDetailIcon">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>100</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>100</width>
+                     <height>100</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Trebuchet MS</family>
+                     <pointsize>15</pointsize>
+                     <weight>75</weight>
+                     <italic>true</italic>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true"/>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="pixmap">
+                    <pixmap resource="resource.qrc">:/images/ChartIcon.png</pixmap>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>true</bool>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frChartDetailDetail">
+                <property name="minimumSize">
+                 <size>
+                  <width>400</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="lineWidth">
+                 <number>0</number>
+                </property>
+                <layout class="QGridLayout" name="glChartDetail">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="2" column="0">
+                  <spacer name="verticalSpacer03">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="labelChartDetailChartName">
+                   <property name="font">
+                    <font>
+                     <family>Trebuchet MS</family>
+                     <pointsize>36</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>ChartName</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="labelChartDetailChartDetail">
+                   <property name="font">
+                    <font>
+                     <family>Trebuchet MS</family>
+                     <pointsize>12</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>chartDetail</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QTableView" name="chartDetailSongList">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
              </widget>
             </item>
            </layout>
@@ -2227,7 +2420,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="label">
+                <widget class="QLabel" name="openerIcon01">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -2255,7 +2448,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_2">
+                <widget class="QLabel" name="openerIcon02">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -2283,7 +2476,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_3">
+                <widget class="QLabel" name="openerIcon03">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -2311,7 +2504,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_4">
+                <widget class="QLabel" name="openerIcon04">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -2339,7 +2532,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_5">
+                <widget class="QLabel" name="openerIcon05">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -2360,6 +2553,34 @@
                  </property>
                  <property name="pixmap">
                   <pixmap resource="resource.qrc">:/images/SongIcon.png</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="openerIcon06">
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>100</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>100</width>
+                   <height>100</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="resource.qrc">:/images/ChartIcon.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -4725,6 +4946,12 @@ Click on 'All Songs' to continue.</string>
    <class>QWebEngineView</class>
    <extends>QWidget</extends>
    <header>QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+  <customwidget>
+   <class>SBTabChartDetail</class>
+   <extends>QWidget</extends>
+   <header>SBTabChartDetail.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

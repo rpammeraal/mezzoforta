@@ -24,6 +24,7 @@ class MainWindow : public QMainWindow
     friend class SBTab;
     friend class SBTabAlbumDetail;
     friend class SBTabAlbumEdit;
+    friend class SBTabChartDetail;
     friend class SBTabQueuedSongs;
     friend class SBTabPerformerDetail;
     friend class SBTabPerformerEdit;
