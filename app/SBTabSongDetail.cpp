@@ -395,10 +395,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_playlists,rowCount>0);
 
     //  populate tabSongDetailChartList
-    //tv=mw->ui.songDetailChartList;
-    //qm=DataEntitySong::getOnChartListBySong(id);
-    //rowCount=populateTableView(tv,qm,0);
-    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,0);
+    tv=mw->ui.songDetailCharts;
+    tm=songPtr->charts();
+    rowCount=populateTableView(tv,tm,1);
+    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,rowCount>0);
 
     //	lyrics
     if(songPtr->lyrics().length()>0)

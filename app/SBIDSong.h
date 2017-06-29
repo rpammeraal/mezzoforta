@@ -52,6 +52,7 @@ public:
     SBTableModel* albums() const;
     SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
     QVector<SBIDAlbumPerformancePtr> allPerformances() const;
+    SBTableModel* charts() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
@@ -119,9 +120,11 @@ private:
     QVector<PlaylistOnlinePerformance> _playlistOnlinePerformanceList;
     SBIDSongPerformancePtr             _orgSPPtr;
     QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
+    QMap<int,SBIDSongPerformancePtr>   _chartPerformances; //	key:chartID
 
     void _init();
     void _loadAlbumPerformances();
+    void _loadChartPerformances();
     void _loadPlaylists();
     void _loadOriginalSongPerformancePtr();
     void _loadPreferredAlbumPerformancePtr();
@@ -133,6 +136,7 @@ private:
     void _setSongPerformerID(int performerID);
 
     //	Aux helper methods
+    QMap<int,SBIDSongPerformancePtr> _loadChartPerformancesFromDB() const;
     QVector<SBIDSong::PlaylistOnlinePerformance> _loadPlaylistOnlinePerformanceListFromDB() const;
     QMap<int,SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
     QStringList _updateSQLSongPerformances() const;

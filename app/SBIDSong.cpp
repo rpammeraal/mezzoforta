@@ -259,6 +259,18 @@ SBIDSong::allPerformances() const
     return _albumPerformances;
 }
 
+SBTableModel*
+SBIDSong::charts() const
+{
+    SBTableModel* tm=new SBTableModel();
+    if(_songPerformances.count()==0)
+    {
+        const_cast<SBIDSong *>(this)->refreshDependents();
+    }
+    tm->populateChartsBySong(_chartPerformances);
+    return tm;
+}
+
 void
 SBIDSong::deleteIfOrphanized()
 {
@@ -1159,6 +1171,10 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadAlbumPerformances();
     }
+    if(forcedFlag==1 || _chartPerformances.count()==0)
+    {
+        _loadChartPerformances();
+    }
     if(forcedFlag==1 || _playlistOnlinePerformanceList.count()==0)
     {
         _loadPlaylists();
@@ -1561,6 +1577,12 @@ SBIDSong::_loadAlbumPerformances()
 }
 
 void
+SBIDSong::_loadChartPerformances()
+{
+    _chartPerformances=_loadChartPerformancesFromDB();
+}
+
+void
 SBIDSong::_loadPlaylists()
 {
     _playlistOnlinePerformanceList=_loadPlaylistOnlinePerformanceListFromDB();
@@ -1580,7 +1602,6 @@ SBIDSong::_loadSongPerformances()
 {
     _songPerformances=_loadSongPerformancesFromDB();
 }
-
 
 void
 SBIDSong::_setSongTitle(const QString &songTitle)
@@ -1611,6 +1632,17 @@ SBIDSong::_setSongPerformerID(int performerID)
 }
 
 ///	Aux methods
+QMap<int,SBIDSongPerformancePtr>
+SBIDSong::_loadChartPerformancesFromDB() const
+{
+    SBSqlQueryModel* qm=SBIDSongPerformance::performancesOnChart(songID());
+    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+
+    QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm,SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default);
+    delete qm;
+    return songPerformances;
+}
+
 QVector<SBIDSong::PlaylistOnlinePerformance>
 SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
 {
@@ -1667,7 +1699,6 @@ SBIDSong::_loadSongPerformancesFromDB() const
     delete qm;
     return songPerformances;
 }
-
 
 QStringList
 SBIDSong::_updateSQLSongPerformances() const

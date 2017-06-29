@@ -198,6 +198,33 @@ SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDepend
 }
 
 SBSqlQueryModel*
+SBIDSongPerformance::performancesOnChart(int songID)
+{
+    QString q=QString
+    (
+        "SELECT "
+            "cp.chart_id, "
+            "p.performance_id, "
+            "p.song_id, "
+            "p.artist_id, "
+            "p.role_id, "
+            "p.year, "
+            "p.notes, "
+            "p.preferred_record_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance p "
+                "JOIN ___SB_SCHEMA_NAME___chart_performance cp ON "
+                    "p.performance_id=cp.performance_id "
+        "WHERE "
+            "p.song_id=%1 "
+    )
+        .arg(songID)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+SBSqlQueryModel*
 SBIDSongPerformance::performancesBySong(int songID)
 {
     QString q=QString

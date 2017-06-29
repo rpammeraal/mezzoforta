@@ -26,6 +26,7 @@ Diest, Belgie
 Berkel-Enschot, N-Brabant
 Enroute: LAX-KEF
 Zoetermeer
+On board: Miami - San Juan, Puerto Rico - St Thomas - Sint Maarten
 
 
 Crown Princess Demo (20150407):
@@ -776,6 +777,9 @@ Between 20161215 and 20170604:
 *	add original_song_performance_id to song
 	-	code
 	-	db migration scripts
+*	Love is a battlefield:
+	-	shows ", Pat Benatar" note the comma at the start.
+	-	unknown year. If year is unknown, possibly actively set from earliest chart date.
 
 Todo:
 *	streamline population of database new style

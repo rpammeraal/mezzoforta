@@ -71,6 +71,7 @@ public:
 
     //	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
+    static SBSqlQueryModel* performancesOnChart(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
