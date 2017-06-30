@@ -32,8 +32,8 @@ public:
     SBIDPtr determineSBID(const QModelIndex &idx, bool showProgressDialogFlag=0) const;
     void populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
     void populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances);
-    void populateChartsBySong(QMap<int,SBIDSongPerformancePtr> performances);
-    void populateChartContent(const QMap<int,SBIDSongPerformancePtr>& items);
+    void populateChartsBySong(QMap<int,SBIDChartPerformancePtr> performances);
+    void populateChartContent(const QMap<int,SBIDChartPerformancePtr>& items);
     void populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances);
     void populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> list);
     void populatePlaylistContent(const QMap<int,SBIDPtr>& items);

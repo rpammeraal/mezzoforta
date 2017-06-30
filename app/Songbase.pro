@@ -75,7 +75,8 @@ HEADERS     = \
     SBIDOnlinePerformance.h \
     SBIDChart.h \
     SBTabChartDetail.h \
-    SBTabChooser.h
+    SBTabChooser.h \
+    SBIDChartPerformance.h
 
 SOURCES     = \
     main.cpp \
@@ -151,7 +152,8 @@ SOURCES     = \
     SBIDOnlinePerformance.cpp \
     SBIDChart.cpp \
     SBTabChartDetail.cpp \
-    SBTabChooser.cpp
+    SBTabChooser.cpp \
+    SBIDChartPerformance.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

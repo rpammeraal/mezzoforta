@@ -3,23 +3,20 @@
 
 #include "SBIDBase.h"
 
-class SBIDSongPerformance;
-typedef std::shared_ptr<SBIDSongPerformance> SBIDSongPerformancePtr;
+//class SBIDAlbumPerformance;
+//typedef std::shared_ptr<SBIDAlbumPerformance> SBIDAlbumPerformancePtr;
 
-class SBIDAlbumPerformance;
-typedef std::shared_ptr<SBIDAlbumPerformance> SBIDAlbumPerformancePtr;
+//class SBIDOnlinePerformance;
+//typedef std::shared_ptr<SBIDOnlinePerformance> SBIDOnlinePerformancePtr;
 
-class SBIDOnlinePerformance;
-typedef std::shared_ptr<SBIDOnlinePerformance> SBIDOnlinePerformancePtr;
+//class SBIDAlbum;
+//typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
 
-class SBIDAlbum;
-typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
+//class SBIDPerformer;
+//typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
 
-class SBIDPerformer;
-typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
-
-class SBIDSong;
-typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
+//class SBIDSong;
+//typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 
 class SBIDSongPerformance : public SBIDBase
 {
@@ -71,7 +68,6 @@ public:
 
     //	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
-    static SBSqlQueryModel* performancesOnChart(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

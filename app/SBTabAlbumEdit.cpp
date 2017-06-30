@@ -772,8 +772,8 @@ SBTabAlbumEdit::save() const
     //		E.g.: Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
     //	A2.	Edit albums to correct performers.
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    //SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
@@ -866,7 +866,7 @@ SBTabAlbumEdit::save() const
     {
         MusicLibrary::MLentity song;
         QStandardItem* item;
-        bool removedFlag=0;
+        //bool removedFlag=0;
         //bool isNewFlag=0;
         //int mergedToIndex=0;
         //int position=1;

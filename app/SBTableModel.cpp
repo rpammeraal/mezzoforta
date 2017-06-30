@@ -245,14 +245,12 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
 }
 
 void
-SBTableModel::populateChartsBySong(QMap<int,SBIDSongPerformancePtr> performances)
+SBTableModel::populateChartsBySong(QMap<int,SBIDChartPerformancePtr> performances)
 {
     _init();
 
     //	Populate header
     QStringList header;
-    header.append("SB_ITEM_KEY1");
-    header.append("song title");
     header.append("SB_ITEM_KEY2");
     header.append("performer");
     header.append("SB_ITEM_KEY3");
@@ -261,7 +259,7 @@ SBTableModel::populateChartsBySong(QMap<int,SBIDSongPerformancePtr> performances
     setHorizontalHeaderLabels(header);
 
     //	Populate data
-    QMapIterator<int,SBIDSongPerformancePtr> pIT(performances);
+    QMapIterator<int,SBIDChartPerformancePtr> pIT(performances);
     int index=0;
     while(pIT.hasNext())
     {
@@ -269,16 +267,17 @@ SBTableModel::populateChartsBySong(QMap<int,SBIDSongPerformancePtr> performances
 
         const int chartID=pIT.key();
         SBIDChartPtr cPtr=SBIDChart::retrieveChart(chartID);
-        SBIDSongPerformancePtr spPtr=pIT.value();
+        SBIDChartPerformancePtr cpPtr=pIT.value();
+        SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
 
-        if(cPtr && spPtr)
+        if(cPtr && cpPtr && spPtr)
         {
-            _setItem(index,0,spPtr->songKey());
-            _setItem(index,1,spPtr->songTitle());
-            _setItem(index,2,spPtr->songPerformerKey());
-            _setItem(index,3,spPtr->songPerformerName());
-            _setItem(index,4,cPtr->key());
-            _setItem(index,5,cPtr->chartName());
+            int i=0;
+            _setItem(index,i++,spPtr->songPerformerKey());
+            _setItem(index,i++,spPtr->songPerformerName());
+            _setItem(index,i++,cPtr->key());
+            _setItem(index,i++,cPtr->chartName());
+            _setItem(index,i++,QString("%1").arg(cpPtr->chartPosition()));
 
             index++;
         }
@@ -286,7 +285,7 @@ SBTableModel::populateChartsBySong(QMap<int,SBIDSongPerformancePtr> performances
 }
 
 void
-SBTableModel::populateChartContent(const QMap<int, SBIDSongPerformancePtr> &items)
+SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &items)
 {
     _init();
 
@@ -300,12 +299,13 @@ SBTableModel::populateChartContent(const QMap<int, SBIDSongPerformancePtr> &item
     _positionColumn=0;
     setHorizontalHeaderLabels(header);
 
-    QMapIterator<int,SBIDSongPerformancePtr> it(items);
+    QMapIterator<int,SBIDChartPerformancePtr> it(items);
     int i=0;
     while(it.hasNext())
     {
         it.next();
-        SBIDSongPerformancePtr spPtr=it.value();
+        SBIDChartPerformancePtr cpPtr=it.value();
+        SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
 
         if(spPtr)
         {

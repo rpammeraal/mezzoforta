@@ -120,7 +120,7 @@ private:
     QVector<PlaylistOnlinePerformance> _playlistOnlinePerformanceList;
     SBIDSongPerformancePtr             _orgSPPtr;
     QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
-    QMap<int,SBIDSongPerformancePtr>   _chartPerformances; //	key:chartID
+    QMap<int,SBIDChartPerformancePtr>  _chartPerformances; //	key:chartID
 
     void _init();
     void _loadAlbumPerformances();
@@ -136,7 +136,7 @@ private:
     void _setSongPerformerID(int performerID);
 
     //	Aux helper methods
-    QMap<int,SBIDSongPerformancePtr> _loadChartPerformancesFromDB() const;
+    QMap<int,SBIDChartPerformancePtr> _loadChartPerformancesFromDB() const;
     QVector<SBIDSong::PlaylistOnlinePerformance> _loadPlaylistOnlinePerformanceListFromDB() const;
     QMap<int,SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
     QStringList _updateSQLSongPerformances() const;

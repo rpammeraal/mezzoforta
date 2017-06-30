@@ -5,9 +5,6 @@
 #include "SBTableModel.h"
 #include "SBIDSongPerformance.h"
 
-class SBIDChart;
-typedef std::shared_ptr<SBIDChart> SBIDChartPtr;
-
 class SBIDChart : public SBIDBase
 {
 public:
@@ -76,13 +73,13 @@ private:
     //	Not instantiated
     int               _num_items;	//	may only be used until _items has been loaded
 
-    QMap<int,SBIDSongPerformancePtr> _items;
+    QMap<int,SBIDChartPerformancePtr> _items;
 
     //	Methods:0
 
     void _init();
     void _loadPerformances();
-    static QMap<int,SBIDSongPerformancePtr> _loadPerformancesFromDB(int chartID,bool showProgressDialogFlag=0);
+    static QMap<int,SBIDChartPerformancePtr> _loadPerformancesFromDB(int chartID,bool showProgressDialogFlag=0);
 };
 
 #endif // SBIDCHART_H

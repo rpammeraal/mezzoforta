@@ -17,6 +17,15 @@ class SBSqlQueryModel;
 class SBIDBase;
 typedef std::shared_ptr<SBIDBase> SBIDPtr;
 
+class SBIDAlbum;            typedef std::shared_ptr<SBIDAlbum>             SBIDAlbumPtr;
+class SBIDAlbumPerformance; typedef std::shared_ptr<SBIDAlbumPerformance>  SBIDAlbumPerformancePtr;
+class SBIDChart;            typedef std::shared_ptr<SBIDChart>             SBIDChartPtr;
+class SBIDChartPerformance; typedef std::shared_ptr<SBIDChartPerformance>  SBIDChartPerformancePtr;
+class SBIDOnlinePerformance;typedef std::shared_ptr<SBIDOnlinePerformance> SBIDOnlinePerformancePtr;
+class SBIDPerformer;        typedef std::shared_ptr<SBIDPerformer>         SBIDPerformerPtr;
+class SBIDSong;             typedef std::shared_ptr<SBIDSong>              SBIDSongPtr;
+class SBIDSongPerformance;  typedef std::shared_ptr<SBIDSongPerformance>   SBIDSongPerformancePtr;
+
 class SBIDBase
 {
 
@@ -32,7 +41,8 @@ public:
         sb_type_song_performance=6,
         sb_type_album_performance=7,
         sb_type_playlist_detail=8,
-        sb_type_online_performance=9
+        sb_type_online_performance=9,
+        sb_type_chart_performance=10
     };
 
     static size_t sb_type_count() { return 8; }

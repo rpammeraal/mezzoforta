@@ -280,6 +280,13 @@ SBIDAlbumPerformancePtr
 SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes)
 {
     SBIDAlbumPerformancePtr albumPerformancePtr;
+    Q_UNUSED(songID);
+    Q_UNUSED(performerID);
+    Q_UNUSED(albumPosition);
+    Q_UNUSED(year);
+    Q_UNUSED(path);
+    Q_UNUSED(duration);
+    Q_UNUSED(notes);
 //    if(_albumPerformances.count()==0)
 //    {
 //        qDebug() << SB_DEBUG_INFO;
@@ -671,6 +678,7 @@ SBIDAlbum::performances() const
 void
 SBIDAlbum::processNewSongList(QVector<MusicLibrary::MLentityPtr> &newSongList)
 {
+    Q_UNUSED(newSongList);
 //    QVector<MusicLibrary::MLentityPtr> orgSongList(_albumPerformances.count()+1); //	<position:1>
 //    QVector<QString> changedSongs;                  //	contains keys <unsorted>
 //    QMap<QString,QString> mergedTo;                 //	<songID:songPerformerID,mergedToIndex:1>

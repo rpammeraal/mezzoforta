@@ -39,7 +39,7 @@ SBIDSongPerformance::iconResourceLocation() const
 int
 SBIDSongPerformance::itemID() const
 {
-    return -1;
+    return songID();
 }
 
 SBIDBase::sb_type
@@ -52,7 +52,7 @@ QString
 SBIDSongPerformance::genericDescription() const
 {
     return QString("Song - %1 / %2")
-        .arg(this->text())
+        .arg(this->songTitle())
         .arg(this->songPerformerName())
     ;
 }
@@ -195,33 +195,6 @@ SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDepend
         spPtr=spMgr->retrieve(createKey(songPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default));
     }
     return spPtr;
-}
-
-SBSqlQueryModel*
-SBIDSongPerformance::performancesOnChart(int songID)
-{
-    QString q=QString
-    (
-        "SELECT "
-            "cp.chart_id, "
-            "p.performance_id, "
-            "p.song_id, "
-            "p.artist_id, "
-            "p.role_id, "
-            "p.year, "
-            "p.notes, "
-            "p.preferred_record_performance_id "
-        "FROM "
-            "___SB_SCHEMA_NAME___performance p "
-                "JOIN ___SB_SCHEMA_NAME___chart_performance cp ON "
-                    "p.performance_id=cp.performance_id "
-        "WHERE "
-            "p.song_id=%1 "
-    )
-        .arg(songID)
-    ;
-
-    return new SBSqlQueryModel(q);
 }
 
 SBSqlQueryModel*

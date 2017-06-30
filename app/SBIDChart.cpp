@@ -60,12 +60,13 @@ void
 SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
-    QMapIterator<int,SBIDSongPerformancePtr> it(_items);
+    QMapIterator<int,SBIDChartPerformancePtr> it(_items);
     int index=0;
     while(it.hasNext())
     {
         it.next();
-        SBIDSongPerformancePtr spPtr=it.value();
+        SBIDChartPerformancePtr cpPtr=it.value();
+        SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
         SBIDAlbumPerformancePtr apPtr=spPtr->preferredAlbumPerformancePtr();
         SBIDOnlinePerformancePtr opPtr=(apPtr?apPtr->preferredOnlinePerformancePtr():SBIDOnlinePerformancePtr());
 
@@ -274,7 +275,7 @@ SBIDChart::_loadPerformances()
     _items=_loadPerformancesFromDB(this->chartID());
 }
 
-QMap<int,SBIDSongPerformancePtr>
+QMap<int,SBIDChartPerformancePtr>
 SBIDChart::_loadPerformancesFromDB(int chartID, bool showProgressDialogFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();

@@ -38,7 +38,6 @@ SBTabChooser::showContextMenuView(const QPoint& p)
     }
 
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
     QModelIndex idx=subtabID2TableView(-1)->indexAt(p);
 
     PlaylistItem selected=_getSelectedItem(subtabID2TableView(-1)->model(),idx);

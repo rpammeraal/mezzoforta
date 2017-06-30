@@ -512,7 +512,7 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
 QStringList
 SBIDAlbumPerformance::updateSQL() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
 
     qDebug() << SB_DEBUG_INFO
