@@ -131,6 +131,17 @@ SBIDPerformer::albumPerformances() const
     return _albumPerformances;
 }
 
+SBTableModel*
+SBIDPerformer::charts() const
+{
+    SBTableModel* tm=new SBTableModel();
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this,0);
+
+    tm->populateChartsByItemType(SBIDBase::sb_type_performer,list);
+
+    return tm;
+}
+
 int
 SBIDPerformer::numAlbums() const
 {
@@ -139,17 +150,13 @@ SBIDPerformer::numAlbums() const
         const_cast<SBIDPerformer *>(this)->_loadAlbums();
     }
 
-    qDebug() << SB_DEBUG_INFO << this->performerID();
     int albumCount=0;
     QVectorIterator<SBIDAlbumPtr> aIT(_albumList);
     while(aIT.hasNext())
     {
         SBIDAlbumPtr albumPtr=aIT.next();
-        qDebug() << SB_DEBUG_INFO << albumPtr->albumTitle() << albumPtr->albumPerformerID();
         albumCount+=(albumPtr->albumPerformerID()==this->performerID()?1:0);
     }
-
-        qDebug() << SB_DEBUG_INFO << albumCount;
     return albumCount;
 }
 
@@ -377,7 +384,6 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
 void
 SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 {
-    qDebug() << SB_DEBUG_INFO << showProgressDialogFlag;
     if(forcedFlag || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances(showProgressDialogFlag);
@@ -600,11 +606,9 @@ SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
     {
         if(!(to->_relatedPerformerKey.contains(_relatedPerformerKey.at(i))))
         {
-            qDebug() << SB_DEBUG_INFO;
             to->_relatedPerformerKey.append(_relatedPerformerKey.at(i));
         }
     }
-            qDebug() << SB_DEBUG_INFO;
     setMergedWithID(to->performerID());
 }
 
@@ -653,8 +657,6 @@ SBIDPerformer::updateSQL() const
     QStringList SQL;
     QString q;
     bool deletedFlag=this->deletedFlag();
-
-    qDebug() << SB_DEBUG_INFO << performerID() << mergedFlag() << mergedWithID() << deletedFlag;
 
     //	Merged
     if(mergedFlag())
@@ -975,7 +977,6 @@ SBIDPerformer::updateSQL() const
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << SQL.count();
     return SQL;
 }
 

@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "Preloader.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDAlbumPerformance.h"
 #include "SBIDOnlinePerformance.h"
@@ -266,11 +267,8 @@ SBTableModel*
 SBIDSong::charts() const
 {
     SBTableModel* tm=new SBTableModel();
-    if(_chartPerformances.count()==0)
-    {
-        const_cast<SBIDSong *>(this)->refreshDependents();
-    }
-    tm->populateChartsBySong(_chartPerformances);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this,0);
+    tm->populateChartsByItemType(SBIDBase::sb_type_song,chartToPerformances);
     return tm;
 }
 
@@ -1174,10 +1172,6 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadAlbumPerformances();
     }
-    if(forcedFlag==1 || _chartPerformances.count()==0)
-    {
-        _loadChartPerformances();
-    }
     if(forcedFlag==1 || _playlistOnlinePerformanceList.count()==0)
     {
         _loadPlaylists();
@@ -1580,12 +1574,6 @@ SBIDSong::_loadAlbumPerformances()
 }
 
 void
-SBIDSong::_loadChartPerformances()
-{
-    _chartPerformances=_loadChartPerformancesFromDB();
-}
-
-void
 SBIDSong::_loadPlaylists()
 {
     _playlistOnlinePerformanceList=_loadPlaylistOnlinePerformanceListFromDB();
@@ -1636,17 +1624,6 @@ SBIDSong::_setSongPerformerID(int performerID)
 }
 
 ///	Aux methods
-QMap<int,SBIDChartPerformancePtr>
-SBIDSong::_loadChartPerformancesFromDB() const
-{
-    SBSqlQueryModel* qm=SBIDChartPerformance::performancesOnChart(songID());
-    SBIDChartPerformanceMgr* cpmgr=Context::instance()->getChartPerformanceMgr();
-
-    QMap<int,SBIDChartPerformancePtr> chartPerformances=cpmgr->retrieveMap(qm,SBIDManagerTemplate<SBIDChartPerformance,SBIDBase>::open_flag_default);
-    delete qm;
-    return chartPerformances;
-}
-
 QVector<SBIDSong::PlaylistOnlinePerformance>
 SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
 {

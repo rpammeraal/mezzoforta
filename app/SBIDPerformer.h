@@ -39,6 +39,7 @@ public:
     SBTableModel* albums() const;
     QVector<SBIDAlbumPtr> albumList() const;
     QVector<SBIDAlbumPerformancePtr> albumPerformances() const;
+    SBTableModel* charts() const;
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;

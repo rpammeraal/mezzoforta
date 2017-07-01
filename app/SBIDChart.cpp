@@ -151,10 +151,8 @@ SBIDChart::key() const
 void
 SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    qDebug() << SB_DEBUG_INFO << this->key() << showProgressDialogFlag << forcedFlag << _items.count();
     if(forcedFlag==1 || _items.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         _loadPerformances();
     }
 }
@@ -206,8 +204,6 @@ SBIDChart::instantiate(const QSqlRecord &r)
     chart._notes      =r.value(2).toString();
     chart._releaseDate=r.value(3).toDate();
     chart._num_items  =r.value(4).toInt();
-
-    qDebug() << SB_DEBUG_INFO << "##########################" << chart._chartID;
 
     return std::make_shared<SBIDChart>(chart);
 }
@@ -272,15 +268,27 @@ SBIDChart::_init()
 void
 SBIDChart::_loadPerformances()
 {
-    _items=_loadPerformancesFromDB(this->chartID());
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=_loadPerformancesFromDB(*this,1);
+    _items.clear();
+
+    QMapIterator<SBIDChartPerformancePtr,SBIDChartPtr> it(list);
+    while(it.hasNext())
+    {
+        it.next();
+        SBIDChartPerformancePtr ptr=it.key();
+        int position=ptr->chartPosition();
+
+        //	Some songPerformances share the same spot in the same chart.
+        while(_items.contains(position))
+        {
+            position++;
+        }
+        _items[position]=ptr;
+    }
 }
 
-QMap<int,SBIDChartPerformancePtr>
-SBIDChart::_loadPerformancesFromDB(int chartID, bool showProgressDialogFlag)
+QMap<SBIDChartPerformancePtr,SBIDChartPtr>
+SBIDChart::_loadPerformancesFromDB(const SBIDChart& chart, bool showProgressDialogFlag)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
-    return Preloader::chartItems(chartID,showProgressDialogFlag);
+    return Preloader::chartItems(chart,showProgressDialogFlag);
 }

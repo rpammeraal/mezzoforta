@@ -21,6 +21,7 @@ public:
     virtual QString type() const;
 
     //	SBIDChartPerformance specific methods
+    inline int chartPerformanceID() const { return _chartPerformanceID; }
     inline int chartPosition() const { return _chartPosition; }
 
     //	Setters
@@ -46,7 +47,7 @@ public:
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
-    static SBSqlQueryModel* performancesOnChart(int songID);
+    //static SBSqlQueryModel* songPerformancesOnChart(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

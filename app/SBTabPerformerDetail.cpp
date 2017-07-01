@@ -464,14 +464,14 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,1);
+    rowCount=populateTableView(tv,tm,2);
     mw->ui.tabPerformerDetailLists->setTabEnabled(1,rowCount>0);
 
     //	Populate charts
-    //tv=mw->ui.performerDetailCharts;
-    //qm=DataEntityPerformer::getAllCharts(id);
-    //rowCount=populateTableView(tv,qm,0);
-    mw->ui.tabPerformerDetailLists->setTabEnabled(2,0);	//rowCount>0);
+    tv=mw->ui.performerDetailCharts;
+    tm=performerPtr->charts();
+    rowCount=populateTableView(tv,tm,0);
+    mw->ui.tabPerformerDetailLists->setTabEnabled(2,rowCount>0);
     //connect(tv, SIGNAL(clicked(QModelIndex)),
             //this, SLOT(performerDetailChartlistSelected(QModelIndex)));
 

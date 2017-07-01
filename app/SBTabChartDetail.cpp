@@ -24,21 +24,17 @@ SBTabChartDetail::playNow(bool enqueueFlag)
     PlaylistItem selected=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
     SBIDPtr ptr;
 
-    qDebug() << SB_DEBUG_INFO;
     if(selected.key.length()==0)
     {
         //	Label clicked
-    qDebug() << SB_DEBUG_INFO << currentPtr->itemType() << currentPtr->itemID();
         ptr=SBIDChart::retrieveChart(currentPtr->itemID());
     }
     else
     {
-    qDebug() << SB_DEBUG_INFO;
         ptr=SBIDBase::createPtr(selected.key,1);
     }
     if(ptr)
     {
-    qDebug() << SB_DEBUG_INFO;
         PlayManager* pmgr=Context::instance()->getPlayManager();
         pmgr?pmgr->playItemNow(ptr,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);

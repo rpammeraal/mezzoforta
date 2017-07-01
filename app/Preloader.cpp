@@ -6,46 +6,59 @@
 #include "DataAccessLayer.h"
 #include "SBIDAlbumPerformance.h"
 
-QMap<int,SBIDChartPerformancePtr>
-Preloader::chartItems(int chartID, bool showProgressDialogFlag)
+//	Retrieve map between chart and chart performance based on an SBID object, which is either:
+//	-	chart
+//	-	performer (all chart performances by chart for this performer)
+//	-	song (all chart performances by chart for this song)
+QMap<SBIDChartPerformancePtr,SBIDChartPtr>
+Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
 {
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
     SBIDChartPerformanceMgr* cpmgr=Context::instance()->getChartPerformanceMgr();
     SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QMap<int,SBIDChartPerformancePtr> items;
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields                         << "3"  << "9"  << "10" << "11" << "12";
-    QStringList performerFields; performerFields               << "4"  << "13" << "14" << "15" << "16";
-    QStringList songPerformanceFields; songPerformanceFields   << "2"  << "3"  << "4"  << "5"  << "7"  << "10"  << "8";
-    QStringList chartPerformanceFields; chartPerformanceFields << "18" << "17" << "2"  << "0"  << "1";
+
+    QStringList chartFields; chartFields                       << "0"  << "1"  << "3"  << "2"  << "22";
+    QStringList chartPerformanceFields; chartPerformanceFields << "4"  << "0"  << "5"  << "6"  << "7";
+    QStringList performerFields; performerFields               << "9"  << "18" << "19" << "20" << "21";
+    QStringList songFields; songFields                         << "8"  << "14" << "15" << "16" << "17";
+    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "10" << "11"  << "12"  << "13";
     QString q;
 
     q=QString
     (
         "SELECT "
-            "cp.chart_position, "             //	0
+            "c.chart_id, "                    //	0
+            "c.name, "
+            "c.release_date, "
+            "c.notes, "
+            "cp.chart_performance_id, "
+            "cp.performance_id, "             //	5
+            "cp.chart_position, "
             "cp.notes, "
-            "p.performance_id, "
             "p.song_id, "
             "p.artist_id, "
-            "p.role_id, "                     //	5
+            "p.role_id, "                     //	10
             "p.year, "
             "p.notes, "
             "p.preferred_record_performance_id , "
             "s.title, "
-            "s.notes, "                       //	10
+            "s.notes, "                       //	15
             "l.lyrics, "
             "-1 AS original_song_performance_id, "
             "a.name, "
             "a.www, "
-            "a.notes, "                       //	15
+            "a.notes, "                       //	20
             "a.mbid, "
-            "cp.chart_id, "
-            "cp.chart_performance_id "
+            "0 AS num_items "
         "FROM "
             "___SB_SCHEMA_NAME___chart_performance cp "
+                "JOIN ___SB_SCHEMA_NAME___chart c ON "
+                    "cp.chart_id=c.chart_id "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
                     "cp.performance_id=p.performance_id "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
@@ -55,13 +68,19 @@ Preloader::chartItems(int chartID, bool showProgressDialogFlag)
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
-            "cp.chart_id=%1 "
+            "cp.chart_id=CASE WHEN %1=%3 THEN %2 ELSE cp.chart_id END AND "
+            "p.artist_id=CASE WHEN %1=%4 THEN %2 ELSE p.artist_id END AND "
+            "p.song_id=CASE WHEN %1=%5 THEN %2 ELSE p.song_id END "
         "ORDER BY "
             "cp.chart_position, "
             "s.title, "
             "a.name "
     )
-        .arg(chartID)
+        .arg(id.itemType())
+        .arg(id.itemID())
+        .arg(SBIDBase::sb_type_chart)
+        .arg(SBIDBase::sb_type_performer)
+        .arg(SBIDBase::sb_type_song)
     ;
 
     dal->customize(q);
@@ -103,63 +122,69 @@ Preloader::chartItems(int chartID, bool showProgressDialogFlag)
         QString key;
         QSqlRecord r;
         QSqlField f;
-        SBIDAlbumPtr albumPtr;
+        SBIDChartPtr chartPtr;
         SBIDSongPerformancePtr songPerformancePtr;
-        SBIDAlbumPerformancePtr albumPerformancePtr;
-        SBIDOnlinePerformancePtr onlinePerformancePtr;
         SBIDChartPerformancePtr chartPerformancePtr;
         SBIDPerformerPtr performerPtr;
-        SBIDPlaylistPtr playlistPtr;
         SBIDSongPtr songPtr;
 
         //	Chart position
         chartPosition++;
 
-        //	Process song
-        if(!queryList.isNull(3))
+        //	Process chart
+        if(!queryList.isNull(0))
         {
-            key=SBIDSong::createKey(queryList.value(3).toInt());
+            key=SBIDChart::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
-            }
-        }
-
-        //	Process performer
-        if(!queryList.isNull(4))
-        {
-            key=SBIDPerformer::createKey(queryList.value(4).toInt());
-            if(key.length()>0)
-            {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
-            }
-        }
-
-        //	Process song performance
-        if(!queryList.isNull(2))
-        {
-            key=SBIDSongPerformance::createKey(queryList.value(2).toInt());
-            if(key.length()>0)
-            {
-                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+                chartPtr=(cmgr->contains(key)? cmgr->retrieve(key,SBIDChartMgr::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
             }
         }
 
         //	Process chart performance
-        if(!queryList.isNull(18))
+        if(!queryList.isNull(4))
         {
-            key=SBIDChartPerformance::createKey(queryList.value(18).toInt());
+            key=SBIDChartPerformance::createKey(queryList.value(4).toInt());
             if(key.length()>0)
             {
                 chartPerformancePtr=(cpmgr->contains(key)? cpmgr->retrieve(key,SBIDChartPerformanceMgr::open_flag_parentonly): _instantiateChartPerformance(cpmgr,chartPerformanceFields,queryList));
             }
         }
 
-        if(chartPerformancePtr)
+        //	Process performer
+        if(!queryList.isNull(9))
         {
-            items[chartPosition]=chartPerformancePtr;
+            key=SBIDPerformer::createKey(queryList.value(9).toInt());
+            if(key.length()>0)
+            {
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
         }
 
+        //	Process song
+        if(!queryList.isNull(8))
+        {
+            key=SBIDSong::createKey(queryList.value(8).toInt());
+            if(key.length()>0)
+            {
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+            }
+        }
+
+        //	Process song performance
+        if(!queryList.isNull(5))
+        {
+            key=SBIDSongPerformance::createKey(queryList.value(5).toInt());
+            if(key.length()>0)
+            {
+                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+            }
+        }
+
+        if(chartPerformancePtr)
+        {
+            items[chartPerformancePtr]=chartPtr;
+        }
 
         if(showProgressDialogFlag && (currentValue%10)==0)
         {
@@ -172,7 +197,6 @@ Preloader::chartItems(int chartID, bool showProgressDialogFlag)
     {
         pd.setValue(maxValue);
     }
-    qDebug() << SB_DEBUG_INFO << items.count();
     return items;
 }
 
@@ -431,7 +455,6 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
         if(!queryList.isNull(20))
         {
             key=SBIDAlbumPerformance::createKey(queryList.value(20).toInt());
-            qDebug() << SB_DEBUG_INFO << key;
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
@@ -455,7 +478,6 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     {
         pd.setValue(maxValue);
     }
-    qDebug() << SB_DEBUG_INFO << items.count();
     return items;
 }
 
@@ -780,6 +802,24 @@ Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, cons
     return albumPtr;
 }
 
+SBIDChartPtr
+Preloader::_instantiateChart(SBIDChartMgr* cmgr, const QStringList& fields, const QSqlQuery& queryList)
+{
+    QSqlRecord r;
+    QSqlField f;
+
+    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());     r.append(f);
+    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());     r.append(f);
+    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString());  r.append(f);
+    f=QSqlField("f4",QVariant::Date);   f.setValue(queryList.value(fields.at(3).toInt()).toDate()); r.append(f);
+    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());     r.append(f);
+
+
+    SBIDChartPtr cPtr=SBIDChart::instantiate(r);
+    cmgr->addItem(cPtr);
+    return cPtr;
+}
+
 SBIDChartPerformancePtr
 Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
@@ -842,9 +882,6 @@ Preloader::_instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* opmgr, const 
     QSqlRecord r;
     QSqlField f;
 
-    qDebug() << SB_DEBUG_INFO << fields.count();
-
-    //	CWIP: apid
     f=QSqlField("f01",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
     f=QSqlField("f02",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
     f=QSqlField("f03",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);

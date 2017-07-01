@@ -245,36 +245,51 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
 }
 
 void
-SBTableModel::populateChartsBySong(QMap<int,SBIDChartPerformancePtr> performances)
+SBTableModel::populateChartsByItemType(SBIDBase::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances)
 {
     _init();
 
     //	Populate header
     QStringList header;
+    if(type==SBIDBase::sb_type_performer)
+    {
+        header.append("SB_ITEM_KEY1");
+        header.append("song");
+    }
+    else if(type==SBIDBase::sb_type_song)
+    {
+        header.append("SB_ITEM_KEY1");
+        header.append("performer");
+    }
     header.append("SB_ITEM_KEY2");
-    header.append("performer");
-    header.append("SB_ITEM_KEY3");
     header.append("chart");
     header.append("position");
     setHorizontalHeaderLabels(header);
 
     //	Populate data
-    QMapIterator<int,SBIDChartPerformancePtr> pIT(performances);
+    QMapIterator<SBIDChartPerformancePtr,SBIDChartPtr> pIT(performances);
     int index=0;
     while(pIT.hasNext())
     {
         pIT.next();
 
-        const int chartID=pIT.key();
-        SBIDChartPtr cPtr=SBIDChart::retrieveChart(chartID);
-        SBIDChartPerformancePtr cpPtr=pIT.value();
+        SBIDChartPerformancePtr cpPtr=pIT.key();
+        SBIDChartPtr cPtr=pIT.value();
         SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
 
         if(cPtr && cpPtr && spPtr)
         {
             int i=0;
-            _setItem(index,i++,spPtr->songPerformerKey());
-            _setItem(index,i++,spPtr->songPerformerName());
+            if(type==SBIDBase::sb_type_performer)
+            {
+                _setItem(index,i++,spPtr->songKey());
+                _setItem(index,i++,spPtr->songTitle());
+            }
+            else if(type==SBIDBase::sb_type_song)
+            {
+                _setItem(index,i++,spPtr->songPerformerKey());
+                _setItem(index,i++,spPtr->songPerformerName());
+            }
             _setItem(index,i++,cPtr->key());
             _setItem(index,i++,cPtr->chartName());
             _setItem(index,i++,QString("%1").arg(cpPtr->chartPosition()));

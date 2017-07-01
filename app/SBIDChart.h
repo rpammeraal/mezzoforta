@@ -79,7 +79,7 @@ private:
 
     void _init();
     void _loadPerformances();
-    static QMap<int,SBIDChartPerformancePtr> _loadPerformancesFromDB(int chartID,bool showProgressDialogFlag=0);
+    static QMap<SBIDChartPerformancePtr,SBIDChartPtr> _loadPerformancesFromDB(const SBIDChart& id,bool showProgressDialogFlag=0);
 };
 
 #endif // SBIDCHART_H

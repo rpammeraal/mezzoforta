@@ -32,7 +32,7 @@ SBIDChartPerformance::iconResourceLocation() const
 int
 SBIDChartPerformance::itemID() const
 {
-    return songID();
+    return chartPerformanceID();
 }
 
 SBIDBase::sb_type
@@ -220,31 +220,31 @@ SBIDChartPerformance::retrieveSQL(const QString &key)
 }
 
 ///	Helper methods for SBIDManagerTemplate
-SBSqlQueryModel*
-SBIDChartPerformance::performancesOnChart(int songID)
-{
-    QString q=QString
-    (
-        "SELECT "
-            "cp.chart_id, "
-            "cp.chart_performance_id, "
-            "cp.chart_id, "
-            "cp.performance_id, "
-            "cp.chart_position, "
-            "cp.notes "
-        "FROM "
-            "___SB_SCHEMA_NAME___chart_performance cp "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "cp.performance_id=p.performance_id "
-        "WHERE "
-            "p.song_id=%1 "
-    )
-        .arg(songID)
-    ;
+//SBSqlQueryModel*
+//SBIDChartPerformance::songPerformancesOnChart(int songID)
+//{
+//    QString q=QString
+//    (
+//        "SELECT "
+//            "cp.chart_id, "
+//            "cp.chart_performance_id, "
+//            "cp.chart_id, "
+//            "cp.performance_id, "
+//            "cp.chart_position, "
+//            "cp.notes "
+//        "FROM "
+//            "___SB_SCHEMA_NAME___chart_performance cp "
+//                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+//                    "cp.performance_id=p.performance_id "
+//        "WHERE "
+//            "p.song_id=%1 "
+//    )
+//        .arg(songID)
+//    ;
 
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-}
+//    qDebug() << SB_DEBUG_INFO << q;
+//    return new SBSqlQueryModel(q);
+//}
 
 
 ///	Protected methods
