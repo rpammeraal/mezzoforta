@@ -314,6 +314,16 @@ SBTabPerformerDetail::_init()
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
                 this, SLOT(showContextMenuView(QPoint)));
 
+        //		3.	List of charts
+        tv=mw->ui.performerDetailCharts;
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(tableViewCellClicked(QModelIndex)));
+        connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
+                this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
+                this, SLOT(showContextMenuView(QPoint)));
+
         //	Icon
         SBLabel* l=mw->ui.labelPerformerDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
@@ -403,6 +413,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     SBIDPerformerPtr ptr;
     for(int i=-2;i<related.count();i++)
     {
+        qDebug() << SB_DEBUG_INFO << cs;
         QString t;
         switch(i)
         {
@@ -435,15 +446,14 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     if(cs.length()>0)
     {
         cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
-        frRelated->setText(cs);
         connect(frRelated, SIGNAL(anchorClicked(QUrl)),
             Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
     }
     else
     {
         cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\"></BODY>";
-        frRelated->setText(cs);
     }
+    frRelated->setText(cs);
 
     //	Reused vars
     QTableView* tv=NULL;
@@ -470,10 +480,11 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     //	Populate charts
     tv=mw->ui.performerDetailCharts;
     tm=performerPtr->charts();
+    dragableColumns.clear();
+    dragableColumns << 0 << 1 << 0 << 1 << 0;
+    tm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,tm,0);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,rowCount>0);
-    //connect(tv, SIGNAL(clicked(QModelIndex)),
-            //this, SLOT(performerDetailChartlistSelected(QModelIndex)));
 
     //QUrl url(performer.url);
     //if(url.isValid()==1)

@@ -244,6 +244,16 @@ SBTabSongDetail::_init()
         connect(tv, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuView(QPoint)));
 
+        //		2.	Chart
+        tv=mw->ui.songDetailCharts;
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(tableViewCellClicked(QModelIndex)));
+        connect(tv->horizontalHeader(), SIGNAL(sectionClicked(int)),
+                this, SLOT(sortOrderChanged(int)));
+        tv->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tv, SIGNAL(customContextMenuRequested(QPoint)),
+                this, SLOT(showContextMenuView(QPoint)));
+
         //	Icon
         SBLabel* l=mw->ui.labelSongDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
@@ -315,7 +325,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     }
     _alsoPerformedBy.clear();
 
-    //	Recreate
+    //	Recreate performer list
     QVector<int> performerList=songPtr->performerIDList();
     QString cs;
     int toDisplay=performerList.count();
@@ -331,6 +341,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         switch(i)
         {
         case -1:
+            qDebug() << SB_DEBUG_INFO
+                     << songPtr->songOriginalPerformerName()
+                     << songPtr->songOriginalPerformerID()
+            ;
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
                 .arg(songPtr->songOriginalPerformerID())
                 .arg(songPtr->songOriginalPerformerName());
@@ -351,11 +365,15 @@ SBTabSongDetail::_populate(const ScreenItem& si)
                 }
             }
         }
+        qDebug() << SB_DEBUG_INFO << i << cs;
     }
+    qDebug() << SB_DEBUG_INFO << toDisplay << performerList.count();
+
     if(performerList.count()>toDisplay)
     {
             cs=cs+QString(",&nbsp;...");
     }
+        qDebug() << SB_DEBUG_INFO << cs;
     cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
     frAlsoPerformedBy->setText(cs);
     connect(frAlsoPerformedBy, SIGNAL(anchorClicked(QUrl)),
@@ -397,6 +415,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //  populate tabSongDetailChartList
     tv=mw->ui.songDetailCharts;
     tm=songPtr->charts();
+    dragableColumns.clear();
+    dragableColumns << 0 << 1 << 0 << 1 << 0;
+    tm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,tm,1);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,rowCount>0);
 

@@ -773,14 +773,15 @@ Between 20161215 and 20170604:
 -	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
     -	playlist only to support SBIDOnlinePerformance as song
 
-20170626:
+current:
+-	Charts implemented.
 -	Definitions in SBIDSongPerformance.h to be moved to SBID.h
 *	add original_song_performance_id to song
 	-	code
 	-	db migration scripts
-*	Love is a battlefield:
+-	Love is a battlefield:
 	-	shows ", Pat Benatar" note the comma at the start.
-	-	unknown year. If year is unknown, possibly actively set from earliest chart date.
+	-	unknown year. If year is unknown, possibly actively set from earliest chart date - not a bug.
 *	All SBID* classes: redirector methods to rely directly on Mgrs -- do not store
 	any smart pointer in any SBID* class, just the actual ID.
 *	difference between text() and genericDescription() -- possibly merge.
@@ -792,6 +793,24 @@ Todo:
 *	Import.
 
 Bugs that need to be fixed:
+*	performer screen:
+	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
+	-	open any performer from chars screen.
+*	search screen:
+	-	search for following items in this order, goes into loop.
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 0 ScreenItem:AllSongs :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 1 ScreenItem:SBIDBase ["SBIDPerformer:2078:n=U2 [#related=10]"] :subtabID=2 :sortColumn=2147483647 :editFlag=false subtabID= 2 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 2 ScreenItem:SBIDBase ["SBIDPerformer:2577:n=Fat Boys & The Beach Boys [#related=0]"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 3 ScreenItem:search ["brother"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 4 ScreenItem:search ["funk"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 5 ScreenItem:search ["brother"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "***Current***" 6 ScreenItem:search ["town"] :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
+		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 275 _currentScreenID= 6
+		14664 "13:27:05" ..\app\Navigator.cpp Navigator::openScreen 108 ***ERROR*** UNHANDLED SCREENITEM TYPE:  0
+		14664 "13:27:06" ..\app\ScreenStack.cpp ScreenStack::debugShow 249 "openScreen:113" num screens 7
+	-	when searching a new item on search screen, search results is not scrolled back to the top.
+	-	need progress dialog
+
 
 Near future:
 *	Change sendToPlayQueue() to return number of actual items queued:

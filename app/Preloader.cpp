@@ -31,7 +31,7 @@ Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
 
     q=QString
     (
-        "SELECT "
+        "SELECT DISTINCT "
             "c.chart_id, "                    //	0
             "c.name, "
             "c.release_date, "
@@ -49,7 +49,7 @@ Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
             "s.title, "
             "s.notes, "                       //	15
             "l.lyrics, "
-            "-1 AS original_song_performance_id, "
+            "COALESCE(org_p.performance_id,-1), "
             "a.name, "
             "a.www, "
             "a.notes, "                       //	20
@@ -63,6 +63,9 @@ Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
                     "cp.performance_id=p.performance_id "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
                     "p.song_id=s.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance org_p ON "
+                    "s.song_id=org_p.song_id AND "
+                    "org_p.role_id=0 "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
