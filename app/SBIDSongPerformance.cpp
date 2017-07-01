@@ -11,10 +11,6 @@ SBIDSongPerformance::SBIDSongPerformance(const SBIDSongPerformance &p):SBIDBase(
     _year                       =p._year;
     _notes                      =p._notes;
     _preferredAlbumPerformanceID=p._preferredAlbumPerformanceID;
-
-    _pPtr                       =p._pPtr;
-    _sPtr                       =p._sPtr;
-    _prefAPPtr                  =p._prefAPPtr;
 }
 
 //	Inherited methods
@@ -85,32 +81,23 @@ SBIDSongPerformance::type() const
 SBIDPerformerPtr
 SBIDSongPerformance::performerPtr() const
 {
-    if(!_pPtr && _performerID>=0)
-    {
-        const_cast<SBIDSongPerformance *>(this)->_loadPerformerPtr();
-    }
-    return _pPtr;
+    SBIDPerformerMgr* pMgr=Context::instance()->getPerformerMgr();
+    return pMgr->retrieve(SBIDPerformer::createKey(_performerID));
 }
 
 SBIDAlbumPerformancePtr
 SBIDSongPerformance::preferredAlbumPerformancePtr() const
 {
+    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    return apMgr->retrieve(SBIDAlbumPerformance::createKey(_preferredAlbumPerformanceID));
     qDebug() << SB_DEBUG_INFO << _songPerformanceID << _preferredAlbumPerformanceID;
-    if(!_prefAPPtr && _preferredAlbumPerformanceID>=0)
-    {
-        const_cast<SBIDSongPerformance *>(this)->_loadPreferredAlbumPerformancePtr();
-    }
-    return _prefAPPtr;
 }
 
 SBIDSongPtr
 SBIDSongPerformance::songPtr() const
 {
-    if(!_sPtr && _songID>=0)
-    {
-        const_cast<SBIDSongPerformance *>(this)->_loadSongPtr();
-    }
-    return _sPtr;
+    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
+    return sMgr->retrieve(SBIDSong::createKey(_songID));
 }
 
 ///	Redirectors
@@ -147,8 +134,8 @@ SBIDSongPerformance::songTitle() const
 SBIDSongPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=_sPtr?this->songTitle():"not retrieved yet";
-    QString songPerformerName=_pPtr?this->songPerformerName():"not retrieved yet";
+    QString songTitle=this->songTitle();
+    QString songPerformerName=this->songPerformerName();
 
     return QString("SBIDSongPerformance:%1:t=%2:p=%3 %4")
             .arg(this->songID())
@@ -179,9 +166,6 @@ SBIDSongPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFl
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
-
-    performerPtr();
-    songPtr();
 }
 
 //	Static methods
@@ -440,23 +424,4 @@ SBIDSongPerformance::setOriginalPerformerFlag(bool originalPerformerFlag)
         setChangedFlag();
         _originalPerformerFlag=originalPerformerFlag;
     }
-}
-
-///	Private methods
-void
-SBIDSongPerformance::_loadPerformerPtr()
-{
-    _pPtr=SBIDPerformer::retrievePerformer(_performerID,1);
-}
-
-void
-SBIDSongPerformance::_loadPreferredAlbumPerformancePtr()
-{
-    _prefAPPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_preferredAlbumPerformanceID,1);
-}
-
-void
-SBIDSongPerformance::_loadSongPtr()
-{
-    _sPtr=SBIDSong::retrieveSong(_songID,1);
 }

@@ -20,7 +20,6 @@ SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
     _notes            =c._notes;
     _year             =c._year;
 
-    _performerPtr     =c._performerPtr;
     _albumPerformances=c._albumPerformances;
 }
 
@@ -1361,12 +1360,8 @@ SBIDAlbum::updateSongOnAlbum(const SBIDSong &song)
 SBIDPerformerPtr
 SBIDAlbum::performerPtr() const
 {
-    if(!_performerPtr && _performerID>=0)
-    {
-        //	Model this the same way as SBIDSong
-        const_cast<SBIDAlbum *>(this)->_loadPerformerPtr();
-    }
-    return _performerPtr;
+    SBIDPerformerMgr* pMgr=Context::instance()->getPerformerMgr();
+    return pMgr->retrieve(SBIDPerformer::createKey(_performerID));
 }
 
 ///	Redirectors
@@ -1380,7 +1375,7 @@ SBIDAlbum::albumPerformerName() const
 ///	Operators
 SBIDAlbum::operator QString() const
 {
-    QString albumPerformerName=this->_performerPtr ? this->albumPerformerName() : "<not loaded yet>";
+    QString albumPerformerName=this->albumPerformerName();
     QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
     return QString("SBIDAlbum:%1:t=%2:p=%3 %4")
             .arg(this->_albumID)
@@ -1415,10 +1410,6 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances(showProgressDialogFlag);
-    }
-    if(forcedFlag==1 || !_performerPtr)
-    {
-        _loadPerformerPtr();
     }
 }
 
@@ -1831,12 +1822,6 @@ QMap<int,SBIDAlbumPerformancePtr>
 SBIDAlbum::_loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const
 {
     return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),showProgressDialogFlag);
-}
-
-void
-SBIDAlbum::_loadPerformerPtr()
-{
-    _performerPtr=SBIDPerformer::retrievePerformer(_performerID,1,0);
 }
 
 QStringList

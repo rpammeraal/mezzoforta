@@ -151,6 +151,7 @@ SBIDChart::key() const
 void
 SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
+    Q_UNUSED(showProgressDialogFlag);
     if(forcedFlag==1 || _items.count()==0)
     {
         _loadPerformances();

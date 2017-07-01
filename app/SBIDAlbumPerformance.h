@@ -103,19 +103,10 @@ private:
     QString                           _notes;
     int                               _preferredOnlinePerformanceID;
 
-    //	Loaded on demand
-    SBIDAlbumPtr                      _aPtr;
-    SBIDSongPerformancePtr            _spPtr;
-    SBIDOnlinePerformancePtr          _prefOPPtr;
-
     //	Not stored in database
     int                               _orgAlbumPosition;	//	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
 
     void _init();
-
-    void _loadAlbumPtr();
-    void _loadSongPerformancePtr();
-    void _loadPreferredOnlinePerformancePtr();
 };
 
 #endif // SBIDALBUMPERFORMANCE_H

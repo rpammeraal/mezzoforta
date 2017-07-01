@@ -103,16 +103,7 @@ private:
     QString                 _notes;
     int                     _preferredAlbumPerformanceID;
 
-    //	Loaded on demand
-    SBIDPerformerPtr        _pPtr;
-    SBIDSongPtr             _sPtr;
-    SBIDAlbumPerformancePtr _prefAPPtr;
-
     void _init();
-
-    void _loadPerformerPtr();
-    void _loadPreferredAlbumPerformancePtr();
-    void _loadSongPtr();
 };
 
 #endif // SBIDSONGPERFORMANCE_H

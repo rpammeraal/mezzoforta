@@ -82,14 +82,10 @@ private:
     int                     _albumPerformanceID;	//	FK
     QString                 _path;
 
-    //	Loaded on demand
-    SBIDAlbumPerformancePtr _apPtr;
-
     //	Not stored in database
     int                     _playPosition; //	current position in current playlist
 
     void _init();
-    void _loadAlbumPerformancePtr();
 };
 
 #endif // SBIDONLINEPERFORMANCE_H

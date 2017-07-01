@@ -776,15 +776,17 @@ Between 20161215 and 20170604:
 current:
 -	Charts implemented.
 -	Definitions in SBIDSongPerformance.h to be moved to SBID.h
-*	add original_song_performance_id to song
-	-	code
-	-	db migration scripts
 -	Love is a battlefield:
 	-	shows ", Pat Benatar" note the comma at the start.
 	-	unknown year. If year is unknown, possibly actively set from earliest chart date - not a bug.
-*	All SBID* classes: redirector methods to rely directly on Mgrs -- do not store
+-	All SBID* classes: redirector methods to rely directly on Mgrs -- do not store
 	any smart pointer in any SBID* class, just the actual ID.
+-	All SBID* classes: _init() to initialize all attributes and be called.
 *	difference between text() and genericDescription() -- possibly merge.
+*	add original_song_performance_id to song
+	-	code
+	-	db migration scripts
+*	enqueueing from chart is slow (windows)
 
 Todo:
 *	streamline population of database new style
@@ -793,6 +795,7 @@ Todo:
 *	Import.
 
 Bugs that need to be fixed:
+*	charts tab (performer, song): to be ordered by chart position.
 *	performer screen:
 	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
 	-	open any performer from chars screen.

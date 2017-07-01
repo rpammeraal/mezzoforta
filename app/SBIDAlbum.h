@@ -63,7 +63,7 @@ public:
 
     //	Setters
     void setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
-    void setAlbumPerformerID(int performerID) { _performerID=performerID; _performerPtr=SBIDPerformerPtr(); setChangedFlag(); }
+    void setAlbumPerformerID(int performerID) { _performerID=performerID; setChangedFlag(); }
     void setYear(int year) { _year=year; setChangedFlag(); }
     void setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
 
@@ -116,15 +116,11 @@ private:
     QString                           _notes;
     int                               _year;
 
-    //	Attributes derived from core attributes
-    SBIDPerformerPtr                  _performerPtr;
-
     //	CWIP: make this a vector. Will solve a lot of headaches
     QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;	//	1:based, index is record position
 
     void _init();
     void _loadAlbumPerformances(bool showProgressDialogFlag=0);
-    void _loadPerformerPtr();
 
     //	Aux helper methods
     QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const;

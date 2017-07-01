@@ -80,13 +80,8 @@ SBIDChartPerformance::type() const
 SBIDSongPerformancePtr
 SBIDChartPerformance::songPerformancePtr() const
 {
-    SBIDSongPerformancePtr spPtr;
-    if(_songPerformanceID>=0)
-    {
-        SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-        spPtr=spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
-    }
-    return spPtr;
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
 }
 
 ///	Redirectors

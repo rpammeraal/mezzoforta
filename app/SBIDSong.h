@@ -117,14 +117,12 @@ private:
 
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPerformancePtr>   _albumPerformances;
-    QVector<PlaylistOnlinePerformance> _playlistOnlinePerformanceList;
-    SBIDSongPerformancePtr             _orgSPPtr;
+    QVector<PlaylistOnlinePerformance> _playlistOnlinePerformances;
     QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
 
     void _init();
     void _loadAlbumPerformances();
     void _loadPlaylists();
-    void _loadOriginalSongPerformancePtr();
     void _loadPreferredAlbumPerformancePtr();
     void _loadSongPerformances();
 

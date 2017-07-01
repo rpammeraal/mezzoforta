@@ -11,8 +11,6 @@ SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBI
     _albumPerformanceID =p._albumPerformanceID;
     _path               =p._path;
 
-    _apPtr              =p._apPtr;
-
     _playPosition       =p._playPosition;
 }
 
@@ -131,25 +129,16 @@ SBIDOnlinePerformance::updateLastPlayDate()
 SBIDAlbumPerformancePtr
 SBIDOnlinePerformance::albumPerformancePtr() const
 {
-    if(!_apPtr && _albumPerformanceID>=0)
-    {
-        const_cast<SBIDOnlinePerformance *>(this)->_loadAlbumPerformancePtr();
-    }
-    return _apPtr;
+    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    return apMgr->retrieve(SBIDAlbumPerformance::createKey(_albumPerformanceID));
 }
 
 SBIDSongPtr
 SBIDOnlinePerformance::songPtr() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
-    SBIDSongPtr sPtr;
-    if(apPtr)
-    {
-        sPtr=apPtr->songPtr();
-    }
-    return sPtr;
+    return (apPtr?apPtr->songPtr():SBIDSongPtr());
 }
-
 
 ///	Redirectors
 int
@@ -241,15 +230,12 @@ SBIDOnlinePerformance::songTitle() const
 ///	Operators
 SBIDOnlinePerformance::operator QString()
 {
-    //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString str=_apPtr?_apPtr->operator QString():QString("not retrieved yet");
+    QString str=albumPerformancePtr()->operator QString();
 
-    return QString("SBIdOnlinePerformance:%1")
+    return QString("SBIDOnlinePerformance:%1")
         .arg(str)
     ;
 }
-
-
 
 //	Static methods
 QString
@@ -319,8 +305,6 @@ SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forced
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
-
-    _loadAlbumPerformancePtr();
 }
 
 ///	Protected methods
@@ -391,10 +375,4 @@ SBIDOnlinePerformance::_init()
     _onlinePerformanceID=-1;
     _albumPerformanceID=-1;
     _playPosition=-1;
-}
-
-void
-SBIDOnlinePerformance::_loadAlbumPerformancePtr()
-{
-    _apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(_albumPerformanceID,1);
 }

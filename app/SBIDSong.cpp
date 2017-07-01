@@ -21,9 +21,8 @@ SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
     _notes                     =c._notes;
     _lyrics                    =c._lyrics;
     _originalSongPerformanceID =c._originalSongPerformanceID;
-    _orgSPPtr                  =c._orgSPPtr;
 
-    _playlistOnlinePerformanceList=c._playlistOnlinePerformanceList;
+    _playlistOnlinePerformances=c._playlistOnlinePerformances;
     _albumPerformances         =c._albumPerformances;
     _songPerformances          =c._songPerformances;
 }
@@ -358,13 +357,13 @@ SBIDSong::numOnlinePerformances() const
 SBTableModel*
 SBIDSong::playlists()
 {
-    if(!_playlistOnlinePerformanceList.count())
+    if(!_playlistOnlinePerformances.count())
     {
         //	Playlists may not be loaded -- retrieve again
         this->_loadPlaylists();
     }
     SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_playlistOnlinePerformanceList);
+    tm->populatePlaylists(_playlistOnlinePerformances);
     return tm;
 }
 
@@ -1105,11 +1104,8 @@ SBIDSong::updateSoundexFields()
 SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
-    if(!_orgSPPtr && _originalSongPerformanceID>=0)
-    {
-        const_cast<SBIDSong *>(this)->_loadOriginalSongPerformancePtr();
-    }
-    return _orgSPPtr;
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_originalSongPerformanceID));
 }
 
 ///	Redirectors
@@ -1138,7 +1134,7 @@ SBIDSong::songOriginalYear() const
 SBIDSong::operator QString() const
 {
     QString songTitle=this->_songTitle.length() ? this->_songTitle:"<N/A>";
-    QString songPerformerName=_orgSPPtr?this->songOriginalPerformerName():"not retrieved yet";
+    QString songPerformerName=this->songOriginalPerformerName();
 
     return QString("SBIDSong:%1:t=%2) //:p=%3 %4")
             .arg(this->_songID)
@@ -1172,13 +1168,9 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadAlbumPerformances();
     }
-    if(forcedFlag==1 || _playlistOnlinePerformanceList.count()==0)
+    if(forcedFlag==1 || _playlistOnlinePerformances.count()==0)
     {
         _loadPlaylists();
-    }
-    if(forcedFlag==1 || !_orgSPPtr)
-    {
-        _loadOriginalSongPerformancePtr();
     }
     if(forcedFlag==1 || _songPerformances.count()==0)
     {
@@ -1576,16 +1568,7 @@ SBIDSong::_loadAlbumPerformances()
 void
 SBIDSong::_loadPlaylists()
 {
-    _playlistOnlinePerformanceList=_loadPlaylistOnlinePerformanceListFromDB();
-
-        SBIDSong::PlaylistOnlinePerformance r;
-
-}
-
-void
-SBIDSong::_loadOriginalSongPerformancePtr()
-{
-    _orgSPPtr=SBIDSongPerformance::retrieveSongPerformance(_originalSongPerformanceID);
+    _playlistOnlinePerformances=_loadPlaylistOnlinePerformanceListFromDB();
 }
 
 void

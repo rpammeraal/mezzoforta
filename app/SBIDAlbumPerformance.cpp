@@ -18,10 +18,6 @@ SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDBa
     _notes                        =p._notes;
     _preferredOnlinePerformanceID =p._preferredOnlinePerformanceID;
 
-    _aPtr                         =p._aPtr;
-    _spPtr                        =p._spPtr;
-    _prefOPPtr                    =p._prefOPPtr;
-
     _orgAlbumPosition             =p._orgAlbumPosition;
 
     //_sb_play_position            =p._sb_play_position;	CWIP DELETE
@@ -117,31 +113,22 @@ SBIDAlbumPerformance::setAlbumPosition(int position)
 SBIDAlbumPtr
 SBIDAlbumPerformance::albumPtr() const
 {
-    if(!_aPtr && _albumPerformanceID>=0)
-    {
-        const_cast<SBIDAlbumPerformance *>(this)->_loadAlbumPtr();
-    }
-    return _aPtr;
+    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
+    return aMgr->retrieve(SBIDAlbum::createKey(_albumPerformanceID));
 }
 
 SBIDSongPerformancePtr
 SBIDAlbumPerformance::songPerformancePtr() const
 {
-    if(!_spPtr && _songPerformanceID>=0)
-    {
-        const_cast<SBIDAlbumPerformance *>(this)->_loadSongPerformancePtr();
-    }
-    return _spPtr;
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
 }
 
 SBIDOnlinePerformancePtr
 SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 {
-    if(!_prefOPPtr && _preferredOnlinePerformanceID>=0)
-    {
-        const_cast<SBIDAlbumPerformance *>(this)->_loadPreferredOnlinePerformancePtr();
-    }
-    return _prefOPPtr;
+    SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
+    return opMgr->retrieve(SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID));
 }
 
 ///	Redirectors
@@ -227,9 +214,9 @@ SBIDAlbumPerformance::year() const
 SBIDAlbumPerformance::operator QString()
 {
     //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=_spPtr?this->songTitle():"not retrieved yet";
-    QString songPerformerName=_spPtr?this->songPerformerName():"not retrieved yet";
-    QString albumTitle=_aPtr?this->albumTitle():"not retrieved yet";
+    QString songTitle=this->songTitle();
+    QString songPerformerName=this->songPerformerName();
+    QString albumTitle=this->albumTitle();
 
     return QString("SBIDAlbumPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
             .arg(this->songID())
@@ -253,9 +240,6 @@ SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
-    _loadAlbumPtr();
-    _loadSongPerformancePtr();
-    _loadPreferredOnlinePerformancePtr();
 }
 
 //	Static methods
@@ -676,22 +660,4 @@ SBIDAlbumPerformance::_init()
     _albumID=-1;
     _albumPosition=-1;
     _preferredOnlinePerformanceID=-1;
-}
-
-void
-SBIDAlbumPerformance::_loadAlbumPtr()
-{
-    _aPtr=SBIDAlbum::retrieveAlbum(_albumID,1);
-}
-
-void
-SBIDAlbumPerformance::_loadSongPerformancePtr()
-{
-    _spPtr=SBIDSongPerformance::retrieveSongPerformance(_songPerformanceID,1);
-}
-
-void
-SBIDAlbumPerformance::_loadPreferredOnlinePerformancePtr()
-{
-    _prefOPPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(_preferredOnlinePerformanceID,1);
 }
