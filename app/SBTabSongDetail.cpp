@@ -341,10 +341,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         switch(i)
         {
         case -1:
-            qDebug() << SB_DEBUG_INFO
-                     << songPtr->songOriginalPerformerName()
-                     << songPtr->songOriginalPerformerID()
-            ;
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
                 .arg(songPtr->songOriginalPerformerID())
                 .arg(songPtr->songOriginalPerformerName());
@@ -365,9 +361,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
                 }
             }
         }
-        qDebug() << SB_DEBUG_INFO << i << cs;
     }
-    qDebug() << SB_DEBUG_INFO << toDisplay << performerList.count();
 
     if(performerList.count()>toDisplay)
     {

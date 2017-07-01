@@ -476,17 +476,17 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         else if(itemName=="menuNewPlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(newPlaylist()));
+                    Context::instance()->getChooser(), SLOT(playlistNew()));
         }
         else if(itemName=="menuDeletePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(deletePlaylist()));
+                    Context::instance()->getChooser(), SLOT(playlistDelete()));
         }
         else if(itemName=="menuRenamePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(renamePlaylist()));
+                    Context::instance()->getChooser(), SLOT(playlistRename()));
         }
         else if(itemName=="menuRecalculatePlaylist")
         {

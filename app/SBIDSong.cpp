@@ -16,15 +16,7 @@
 ///	Ctors
 SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
 {
-    _songID                    =c._songID;
-    _songTitle                 =c._songTitle;
-    _notes                     =c._notes;
-    _lyrics                    =c._lyrics;
-    _originalSongPerformanceID =c._originalSongPerformanceID;
-
-    _playlistOnlinePerformances=c._playlistOnlinePerformances;
-    _albumPerformances         =c._albumPerformances;
-    _songPerformances          =c._songPerformances;
+    _copy(c);
 }
 
 SBIDSong::~SBIDSong()
@@ -215,8 +207,10 @@ SBIDSong::albums() const
     SBTableModel* tm=new SBTableModel();
     if(_albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
+        qDebug() << SB_DEBUG_INFO;
     tm->populateAlbumsBySong(_albumPerformances);
     return tm;
 }
@@ -1105,7 +1099,9 @@ SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-    return spMgr->retrieve(SBIDSongPerformance::createKey(_originalSongPerformanceID));
+    return spMgr->retrieve(
+                SBIDSongPerformance::createKey(_originalSongPerformanceID),
+                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -1133,13 +1129,10 @@ SBIDSong::songOriginalYear() const
 ///	Operators
 SBIDSong::operator QString() const
 {
-    QString songTitle=this->_songTitle.length() ? this->_songTitle:"<N/A>";
-    QString songPerformerName=this->songOriginalPerformerName();
-
-    return QString("SBIDSong:%1:t=%2) //:p=%3 %4")
-            .arg(this->_songID)
-            .arg(songTitle)
-            .arg(songPerformerName)
+    return QString("SBIDSong:sID=%1:t=%2:oSPID=%3")
+            .arg(_songID)
+            .arg(_songTitle)
+            .arg(_originalSongPerformanceID)
     ;
 }
 
@@ -1238,6 +1231,13 @@ SBIDSong::iconResourceLocationStatic()
 SBIDSong::SBIDSong():SBIDBase()
 {
     _init();
+}
+
+SBIDSong&
+SBIDSong::operator=(const SBIDSong& t)
+{
+    _copy(t);
+    return *this;
 }
 
 SBIDSongPtr
@@ -1541,16 +1541,33 @@ SBIDSong::clearChangedFlag()
 
 ///	Private methods
 void
+SBIDSong::_copy(const SBIDSong &c)
+{
+    _songID                    =c._songID;
+    _songTitle                 =c._songTitle;
+    _notes                     =c._notes;
+    _lyrics                    =c._lyrics;
+    _originalSongPerformanceID =c._originalSongPerformanceID;
+
+    _playlistOnlinePerformances=c._playlistOnlinePerformances;
+    _albumPerformances         =c._albumPerformances;
+    _songPerformances          =c._songPerformances;
+}
+
+void
 SBIDSong::_init()
 {
     _sb_item_type=SBIDBase::sb_type_song;
+
     _songID=-1;
     _songTitle=QString();
-    _lyrics=QString();
     _notes=QString();
+    _lyrics=QString();
     _originalSongPerformanceID=-1;
 
     _albumPerformances.clear();
+    _playlistOnlinePerformances.clear();
+    _songPerformances.clear();
 }
 
 void
@@ -1560,7 +1577,9 @@ SBIDSong::_loadAlbumPerformances()
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
+    qDebug()<< SB_DEBUG_INFO;
     _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
+    qDebug()<< SB_DEBUG_INFO;
 
     delete qm;
 }

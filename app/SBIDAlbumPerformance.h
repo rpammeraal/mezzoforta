@@ -83,6 +83,9 @@ protected:
 
     SBIDAlbumPerformance();
 
+    //	Operators
+    SBIDAlbumPerformance& operator=(const SBIDAlbumPerformance& t);
+
     //	Methods used by SBIDManager
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumPerformanceID);
@@ -106,6 +109,7 @@ private:
     //	Not stored in database
     int                               _orgAlbumPosition;	//	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
 
+    void _copy(const SBIDAlbumPerformance& c);
     void _init();
 };
 

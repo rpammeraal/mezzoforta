@@ -10,18 +10,7 @@
 ///	Ctors, dtors
 SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDBase(p)
 {
-    _albumPerformanceID           =p._albumPerformanceID;
-    _songPerformanceID            =p._songPerformanceID;
-    _albumID                      =p._albumID;
-    _albumPosition                =p._albumPosition;
-    _duration                     =p._duration;
-    _notes                        =p._notes;
-    _preferredOnlinePerformanceID =p._preferredOnlinePerformanceID;
-
-    _orgAlbumPosition             =p._orgAlbumPosition;
-
-    //_sb_play_position            =p._sb_play_position;	CWIP DELETE
-    //_playlistPosition            =p._playlistPosition;
+    _copy(p);
 }
 
 SBIDAlbumPerformance::~SBIDAlbumPerformance()
@@ -114,21 +103,27 @@ SBIDAlbumPtr
 SBIDAlbumPerformance::albumPtr() const
 {
     SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
-    return aMgr->retrieve(SBIDAlbum::createKey(_albumPerformanceID));
+    return aMgr->retrieve(
+                SBIDAlbum::createKey(_albumID),
+                SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
 }
 
 SBIDSongPerformancePtr
 SBIDAlbumPerformance::songPerformancePtr() const
 {
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
+    return spMgr->retrieve(
+                SBIDSongPerformance::createKey(_songPerformanceID),
+                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
 }
 
 SBIDOnlinePerformancePtr
 SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 {
     SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
-    return opMgr->retrieve(SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID));
+    return opMgr->retrieve(
+                SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID),
+                SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -213,18 +208,11 @@ SBIDAlbumPerformance::year() const
 ///	Operators
 SBIDAlbumPerformance::operator QString()
 {
-    //	Do not cause retrievals to be done, in case this method is being called during a retrieval.
-    QString songTitle=this->songTitle();
-    QString songPerformerName=this->songPerformerName();
-    QString albumTitle=this->albumTitle();
-
-    return QString("SBIDAlbumPerformance:%1:t=%2:p=%3 %4:a=%5 %6")
-            .arg(this->songID())
-            .arg(songTitle)
-            .arg(songPerformerName)
-            .arg(this->songPerformerID())
-            .arg(albumTitle)
-            .arg(this->albumID())
+    return QString("SBIDAlbumPerformance:apID=%1:spID=%2:aID=%3:pos=%4")
+            .arg(_albumPerformanceID)
+            .arg(_songPerformanceID)
+            .arg(_albumID)
+            .arg(_albumPosition)
     ;
 }
 
@@ -425,13 +413,19 @@ SBIDAlbumPerformance::SBIDAlbumPerformance()
     _init();
 }
 
+SBIDAlbumPerformance&
+SBIDAlbumPerformance::operator=(const SBIDAlbumPerformance& t)
+{
+    _copy(t);
+    return *this;
+}
+
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 {
     SBIDAlbumPerformance ap;
     int i=0;
 
-    //	CWIP: apid
     ap._albumPerformanceID          =Common::parseIntFieldDB(&r,i++);
     ap._songPerformanceID           =Common::parseIntFieldDB(&r,i++);
     ap._albumID                     =Common::parseIntFieldDB(&r,i++);
@@ -442,7 +436,6 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 
     ap._orgAlbumPosition=ap._albumPosition;
 
-    qDebug() << SB_DEBUG_INFO << ap._albumPerformanceID << ap._preferredOnlinePerformanceID;
     return std::make_shared<SBIDAlbumPerformance>(ap);
 }
 
@@ -653,11 +646,30 @@ SBIDAlbumPerformance::updateSQL() const
 
 //	Private methods
 void
+SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)
+{
+    _albumPerformanceID           =c._albumPerformanceID;
+    _songPerformanceID            =c._songPerformanceID;
+    _albumID                      =c._albumID;
+    _albumPosition                =c._albumPosition;
+    _duration                     =c._duration;
+    _notes                        =c._notes;
+    _preferredOnlinePerformanceID =c._preferredOnlinePerformanceID;
+
+    _orgAlbumPosition             =c._orgAlbumPosition;
+}
+
+void
 SBIDAlbumPerformance::_init()
 {
+    _sb_item_type=SBIDBase::sb_type_album_performance;
+
     _albumPerformanceID=-1;
     _songPerformanceID=-1;
     _albumID=-1;
     _albumPosition=-1;
+    _duration=Duration();
+    _notes=QString();
     _preferredOnlinePerformanceID=-1;
+    _orgAlbumPosition=-1;
 }

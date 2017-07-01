@@ -773,7 +773,7 @@ Between 20161215 and 20170604:
 -	Go to 000-2017 playlist. Select Kite-U2. Playlists not populated in resulting songtab.
     -	playlist only to support SBIDOnlinePerformance as song
 
-current:
+20170701:
 -	Charts implemented.
 -	Definitions in SBIDSongPerformance.h to be moved to SBID.h
 -	Love is a battlefield:
@@ -781,12 +781,18 @@ current:
 	-	unknown year. If year is unknown, possibly actively set from earliest chart date - not a bug.
 -	All SBID* classes: redirector methods to rely directly on Mgrs -- do not store
 	any smart pointer in any SBID* class, just the actual ID.
+
+current:
 -	All SBID* classes: _init() to initialize all attributes and be called.
+-	All SBID* classes: operator =() to be implemented
+-	Bohemian Rhapsody opened from chart -- blank album titles.
+-	Playlist 'Herinneringen Aan Holland' -- many blank album titles.
 *	difference between text() and genericDescription() -- possibly merge.
 *	add original_song_performance_id to song
 	-	code
 	-	db migration scripts
 *	enqueueing from chart is slow (windows)
+*	unable to play on windows
 
 Todo:
 *	streamline population of database new style

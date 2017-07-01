@@ -7,11 +7,7 @@
 ///	Ctors, dtors
 SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBIDBase(p)
 {
-    _onlinePerformanceID=p._onlinePerformanceID;
-    _albumPerformanceID =p._albumPerformanceID;
-    _path               =p._path;
-
-    _playPosition       =p._playPosition;
+    _copy(p);
 }
 
 SBIDOnlinePerformance::~SBIDOnlinePerformance()
@@ -130,7 +126,9 @@ SBIDAlbumPerformancePtr
 SBIDOnlinePerformance::albumPerformancePtr() const
 {
     SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
-    return apMgr->retrieve(SBIDAlbumPerformance::createKey(_albumPerformanceID));
+    return apMgr->retrieve(
+                SBIDAlbumPerformance::createKey(_albumPerformanceID),
+                SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
 }
 
 SBIDSongPtr
@@ -230,10 +228,9 @@ SBIDOnlinePerformance::songTitle() const
 ///	Operators
 SBIDOnlinePerformance::operator QString()
 {
-    QString str=albumPerformancePtr()->operator QString();
-
-    return QString("SBIDOnlinePerformance:%1")
-        .arg(str)
+    return QString("SBIDOnlinePerformance:opID=%1:apID=%2")
+        .arg(_onlinePerformanceID)
+        .arg(_albumPerformanceID)
     ;
 }
 
@@ -313,6 +310,13 @@ SBIDOnlinePerformance::SBIDOnlinePerformance()
     _init();
 }
 
+SBIDOnlinePerformance&
+SBIDOnlinePerformance::operator=(const SBIDOnlinePerformance& t)
+{
+    _copy(t);
+    return *this;
+}
+
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::instantiate(const QSqlRecord& r)
 {
@@ -370,9 +374,22 @@ SBIDOnlinePerformance::updateSQL() const
 
 ///	Private methods
 void
+SBIDOnlinePerformance::_copy(const SBIDOnlinePerformance &c)
+{
+    _onlinePerformanceID=c._onlinePerformanceID;
+    _albumPerformanceID =c._albumPerformanceID;
+    _path               =c._path;
+
+    _playPosition       =c._playPosition;
+}
+
+void
 SBIDOnlinePerformance::_init()
 {
+    _sb_item_type=SBIDBase::sb_type_online_performance;
+
     _onlinePerformanceID=-1;
     _albumPerformanceID=-1;
+    _path=QString();
     _playPosition=-1;
 }

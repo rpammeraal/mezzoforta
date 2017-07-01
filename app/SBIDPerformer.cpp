@@ -16,13 +16,7 @@
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
-    _performerID        =c._performerID;
-    _performerName      =c._performerName;
-    _notes              =c._notes;
-
-    _albumList          =c._albumList;
-    _albumPerformances  =c._albumPerformances;
-    _relatedPerformerKey=c._relatedPerformerKey;
+    _copy(c);
 }
 
 SBIDPerformer::~SBIDPerformer()
@@ -286,11 +280,9 @@ SBIDPerformer::deleteRelatedPerformer(const QString& key)
 ///	Operators
 SBIDPerformer::operator QString() const
 {
-    QString performerName=this->_performerName.length() ? this->_performerName : "<N/A>";
-    return QString("SBIDPerformer:%1:n=%2 [#related=%4]")
-            .arg(this->_performerID)
-            .arg(performerName)
-            .arg(_relatedPerformerKey.count())
+    return QString("SBIDPerformer:pID=%1:n=%2")
+            .arg(_performerID)
+            .arg(_performerName)
     ;
 }
 
@@ -437,6 +429,14 @@ SBIDPerformer::SBIDPerformer():SBIDBase()
 {
     _init();
 }
+
+SBIDPerformer&
+SBIDPerformer::operator=(const SBIDPerformer& t)
+{
+    _copy(t);
+    return *this;
+}
+
 
 ///	Methods used by SBIDManager
 SBIDPerformerPtr
@@ -1049,12 +1049,28 @@ SBIDPerformer::deleteRelatedPerformerSQL(const QString& key) const
 
 ///	Private methods
 void
+SBIDPerformer::_copy(const SBIDPerformer &c)
+{
+    _performerID        =c._performerID;
+    _performerName      =c._performerName;
+    _notes              =c._notes;
+
+    _albumList          =c._albumList;
+    _albumPerformances  =c._albumPerformances;
+    _relatedPerformerKey=c._relatedPerformerKey;
+}
+
+void
 SBIDPerformer::_init()
 {
     _sb_item_type=SBIDBase::sb_type_performer;
+
     _performerID=-1;
-    _performerName="";
-    _notes="";
+    _performerName=QString();
+    _notes=QString();
+
+    _albumList.clear();
+    _albumPerformances.clear();
     _relatedPerformerKey.clear();
 }
 

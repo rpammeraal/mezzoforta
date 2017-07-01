@@ -42,9 +42,8 @@ public:
         sb_type_playlist=5,
         sb_type_song_performance=6,
         sb_type_album_performance=7,
-        sb_type_playlist_detail=8,
-        sb_type_online_performance=9,
-        sb_type_chart_performance=10
+        sb_type_online_performance=8,
+        sb_type_chart_performance=9
     };
 
     static size_t sb_type_count() { return 8; }
@@ -102,9 +101,14 @@ public:
 
 protected:
     friend class SBIDAlbum;
+    friend class SBIDAlbumPerformance;
+    friend class SBIDChart;
+    friend class SBIDChartPerformance;
+    friend class SBIDOnlinePerformance;
     friend class SBIDPerformer;
     friend class SBIDPlaylist;
     friend class SBIDSong;
+    friend class SBIDSongPerformance;
     friend class SBModel;
     template <class T, class parentT> friend class SBIDManagerTemplate;
 

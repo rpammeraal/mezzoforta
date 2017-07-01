@@ -13,14 +13,7 @@
 
 SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
 {
-    _albumID          =c._albumID;
-    _performerID      =c._performerID;
-    _albumTitle       =c._albumTitle;
-    _genre            =c._genre;
-    _notes            =c._notes;
-    _year             =c._year;
-
-    _albumPerformances=c._albumPerformances;
+    _copy(c);
 }
 
 SBIDAlbum::~SBIDAlbum()
@@ -1361,7 +1354,9 @@ SBIDPerformerPtr
 SBIDAlbum::performerPtr() const
 {
     SBIDPerformerMgr* pMgr=Context::instance()->getPerformerMgr();
-    return pMgr->retrieve(SBIDPerformer::createKey(_performerID));
+    return pMgr->retrieve(
+                SBIDPerformer::createKey(_performerID),
+                SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -1375,13 +1370,9 @@ SBIDAlbum::albumPerformerName() const
 ///	Operators
 SBIDAlbum::operator QString() const
 {
-    QString albumPerformerName=this->albumPerformerName();
-    QString albumTitle=this->_albumTitle.length() ? this->_albumTitle : "<N/A>";
-    return QString("SBIDAlbum:%1:t=%2:p=%3 %4")
-            .arg(this->_albumID)
-            .arg(albumTitle)
-            .arg(albumPerformerName)
-            .arg(this->_performerID)
+    return QString("SBIDAlbum:%1:t=%2")
+            .arg(_albumID)
+            .arg(_albumTitle)
     ;
 }
 
@@ -1474,6 +1465,13 @@ SBIDAlbum::albumsByPerformer(int performerID)
 SBIDAlbum::SBIDAlbum():SBIDBase()
 {
     _init();
+}
+
+SBIDAlbum&
+SBIDAlbum::operator=(const SBIDAlbum& t)
+{
+    _copy(t);
+    return *this;
 }
 
 SBIDAlbumPtr
@@ -1634,6 +1632,10 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._notes      =r.value(4).toString();
     album._year       =r.value(5).toInt();
 
+    qDebug() << SB_DEBUG_INFO
+             << "albumID=" << album._albumID
+             << "title=" << album._albumTitle
+    ;
     return std::make_shared<SBIDAlbum>(album);
 }
 
@@ -1803,13 +1805,31 @@ SBIDAlbum::clearChangedFlag()
 
 ///	Private methods
 void
+SBIDAlbum::_copy(const SBIDAlbum &t)
+{
+    _albumID          =t._albumID;
+    _performerID      =t._performerID;
+    _albumTitle       =t._albumTitle;
+    _genre            =t._genre;
+    _notes            =t._notes;
+    _year             =t._year;
+
+    _albumPerformances=t._albumPerformances;
+}
+
+void
 SBIDAlbum::_init()
 {
     _sb_item_type=SBIDBase::sb_type_album;
+
     _albumID=-1;
     _performerID=-1;
-    _albumTitle="";
+    _albumTitle=QString();
+    _genre=QString();
+    _notes=QString();
     _year=-1;
+
+    _albumPerformances.clear();
 }
 
 void

@@ -21,8 +21,6 @@ public:
     SBIDAlbum(const SBIDAlbum& c);
     ~SBIDAlbum();
 
-    //	toberemoved
-
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
@@ -94,6 +92,9 @@ protected:
 
     SBIDAlbum();
 
+    //	Operators
+    SBIDAlbum& operator=(const SBIDAlbum& t);	//	CWIP: to be moved to protected
+
     //	Methods used by SBIDManager
     static SBIDAlbumPtr createInDB();
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
@@ -119,6 +120,7 @@ private:
     //	CWIP: make this a vector. Will solve a lot of headaches
     QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;	//	1:based, index is record position
 
+    void _copy(const SBIDAlbum& c);
     void _init();
     void _loadAlbumPerformances(bool showProgressDialogFlag=0);
 

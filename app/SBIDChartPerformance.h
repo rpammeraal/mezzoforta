@@ -47,13 +47,15 @@ public:
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
-    //static SBSqlQueryModel* songPerformancesOnChart(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
 
     SBIDChartPerformance();
+
+    //	Operators
+    SBIDChartPerformance& operator=(const SBIDChartPerformance& t);
 
     //	Methods used by SBIDManager
     static SBIDChartPerformancePtr instantiate(const QSqlRecord& r);
@@ -70,6 +72,7 @@ private:
     int     _chartPosition;
     QString _notes;
 
+    void _copy(const SBIDChartPerformance& c);
     void _init();
 };
 

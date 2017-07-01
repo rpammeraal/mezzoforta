@@ -100,7 +100,7 @@ public:
         QStandardItem* parentItem = this->invisibleRootItem();
         QStandardItem* item1;
 
-        item1 = new QStandardItem("Your Songs");
+        item1 = new QStandardItem("Your Songs");	//	sb_your_songs
         parentItem->appendRow(item1);
 
         record=createNode("All Songs",-1,ScreenItem::screen_type_allsongs,SBIDBase::sb_type_invalid);
@@ -108,10 +108,10 @@ public:
         record=createNode("Songs in Queue",-1,ScreenItem::screen_type_current_playlist,SBIDBase::sb_type_invalid);
         item1->appendRow(record);
 
-        item1 = new QStandardItem("");
+        item1 = new QStandardItem("");              //	sb_empty_1
         parentItem->appendRow(item1);
 
-        item1 = new QStandardItem("Charts");
+        item1 = new QStandardItem("Charts");        //	sb_charts
         this->appendRow(item1);
         _chartRoot=item1;
 
@@ -125,10 +125,10 @@ public:
             item1->appendRow(record);
         }
 
-        item1 = new QStandardItem("");
+        item1 = new QStandardItem("");              //	sb_empty2
         parentItem->appendRow(item1);
 
-        item1 = new QStandardItem("Playlists");
+        item1 = new QStandardItem("Playlists");     //	sb_playlists
         this->appendRow(item1);
         _playlistRoot=item1;
 
@@ -268,7 +268,25 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 }
 
 void
-Chooser::deletePlaylist()
+Chooser::chartPlay(bool enqueueFlag)
+{
+        qDebug() << SB_DEBUG_INFO;
+    SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
+    if(cPtr)
+    {
+        PlayManager* pmgr=Context::instance()->getPlayManager();
+        pmgr?pmgr->playItemNow(cPtr,enqueueFlag):0;
+    }
+}
+
+void
+Chooser::chartEnqueue()
+{
+    chartPlay(true);
+}
+
+void
+Chooser::playlistDelete()
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -307,13 +325,13 @@ Chooser::deletePlaylist()
 }
 
 void
-Chooser::enqueuePlaylist()
+Chooser::playlistEnqueue()
 {
-    playPlaylist(true);
+    playlistPlay(true);
 }
 
 void
-Chooser::newPlaylist()
+Chooser::playlistNew()
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr ptr=pmgr->createInDB();
@@ -373,7 +391,7 @@ Chooser::playlistChanged(int playlistID)
 }
 
 void
-Chooser::playPlaylist(bool enqueueFlag)
+Chooser::playlistPlay(bool enqueueFlag)
 {
         qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
@@ -385,7 +403,7 @@ Chooser::playPlaylist(bool enqueueFlag)
 }
 
 void
-Chooser::renamePlaylist()
+Chooser::playlistRename()
 {
     qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
@@ -393,7 +411,7 @@ Chooser::renamePlaylist()
     {
         SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(playlistPtr);
         connect(pl, SIGNAL(playlistNameChanged(const SBIDPlaylistPtr&)),
-                this, SLOT(_renamePlaylist(const SBIDPlaylistPtr&)));
+                this, SLOT(_playlistRename(const SBIDPlaylistPtr&)));
         pl->exec();
     }
     qDebug() << SB_DEBUG_INFO;
@@ -429,12 +447,31 @@ Chooser::showContextMenu(const QPoint &p)
                 QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
 
                 QMenu menu(NULL);
-                menu.addAction(_playPlaylistAction);
-                menu.addAction(_enqueuePlaylistAction);
-                menu.addAction(_newAction);
-                menu.addAction(_deleteAction);
-                menu.addAction(_renameAction);
-                menu.addAction(_recalculateDurationAction);
+                menu.addAction(_playlistPlayAction);
+                menu.addAction(_playlistEnqueueAction);
+                menu.addAction(_playlistNewAction);
+                menu.addAction(_playlistDeleteAction);
+                menu.addAction(_playlistRenameAction);
+                menu.addAction(_playlistRecalculateDurationAction);
+                menu.exec(gp);
+            }
+        }
+        break;
+
+    case Chooser::sb_charts:
+        {
+        qDebug() << SB_DEBUG_INFO;
+            SBIDChartPtr cPtr=_getChartSelected(idx);
+
+            if(cPtr)
+            {
+                //	Only show in the right context :)
+                _lastClickedIndex=idx;
+                QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
+
+                QMenu menu(NULL);
+                menu.addAction(_chartPlayAction);
+                menu.addAction(_chartEnqueueAction);
                 menu.exec(gp);
             }
         }
@@ -451,8 +488,8 @@ Chooser::showContextMenu(const QPoint &p)
                 QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
 
                 QMenu menu(NULL);
-                menu.addAction(_newAction);
-                menu.addAction(_recalculateDurationAction);
+                menu.addAction(_playlistNewAction);
+                menu.addAction(_playlistRecalculateDurationAction);
                 menu.exec(gp);
             }
         }
@@ -607,6 +644,35 @@ Chooser::_findItem(const SBIDPtr id)
     return index;
 }
 
+SBIDChartPtr
+Chooser::_getChartSelected(const QModelIndex& i)
+{
+    SBIDChartPtr cPtr;
+
+    if(_cm)
+    {
+        //	Get pointer to parent node (hackery going on).
+        //	find si with charts place holder
+        QStandardItem* si=_cm->_chartRoot;
+
+        if(si)
+        {
+            QStandardItem* chartNameItem=si->child(i.row(),0);
+            QStandardItem* chartIDItem=si->child(i.row(),1);
+
+            if(chartNameItem && chartIDItem)
+            {
+                cPtr=SBIDChart::retrieveChart(chartIDItem->text().toInt(),1);
+            }
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_NPTR;
+        }
+    }
+    return cPtr;
+}
+
 SBIDPlaylistPtr
 Chooser::_getPlaylistSelected(const QModelIndex& i)
 {
@@ -644,43 +710,56 @@ Chooser::_init()
 
     this->_populate();
 
+    //	Play chart
+    _chartPlayAction = new QAction(tr("&Play Chart"), this);
+    _chartPlayAction->setStatusTip(tr("Play Chart"));
+    connect(_chartPlayAction, SIGNAL(triggered()),
+            this, SLOT(chartPlay()));
+
+    //	Enqueue chart
+    _chartEnqueueAction = new QAction(tr("Enqeue Chart"), this);
+    _chartEnqueueAction->setStatusTip(tr("Enqueue Chart"));
+    connect(_chartEnqueueAction, SIGNAL(triggered()),
+            this, SLOT(chartEnqueue()));
+
+
     //	Play playlist
-    _playPlaylistAction = new QAction(tr("&Play Playlist"), this);
-    _playPlaylistAction->setStatusTip(tr("Play Playlist"));
-    connect(_playPlaylistAction, SIGNAL(triggered()),
-            this, SLOT(playPlaylist()));
+    _playlistPlayAction = new QAction(tr("&Play Playlist"), this);
+    _playlistPlayAction->setStatusTip(tr("Play Playlist"));
+    connect(_playlistPlayAction, SIGNAL(triggered()),
+            this, SLOT(playlistPlay()));
 
     //	Enqueue playlist
-    _enqueuePlaylistAction = new QAction(tr("Enqeue Playlist"), this);
-    _enqueuePlaylistAction->setStatusTip(tr("Enqueue Playlist"));
-    connect(_enqueuePlaylistAction, SIGNAL(triggered()),
-            this, SLOT(enqueuePlaylist()));
+    _playlistEnqueueAction = new QAction(tr("Enqeue Playlist"), this);
+    _playlistEnqueueAction->setStatusTip(tr("Enqueue Playlist"));
+    connect(_playlistEnqueueAction, SIGNAL(triggered()),
+            this, SLOT(playlistEnqueue()));
 
     //	New playlist
-    _newAction = new QAction(tr("&New Playlist"), this);
-    _newAction->setShortcuts(QKeySequence::New);
-    _newAction->setStatusTip(tr("Create New Playlist"));
-    connect(_newAction, SIGNAL(triggered()),
-            this, SLOT(newPlaylist()));
+    _playlistNewAction = new QAction(tr("&New Playlist"), this);
+    _playlistNewAction->setShortcuts(QKeySequence::New);
+    _playlistNewAction->setStatusTip(tr("Create New Playlist"));
+    connect(_playlistNewAction, SIGNAL(triggered()),
+            this, SLOT(playlistNew()));
 
     //	Delete playlist
-    _deleteAction = new QAction(tr("&Delete Playlist"), this);
-    _deleteAction->setShortcuts(QKeySequence::Delete);
+    _playlistDeleteAction = new QAction(tr("&Delete Playlist"), this);
+    _playlistDeleteAction->setShortcuts(QKeySequence::Delete);
 
-    _deleteAction->setStatusTip(tr("Delete Playlist"));
-    connect(_deleteAction, SIGNAL(triggered()),
-            this, SLOT(deletePlaylist()));
+    _playlistDeleteAction->setStatusTip(tr("Delete Playlist"));
+    connect(_playlistDeleteAction, SIGNAL(triggered()),
+            this, SLOT(playlistDelete()));
 
     //	Rename playlist
-    _renameAction = new QAction(tr("&Rename Playlist"), this);
-    _renameAction->setStatusTip(tr("Rename Playlist"));
-    connect(_renameAction, SIGNAL(triggered()),
-            this, SLOT(renamePlaylist()));
+    _playlistRenameAction = new QAction(tr("&Rename Playlist"), this);
+    _playlistRenameAction->setStatusTip(tr("Rename Playlist"));
+    connect(_playlistRenameAction, SIGNAL(triggered()),
+            this, SLOT(playlistRename()));
 
     //	Recalculate playlist duration: TEMP
-    _recalculateDurationAction = new QAction(tr("&Recalculate playlist"), this);
-    _recalculateDurationAction->setStatusTip(tr("Recalculate Playlist"));
-    connect(_recalculateDurationAction, SIGNAL(triggered()),
+    _playlistRecalculateDurationAction = new QAction(tr("&Recalculate playlist"), this);
+    _playlistRecalculateDurationAction->setStatusTip(tr("Recalculate Playlist"));
+    connect(_playlistRecalculateDurationAction, SIGNAL(triggered()),
             this, SLOT(recalculateDuration()));
 
     //	Connections

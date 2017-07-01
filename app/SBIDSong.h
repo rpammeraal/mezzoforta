@@ -94,6 +94,9 @@ protected:
 
     SBIDSong();
 
+    //	Operators
+    SBIDSong& operator=(const SBIDSong& t);
+
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB();
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
@@ -120,6 +123,7 @@ private:
     QVector<PlaylistOnlinePerformance> _playlistOnlinePerformances;
     QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
 
+    void _copy(const SBIDSong& c);
     void _init();
     void _loadAlbumPerformances();
     void _loadPlaylists();

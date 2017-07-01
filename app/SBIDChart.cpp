@@ -6,13 +6,7 @@
 //	Ctors, dtors
 SBIDChart::SBIDChart(const SBIDChart& c)
 {
-    _chartID    =c._chartID;
-    _chartName  =c._chartName;
-    _notes      =c._notes;
-    _releaseDate=c._releaseDate;
-
-    _num_items  =c._num_items;
-    _items      =c._items;
+    _copy(c);
 }
 
 SBIDChart::~SBIDChart()
@@ -65,16 +59,22 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
     while(it.hasNext())
     {
         it.next();
+        qDebug() << SB_DEBUG_INFO;
         SBIDChartPerformancePtr cpPtr=it.value();
+        qDebug() << SB_DEBUG_INFO;
         SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
+        qDebug() << SB_DEBUG_INFO;
         SBIDAlbumPerformancePtr apPtr=spPtr->preferredAlbumPerformancePtr();
+        qDebug() << SB_DEBUG_INFO;
         SBIDOnlinePerformancePtr opPtr=(apPtr?apPtr->preferredOnlinePerformancePtr():SBIDOnlinePerformancePtr());
+        qDebug() << SB_DEBUG_INFO;
 
         if(opPtr && opPtr->path().length()>0)
         {
             list[index++]=opPtr;
         }
     }
+        qDebug() << SB_DEBUG_INFO;
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
@@ -111,34 +111,18 @@ SBIDChart::numItems() const
 {
     if(_items.count()==0)
     {
-        //	Items are not loaded (yet) -- use precalculated _num_items
-        return _num_items;
+        //	Items are not loaded (yet) -- use precalculated _numItems
+        return _numItems;
     }
     return _items.count();
 }
 
 SBIDChart::operator QString() const
 {
-    QString name=this->_chartName.length() ? this->_chartName:"<N/A>";
-
-    return QString("SBIDCHart:%1:t=%2) //:p=%3 %4")
-            .arg(this->chartID())
-            .arg(name)
+    return QString("SBIDChart:%1:t=%2")
+            .arg(_chartID)
+            .arg(_chartName)
     ;
-}
-
-SBIDChart&
-SBIDChart::operator=(const SBIDChart& t)
-{
-    _chartID    =t._chartID;
-    _chartName  =t._chartName;
-    _notes      =t._notes;
-    _releaseDate=t._releaseDate;
-
-    _num_items  =t._num_items;
-    _items      =t._items;
-
-    return *this;
 }
 
 //	Methods required by SBIDManagerTemplate
@@ -189,10 +173,11 @@ SBIDChart::SBIDChart():SBIDBase()
     _init();
 }
 
-SBIDChart::SBIDChart(int itemID):SBIDBase()
+SBIDChart&
+SBIDChart::operator=(const SBIDChart& t)
 {
-    _init();
-    _chartID=itemID;
+    _copy(t);
+    return *this;
 }
 
 SBIDChartPtr
@@ -204,7 +189,7 @@ SBIDChart::instantiate(const QSqlRecord &r)
     chart._chartName  =r.value(1).toString();
     chart._notes      =r.value(2).toString();
     chart._releaseDate=r.value(3).toDate();
-    chart._num_items  =r.value(4).toInt();
+    chart._numItems   =r.value(4).toInt();
 
     return std::make_shared<SBIDChart>(chart);
 }
@@ -259,11 +244,29 @@ SBIDChart::retrieveSQL(const QString& key)
 
 ///	Private
 void
+SBIDChart::_copy(const SBIDChart &c)
+{
+    _chartID    =c._chartID;
+    _chartName  =c._chartName;
+    _notes      =c._notes;
+    _releaseDate=c._releaseDate;
+
+    _numItems   =c._numItems;
+    _items      =c._items;
+}
+
+void
 SBIDChart::_init()
 {
+    _sb_item_type=SBIDBase::sb_type_chart;
+
     _chartID=-1;
     _chartName=QString();
     _notes=QString();
+    _releaseDate=QDate();
+    _numItems=0;
+
+    _items.clear();
 }
 
 void

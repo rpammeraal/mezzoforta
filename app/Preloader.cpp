@@ -682,7 +682,6 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         QString key;
         Common::sb_field itemType=static_cast<Common::sb_field>(queryList.value(1).toInt());
         SBIDPlaylistPtr playlistPtr;
-        SBIDSongPtr songPtr;
         SBIDPtr itemPtr;
 
         //	Process performer
@@ -754,18 +753,26 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
                 (apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
 
+            //	Load album in cache
+            key=SBIDAlbum::createKey(queryList.value(10).toInt());
+            if(key.length()>0)
+            {
+                (amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+            }
+
+            //	Load performer in cache
+            key=SBIDPerformer::createKey(queryList.value(5).toInt());
+            if(key.length()>0)
+            {
+                (pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
             //	Load onlinePerformance in cache and add to list
             key=SBIDOnlinePerformance::createKey(queryList.value(2).toInt());
             if(key.length()>0)
             {
-                //	checked on albumPerformanceID
                 itemPtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
-
-                if(itemPtr)
-                {
-                    qDebug() << SB_DEBUG_INFO << (*itemPtr);
-                }
             }
+
         }
 
         if(itemPtr)

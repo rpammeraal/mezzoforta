@@ -76,6 +76,9 @@ protected:
 
     SBIDPerformer();
 
+    //	Operators
+    SBIDPerformer& operator=(const SBIDPerformer& t);
+
     static SBIDPerformerPtr createInDB();
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
@@ -101,6 +104,7 @@ private:
     QVector<QString>                  _relatedPerformerKey;
 
     //	Methods
+    void _copy(const SBIDPerformer& c);
     void _init();
     void _loadAlbums(bool showProgressDialogFlag=0);
     void _loadAlbumPerformances(bool showProgressDialogFlag=0);

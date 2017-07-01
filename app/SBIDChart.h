@@ -36,7 +36,6 @@ public:
 
     //	Operators
     virtual operator QString() const;
-    SBIDChart& operator=(const SBIDChart& t);	//	CWIP: to be moved to protected
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
@@ -47,11 +46,13 @@ public:
     static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
 
 protected:
-    SBIDChart();
-    SBIDChart(int itemID);
-
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
+
+    SBIDChart();
+
+    //	Operators
+    SBIDChart& operator=(const SBIDChart& t);
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     //bool addDependent(SBIDPtr tobeAddedPtr);
@@ -65,18 +66,19 @@ protected:
     //QStringList updateSQL() const;
 
 private:
-    int               _chartID;
-    QString           _chartName;
-    QString           _notes;
-    QDate             _releaseDate;
+    int                               _chartID;
+    QString                           _chartName;
+    QString                           _notes;
+    QDate                             _releaseDate;
 
     //	Not instantiated
-    int               _num_items;	//	may only be used until _items has been loaded
+    int                               _numItems ;	//	may only be used until _items has been loaded
 
     QMap<int,SBIDChartPerformancePtr> _items;
 
     //	Methods:0
 
+    void _copy(const SBIDChart& c);
     void _init();
     void _loadPerformances();
     static QMap<SBIDChartPerformancePtr,SBIDChartPtr> _loadPerformancesFromDB(const SBIDChart& id,bool showProgressDialogFlag=0);

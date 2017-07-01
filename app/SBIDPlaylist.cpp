@@ -11,12 +11,7 @@
 
 SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
 {
-    _duration      =c._duration;
-    _sb_playlist_id=c._sb_playlist_id;
-    _playlistName  =c._playlistName;
-    _num_items     =c._num_items;
-
-    _items         =c._items;
+    _copy(c);
 }
 
 SBIDPlaylist::~SBIDPlaylist()
@@ -52,7 +47,7 @@ SBIDPlaylist::iconResourceLocation() const
 int
 SBIDPlaylist::itemID() const
 {
-    return _sb_playlist_id;
+    return _playlistID;
 }
 
 SBIDBase::sb_type
@@ -150,8 +145,8 @@ SBIDPlaylist::numItems() const
 {
     if(_items.count()==0)
     {
-        //	Items are not loaded (yet) -- use precalculated _num_items
-        return _num_items;
+        //	Items are not loaded (yet) -- use precalculated _numItems
+        return _numItems;
     }
     return _items.count();
 }
@@ -711,10 +706,17 @@ SBIDPlaylist::SBIDPlaylist():SBIDBase()
     _init();
 }
 
+SBIDPlaylist&
+SBIDPlaylist::operator=(const SBIDPlaylist& t)
+{
+    _copy(t);
+    return *this;
+}
+
 SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
 {
     _init();
-    _sb_playlist_id=itemID;
+    _playlistID=itemID;
 }
 
 ///	Methods used by SBIDManager
@@ -762,9 +764,9 @@ SBIDPlaylist::createInDB()
 
     //	Instantiate
     SBIDPlaylist playlist;
-    playlist._sb_playlist_id=qID.value(0).toInt();
+    playlist._playlistID=qID.value(0).toInt();
     playlist._playlistName="111111111111";
-    playlist._num_items=0;
+    playlist._numItems=0;
 
     //	Give new playlist unique name
     int maxNum=1;
@@ -804,10 +806,10 @@ SBIDPlaylist::instantiate(const QSqlRecord &r)
 {
     SBIDPlaylist playlist;
 
-    playlist._sb_playlist_id=r.value(0).toInt();
+    playlist._playlistID    =r.value(0).toInt();
     playlist._playlistName  =r.value(1).toString();
     playlist._duration      =r.value(2).toString();
-    playlist._num_items     =r.value(3).toInt();
+    playlist._numItems      =r.value(3).toInt();
 
     playlist._reorderPlaylistPositions();
 
@@ -1051,24 +1053,12 @@ SBIDPlaylist::updateSQL() const
     return SQL;
 }
 
-SBIDPlaylist&
-SBIDPlaylist::operator=(const SBIDPlaylist& t)
-{
-    _num_items     =t._num_items;
-    _duration      =t._duration;
-    _sb_playlist_id=t._sb_playlist_id;
-    _playlistName  =t._playlistName;
-
-    return *this;
-}
-
 ///	Operators
 SBIDPlaylist::operator QString() const
 {
-    QString playlistName=this->_playlistName.length() ? this->_playlistName : "<N/A>";
-    return QString("SBIDPlaylist:%1:n=%2")
-            .arg(this->_sb_playlist_id)
-            .arg(playlistName)
+    return QString("SBIDPlaylist:plID=%1:n=%2")
+            .arg(_playlistID)
+            .arg(_playlistName)
     ;
 }
 
@@ -1307,10 +1297,27 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
 }
 
 void
+SBIDPlaylist::_copy(const SBIDPlaylist &c)
+{
+    _duration      =c._duration;
+    _playlistID    =c._playlistID;
+    _playlistName  =c._playlistName;
+    _numItems      =c._numItems;
+
+    _items         =c._items;
+}
+
+void
 SBIDPlaylist::_init()
 {
     _sb_item_type=SBIDBase::sb_type_playlist;
-    _sb_playlist_id=-1;
+
+    _duration=Duration();
+    _playlistID=-1;
+    _playlistName=QString();
+    _numItems=0;
+
+    _items.clear();
 }
 
 void

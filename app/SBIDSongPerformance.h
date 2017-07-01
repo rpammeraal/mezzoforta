@@ -75,6 +75,9 @@ protected:
 
     SBIDSongPerformance();
 
+    //	Operators
+    SBIDSongPerformance& operator=(const SBIDSongPerformance& t);
+
     //	Methods used by SBIDManager
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr);
     static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
@@ -103,6 +106,7 @@ private:
     QString                 _notes;
     int                     _preferredAlbumPerformanceID;
 
+    void _copy(const SBIDSongPerformance& c);
     void _init();
 };
 

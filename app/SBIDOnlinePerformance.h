@@ -67,6 +67,9 @@ protected:
 
     SBIDOnlinePerformance();
 
+    //	Operators
+    SBIDOnlinePerformance& operator=(const SBIDOnlinePerformance& t);
+
     //	Methods used by SBIDManager
 
     //static SBIDOnlinePerformancePtr createNew(int songID, int performerID, int albumID, int albumPerformanceID, int onlinePerformanceID, const Duration& duration, const QString& path);
@@ -85,6 +88,7 @@ private:
     //	Not stored in database
     int                     _playPosition; //	current position in current playlist
 
+    void _copy(const SBIDOnlinePerformance& c);
     void _init();
 };
 

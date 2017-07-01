@@ -23,7 +23,9 @@ public:
         sb_parent=-1,
         sb_your_songs=0,
         sb_empty1,
-        sb_playlists
+        sb_charts,
+        sb_empty2,
+        sb_playlists,
     };
 
     Chooser();
@@ -33,12 +35,16 @@ public:
 
 public slots:
     void assignItem(const QModelIndex& idx, const SBIDPtr& assignPtr);
-    void deletePlaylist();
-    void enqueuePlaylist();
-    void newPlaylist();
+
+    void chartEnqueue();
+    void chartPlay(bool enqueueFlag=0);
     void playlistChanged(int playlistID);
-    void playPlaylist(bool enqueueFlag=0);
-    void renamePlaylist();
+    void playlistDelete();
+    void playlistEnqueue();
+    void playlistNew();
+    void playlistPlay(bool enqueueFlag=0);
+    void playlistRename();
+
     void schemaChanged();
     void showContextMenu(const QPoint& p);
 
@@ -54,12 +60,14 @@ private slots:
 
 private:
     //	Context menu actions
-    QAction* _newAction;
-    QAction* _deleteAction;
-    QAction* _renameAction;
-    QAction* _playPlaylistAction;
-    QAction* _enqueuePlaylistAction;
-    QAction* _recalculateDurationAction;
+    QAction* _chartPlayAction;
+    QAction* _chartEnqueueAction;
+    QAction* _playlistNewAction;
+    QAction* _playlistDeleteAction;
+    QAction* _playlistRenameAction;
+    QAction* _playlistPlayAction;
+    QAction* _playlistEnqueueAction;
+    QAction* _playlistRecalculateDurationAction;
 
     //SBStandardItemModel* model;
     QModelIndex _lastClickedIndex;
@@ -67,6 +75,7 @@ private:
 
     QModelIndex _findItem(const QString& toFind);
     QModelIndex _findItem(const SBIDPtr playlistPtr);
+    SBIDChartPtr _getChartSelected(const QModelIndex& i);
     SBIDPlaylistPtr _getPlaylistSelected(const QModelIndex& i);
     void _init();
     void _populate();

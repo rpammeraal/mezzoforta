@@ -4,11 +4,7 @@
 
 SBIDChartPerformance::SBIDChartPerformance(const SBIDChartPerformance& p):SBIDBase(p)
 {
-    _chartPerformanceID=p._chartPerformanceID;
-    _chartID           =p._chartID;
-    _songPerformanceID =p._songPerformanceID;
-    _chartPosition     =p._chartPosition;
-    _notes             =p._notes;
+    _copy(p);
 }
 
 int
@@ -81,7 +77,9 @@ SBIDSongPerformancePtr
 SBIDChartPerformance::songPerformancePtr() const
 {
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
+    return spMgr->retrieve(
+                SBIDSongPerformance::createKey(_songPerformanceID),
+                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -116,11 +114,11 @@ SBIDChartPerformance::songTitle() const
 ///	Operators
 SBIDChartPerformance::operator QString()
 {
-    return QString("SBIDSongPerformance:%1:t=%2:p=%3 %4")
-            .arg(this->songID())
-            .arg(this->songTitle())
-            .arg(this->songPerformerName())
-            .arg(this->songPerformerID())
+    return QString("SBIDChartPerformance:cpID=%1:cID=%2:spID=%3:pos=%4")
+            .arg(_chartPerformanceID)
+            .arg(_chartID)
+            .arg(_songPerformanceID)
+            .arg(_chartPosition)
     ;
 }
 
@@ -158,6 +156,19 @@ SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDep
         cpPtr=cpMgr->retrieve(createKey(chartPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDChartPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChartPerformance,SBIDBase>::open_flag_default));
     }
     return cpPtr;
+}
+
+///	Protected methods
+SBIDChartPerformance::SBIDChartPerformance()
+{
+    _init();
+}
+
+SBIDChartPerformance&
+SBIDChartPerformance::operator=(const SBIDChartPerformance& t)
+{
+    _copy(t);
+    return *this;
 }
 
 ///	Helper methods for SBIDManagerTemplate
@@ -215,44 +226,26 @@ SBIDChartPerformance::retrieveSQL(const QString &key)
 }
 
 ///	Helper methods for SBIDManagerTemplate
-//SBSqlQueryModel*
-//SBIDChartPerformance::songPerformancesOnChart(int songID)
-//{
-//    QString q=QString
-//    (
-//        "SELECT "
-//            "cp.chart_id, "
-//            "cp.chart_performance_id, "
-//            "cp.chart_id, "
-//            "cp.performance_id, "
-//            "cp.chart_position, "
-//            "cp.notes "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___chart_performance cp "
-//                "JOIN ___SB_SCHEMA_NAME___performance p ON "
-//                    "cp.performance_id=p.performance_id "
-//        "WHERE "
-//            "p.song_id=%1 "
-//    )
-//        .arg(songID)
-//    ;
-
-//    qDebug() << SB_DEBUG_INFO << q;
-//    return new SBSqlQueryModel(q);
-//}
-
-
-///	Protected methods
-SBIDChartPerformance::SBIDChartPerformance()
-{
-}
 
 ///	Private
 void
+SBIDChartPerformance::_copy(const SBIDChartPerformance &c)
+{
+    _chartPerformanceID=c._chartPerformanceID;
+    _chartID           =c._chartID;
+    _songPerformanceID =c._songPerformanceID;
+    _chartPosition     =c._chartPosition;
+    _notes             =c._notes;
+}
+
+void
 SBIDChartPerformance::_init()
 {
+    _sb_item_type=SBIDBase::sb_type_chart_performance;
+
     _chartPerformanceID=-1;
     _chartID=-1;
     _songPerformanceID=-1;
     _chartPosition=-1;
+    _notes=QString();
 }

@@ -37,18 +37,17 @@ public:
     //SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
     int numItems() const;
-    inline int playlistID() const { return _sb_playlist_id; }
+    inline int playlistID() const { return _playlistID; }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
     bool removePlaylistItem(int playlistPosition);
     bool moveItem(const SBIDPtr& fromPtr, int toRow);
     //void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
-    void setPlaylistID(int playlistID) { _sb_playlist_id=playlistID; }
+    void setPlaylistID(int playlistID) { _playlistID=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 
     //	Operators
     virtual operator QString() const;
-    SBIDPlaylist& operator=(const SBIDPlaylist& t);	//	CWIP: to be moved to protected
 
     //	Methods required by SBIDManagerTemplate
     virtual QString key() const;
@@ -59,11 +58,14 @@ public:
     static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
 
 protected:
+    template <class T, class parentT> friend class SBIDManagerTemplate;
+    friend class Preloader;
+
     SBIDPlaylist();
     SBIDPlaylist(int itemID);
 
-    template <class T, class parentT> friend class SBIDManagerTemplate;
-    friend class Preloader;
+    //	Operators
+    SBIDPlaylist& operator=(const SBIDPlaylist& t);
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     bool addDependent(SBIDPtr tobeAddedPtr);
@@ -77,17 +79,18 @@ protected:
     QStringList updateSQL() const;
 
 private:
-    Duration          _duration;
-    int               _sb_playlist_id;
+    int               _playlistID;
     QString           _playlistName;
+    Duration          _duration;
 
     //	Not instantiated
-    int               _num_items;	//	may only be used until _items has been loaded
+    int               _numItems;	//	may only be used until _items has been loaded
 
     QMap<int,SBIDPtr> _items;
 
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
+    void _copy(const SBIDPlaylist& c);
     void _init();
     void _loadPlaylistItems(bool showProgressDialogFlag=0);
     QMap<int,SBIDPtr> _loadPlaylistItemsFromDB(bool showProgressDialogFlag=0) const;
