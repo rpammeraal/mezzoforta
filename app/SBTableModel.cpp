@@ -216,7 +216,6 @@ void
 SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances)
 {
     _init();
-            qDebug() << SB_DEBUG_INFO;
 
     //	Populate header
     QStringList header;
@@ -229,21 +228,12 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
     setHorizontalHeaderLabels(header);
 
     //	Populate data
-            qDebug() << SB_DEBUG_INFO;
     for(int i=0;i<performances.count();i++)
     {
-            qDebug() << SB_DEBUG_INFO;
         SBIDAlbumPerformancePtr apPtr=performances.at(i);
-            qDebug() << SB_DEBUG_INFO;
 
         if(apPtr && apPtr->albumID()>=0)
         {
-            qDebug() << SB_DEBUG_INFO
-                     << apPtr->key()
-                     << apPtr->albumKey()
-                     << apPtr->albumID()
-                     << apPtr->albumTitle()
-            ;
             _setItem(i,0,apPtr->albumKey());
             _setItem(i,1,apPtr->albumTitle());
             _setItem(i,2,apPtr->duration().toString(Duration::sb_hhmmss_format));

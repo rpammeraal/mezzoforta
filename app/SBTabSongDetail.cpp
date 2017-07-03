@@ -412,7 +412,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,1);
+    rowCount=populateTableView(tv,tm,4);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,rowCount>0);
 
     //	lyrics

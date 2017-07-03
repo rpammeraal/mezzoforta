@@ -483,7 +483,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
-    rowCount=populateTableView(tv,tm,0);
+    rowCount=populateTableView(tv,tm,4);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,rowCount>0);
 
     //QUrl url(performer.url);

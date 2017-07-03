@@ -781,30 +781,31 @@ Between 20161215 and 20170604:
 	-	unknown year. If year is unknown, possibly actively set from earliest chart date - not a bug.
 -	All SBID* classes: redirector methods to rely directly on Mgrs -- do not store
 	any smart pointer in any SBID* class, just the actual ID.
-
-current:
 -	All SBID* classes: _init() to initialize all attributes and be called.
 -	All SBID* classes: operator =() to be implemented
 -	Bohemian Rhapsody opened from chart -- blank album titles.
 -	Playlist 'Herinneringen Aan Holland' -- many blank album titles.
+-	unable to play on windows
+-	enqueueing from chart is slow (windows)
+
+20170703:
+-	charts tab (performer, song): to be ordered by chart position.
+
+Current:
+Todo:
 *	difference between text() and genericDescription() -- possibly merge.
 *	add original_song_performance_id to song
 	-	code
 	-	db migration scripts
-*	enqueueing from chart is slow (windows)
-*	unable to play on windows
-
-Todo:
 *	streamline population of database new style
 *	Test drag & drop.
 *	Edit.
 *	Import.
 
 Bugs that need to be fixed:
-*	charts tab (performer, song): to be ordered by chart position.
 *	performer screen:
 	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
-	-	open any performer from chars screen.
+	-	open any performer from chart screen.
 *	search screen:
 	-	search for following items in this order, goes into loop.
 		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 0 ScreenItem:AllSongs :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
