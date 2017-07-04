@@ -51,11 +51,12 @@ Navigator::clearSearchFilter()
 {
     QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
     QCompleter* completer=lineEdit->completer();
-    if(completer!=NULL && lineEdit!=NULL)
+    if(completer==NULL && lineEdit!=NULL)
     {
-        completer->setCurrentRow(0);
-        lineEdit->setCompleter(NULL);
+        completer=CompleterFactory::getCompleterAll();
+        lineEdit->setCompleter(completer);
     }
+    completer->setCurrentRow(0);
     if(lineEdit!=NULL)
     {
         lineEdit->clear();
@@ -64,8 +65,6 @@ Navigator::clearSearchFilter()
     }
 
     Navigator* navigator=Context::instance()->getNavigator();
-    completer=CompleterFactory::getCompleterAll();
-    lineEdit->setCompleter(completer);
 
     connect(
         completer, SIGNAL(activated(const QModelIndex&)),
@@ -142,7 +141,6 @@ Navigator::openScreen(const ScreenItem &si)
     {
         st->pushScreen(si);
     }
-    st->debugShow("openScreen:156");
     if(_activateScreen()==0)
     {
         st->removeScreen(si);
@@ -356,8 +354,15 @@ void
 Navigator::applySonglistFilter()
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-
     QString filter=mw->ui.searchEdit->text();
+
+    //	Ignore requests without search content
+    if(filter.length()==0)
+    {
+        return;
+    }
+
+    qDebug() << SB_DEBUG_INFO << filter;
 
     //	Sometimes QT emits a returnPressed before an activated on QCompleter.
     //	This is ugly as hell, but if this happens we need to filter out
@@ -388,6 +393,9 @@ Navigator::applySonglistFilter()
     }
 
     openScreen(ScreenItem(filter));
+
+    //	Only scroll to top with new search
+    mw->ui.allSongsList->scrollToTop();
 
     mw->ui.searchEdit->setFocus();
     mw->ui.searchEdit->selectAll();

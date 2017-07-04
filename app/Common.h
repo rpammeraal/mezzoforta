@@ -100,6 +100,7 @@ public:
         QString genre;
     };
 
+    static QStringList articles();
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return ++ID; }

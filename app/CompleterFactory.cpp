@@ -9,11 +9,14 @@
 QCompleter*
 CompleterFactory::getCompleterAll()
 {
-    QString query=
+    QStringList articles=Common::articles();
+    articles.append(QString());
+
+    QString tpl=
         QString
         (
             "SELECT DISTINCT "
-                "s.title || ' - song by ' || a.name, "
+                "___REPLACE_START___LTRIM(RTRIM(s.title))___REPLACE_END___ || ' - song by ' || a.name, "
                 "s.song_id AS SB_ITEM_ID, "
                 "%1 AS SB_TYPE_ID "
             "FROM "
@@ -25,25 +28,52 @@ CompleterFactory::getCompleterAll()
                         "p.artist_id=a.artist_id "
             "UNION "
             "SELECT DISTINCT "
-                "r.title || ' - record', "
+                "___REPLACE_START___LTRIM(RTRIM(r.title))___REPLACE_END___ || ' - record', "
                 "r.record_id AS SB_ITEM_ID, "
                 "%2 AS SB_TYPE_ID "
             "FROM "
                 "___SB_SCHEMA_NAME___record r "
             "UNION "
             "SELECT DISTINCT "
-                "a.name || ' - performer', "
+                "___REPLACE_START___LTRIM(RTRIM(a.name))___REPLACE_END___ || ' - performer', "
                 "a.artist_id, "
                 "%3 AS SB_TYPE_ID "
             "FROM "
                 "___SB_SCHEMA_NAME___artist a "
-            "ORDER BY 1 "
         )
             .arg(SBIDBase::sb_type_song)
             .arg(SBIDBase::sb_type_album)
             .arg(SBIDBase::sb_type_performer)
         ;
 
+    QStringListIterator it(articles);
+    QStringList queryList;
+    while(it.hasNext())
+    {
+        QString query=tpl;
+        QString article=it.next();
+        Common::toTitleCase(article);
+        QString replacement=QString(", '%1 ','')").arg(article);
+
+        if(article.length()>0)
+        {
+                //	"REPLACE(a.name,'The ','') || ' - performer', "
+            query.replace("___REPLACE_START___","REPLACE(");
+            query.replace("___REPLACE_END___",replacement);
+        }
+        else
+        {
+            query.replace("___REPLACE_START___","");
+            query.replace("___REPLACE_END___","");
+
+        }
+        queryList.append(query);
+
+    }
+    QString query=queryList.join(" UNION ");
+    query.append(" ORDER BY 1");
+
+    qDebug() << SB_DEBUG_INFO << query;
     return createCompleter(query);
 }
 
@@ -108,6 +138,7 @@ CompleterFactory::createCompleter(QString& query)
     //	Prep query
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     dal->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
 
     //	Get data
     QSqlQueryModel* sqm = new QSqlQueryModel();

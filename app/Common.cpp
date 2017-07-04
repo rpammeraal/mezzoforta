@@ -22,6 +22,31 @@ Common::~Common()
 {
 }
 
+QStringList
+Common::articles()
+{
+    static QStringList _articles;
+    if(_articles.count()==0)
+    {
+        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+        const QString q=
+            "SELECT "
+                "word "
+            "FROM "
+                "article ";
+        QSqlQuery qWords(q,QSqlDatabase::database(dal->getConnectionName()));
+
+        while(qWords.next())
+        {
+            const QString word=qWords.value(0).toString().toLower().trimmed();
+            _articles.append(word);
+        }
+    }
+
+    return _articles;
+}
+
+
 QString
 Common::escapeSingleQuotes(const QString &s)
 {
@@ -122,25 +147,9 @@ Common::removeAccents(const QString &s)
 QString
 Common::removeArticles(const QString &s)
 {
-    static QStringList _articles;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    if(_articles.count()==0)
-    {
-        const QString q=
-            "SELECT "
-                "word "
-            "FROM "
-                "article ";
-        QSqlQuery qWords(q,QSqlDatabase::database(dal->getConnectionName()));
+    QStringList articles=Common::articles();
 
-        while(qWords.next())
-        {
-            const QString word=qWords.value(0).toString().toLower().trimmed();
-            _articles.append(word);
-        }
-    }
-
-    QStringListIterator it(_articles);
+    QStringListIterator it(articles);
     QString t=s.toLower().trimmed();
     while(it.hasNext())
     {
