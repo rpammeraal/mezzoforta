@@ -792,7 +792,7 @@ Between 20161215 and 20170604:
 20170703:
 -	charts tab (performer, song): to be ordered by chart position.
 
-Current:
+20170704:
 -	search screen:
 	-	search for following items in this order, goes into loop.
 		14664 "13:27:05" ..\app\ScreenStack.cpp ScreenStack::debugShow 263 "             " 0 ScreenItem:AllSongs :subtabID=2147483647 :sortColumn=2147483647 :editFlag=false subtabID= 2147483647 isEditFlag: false sortColumn: 2147483647
@@ -809,6 +809,16 @@ Current:
 -	performer search:
 	-	take care of article words in artist search.
 	-	trim at end and start, dedupe white space. Use Common::simplified().70099
+-	initial refactoring of progress dialogbar. Now works for opening charts.
+
+Bugs that need to be fixed:
+*	Open up 'Holiday Rap' -- hangs
+*	performer screen:
+	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
+	-	open any performer from chart screen.
+*	search screen:
+	-	need progress dialog
+
 
 Todo:
 *	add original_song_performance_id to song
@@ -820,12 +830,6 @@ Todo:
 *	Edit.
 *	Import.
 
-Bugs that need to be fixed:
-*	performer screen:
-	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
-	-	open any performer from chart screen.
-*	search screen:
-	-	need progress dialog
 
 
 Near future:
