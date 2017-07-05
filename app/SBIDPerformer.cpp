@@ -129,7 +129,7 @@ SBTableModel*
 SBIDPerformer::charts() const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this,0);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
 
     tm->populateChartsByItemType(SBIDBase::sb_type_performer,list);
 

@@ -43,7 +43,7 @@ public:
 
     //	Static methods
     static QString createKey(int chartID,int unused=-1);
-    static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
+    static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -81,7 +81,7 @@ private:
     void _copy(const SBIDChart& c);
     void _init();
     void _loadPerformances();
-    static QMap<SBIDChartPerformancePtr,SBIDChartPtr> _loadPerformancesFromDB(const SBIDChart& id,bool showProgressDialogFlag=0);
+    static QMap<SBIDChartPerformancePtr,SBIDChartPtr> _loadPerformancesFromDB(const SBIDChart& id);
 };
 
 #endif // SBIDCHART_H

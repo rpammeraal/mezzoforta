@@ -73,7 +73,9 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         break;
 
     case SBIDBase::sb_type_chart:
+        qDebug() << SB_DEBUG_INFO;
         ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
+        qDebug() << SB_DEBUG_INFO;
         break;
 
     case SBIDBase::sb_type_song_performance:

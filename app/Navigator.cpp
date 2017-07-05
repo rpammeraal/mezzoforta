@@ -20,6 +20,7 @@
 #include "Chooser.h"
 #include "MainWindow.h"
 #include "PlayerController.h"
+#include "ProgressDialog.h"
 #include "SBIDBase.h"
 #include "SBIDManagerTemplate.h"
 #include "SBIDPlaylist.h"
@@ -648,10 +649,17 @@ Navigator::_activateScreen()
 
     if(tab)
     {
+        if(ptr)
+        {
+            ptr->refreshDependents(1,1);
+        }
+
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
         si=tab->populate(si);
     }
+
+    ProgressDialog::instance()->hide();
 
     if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.ptr())
     {

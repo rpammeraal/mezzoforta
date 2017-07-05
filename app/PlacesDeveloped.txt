@@ -27,6 +27,7 @@ Berkel-Enschot, N-Brabant
 Enroute: LAX-KEF
 Zoetermeer
 On board: Miami - San Juan, Puerto Rico - St Thomas - Sint Maarten
+Enroute: FLL-LAX
 
 
 Crown Princess Demo (20150407):
@@ -805,12 +806,11 @@ Current:
 		14664 "13:27:05" ..\app\Navigator.cpp Navigator::openScreen 108 ***ERROR*** UNHANDLED SCREENITEM TYPE:  0
 		14664 "13:27:06" ..\app\ScreenStack.cpp ScreenStack::debugShow 249 "openScreen:113" num screens 7
 	-	when searching a new item on search screen, search results is not scrolled back to the top.
-*	performer search:
+-	performer search:
 	-	take care of article words in artist search.
-	*	trim at end and start, dedupe white space. Use Common::simplified().70099
+	-	trim at end and start, dedupe white space. Use Common::simplified().70099
 
 Todo:
-*	difference between text() and genericDescription() -- possibly merge.
 *	add original_song_performance_id to song
 	-	code
 	-	db migration scripts

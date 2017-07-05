@@ -260,7 +260,7 @@ SBTableModel*
 SBIDSong::charts() const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this,0);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
     tm->populateChartsByItemType(SBIDBase::sb_type_song,chartToPerformances);
     return tm;
 }

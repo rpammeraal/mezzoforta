@@ -76,7 +76,8 @@ HEADERS     = \
     SBIDChart.h \
     SBTabChartDetail.h \
     SBTabChooser.h \
-    SBIDChartPerformance.h
+    SBIDChartPerformance.h \
+    ProgressDialog.h
 
 SOURCES     = \
     main.cpp \
@@ -153,7 +154,8 @@ SOURCES     = \
     SBIDChart.cpp \
     SBTabChartDetail.cpp \
     SBTabChooser.cpp \
-    SBIDChartPerformance.cpp
+    SBIDChartPerformance.cpp \
+    ProgressDialog.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

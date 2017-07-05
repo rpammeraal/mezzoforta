@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "ProgressDialog.h"
 #include "SBIDAlbumPerformance.h"
 
 //	Retrieve map between chart and chart performance based on an SBID object, which is either:
@@ -11,7 +12,7 @@
 //	-	performer (all chart performances by chart for this performer)
 //	-	song (all chart performances by chart for this song)
 QMap<SBIDChartPerformancePtr,SBIDChartPtr>
-Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
+Preloader::chartItems(const SBIDBase& id)
 {
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
@@ -89,31 +90,15 @@ Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery queryList(q,db);
-    int maxValue=queryList.size();
-    if(maxValue<0)
+    int progressCurrentValue=0;
+    int progressMaxValue=queryList.size();
+    if(progressMaxValue<0)
     {
         //	Count items
         while(queryList.next())
         {
-            maxValue++;
+            progressMaxValue++;
         }
-    }
-
-    //	Set up progress dialog
-    QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
-    if(maxValue<=10)
-    {
-        showProgressDialogFlag=0;
-    }
-
-    int currentValue=0;
-    if(showProgressDialogFlag)
-    {
-        pd.setWindowModality(Qt::WindowModal);
-        pd.show();
-        pd.raise();
-        pd.activateWindow();
-        QCoreApplication::processEvents();
     }
 
     items.clear();
@@ -189,17 +174,13 @@ Preloader::chartItems(const SBIDBase& id, bool showProgressDialogFlag)
             items[chartPerformancePtr]=chartPtr;
         }
 
-        if(showProgressDialogFlag && (currentValue%10)==0)
+        if((progressCurrentValue%10)==0)
         {
-            QCoreApplication::processEvents();
-            pd.setValue(currentValue);
+            ProgressDialog::instance()->update("Preloader::chartItems",progressCurrentValue*100/progressMaxValue);
         }
-        currentValue++;
+        progressCurrentValue++;
     }
-    if(showProgressDialogFlag)
-    {
-        pd.setValue(maxValue);
-    }
+    ProgressDialog::instance()->update("Preloader::chartItems",100);
     return items;
 }
 
@@ -226,24 +207,24 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
     qDebug() << SB_DEBUG_INFO << query;
 
     QSqlQuery queryList(query,db);
-    int maxValue=queryList.size();
-    if(maxValue<0)
+    int progressMaxValue=queryList.size();
+    if(progressMaxValue<0)
     {
         //	Count items
         while(queryList.next())
         {
-            maxValue++;
+            progressMaxValue++;
         }
     }
 
     //	Set up progress dialog
-    QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
-    if(maxValue<=10)
+    QProgressDialog pd("Retrieving Performances",QString(),0,progressMaxValue);
+    if(progressMaxValue<=10)
     {
         showProgressDialogFlag=0;
     }
 
-    int currentValue=0;
+    int progressCurrentValue=0;
     if(showProgressDialogFlag)
     {
         pd.setWindowModality(Qt::WindowModal);
@@ -336,16 +317,16 @@ Preloader::performances(QString query, bool showProgressDialogFlag)
             items.append(albumPerformancePtr);
         }
 
-        if(showProgressDialogFlag && (currentValue%10)==0)
+        if(showProgressDialogFlag && (progressCurrentValue%10)==0)
         {
             QCoreApplication::processEvents();
-            pd.setValue(currentValue);
+            pd.setValue(progressCurrentValue);
         }
-        currentValue++;
+        progressCurrentValue++;
     }
     if(showProgressDialogFlag)
     {
-        pd.setValue(maxValue);
+        pd.setValue(progressMaxValue);
     }
     return items;
 }
@@ -370,24 +351,24 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;
     QSqlQuery queryList(query,db);
-    int maxValue=queryList.size();
-    if(maxValue<0)
+    int progressMaxValue=queryList.size();
+    if(progressMaxValue<0)
     {
         //	Count items
         while(queryList.next())
         {
-            maxValue++;
+            progressMaxValue++;
         }
     }
 
     //	Set up progress dialog
-    QProgressDialog pd("Retrieving Performances",QString(),0,maxValue);
-    if(maxValue<=10)
+    QProgressDialog pd("Retrieving Performances",QString(),0,progressMaxValue);
+    if(progressMaxValue<=10)
     {
         showProgressDialogFlag=0;
     }
 
-    int currentValue=0;
+    int progressCurrentValue=0;
     if(showProgressDialogFlag)
     {
         pd.setWindowModality(Qt::WindowModal);
@@ -470,16 +451,16 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
             items[albumPerformancePtr->albumPosition()]=albumPerformancePtr;
         }
 
-        if(showProgressDialogFlag && (currentValue%10)==0)
+        if(showProgressDialogFlag && (progressCurrentValue%10)==0)
         {
             QCoreApplication::processEvents();
-            pd.setValue(currentValue);
+            pd.setValue(progressCurrentValue);
         }
-        currentValue++;
+        progressCurrentValue++;
     }
     if(showProgressDialogFlag)
     {
-        pd.setValue(maxValue);
+        pd.setValue(progressMaxValue);
     }
     return items;
 }
@@ -487,6 +468,7 @@ Preloader::performanceMap(QString query, bool showProgressDialogFlag)
 QMap<int,SBIDPtr>
 Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
@@ -656,14 +638,14 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
     qDebug() << SB_DEBUG_INFO << q;
 
     //	Set up progress dialog
-    int maxValue=queryList.size();
-    QProgressDialog pd("Retrieving All Items",QString(),0,maxValue);
-    if(maxValue<=10)
+    int progressMaxValue=queryList.size();
+    QProgressDialog pd("Retrieving All Items",QString(),0,progressMaxValue);
+    if(progressMaxValue<=10)
     {
         showProgressDialogFlag=0;
     }
 
-    int currentValue=0;
+    int progressCurrentValue=0;
     if(showProgressDialogFlag)
     {
         pd.setWindowModality(Qt::WindowModal);
@@ -779,16 +761,16 @@ Preloader::playlistItems(int playlistID,bool showProgressDialogFlag)
         {
             items[playlistIndex++]=itemPtr;
         }
-        if(showProgressDialogFlag && (currentValue%10)==0)
+        if(showProgressDialogFlag && (progressCurrentValue%10)==0)
         {
             QCoreApplication::processEvents();
-            pd.setValue(currentValue);
+            pd.setValue(progressCurrentValue);
         }
-        currentValue++;
+        progressCurrentValue++;
     }
     if(showProgressDialogFlag)
     {
-        pd.setValue(maxValue);
+        pd.setValue(progressMaxValue);
     }
     return items;
 }

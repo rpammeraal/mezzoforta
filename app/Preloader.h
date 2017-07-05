@@ -10,7 +10,7 @@
 class Preloader
 {
 public:
-    static QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartItems(const SBIDBase& id,bool showProgressDialogFlag);
+    static QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartItems(const SBIDBase& id);
     static QVector<SBIDAlbumPerformancePtr> performances(QString query, bool showProgressDialogFlag);
     static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query, bool showProgressDialogFlag);
     static QMap<int,SBIDPtr> playlistItems(int playlistID,bool showProgressDialogFlag);

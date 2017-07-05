@@ -2,6 +2,7 @@
 
 #include "Context.h"
 #include "Preloader.h"
+#include "ProgressDialog.h"
 
 //	Ctors, dtors
 SBIDChart::SBIDChart(const SBIDChart& c)
@@ -136,8 +137,13 @@ void
 SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
+    if(showProgressDialogFlag)
+    {
+        ProgressDialog::instance()->show("Loading chart",3);
+    }
     if(forcedFlag==1 || _items.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         _loadPerformances();
     }
 }
@@ -272,10 +278,13 @@ SBIDChart::_init()
 void
 SBIDChart::_loadPerformances()
 {
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=_loadPerformancesFromDB(*this,1);
+    qDebug() << SB_DEBUG_INFO;
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=_loadPerformancesFromDB(*this);
     _items.clear();
 
     QMapIterator<SBIDChartPerformancePtr,SBIDChartPtr> it(list);
+    const int progressMaxValue=list.count();
+    int progressCurrentValue=0;
     while(it.hasNext())
     {
         it.next();
@@ -288,11 +297,12 @@ SBIDChart::_loadPerformances()
             position++;
         }
         _items[position]=ptr;
+        ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressCurrentValue++*100/progressMaxValue);
     }
 }
 
 QMap<SBIDChartPerformancePtr,SBIDChartPtr>
-SBIDChart::_loadPerformancesFromDB(const SBIDChart& chart, bool showProgressDialogFlag)
+SBIDChart::_loadPerformancesFromDB(const SBIDChart& chart)
 {
-    return Preloader::chartItems(chart,showProgressDialogFlag);
+    return Preloader::chartItems(chart);
 }

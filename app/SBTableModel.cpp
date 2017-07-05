@@ -1,6 +1,7 @@
 #include "SBTableModel.h"
 
 #include "Context.h"
+#include "ProgressDialog.h"
 #include "SBModel.h"
 #include "SBIDPlaylist.h"
 #include "SBIDOnlinePerformance.h"
@@ -316,6 +317,8 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
 
     QMapIterator<int,SBIDChartPerformancePtr> it(items);
     int i=0;
+    const int progressMaxValue=items.count();
+    int progressCurrentValue=0;
     while(it.hasNext())
     {
         it.next();
@@ -331,6 +334,7 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
             _setItem(i,4,QString("%1").arg(spPtr->songPerformerName()));
             i++;
         }
+        ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressCurrentValue++*100/progressMaxValue);
     }
 }
 
