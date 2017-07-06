@@ -334,8 +334,9 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
             _setItem(i,4,QString("%1").arg(spPtr->songPerformerName()));
             i++;
         }
-        ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressCurrentValue++*100/progressMaxValue);
+        ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressCurrentValue++,progressMaxValue);
     }
+    ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressMaxValue,progressMaxValue);
 }
 
 void

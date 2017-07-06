@@ -1632,10 +1632,6 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._notes      =r.value(4).toString();
     album._year       =r.value(5).toInt();
 
-    qDebug() << SB_DEBUG_INFO
-             << "albumID=" << album._albumID
-             << "title=" << album._albumTitle
-    ;
     return std::make_shared<SBIDAlbum>(album);
 }
 

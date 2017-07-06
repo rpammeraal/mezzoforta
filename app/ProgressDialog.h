@@ -3,6 +3,15 @@
 
 #include "QProgressDialog"
 
+//	Provides a simple progress dialog.
+//	Usage:
+//		ProgressDialog::instance()->show(<title>,<number of phases>);
+//		In each loop for a phase:
+//		ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressCurrentValue++,progressMaxValue);
+//
+//		After each loop:
+//		ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressMaxValue,progressMaxValue);
+
 class ProgressDialog
 {
 public:
@@ -12,17 +21,19 @@ public:
         return &_instance;
     }
 
-    void show(const QString& title,int numSteps);
-    void update(const QString& step, int currentValue);
+    void show(const QString& title,const QString& initiatingFunction, int numSteps);
+    void update(const QString& step, int currentValue, int maxValue);
     void hide();
 
 private:
     ProgressDialog();
     ~ProgressDialog();
 
-    QProgressDialog _pd;
+    QString         _initiatingFunction;
     int             _numSteps;
+    QProgressDialog _pd;
     QStringList     _stepList;
+    bool            _visible;
 
     void _init();
 };

@@ -23,6 +23,30 @@ Preloader::chartItems(const SBIDBase& id)
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
+    QString whereClause;
+    switch(id.itemType())
+    {
+        case SBIDBase::sb_type_song:
+            whereClause=QString("cp.song_id=%1").arg(id.itemID());
+            break;
+        case SBIDBase::sb_type_performer:
+            whereClause=QString("cp.artist_id=%1").arg(id.itemID());
+            break;
+        case SBIDBase::sb_type_chart:
+            whereClause=QString("cp.chart_id=%1").arg(id.itemID());
+            break;
+
+        case SBIDBase::sb_type_invalid:
+        case SBIDBase::sb_type_album:
+        case SBIDBase::sb_type_playlist:
+        case SBIDBase::sb_type_song_performance:
+        case SBIDBase::sb_type_album_performance:
+        case SBIDBase::sb_type_online_performance:
+        case SBIDBase::sb_type_chart_performance:
+            whereClause="1=0";
+            break;
+    }
+
     QStringList chartFields; chartFields                       << "0"  << "1"  << "3"  << "2"  << "22";
     QStringList chartPerformanceFields; chartPerformanceFields << "4"  << "0"  << "5"  << "6"  << "7";
     QStringList performerFields; performerFields               << "9"  << "18" << "19" << "20" << "21";
@@ -72,19 +96,13 @@ Preloader::chartItems(const SBIDBase& id)
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
-            "cp.chart_id=CASE WHEN %1=%3 THEN %2 ELSE cp.chart_id END AND "
-            "p.artist_id=CASE WHEN %1=%4 THEN %2 ELSE p.artist_id END AND "
-            "p.song_id=CASE WHEN %1=%5 THEN %2 ELSE p.song_id END "
+            "%1 "
         "ORDER BY "
             "cp.chart_position, "
             "s.title, "
             "a.name "
     )
-        .arg(id.itemType())
-        .arg(id.itemID())
-        .arg(SBIDBase::sb_type_chart)
-        .arg(SBIDBase::sb_type_performer)
-        .arg(SBIDBase::sb_type_song)
+        .arg(whereClause)
     ;
 
     dal->customize(q);
@@ -174,13 +192,10 @@ Preloader::chartItems(const SBIDBase& id)
             items[chartPerformancePtr]=chartPtr;
         }
 
-        if((progressCurrentValue%10)==0)
-        {
-            ProgressDialog::instance()->update("Preloader::chartItems",progressCurrentValue*100/progressMaxValue);
-        }
+        ProgressDialog::instance()->update("Preloader::chartItems",progressCurrentValue,progressMaxValue);
         progressCurrentValue++;
     }
-    ProgressDialog::instance()->update("Preloader::chartItems",100);
+    ProgressDialog::instance()->update("Preloader::chartItems",progressMaxValue,progressMaxValue);
     return items;
 }
 

@@ -651,7 +651,7 @@ Navigator::_activateScreen()
     {
         if(ptr)
         {
-            ptr->refreshDependents(1,1);
+            ptr->refreshDependents(1,0);
         }
 
         //	Populate() will retrieve details from the database, populate the widget and returns
