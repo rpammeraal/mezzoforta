@@ -27,10 +27,10 @@ Preloader::chartItems(const SBIDBase& id)
     switch(id.itemType())
     {
         case SBIDBase::sb_type_song:
-            whereClause=QString("cp.song_id=%1").arg(id.itemID());
+            whereClause=QString("p.song_id=%1").arg(id.itemID());
             break;
         case SBIDBase::sb_type_performer:
-            whereClause=QString("cp.artist_id=%1").arg(id.itemID());
+            whereClause=QString("a.artist_id=%1").arg(id.itemID());
             break;
         case SBIDBase::sb_type_chart:
             whereClause=QString("cp.chart_id=%1").arg(id.itemID());

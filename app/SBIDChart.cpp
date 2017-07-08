@@ -56,11 +56,18 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
     ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",2);
 
+    if(_items.count()==0)
+    {
+        this->refreshDependents();
+    }
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMapIterator<int,SBIDChartPerformancePtr> it(_items);
     int index=0;
     int progressCurrentValue=0;
     int progressMaxValue=_items.count();
+    qDebug() << SB_DEBUG_INFO << progressMaxValue;
+    ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",0,progressMaxValue);
+
     while(it.hasNext())
     {
         it.next();
@@ -285,6 +292,7 @@ SBIDChart::_loadPerformances()
     QMapIterator<SBIDChartPerformancePtr,SBIDChartPtr> it(list);
     const int progressMaxValue=list.count();
     int progressCurrentValue=0;
+    ProgressDialog::instance()->update("SBIDChart::_loadPerformances",0,progressMaxValue);
     while(it.hasNext())
     {
         it.next();

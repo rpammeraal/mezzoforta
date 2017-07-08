@@ -811,7 +811,11 @@ Between 20161215 and 20170604:
 	-	trim at end and start, dedupe white space. Use Common::simplified().70099
 -	initial refactoring of progress dialogbar. Now works for opening charts.
 
+Current:
+-	online_performance properly updated.
+
 Bugs that need to be fixed:
+*	Chart tabs in song, performer not populated.
 *	Open up 'Holiday Rap' -- hangs
 *	performer screen:
 	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.

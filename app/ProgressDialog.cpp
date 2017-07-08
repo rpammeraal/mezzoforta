@@ -15,10 +15,11 @@ ProgressDialog::show(const QString &title,const QString& initiatingFunction, int
     _pd.activateWindow();
     QCoreApplication::processEvents();
 
-    _initiatingFunction=initiatingFunction;
     _numSteps=numSteps;
-    _stepList.clear();
     _visible=1;
+
+    _stepList.clear();
+    _stepList.append(initiatingFunction);
 }
 
 void
@@ -36,7 +37,7 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
         if(_stepList.count()>_numSteps)
         {
             qDebug() << SB_DEBUG_WARNING
-                     << "initiator" << _initiatingFunction
+                     << "initiator" << _stepList.at(0)
                      << "extra step "  << step
                      << "current steps" << _stepList.count()
                      << "expected steps" << _numSteps
@@ -47,9 +48,10 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
     if(maxValue==0)
     {
         qDebug() << SB_DEBUG_WARNING
-                 << "maxValue passed as 0 -- setting to currentValue"
+                 << "initiator" << _stepList.at(0)
+                 << "maxValue passed as 0 -- setting to 100"
         ;
-        maxValue=currentValue;
+        maxValue=100;
     }
 
     if((currentValue%(maxValue/10))==0)

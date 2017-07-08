@@ -29,7 +29,6 @@ private:
     ProgressDialog();
     ~ProgressDialog();
 
-    QString         _initiatingFunction;
     int             _numSteps;
     QProgressDialog _pd;
     QStringList     _stepList;

@@ -101,16 +101,10 @@ SBIDOnlinePerformance::updateLastPlayDate()
         "SET "
             "last_play_date=%1 "
         "WHERE "
-            "song_id=%2 AND "
-            "artist_id=%3 AND "
-            "record_id=%4 AND "
-            "record_position=%5 "
+            "online_performance_id=%2 "
     )
         .arg(dal->getGetDateTime())
-        .arg(this->songID())
-        .arg(this->songPerformerID())
-        .arg(this->albumID())
-        .arg(this->albumPosition())
+        .arg(this->onlinePerformanceID())
     ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
