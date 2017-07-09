@@ -11,9 +11,9 @@ class Preloader
 {
 public:
     static QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartItems(const SBIDBase& id);
-    static QVector<SBIDAlbumPerformancePtr> performances(QString query, bool showProgressDialogFlag);
-    static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query, bool showProgressDialogFlag);
-    static QMap<int,SBIDPtr> playlistItems(int playlistID,bool showProgressDialogFlag);
+    static QVector<SBIDAlbumPerformancePtr> performances(QString query);
+    static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query);
+    static QMap<int,SBIDPtr> playlistItems(int playlistID);
 
 private:
     static SBIDAlbumPtr _instantiateAlbum(SBIDAlbumMgr* amgr,const QStringList& fields, const QSqlQuery& queryList);

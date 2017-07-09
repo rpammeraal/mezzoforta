@@ -319,6 +319,8 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
     int i=0;
     const int progressMaxValue=items.count();
     int progressCurrentValue=0;
+    ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressCurrentValue,progressMaxValue);
+
     while(it.hasNext())
     {
         it.next();
@@ -336,7 +338,7 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
         }
         ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->update("SBTableModel::populateChartContent",progressMaxValue,progressMaxValue);
+    ProgressDialog::instance()->finishStep("SBTableModel::populateChartContent");
 }
 
 void

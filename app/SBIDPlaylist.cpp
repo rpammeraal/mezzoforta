@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "Preloader.h"
+#include "ProgressDialog.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBSqlQueryModel.h"
@@ -59,11 +60,15 @@ SBIDPlaylist::itemType() const
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
+    ProgressDialog::instance()->show("Loading songs","SDIDPlaylist::sendToPlayQueue",2);
+
     QMap<int,SBIDOnlinePerformancePtr> list;
-    list=_retrievePlaylistItems(this->playlistID(),1);
+    list=_retrievePlaylistItems(this->playlistID());
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+
+    ProgressDialog::instance()->hide();
 }
 
 QString
@@ -666,10 +671,13 @@ SBIDPlaylist::key() const
 void
 SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    qDebug() << SB_DEBUG_INFO << this->key() << showProgressDialogFlag << forcedFlag << _items.count();
+    if(showProgressDialogFlag)
+    {
+        ProgressDialog::instance()->show("Retrieving Playlist","SBIDPlaylist::refreshDependents",2);
+    }
+
     if(forcedFlag==1 || _items.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         _loadPlaylistItems();
     }
 }
@@ -972,7 +980,7 @@ SBIDPlaylist::updateSQL() const
         SQL.append(q);
 
         //	Create reverse lookups of old and new
-        QMap<int, SBIDPtr> oldItems=Preloader::playlistItems(this->playlistID(),1);
+        QMap<int, SBIDPtr> oldItems=Preloader::playlistItems(this->playlistID());
         QMap<QString,int> oldItemKeys;	//	key -> position in playlist
         QMapIterator<int,SBIDPtr> oldItemsIt(oldItems);
         while(oldItemsIt.hasNext())
@@ -1064,7 +1072,7 @@ SBIDPlaylist::operator QString() const
 
 ///	Private methods
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allPerformances,SBIDPtr rootPtr, QProgressDialog* progressDialog)
+SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allPerformances,SBIDPtr rootPtr)
 {
     SBIDPlaylistPtr playlistPtr;
     if(rootPtr && rootPtr->itemType()==SBIDBase::sb_type_playlist)
@@ -1202,10 +1210,6 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
                         allPerformances.append(opPtr);
                     }
                 }
-                if(progressDialog)
-                {
-                    progressDialog->setValue(progressDialog->value()+1);
-                }
             }
         }
         //	We're now done for this item, if it is a playlist:
@@ -1275,6 +1279,8 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
 
     case SBIDBase::sb_type_song_performance:
     case SBIDBase::sb_type_album_performance:
+    case SBIDBase::sb_type_chart_performance:
+    case SBIDBase::sb_type_online_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_song:
         break;
@@ -1321,15 +1327,15 @@ SBIDPlaylist::_init()
 }
 
 void
-SBIDPlaylist::_loadPlaylistItems(bool showProgressDialogFlag)
+SBIDPlaylist::_loadPlaylistItems()
 {
-    _items=_loadPlaylistItemsFromDB(showProgressDialogFlag);
+    _items=_loadPlaylistItemsFromDB();
 }
 
 QMap<int,SBIDPtr>
-SBIDPlaylist::_loadPlaylistItemsFromDB(bool showProgressDialogFlag) const
+SBIDPlaylist::_loadPlaylistItemsFromDB() const
 {
-    return Preloader::playlistItems(playlistID(),showProgressDialogFlag);
+    return Preloader::playlistItems(playlistID());
 }
 
 void
@@ -1397,7 +1403,7 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
-SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
+SBIDPlaylist::_retrievePlaylistItems(int playlistID)
 {
     QList<SBIDPtr> compositesTraversed;
     QList<SBIDOnlinePerformancePtr> allPerformances;
@@ -1406,22 +1412,14 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
 
     if(playlistPtr)
     {
-        QProgressDialog pd("Preparing All Songs",QString(),0,playlistPtr->numItems());
-
-        if(showProgressDialogFlag)
-        {
-            pd.setWindowModality(Qt::WindowModal);
-            pd.setValue(0);
-            pd.show();
-            pd.raise();
-            pd.activateWindow();
-            QCoreApplication::processEvents();
-        }
+        int progressCurrentValue=0;
+        int progressMaxValue=playlistPtr->numItems();
+        ProgressDialog::instance()->update("SBIDPlaylist::_retrievePlaylistItems",0,progressMaxValue);
 
         //	Get all songs
         compositesTraversed.clear();
         allPerformances.clear();
-        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,playlistPtr,showProgressDialogFlag?&pd:NULL);
+        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,playlistPtr);
 
         //	Populate playlist
         int index=0;
@@ -1432,8 +1430,9 @@ SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool showProgressDialogFlag)
             {
                 playList[index++]=opPtr;
             }
-
+            ProgressDialog::instance()->update("SBIDPlaylist::_retrievePlaylistItems",progressCurrentValue++,progressMaxValue);
         }
+        ProgressDialog::instance()->finishStep("SBIDPlaylist::_retrievePlaylistItems");
     }
     return playList;
 }
@@ -1478,7 +1477,7 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
             0);
         break;
 
-    case SBIDBase::sb_type_album_performance:
+    case SBIDBase::sb_type_online_performance:
     {
         SBIDAlbumPerformancePtr performancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(itemPtr);
         q=QString
@@ -1537,6 +1536,15 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
             .arg(SBIDBase::sb_type_chart)
         ;
         break;
+
+    case SBIDBase::sb_type_chart_performance:
+    case SBIDBase::sb_type_song_performance:
+    case SBIDBase::sb_type_album_performance:
+    case SBIDBase::sb_type_invalid:
+        qDebug() << SB_DEBUG_ERROR << "INVALID TYPE";
+        break;
+
+
     }
 
     return QStringList(q);

@@ -7,6 +7,7 @@
 void
 ProgressDialog::show(const QString &title,const QString& initiatingFunction, int numSteps)
 {
+    _initiatingFunction=initiatingFunction;
     _pd.setValue(0);
     _pd.setLabelText(title);
     _pd.setWindowModality(Qt::WindowModal);
@@ -17,9 +18,9 @@ ProgressDialog::show(const QString &title,const QString& initiatingFunction, int
 
     _numSteps=numSteps;
     _visible=1;
+    _prevOffset=-1;
 
     _stepList.clear();
-    _stepList.append(initiatingFunction);
 }
 
 void
@@ -37,41 +38,94 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
         if(_stepList.count()>_numSteps)
         {
             qDebug() << SB_DEBUG_WARNING
-                     << "initiator" << _stepList.at(0)
+                     << "initiator" << _initiatingFunction
                      << "extra step "  << step
                      << "current steps" << _stepList.count()
                      << "expected steps" << _numSteps
             ;
+
+            QStringListIterator it(_stepList);
+            qDebug() << SB_DEBUG_WARNING << "List of current steps:";
+            while(it.hasNext())
+            {
+                QString step=it.next();
+                qDebug() << SB_DEBUG_WARNING << step;
+            }
         }
     }
 
     if(maxValue==0)
     {
         qDebug() << SB_DEBUG_WARNING
-                 << "initiator" << _stepList.at(0)
-                 << "maxValue passed as 0 -- setting to 100"
+                 << "initiator" << _initiatingFunction
+                 << "numSteps" << _numSteps
+                 << "step" << step
+                 << "maxValue passed as 0 -- setting to complete for this step"
         ;
+        currentValue=100;
         maxValue=100;
+            QStringListIterator it(_stepList);
+            qDebug() << SB_DEBUG_WARNING << "List of current steps:";
+            while(it.hasNext())
+            {
+                QString step=it.next();
+                qDebug() << SB_DEBUG_WARNING << step;
+            }
     }
 
-    if((currentValue%(maxValue/10))==0)
+    if(_numSteps==0)
     {
-        int perc=currentValue*100/maxValue;
-
-        const int range=(100/_numSteps);
-        const int base=range * (_stepList.count()-1);
-        const int offset=base + (perc/_numSteps);
-
-        _pd.setValue(offset);
-        QCoreApplication::processEvents();
+        qDebug() << SB_DEBUG_ERROR
+                 << "call with _numSteps set 0"
+                 << "initiator" << _initiatingFunction
+                 << "current step" << step
+        ;
     }
+    int perc=currentValue*100/maxValue;
+
+    const int range=(100/_numSteps);
+    const int base=range * (_stepList.count()-1);
+    const int offset=base + (perc/_numSteps);
+
+        qDebug() << SB_DEBUG_INFO
+                 << "step" << step
+                 << "currentStep" << _stepList.count()
+                 << "numSteps=" << _numSteps
+                 << "currentValue" << currentValue
+                 << "maxValue" << maxValue
+                 << "range" << range
+                 << "base" << base
+                 << "_prev" << _prevOffset
+                 << "offset" << offset
+        ;
+
+    if(offset!=_prevOffset)
+    {
+        if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
+        {
+            qDebug() << SB_DEBUG_INFO
+                     << "display"
+            ;
+            _pd.setValue(offset);
+            _prevOffset=offset;
+            QCoreApplication::processEvents();
+        }
+    }
+}
+
+void
+ProgressDialog::finishStep(const QString &step)
+{
+    update(step,100,100);
 }
 
 void
 ProgressDialog::hide()
 {
+    _pd.close();
     _pd.hide();
     _visible=0;
+    _prevOffset=0;
 }
 
 ///	Private methods
@@ -91,4 +145,5 @@ ProgressDialog::_init()
     _pd.setAutoReset(1);
     _pd.setCancelButton(NULL);
     _visible=0;
+    hide();
 }

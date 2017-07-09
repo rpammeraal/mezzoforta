@@ -62,7 +62,6 @@ SBIDAlbumPerformance::genericDescription() const
 void
 SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDOnlinePerformancePtr> list;
     const SBIDOnlinePerformancePtr opPtr=preferredOnlinePerformancePtr();
     if(opPtr)
     {

@@ -441,7 +441,7 @@ Navigator::openChooserItem(const QModelIndex &i)
     if(screenType==ScreenItem::screen_type_sbidbase)
     {
         //	OPen without dependents, so we can explicitly force a progress box when loading dependents
-        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt(),0,1);
+        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt(),1,0);
         screenItem=ScreenItem(ptr);
 
     }
@@ -625,6 +625,7 @@ Navigator::_activateScreen()
                 canBeEditedFlag=0;
                 break;
 
+            case SBIDBase::sb_type_chart_performance:
             case SBIDBase::sb_type_invalid:
                 break;
             }

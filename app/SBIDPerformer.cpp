@@ -5,6 +5,7 @@
 
 #include "Context.h"
 #include "Preloader.h"
+#include "ProgressDialog.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDOnlinePerformance.h"
 #include "SBMessageBox.h"
@@ -63,8 +64,15 @@ SBIDPerformer::itemType() const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
+    ProgressDialog::instance()->show("Loading songs","SBIDPerformer::sendToPlayQueue",3);
+
     QMap<int,SBIDOnlinePerformancePtr> list;
     QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
+
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=albumPerformances.count();
+    ProgressDialog::instance()->update("SBIDPerformer::sendToPlayQueue",progressCurrentValue,progressMaxValue);
 
     int index=0;
     for(int i=0;i<albumPerformances.count();i++)
@@ -74,10 +82,13 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
         {
             list[index++]=opPtr;
         }
+        ProgressDialog::instance()->update("SBIDPerformer::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
     }
+    ProgressDialog::instance()->finishStep("SBIDPerformer::sendToPlayQueue");
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+    ProgressDialog::instance()->hide();
 }
 
 QString
@@ -376,9 +387,13 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
 void
 SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 {
+    if(showProgressDialogFlag)
+    {
+        ProgressDialog::instance()->show("Retrieving Performer","SBIDPerformer::refreshDependents",3);
+    }
     if(forcedFlag || _albumPerformances.count()==0)
     {
-        _loadAlbumPerformances(showProgressDialogFlag);
+        _loadAlbumPerformances();
     }
     if(forcedFlag || _relatedPerformerKey.count()==0)
     {
@@ -386,7 +401,7 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
     }
     if(forcedFlag || _albumList.count()==0)
     {
-        _loadAlbums(showProgressDialogFlag);
+        _loadAlbums();
     }
 }
 
@@ -1075,15 +1090,15 @@ SBIDPerformer::_init()
 }
 
 void
-SBIDPerformer::_loadAlbums(bool showProgressDialogFlag)
+SBIDPerformer::_loadAlbums()
 {
-    _albumList=_loadAlbumsFromDB(showProgressDialogFlag);
+    _albumList=_loadAlbumsFromDB();
 }
 
 void
-SBIDPerformer::_loadAlbumPerformances(bool showProgressDialogFlag)
+SBIDPerformer::_loadAlbumPerformances()
 {
-    _albumPerformances=_loadAlbumPerformancesFromDB(showProgressDialogFlag);
+    _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
 QVector<QString>
@@ -1116,9 +1131,16 @@ SBIDPerformer::_loadRelatedPerformers() const
     ;
     qDebug() << SB_DEBUG_INFO << q;
 
+
     QVector<QString> relatedPerformerKey;
     SBSqlQueryModel qm(q);
     int performerID;
+
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=qm.rowCount();
+    ProgressDialog::instance()->update("SBIDPerformer::_loadRelatedPerformers",progressCurrentValue,progressMaxValue);
+
     for(int i=0;i<qm.rowCount();i++)
     {
         performerID=qm.data(qm.index(i,0)).toInt();
@@ -1130,20 +1152,21 @@ SBIDPerformer::_loadRelatedPerformers() const
                 relatedPerformerKey.append(key);
             }
         }
+        ProgressDialog::instance()->update("SBIDPerformer::_loadRelatedPerformers",progressCurrentValue++,progressMaxValue);
     }
+    ProgressDialog::instance()->finishStep("SBIDPerformer::_loadRelatedPerformers");
     return relatedPerformerKey;
 }
 
 QVector<SBIDAlbumPerformancePtr>
-SBIDPerformer::_loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const
+SBIDPerformer::_loadAlbumPerformancesFromDB() const
 {
-    return Preloader::performances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()),showProgressDialogFlag);
+    return Preloader::performances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
 }
 
 QVector<SBIDAlbumPtr>
-SBIDPerformer::_loadAlbumsFromDB(bool showProgressDialogFlag) const
+SBIDPerformer::_loadAlbumsFromDB() const
 {
-    Q_UNUSED(showProgressDialogFlag)
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);

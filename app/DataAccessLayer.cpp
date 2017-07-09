@@ -119,7 +119,7 @@ DataAccessLayer::createRestorePoint() const
     QStringList ID;
     ID.append("restorepoint");
 
-    for(size_t i=0;i<SBIDBase::sb_type_count();i++)
+    for(size_t i=0;i<11;i++)
     {
         QString q;
         switch((SBIDBase::sb_type)i)

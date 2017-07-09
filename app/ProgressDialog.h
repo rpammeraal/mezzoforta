@@ -23,16 +23,19 @@ public:
 
     void show(const QString& title,const QString& initiatingFunction, int numSteps);
     void update(const QString& step, int currentValue, int maxValue);
+    void finishStep(const QString& step);
     void hide();
 
 private:
     ProgressDialog();
     ~ProgressDialog();
 
+    QString         _initiatingFunction;
     int             _numSteps;
     QProgressDialog _pd;
     QStringList     _stepList;
     bool            _visible;
+    int             _prevOffset;
 
     void _init();
 };

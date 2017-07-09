@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "Preloader.h"
+#include "ProgressDialog.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
@@ -145,6 +146,7 @@ SBIDAlbum::save()
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
+    ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",3);
     QMap<int,SBIDOnlinePerformancePtr> list;
 
     if(_albumPerformances.count()==0)
@@ -153,6 +155,9 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     }
 
     int index=0;
+    int progressCurrentValue=0;
+    int progressMaxValue=_albumPerformances.count();
+    ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",0,progressMaxValue);
     QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
     while(pIT.hasNext())
     {
@@ -163,10 +168,13 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
         {
             list[index++]=opPtr;
         }
+        ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
     }
+    ProgressDialog::instance()->finishStep("SBIDAlbum::sendToPlayQueue");
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+    ProgressDialog::instance()->hide();
 }
 
 QString
@@ -1396,11 +1404,14 @@ SBIDAlbum::key() const
 void
 SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
+    if(showProgressDialogFlag)
+    {
+        ProgressDialog::instance()->show("Retrieving Album","SBIDChart::refreshDependents",1);
+    }
 
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
-        _loadAlbumPerformances(showProgressDialogFlag);
+        _loadAlbumPerformances();
     }
 }
 
@@ -1829,15 +1840,15 @@ SBIDAlbum::_init()
 }
 
 void
-SBIDAlbum::_loadAlbumPerformances(bool showProgressDialogFlag)
+SBIDAlbum::_loadAlbumPerformances()
 {
-    _albumPerformances=_loadAlbumPerformancesFromDB(showProgressDialogFlag);
+    _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
 QMap<int,SBIDAlbumPerformancePtr>
-SBIDAlbum::_loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const
+SBIDAlbum::_loadAlbumPerformancesFromDB() const
 {
-    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()),showProgressDialogFlag);
+    return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()));
 }
 
 QStringList

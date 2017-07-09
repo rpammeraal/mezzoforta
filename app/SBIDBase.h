@@ -46,14 +46,14 @@ public:
         sb_type_chart_performance=9
     };
 
-    static size_t sb_type_count() { return 8; }
+    static size_t sb_type_count() { return 10; }
 
     SBIDBase();
     SBIDBase(const SBIDBase& c);
     virtual ~SBIDBase();
-    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
+    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
     static SBIDPtr createPtr(const QByteArray& encodedData);
-    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
+    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
 
     //	Public methods
     virtual QByteArray encode() const;

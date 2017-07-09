@@ -58,7 +58,7 @@ public:
 
     //	Static methods
     static QString createKey(int onlinePerformanceID);
-    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=0);
+    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
 
 protected:

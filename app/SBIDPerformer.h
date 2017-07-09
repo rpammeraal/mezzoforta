@@ -67,7 +67,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
+    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
     static SBIDPerformerPtr retrieveVariousPerformers();
 
 protected:
@@ -106,12 +106,12 @@ private:
     //	Methods
     void _copy(const SBIDPerformer& c);
     void _init();
-    void _loadAlbums(bool showProgressDialogFlag=0);
-    void _loadAlbumPerformances(bool showProgressDialogFlag=0);
+    void _loadAlbums();
+    void _loadAlbumPerformances();
     QVector<QString> _loadRelatedPerformers() const;
 
-    QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const;
-    QVector<SBIDAlbumPtr> _loadAlbumsFromDB(bool showProgressDialogFlag) const;
+    QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
+    QVector<SBIDAlbumPtr> _loadAlbumsFromDB() const;
 };
 
 inline uint qHash(const SBIDPerformer& p,uint seed=0)

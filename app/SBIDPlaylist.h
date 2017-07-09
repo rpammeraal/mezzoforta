@@ -55,7 +55,7 @@ public:
 
     //	Static methods
     static QString createKey(int playlistID,int unused=-1);
-    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=0,bool showProgressDialogFlag=0);
+    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -89,13 +89,13 @@ private:
     QMap<int,SBIDPtr> _items;
 
     //	Methods
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root, QProgressDialog* progressDialog=NULL);
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root);
     void _copy(const SBIDPlaylist& c);
     void _init();
-    void _loadPlaylistItems(bool showProgressDialogFlag=0);
-    QMap<int,SBIDPtr> _loadPlaylistItemsFromDB(bool showProgressDialogFlag=0) const;
+    void _loadPlaylistItems();
+    QMap<int,SBIDPtr> _loadPlaylistItemsFromDB() const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID,bool showProgressDialogFlag=0);
+    static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID);
 
     QStringList _generateSQLdeleteItem(int playlistPosition) const;
     QStringList _generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const;

@@ -279,6 +279,9 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     }
     QList<QStandardItem *>record;
 
+    int progressCurrentValue=0;
+    int progressMaxValue=newPlaylist.count();
+    ProgressDialog::instance()->update("SBModelQueuedSongs::populate",0,progressMaxValue);
     for(int i=0;i<newPlaylist.count();i++)
     {
         if(currentPlayID()==-1)
@@ -299,7 +302,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
             QCoreApplication::processEvents();
         }
-        ProgressDialog::instance()->update("SBModelQueuedSongs::populate",i,newPlaylist.count());
+        ProgressDialog::instance()->update("SBModelQueuedSongs::populate",progressCurrentValue++,progressMaxValue);
     }
 
     _populateHeader();
@@ -318,7 +321,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
             _currentPlayID=-1;
         }
     }
-    ProgressDialog::instance()->update("SBModelQueuedSongs::populate",newPlaylist.count(),newPlaylist.count());
+    ProgressDialog::instance()->finishStep("SBModelQueuedSongs::populate");
     emit listChanged();
 }
 

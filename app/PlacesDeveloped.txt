@@ -811,18 +811,26 @@ Between 20161215 and 20170604:
 	-	trim at end and start, dedupe white space. Use Common::simplified().70099
 -	initial refactoring of progress dialogbar. Now works for opening charts.
 
-Current:
+20170708
 -	online_performance properly updated.
+-	Chart tabs in song, performer not populated.
+*	weird thing going on with loading song from all songs. ProgressDialog indicates other items calling update() outside refreshDependents()
+
+20170709:
+-	performer screen:
+    -	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
+	-	open any performer from chart screen.
 
 Bugs that need to be fixed:
-*	Chart tabs in song, performer not populated.
 *	Open up 'Holiday Rap' -- hangs
-*	performer screen:
-	-	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
-	-	open any performer from chart screen.
 *	search screen:
 	-	need progress dialog
-
+*	player does not refresh in radio mode after 100 songs.
+*	wikipedia entry not working in performer tab
+*	SBID*: retrieve*() should not have the option to show progress dialog
+    SBIDManager: remove progress dialog flag
+*	Enqueue U2. Should result in 558 entries. Enqueue Simple Minds. SImple Minds entries start to appear before entry #558.
+    Sum of all songs for these performers don't add up.
 
 Todo:
 *	add original_song_performance_id to song
@@ -844,6 +852,7 @@ Near future:
 *	Find out where we need to offer a choice of what online performance to play if a song is to be played/queud.
 
 Import bugs/features/missing:
+*	DataAccessLayer::createRestorePoint to be revisited
 *	Dialogbox needed at additional places during import
 *	Validate album positions
 *	Import songbase directory:

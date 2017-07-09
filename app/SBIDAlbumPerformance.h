@@ -72,7 +72,7 @@ public:
     static SBSqlQueryModel* onlinePerformances(int limit=0);
     static QString performancesByAlbum_Preloader(int albumID);
     static QString performancesByPerformer_Preloader(int performerID);
-    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=0);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
 
 	//	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);

@@ -43,7 +43,7 @@ public:
 
     //	Static methods
     static QString createKey(int chartID,int unused=-1);
-    static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
+    static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

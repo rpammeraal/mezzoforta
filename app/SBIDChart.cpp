@@ -54,7 +54,7 @@ SBIDChart::itemType() const
 void
 SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
-    ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",2);
+    ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",4);
 
     if(_items.count()==0)
     {
@@ -63,10 +63,11 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMapIterator<int,SBIDChartPerformancePtr> it(_items);
     int index=0;
+
+    //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=_items.count();
-    qDebug() << SB_DEBUG_INFO << progressMaxValue;
-    ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",0,progressMaxValue);
+    ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",progressCurrentValue,progressMaxValue);
 
     while(it.hasNext())
     {
@@ -82,7 +83,7 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
         }
         ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",progressMaxValue,progressMaxValue);
+    ProgressDialog::instance()->finishStep("SBIDChart::sendToPlayQueue");
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
@@ -144,14 +145,12 @@ SBIDChart::key() const
 void
 SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     if(showProgressDialogFlag)
     {
-        ProgressDialog::instance()->show("Loading chart","SBIDChart::refreshDependents",3);
+        ProgressDialog::instance()->show("Retrieving Chart","SBIDChart::refreshDependents",3);
     }
     if(forcedFlag==1 || _items.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         _loadPerformances();
     }
 }
@@ -167,7 +166,7 @@ SBIDChart::createKey(int chartID,int unused)
 }
 
 SBIDChartPtr
-SBIDChart::retrieveChart(int chartID,bool noDependentsFlag,bool showProgressDialogFlag)
+SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
 {
     SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
     SBIDChartPtr cPtr;
@@ -176,7 +175,7 @@ SBIDChart::retrieveChart(int chartID,bool noDependentsFlag,bool showProgressDial
         cPtr=cmgr->retrieve(
                         createKey(chartID),
                         (noDependentsFlag==1?SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_default),
-                        showProgressDialogFlag);
+                        0);
     }
     return cPtr;
 }
@@ -308,7 +307,7 @@ SBIDChart::_loadPerformances()
 
         ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressMaxValue,progressMaxValue);
+    ProgressDialog::instance()->finishStep("SBIDChart::_loadPerformances");
 }
 
 QMap<SBIDChartPerformancePtr,SBIDChartPtr>

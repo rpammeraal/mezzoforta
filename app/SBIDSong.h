@@ -85,7 +85,7 @@ public:
 
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
-    static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=0);
+    static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=1);
     static QString iconResourceLocationStatic();
 
 protected:

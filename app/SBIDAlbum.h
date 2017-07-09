@@ -80,7 +80,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for SBIDManagerTemplate
-    static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=0);
+    static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveUnknownAlbum();
 
     //	Static methods
@@ -122,10 +122,10 @@ private:
 
     void _copy(const SBIDAlbum& c);
     void _init();
-    void _loadAlbumPerformances(bool showProgressDialogFlag=0);
+    void _loadAlbumPerformances();
 
     //	Aux helper methods
-    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB(bool showProgressDialogFlag) const;
+    QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QStringList _updateSQLAlbumPerformances() const;
     void _showAlbumPerformances(const QString& title) const;
 };

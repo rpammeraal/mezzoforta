@@ -73,9 +73,11 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         break;
 
     case SBIDBase::sb_type_chart:
-        qDebug() << SB_DEBUG_INFO;
         ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
-        qDebug() << SB_DEBUG_INFO;
+        break;
+
+    case SBIDBase::sb_type_chart_performance:
+        ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
         break;
 
     case SBIDBase::sb_type_song_performance:
@@ -182,9 +184,18 @@ SBIDBase::convert(Common::sb_field f)
         t=SBIDBase::sb_type_chart;
         break;
 
+    case Common::sb_field_album_performance_id:
+        t=SBIDBase::sb_type_album_performance;
+        break;
+
+    case Common::sb_field_online_performance_id:
+        t=SBIDBase::sb_type_online_performance;
+        break;
+
     case Common::sb_field_playlist_id:
         t=SBIDBase::sb_type_playlist;
         break;
+
 
     case Common::sb_field_key:
     case Common::sb_field_album_position:

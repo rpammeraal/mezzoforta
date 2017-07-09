@@ -10,6 +10,7 @@
 
 #include "Common.h"
 #include "DataAccessLayer.h"
+#include "ProgressDialog.h"
 #include "SBSqlQueryModel.h"
 
 //	LAX-DUB-AMS-Maastricht-Luik-Sint Truiden-Leuven-Diest-Lommel-Eindhoven
@@ -47,8 +48,8 @@ public:
     int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default,bool showProgressDialogFlag=0);
     QVector<std::shared_ptr<T>> retrieveAll();
-    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
-    QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default,const QString& label="");
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
+    QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
 
     //	Update
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
@@ -240,26 +241,15 @@ SBIDManagerTemplate<T,parentT>::retrieveAll()
 }
 
 template <class T, class parentT> QVector<std::shared_ptr<T>>
-SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
+SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
 {
-    bool showProgressDialogFlag=label.count()>1;
     const int rowCount=qm->rowCount();
-    int currentRowIndex=0;
-    QProgressDialog pd(label,QString(),0,rowCount);
 
-    if(rowCount<=20)
-    {
-        showProgressDialogFlag=0;
-    }
-
-    if(showProgressDialogFlag)
-    {
-        pd.setWindowModality(Qt::WindowModal);
-        pd.show();
-        pd.raise();
-        pd.activateWindow();
-        QCoreApplication::processEvents();
-    }
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=rowCount;
+    const QString typeName=QString("SBIDManagerTemplate_retrieveSet:%1").arg(typeid(T).name());
+    ProgressDialog::instance()->update(typeName,progressCurrentValue,progressMaxValue);
 
     QVector<std::shared_ptr<T>> list;
     for(int i=0;i<rowCount;i++)
@@ -290,41 +280,23 @@ SBIDManagerTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openF
             }
         }
         list.append(newT);
-
-        //	Take care of progress dialog
-        if(showProgressDialogFlag && (currentRowIndex%10)==0)
-        {
-            QCoreApplication::processEvents();
-            pd.setValue(currentRowIndex);
-        }
-        currentRowIndex++;
+        ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
     }
-    pd.setValue(rowCount);
+    ProgressDialog::instance()->finishStep(typeName);
     return list;
 }
 
 //	First field of qm contains int to be used for key in QMap<int,std::shared_ptr<T>>
 template <class T, class parentT> QMap<int,std::shared_ptr<T>>
-SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag, const QString& label)
+SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
 {
-    bool showProgressDialogFlag=label.count()>1;
     const int rowCount=qm->rowCount();
-    int currentRowIndex=0;
-    QProgressDialog pd(label,QString(),0,rowCount);
 
-    if(rowCount<=20)
-    {
-        showProgressDialogFlag=0;
-    }
-
-    if(showProgressDialogFlag)
-    {
-        pd.setWindowModality(Qt::WindowModal);
-        pd.show();
-        pd.raise();
-        pd.activateWindow();
-        QCoreApplication::processEvents();
-    }
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=rowCount;
+    const QString typeName=QString("SBIDManagerTemplate_retrieveMap:%1").arg(typeid(T).name());
+    ProgressDialog::instance()->update(typeName,progressCurrentValue,progressMaxValue);
 
     QMap<int,std::shared_ptr<T>> map;
     for(int i=0;i<rowCount;i++)
@@ -356,16 +328,9 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
             }
         }
         map[intKey]=newT;
-
-        //	Take care of progress dialog
-        if(showProgressDialogFlag && (currentRowIndex%10)==0)
-        {
-            QCoreApplication::processEvents();
-            pd.setValue(currentRowIndex);
-        }
-        currentRowIndex++;
+        ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
     }
-    pd.setValue(rowCount);
+    ProgressDialog::instance()->finishStep(typeName);
     return map;
 }
 

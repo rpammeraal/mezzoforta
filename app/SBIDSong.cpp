@@ -1155,20 +1155,27 @@ SBIDSong::key() const
 void
 SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
+    if(showProgressDialogFlag)
+    {
+        ProgressDialog::instance()->show("Retrieving Data","SBIDSong::refreshDependents",4);
+    }
 
+    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
     }
+    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _playlistOnlinePerformances.count()==0)
     {
         _loadPlaylists();
     }
+    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _songPerformances.count()==0)
     {
         _loadSongPerformances();
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 
@@ -1577,9 +1584,7 @@ SBIDSong::_loadAlbumPerformances()
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    qDebug()<< SB_DEBUG_INFO;
     _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
-    qDebug()<< SB_DEBUG_INFO;
 
     delete qm;
 }
@@ -1654,20 +1659,37 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
         .arg(this->songID())
     ;
 
-    QSqlQuery q1(db);
-    q1.exec(dal->customize(q));
+    QSqlQuery query(db);
+    query.exec(dal->customize(q));
 
-    while(q1.next())
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=query.size();
+    if(progressMaxValue<0)
     {
-        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(q1.value(0).toInt(),1);
-        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(q1.value(1).toInt(),1);
+        //	Count items
+        while(query.next())
+        {
+            progressMaxValue++;
+        }
+    }
+    ProgressDialog::instance()->update("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue,progressMaxValue);
+
+    query.first();
+    query.previous();
+    while(query.next())
+    {
+        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(query.value(0).toInt(),1);
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(query.value(1).toInt(),1);
 
         SBIDSong::PlaylistOnlinePerformance r;
         r.plPtr=plPtr;
         r.opPtr=opPtr;
 
         playlistOnlinePerformanceList.append(r);
+        ProgressDialog::instance()->update("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue++,progressMaxValue);
     }
+    ProgressDialog::instance()->finishStep("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB");
     return playlistOnlinePerformanceList;
 }
 

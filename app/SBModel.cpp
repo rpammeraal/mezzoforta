@@ -75,7 +75,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
             if(header=="sb_item_key")
             {
-                ptr=SBIDBase::createPtr(v.toString(),0,showProgressDialogFlag);
+                ptr=SBIDBase::createPtr(v.toString(),1,showProgressDialogFlag);
                 return ptr;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
@@ -104,7 +104,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
             if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
-                ptr=SBIDBase::createPtr(itemType,itemID,0,showProgressDialogFlag);
+                ptr=SBIDBase::createPtr(itemType,itemID,1,showProgressDialogFlag);
                 return ptr;
             }
         }
@@ -123,7 +123,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
         if((!ptr) && key.length())
         {
             qDebug() << SB_DEBUG_INFO << key;
-            ptr=SBIDBase::createPtr(key,0,showProgressDialogFlag);
+            ptr=SBIDBase::createPtr(key,1,showProgressDialogFlag);
             return ptr;
         }
     }
@@ -155,7 +155,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
-            ptr=SBIDBase::createPtr(itemType,itemID,0,showProgressDialogFlag);
+            ptr=SBIDBase::createPtr(itemType,itemID,1,showProgressDialogFlag);
             return ptr;
         }
     }
