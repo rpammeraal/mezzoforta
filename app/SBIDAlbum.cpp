@@ -207,14 +207,12 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
 //            "( "
 //                "song_id, "
 //                "artist_id, "
-//                "role_id, "
 //                "year, "
 //                "notes "
 //            ") "
 //            "SELECT "
 //                "song_id, "
 //                "%1, "	//	artist_id
-//                "1, "	//	role_id,
 //                "%3, "
 //                "'' "
 //            "FROM "

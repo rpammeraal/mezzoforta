@@ -136,7 +136,6 @@ SBIDSongPerformance::operator QString()
             .arg(_songPerformanceID)
             .arg(_songID)
             .arg(_performerID)
-            .arg(_originalPerformerFlag)
     ;
 }
 
@@ -186,7 +185,6 @@ SBIDSongPerformance::performancesBySong(int songID)
             "p.performance_id, "
             "p.song_id, "
             "p.artist_id, "
-            "p.role_id, "
             "p.year, "
             "p.notes, "
             "p.preferred_record_performance_id "
@@ -249,10 +247,9 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         "FROM "
             "___SB_SCHEMA_NAME___performance p "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
-                    "p.song_id=s.song_id "
+                    "p.performance_id=s.original_performance_id "
                     "%4 "
         "WHERE "
-            "p. role_id=0 AND "
             "( "
                 "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
                 "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
@@ -278,7 +275,6 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     sP._songPerformanceID          =Common::parseIntFieldDB(&r,i++);
     sP._songID                     =Common::parseIntFieldDB(&r,i++);
     sP._performerID                =Common::parseIntFieldDB(&r,i++);
-    sP._originalPerformerFlag      =r.value(i++).toBool();
     sP._year                       =Common::parseIntFieldDB(&r,i++);
     sP._notes                      =Common::parseTextFieldDB(&r,i++);
     sP._preferredAlbumPerformanceID=Common::parseIntFieldDB(&r,i++);
@@ -298,7 +294,6 @@ SBIDSongPerformance::retrieveSQL(const QString &key)
             "p.performance_id, "
             "p.song_id, "
             "p.artist_id, "
-            "CASE WHEN p.role_id=0 THEN 1 ELSE 0 END, "
             "p.year, "
             "p.notes, "
             "p.preferred_record_performance_id "
@@ -336,20 +331,17 @@ SBIDSongPerformance::updateSQL() const
             "( "
                 "song_id, "
                 "artist_id, "
-                "role_id, "
                 "year, "
                 "notes "
             ") "
             "SELECT "
                 "%1 as song_id, "
                 "%2 as artist_id, "
-                "%3 as role_id, "
-                "%4 as year, "
-                "CAST('%5' AS VARCHAR) as notes "
+                "%3 as year, "
+                "CAST('%4' AS VARCHAR) as notes "
         )
             .arg(_songID)
             .arg(_performerID)
-            .arg(_originalPerformerFlag==1?0:1)
             .arg(_year<1900?1900:_year)
             .arg(Common::escapeSingleQuotes(_notes))
         );
@@ -360,16 +352,14 @@ SBIDSongPerformance::updateSQL() const
         (
             "UPDATE ___SB_SCHEMA_NAME___performance "
             "SET "
-                "role_id=%3 "
-                "year=%4, "
-                "notes='%5' "
+                "year=%3, "
+                "notes='%4' "
             "WHERE "
                 "song_id=%1 AND "
                 "artist_id=%2 "
         )
             .arg(this->songID())
             .arg(this->songPerformerID())
-            .arg(this->_originalPerformerFlag==1?0:1)
             .arg(this->year())
             .arg(Common::escapeSingleQuotes(this->notes()))
         );
@@ -401,7 +391,6 @@ SBIDSongPerformance::_copy(const SBIDSongPerformance &c)
     _songPerformanceID          =c._songPerformanceID;
     _songID                     =c._songID;
     _performerID                =c._performerID;
-    _originalPerformerFlag      =c._originalPerformerFlag;
     _year                       =c._year;
     _notes                      =c._notes;
     _preferredAlbumPerformanceID=c._preferredAlbumPerformanceID;
@@ -415,7 +404,6 @@ SBIDSongPerformance::_init()
     _songPerformanceID=-1;
     _songID=-1;
     _performerID=-1;
-    _originalPerformerFlag=0;
     _year=-1;
     _notes=QString();
     _preferredAlbumPerformanceID=-1;
@@ -432,14 +420,4 @@ void
 SBIDSongPerformance::postInstantiate(SBIDSongPerformancePtr &ptr)
 {
     Q_UNUSED(ptr);
-}
-
-void
-SBIDSongPerformance::setOriginalPerformerFlag(bool originalPerformerFlag)
-{
-    if(originalPerformerFlag!=_originalPerformerFlag)
-    {
-        setChangedFlag();
-        _originalPerformerFlag=originalPerformerFlag;
-    }
 }

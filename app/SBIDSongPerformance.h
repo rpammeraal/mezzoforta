@@ -91,7 +91,6 @@ protected:
     //void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
     //void setYear(int year) { _year=year; setChangedFlag(); }
     //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void setOriginalPerformerFlag(bool originalPerformerFlag);
 
     friend class SBIDSong;
     static SBIDSongPerformancePtr createNew(int songID,int performerID,int year,const QString& notes);
@@ -101,7 +100,6 @@ private:
     int                     _songPerformanceID;
     int                     _songID;
     int                     _performerID;
-    bool                    _originalPerformerFlag;
     int                     _year;
     QString                 _notes;
     int                     _preferredAlbumPerformanceID;

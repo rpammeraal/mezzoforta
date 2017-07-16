@@ -1,5 +1,6 @@
 BEGIN;
 
+--	1.	DROP OLD TABLES
 ALTER TABLE ---SQL_SCHEMA_NAME---record_performance_old
 DROP CONSTRAINT record_perf_online_performance;
 ALTER TABLE ---SQL_SCHEMA_NAME---record_performance_old
@@ -59,7 +60,13 @@ DROP TABLE ---SQL_SCHEMA_NAME---artist_rel_old
 DROP TABLE ---SQL_SCHEMA_NAME---artist_old
 ;
 
-----	constraints to be created
+--	2.	constraints to be created
+ALTER TABLE ---SQL_SCHEMA_NAME---song
+ADD CONSTRAINT fk_song_original_performance_id_performance 
+FOREIGN KEY (original_performance_id) 
+REFERENCES ---SQL_SCHEMA_NAME---performance(performance_id) 
+;
+
 ALTER TABLE ---SQL_SCHEMA_NAME---performance
 ADD CONSTRAINT fk_performance_preferred_record_performance_id_record_performance_record
 FOREIGN KEY (preferred_record_performance_id) REFERENCES ---SQL_SCHEMA_NAME---record_performance(record_performance_id)
@@ -99,6 +106,11 @@ WHERE
 			performance_id 
 		FROM 
 			---SQL_SCHEMA_NAME---chart_performance
+		UNION
+		SELECT 
+			original_performance_id
+		FROM
+			---SQL_SCHEMA_NAME---song
 	)
 ;
 
@@ -146,7 +158,9 @@ WHERE
 	rp.record_performance_id=t.record_performance_id
 ;
 
-DROP TABLE conversion;
+--	song.preferred_performance_id
+		
+--DROP TABLE conversion;
 
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance WHERE preferred_record_performance_id IS NULL;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_performance WHERE preferred_online_performance_id IS NULL;

@@ -51,7 +51,7 @@ Preloader::chartItems(const SBIDBase& id)
     QStringList chartPerformanceFields; chartPerformanceFields << "4"  << "0"  << "5"  << "6"  << "7";
     QStringList performerFields; performerFields               << "9"  << "18" << "19" << "20" << "21";
     QStringList songFields; songFields                         << "8"  << "14" << "15" << "16" << "17";
-    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "10" << "11"  << "12"  << "13";
+    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "11" << "12"  << "13";
     QString q;
 
     q=QString
@@ -67,14 +67,14 @@ Preloader::chartItems(const SBIDBase& id)
             "cp.notes, "
             "p.song_id, "
             "p.artist_id, "
-            "p.role_id, "                     //	10
+            "NULL AS rsole_id, "                     //	10
             "p.year, "
             "p.notes, "
             "p.preferred_record_performance_id , "
             "s.title, "
             "s.notes, "                       //	15
             "l.lyrics, "
-            "COALESCE(org_p.performance_id,-1), "
+            "s.original_performance_id, "
             "a.name, "
             "a.www, "
             "a.notes, "                       //	20
@@ -88,9 +88,6 @@ Preloader::chartItems(const SBIDBase& id)
                     "cp.performance_id=p.performance_id "
                 "JOIN ___SB_SCHEMA_NAME___song s ON "
                     "p.song_id=s.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___performance org_p ON "
-                    "s.song_id=org_p.song_id AND "
-                    "org_p.role_id=0 "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -454,7 +451,7 @@ Preloader::playlistItems(int playlistID)
     QStringList songFields; songFields                           << "29" << "20" << "21" << "24" << "36";
     QStringList albumFields; albumFields                         << "10" << "12" << "11" << "14" << "15" << "13";
     QStringList performerFields; performerFields                 << "5"  << "6"  << "7"  << "8"  << "9";
-    QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "34" << "26" << "35" << "37";
+    QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "26" << "35" << "37";
     QStringList albumPerformanceFields; albumPerformanceFields   << "30" << "31" << "3"  << "4"  << "25" << "32" << "33";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "2"  << "30" << "28";
 
@@ -508,7 +505,7 @@ Preloader::playlistItems(int playlistID)
             "NULL AS performance_id, "
             "NULL AS notes, "
             "NULL AS preferred_online_performance_id, "
-            "NULL AS role_id, "
+            "NULL AS sole_id, "
 
             "NULL AS notes1, "                                       //	35
             "NULL AS original_performance_id, "
@@ -566,15 +563,15 @@ Preloader::playlistItems(int playlistID)
             "p.performance_id, "
             "rp.notes, "
             "COALESCE(rp.preferred_online_performance_id,-1), "
-            "CASE WHEN p.role_id=1 THEN 0 ELSE 1 END,  "
+            "NULL AS sole_id, "
 
             "p.notes, "                                            //	35
-            "COALESCE(p_o.performance_id,-1) AS original_performance_id,  "
+            "s.original_performance_id, "
             "p.preferred_record_performance_id "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pp  "
-                //	LEFT JOIN ON online_performance to show everything.
+                //	perform a LEFT JOIN ON online_performance to show everything.
                 "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
                     "op.online_performance_id=pp.online_performance_id "
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -589,9 +586,6 @@ Preloader::playlistItems(int playlistID)
                     "p.song_id=s.song_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___performance p_o ON "
-                    "s.song_id=p_o.song_id AND "
-                    "p_o.role_id=0 "
         "WHERE "
             "pp.online_performance_id IS NOT NULL AND "
             "pp.playlist_id=%1 "
@@ -791,9 +785,8 @@ Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStr
     f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
     f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
     f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
-    f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
-    f=QSqlField("f7",QVariant::Int);    f.setValue(queryList.value(fields.at(6).toInt()).toInt());    r.append(f);
+    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
+    f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(fields.at(5).toInt()).toInt());    r.append(f);
 
     SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(r);
     spmgr->addItem(performancePtr);
@@ -860,8 +853,8 @@ Preloader::_instantiateSong(SBIDSongMgr* smgr, const QStringList& fields, const 
     f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
     f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
     f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
-    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
+    f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
+    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
 
     SBIDSongPtr songPtr=SBIDSong::instantiate(r);
     smgr->addItem(songPtr);

@@ -834,7 +834,11 @@ Between 20161215 and 20170604:
 -	Play 'Doris Day & Andere Stukken'. Error message at the end of last played song.
 -	wikipedia entry not working in performer tab
 
-Current:
+20170716:
+-	add original_song_performance_id to song
+    -	code
+	-	db migration scripts
+-	streamline population of database new style
 
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
@@ -842,10 +846,6 @@ Bugs that need to be fixed:
 	-	need progress dialog
 
 Todo:
-*	add original_song_performance_id to song
-	-	code
-	-	db migration scripts
-*	streamline population of database new style
 *	Play/enqueue from each screen/tab
 *	Test drag & drop.
 *	Edit.
@@ -983,6 +983,8 @@ Import bugs/features/missing:
 *	be smart about album duration. Populate albumPerformance.duration from actual music file as soon
     as the preferred_online_performance_id gets set/changed.
 *	ability to pick MBID in case of multiple MBID's for the same performer (e.g. U2)
+*	Set performance year based on album year if not set or -1
+*	store MBID in database
 
 Library check:
 *	quite a number of songs without any performance

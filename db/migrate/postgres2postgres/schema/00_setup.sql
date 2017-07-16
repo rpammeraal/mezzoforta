@@ -248,12 +248,12 @@ UNION
 SELECT 'conversion',COUNT(DISTINCT record_id) FROM conversion
 ;
 	
-SELECT 'playlist',COUNT(DISTINCT playlist_id) FROM ---SQL_SCHEMA_NAME---playlist
-UNION
-SELECT 'conversion',COUNT(DISTINCT playlist_Id) FROM conversion
-;
+--SELECT 'playlist',COUNT(DISTINCT playlist_id) FROM ---SQL_SCHEMA_NAME---playlist
+--UNION
+--SELECT 'conversion',COUNT(DISTINCT playlist_Id) FROM conversion
+--;
 	
-SELECT 'chart',COUNT(DISTINCT chart_id) FROM ---SQL_SCHEMA_NAME---chart
-UNION
-SELECT 'conversion',COUNT(DISTINCT chart_id) FROM conversion
-;
+--SELECT 'chart',COUNT(DISTINCT chart_id) FROM ---SQL_SCHEMA_NAME---chart
+--UNION
+--SELECT 'conversion',COUNT(DISTINCT chart_id) FROM conversion
+--;

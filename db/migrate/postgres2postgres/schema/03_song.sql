@@ -4,12 +4,13 @@ ALTER TABLE ---SQL_SCHEMA_NAME---song RENAME TO song_old;
 
 CREATE TABLE ---SQL_SCHEMA_NAME---song 
 ( 
-	song_id SERIAL PRIMARY KEY NOT NULL, 
-	title   CHARACTER VARYING NOT NULL, 
-	notes   TEXT, 
-	soundex CHARACTER VARYING, 
+	song_id                 ---AUTOID--- PRIMARY KEY NOT NULL, 
+	original_performance_id INT NULL,
+	title                   CHARACTER VARYING NOT NULL, 
+	notes                   TEXT, 
+	soundex                 CHARACTER VARYING, 
 	CONSTRAINT cc_song_song_id_check CHECK ((song_id >= 0)), 
-	CONSTRAINT cc_song_title_check CHECK (((title) <> '')) 
+	CONSTRAINT cc_song_title_check CHECK (((title) <> ''))
 ); 
 
 CREATE INDEX idx_song_title ON ---SQL_SCHEMA_NAME---song (title);
