@@ -71,6 +71,7 @@ PlayManager::playerNext(bool previousFlag)
     int numTries=numSongs;
     bool isPlayingFlag=0;
     bool exitLoopFlag=0;	//	meta indicator to avoid infinite loops
+    bool lastSongPlayedFlag=0;
 
     if(previousFlag && currentPlayID()==0)
     {
@@ -91,9 +92,10 @@ PlayManager::playerNext(bool previousFlag)
     {
         numTries=5;
     }
+    lastSongPlayedFlag=(numSongs-currentPlayID()-1)==0;
 
     pc->playerStop();
-    while(numTries>0 && isPlayingFlag==0 && exitLoopFlag==0)
+    while((numTries>0 && isPlayingFlag==0 && exitLoopFlag==0) || (lastSongPlayedFlag==1 && radioModeFlag()))
     {
         int nextCurrentPlayID=previousFlag?currentPlayID()-1:currentPlayID()+1;
 

@@ -43,7 +43,7 @@ SBIDBase::~SBIDBase()
 }
 
 SBIDPtr
-SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,bool showProgressDialogFlag)
+SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
 {
     SBIDPtr ptr;
     switch(itemType)
@@ -53,7 +53,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         break;
 
     case SBIDBase::sb_type_performer:
-        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag,showProgressDialogFlag);
+        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
     case SBIDBase::sb_type_song:
@@ -61,7 +61,7 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag,
         break;
 
     case SBIDBase::sb_type_playlist:
-        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag,showProgressDialogFlag);
+        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
         break;
 
     case SBIDBase::sb_type_album_performance:
@@ -100,7 +100,7 @@ SBIDBase::createPtr(const QByteArray& encodedData)
 }
 
 SBIDPtr
-SBIDBase::createPtr(const QString &key,bool noDependentsFlag,bool showProgressDialogFlag)
+SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
 {
     qDebug() << SB_DEBUG_INFO;
     SBIDPtr ptr=SBIDPtr();
@@ -109,7 +109,7 @@ SBIDBase::createPtr(const QString &key,bool noDependentsFlag,bool showProgressDi
         const QStringList list=key.split(":");
         const SBIDBase::sb_type itemType=static_cast<SBIDBase::sb_type>(list[0].toInt());
         const int itemID=list[1].toInt();
-        ptr=SBIDBase::createPtr(itemType,itemID,noDependentsFlag,showProgressDialogFlag);
+        ptr=SBIDBase::createPtr(itemType,itemID,noDependentsFlag);
     }
     return ptr;
 }

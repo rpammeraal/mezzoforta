@@ -35,7 +35,7 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
 }
 
 SBIDPtr
-SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, bool showProgressDialogFlag) const
+SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) const
 {
     //	Two types of how data can be dragged and dropped.
     //	-	non-positional: each row contains one item (this is the default). Only this item can be dragged
@@ -75,7 +75,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
             if(header=="sb_item_key")
             {
-                ptr=SBIDBase::createPtr(v.toString(),1,showProgressDialogFlag);
+                ptr=SBIDBase::createPtr(v.toString(),1);
                 return ptr;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
@@ -104,7 +104,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
             if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
-                ptr=SBIDBase::createPtr(itemType,itemID,1,showProgressDialogFlag);
+                ptr=SBIDBase::createPtr(itemType,itemID,1);
                 return ptr;
             }
         }
@@ -123,7 +123,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
         if((!ptr) && key.length())
         {
             qDebug() << SB_DEBUG_INFO << key;
-            ptr=SBIDBase::createPtr(key,1,showProgressDialogFlag);
+            ptr=SBIDBase::createPtr(key,1);
             return ptr;
         }
     }
@@ -155,7 +155,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx, b
 
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
-            ptr=SBIDBase::createPtr(itemType,itemID,1,showProgressDialogFlag);
+            ptr=SBIDBase::createPtr(itemType,itemID,1);
             return ptr;
         }
     }
@@ -205,7 +205,7 @@ SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexe
         if (i.isValid())
         {
             QMimeData* mimeData = new QMimeData();
-            SBIDPtr ptr=_determineSBID(aim, i, 0);
+            SBIDPtr ptr=_determineSBID(aim, i);
             if(ptr)
             {
                 QByteArray ba=ptr->encode();

@@ -664,7 +664,6 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                     QString urlString=QString("https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&redirects&format=xml&iiurlwidth=250&titles=File:%1")
                                         .arg(imageFileName)
                                     ;
-                                    qDebug() << SB_DEBUG_INFO << urlString;
                                     mb->get(QNetworkRequest(QUrl(urlString)));
                                 }
                             }
@@ -674,12 +673,12 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
             }
         }
     }
-    else if(0)
+    else
     {
-        QMessageBox messagebox;
-        messagebox.setText("Error processing network request:");
-        messagebox.setInformativeText(r->errorString());
-        messagebox.exec();
+        qDebug() << SB_DEBUG_ERROR
+                 << r->errorString()
+                 << r->error()
+        ;
     }
 }
 
@@ -745,7 +744,7 @@ ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
                                             QString urlString=QString("http://musicbrainz.org/ws/2/work/%1?inc=url-rels")
                                                 .arg(mbid)
                                             ;
-                                            mb->get(QNetworkRequest(QUrl(urlString)));
+                                            _sendMusicBrainzQuery(mb,urlString);
                                             return;
                                         }
                                     }
@@ -828,7 +827,7 @@ ExternalData::handleSongURLFromMB(QNetworkReply *r)
                                         }
                                         else
                                         {
-                                            qDebug() << SB_DEBUG_INFO << "Other URL:type=" << type << e.text();
+                                            qDebug() << SB_DEBUG_WARNING << "Other URL:type=" << type << e.text();
                                         }
                                     }
                                 }
@@ -889,7 +888,7 @@ ExternalData::_getMBIDAndMore()
         QString urlString=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1")
             .arg(_currentPtr->commonPerformerName())
         ;
-        m->get(QNetworkRequest(QUrl(urlString)));
+        _sendMusicBrainzQuery(m,urlString);
     }
     else
     {
@@ -905,7 +904,7 @@ ExternalData::_getMBIDAndMore()
                 urlString=QString("http://musicbrainz.org/ws/2/artist/%1?inc=url-rels")
                     .arg(_currentPtr->MBID())
                 ;
-                mb->get(QNetworkRequest(QUrl(urlString)));
+                _sendMusicBrainzQuery(mb,urlString);
             }
             else
             {
@@ -951,11 +950,12 @@ ExternalData::_getMBIDAndMore()
                 connect(mb, SIGNAL(finished(QNetworkReply *)),
                         this, SLOT(handleAlbumURLDataFromMB(QNetworkReply*)));
 
+                QString performerMBID=albumPtr->albumPerformerMBID();
                 urlString=QString("https://musicbrainz.org/ws/2/release-group?artist=%1&inc=url-rels&offset=0&limit=%2")
-                    .arg(_currentPtr->MBID())
+                    .arg(performerMBID)
                     .arg(MUSICBRAINZ_MAXNUM)
                 ;
-                mb->get(QNetworkRequest(QUrl(urlString)));
+                _sendMusicBrainzQuery(mb,urlString);
             }
             else
             {
@@ -982,7 +982,7 @@ ExternalData::_getMBIDAndMore()
                     .arg(_currentOffset)
                     .arg(MUSICBRAINZ_MAXNUM)
                 ;
-                mb->get(QNetworkRequest(QUrl(urlString)));
+                _sendMusicBrainzQuery(mb,urlString);
             }
             else
             {
@@ -990,6 +990,17 @@ ExternalData::_getMBIDAndMore()
             }
         }
     }
+}
+
+void
+ExternalData::_sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString &urlString)
+{
+    QNetworkRequest nr;
+    nr.setUrl(QUrl(urlString));
+    nr.setHeader(QNetworkRequest::UserAgentHeader,QVariant("songbase ( to@be.provided )"));
+    mb->get(nr);
+
+    //	CWIP store mb pointer somewhere so we can remove this later
 }
 
 void

@@ -5,6 +5,7 @@
 
 SBTabChooser::SBTabChooser(QWidget* parent) : SBTab(parent)
 {
+    _deleteItemAction=NULL;
 }
 
 void
@@ -60,7 +61,10 @@ SBTabChooser::showContextMenuView(const QPoint& p)
 
         _menu->addAction(_playNowAction);
         _menu->addAction(_enqueueAction);
-        _menu->addAction(_deleteItemAction);
+        if(_deleteItemAction)
+        {
+            _menu->addAction(_deleteItemAction);
+        }
         _menu->exec(gp);
         _recordLastPopup(p);
     }

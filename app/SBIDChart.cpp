@@ -174,8 +174,7 @@ SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
     {
         cPtr=cmgr->retrieve(
                         createKey(chartID),
-                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_default),
-                        0);
+                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_default));
     }
     return cPtr;
 }

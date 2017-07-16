@@ -1375,6 +1375,13 @@ SBIDAlbum::albumPerformerName() const
     return (pPtr?pPtr->performerName():QString());
 }
 
+QString
+SBIDAlbum::albumPerformerMBID() const
+{
+    SBIDPerformerPtr pPtr=performerPtr();
+    return (pPtr?pPtr->MBID():QString());
+}
+
 ///	Operators
 SBIDAlbum::operator QString() const
 {

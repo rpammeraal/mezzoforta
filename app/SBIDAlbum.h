@@ -70,6 +70,7 @@ public:
 
     //	Redirectors
     QString albumPerformerName() const;
+    QString albumPerformerMBID() const;
 
     //	Operators
     virtual operator QString() const;

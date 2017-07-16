@@ -55,7 +55,7 @@ public:
 
     //	Static methods
     static QString createKey(int playlistID,int unused=-1);
-    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
+    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

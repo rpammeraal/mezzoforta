@@ -407,7 +407,7 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 
 //	Static methods
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag,bool showProgressDialogFlag)
+SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBIDPerformerPtr performerPtr;
@@ -415,8 +415,7 @@ SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag,bool show
     {
         performerPtr=pemgr->retrieve(
             createKey(performerID),
-            (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default),
-            showProgressDialogFlag);
+            (noDependentsFlag==1?SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_default));
     }
     return performerPtr;
 }

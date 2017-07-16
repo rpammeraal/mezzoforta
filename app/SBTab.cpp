@@ -417,7 +417,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << ' ';
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
-            ptr=m->determineSBID(idy,1);
+            ptr=m->determineSBID(idy);
         }
         else
         {
@@ -427,7 +427,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
                 qDebug() << ' ';
                 qDebug() << SB_DEBUG_INFO << "######################################################################";
                 qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
-                ptr=m->determineSBID(idy,1);
+                ptr=m->determineSBID(idy);
             }
         }
         if(ptr)

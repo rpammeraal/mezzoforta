@@ -87,25 +87,10 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
     const int base=range * (_stepList.count()-1);
     const int offset=base + (perc/_numSteps);
 
-        qDebug() << SB_DEBUG_INFO
-                 << "step" << step
-                 << "currentStep" << _stepList.count()
-                 << "numSteps=" << _numSteps
-                 << "currentValue" << currentValue
-                 << "maxValue" << maxValue
-                 << "range" << range
-                 << "base" << base
-                 << "_prev" << _prevOffset
-                 << "offset" << offset
-        ;
-
     if(offset!=_prevOffset)
     {
         if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
         {
-            qDebug() << SB_DEBUG_INFO
-                     << "display"
-            ;
             _pd.setValue(offset);
             _prevOffset=offset;
             QCoreApplication::processEvents();

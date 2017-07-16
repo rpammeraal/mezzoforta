@@ -156,9 +156,9 @@ SBTabPlaylistDetail::_init()
                 this, SLOT(enqueue()));
 
         //		3.	Delete item from playlist
-        _deletePlaylistItemAction = new QAction(tr("Delete Item From Playlist "), this);
-        _deletePlaylistItemAction->setStatusTip(tr("Delete Item From Playlist"));
-        connect(_deletePlaylistItemAction, SIGNAL(triggered()),
+        _deleteItemAction = new QAction(tr("Delete Item From Playlist "), this);
+        _deleteItemAction->setStatusTip(tr("Delete Item From Playlist"));
+        connect(_deleteItemAction, SIGNAL(triggered()),
                 this, SLOT(deletePlaylistItem()));
 
         //	Tableviews

@@ -7,6 +7,7 @@
 #include "SBIDPerformer.h"
 
 class QNetworkReply;
+class QNetworkAccessManager;
 
 static const int MUSICBRAINZ_MAXNUM=100;
 
@@ -73,7 +74,9 @@ private:
     void _loadAlbumCoverAS();
     static bool _loadImageFromCache(QPixmap& p,const SBIDPtr& ptr);
     void _getMBIDAndMore();
+    void _sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString& url);
     void _storeInCache(QByteArray* a) const;
+
 };
 
 #endif // EXTERNALDATA_H

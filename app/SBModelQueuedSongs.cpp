@@ -282,6 +282,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     int progressCurrentValue=0;
     int progressMaxValue=newPlaylist.count();
     ProgressDialog::instance()->update("SBModelQueuedSongs::populate",0,progressMaxValue);
+    int currentIndex=offset+1;
     for(int i=0;i<newPlaylist.count();i++)
     {
         if(currentPlayID()==-1)
@@ -292,12 +293,13 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
         if(performancePtr)
         {
-            record=createRecord(performancePtr,i+offset+1);
+            record=createRecord(performancePtr,currentIndex);
             _totalDuration+=performancePtr->duration();
 
             if(_recordExists(record)==0)
             {
                 this->appendRow(record);
+                currentIndex++;
             }
 
             QCoreApplication::processEvents();

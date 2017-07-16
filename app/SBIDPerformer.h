@@ -67,7 +67,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1,bool showProgressDialogFlag=0);
+    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1);
     static SBIDPerformerPtr retrieveVariousPerformers();
 
 protected:

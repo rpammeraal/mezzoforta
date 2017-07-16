@@ -46,7 +46,7 @@ public:
     //	Retrieve
     bool contains(const QString& key) const;
     int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches);
-    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default,bool showProgressDialogFlag=0);
+    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
@@ -141,7 +141,7 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
 }
 
 template <class T, class parentT> std::shared_ptr<T>
-SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag,bool showProgressDialogFlag)
+SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
 {
     std::shared_ptr<T> ptr;
     //if(_leMap.contains(key))
@@ -160,7 +160,7 @@ SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag,bool sho
             addItem(ptr);
             if(openFlag!=OpenFlags::open_flag_parentonly)
             {
-                ptr->refreshDependents(showProgressDialogFlag);
+                ptr->refreshDependents();
             }
         }
     }

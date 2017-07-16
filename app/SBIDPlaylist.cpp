@@ -694,7 +694,7 @@ SBIDPlaylist::createKey(int playlistID, int unused)
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag,bool showProgressDialogFlag)
+SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
     SBIDPlaylistPtr playlistPtr;
@@ -702,8 +702,7 @@ SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag,bool showPro
     {
         playlistPtr=pmgr->retrieve(
                         createKey(playlistID),
-                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default),
-                        showProgressDialogFlag);
+                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
     }
     return playlistPtr;
 }

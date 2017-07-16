@@ -86,7 +86,7 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
     const QModelIndex n=this->index(parent.row(),0);
     qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
-    SBIDPtr toIDPtr=determineSBID(n,0);
+    SBIDPtr toIDPtr=determineSBID(n);
 
     qDebug() << SB_DEBUG_INFO;
     //emit assign(fromIDPtr,toIDPtr);
@@ -149,9 +149,9 @@ SBTableModel::supportedDropActions() const
 
 ///	SBTableModel specific methods
 SBIDPtr
-SBTableModel::determineSBID(const QModelIndex &idx, bool showProgressDialogFlag) const
+SBTableModel::determineSBID(const QModelIndex &idx) const
 {
-    return SBModel::_determineSBID(this,idx, showProgressDialogFlag);
+    return SBModel::_determineSBID(this,idx);
 }
 
 void

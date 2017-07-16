@@ -48,7 +48,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex,0);
+    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
     const SBIDPtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
@@ -107,7 +107,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids,0);
+    SBIDPtr selected=sm->determineSBID(ids);
 
     if(selected)
     {
@@ -413,7 +413,6 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     SBIDPerformerPtr ptr;
     for(int i=-2;i<related.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO << cs;
         QString t;
         switch(i)
         {

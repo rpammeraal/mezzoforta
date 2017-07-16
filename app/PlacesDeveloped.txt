@@ -821,16 +821,25 @@ Between 20161215 and 20170604:
     -	need better progress dialog. Open 'U2' on Windows -- very slow with no progress dialog.
 	-	open any performer from chart screen.
 
+20170715: Happy Birthday Amy!
+-	Standardized use of progress dialog box -- it is now controlled by the meta caller by use of ProgressDialog:
+    -	if one is set up, it'll be shown
+	-	otherwise -> ignore.
+-	SBID*: retrieve*() should not have the option to show progress dialog
+    -	SBIDManager: remove progress dialog flag
+-	player does not refresh in radio mode after 100 songs.
+-	Enqueue U2. Should result in 558 entries. Enqueue Simple Minds. SImple Minds entries start to appear before entry #558.
+    Sum of all songs for these performers don't add up.
+- 	Open playlist 'Herinneringen aan Holland'. Alt-click crashes
+-	Play 'Doris Day & Andere Stukken'. Error message at the end of last played song.
+-	wikipedia entry not working in performer tab
+
+Current:
+
 Bugs that need to be fixed:
-*	Open up 'Holiday Rap' -- hangs
+*	Open up 'Holiday Rap' -- hangs (test under windows)
 *	search screen:
 	-	need progress dialog
-*	player does not refresh in radio mode after 100 songs.
-*	wikipedia entry not working in performer tab
-*	SBID*: retrieve*() should not have the option to show progress dialog
-    SBIDManager: remove progress dialog flag
-*	Enqueue U2. Should result in 558 entries. Enqueue Simple Minds. SImple Minds entries start to appear before entry #558.
-    Sum of all songs for these performers don't add up.
 
 Todo:
 *	add original_song_performance_id to song
@@ -973,6 +982,7 @@ Import bugs/features/missing:
 *	drag own image at image e.g. for performer and use this
 *	be smart about album duration. Populate albumPerformance.duration from actual music file as soon
     as the preferred_online_performance_id gets set/changed.
+*	ability to pick MBID in case of multiple MBID's for the same performer (e.g. U2)
 
 Library check:
 *	quite a number of songs without any performance
