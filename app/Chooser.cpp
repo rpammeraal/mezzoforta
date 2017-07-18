@@ -13,6 +13,7 @@
 #include "PlayManager.h"
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBSqlQueryModel.h"
 #include "SBTabQueuedSongs.h"
 #include "SBTabSongDetail.h"
@@ -213,7 +214,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             {
                 //	Check for multiple performances
                 SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
-                fromPtr=SBTabSongDetail::selectPerformanceFromSong(songPtr,0);
+                fromPtr=SBTabSongDetail::selectOnlinePerformanceFromSong(songPtr);
             }
             else
             {
@@ -238,7 +239,6 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                                 .arg(toBeAssignedToPtr->type()) //	5
                                 .arg(playlistPtr->type())       //	6
                             ;
-                            qDebug() << SB_DEBUG_INFO;
                             this->playlistChanged(playlistPtr->playlistID());
                         }
                         else
@@ -270,7 +270,6 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
 void
 Chooser::chartPlay(bool enqueueFlag)
 {
-        qDebug() << SB_DEBUG_INFO;
     SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
     if(cPtr)
     {
@@ -355,7 +354,6 @@ Chooser::playlistNew()
 void
 Chooser::playlistChanged(int playlistID)
 {
-    qDebug() << SB_DEBUG_INFO << playlistID;
     SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID);
 
     for(int y=0;_cm && y<_cm->rowCount();y++)
@@ -393,7 +391,6 @@ Chooser::playlistChanged(int playlistID)
 void
 Chooser::playlistPlay(bool enqueueFlag)
 {
-        qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     if(playlistPtr)
     {
@@ -405,16 +402,14 @@ Chooser::playlistPlay(bool enqueueFlag)
 void
 Chooser::playlistRename()
 {
-    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     if(playlistPtr)
     {
         SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(playlistPtr);
         connect(pl, SIGNAL(playlistNameChanged(const SBIDPlaylistPtr&)),
-                this, SLOT(_playlistRename(const SBIDPlaylistPtr&)));
+                this, SLOT(_renamePlaylist(const SBIDPlaylistPtr&)));
         pl->exec();
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -437,7 +432,6 @@ Chooser::showContextMenu(const QPoint &p)
     {
     case Chooser::sb_playlists:
         {
-        qDebug() << SB_DEBUG_INFO;
             SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
 
             if(playlistPtr)
@@ -460,7 +454,6 @@ Chooser::showContextMenu(const QPoint &p)
 
     case Chooser::sb_charts:
         {
-        qDebug() << SB_DEBUG_INFO;
             SBIDChartPtr cPtr=_getChartSelected(idx);
 
             if(cPtr)

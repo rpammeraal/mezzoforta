@@ -22,6 +22,7 @@ class QTableView;
 #define SB_DEBUG_NPTR SB_DEBUG_INFO << "NULL PTR"
 #define SB_DEBUG_IF_NULL(x) if(!x) { qDebug() << SB_DEBUG_NPTR; }
 #define SB_RETURN_NULL_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return NULL; }
+#define SB_RETURN_VOID_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return; }
 
 #define SB_REPLACE_UNDERSCORE(x) QString(x).replace(QChar('_'),QString("___SB_UNDERSCORE_123___"))
 #define SB_SONG_ID "sb_song_id"

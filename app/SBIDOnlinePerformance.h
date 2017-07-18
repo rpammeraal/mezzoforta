@@ -30,6 +30,7 @@ public:
     //	Setters
 
     //	Pointers
+    SBIDAlbumPtr albumPtr() const;
     SBIDAlbumPerformancePtr albumPerformancePtr() const;
     SBIDSongPtr songPtr() const;
 
@@ -60,6 +61,7 @@ public:
     static QString createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
+    static QString onlinePerformancesBySong_Preloader(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;

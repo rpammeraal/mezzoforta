@@ -321,6 +321,7 @@ PlayManager::_loadRadio()
     SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
+    const int numberSongsToDisplay=100;
     _radioModeFlag=1;
 
     QMap<int,SBIDOnlinePerformancePtr> playList;
@@ -336,18 +337,24 @@ PlayManager::_loadRadio()
     pd.setValue(0);
     QCoreApplication::processEvents();
 
-    SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(100);
+    SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0);
     pd.setValue(++progressStep);
     QCoreApplication::processEvents();
 
     int numPerformances=qm->rowCount();
-    if(numPerformances>100)
+    if(numPerformances>numberSongsToDisplay)
     {
         //	DataEntityCurrentPlaylist::getAllOnlineSongs() may return more than 100,
         //	limit this to a 100 to make the view not too large.
-        numPerformances=100;
+        numPerformances=numberSongsToDisplay;
     }
-    const int maxNumberAttempts=50;
+    const int maxNumberAttempts=numberSongsToDisplay/2;
+    int maxNumberToRandomize=qm->rowCount();
+    if(maxNumberToRandomize>(4 * numberSongsToDisplay))
+    {
+        maxNumberToRandomize=maxNumberToRandomize/2;	//	don't give the last <numberSongsToDisplay> a change to be played again
+    }
+
     int songInterval=numPerformances/10;
 
     bool found=1;
@@ -361,7 +368,7 @@ PlayManager::_loadRadio()
 
         for(int j=maxNumberAttempts;j && !found;j--)
         {
-            idx=Common::randomOldestFirst(qm->rowCount());
+            idx=Common::randomOldestFirst(maxNumberToRandomize);
             if(indexCovered.contains(idx)==0)
             {
                 found=1;

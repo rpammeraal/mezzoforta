@@ -64,6 +64,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
+    static QString performancesByPerformer_Preloader(int performerID);
     static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=1);
 
     //	Helper methods for SBIDManagerTemplate

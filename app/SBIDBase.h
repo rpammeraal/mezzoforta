@@ -14,9 +14,7 @@
 
 class SBSqlQueryModel;
 
-class SBIDBase;
-typedef std::shared_ptr<SBIDBase> SBIDPtr;
-
+class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDPtr;
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDBasePtr;
 
 class SBIDAlbum;            typedef std::shared_ptr<SBIDAlbum>             SBIDAlbumPtr;

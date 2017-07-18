@@ -840,13 +840,23 @@ Between 20161215 and 20170604:
 	-	db migration scripts
 -	streamline population of database new style
 
+20170717:
+-	assigning songs to playlist now works
+-	playing/enqueueing songs now works
+-	random is now passed the right parameters
+-	Play/enqueue from each screen/tab
+-	play default song, except on song detail.
+-	after assignment to playlist, need to refreshDepents() on assigned
+-	migration database: set year on performance from album
+-	Amanda Strijdom: now shows songs that are not online or on an album
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	search screen:
 	-	need progress dialog
+*	alt-click on songs in charts does not work
 
 Todo:
-*	Play/enqueue from each screen/tab
 *	Test drag & drop.
 *	Edit.
 *	Import.
@@ -859,6 +869,7 @@ Near future:
 	*	repeat at all levels (SBIDSongPerformance, SBIDAlbumPerformance, SBIDOnlinePerformance)
 *	Playlist should be able to contain songs, performances, record performances, online performances.
 *	Find out where we need to offer a choice of what online performance to play if a song is to be played/queud.
+*	After songs get assigned to playlist, need to refreshDependents() on the item assigned to the playlist.
 
 Import bugs/features/missing:
 *	DataAccessLayer::createRestorePoint to be revisited

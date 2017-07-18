@@ -42,11 +42,13 @@ SBTabSongDetail::tabWidget() const
     return mw->ui.tabSongDetailLists;
 }
 
-SBIDAlbumPerformancePtr
-SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOnlyFlag)
+SBIDOnlinePerformancePtr
+SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
 {
-    SBIDAlbumPerformancePtr selectedPerformancePtr;
-    if(songPtr->numAlbumPerformances()==0)
+    SBIDOnlinePerformancePtr opPtr;
+    QVector<SBIDOnlinePerformancePtr> allOPPtr=songPtr->onlinePerformances();
+
+    if(allOPPtr.count()==0)
     {
         //	Can't assign -- does not exist on an album
         QMessageBox mb;
@@ -54,26 +56,27 @@ SBTabSongDetail::selectPerformanceFromSong(SBIDSongPtr& songPtr, bool playableOn
         mb.setInformativeText("Songs that do not appear on an album cannot be used.");
         mb.exec();
     }
-    else if(songPtr->numAlbumPerformances()==1)
+    else if(allOPPtr.count()==1)
     {
-        selectedPerformancePtr=songPtr->allPerformances().at(0);
+        opPtr=allOPPtr.at(0);
     }
     else
     {
         //	Ask from which album song should be assigned from
-        SBDialogSelectItem* ssa=SBDialogSelectItem::selectPerformanceFromSong(songPtr,playableOnlyFlag);
+        SBDialogSelectItem* ssa=SBDialogSelectItem::selectOnlinePerformanceFromSong(songPtr,allOPPtr);
 
         ssa->exec();
         SBIDPtr ptr=ssa->getSelected();
-        selectedPerformancePtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(ptr);
+        opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(ptr);
     }
-    return selectedPerformancePtr;
+    return opPtr;
 }
 
 ///	Public slots
 void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
@@ -86,9 +89,12 @@ SBTabSongDetail::playNow(bool enqueueFlag)
         //	Context menu from SBLabel is clicked
         SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(currentScreenItem().ptr());
 
-        selectPtr=selectPerformanceFromSong(songPtr,1);
+        selectPtr=selectOnlinePerformanceFromSong(songPtr);
     }
-    pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
+    if(selectPtr)
+    {
+        pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
+    }
     SBTab::playNow(enqueueFlag);
 }
 
@@ -187,6 +193,9 @@ SBTabSongDetail::_determineViewCurrentTab() const
         break;
 
     case SBTabSongDetail::sb_tab_charts:
+        tv=mw->ui.songDetailCharts;
+        break;
+
     case SBTabSongDetail::sb_tab_lyrics:
     case SBTabSongDetail::sb_tab_wikipedia:
     default:

@@ -158,9 +158,38 @@ WHERE
 	rp.record_performance_id=t.record_performance_id
 ;
 
---	song.preferred_performance_id
-		
---DROP TABLE conversion;
+--	set year from record, if not set
+WITH allyears
+AS
+(
+	SELECT
+		a.artist_id,
+		s.song_id,
+		a.name,
+		s.title,
+		MIN(r.year) OVER(PARTITION BY a.artist_id,s.song_id) AS year
+	FROM
+		rock.performance p
+			JOIN ---SQL_SCHEMA_NAME---artist a USING(artist_id)
+			JOIN ---SQL_SCHEMA_NAME---song s USING(song_id)
+			JOIN ---SQL_SCHEMA_NAME---record_performance rp USING(performance_id)
+			JOIN ---SQL_SCHEMA_NAME---record r USING(record_id)
+	WHERE
+		COALESCE(p.year,0)<1900
+)
+UPDATE ---SQL_SCHEMA_NAME---performance AS p
+SET
+	year=y.year
+FROM
+	allyears y
+WHERE
+	p.artist_id=y.artist_id AND
+	p.song_id=y.song_id AND
+	COALESCE(p.year,0)<1900 AND
+	COALESCE(y.year,0)!=0
+;
+	
+DROP TABLE conversion;
 
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance WHERE preferred_record_performance_id IS NULL;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_performance WHERE preferred_online_performance_id IS NULL;

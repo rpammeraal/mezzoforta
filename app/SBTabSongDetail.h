@@ -26,7 +26,7 @@ public:
 
     virtual QTableView* subtabID2TableView(int subtabID) const;
     virtual QTabWidget* tabWidget() const;
-    static SBIDAlbumPerformancePtr selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
+    static SBIDOnlinePerformancePtr selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr);
 
 public slots:
     virtual void playNow(bool enqueueFlag=0);

@@ -115,7 +115,7 @@ SBTabChartDetail::_populate(const ScreenItem& si)
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(cPtr);
-    mw->ui.labelPlaylistDetailIcon->setPtr(cPtr);
+    mw->ui.labelChartDetailIcon->setPtr(cPtr);
 
     mw->ui.labelChartDetailChartName->setText(cPtr->chartName());
     mw->ui.labelChartDetailChartDetail->setText(cPtr->chartReleaseDate().toString());

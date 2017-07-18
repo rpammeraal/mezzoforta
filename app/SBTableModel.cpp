@@ -475,7 +475,7 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
 }
 
 void
-SBTableModel::populateSongsByPerformer(const QVector<SBIDAlbumPerformancePtr>& performances)
+SBTableModel::populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& performances)
 {
     _init();
 
@@ -490,15 +490,15 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDAlbumPerformancePtr>& p
     int index=0;
     for(int i=0;i<performances.count();i++)
     {
-        SBIDAlbumPerformancePtr performancePtr=performances.at(i);
+        SBIDSongPerformancePtr spPtr=performances.at(i);
 
-        if(performancePtr && !songID.contains(performancePtr->songID()))
+        if(spPtr && !songID.contains(spPtr->songID()))
         {
-            _setItem(index, 0,performancePtr->songPtr()->key());
-            _setItem(index, 1,performancePtr->songTitle());
-            _setItem(index, 2,QString("%1").arg(performancePtr->year()));
+            _setItem(index, 0,spPtr->songPtr()->key());
+            _setItem(index, 1,spPtr->songTitle());
+            _setItem(index, 2,QString("%1").arg(spPtr->year()));
             index++;
-            songID.append(performancePtr->songID());
+            songID.append(spPtr->songID());
         }
     }
 }

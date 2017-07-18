@@ -46,6 +46,7 @@ public:
     inline int performerID() const { return _performerID; }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
+    QVector<SBIDSongPerformancePtr> songPerformances() const;
     SBTableModel* songs() const;
 
     //	Setters
@@ -101,6 +102,7 @@ private:
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPtr>             _albumList;
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
+    QVector<SBIDSongPerformancePtr>   _songPerformances;
     QVector<QString>                  _relatedPerformerKey;
 
     //	Methods
@@ -109,8 +111,10 @@ private:
     void _loadAlbums();
     void _loadAlbumPerformances();
     QVector<QString> _loadRelatedPerformers() const;
+    void _loadSongPerformances();
 
     QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
+    QVector<SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
     QVector<SBIDAlbumPtr> _loadAlbumsFromDB() const;
 };
 

@@ -56,21 +56,8 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 
     if(maxValue==0)
     {
-        qDebug() << SB_DEBUG_WARNING
-                 << "initiator" << _initiatingFunction
-                 << "numSteps" << _numSteps
-                 << "step" << step
-                 << "maxValue passed as 0 -- setting to complete for this step"
-        ;
         currentValue=100;
         maxValue=100;
-            QStringListIterator it(_stepList);
-            qDebug() << SB_DEBUG_WARNING << "List of current steps:";
-            while(it.hasNext())
-            {
-                QString step=it.next();
-                qDebug() << SB_DEBUG_WARNING << step;
-            }
     }
 
     if(_numSteps==0)

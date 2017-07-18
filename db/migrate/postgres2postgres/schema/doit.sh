@@ -6,7 +6,7 @@ AUTOID=SERIAL	#	postgres
 SQLITE_DST_DB=/Volumes/Home/roy/Projects/qt/songbase/db/actual\ databases/20170610.QT.sqlite
 SQLITE_EXEC="sqlite3 -echo $SQLITE_DST_DB"
 
-PSQL_EXEC="psql -p 22500 songbaseQT20170716 -h mars -e "
+PSQL_EXEC="psql -p 22500 ROY -h mars -e "
 PSQL_SCHEMA_NAME='rock'
 
 SQL_SCHEMA="$PSQL_SCHEMA_NAME."

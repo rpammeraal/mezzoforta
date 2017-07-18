@@ -198,7 +198,7 @@ Preloader::chartItems(const SBIDBase& id)
 }
 
 QVector<SBIDAlbumPerformancePtr>
-Preloader::performances(QString query)
+Preloader::albumPerformances(QString query)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
@@ -213,7 +213,7 @@ Preloader::performances(QString query)
     QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" << "11" << "9";
     QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
     QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
-    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" << "4"  << "5"  << "28";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "4"  << "5"  << "28";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
@@ -240,14 +240,11 @@ Preloader::performances(QString query)
     while(queryList.next())
     {
         QString key;
-        QSqlRecord r;
-        QSqlField f;
         SBIDAlbumPtr albumPtr;
         SBIDSongPerformancePtr spPtr;
         SBIDAlbumPerformancePtr albumPerformancePtr;
         SBIDOnlinePerformancePtr onlinePerformancePtr;
         SBIDPerformerPtr performerPtr;
-        SBIDPlaylistPtr playlistPtr;
         SBIDSongPtr songPtr;
 
         //	Process song
@@ -319,6 +316,128 @@ Preloader::performances(QString query)
         ProgressDialog::instance()->update("Preloader::performances",progressCurrentValue++,progressMaxValue);
     }
     ProgressDialog::instance()->finishStep("Preloader::performances");
+    return items;
+}
+
+QVector<SBIDOnlinePerformancePtr>
+Preloader::onlinePerformances(QString query)
+{
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QVector<SBIDOnlinePerformancePtr> items;
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QStringList songFields; songFields                           << "0"  << "1"  << "2"  << "22" << "27";
+    QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" << "11" << "9";
+    QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" << "4"  << "5"  << "28";
+    QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
+
+    dal->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
+
+    QSqlQuery queryList(query,db);
+
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=queryList.size();
+    if(progressMaxValue<0)
+    {
+        //	Count items
+        while(queryList.next())
+        {
+            progressMaxValue++;
+        }
+    }
+    ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue,progressMaxValue);
+
+    items.clear();
+    queryList.first();
+    queryList.previous();
+    while(queryList.next())
+    {
+        QString key;
+        SBIDAlbumPtr albumPtr;
+        SBIDSongPerformancePtr spPtr;
+        SBIDAlbumPerformancePtr albumPerformancePtr;
+        SBIDOnlinePerformancePtr onlinePerformancePtr;
+        SBIDPerformerPtr performerPtr;
+        SBIDSongPtr songPtr;
+
+        //	Process song
+        if(!queryList.isNull(0))
+        {
+            key=SBIDSong::createKey(queryList.value(0).toInt());
+            if(key.length()>0)
+            {
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+            }
+        }
+
+        //	Process album
+        if(!queryList.isNull(6))
+        {
+            key=SBIDAlbum::createKey(queryList.value(6).toInt());
+            if(key.length()>0)
+            {
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+            }
+        }
+
+        //	Process performer
+        if(!queryList.isNull(12))
+        {
+            key=SBIDPerformer::createKey(queryList.value(12).toInt());
+            if(key.length()>0)
+            {
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
+        }
+
+        //	Process song performance
+        if(!queryList.isNull(25))
+        {
+            key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
+            if(key.length()>0)
+            {
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+            }
+        }
+
+        //	Process album performance
+        if(!queryList.isNull(21))
+        {
+            key=SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
+            if(key.length()>0)
+            {
+                //	checked on albumPerformanceID
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+            }
+        }
+
+        //	Process online performance
+        if(!queryList.isNull(21))
+        {
+            key=SBIDOnlinePerformance::createKey(queryList.value(21).toInt());
+            if(key.length()>0)
+            {
+                //	checked on albumPerformanceID
+                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+            }
+        }
+
+        if(onlinePerformancePtr)
+        {
+            items.append(onlinePerformancePtr);
+        }
+        ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue++,progressMaxValue);
+    }
+    ProgressDialog::instance()->finishStep("Preloader::onlinePerformances");
     return items;
 }
 
@@ -440,6 +559,7 @@ Preloader::playlistItems(int playlistID)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
     SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
@@ -454,6 +574,7 @@ Preloader::playlistItems(int playlistID)
     QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "26" << "35" << "37";
     QStringList albumPerformanceFields; albumPerformanceFields   << "30" << "31" << "3"  << "4"  << "25" << "32" << "33";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "2"  << "30" << "28";
+    QStringList chartFields; chartFields                         << "2"  << "38" << "39" << "40";
 
     QString q;
 
@@ -466,50 +587,55 @@ Preloader::playlistItems(int playlistID)
                 "WHEN pc.child_playlist_id IS NOT NULL THEN %2 "
                 "WHEN pc.record_id         IS NOT NULL THEN %3 "
                 "WHEN pc.artist_id         IS NOT NULL THEN %4 "
+                "WHEN pc.chart_id          IS NOT NULL THEN %6 "
             "END AS SB_ITEM_TYPE, "
-            "COALESCE(pc.child_playlist_id,pc.record_id,pc.artist_id) AS SB_ITEM_ID, "
+            "COALESCE(pc.child_playlist_id,pc.record_id,pc.artist_id,pc.chart_id) AS SB_ITEM_ID, "
             "0 AS SB_ALBUM_ID, "
             "0 AS SB_POSITION_ID, "
 
-            "a.artist_id, "                                         //	5
+            "a.artist_id, "                                        //	5
             "a.name, "
             "a.www, "
             "a.notes, "
             "a.mbid, "
 
-            "r.record_id, "                                         //	10
+            "r.record_id, "                                        //	10
             "r.title, "
             "r.artist_id, "
             "r.year, "
             "r.genre, "
 
-            "r.notes, "                                             //	15
+            "r.notes, "                                            //	15
             "pl.playlist_id, "
             "pl.name AS playlist_name, "
             "pl.duration AS playlist_duration, "
             "0 AS playlist_num_items, "
 
-            "NULL AS song_title, "                                  //	20
+            "NULL AS song_title, "                                 //	20
             "NULL AS notes, "
             "NULL AS artist_id, "
             "NULL AS year, "
             "NULL AS lyrics, "
 
-            "NULL AS duration, "                                    //	25
+            "NULL AS duration, "                                   //	25
             "NULL AS year, "
             "NULL AS notes, "
             "NULL AS path, "
             "NULL AS song_id, "
 
-            "NULL AS recod_performance_id, "                      //	30
+            "NULL AS record_performance_id, "                       //	30
             "NULL AS performance_id, "
             "NULL AS notes, "
             "NULL AS preferred_online_performance_id, "
             "NULL AS sole_id, "
 
-            "NULL AS notes1, "                                       //	35
+            "NULL AS notes1, "                                     //	35
             "NULL AS original_performance_id, "
-            "NULL AS preferred_record_performance_id "
+            "NULL AS preferred_record_performance_id, "
+            "c.name, "
+            "c.release_date, "
+
+            "c.notes "                                             //	40
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pc "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -518,6 +644,8 @@ Preloader::playlistItems(int playlistID)
                     "pc.record_id=r.record_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist pl ON "
                     "pc.child_playlist_id=pl.playlist_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___chart c ON "
+                    "pc.chart_id=c.chart_id "
         "WHERE "
             "pc.online_performance_id IS NULL AND "
             "pc.playlist_id=%1 "
@@ -567,7 +695,11 @@ Preloader::playlistItems(int playlistID)
 
             "p.notes, "                                            //	35
             "s.original_performance_id, "
-            "p.preferred_record_performance_id "
+            "p.preferred_record_performance_id, "
+            "NULL, "
+            "NULL, "
+
+            "NULL "                                                //	40
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pp  "
@@ -596,6 +728,7 @@ Preloader::playlistItems(int playlistID)
             .arg(Common::sb_field_album_id)
             .arg(Common::sb_field_performer_id)
             .arg(Common::sb_field_online_performance_id)
+            .arg(Common::sb_field_chart_id)
     ;
 
     dal->customize(q);
@@ -636,6 +769,16 @@ Preloader::playlistItems(int playlistID)
             if(key.length()>0)
             {
                 itemPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+            }
+        }
+
+        //	Process chart
+        if(itemType==Common::sb_field_chart_id)
+        {
+            key=SBIDChart::createKey(queryList.value(2).toInt());
+            if(key.length()>0)
+            {
+                itemPtr=(cmgr->contains(key)? cmgr->retrieve(key,SBIDChartMgr::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
             }
         }
 
@@ -717,6 +860,128 @@ Preloader::playlistItems(int playlistID)
         ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue++,progressMaxValue);
     }
     ProgressDialog::instance()->finishStep("Preloader::playlistItems");
+    return items;
+}
+
+QVector<SBIDSongPerformancePtr>
+Preloader::songPerformances(QString query)
+{
+    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
+    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QVector<SBIDSongPerformancePtr> items;
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QStringList songFields; songFields                           << "0"  << "1"  << "2"  << "22" << "27";
+    QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" << "11" << "9";
+    QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" << "4"  << "5"  << "28";
+    QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
+
+    dal->customize(query);
+    qDebug() << SB_DEBUG_INFO << query;
+
+    QSqlQuery queryList(query,db);
+
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=queryList.size();
+    if(progressMaxValue<0)
+    {
+        //	Count items
+        while(queryList.next())
+        {
+            progressMaxValue++;
+        }
+    }
+    ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue,progressMaxValue);
+
+    items.clear();
+    queryList.first();
+    queryList.previous();
+    while(queryList.next())
+    {
+        QString key;
+        SBIDAlbumPtr albumPtr;
+        SBIDSongPerformancePtr spPtr;
+        SBIDAlbumPerformancePtr albumPerformancePtr;
+        SBIDOnlinePerformancePtr onlinePerformancePtr;
+        SBIDPerformerPtr performerPtr;
+        SBIDSongPtr songPtr;
+
+        //	Process song
+        if(!queryList.isNull(0))
+        {
+            key=SBIDSong::createKey(queryList.value(0).toInt());
+            if(key.length()>0)
+            {
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+            }
+        }
+
+        //	Process album
+        if(!queryList.isNull(6))
+        {
+            key=SBIDAlbum::createKey(queryList.value(6).toInt());
+            if(key.length()>0)
+            {
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+            }
+        }
+
+        //	Process performer
+        if(!queryList.isNull(12))
+        {
+            key=SBIDPerformer::createKey(queryList.value(12).toInt());
+            if(key.length()>0)
+            {
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            }
+        }
+
+        //	Process song performance
+        if(!queryList.isNull(25))
+        {
+            key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
+            if(key.length()>0)
+            {
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+            }
+        }
+
+        //	Process album performance
+        if(!queryList.isNull(21))
+        {
+            key=SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
+            if(key.length()>0)
+            {
+                //	checked on albumPerformanceID
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+            }
+        }
+
+        //	Process online performance
+        if(!queryList.isNull(21))
+        {
+            key=SBIDOnlinePerformance::createKey(queryList.value(21).toInt());
+            if(key.length()>0)
+            {
+                //	checked on albumPerformanceID
+                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+            }
+        }
+
+        if(spPtr)
+        {
+            items.append(spPtr);
+        }
+        ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue++,progressMaxValue);
+    }
+    ProgressDialog::instance()->finishStep("Preloader::onlinePerformances");
     return items;
 }
 

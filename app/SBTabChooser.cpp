@@ -21,8 +21,14 @@ SBTabChooser::showContextMenuLabel(const QPoint &p)
 
     _menu=new QMenu(NULL);
 
-    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
-    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
+    if(_playNowAction)
+    {
+        _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    }
+    if(_enqueueAction)
+    {
+        _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
+    }
 
     _menu->addAction(_playNowAction);
     _menu->addAction(_enqueueAction);

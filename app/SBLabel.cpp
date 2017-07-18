@@ -32,6 +32,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
+        SB_RETURN_VOID_IF_NULL(_ptr);
         QByteArray ba=_ptr->encode();
 
         mimeData->setData("application/vnd.text.list", ba);

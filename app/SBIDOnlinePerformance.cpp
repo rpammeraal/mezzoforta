@@ -116,6 +116,13 @@ SBIDOnlinePerformance::updateLastPlayDate()
 }
 
 //	Pointers
+SBIDAlbumPtr
+SBIDOnlinePerformance::albumPtr() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->albumPtr():SBIDAlbumPtr());
+}
+
 SBIDAlbumPerformancePtr
 SBIDOnlinePerformance::albumPerformancePtr() const
 {
@@ -285,6 +292,69 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
     return new SBSqlQueryModel(q);
 }
 
+QString
+SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
+{
+    return QString
+    (
+        "SELECT DISTINCT "
+            "s.song_id, "                         //	0
+            "s.title, "
+            "s.notes, "
+            "p.artist_id, "
+            "p.year, "
+
+            "p.notes, "                           //	5
+            "r.record_id, "
+            "r.title, "
+            "r.artist_id, "
+            "r.year, "
+
+            "r.genre, "                           //	10
+            "r.notes, "
+            "a.artist_id, "
+            "a.name, "
+            "a.www, "
+
+            "a.notes, "                           //	15
+            "a.mbid, "
+            "rp.record_position, "
+            "rp.duration, "
+            "rp.notes, "
+
+            "op.path, "                           //	20
+            "rp.record_performance_id, "
+            "l.lyrics, "
+            "op.online_performance_id, "
+            "rp.preferred_online_performance_id, "
+
+            "p.performance_id, "                   //	25
+            "rp.notes, "
+            "s.original_performance_id, "
+            "p.preferred_record_performance_id, "
+            "NULL AS sole_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "s.song_id=p.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "p.performance_id=rp.performance_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id "
+                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "rp.record_performance_id=op.record_performance_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE "
+            "s.song_id=%1 "
+    )
+        .arg(songID)
+    ;
+}
+
+///	Protected
 QString
 SBIDOnlinePerformance::key() const
 {

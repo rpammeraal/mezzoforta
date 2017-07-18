@@ -203,10 +203,8 @@ SBIDSong::albums() const
     SBTableModel* tm=new SBTableModel();
     if(_albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
-        qDebug() << SB_DEBUG_INFO;
     tm->populateAlbumsBySong(_albumPerformances);
     return tm;
 }
@@ -243,7 +241,7 @@ SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 }
 
 QVector<SBIDAlbumPerformancePtr>
-SBIDSong::allPerformances() const
+SBIDSong::allPerformancesDEP() const
 {
     if(_albumPerformances.count()==0)
     {
@@ -327,23 +325,6 @@ SBIDSong::numAlbumPerformances() const
     return _albumPerformances.count();
 }
 
-int
-SBIDSong::numOnlinePerformances() const
-{
-    int count=0;
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
-    }
-    QVectorIterator<SBIDAlbumPerformancePtr> apPTRit(_albumPerformances);
-    while(apPTRit.hasNext())
-    {
-        SBIDAlbumPerformancePtr apPtr=apPTRit.next();
-        //count+=apPtr->numOnlinePerformances();
-    }
-    return count;
-}
-
 SBTableModel*
 SBIDSong::playlists()
 {
@@ -355,6 +336,12 @@ SBIDSong::playlists()
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylists(_playlistOnlinePerformances);
     return tm;
+}
+
+QVector<SBIDOnlinePerformancePtr>
+SBIDSong::onlinePerformances() const
+{
+    return Preloader::onlinePerformances(SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(this->songID()));
 }
 
 SBIDAlbumPerformancePtr
@@ -1156,22 +1143,18 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
         ProgressDialog::instance()->show("Retrieving Data","SBIDSong::refreshDependents",4);
     }
 
-    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
     }
-    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _playlistOnlinePerformances.count()==0)
     {
         _loadPlaylists();
     }
-    qDebug() << SB_DEBUG_INFO;
     if(forcedFlag==1 || _songPerformances.count()==0)
     {
         _loadSongPerformances();
     }
-    qDebug() << SB_DEBUG_INFO;
 }
 
 

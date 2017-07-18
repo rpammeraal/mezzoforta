@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBIDAlbum.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
@@ -48,19 +49,14 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
-    const SBIDPtr currentPtr=this->currentScreenItem().ptr();
+    SBIDBasePtr selectedPtr=sm->determineSBID(_lastClickedIndex);
+    const SBIDBasePtr currentPtr=this->currentScreenItem().ptr();
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
     if(!selectedPtr)
     {
         //	Context menu from SBLabel is clicked
         selectedPtr=currentPtr;
-    }
-    else if(selectedPtr && selectedPtr->itemType()==SBIDBase::sb_type_song)
-    {
-        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(selectedPtr);
-        selectedPtr=SBTabSongDetail::selectPerformanceFromSong(songPtr,1);
     }
 
     if(selectedPtr)
@@ -78,7 +74,7 @@ SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBIDBasePtr ptr=this->currentScreenItem().ptr();
 
     _lastClickedIndex=QModelIndex();
 
@@ -107,7 +103,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids);
+    SBIDBasePtr selected=sm->determineSBID(ids);
 
     if(selected)
     {
@@ -128,7 +124,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
 }
 
 void
-SBTabPerformerDetail::updatePerformerHomePage(const SBIDPtr &ptr)
+SBTabPerformerDetail::updatePerformerHomePage(const SBIDBasePtr &ptr)
 {
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
@@ -153,7 +149,7 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDPtr &ptr)
 }
 
 void
-SBTabPerformerDetail::updatePerformerMBID(const SBIDPtr &ptr)
+SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
 {
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
@@ -251,6 +247,9 @@ SBTabPerformerDetail::_determineViewCurrentTab() const
         break;
 
     case SBTabPerformerDetail::sb_tab_charts:
+        tv=mw->ui.performerDetailCharts;
+        break;
+
     case SBTabPerformerDetail::sb_tab_news:
     case SBTabPerformerDetail::sb_tab_wikipedia:
     case SBTabPerformerDetail::sb_tab_homepage:
@@ -372,10 +371,10 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerHomePage(QString)));
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(SBIDPtr)),
-            this, SLOT(updatePerformerMBID(SBIDPtr)));
-    connect(ed, SIGNAL(updatePerformerHomePage(SBIDPtr)),
-            this, SLOT(updatePerformerHomePage(SBIDPtr)));
+    connect(ed, SIGNAL(updatePerformerMBID(SBIDBasePtr)),
+            this, SLOT(updatePerformerMBID(SBIDBasePtr)));
+    connect(ed, SIGNAL(updatePerformerHomePage(SBIDBasePtr)),
+            this, SLOT(updatePerformerHomePage(SBIDBasePtr)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setPerformerImage(QPixmap)));
     connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),

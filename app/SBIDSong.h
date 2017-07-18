@@ -51,13 +51,13 @@ public:
     //	Song specific methods
     SBTableModel* albums() const;
     SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
-    QVector<SBIDAlbumPerformancePtr> allPerformances() const;
+    QVector<SBIDAlbumPerformancePtr> allPerformancesDEP() const;
     SBTableModel* charts() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
     int numAlbumPerformances() const;
-    int numOnlinePerformances() const;
+    QVector<SBIDOnlinePerformancePtr> onlinePerformances() const;
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlists();

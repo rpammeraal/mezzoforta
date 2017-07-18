@@ -365,16 +365,14 @@ SBIDAlbumPerformance::performancesByPerformer_Preloader(int performerID)
             "p.performance_id, "                   //	25
             "rp.notes, "
             "s.original_performance_id, "
-            "p.preferred_record_performance_id, "
-            "NULL AS sole_id "
+            "p.preferred_record_performance_id "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id=p.song_id  AND "
-                    "p.artist_id=%1 "
+                    "s.song_id=p.song_id "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
                     "p.performance_id=rp.performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
                     "rp.record_id=r.record_id "
@@ -382,6 +380,8 @@ SBIDAlbumPerformance::performancesByPerformer_Preloader(int performerID)
                     "rp.record_performance_id=op.record_performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
+        "WHERE "
+            "p.artist_id=%1 "
     )
         .arg(performerID)
     ;
@@ -484,11 +484,6 @@ SBIDAlbumPerformance::updateSQL() const
 {
     //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
-
-    qDebug() << SB_DEBUG_INFO
-             << deletedFlag()
-             << newFlag()
-    ;
 
     if(deletedFlag() && !newFlag())
     {

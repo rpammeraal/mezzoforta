@@ -11,6 +11,7 @@
 #include "SBDialogSelectItem.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBIDSong.h"
 #include "ui_SBDialogSelectItem.h"
 
@@ -110,56 +111,61 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
     return d;
 }
 
+///
+/// \brief SBDialogSelectItem::selectOnlinePerformanceFromSong
+/// \param songPtr
+/// \param allOPPtr
+/// \param parent
+/// \return
+///
+/// Intended to get an online performance for the given song. Used when assigning songs to playlist or to play/enqueue songs.
+///
 SBDialogSelectItem*
-SBDialogSelectItem::selectPerformanceFromSong(const SBIDSongPtr& songPtr, bool playableOnlyFlag, QWidget *parent)
+SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, QVector<SBIDOnlinePerformancePtr> allOPPtr, QWidget *parent)
 {
     Q_UNUSED(songPtr);
-    Q_UNUSED(playableOnlyFlag);
     Q_UNUSED(parent);
-    QVector<SBIDAlbumPerformancePtr> performanceList=songPtr->allPerformances();
     SBDialogSelectItem* dialog=new SBDialogSelectItem(songPtr,parent);
     dialog->ui->setupUi(dialog);
 
     //	Populate choices
-    QString title=QString("Choose album and performer for song %1%2%3:").arg(QChar(96)).arg(songPtr->songTitle()).arg(QChar(180));
+    QString title=QString("Choose song %1%2%3:").arg(QChar(96)).arg(songPtr->songTitle()).arg(QChar(180));
     dialog->setTitle(title);
-    for(int i=0;i<performanceList.size();i++)
+    QVectorIterator<SBIDOnlinePerformancePtr> allOPPtrIt(allOPPtr);
+    while(allOPPtrIt.hasNext())
     {
-        SBIDAlbumPerformancePtr currentPerformancePtr=performanceList.at(i);
+        SBIDOnlinePerformancePtr opPtr=allOPPtrIt.next();
 
         //	CWIP: SBIDOnlinePerformance
-//        if(playableOnlyFlag==0 || (playableOnlyFlag==1 && currentPerformancePtr->path().length()>0))
-//        {
-//            QLabel* l=new QLabel;
-//            SBIDAlbumPtr currentAlbumPtr=SBIDAlbum::retrieveAlbum(currentPerformancePtr->albumID());
-//            qDebug() << SB_DEBUG_INFO << currentPerformancePtr->albumID();
-//            SB_DEBUG_IF_NULL(currentAlbumPtr);
+        QLabel* l=new QLabel;
+        SBIDAlbumPtr aPtr=opPtr->albumPtr();
 
-//            l->setWindowFlags(Qt::FramelessWindowHint);
-//            l->setTextFormat(Qt::RichText);
-//            QString imagePath=ExternalData::getCachePath(currentAlbumPtr);
-//            QFile imageFile(imagePath);
+        SB_DEBUG_IF_NULL(aPtr);
 
-//            if(imageFile.exists()==0)
-//            {
-//                imagePath=songPtr->iconResourceLocation();
-//            }
-//            l->setText(QString("<html><head><style type=text/css> "
-//                               "a:link {color:black; text-decoration:none;} "
-//                               "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
-//                       //	set args correctly
-//                       .arg(imagePath)
-//                       .arg(currentPerformancePtr->key())
-//                       .arg(currentAlbumPtr->albumTitle())
-//                       .arg(currentPerformancePtr->songPerformerName())
-//                       .arg(currentPerformancePtr->duration().toString(Duration::sb_hhmmss_format)));
+        l->setWindowFlags(Qt::FramelessWindowHint);
+        l->setTextFormat(Qt::RichText);
+        QString imagePath=ExternalData::getCachePath(aPtr);
+        QFile imageFile(imagePath);
 
-//            l->setStyleSheet( ":hover{ background-color: darkgrey; }");
-//            connect(l, SIGNAL(linkActivated(QString)),
-//                    dialog, SLOT(OK(QString)));
+        if(imageFile.exists()==0)
+        {
+            imagePath=opPtr->iconResourceLocation();
+        }
+        l->setText(QString("<html><head><style type=text/css> "
+                           "a:link {color:black; text-decoration:none;} "
+                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
+                   //	set args correctly
+                   .arg(imagePath)
+                   .arg(opPtr->key())
+                   .arg(aPtr->albumTitle())
+                   .arg(opPtr->songPerformerName())
+                   .arg(opPtr->duration().toString(Duration::sb_hhmmss_format)));
 
-//            dialog->ui->vlAlbumList->addWidget(l);
-//        }
+        l->setStyleSheet( ":hover{ background-color: darkgrey; }");
+        connect(l, SIGNAL(linkActivated(QString)),
+                dialog, SLOT(OK(QString)));
+
+        dialog->ui->vlAlbumList->addWidget(l);
     }
     dialog->updateGeometry();
     return dialog;

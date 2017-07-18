@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo usage $0 "<database> <table>"
+
+pg_dump -d $1 -h mars -p 22500 -w --table --no-security-labels --no-synchronized-snapshots --no-tablespaces --no-unlogged-table-data --no-privileges --no-owner --table=$2
