@@ -65,7 +65,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist \n"
                 "( \n"
-                    //"artist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "artist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "name      CHARACTER VARYING NOT NULL, \n"
                     "sort_name CHARACTER VARYING NOT NULL, \n"
@@ -81,7 +80,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_rel \n"
                 "( \n"
-                    //"artist_rel_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "artist_rel_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "artist1_id    INTEGER NOT NULL, \n"
                     "artist2_id    INTEGER NOT NULL, \n"
@@ -95,14 +93,14 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE song \n"
                 "( \n"
-                    //"song_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "song_id                 INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "original_performance_id INT NULL, \n"
                     "title                   CHARACTER VARYING NOT NULL, \n"
                     "notes                   TEXT NULL, \n"
                     "soundex                 CHARACTER VARYING NULL, \n"
                     "CONSTRAINT cc_song_song_id_check CHECK ((song_id >= 0)), \n"
-                    "CONSTRAINT cc_song_title_check CHECK (((title) <> '')) \n"
+                    "CONSTRAINT cc_song_title_check CHECK (((title) <> '')), \n"
+                    "CONSTRAINT fk_song_original_performance_id_performance_performance_id FOREIGN KEY (original_performance_id) REFERENCES performance(performance_id)\n"
                 "); \n"
             ));
             SQL.append("CREATE INDEX idx_song_title ON song (title); ");
@@ -120,28 +118,22 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE performance \n"
                 "( \n"
-                    //"performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
-                    "performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
-                    "song_id        INTEGER NOT NULL, \n"
-                    "artist_id      INTEGER NOT NULL, \n"
-                    "year           INTEGER, \n"
-                    "notes          TEXT, \n"
+                    "performance_id                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "song_id                         INTEGER NOT NULL, \n"
+                    "artist_id                       INTEGER NOT NULL, \n"
+                    "preferred_record_performance_id INTEGER NULL, \n"
+                    "year                            INTEGER, \n"
+                    "notes                           TEXT, \n"
                     "CONSTRAINT cc_performance_year_check CHECK (((year IS NULL) OR (year >= 1900))), \n"
-                    "CONSTRAINT fk_performance_song_id_song_song_id FOREIGN KEY (song_id) REFERENCES song(song_id) \n"
+                    "CONSTRAINT fk_performance_artist_id_artist_artist_id FOREIGN KEY (artist_id) REFERENCES artist(artist_id),\n"
+                    "CONSTRAINT fk_performance_song_id_song_song_id FOREIGN KEY (song_id) REFERENCES song(song_id), \n"
+                    "CONSTRAINT fk_performance_preferred_record_performance_id_record_performance_record_performance_id FOREIGN KEY (preferred_record_performance_id) REFERENCES performance(performance_id) \n"
                 "); \n"
-            ));
-
-            SQL.append(Common::escapeSingleQuotes(
-                "ALTER TABLE song "
-                "ADD CONSTRAINT fk_song_original_performance_id_performance "
-                "FOREIGN KEY (original_performance_id) "
-                "REFERENCES performance(performance_id)\n"
             ));
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record \n"
                 "( \n"
-                    //"record_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "record_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "artist_id     INTEGER NOT NULL, \n"
                     "title         CHARACTER VARYING NOT NULL, \n"
@@ -163,22 +155,22 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record_performance \n"
                 "( \n"
-                    //"record_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
-                    "record_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
-                    "performance_id        INTEGER NOT NULL, \n"
-                    "record_id             INTEGER NOT NULL, \n"
-                    "record_position       SMALLINT NOT NULL, \n"
-                    "duration              TIME WITHOUT TIME ZONE NOT NULL, \n"
-                    "notes                 TEXT, \n"
+                    "record_performance_id           INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "performance_id                  INTEGER NOT NULL, \n"
+                    "preferred_online_performance_id INTEGER null, \n"
+                    "record_id                       INTEGER NOT NULL, \n"
+                    "record_position                 SMALLINT NOT NULL, \n"
+                    "duration                        TIME WITHOUT TIME ZONE NOT NULL, \n"
+                    "notes                           TEXT, \n"
                     "CONSTRAINT cc_record_performance_record_position_check CHECK ((record_position >= 0)), \n"
-                    "CONSTRAINT fk_record_performance_record_id_record_record_id FOREIGN KEY (record_id) REFERENCES record(record_id) \n"
+                    "CONSTRAINT fk_record_performance_record_id_record_record_id FOREIGN KEY (record_id) REFERENCES record(record_id), \n"
+                    "CONSTRAINT fk_record_performance_preferred_online_performance_id_online_performance_online_performance_id FOREIGN KEY (preferred_online_performance_id) REFERENCES online_performance(online_performance_id) \n"
                 "); \n"
             ));
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE online_performance \n"
                 "( \n"
-                    //"online_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "online_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "record_performance_id INTEGER NOT NULL, \n"
                     "format_id             INTEGER NOT NULL, \n"
@@ -196,7 +188,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist \n"
                 "( \n"
-                    //"playlist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "playlist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "name        CHARACTER VARYING NOT NULL, \n"
                     "notes       TEXT, \n"
@@ -212,7 +203,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist_detail \n"
                 "( \n"
-                    //"playlist_detail_id    INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "playlist_detail_id    INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "playlist_id           INTEGER NOT NULL, \n"
                     "playlist_position     INTEGER NOT NULL, \n"
@@ -221,8 +211,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                     "chart_id              INTEGER NULL, \n"
                     "record_id             INTEGER NULL, \n"
                     "artist_id             INTEGER NULL, \n"
-                    "collection_id         INTEGER, \n"
-                    "c_position            SMALLINT, \n"
                     "timestamp             DATE NOT NULL, \n"
                     "notes                 TEXT, \n"
                     "CONSTRAINT cc_playlist_detail_playlist_position_check CHECK ((playlist_position > 0)) \n"
@@ -235,9 +223,31 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
 
             SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE chart \n"
+                "( \n"
+                    "chart_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "name         CHARACTER VARYING NOT NULL, \n"
+                    "release_date DATE NOT NULL, \n"
+                    "notes        TEXT \n"
+                "); \n"
+            ));
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE chart_performance \n"
+                "( \n"
+                    "chart_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
+                    "chart_id              INTEGER NOT NULL, \n"
+                    "performance_id        INTEGER NOT NULL, \n"
+                    "chart_position        INTEGER NOT NULL, \n"
+                    "NOTES                 VARCHAR NULL, \n"
+                    "CONSTRAINT fk_chart_id_chart_chart_id FOREIGN KEY (chart_id) REFERENCES chart(chart_id) \n"
+                    "CONSTRAINT fk_performance_id_performance_performance_id FOREIGN KEY (performance_id) REFERENCES performance(performance_id) \n"
+                "); \n"
+            ));
+
+            SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE toplay \n"
                 "( \n"
-                    //"toplay_detail_id      INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "toplay_id             INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "online_performance_id INTEGER NOT NULL, \n"
                     "insert_order          INTEGER NOT NULL, \n"
@@ -250,7 +260,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE config_host \n"
                 "( \n"
-                    //"config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "hostname        VARCHAR NOT NULL, \n"
                     "local_data_path INTEGER NOT NULL \n"
@@ -281,6 +290,13 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                     "keyword varchar NOT NULL, \n"
                     "value varchar NOT NULL, \n"
                     "CONSTRAINT pk_config_host PRIMARY KEY(keyword,value) \n"
+                "); \n"
+            ));
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE genre \n"
+                "( \n"
+                    "genrename varchar NOT NULL \n"
                 "); \n"
             ));
 

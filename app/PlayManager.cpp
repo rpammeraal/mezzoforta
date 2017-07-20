@@ -94,6 +94,7 @@ PlayManager::playerNext(bool previousFlag)
     }
     lastSongPlayedFlag=(numSongs-currentPlayID()-1)==0;
 
+    qDebug() << SB_DEBUG_INFO;
     pc->playerStop();
     while((numTries>0 && isPlayingFlag==0 && exitLoopFlag==0) || (lastSongPlayedFlag==1 && radioModeFlag()))
     {
@@ -147,6 +148,7 @@ PlayManager::playerNext(bool previousFlag)
 void
 PlayManager::playerStop()
 {
+    qDebug() << SB_DEBUG_INFO;
     Context::instance()->getPlayerController()->playerStop();
 }
 
@@ -175,6 +177,7 @@ PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
     if(enqueueFlag==0)
     {
         this->clearPlaylist();
+    qDebug() << SB_DEBUG_INFO;
         pc->playerStop();
     }
     ptr->sendToPlayQueue(enqueueFlag);
@@ -255,6 +258,7 @@ PlayManager::startRadio()
     PlayerController* pc=Context::instance()->getPlayerController();
 
     //	stop player
+    qDebug() << SB_DEBUG_INFO;
     pc->playerStop();
 
     //	load queue

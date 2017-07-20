@@ -26,12 +26,12 @@ public:
     ~ExternalData();
 
     //	Main interface
-    void loadAlbumData(const SBIDPtr& ptr);
-    void loadPerformerData(const SBIDPtr& ptr);
-    void loadSongData(const SBIDPtr& ptr);
+    void loadAlbumData(const SBIDBasePtr& ptr);
+    void loadPerformerData(const SBIDBasePtr& ptr);
+    void loadSongData(const SBIDBasePtr& ptr);
 
     //	Static methods
-    QString static getCachePath(const SBIDPtr& id);
+    QString static getCachePath(const SBIDBasePtr& id);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);
@@ -42,8 +42,8 @@ signals:
     void performerWikipediaPageAvailable(const QString& url);
     void songLyricsURLAvailable(const QString& url);
     void songWikipediaPageAvailable(const QString& url);
-    void updatePerformerMBID(const SBIDPtr& ptr);
-    void updatePerformerHomePage(const SBIDPtr& ptr);
+    void updatePerformerMBID(const SBIDBasePtr& ptr);
+    void updatePerformerHomePage(const SBIDBasePtr& ptr);
 
 public slots:
     void handleAlbumImageURLFromAS(QNetworkReply *r);
@@ -63,7 +63,7 @@ private:
     bool _wikipediaURLRetrievedFlag;        // 	album performer song
 
     int _currentOffset;
-    SBIDPtr _currentPtr;
+    SBIDBasePtr _currentPtr;
     bool _performerMBIDRetrievedFlag;       //	set if call to retrieve MBID already has been made.
 
     QList<NewsItem> _allNewsItems;
@@ -72,7 +72,7 @@ private:
     void _init();
     //bool _fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const;
     void _loadAlbumCoverAS();
-    static bool _loadImageFromCache(QPixmap& p,const SBIDPtr& ptr);
+    static bool _loadImageFromCache(QPixmap& p,const SBIDBasePtr& ptr);
     void _getMBIDAndMore();
     void _sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString& url);
     void _storeInCache(QByteArray* a) const;

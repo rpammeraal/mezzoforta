@@ -850,6 +850,10 @@ Between 20161215 and 20170604:
 -	migration database: set year on performance from album
 -	Amanda Strijdom: now shows songs that are not online or on an album
 
+20170719:
+-	Fixed creating new sqlite database in app
+-	Fixed postgres2sqlite migration script to populate a pre-created database from the app
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	search screen:

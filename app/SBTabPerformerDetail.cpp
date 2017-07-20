@@ -371,10 +371,10 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerHomePage(QString)));
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(SBIDBasePtr)),
-            this, SLOT(updatePerformerMBID(SBIDBasePtr)));
-    connect(ed, SIGNAL(updatePerformerHomePage(SBIDBasePtr)),
-            this, SLOT(updatePerformerHomePage(SBIDBasePtr)));
+    connect(ed, SIGNAL(updatePerformerMBID(const SBIDBasePtr &)),
+            this, SLOT(updatePerformerMBID(const SBIDBasePtr &)));
+    connect(ed, SIGNAL(updatePerformerHomePage(const SBIDBasePtr &)),
+            this, SLOT(updatePerformerHomePage(const SBIDBasePtr &)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setPerformerImage(QPixmap)));
     connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),

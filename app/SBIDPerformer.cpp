@@ -669,9 +669,17 @@ SBIDPerformer::updateSQL() const
     QString q;
     bool deletedFlag=this->deletedFlag();
 
+    qDebug() << SB_DEBUG_INFO
+             << mergedFlag()
+             << deletedFlag
+             << changedFlag()
+    ;
+
     //	Merged
     if(mergedFlag())
     {
+        qDebug() << SB_DEBUG_INFO;
+
         //	1.	artist_rel
         q=QString
         (
@@ -921,7 +929,6 @@ SBIDPerformer::updateSQL() const
         ;
         SQL.append(q);
     }
-
     else if(!mergedFlag() && !deletedFlag && changedFlag())
     {
         //	Update sort_name
@@ -939,7 +946,8 @@ SBIDPerformer::updateSQL() const
                     "sort_name='%3', "
                     "notes='%4', "
                     "www='%5', "
-                    "mbid='%6' "
+                    "mbid='%6', "
+                    "soundex='%7' "
                 "WHERE "
                     "artist_id=%1 "
              )
@@ -949,6 +957,7 @@ SBIDPerformer::updateSQL() const
                 .arg(Common::escapeSingleQuotes(this->notes()))
                 .arg(Common::escapeSingleQuotes(this->url()))
                 .arg(Common::escapeSingleQuotes(this->MBID()))
+                .arg(Common::soundex(Common::escapeSingleQuotes(this->performerName())))
             ;
             SQL.append(q);
         }
@@ -1013,7 +1022,7 @@ SBIDPerformer::addRelatedPerformerSQL(const QString& key) const
             "NOT EXISTS "
             "( "
                 "SELECT "
-                    "NULL "
+                    "1 "
                 "FROM "
                     "___SB_SCHEMA_NAME___artist_rel "
                 "WHERE "
@@ -1023,7 +1032,7 @@ SBIDPerformer::addRelatedPerformerSQL(const QString& key) const
             "NOT EXISTS "
             "( "
                 "SELECT "
-                    "NULL "
+                    "1 "
                 "FROM "
                     "___SB_SCHEMA_NAME___artist_rel "
                 "WHERE "

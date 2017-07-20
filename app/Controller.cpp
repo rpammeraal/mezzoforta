@@ -32,12 +32,6 @@
 #include "ScreenStack.h"
 #include "SetupWizard.h"
 
-class I : public QThread
-{
-public:
-    static void sleep(unsigned long secs) { QThread::sleep(secs); }
-};
-
 Controller::Controller(int argc, char *argv[], QApplication* app) : _app(app)
 {
     Q_UNUSED(argc);

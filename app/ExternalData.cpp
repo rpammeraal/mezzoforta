@@ -28,7 +28,7 @@ ExternalData::~ExternalData()
 
 //	Main interface
 void
-ExternalData::loadAlbumData(const SBIDPtr& ptr)
+ExternalData::loadAlbumData(const SBIDBasePtr& ptr)
 {
     _currentPtr=ptr;
 
@@ -50,7 +50,7 @@ ExternalData::loadAlbumData(const SBIDPtr& ptr)
 }
 
 void
-ExternalData::loadPerformerData(const SBIDPtr& ptr)
+ExternalData::loadPerformerData(const SBIDBasePtr& ptr)
 {
     _currentPtr=ptr;
 
@@ -79,7 +79,7 @@ ExternalData::loadPerformerData(const SBIDPtr& ptr)
 }
 
 void
-ExternalData::loadSongData(const SBIDPtr& ptr)
+ExternalData::loadSongData(const SBIDBasePtr& ptr)
 {
     _currentPtr=ptr;
 
@@ -94,7 +94,7 @@ ExternalData::loadSongData(const SBIDPtr& ptr)
 
 //	Static methods
 QString
-ExternalData::getCachePath(const SBIDPtr& ptr)
+ExternalData::getCachePath(const SBIDBasePtr& ptr)
 {
     QString p=QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     p.replace("!","");
@@ -114,7 +114,7 @@ ExternalData::getCachePath(const SBIDPtr& ptr)
 /// \return 1 if image is successfully loaded from cache
 ///
 bool
-ExternalData::_loadImageFromCache(QPixmap& p,const SBIDPtr& ptr)
+ExternalData::_loadImageFromCache(QPixmap& p,const SBIDBasePtr& ptr)
 {
     QString fn=getCachePath(ptr);
     QFile f(fn);
