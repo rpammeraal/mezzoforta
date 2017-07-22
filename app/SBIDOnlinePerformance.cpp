@@ -197,6 +197,13 @@ SBIDOnlinePerformance::songID() const
     return (apPtr?apPtr->songID():-1);
 }
 
+int
+SBIDOnlinePerformance::songPerformanceID() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songPerformanceID():-1);
+}
+
 QString
 SBIDOnlinePerformance::songPerformerKey() const
 {

@@ -153,7 +153,8 @@ SBTabQueuedSongs::setViewLayout()
     tv->setColumnHidden(6,1);	//	sb_column_playlistpositionid
     tv->setColumnHidden(7,1);	//	sb_column_position
     tv->setColumnHidden(8,1);	//	sb_column_path
-    tv->setColumnHidden(9,1);	//	sb_column_album_performance_id
+    tv->setColumnHidden(9,1);	//	sb_column_online_performance_id
+    tv->setColumnHidden(10,1);	//	sb_column_performance_id
 
     //	4.	Set headers.
     QHeaderView* hv=NULL;

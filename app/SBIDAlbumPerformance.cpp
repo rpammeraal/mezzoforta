@@ -162,6 +162,13 @@ SBIDAlbumPerformance::songID() const
 }
 
 int
+SBIDAlbumPerformance::songPerformanceID() const
+{
+    SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    return (spPtr?spPtr->songPerformanceID():-1);
+}
+
+int
 SBIDAlbumPerformance::songPerformerID() const
 {
     SBIDSongPerformancePtr spPtr=songPerformancePtr();

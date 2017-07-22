@@ -43,6 +43,7 @@ public:
     QString albumTitle() const;
     SBDuration duration() const;
     int songID() const;
+    int songPerformanceID() const;
     QString songPerformerKey() const;
     int songPerformerID() const;
     QString songPerformerName() const;

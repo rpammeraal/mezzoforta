@@ -858,6 +858,9 @@ Between 20161215 and 20170604:
 -	added code to prevent the computer going to sleep.
 -	renamed Duration class to SBDuration to avoid name clash.
 
+20170722:
+-	Fixed adding duplicates to queue.
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	search screen:

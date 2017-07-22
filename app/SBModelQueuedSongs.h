@@ -28,14 +28,15 @@ public:
         sb_column_position=7,
         sb_column_path=8,
         sb_column_online_performance_id=9,
+        sb_column_performance_id=10,
 
-        sb_column_startofdata=10,
-        sb_column_songtitle=10,
-        sb_column_duration=11,
-        sb_column_performername=12,
-        sb_column_albumtitle=13
+        sb_column_startofdata=11,
+        sb_column_songtitle=11,
+        sb_column_duration=12,
+        sb_column_performername=13,
+        sb_column_albumtitle=14
     };
-    //	Note: modify SBTabQueuedSongs as well when sb_column_type is modified in any way
+    //	Note: modify SBTabQueuedSongs::setViewLayout() as well when sb_column_type is modified in any way
 
     SBModelQueuedSongs(QObject* parent=0);
 

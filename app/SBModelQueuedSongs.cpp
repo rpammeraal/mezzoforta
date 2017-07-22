@@ -116,6 +116,7 @@ SBModelQueuedSongs::addRow()
     item=new QStandardItem("0"); column.append(item);                               //	sb_column_position
     item=new QStandardItem("0"); column.append(item);                               //	sb_column_path
     item=new QStandardItem("0"); column.append(item);                               //	sb_column_online_performance_id
+    item=new QStandardItem("0"); column.append(item);                               //	sb_column_performance_id
 
     item=new QStandardItem("Title"); column.append(item);                           //	sb_column_songtitle
     item=new QStandardItem("Duration"); column.append(item);                        //	sb_column_duration
@@ -155,6 +156,7 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
     case SBModelQueuedSongs::sb_column_position:
     case SBModelQueuedSongs::sb_column_path:
     case SBModelQueuedSongs::sb_column_online_performance_id:
+    case SBModelQueuedSongs::sb_column_performance_id:
         break;
 
     case SBModelQueuedSongs::sb_column_displayplaylistpositionid:
@@ -283,18 +285,19 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     int progressMaxValue=newPlaylist.count();
     ProgressDialog::instance()->update("SBModelQueuedSongs::populate",0,progressMaxValue);
     int currentIndex=offset+1;
+
     for(int i=0;i<newPlaylist.count();i++)
     {
         if(currentPlayID()==-1)
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
         }
-        SBIDOnlinePerformancePtr performancePtr=newPlaylist[i];
+        SBIDOnlinePerformancePtr opPtr=newPlaylist[i];
 
-        if(performancePtr)
+        if(opPtr)
         {
-            record=createRecord(performancePtr,currentIndex);
-            _totalDuration+=performancePtr->duration();
+            record=createRecord(opPtr,currentIndex);
+            _totalDuration+=opPtr->duration();
 
             if(_recordExists(record)==0)
             {
@@ -352,27 +355,6 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
         {
             if(item->text().toInt()==playlistIndex+1)
             {
-//                //	sb_column_songid
-//                item=this->item(internalPlaylistIndex,SBModelQueuedSongs::sb_column_songid);
-//                if(item)
-//                {
-//                    songID=item->text().toInt();
-//                }
-
-//                //	sb_column_albumid
-//                item=this->item(internalPlaylistIndex,SBModelQueuedSongs::sb_column_albumid);
-//                if(item)
-//                {
-//                    albumID=item->text().toInt();
-//                }
-
-//                //	sb_column_position
-//                item=this->item(internalPlaylistIndex,SBModelQueuedSongs::sb_column_position);
-//                if(item)
-//                {
-//                    albumPosition=item->text().toInt();
-//                }
-
                 //	sb_column_online_performance_id
                 item=this->item(internalPlaylistIndex,SBModelQueuedSongs::sb_column_online_performance_id);
                 if(item)
@@ -660,21 +642,22 @@ SBModelQueuedSongs::createRecord(const SBIDOnlinePerformancePtr& opPtr,int playP
 
     item=new QStandardItem("0"); record.append(item);                                                             //	sb_column_deleteflag
     item=new QStandardItem(""); record.append(item);                                                              //	sb_column_playflag
-    item=new QStandardItem(QString("%1").arg(opPtr->albumID())); record.append(item);                    //	sb_column_albumid
-    item=new QStandardItem(formatDisplayPlayID(playPosition)); record.append(item);                               //	sb_column_displayplaylistpositionid
+    item=new QStandardItem(QString("%1").arg(opPtr->albumID())); record.append(item);                      //	sb_column_albumid
+    item=new QStandardItem(formatDisplayPlayID(playPosition)); record.append(item);                        //	sb_column_displayplaylistpositionid
     item->setData(Qt::AlignRight, Qt::TextAlignmentRole);
 
-    item=new QStandardItem(QString("%1").arg(opPtr->songID())); record.append(item);                     //	sb_column_songid
-    item=new QStandardItem(QString("%1").arg(opPtr->songPerformerID())); record.append(item);	          //	sb_column_performerid
-    item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);                           //	sb_column_playlistpositionid
-    item=new QStandardItem(QString("%1").arg(opPtr->albumPosition())); record.append(item);              //	sb_column_position
-    item=new QStandardItem(opPtr->path()); record.append(item);                                          //	sb_column_path
-    item=new QStandardItem(QString("%1").arg(opPtr->onlinePerformanceID())); record.append(item);        //	sb_column_online_performance_id
+    item=new QStandardItem(QString("%1").arg(opPtr->songID())); record.append(item);                       //	sb_column_songid
+    item=new QStandardItem(QString("%1").arg(opPtr->songPerformerID())); record.append(item);	           //	sb_column_performerid
+    item=new QStandardItem(_formatPlaylistPosition(playPosition)); record.append(item);                    //	sb_column_playlistpositionid
+    item=new QStandardItem(QString("%1").arg(opPtr->albumPosition())); record.append(item);                //	sb_column_position
+    item=new QStandardItem(opPtr->path()); record.append(item);                                            //	sb_column_path
+    item=new QStandardItem(QString("%1").arg(opPtr->onlinePerformanceID())); record.append(item);          //	sb_column_online_performance_id
+    item=new QStandardItem(QString("%1").arg(opPtr->songPerformanceID())); record.append(item);            //	sb_column_performance_id
 
-    item=new QStandardItem(opPtr->songTitle()); record.append(item);                                     //	sb_column_songtitle
+    item=new QStandardItem(opPtr->songTitle()); record.append(item);                                       //	sb_column_songtitle
     item=new QStandardItem(opPtr->duration().toString(SBDuration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
-    item=new QStandardItem(opPtr->songPerformerName()); record.append(item);                             //	sb_column_performername
-    item=new QStandardItem(opPtr->albumTitle()); record.append(item);                                    //	sb_column_albumtitle
+    item=new QStandardItem(opPtr->songPerformerName()); record.append(item);                               //	sb_column_performername
+    item=new QStandardItem(opPtr->albumTitle()); record.append(item);                                      //	sb_column_albumtitle
 
     return record;
 }
@@ -702,6 +685,7 @@ SBModelQueuedSongs::_populateHeader()
     item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_position
     item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_path
     item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_online_performance_id
+    item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_performance_id
     item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
     item=new QStandardItem("Duration"); this->setHorizontalHeaderItem(columnIndex++,item);   //	sb_column_duration
     item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
@@ -726,19 +710,13 @@ SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
 bool
 SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
 {
-    int matchSongID=record[SBModelQueuedSongs::sb_column_songid]->text().toInt();
-    int matchPerformerID=record[SBModelQueuedSongs::sb_column_performerid]->text().toInt();
-    int matchAlbumID=record[SBModelQueuedSongs::sb_column_albumid]->text().toInt();
-    int matchPositionID=record[SBModelQueuedSongs::sb_column_position]->text().toInt();
+    const int matchPerformanceID=record[SBModelQueuedSongs::sb_column_performance_id]->text().toInt();
 
     for(int i=0;i<this->rowCount();i++)
     {
-        int songID=this->item(i,SBModelQueuedSongs::sb_column_songid)->text().toInt();
-        int performerID=this->item(i,SBModelQueuedSongs::sb_column_performerid)->text().toInt();
-        int albumID=this->item(i,SBModelQueuedSongs::sb_column_albumid)->text().toInt();
-        int positionID=this->item(i,SBModelQueuedSongs::sb_column_position)->text().toInt();
+        int performanceID=this->item(i,SBModelQueuedSongs::sb_column_performance_id)->text().toInt();
 
-        if(songID==matchSongID && performerID==matchPerformerID && albumID==matchAlbumID && positionID==matchPositionID)
+        if(performanceID==matchPerformanceID)
         {
             return 1;
         }
