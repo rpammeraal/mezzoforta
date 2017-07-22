@@ -6,7 +6,7 @@
 #include <QString>
 
 
-#include "Duration.h"
+#include "SBDuration.h"
 
 class MetaData
 {
@@ -21,14 +21,14 @@ public:
     inline QString songTitle() const { return _songTitle; }
     inline int albumPosition() const { return _albumPosition; }
     inline int year() const { return _year; }
-    inline Duration duration() const { return _duration; }
+    inline SBDuration duration() const { return _duration; }
 
 private:
     //TagLib::FileRef _f;
 
     QString         _albumTitle;
     int             _albumPosition;
-    Duration        _duration;
+    SBDuration        _duration;
     QString         _genre;
     QString         _notes;
     QString         _songPerformerName;

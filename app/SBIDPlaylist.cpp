@@ -169,7 +169,7 @@ SBIDPlaylist::recalculatePlaylistDuration()
     _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,std::make_shared<SBIDPlaylist>(*this));
 
     //	Calculate duration
-    Duration duration;
+    SBDuration duration;
     for(int i=0;i<allPerformances.count();i++)
     {
         duration+=allPerformances.at(i)->duration();
@@ -188,7 +188,7 @@ SBIDPlaylist::recalculatePlaylistDuration()
         "WHERE "
             "playlist_id=%2 "
     )
-        .arg(duration.toString(Duration::sb_full_hhmmss_format))
+        .arg(duration.toString(SBDuration::sb_full_hhmmss_format))
         .arg(this->playlistID())
     ;
     dal->customize(q);
@@ -1320,7 +1320,7 @@ SBIDPlaylist::_init()
 {
     _sb_item_type=SBIDBase::sb_type_playlist;
 
-    _duration=Duration();
+    _duration=SBDuration();
     _playlistID=-1;
     _playlistName=QString();
     _numItems=0;

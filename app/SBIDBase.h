@@ -10,7 +10,7 @@
 #include <QStandardItem>
 
 #include "Common.h"
-#include "Duration.h"
+#include "SBDuration.h"
 
 class SBSqlQueryModel;
 

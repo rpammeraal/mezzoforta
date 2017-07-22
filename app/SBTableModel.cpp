@@ -237,7 +237,7 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
         {
             _setItem(i,0,apPtr->albumKey());
             _setItem(i,1,apPtr->albumTitle());
-            _setItem(i,2,apPtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i,2,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i,3,QString("%1").arg(apPtr->year()));
             _setItem(i,4,apPtr->songPerformerKey());
             _setItem(i,5,apPtr->songPerformerName());
@@ -368,7 +368,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
             _setItem(i, 0,QString("%1").arg(performancePtr->albumPosition()));
             _setItem(i, 1,performancePtr->key());
             _setItem(i, 2,performancePtr->songTitle());
-            _setItem(i, 3,performancePtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i, 3,performancePtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i, 4,performancePtr->songPerformerKey());
             _setItem(i, 5,performancePtr->songPerformerName());
             i++;
@@ -433,7 +433,7 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
             _setItem(i,1,plPtr->playlistName());
             _setItem(i,2,opPtr->songPerformerKey());
             _setItem(i,3,opPtr->songPerformerName());
-            _setItem(i,4,opPtr->duration().toString(Duration::sb_hhmmss_format));
+            _setItem(i,4,opPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i,5,opPtr->albumKey());
             _setItem(i,6,opPtr->albumTitle());
 

@@ -53,7 +53,7 @@ SBIDAlbumPerformance::genericDescription() const
 {
     return QString("Song - %1 [%2] / %3 - %4")
         .arg(this->text())
-        .arg(this->_duration.toString(Duration::sb_hhmmss_format))
+        .arg(this->_duration.toString(SBDuration::sb_hhmmss_format))
         .arg(this->songPerformerName())
         .arg(this->albumTitle().length()?QString("'%1'").arg(albumTitle()):QString())
     ;
@@ -559,7 +559,7 @@ SBIDAlbumPerformance::updateSQL() const
             .arg(this->songPerformerID())
             .arg(this->_albumID)
             .arg(this->_albumPosition)
-            .arg(this->_duration.toString(Duration::sb_full_hhmmss_format))
+            .arg(this->_duration.toString(SBDuration::sb_full_hhmmss_format))
             .arg(Common::escapeSingleQuotes(this->notes()))
         );
 
@@ -656,7 +656,7 @@ SBIDAlbumPerformance::_init()
     _songPerformanceID=-1;
     _albumID=-1;
     _albumPosition=-1;
-    _duration=Duration();
+    _duration=SBDuration();
     _notes=QString();
     _preferredOnlinePerformanceID=-1;
     _orgAlbumPosition=-1;

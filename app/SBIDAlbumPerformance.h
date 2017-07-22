@@ -27,7 +27,7 @@ public:
     int albumID() const;
     inline int albumPerformanceID() const { return _albumPerformanceID; }
     inline int albumPosition() const { return _albumPosition; }
-    inline Duration duration() const { return _duration; }
+    inline SBDuration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
     inline int orgAlbumPosition() const { return _orgAlbumPosition; }
     //inline int playlistPosition() const { return _playlistPosition; }
@@ -102,7 +102,7 @@ private:
     int                               _songPerformanceID;
     int                               _albumID;
     int                               _albumPosition;
-    Duration                          _duration;
+    SBDuration                          _duration;
     QString                           _notes;
     int                               _preferredOnlinePerformanceID;
 

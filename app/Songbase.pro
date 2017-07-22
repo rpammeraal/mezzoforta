@@ -45,7 +45,6 @@ HEADERS     = \
     SBTabQueuedSongs.h \
     SBModelQueuedSongs.h \
     SBSortFilterProxyQueuedSongsModel.h \
-    Duration.h \
     PlayManager.h \
     SBIDSong.h \
     SBIDPerformer.h \
@@ -77,7 +76,8 @@ HEADERS     = \
     SBTabChartDetail.h \
     SBTabChooser.h \
     SBIDChartPerformance.h \
-    ProgressDialog.h
+    ProgressDialog.h \
+    SBDuration.h
 
 SOURCES     = \
     main.cpp \
@@ -125,7 +125,6 @@ SOURCES     = \
     SBTabQueuedSongs.cpp \
     SBModelQueuedSongs.cpp \
     SBSortFilterProxyQueuedSongsModel.cpp \
-    Duration.cpp \
     PlayManager.cpp \
     SBIDSong.cpp \
     SBIDPerformer.cpp \
@@ -155,7 +154,8 @@ SOURCES     = \
     SBTabChartDetail.cpp \
     SBTabChooser.cpp \
     SBIDChartPerformance.cpp \
-    ProgressDialog.cpp
+    ProgressDialog.cpp \
+    SBDuration.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

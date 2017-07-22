@@ -275,7 +275,7 @@ SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes)
+SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes)
 {
     SBIDAlbumPerformancePtr albumPerformancePtr;
     Q_UNUSED(songID);
@@ -309,10 +309,10 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     return albumPerformancePtr;
 }
 
-Duration
+SBDuration
 SBIDAlbum::duration() const
 {
-    Duration duration;
+    SBDuration duration;
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);

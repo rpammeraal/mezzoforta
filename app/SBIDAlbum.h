@@ -39,8 +39,8 @@ public:
     inline int albumPerformerID() const { return _performerID; }
     inline QString albumTitle() const { return _albumTitle; }
     QStringList addSongToAlbum(const SBIDSong& song) const;
-    SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const Duration& duration, const QString& notes);
-    Duration duration() const;
+    SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes);
+    SBDuration duration() const;
     inline QString genre() const { return _genre; }
     //SBSqlQueryModel* matchAlbum() const;
     QStringList mergeAlbum(const SBIDBase& to) const;	//	CWIP: amgr

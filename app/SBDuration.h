@@ -7,7 +7,7 @@
 /// For no appearant reason.
 /// So, we'll implement these here
 
-class Duration
+class SBDuration
 {
 public:
     const static int msDay=1000*60*60*24;
@@ -23,16 +23,16 @@ public:
         sb_full_hhmmss_format=2 //	hh:mm:ss, with hours could be greater than 24.
     };
 
-    Duration();
-    Duration(const QTime& t);
-    Duration(const Duration& t);
-    Duration(const QString& t);
-    Duration(int hours, int minutes, int seconds);
+    SBDuration();
+    SBDuration(const QTime& t);
+    SBDuration(const SBDuration& t);
+    SBDuration(const QString& t);
+    SBDuration(int hours, int minutes, int seconds);
 
-    Duration& operator=(const Duration& t);
-    Duration& operator=(const QTime& t);
-    Duration& operator+=(const Duration& t);
-    Duration& operator-=(const Duration& t);
+    SBDuration& operator=(const SBDuration& t);
+    SBDuration& operator=(const QTime& t);
+    SBDuration& operator+=(const SBDuration& t);
+    SBDuration& operator-=(const SBDuration& t);
 
     bool setHMS(int h, int m, int s, int ms=0);
 
@@ -44,10 +44,10 @@ public:
     inline int MS() const { return _ms; }
     inline QTime toTime() const { return QTime(hour(),minute(),second(),ms()); }
 
-    friend QDebug operator<<(QDebug dbg, const Duration& t);
+    friend QDebug operator<<(QDebug dbg, const SBDuration& t);
 
     void setDuration(int ms);
-    QString toString(Duration::sb_displayformat displayFormat=Duration::sb_default_format) const;
+    QString toString(SBDuration::sb_displayformat displayFormat=SBDuration::sb_default_format) const;
 
 private:
     qint64 _ms;

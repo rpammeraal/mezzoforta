@@ -305,7 +305,7 @@ SBTabQueuedSongs::_updateDetail()
             const int numSongs=mqs->numSongs();
             if(numSongs)
             {
-                Duration totalDuration=mqs->totalDuration();
+                SBDuration totalDuration=mqs->totalDuration();
 
                 detail+=QString("%1 song%2 %3 %4")
                         .arg(numSongs)

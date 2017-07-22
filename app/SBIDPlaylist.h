@@ -33,7 +33,7 @@ public:
 
     //	Methods specific to SBIDPlaylist
     bool addPlaylistItem(SBIDPtr ptr);
-    inline Duration duration() const { return _duration; }
+    inline SBDuration duration() const { return _duration; }
     //SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
     int numItems() const;
@@ -81,7 +81,7 @@ protected:
 private:
     int               _playlistID;
     QString           _playlistName;
-    Duration          _duration;
+    SBDuration          _duration;
 
     //	Not instantiated
     int               _numItems;	//	may only be used until _items has been loaded

@@ -159,7 +159,7 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
                    .arg(opPtr->key())
                    .arg(aPtr->albumTitle())
                    .arg(opPtr->songPerformerName())
-                   .arg(opPtr->duration().toString(Duration::sb_hhmmss_format)));
+                   .arg(opPtr->duration().toString(SBDuration::sb_hhmmss_format)));
 
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),

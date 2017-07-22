@@ -271,7 +271,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     if(!firstBatchHasLoadedFlag)
     {
         this->clear();
-        _totalDuration=Duration();
+        _totalDuration=SBDuration();
     }
     else
     {
@@ -398,7 +398,7 @@ void
 SBModelQueuedSongs::reorderItems()
 {
     //	TODO: recalculate duration while we're here.
-    _totalDuration=Duration();
+    _totalDuration=SBDuration();
 
     QMap<int,int> toFrom;	//	map from old to new index (0-based)
     //	Create map
@@ -432,7 +432,7 @@ SBModelQueuedSongs::reorderItems()
         {
             QTime t1; t1.toString(item->text());
             QTime t2; t2=item->data().toTime();
-            Duration t=Duration(item->text());
+            SBDuration t=SBDuration(item->text());
             _totalDuration+=t;
         }
 
@@ -672,7 +672,7 @@ SBModelQueuedSongs::createRecord(const SBIDOnlinePerformancePtr& opPtr,int playP
     item=new QStandardItem(QString("%1").arg(opPtr->onlinePerformanceID())); record.append(item);        //	sb_column_online_performance_id
 
     item=new QStandardItem(opPtr->songTitle()); record.append(item);                                     //	sb_column_songtitle
-    item=new QStandardItem(opPtr->duration().toString(Duration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
+    item=new QStandardItem(opPtr->duration().toString(SBDuration::sb_hhmmss_format)); record.append(item); //	sb_column_duration
     item=new QStandardItem(opPtr->songPerformerName()); record.append(item);                             //	sb_column_performername
     item=new QStandardItem(opPtr->albumTitle()); record.append(item);                                    //	sb_column_albumtitle
 

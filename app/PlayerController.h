@@ -13,7 +13,7 @@ class QTextBrowser;
 
 #include "SBMediaPlayer.h"
 #include "SBIDSong.h"
-#include "Duration.h"
+#include "SBDuration.h"
 
 ///
 /// \brief The PlayerController class
@@ -76,7 +76,7 @@ private:
     static const int                  _maxPlayerID=2;
     int                               _currentPlayerID;
     SBIDOnlinePerformancePtr          _currentPerformancePlayingPtr;
-    Duration                          _durationTime[_maxPlayerID];
+    SBDuration                          _durationTime[_maxPlayerID];
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];
     QSlider*                          _playerProgressSlider[_maxPlayerID];
@@ -87,7 +87,7 @@ private:
 
     void _init();
     void _makePlayerVisible(PlayerController::sb_player player);
-    Duration _ms2Duration(quint64 ms) const;
+    SBDuration _ms2Duration(quint64 ms) const;
 
     void _refreshPlayingNowData() const;
     void _updatePlayState(PlayerController::sb_player_state newState);

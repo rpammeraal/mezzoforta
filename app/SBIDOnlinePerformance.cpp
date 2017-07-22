@@ -182,7 +182,7 @@ SBIDOnlinePerformance::albumTitle() const
     return (apPtr?apPtr->albumTitle():QString("n/a"));
 }
 
-Duration
+SBDuration
 SBIDOnlinePerformance::duration() const
 {
     //	CWIP: base duration directly of file length --or-- store duration when file is imported.

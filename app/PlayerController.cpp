@@ -60,13 +60,13 @@ PlayerController::playerPositionChanged(quint64 durationMS)
     QString tStr;
     const int durationSec=durationMS/1000;
 
-    Duration currentTime=_ms2Duration(durationMS);
+    SBDuration currentTime=_ms2Duration(durationMS);
     QString format = "mm:ss";
     if(_durationTime[_currentPlayerID].hour()>=1)
     {
         format = "hh:mm:ss";
     }
-    tStr = currentTime.toString(Duration::sb_hhmmss_format) + " / " + _durationTime[_currentPlayerID].toString(Duration::sb_hhmmss_format);
+    tStr = currentTime.toString(SBDuration::sb_hhmmss_format) + " / " + _durationTime[_currentPlayerID].toString(SBDuration::sb_hhmmss_format);
 
     _playerProgressSlider[_currentPlayerID]->setValue(durationSec);
     _playerDurationLabel[_currentPlayerID]->setText(tStr);
@@ -305,7 +305,7 @@ PlayerController::_makePlayerVisible(PlayerController::sb_player player)
     _playerFrame[1]->setVisible(player & PlayerController::sb_player_right);
 }
 
-Duration
+SBDuration
 PlayerController::_ms2Duration(quint64 ms) const
 {
     const int s=ms/1000;
@@ -315,7 +315,7 @@ PlayerController::_ms2Duration(quint64 ms) const
     const int h=(m/24);
     const int hours = (h) % 24;
 
-    return Duration(hours,minutes,seconds);
+    return SBDuration(hours,minutes,seconds);
 }
 
 void

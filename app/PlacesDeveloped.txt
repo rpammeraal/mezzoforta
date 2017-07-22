@@ -854,6 +854,10 @@ Between 20161215 and 20170604:
 -	Fixed creating new sqlite database in app
 -	Fixed postgres2sqlite migration script to populate a pre-created database from the app
 
+20170721:
+-	added code to prevent the computer going to sleep.
+-	renamed Duration class to SBDuration to avoid name clash.
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	search screen:

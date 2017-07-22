@@ -60,7 +60,7 @@ public:
     inline int numSongs() const { return this->rowCount(); }
     void populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag=0);
     SBIDOnlinePerformancePtr performanceAt(int playlistIndex) const;
-    inline Duration totalDuration() const { return _totalDuration; }
+    inline SBDuration totalDuration() const { return _totalDuration; }
 
     void reorderItems();
     virtual bool removeRows(int row, int count, const QModelIndex &parent);
@@ -83,7 +83,7 @@ protected:
 
 private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager
-    Duration _totalDuration;
+    SBDuration _totalDuration;
 
     QList<QStandardItem *> createRecord(const SBIDOnlinePerformancePtr& performancePtr,int playPosition) const;
     QString _formatPlaylistPosition(int playlistPositionID) const;

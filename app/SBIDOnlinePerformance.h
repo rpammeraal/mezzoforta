@@ -41,7 +41,7 @@ public:
     QString albumPerformerName() const;
     int albumPosition() const;
     QString albumTitle() const;
-    Duration duration() const;
+    SBDuration duration() const;
     int songID() const;
     QString songPerformerKey() const;
     int songPerformerID() const;

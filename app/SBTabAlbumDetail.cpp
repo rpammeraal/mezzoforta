@@ -308,7 +308,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
         //	8226 is el buleto
         details=details+" "+QChar(8226)+" ";
     }
-    details+=QString("Duration: %1").arg(albumPtr->duration().toString(Duration::sb_playlist_format));
+    details+=QString("Duration: %1").arg(albumPtr->duration().toString(SBDuration::sb_playlist_format));
 
     //	Details 3: number of songs
     if(details.length()>0)

@@ -7,7 +7,7 @@
 #include <QVector>
 
 #include "Common.h"
-#include "Duration.h"
+#include "SBDuration.h"
 
 class QProgressDialog;
 
@@ -52,7 +52,7 @@ public:
 
         //	Secondary meta data attributes (optional)
         QString albumPerformerName;
-        Duration duration;
+        SBDuration duration;
         QString genre;
         QString notes;
         int year;

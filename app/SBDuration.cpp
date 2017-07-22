@@ -2,24 +2,24 @@
 #include <QTime>
 
 #include "Common.h"
-#include "Duration.h"
+#include "SBDuration.h"
 
-Duration::Duration()
+SBDuration::SBDuration()
 {
     _ms=0;
 }
 
-Duration::Duration(const Duration &t)
+SBDuration::SBDuration(const SBDuration &t)
 {
     _ms=t._ms;
 }
 
-Duration::Duration(const QTime& t)
+SBDuration::SBDuration(const QTime& t)
 {
     _ms=t.msec()+(1000*t.second())+(1000*60*t.minute())+(1000*60*24*t.hour());
 }
 
-Duration::Duration(const QString &t)
+SBDuration::SBDuration(const QString &t)
 {
     QStringList sl=t.split(":");
     bool hasMSFlag=0;
@@ -73,34 +73,34 @@ Duration::Duration(const QString &t)
     }
 }
 
-Duration::Duration(int hours, int minutes, int seconds)
+SBDuration::SBDuration(int hours, int minutes, int seconds)
 {
     setHMS(hours,minutes,seconds);
 }
 
-Duration&
-Duration::operator =(const Duration& t)
+SBDuration&
+SBDuration::operator =(const SBDuration& t)
 {
     _ms=t._ms;
     return *this;
 }
 
-Duration&
-Duration::operator =(const QTime& t)
+SBDuration&
+SBDuration::operator =(const QTime& t)
 {
-    (*this)=Duration(t);
+    (*this)=SBDuration(t);
     return *this;
 }
 
-Duration&
-Duration::operator+=(const Duration& t)
+SBDuration&
+SBDuration::operator+=(const SBDuration& t)
 {
     _ms+=t._ms;
     return (*this);
 }
 
-Duration&
-Duration::operator-=(const Duration& t)
+SBDuration&
+SBDuration::operator-=(const SBDuration& t)
 {
     _ms-=t._ms;
     if(_ms<0)
@@ -112,7 +112,7 @@ Duration::operator-=(const Duration& t)
 }
 
 bool
-Duration::setHMS(int hours, int minutes, int seconds, int ms)
+SBDuration::setHMS(int hours, int minutes, int seconds, int ms)
 {
     _ms=(1000*seconds)+(1000*60*minutes)+(1000*60*24*hours)+ms;
     if(ms<0)
@@ -123,25 +123,25 @@ Duration::setHMS(int hours, int minutes, int seconds, int ms)
 }
 
 QDebug
-operator<<(QDebug dbg, const Duration& t)
+operator<<(QDebug dbg, const SBDuration& t)
 {
-    dbg.nospace() << t.toString(Duration::sb_hhmmss_format);
+    dbg.nospace() << t.toString(SBDuration::sb_hhmmss_format);
     return dbg.space();
 }
 
 void
-Duration::setDuration(int ms)
+SBDuration::setDuration(int ms)
 {
     _ms=ms;
 }
 
 QString
-Duration::toString(Duration::sb_displayformat displayFormat) const
+SBDuration::toString(SBDuration::sb_displayformat displayFormat) const
 {
     QString duration;
     switch(displayFormat)
     {
-    case Duration::sb_default_format:
+    case SBDuration::sb_default_format:
             if(this->day())
             {
                 duration+=QString("%1 day%2 ").arg(this->day()).arg(this->day()>1?"s":"");
@@ -153,7 +153,7 @@ Duration::toString(Duration::sb_displayformat displayFormat) const
             duration+=QString("%1 min ").arg(this->second()>=30?this->minute()+1:this->minute());
         break;
 
-    case Duration::sb_hhmmss_format:
+    case SBDuration::sb_hhmmss_format:
             if(this->hour()+this->day()>0)
             {
                 duration+=QString("%1:").arg(this->day()*24+this->hour());
@@ -161,7 +161,7 @@ Duration::toString(Duration::sb_displayformat displayFormat) const
             duration+=QString().sprintf("%02d:%02d",this->minute(),this->second());
         break;
 
-    case Duration::sb_full_hhmmss_format:
+    case SBDuration::sb_full_hhmmss_format:
             duration+=QString("%1:").arg(this->day()*24+this->hour());
             duration+=QString().sprintf("%02d:%02d",this->minute(),this->second());
         break;

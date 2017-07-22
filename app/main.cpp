@@ -4,11 +4,17 @@
 #include <QDateTime>
 
 #include "Controller.h"
+#include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+//#ifdef Q_OS_OSX
+    qDebug() << SB_DEBUG_INFO << "Calling OSXSetupSleepCallback";
+    OSXSetupSleepCallback();
+//#endif //	Q_OS_OSX
 
     //	Set up names
     app.setOrganizationName("Moose!");
