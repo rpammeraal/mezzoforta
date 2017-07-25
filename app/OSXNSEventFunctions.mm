@@ -7,6 +7,7 @@
 #import <IOKit/IOKitKeys.h>
 
 #include "OSXNSEventFunctions.h"
+#include "Context.h"
 
 bool OSXretrieveKeyPressed(void* event,int& key)
 {
@@ -37,11 +38,12 @@ OSXSleepCallback(void* refCon,io_service_t service,natural_t messageType,void * 
 {
     Q_UNUSED(refCon);
     Q_UNUSED(service);
-    printf( "messageType %08lx, arg %08lx\n",
-        (long unsigned int)messageType,
-        (long unsigned int)messageArgument );
 
-    switch ( messageType )
+    PlayManager* pm=Context::instance()->getPlayManager();
+
+    bool songPlayingFlag=(pm?pm->songPlayingFlag():0);
+
+    switch(messageType)
     {
 
         case kIOMessageCanSystemSleep:
@@ -55,10 +57,18 @@ OSXSleepCallback(void* refCon,io_service_t service,natural_t messageType,void * 
                 seconds then go to sleep.
             */
 
-            //Uncomment to cancel idle sleep
-            IOCancelPowerChange( root_port, (long)messageArgument );
-            // we will allow idle sleep
-            //IOAllowPowerChange( root_port, (long)messageArgument );
+            if(songPlayingFlag)
+            {
+                //	Cancel idle sleep
+                qDebug() << SB_DEBUG_INFO << "denying idle sleep";
+                IOCancelPowerChange( root_port, (long)messageArgument );
+            }
+            else
+            {
+                // Allow idle sleep
+                qDebug() << SB_DEBUG_INFO << "allowing idle sleep";
+                IOAllowPowerChange( root_port, (long)messageArgument );
+            }
             break;
 
         case kIOMessageSystemWillSleep:

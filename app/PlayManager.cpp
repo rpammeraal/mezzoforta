@@ -17,6 +17,14 @@ PlayManager::PlayManager(QObject *parent) : QObject(parent)
 {
 }
 
+bool
+PlayManager::songPlayingFlag() const
+{
+    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
+    return currentPlayState==PlayerController::sb_player_state_play?1:0;
+}
+
 ///	Public slots:
 void
 PlayManager::playerPrevious()

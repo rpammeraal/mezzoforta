@@ -52,6 +52,7 @@ public:
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
 
     //	Update
+    void add(const std::shared_ptr<T>& ptr);
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1,bool errorOnNoChanges=0);
     bool commitAll(DataAccessLayer* dal,const QString& progressDialogTitle=QString());
@@ -70,7 +71,7 @@ public:
 
 protected:
     friend class Preloader;
-    void addItem(const std::shared_ptr<T>& item);
+    void addItem(const std::shared_ptr<T>& ptr);
 
 private:
     QList<QString>                   _changes;	//	Contains keys of objects changed
@@ -335,6 +336,12 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
 }
 
 //	Update
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::add(const std::shared_ptr<T>& ptr)
+{
+    addItem(ptr);
+}
+
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer *dal, bool showProgressDialogFlag)
 {

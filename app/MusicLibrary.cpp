@@ -386,7 +386,7 @@ MusicLibrary::rescanMusicLibrary()
 }
 
 bool
-MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* progressBox)
+MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
 {
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
@@ -394,23 +394,19 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
     Properties* properties=Context::instance()->getProperties();
     SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    int progressCurrentValue=0;
+    int progressMaxValue=0;
 
-    int maxValue=-1;
-    int progressValue=-1;
 
     //	1.	Validate performers
-    if(progressBox)
-    {
-        progressBox->setValue(0);
-        maxValue=list.count();
-        progressBox->setMaximum(maxValue);
-        progressBox->setLabelText("Validating performers...");
-        progressValue=0;
-    }
-
     QMutableVectorIterator<MLentityPtr> feIT(list);
     QHash<QString,int> name2PerformerIDMap;
     feIT.toFront();
+
+    progressCurrentValue=0;
+    progressMaxValue=list.count();
+    ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
+
     while(feIT.hasNext())
     {
         MLentityPtr entityPtr=feIT.next();
@@ -446,18 +442,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
                 entityPtr->songPerformerID=performerID;
                 entityPtr->albumPerformerID=performerID;
             }
-
-            if(progressBox)
-            {
-                progressBox->setValue(progressValue);
-            }
-            QCoreApplication::processEvents();
-            progressValue++;
         }
-    }
-    if(progressBox)
-    {
-        progressBox->setValue(maxValue);
+        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
 
     {	//	DEBUG
@@ -493,14 +479,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
         QHash<QString,MLalbumPathPtr> directory2AlbumPathMap;
         directory2AlbumPathMap.reserve(list.count());
 
-        if(progressBox)
-        {
-            progressBox->setValue(0);
-            maxValue=list.count();
-            progressBox->setMaximum(maxValue);
-            progressBox->setLabelText("Collecting album data");
-            progressValue=0;
-        }
+        progressCurrentValue=0;
+        progressMaxValue=list.count();
+        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
         //	Collect unique album titles for each parent directory
         feIT.toFront();
@@ -536,25 +517,13 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
                         }
                     }
                 }
-                if((progressValue%100)==0 && progressBox)
-                {
-                    progressBox->setValue(progressValue);
-                    QCoreApplication::processEvents();
-                }
-                progressValue++;
             }
+            ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
         }
-        if(progressBox)
-        {
-            progressBox->setValue(maxValue);
 
-            //	If there is more than 1 entry, rename album title, renumber positions
-            progressBox->setValue(0);
-            maxValue=list.count();
-            progressBox->setMaximum(maxValue);
-            progressBox->setLabelText("Processing collection albums");
-            progressValue=0;
-        }
+        progressCurrentValue=0;
+        progressMaxValue=list.count();
+        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
         feIT.toFront();
         while(feIT.hasNext())
@@ -575,17 +544,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
                         entityPtr->createArtificialAlbumFlag=1;
                     }
                 }
-                if((progressValue%100)==0 && progressBox)
-                {
-                    progressBox->setValue(progressValue);
-                    QCoreApplication::processEvents();
-                }
-                progressValue++;
             }
-        }
-        if(progressBox)
-        {
-            progressBox->setValue(maxValue);
+            ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
         }
     }
     //	CWIP
@@ -632,14 +592,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
     }
 
     //	c.	Actual user validation of albums
-    if(progressBox)
-    {
-        progressBox->setValue(0);
-        maxValue=list.count();
-        progressBox->setMaximum(maxValue);
-        progressBox->setLabelText("Validating albums");
-        progressValue=0;
-    }
+    progressCurrentValue=0;
+    progressMaxValue=list.count();
+    ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
     QStringList greatestHitsAlbums=_greatestHitsAlbums();
 
@@ -700,16 +655,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
             entityPtr->albumID=selectedAlbumPtr->albumID();
             entityPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
         }
-        if((progressValue%100)==0 && progressBox)
-        {
-            progressBox->setValue(progressValue);
-            QCoreApplication::processEvents();
-        }
-        progressValue++;
-    }
-    if(progressBox)
-    {
-        progressBox->setValue(maxValue);
+        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
 
     {	//	DEBUG
@@ -732,14 +678,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* pr
     }
 
     //	3.	Validate songs
-    if(progressBox)
-    {
-        progressBox->setValue(0);
-        maxValue=list.count();
-        progressBox->setMaximum(maxValue);
-        progressBox->setLabelText("Validating songs");
-        progressValue=0;
-    }
+    progressCurrentValue=0;
+    progressMaxValue=list.count();
+    ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
     feIT.toFront();
 
 qDebug() << SB_DEBUG_INFO;
@@ -800,19 +741,10 @@ qDebug() << SB_DEBUG_INFO;
                     }
                 }
             }
-            if((progressValue%100)==0 && progressBox)
-            {
-                progressBox->setValue(progressValue);
-                QCoreApplication::processEvents();
-            }
-            progressValue++;
         }
+        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
-    if(progressBox)
-    {
-        progressBox->setValue(maxValue);
-        progressBox->close();
-    }
+    ProgressDialog::instance()->finishStep("MusicLibrary::validateEntityList");
     return 1;
 }
 

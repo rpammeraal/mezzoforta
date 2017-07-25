@@ -40,6 +40,7 @@ public:
     inline QString albumTitle() const { return _albumTitle; }
     QStringList addSongToAlbum(const SBIDSong& song) const;
     SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes);
+    QMap<int,SBIDAlbumPerformancePtr> albumPerformances() const;
     SBDuration duration() const;
     inline QString genre() const { return _genre; }
     //SBSqlQueryModel* matchAlbum() const;
@@ -49,7 +50,6 @@ public:
     int numPerformances() const;
     SBTableModel* performances() const;
     void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
-    QMap<int,SBIDAlbumPerformancePtr> performanceList() const { return _albumPerformances; }
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
@@ -109,6 +109,7 @@ protected:
 
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();
+    virtual void rollback();
 
 private:
     int                               _albumID;
@@ -118,8 +119,9 @@ private:
     QString                           _notes;
     int                               _year;
 
-    //	CWIP: make this a vector. Will solve a lot of headaches
-    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;	//	1:based, index is record position
+    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;         //	1:based, index is record position
+    QVector<SBIDAlbumPerformancePtr>  _addedAlbumPerformances;    //	1:based, index is record position
+    QVector<SBIDAlbumPerformancePtr>  _removedAlbumPerformances;  //	1:based, index is record position
 
     void _copy(const SBIDAlbum& c);
     void _init();

@@ -26,6 +26,7 @@ public:
     PlayManager(QObject *parent = 0);
     inline int currentPlayID() const { return _currentPlayID; }
     inline int radioModeFlag() const { return _radioModeFlag; }
+    bool songPlayingFlag() const;
 
 signals:
     void playlistChanged(int playlistID);
@@ -51,7 +52,7 @@ protected:
     void doInit();	//	Init done by Context::
 
 private:
-    int  _currentPlayID;  //	0-based, -1: no song active
+    int  _currentPlayID;    //	0-based, -1: no song active
     bool _radioModeFlag;
 
     void _init();

@@ -861,17 +861,19 @@ Between 20161215 and 20170604:
 20170722:
 -	Fixed adding duplicates to queue.
 
+20170724:
+-	Test drag & drop (previously tested).
+-	alt-click on songs in charts does not work (previously fixed).
+-	Only prevent screen saver when no songs are being played.
+-	Editing performers seem to work for now.
++	Modifying album edit in progress.
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
-*	search screen:
-	-	need progress dialog
-*	alt-click on songs in charts does not work
 
 Todo:
-*	Test drag & drop.
 *	Edit.
 *	Import.
-
 
 
 Near future:
@@ -881,6 +883,10 @@ Near future:
 *	Playlist should be able to contain songs, performances, record performances, online performances.
 *	Find out where we need to offer a choice of what online performance to play if a song is to be played/queud.
 *	After songs get assigned to playlist, need to refreshDependents() on the item assigned to the playlist.
+*	search screen:
+    -	need progress dialog
+*	Open 'all songs' tab after 10s after showing opening screen.
+*	Charts/Playlists to be minimized.
 
 Import bugs/features/missing:
 *	DataAccessLayer::createRestorePoint to be revisited

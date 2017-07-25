@@ -309,6 +309,16 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     return albumPerformancePtr;
 }
 
+QMap<int,SBIDAlbumPerformancePtr>
+SBIDAlbum::albumPerformances() const
+{
+    if(_albumPerformances.count()==0)
+    {
+        const_cast<SBIDAlbum *>(this)->refreshDependents();
+    }
+    return _albumPerformances;
+}
+
 SBDuration
 SBIDAlbum::duration() const
 {
@@ -673,177 +683,197 @@ SBIDAlbum::performances() const
     return tm;
 }
 
+///
+/// \brief SBIDAlbum::processNewSongList
+/// \param newSongList
+///
+/// Take newSongList as a curated list of songs and save this to the database.
 void
 SBIDAlbum::processNewSongList(QVector<MusicLibrary::MLentityPtr> &newSongList)
 {
     Q_UNUSED(newSongList);
-//    QVector<MusicLibrary::MLentityPtr> orgSongList(_albumPerformances.count()+1); //	<position:1>
-//    QVector<QString> changedSongs;                  //	contains keys <unsorted>
-//    QMap<QString,QString> mergedTo;                 //	<songID:songPerformerID,mergedToIndex:1>
-//    QMap<QString,int> orgKeyToPositionMap;          //	<songID:songPerformerID,position:1>
-//    QMap<QString,int> newKeyToPositionMap;          //	<songID:songPerformerID,position:1>
-//    QVector<QString> allKeys;                       //	Contains all MLEntityPtr::keys
-//    int maxPosition=0;                              //	maxPosition:1
+    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    QVector<MusicLibrary::MLentityPtr> orgSongList(_albumPerformances.count()+1); //	<position:1>
+    QVector<int> changedSongs;         //	contains keys <unsorted>
+    QMap<int,int> mergedTo;            //	<songID:songPerformerID,mergedToIndex:1>
+    QMap<int,int> orgIDToPositionMap;  //	<MLentity::albumPerformanceID,position:1>
+    QMap<int,int> newIDToPositionMap;  //	<MLentity::albumPerformanceID,position:1>
+    QVector<int> allKeys;              //	Contains all MLEntityPtr::albumPerformanceID
+    int maxPosition=0;                 //	maxPosition:1
 
-//    //	A.	Create data structures
-//    //		1.	original list of songs
-//    qDebug() << SB_DEBUG_INFO;
-//    QVectorIterator<SBIDOnlinePerformancePtr> apIT(_albumPerformances);
-//    while(apIT.hasNext())
-//    {
-//        qDebug() << SB_DEBUG_INFO;
-//        SBIDOnlinePerformancePtr opPtr=apIT.next();
+    //	A.	Create data structures
+    //		1.	original list of songs as it is currently stored
+    qDebug() << SB_DEBUG_INFO;
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_loadAlbumPerformancesFromDB());
+    while(apIT.hasNext())
+    {
+        qDebug() << SB_DEBUG_INFO;
+        apIT.next();
+        SBIDAlbumPerformancePtr apPtr=apIT.value();
 
-//        qDebug() << SB_DEBUG_INFO;
-//        if(opPtr)
-//        {
-//            qDebug() << SB_DEBUG_INFO;
-//            MusicLibrary::MLentity orgSong;
-//            orgSong.songTitle=opPtr->songTitle();
-//            orgSong.songID=opPtr->songID();
-//            orgSong.songPerformerName=opPtr->songPerformerName();
-//            orgSong.songPerformerID=opPtr->songPerformerID();
-//            orgSong.albumTitle=this->albumTitle();
-//            orgSong.albumID=this->albumID();
-//            orgSong.albumPosition=opPtr->albumPosition();
-//            orgSong.albumPerformerName=opPtr->albumPerformerName();
-//            orgSong.albumPerformerID=opPtr->albumPerformerID();
+        qDebug() << SB_DEBUG_INFO;
+        if(apPtr)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            MusicLibrary::MLentity orgSong;
+            orgSong.songTitle=apPtr->songTitle();
+            orgSong.songID=apPtr->songID();
+            orgSong.songPerformerName=apPtr->songPerformerName();
+            orgSong.songPerformerID=apPtr->songPerformerID();
+            orgSong.albumTitle=this->albumTitle();
+            orgSong.albumID=this->albumID();
+            orgSong.albumPosition=apPtr->albumPosition();
+            orgSong.albumPerformerName=apPtr->albumPerformerName();
+            orgSong.albumPerformerID=apPtr->albumPerformerID();
+            orgSong.ID=apPtr->albumPerformanceID();
+			
+            const int key=orgSong.ID;
 
-//            const QString key=QString("%1:%2").arg(orgSong.songID).arg(orgSong.songPerformerID);
-//            qDebug() << SB_DEBUG_INFO << orgSong.albumPosition;
-//            orgSongList[orgSong.albumPosition]=std::make_shared<MusicLibrary::MLentity>(orgSong);
-//            qDebug() << SB_DEBUG_INFO;
-//            orgKeyToPositionMap[key]=orgSong.albumPosition;
-//            maxPosition=(orgSong.albumPosition>maxPosition)?orgSong.albumPosition:maxPosition;
+            orgSongList[orgSong.albumPosition]=std::make_shared<MusicLibrary::MLentity>(orgSong);
+            orgIDToPositionMap[key]=orgSong.albumPosition;
+            maxPosition=(orgSong.albumPosition>maxPosition)?orgSong.albumPosition:maxPosition;
 
-//            qDebug() << SB_DEBUG_INFO;
-//            if(!allKeys.contains(key))
-//            {
-//            qDebug() << SB_DEBUG_INFO;
-//                allKeys.append(key);
-//            }
-//            qDebug() << SB_DEBUG_INFO;
-//        }
-//    }
+            if(!allKeys.contains(key))
+            {
+                allKeys.append(key);
+            }
+            qDebug() << SB_DEBUG_INFO;
+        }
+    }
 
-//    //		2.	process list of songs
-//    QVectorIterator<MusicLibrary::MLentityPtr> nslIT(newSongList);
-//    qDebug() << SB_DEBUG_INFO;
-//    while(nslIT.hasNext())
-//    {
-//        MusicLibrary::MLentityPtr newPtr=nslIT.next();
+    //		2.	process list of songs
+    QVectorIterator<MusicLibrary::MLentityPtr> nslIT(newSongList);
+    qDebug() << SB_DEBUG_INFO;
+    while(nslIT.hasNext())
+    {
+        MusicLibrary::MLentityPtr currentPtr=nslIT.next();
 
-//        if(newPtr)
-//        {
-//            qDebug() << SB_DEBUG_INFO
-//                     << newPtr->songTitle
-//                     << newPtr->albumPosition
-//                     << newPtr->songID
-//                     << newPtr->songPerformerID
-//                     << newPtr->albumID
-//                     << newPtr->albumPosition
-//            ;
+        if(currentPtr)
+        {
+            qDebug() << SB_DEBUG_INFO
+                     << currentPtr->songTitle
+                     << currentPtr->albumPosition
+                     << currentPtr->songID
+                     << currentPtr->songPerformerID
+                     << currentPtr->albumID
+                     << currentPtr->albumPosition
+            ;
+            const int key=currentPtr->ID;
 
-//            const QString key=QString("%1:%2").arg(newPtr->songID).arg(newPtr->songPerformerID);
+            if(currentPtr->mergedToAlbumPosition!=0)
+            {
+                qDebug() << SB_DEBUG_INFO << currentPtr->mergedToAlbumPosition;
+                MusicLibrary::MLentityPtr mergedToPtr=newSongList.at(currentPtr->mergedToAlbumPosition);
+                if(mergedToPtr)
+                {
+                    const int mergedToKey=mergedToPtr->ID;
 
-//            if(newPtr->mergedToAlbumPosition!=0)
-//            {
-//                qDebug() << SB_DEBUG_INFO << newPtr->mergedToAlbumPosition;
-//                MusicLibrary::MLentityPtr mergedToPtr=newSongList.at(newPtr->mergedToAlbumPosition);
-//                if(mergedToPtr)
-//                {
-//                    const QString mergedToKey=QString("%1:%2").arg(mergedToPtr->songID).arg(mergedToPtr->songPerformerID);
+                    mergedTo[key]=mergedToKey;
+                }
+            }
+            newIDToPositionMap[key]=currentPtr->albumPosition;
 
-//                    mergedTo[key]=mergedToKey;
-//                }
-//            }
-//            newKeyToPositionMap[key]=newPtr->albumPosition;
+            //	Determine new, changed
+            if(orgIDToPositionMap.contains(key))
+            {
+                int position=orgIDToPositionMap[key];
+                MusicLibrary::MLentityPtr orgPtr=orgSongList[position];
 
-//            //	Determine new, changed
-//            if(orgKeyToPositionMap.contains(key))
-//            {
-//                int position=orgKeyToPositionMap[key];
-//                MusicLibrary::MLentityPtr orgPtr=orgSongList[position];
+                SB_DEBUG_IF_NULL(orgPtr);
+                if(!(orgPtr->compareID(*currentPtr)))
+                {
+                    changedSongs.append(key);
+                }
+            }
+            maxPosition=(currentPtr->albumPosition>maxPosition)?currentPtr->albumPosition:maxPosition;
 
-//                SB_DEBUG_IF_NULL(orgPtr);
-//                if(!(orgPtr->compareID(*newPtr)))
-//                {
-//                    changedSongs.append(key);
-//                }
-//            }
-//            maxPosition=(newPtr->albumPosition>maxPosition)?newPtr->albumPosition:maxPosition;
+            if(!allKeys.contains(key))
+            {
+                if(!currentPtr->removedFlag)
+                {
+                    //	Removed songs has their id's set to -1. Don't add removed songs.
+                    allKeys.append(key);
+                }
+            }
+        }
+    }
 
-//            if(!allKeys.contains(key))
-//            {
-//                if(key!="-1:-1")
-//                {
-//                    //	Removed songs has their id's set to -1. Don't add removed songs.
-//                    allKeys.append(key);
-//                }
-//            }
-//        }
-//    }
+    qDebug() << SB_DEBUG_INFO;
+    _showAlbumPerformances("before");
+    QMap<int,SBIDAlbumPerformancePtr> newAlbumPerformances;	//	1:based, index is record position
+    _removedAlbumPerformances.clear();	//	1:based, index is record position
+    _addedAlbumPerformances.clear();	//	1:based, index is record position
+    QVectorIterator<int> akIT(allKeys);
+    while(akIT.hasNext())
+    {
+        const int currentKey=akIT.next();
+        MusicLibrary::MLentityPtr orgSong;
+        MusicLibrary::MLentityPtr newSong;
 
-//    qDebug() << SB_DEBUG_INFO;
-//    _showAlbumPerformances("before");
-//    QVectorIterator<QString> akIT(allKeys);
-//    while(akIT.hasNext())
-//    {
-//        const QString currentKey=akIT.next();
-//        MusicLibrary::MLentityPtr orgSong;
-//        MusicLibrary::MLentityPtr newSong;
+        int orgPosition=-1;
+        if(orgIDToPositionMap.contains(currentKey))
+        {
+            orgPosition=orgIDToPositionMap[currentKey];
+            orgSong=orgSongList.at(orgPosition);
+        }
+        int newPosition=-1;
+        if(newIDToPositionMap.contains(currentKey))
+        {
+            newPosition=newIDToPositionMap[currentKey];
+            newSong=newSongList.at(newPosition);
+        }
 
-//        int orgPosition=-1;
-//        if(orgKeyToPositionMap.contains(currentKey))
-//        {
-//            orgPosition=orgKeyToPositionMap[currentKey];
-//            orgSong=orgSongList.at(orgPosition);
-//        }
-//        int newPosition=-1;
-//        if(newKeyToPositionMap.contains(currentKey))
-//        {
-//            newPosition=newKeyToPositionMap[currentKey];
-//            newSong=newSongList.at(newPosition);
-//        }
+        bool removedFlag=0;
+        if(!(newSong) || (newSong && newSong->removedFlag))
+        {
+            removedFlag=1;
+        }
+        bool addFlag=0;
+        if(!orgSong)
+        {
+            addFlag=1;
+        }
 
-//        bool removedFlag=0;
-//        if(!(newSong) || (newSong && newSong->removedFlag))
-//        {
-//            removedFlag=1;
-//        }
-//        bool addFlag=0;
-//        if(!orgSong)
-//        {
-//            addFlag=1;
-//        }
+        qDebug() << SB_DEBUG_INFO
+                 << currentKey
+                 << (removedFlag?"DEL":(addFlag?"ADD":"---"))
+                 << (orgSong?orgSong->songTitle:newSong->songTitle)
+                 << (mergedTo.contains(currentKey)?mergedTo[currentKey]:-1)
+                 << orgPosition
+                 << newPosition
+        ;
 
-//        qDebug() << SB_DEBUG_INFO
-//                 << currentKey
-//                 << (removedFlag?"DEL":(addFlag?"ADD":"---"))
-//                 << (orgSong?orgSong->songTitle:newSong->songTitle)
-//                 << (mergedTo.contains(currentKey)?mergedTo[currentKey]:QString("-"))
-//                 << orgPosition
-//                 << newPosition
-//        ;
+        if(removedFlag)
+        {
+            _removedAlbumPerformances.append(_albumPerformances[orgPosition]);
+        }
+        else if(addFlag)
+        {
+            QSqlRecord r;
+            QSqlField f;
 
-//        if(removedFlag)
-//        {
+            f=QSqlField("f1",QVariant::Int);    f.setValue(-1);                           r.append(f);
+            f=QSqlField("f2",QVariant::Int);    f.setValue(newSong->songPerformanceID);   r.append(f);
+            f=QSqlField("f3",QVariant::Int);    f.setValue(newSong->albumID);             r.append(f);
+            f=QSqlField("f4",QVariant::Int);    f.setValue(newSong->albumPosition);       r.append(f);
+            f=QSqlField("f5",QVariant::String); f.setValue(newSong->duration.toString()); r.append(f);
+            f=QSqlField("f6",QVariant::String); f.setValue(newSong->notes);               r.append(f);
+            f=QSqlField("f7",QVariant::Int);    f.setValue(-1);                           r.append(f);
 
-//        }
-//        else if(addFlag)
-//        {
-
-//        }
-//        else
-//        {
-//            qDebug() << SB_DEBUG_INFO << orgPosition << newPosition;
-//            //newAlbumPerformances[newPosition]=_albumPerformances[orgPosition];
-//            //newAlbumPerformances[newPosition]->setAlbumPosition(newPosition);
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO;
-//    _showAlbumPerformances("after");
-//    return;
+            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::instantiate(r);
+            _addedAlbumPerformances.append(apPtr);
+            apMgr->add(apPtr);
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << orgPosition << newPosition;
+            newAlbumPerformances[newPosition]=_albumPerformances[orgPosition];
+            newAlbumPerformances[newPosition]->setAlbumPosition(newPosition);
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
+    _showAlbumPerformances("after");
+    return;
 }
 
 QStringList
@@ -1807,7 +1837,7 @@ void
 SBIDAlbum::clearChangedFlag()
 {
     //	CWIP: unsure how to handle this (restructuring @ SBIDOnlinePerformance 5/15)
-//    SBIDBase::clearChangedFlag();
+    SBIDBase::clearChangedFlag();
 //    foreach(SBIDAlbumPerformancePtr performancePtr,_albumPerformances)
 //    {
 //        performancePtr->clearChangedFlag();
@@ -1815,18 +1845,26 @@ SBIDAlbum::clearChangedFlag()
     //	AlbumPerformances are owned by SBIDAlbum -- don't clear these
 }
 
+void
+SBIDAlbum::rollback()
+{
+    SBIDBase::rollback();
+}
+
 ///	Private methods
 void
 SBIDAlbum::_copy(const SBIDAlbum &t)
 {
-    _albumID          =t._albumID;
-    _performerID      =t._performerID;
-    _albumTitle       =t._albumTitle;
-    _genre            =t._genre;
-    _notes            =t._notes;
-    _year             =t._year;
+    _albumID                 =t._albumID;
+    _performerID             =t._performerID;
+    _albumTitle              =t._albumTitle;
+    _genre                   =t._genre;
+    _notes                   =t._notes;
+    _year                    =t._year;
 
-    _albumPerformances=t._albumPerformances;
+    _albumPerformances       =t._albumPerformances;
+    _addedAlbumPerformances  =t._addedAlbumPerformances;
+    _removedAlbumPerformances=t._removedAlbumPerformances;
 }
 
 void

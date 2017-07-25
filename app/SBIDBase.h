@@ -125,6 +125,7 @@ protected:
     inline bool mergedFlag() const { return _mergedWithID!=-1; }
     inline int mergedWithID() const { return _mergedWithID; }
 	inline int newFlag() const { return _newFlag; }
+    virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
     inline void setDeletedFlag() { _deletedFlag=1; }
     inline void setNewFlag() { _newFlag=1; }

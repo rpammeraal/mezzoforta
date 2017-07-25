@@ -213,6 +213,12 @@ SBIDBase::clearChangedFlag()
     _changedFlag=0;
 }
 
+void
+SBIDBase::rollback()
+{
+    clearChangedFlag();
+}
+
 ///	PRIVATE
 void
 SBIDBase::_init()

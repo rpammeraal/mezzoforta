@@ -57,16 +57,19 @@ public:
         QString notes;
         int year;
 
-        //	Used for editing albums
+        //	Album edit
         int mergedToAlbumPosition;
         int orgAlbumPosition;
         bool removedFlag;
+        bool newFlag;
 
         //	Songbase ids
         int songID;
         int songPerformerID;
+        int songPerformanceID;
         int albumID;
         int albumPerformerID;
+        int albumPerformanceID;
 
         //	Helper attributes
         bool createArtificialAlbumFlag;
@@ -99,7 +102,7 @@ public:
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary();
-    bool validateEntityList(QVector<MLentityPtr>& list, QProgressDialog* progressDialog=NULL);
+    bool validateEntityList(QVector<MLentityPtr>& list);
 
 signals:
 
