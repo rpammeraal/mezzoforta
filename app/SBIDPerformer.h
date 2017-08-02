@@ -87,6 +87,7 @@ protected:
     static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _performerID=PK;  }
     QStringList updateSQL() const;
     static SBIDPerformerPtr userMatch(const Common::sb_parameters& parameters, SBIDPerformerPtr existingPerformerPtr);
 

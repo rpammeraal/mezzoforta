@@ -104,6 +104,7 @@ protected:
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key);
+    virtual void setPrimaryKey(int PK) { _albumID=PK;  }
     QStringList updateSQL() const;
     static SBIDAlbumPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDAlbumPtr existingSongPtr);
 
@@ -119,9 +120,10 @@ private:
     QString                           _notes;
     int                               _year;
 
-    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;         //	1:based, index is record position
-    QVector<SBIDAlbumPerformancePtr>  _addedAlbumPerformances;    //	1:based, index is record position
-    QVector<SBIDAlbumPerformancePtr>  _removedAlbumPerformances;  //	1:based, index is record position
+    QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;         //	index is album_performance_id
+    QMap<int,int>                     _albumPerformanceID2AlbumPositionMap;
+    QVector<SBIDAlbumPerformancePtr>  _addedAlbumPerformances;
+    QVector<SBIDAlbumPerformancePtr>  _removedAlbumPerformances;
 
     void _copy(const SBIDAlbum& c);
     void _init();

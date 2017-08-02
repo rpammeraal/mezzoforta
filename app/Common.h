@@ -60,6 +60,8 @@ class QTableView;
 #define SB_OSX_KEY_SOUND_LOWER  1
 #define SB_OSX_KEY_SOUND_HIGHER 0
 
+#include "SBDuration.h"
+
 static int ID=0;
 
 class Common
@@ -91,7 +93,12 @@ public:
 
     struct sb_parameters
     {
+        int albumID;
+        int albumPerformanceID;
+        int albumPosition;
+        int songID;
         int performerID;
+        int songPerformanceID;
 
         QString albumTitle;
         QString performerName;
@@ -99,6 +106,8 @@ public:
         QString notes;
         int year;
         QString genre;
+        SBDuration duration;
+        QString path;
     };
 
     static QStringList articles();

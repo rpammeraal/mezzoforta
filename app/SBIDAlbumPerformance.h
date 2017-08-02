@@ -29,6 +29,7 @@ public:
     inline int albumPosition() const { return _albumPosition; }
     inline SBDuration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
+    inline int preferredOnlinePerformanceID() const { return _preferredOnlinePerformanceID; }
     inline int orgAlbumPosition() const { return _orgAlbumPosition; }
     //inline int playlistPosition() const { return _playlistPosition; }
     //inline int playPosition() const { return _sb_play_position; }
@@ -64,7 +65,7 @@ public:
     //	Operators
     virtual operator QString();
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by SBIDBase
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
@@ -89,14 +90,19 @@ protected:
     SBIDAlbumPerformance& operator=(const SBIDAlbumPerformance& t);
 
     //	Methods used by SBIDManager
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingPtr);
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumPerformanceID);
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _albumPerformanceID=PK;  }
     QStringList updateSQL() const;
 
-    friend class SBIDAlbum;
     //static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
+    static SBIDAlbumPerformancePtr createNew(const Common::sb_parameters& p);
+    static SBIDAlbumPerformancePtr findByFK(const Common::sb_parameters& p);
+
+    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes
@@ -104,7 +110,7 @@ private:
     int                               _songPerformanceID;
     int                               _albumID;
     int                               _albumPosition;
-    SBDuration                          _duration;
+    SBDuration                        _duration;
     QString                           _notes;
     int                               _preferredOnlinePerformanceID;
 

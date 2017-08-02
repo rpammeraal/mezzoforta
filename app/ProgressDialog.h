@@ -22,6 +22,7 @@ public:
     }
 
     void show(const QString& title,const QString& initiatingFunction, int numSteps);
+    void setLabelText(const QString& title);
     void update(const QString& step, int currentValue, int maxValue);
     void finishStep(const QString& step);
     void hide();

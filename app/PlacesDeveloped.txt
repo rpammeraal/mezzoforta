@@ -868,8 +868,14 @@ Between 20161215 and 20170604:
 -	Editing performers seem to work for now.
 +	Modifying album edit in progress.
 
+Current:
+-	search for 'creo en ti'. Select 'Moose!Music Al Sur De Troya'. Drag 'Creo en Ti' to Latina!Latina!
++	switched gears to getting import to work
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
+*	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used.
+*	Play Nevermind/Nirvana album -- not all songs are put in playlist.
 
 Todo:
 *	Edit.
@@ -877,6 +883,24 @@ Todo:
 
 
 Near future:
+*1	Create
+        -	online_performance:
+		    -	format_id: FK to ~source
+*2	Adjust postgres2postgres to insert rock.online_performance in order of insert_order,
+    then, remove insert_order
+*3	Remove:
+        -	online_performance:
+		    -	source_id
+			-	play_order
+			-	status
+		-	todo
+		-	config_daemon
+		-	config_host_digital_format
+		-	match_song*
+		-	screen_stack
+		-	search_result
+		-	status
+
 *	Change sendToPlayQueue() to return number of actual items queued:
     *	at SBIDSong: if spPtr->sendToPlayQueue() returns 0, find other items to play.
 	*	repeat at all levels (SBIDSongPerformance, SBIDAlbumPerformance, SBIDOnlinePerformance)
@@ -967,6 +991,7 @@ Import bugs/features/missing:
 *	Add option to playlist to always play in order or randomly.
 *	SBID* classes: check on all executed database queries need to exists. SBAlbum::save() is example (calling SBMessageBox::databaseErrorMessageBox)
 *	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
+*	SBIDManagerTemplate<T,parentT>::commitAll(): see if either multipe transactions can be nested or tell dal that we keep track of the transaction.
 
 <future>
 *	Support aac format (look at libav.org)

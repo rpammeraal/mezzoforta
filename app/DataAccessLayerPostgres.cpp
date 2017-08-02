@@ -40,6 +40,12 @@ DataAccessLayerPostgres::availableSchemas() const
     return _availableSchemas;
 }
 
+QString
+DataAccessLayerPostgres::retrieveLastInsertedKeySQL() const
+{
+    return QString("SELECT LASTVAL()");
+}
+
 bool
 DataAccessLayerPostgres::setSchema(const QString &schema)
 {

@@ -53,14 +53,14 @@ public:
 
     //	Update
     void add(const std::shared_ptr<T>& ptr);
-    bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag=1,bool errorOnNoChanges=0);
-    bool commitAll(DataAccessLayer* dal,const QString& progressDialogTitle=QString());
+    bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChanges=0);
+    bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB();
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
-    bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
+    bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL);
     void remove(std::shared_ptr<T> ptr);
-    bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL, bool showProgressDialogFlag=0);
+    bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL);
     void rollbackChanges1();
     void setChanged(std::shared_ptr<T> ptr);
     std::shared_ptr<T> userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr);
@@ -343,14 +343,14 @@ SBIDManagerTemplate<T,parentT>::add(const std::shared_ptr<T>& ptr)
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer *dal, bool showProgressDialogFlag)
+SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer *dal)
 {
     bool successFlag=parentPtr->addDependent(childPtr);
     if(successFlag)
     {
         if(dal)
         {
-            successFlag=commit(parentPtr,dal,showProgressDialogFlag);
+            successFlag=commit(parentPtr,dal);
         }
         else
         {
@@ -361,7 +361,7 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool showProgressDialogFlag,bool errorOnNoChangesFlag)
+SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChangesFlag)
 {
     QList<std::shared_ptr<T>> list;
 
@@ -375,10 +375,15 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
     }
 
     bool successFlag=0;
-    successFlag=dal->executeBatch(SQL,1,0,showProgressDialogFlag?"Saving":"");
+    successFlag=dal->executeBatch(SQL,1,0);
 
     if(successFlag)
     {
+        if(ptr->newFlag())
+        {
+            int ptrID=dal->retrieveLastInsertedKey();
+            ptr->setPrimaryKey(ptrID);
+        }
         _changes.clear();
         ptr->clearChangedFlag();
     }
@@ -386,10 +391,11 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal,const QString& progressDialogTitle)
+SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 {
+    //	CWIP: see if either multipe transactions can be nested or
+    //	tell dal that we keep track of the transaction.
     std::shared_ptr<T> ptr;
-    QStringList SQL;
 
     //	Collect SQL for changes
     qDebug() << SB_DEBUG_INFO << _changes.count();
@@ -397,27 +403,15 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal,const QString& pr
     {
         const QString key=_changes.at(i);
         ptr=retrieve(key);
-        SQL.append(ptr->updateSQL());
-    }
+        commit(ptr,dal);
 
-    bool successFlag=dal->executeBatch(SQL,1,0,progressDialogTitle);
-    if(successFlag)
-    {
-        for(int i=0;i<_changes.count();i++)
+        if(ptr->deletedFlag())
         {
-            const QString key=_changes.at(i);
-            ptr=retrieve(key);
-            ptr->clearChangedFlag();
-
-            if(ptr->deletedFlag())
-            {
-                qDebug() << SB_DEBUG_INFO;
-                _leMap.remove(ptr->key());
-            }
+            qDebug() << SB_DEBUG_INFO;
+            _leMap.remove(ptr->key());
         }
-        _changes.clear();
     }
-    return successFlag;
+    return 1;
 }
 
 template <class T, class parentT> std::shared_ptr<T>
@@ -440,14 +434,14 @@ SBIDManagerTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_p
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::moveDependent(const std::shared_ptr<T> ptr, int fromPosition, int toPosition, DataAccessLayer* dal, bool showProgressDialogFlag)
+SBIDManagerTemplate<T,parentT>::moveDependent(const std::shared_ptr<T> ptr, int fromPosition, int toPosition, DataAccessLayer* dal)
 {
     bool successFlag=ptr->moveDependent(fromPosition,toPosition);
     if(successFlag)
     {
         if(dal)
         {
-            successFlag=commit(ptr,dal,showProgressDialogFlag);
+            successFlag=commit(ptr,dal);
         }
         else
         {
@@ -476,14 +470,14 @@ SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::removeDependent(const std::shared_ptr<T> ptr, int position, DataAccessLayer* dal, bool showProgressDialogFlag)
+SBIDManagerTemplate<T,parentT>::removeDependent(const std::shared_ptr<T> ptr, int position, DataAccessLayer* dal)
 {
     bool successFlag=ptr->removeDependent(position);
     if(successFlag)
     {
         if(dal)
         {
-            successFlag=commit(ptr,dal,showProgressDialogFlag);
+            successFlag=commit(ptr,dal);
         }
         else
         {

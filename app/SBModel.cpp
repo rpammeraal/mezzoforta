@@ -52,6 +52,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     int itemID=-1;
     bool dragableColumnFlag=0;
 
+    qDebug() << SB_DEBUG_INFO;
     if((_dragableColumnList.count()>0) && (idx.column()>=0) && (idx.column()<_dragableColumnList.count()))
     {
         qDebug() << SB_DEBUG_INFO;

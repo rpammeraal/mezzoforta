@@ -6,9 +6,7 @@ CREATE TABLE ---SQL_SCHEMA_NAME---online_performance
 ( 
 	online_performance_id ---AUTOID--- PRIMARY KEY NOT NULL, 
 	record_performance_id INT NOT NULL, 
-	format_id             INT NOT NULL, 
 	path                  CHARACTER VARYING NOT NULL, 
-	source_id             INT NOT NULL, 
 	last_play_date        TIMESTAMP without time zone, 
 	play_order            INT, 
 	insert_order          INT NOT NULL, 
@@ -18,9 +16,7 @@ CREATE TABLE ---SQL_SCHEMA_NAME---online_performance
 INSERT INTO ---SQL_SCHEMA_NAME---online_performance 
 (
 	record_performance_id,
-	format_id,
 	path,
-	source_id,
 	last_play_date,
 	play_order,
 	insert_order
@@ -42,6 +38,8 @@ FROM
 			p.performance_id=rp.performance_id AND
 			opo.record_id=rp.record_id AND
 			opo.record_position=rp.record_position;
+ORDER BY
+	insert_order
 ;
 
 UPDATE conversion AS c

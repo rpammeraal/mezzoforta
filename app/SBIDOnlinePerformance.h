@@ -21,6 +21,7 @@ public:
     virtual QString type() const;
 
     //	SBIDOnlinePerformance specific methods
+    inline int albumPerformanceID() const { return _albumPerformanceID; }
     inline QString path() const { return _path; }
     inline int onlinePerformanceID() const { return _onlinePerformanceID; }
     inline int playPosition() const { return _playPosition; }
@@ -62,11 +63,13 @@ public:
     static QString createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
+    static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);
     static QString onlinePerformancesBySong_Preloader(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
+    friend class SBIDAlbum;  //	adds performances
 
     SBIDOnlinePerformance();
 
@@ -74,13 +77,16 @@ protected:
     SBIDOnlinePerformance& operator=(const SBIDOnlinePerformance& t);
 
     //	Methods used by SBIDManager
-
-    //static SBIDOnlinePerformancePtr createNew(int songID, int performerID, int albumID, int albumPerformanceID, int onlinePerformanceID, const Duration& duration, const QString& path);
+    static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDOnlinePerformancePtr existingPtr);
     static SBIDOnlinePerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDOnlinePerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _onlinePerformanceID=PK;  }
     QStringList updateSQL() const;
+
+    static SBIDOnlinePerformancePtr createNew(const Common::sb_parameters& p);
+    static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
 
 private:
     //	Attributes

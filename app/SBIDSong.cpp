@@ -1305,60 +1305,59 @@ SBSqlQueryModel*
 SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr)
 {
     QString newSoundex=Common::soundex(tobeFound.songTitle);
-    int excludeID=(existingSongPtr?existingSongPtr->songID():-1);
+    int excludeSongID=(existingSongPtr?existingSongPtr->songID():-1);
 
     //	MatchRank:
     //	0	-	exact match with specified artist (0 or 1 in data set).
-    //	1	-	exact match with any other artist (0 or more in data set).
+    //	0	-	exact match based on ID's
+    //	1	-	exact match on song title with any other artist (0 or more in data set).
     //	2	-	soundex match with any other artist (0 or more in data set).
     QString q=QString
     (
-//        "SELECT "
-//            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
-//            "s.song_id, "
-//            "s.title, "
-//            "s.notes, "
-//            "l.lyrics "
-//        "FROM "
-//        	"___SB_SCHEMA_NAME___song s "
-//            	"LEFT JOIN ___SB_SCHEMA_NAME___performance p "
-//                    "p.song_id=s.song_id "
-//                    "%4 "
-//                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-//                    "s.song_id=l.song_id "
-//        "WHERE "
-//            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
-//        "UNION "
-//        "SELECT "
-//            "2 AS matchRank, "
-//            "s.song_id, "
-//            "s.title, "
-//            "s.notes, "
-//            "p.artist_id, "
-//            "p.year, "
-//            "l.lyrics "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___performance p "
-//                "JOIN ___SB_SCHEMA_NAME___song s ON "
-//                    "p.song_id=s.song_id "
-//                    "%4 "
-//                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-//                    "s.song_id=l.song_id "
-//        "WHERE "
-//            "p. sole_id=0 AND "
-//            "( "
-//                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
-//                "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
-//            ") AND "
-//            "length(s.soundex)<= 2*length('%3') "
-//        "ORDER BY "
-//            "1,3 "
-
+        "SELECT "
+            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
+            "s.song_id, "
+            "s.title, "
+            "s.notes, "
+            "l.lyrics, "
+            "s.original_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "p.song_id=s.song_id "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE "
+            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') OR "
+            "s.song_id=%5 "
+            "%4 "
+        "UNION "
+        "SELECT "
+            "2 AS matchRank, "
+            "s.song_id, "
+            "s.title, "
+            "s.notes, "
+            "l.lyrics, "
+            "s.original_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
+                    "s.song_id=l.song_id "
+        "WHERE "
+            "( "
+                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
+                "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
+            ") AND "
+            "length(s.soundex)<= 2*length('%3') "
+            "%4 "
+        "ORDER BY "
+            "1,3 "
     )
         .arg(Common::escapeSingleQuotes(tobeFound.songTitle.toLower()))
         .arg(tobeFound.performerID)
         .arg(newSoundex)
-        .arg(excludeID==-1?"":QString(" AND s.song_id=%1").arg(excludeID))
+        .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
+        .arg(tobeFound.songID)
     ;
     return new SBSqlQueryModel(q);
 }
@@ -1453,12 +1452,10 @@ SBIDSong::updateSQL() const
 SBIDSongPtr
 SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     SBIDSongPtr selectedSongPtr;
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     bool resultCode=1;
     QMap<int,QList<SBIDSongPtr>> matches;
-    bool createNewFlag=0;
 
     int findCount=smgr->find(tobeMatched,existingSongPtr,matches);
 
@@ -1491,22 +1488,8 @@ SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existi
                     //	Existing song is choosen
                     selectedSongPtr=std::dynamic_pointer_cast<SBIDSong>(selected);
                 }
-                else
-                {
-                    createNewFlag=1;
-                }
             }
         }
-    }
-    if(findCount==0 || createNewFlag)
-    {
-        selectedSongPtr=smgr->createInDB();
-        selectedSongPtr->_setSongTitle(tobeMatched.songTitle);
-        selectedSongPtr->_setNotes("populated by us");
-        selectedSongPtr->_setSongPerformerID(tobeMatched.performerID);
-
-        selectedSongPtr->addSongPerformance(tobeMatched.performerID,tobeMatched.year,tobeMatched.notes);
-        smgr->commit(selectedSongPtr,dal,0);
     }
     return selectedSongPtr;
 }
@@ -1514,6 +1497,7 @@ SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existi
 void
 SBIDSong::clearChangedFlag()
 {
+    //	CWIP: find a more generic method -- maybe doing a full load from mgr
     SBIDBase::clearChangedFlag();
     foreach(SBIDSongPerformancePtr performancePtr,_songPerformances)
     {

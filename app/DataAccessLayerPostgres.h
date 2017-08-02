@@ -15,7 +15,9 @@ public:
     DataAccessLayerPostgres& operator= (const DataAccessLayerPostgres& c);
     ~DataAccessLayerPostgres();
 
+    //	Database type specific
     virtual QStringList availableSchemas() const;
+    virtual QString retrieveLastInsertedKeySQL() const;
     virtual bool setSchema(const QString& schema);
     virtual bool supportSchemas() const;
 

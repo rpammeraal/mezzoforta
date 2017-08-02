@@ -376,7 +376,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformer
     {
         selectedPerformerPtr=pemgr->createInDB();
         selectedPerformerPtr->setPerformerName(tobeMatched.performerName);
-        pemgr->commit(selectedPerformerPtr,dal,0);
+        pemgr->commit(selectedPerformerPtr,dal);
     }
     return selectedPerformerPtr;
 }
@@ -429,7 +429,7 @@ SBIDPerformer::retrieveVariousPerformers()
     {
         performerPtr=pemgr->createInDB();
         performerPtr->setPerformerName("VARIOUS ARTISTS");
-        pemgr->commit(performerPtr,dal,0);
+        pemgr->commit(performerPtr,dal);
     }
     return  performerPtr;
 }

@@ -299,6 +299,49 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
     return new SBSqlQueryModel(q);
 }
 
+SBSqlQueryModel*
+SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+
+    QString limitClause;
+
+    if(limit)
+    {
+        limitClause=QString("LIMIT %1").arg(limit);
+    }
+
+    //	Main query
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "p.song_id, "
+            "p.artist_id, "
+            "p.performance_id, "
+            "rp.record_id, "
+            "r.artist_id, "
+            "rp.record_position, "
+            "rp.record_performance_id, "
+            "op.online_performance_id, "
+            "op.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance op "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "op.record_performance_id=rp.record_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
+                    "rp.performance_id=p.performance_id "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id "
+        "ORDER BY "
+            "2 "
+        "%2 "
+    )
+            .arg(limitClause)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 QString
 SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
 {
@@ -388,6 +431,35 @@ SBIDOnlinePerformance::operator=(const SBIDOnlinePerformance& t)
     return *this;
 }
 
+SBSqlQueryModel*
+SBIDOnlinePerformance::find(const Common::sb_parameters& tobeFound,SBIDOnlinePerformancePtr existingOnlinePerformancePtr)
+{
+    Q_UNUSED(existingOnlinePerformancePtr);
+
+    //	MatchRank:
+    //	0	-	exact match with specified artist (0 or 1 in data set).
+    //	1	-	exact match with any other artist (0 or more in data set).
+    //	2	-	soundex match with any other artist (0 or more in data set).
+    QString q=QString
+    (
+        //	match on foreign keys
+        "SELECT "
+            "0 AS matchRank, "
+            "p.online_performance_id, "
+            "p.record_performance_id, "
+            "p.path "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance p "
+        "WHERE "
+            "p.record_performance_id=%1 "
+        "ORDER BY "
+            "1,3 "
+    )
+        .arg(tobeFound.albumPerformanceID)
+    ;
+    return new SBSqlQueryModel(q);
+}
+
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::instantiate(const QSqlRecord& r)
 {
@@ -440,7 +512,78 @@ SBIDOnlinePerformance::retrieveSQL(const QString &key)
 QStringList
 SBIDOnlinePerformance::updateSQL() const
 {
-    return QStringList();
+    QStringList SQL;
+
+    if(deletedFlag() && !newFlag())
+    {
+        //	CWIP
+    }
+    else if(newFlag() && !deletedFlag())
+    {
+        //	Insert with NULL values for op_fields
+        SQL.append(QString
+        (
+            "WITH max1 "
+            "AS "
+            "( "
+                "SELECT "
+                    "MAX(insert_order)+1 AS insert_order "
+                "FROM "
+                    "___SB_SCHEMA_NAME___online_performance "
+                "UNION "
+                "SELECT 1"
+            ") "
+            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
+            "( "
+                "record_performance_id, "
+                "path, "
+                "insert_order "
+            ") "
+            "SELECT  "
+                "%1, "
+                "'%2', "
+                "MAX(insert_order) "
+            "FROM "
+                "max1 "
+        )
+            .arg(this->albumPerformanceID())
+            .arg(this->path())
+        );
+    }
+
+    qDebug() << SB_DEBUG_INFO << SQL;
+    return SQL;
+}
+
+SBIDOnlinePerformancePtr
+SBIDOnlinePerformance::createNew(const Common::sb_parameters &p)
+{
+    SBIDOnlinePerformance op;
+
+    op._albumPerformanceID=p.albumPerformanceID;
+    op._path=p.path;
+
+    op.setNewFlag();
+
+    return std::make_shared<SBIDOnlinePerformance>(op);
+}
+
+SBIDOnlinePerformancePtr
+SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
+{
+    SBIDOnlinePerformancePtr spPtr;
+    SBIDOnlinePerformanceMgr* spMgr=Context::instance()->getOnlinePerformanceMgr();
+    QMap<int,QList<SBIDOnlinePerformancePtr>> matches;
+    int count=spMgr->find(p,SBIDOnlinePerformancePtr(),matches);
+
+    if(count)
+    {
+        if(matches[0].count()==1)
+        {
+            spPtr=matches[0][0];
+        }
+    }
+    return spPtr;
 }
 
 ///	Private methods

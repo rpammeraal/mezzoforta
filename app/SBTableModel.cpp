@@ -361,16 +361,16 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
     while(pIT.hasNext())
     {
         pIT.next();
-        SBIDAlbumPerformancePtr performancePtr=pIT.value();
+        SBIDAlbumPerformancePtr apPtr=pIT.value();
 
-        if(performancePtr)
+        if(apPtr)
         {
-            _setItem(i, 0,QString("%1").arg(performancePtr->albumPosition()));
-            _setItem(i, 1,performancePtr->key());
-            _setItem(i, 2,performancePtr->songTitle());
-            _setItem(i, 3,performancePtr->duration().toString(SBDuration::sb_hhmmss_format));
-            _setItem(i, 4,performancePtr->songPerformerKey());
-            _setItem(i, 5,performancePtr->songPerformerName());
+            _setItem(i, 0,QString("%1").arg(apPtr->albumPosition()));
+            _setItem(i, 1,apPtr->songPtr()->key());
+            _setItem(i, 2,apPtr->songTitle());
+            _setItem(i, 3,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
+            _setItem(i, 4,apPtr->songPerformerKey());
+            _setItem(i, 5,apPtr->songPerformerName());
             i++;
         }
     }

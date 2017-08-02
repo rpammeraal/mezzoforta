@@ -545,7 +545,7 @@ Preloader::performanceMap(QString query)
 
         if(albumPerformancePtr)
         {
-            items[albumPerformancePtr->albumPosition()]=albumPerformancePtr;
+            items[albumPerformancePtr->albumPerformanceID()]=albumPerformancePtr;
         }
 
         ProgressDialog::instance()->update("Preloader::performanceMap",progressCurrentValue++,progressMaxValue);

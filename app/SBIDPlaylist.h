@@ -34,7 +34,6 @@ public:
     //	Methods specific to SBIDPlaylist
     bool addPlaylistItem(SBIDPtr ptr);
     inline SBDuration duration() const { return _duration; }
-    //SBIDSongPtr getDetailPlaylistItemSong(int playlistPosition) const;
     SBTableModel* items() const;
     int numItems() const;
     inline int playlistID() const { return _playlistID; }
@@ -76,6 +75,7 @@ protected:
     bool moveDependent(int fromPosition, int toPosition);
     bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _playlistID=PK;  }
     QStringList updateSQL() const;
 
 private:

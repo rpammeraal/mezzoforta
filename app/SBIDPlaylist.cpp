@@ -97,42 +97,6 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
     return successFlag;
 }
 
-//SBIDSongPtr
-//SBIDPlaylist::getDetailPlaylistItemSong(int playlistPosition) const
-//{
-//    SBIDSongPtr songPtr;
-//    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-//    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-
-//    QString q=QString
-//    (
-//        "SELECT DISTINCT "
-//            "pp.song_id, "           //	0
-//            "pp.record_id, "
-//            "pp.record_position "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___playlist_performance pp "
-//        "WHERE "
-//            "pp.playlist_id=%1 AND "
-//            "pp.playlist_position=%2 "
-//    )
-//        .arg(this->playlistID())
-//        .arg(playlistPosition)
-//    ;
-//    dal->customize(q);
-
-//    qDebug() << SB_DEBUG_INFO << q;
-//    QSqlQuery query(q,db);
-
-//    if(query.next())
-//    {
-//        songPtr=SBIDSong::retrieveSong(query.value(0).toInt());
-//        //	CWIP:performance
-//        //songPtr->setCurrentPerformanceByAlbumPosition(query.value(1).toInt(),query.value(2).toInt());
-//    }
-//    return songPtr;
-//}
-
 SBTableModel*
 SBIDPlaylist::items() const
 {
@@ -810,11 +774,11 @@ SBIDPlaylistPtr
 SBIDPlaylist::instantiate(const QSqlRecord &r)
 {
     SBIDPlaylist playlist;
+    int i=0;
 
-    playlist._playlistID    =r.value(0).toInt();
-    playlist._playlistName  =r.value(1).toString();
-    playlist._duration      =r.value(2).toString();
-    playlist._numItems      =r.value(3).toInt();
+    playlist._playlistID    =r.value(i++).toInt();
+    playlist._playlistName  =r.value(i++).toString();
+    playlist._duration      =r.value(i++).toString();
 
     playlist._reorderPlaylistPositions();
 
@@ -899,21 +863,9 @@ SBIDPlaylist::retrieveSQL(const QString& key)
         "SELECT DISTINCT "
             "p.playlist_id, "
             "p.name, "
-            "p.duration, "
-            "COALESCE(a.num,0)  "
+            "p.duration "
         "FROM "
             "___SB_SCHEMA_NAME___playlist p "
-                "LEFT JOIN "
-                    "( "
-                        "SELECT "
-                            "p.playlist_id, "
-                            "COUNT(*) AS num "
-                        "FROM "
-                            "___SB_SCHEMA_NAME___playlist_detail p  "
-                            "%1 "
-                        "GROUP BY "
-                            "p.playlist_id "
-                    ") a ON a.playlist_id=p.playlist_id "
         "%1 "
         "ORDER BY "
             "p.name "

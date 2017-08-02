@@ -60,6 +60,28 @@ DROP TABLE ---SQL_SCHEMA_NAME---artist_rel_old
 DROP TABLE ---SQL_SCHEMA_NAME---artist_old
 ;
 
+CREATE VIEW ---SQL_SCHEMA_NAME---all
+AS
+SELECT
+	a.artist_id,
+	a.name,
+	s.song_id,
+	s.title AS song_title,
+	r.record_id,
+	rp.record_position,
+	r.title AS record_title,
+	op.online_performance_id,
+	op.path
+FROM
+	---SQL_SCHEMA_NAME---online_performance op
+		JOIN ---SQL_SCHEMA_NAME---record_performance rp USING(record_performance_id)
+		JOIN ---SQL_SCHEMA_NAME---performance p USING(performance_id)
+		JOIN ---SQL_SCHEMA_NAME---song s USING(song_id)
+		JOIN ---SQL_SCHEMA_NAME---artist a USING(artist_id)
+		JOIN ---SQL_SCHEMA_NAME---record r USING(record_id)
+;
+
+
 --	2.	constraints to be created
 ALTER TABLE ---SQL_SCHEMA_NAME---song
 ADD CONSTRAINT fk_song_original_performance_id_performance 
@@ -190,6 +212,9 @@ WHERE
 ;
 	
 DROP TABLE conversion;
+
+CREATE TABLE ---SQL_SCHEMA_NAME---artist_match (artist_alternative_name VARCHAR NOT NULL, artist_correct_name VARCHAR NOT NULL);
+CREATE UNIQUE INDEX ui_artist_match ON ---SQL_SCHEMA_NAME---artist_match (artist_alternative_name,artist_correct_name);
 
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance WHERE preferred_record_performance_id IS NULL;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_performance WHERE preferred_online_performance_id IS NULL;

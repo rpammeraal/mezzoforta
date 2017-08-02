@@ -58,6 +58,7 @@ public:
     inline QString notes() const { return _notes; }
     int numAlbumPerformances() const;
     QVector<SBIDOnlinePerformancePtr> onlinePerformances() const;
+    inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlists();
@@ -91,6 +92,7 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
+    friend class SBIDAlbum;
 
     SBIDSong();
 
@@ -105,8 +107,11 @@ protected:
     static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _songID=PK;  }
     QStringList updateSQL() const;
     static SBIDSongPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr);
+
+    inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();

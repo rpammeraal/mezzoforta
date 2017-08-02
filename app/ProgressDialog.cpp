@@ -24,6 +24,13 @@ ProgressDialog::show(const QString &title,const QString& initiatingFunction, int
 }
 
 void
+ProgressDialog::setLabelText(const QString &title)
+{
+    _pd.setLabelText(title);
+    QCoreApplication::processEvents();
+}
+
+void
 ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 {
     if(!_visible)

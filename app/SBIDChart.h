@@ -63,6 +63,7 @@ protected:
     //bool moveDependent(int fromPosition, int toPosition);
     //bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _chartID=PK;  }
     //QStringList updateSQL() const;
 
 private:

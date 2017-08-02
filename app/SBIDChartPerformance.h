@@ -62,6 +62,7 @@ protected:
     static void openKey(const QString& key, int& chartPerformanceID);
     void postInstantiate(SBIDChartPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _chartPerformanceID=PK;  }
     //QStringList updateSQL() const;
 
 private:

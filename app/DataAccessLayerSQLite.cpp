@@ -173,9 +173,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "( \n"
                     "online_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
                     "record_performance_id INTEGER NOT NULL, \n"
-                    "format_id             INTEGER NOT NULL, \n"
                     "path                  CHARACTER VARYING NOT NULL, \n"
-                    "source_id             INTEGER NOT NULL, \n"
                     "last_play_date        TIMESTAMP without time zone, \n"
                     "play_order            INTEGER, \n"
                     "insert_order          INTEGER NOT NULL, \n"
@@ -348,11 +346,22 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("INSERT INTO greatest_hits_record VALUES (9,'Collection')");
             SQL.append("INSERT INTO greatest_hits_record VALUES (10,'The Singles')");
 
-            if(dal.executeBatch(SQL,1,0,"Creating Database")==0)
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE artist_match \n"
+                "( \n"
+                    "artist_name             VARCHAR NOT NULL, \n"
+                    "artist_alternative_name VARCHAR NOT NULL, \n"
+                "); \n"
+            ));
+            SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_correct_name);");
+
+            ProgressDialog::instance()->show("Creating Database","DataAccessLayerSQLite::createDatabase",1);
+            if(dal.executeBatch(SQL,1,0)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";
             }
+            ProgressDialog::instance()->hide();
 
             Properties properties(&dal);
             properties.debugShow("createDatabase");

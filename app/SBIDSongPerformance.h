@@ -37,6 +37,7 @@ public:
 
     //	SBIDSongPerformance specific methods
     inline QString notes() const { return _notes; }
+    inline int preferredAlbumPerformanceID() const { return _preferredAlbumPerformanceID; }
     inline int songID() const { return _songID; }
     inline int songPerformanceID() const { return _songPerformanceID; }
     inline int songPerformerID() const { return _performerID; }
@@ -73,6 +74,8 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
+    friend class SBIDAlbum;
+    friend class SBIDSong;
 
     SBIDSongPerformance();
 
@@ -85,6 +88,7 @@ protected:
     static void openKey(const QString& key, int& songPerformanceID);
     void postInstantiate(SBIDSongPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    virtual void setPrimaryKey(int PK) { _songPerformanceID=PK;  }
     QStringList updateSQL() const;
 
     //	Setters to accomodate SBIDAlbumPerformance
@@ -92,9 +96,10 @@ protected:
     //void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
     //void setYear(int year) { _year=year; setChangedFlag(); }
     //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    static SBIDSongPerformancePtr createNew(const Common::sb_parameters& p);
+    static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
 
-    friend class SBIDSong;
-    static SBIDSongPerformancePtr createNew(int songID,int performerID,int year,const QString& notes);
+    inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes

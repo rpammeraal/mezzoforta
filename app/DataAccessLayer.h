@@ -40,14 +40,14 @@ public:
     DataAccessLayer(const DataAccessLayer& c);
     ~DataAccessLayer();
 
-    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0,const QString& progressDialogTitle=QString()) const;
+    bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0) const;
     QString createRestorePoint() const;
     bool restore(const QString& restorePoint) const;
 
     DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
 
-    //	Database specific
+    //	Database type specific
     const QString& schema() const;
     virtual QStringList availableSchemas() const;
     QString customize(QString& sqlString) const;
@@ -58,6 +58,8 @@ public:
     const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
+    virtual int retrieveLastInsertedKey() const;
+    virtual QString retrieveLastInsertedKeySQL() const;
     virtual bool setSchema(const QString& schema);
     virtual bool supportSchemas() const;
 

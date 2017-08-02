@@ -10,6 +10,7 @@
 #include "SBDuration.h"
 
 class QProgressDialog;
+class DataAccessLayer;
 
 class MusicLibrary : public QObject
 {
@@ -22,9 +23,13 @@ public:
         MLperformance() { _init(); }
 
         int songID;
-        int performerID;
+        int songPerformerID;
+        int songPerformanceID;
         int albumID;
+        int albumPerformerID;
         int albumPosition;
+        int albumPerformanceID;
+        int onlinePerformanceID;
         QString path;
         bool pathExists;
     private:
@@ -75,11 +80,12 @@ public:
         bool createArtificialAlbumFlag;
         QString errorMsg;
         int ID;
+        QString key;
 
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
     private:
-        void _init() { songID=-1; songPerformerID=-1; albumID=-1; albumPosition=-1; albumPerformerID=-1; createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; }
+        void _init() { songID=-1; songPerformerID=-1; songPerformanceID=-1; albumID=-1; albumPerformerID=-1; albumPerformanceID=-1; albumPosition=-1;  createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; ID=-1; }
     };
     typedef std::shared_ptr<MLentity> MLentityPtr;
 
@@ -110,6 +116,12 @@ public slots:
 
 private:
     QStringList _greatestHitsAlbums() const;
+    QMap<QString,QString> _alternativePerformerName2CorrectPerformerName;
+
+
+    QString _retrieveCorrectPerformerName(DataAccessLayer* dal, const QString& altPerformerName);
+    void _addAlternativePerformerName(DataAccessLayer* dal, const QString& altPerformerName,const QString& correctPerformerName);
+
 };
 
 #endif // MUSICLIBRARY_H

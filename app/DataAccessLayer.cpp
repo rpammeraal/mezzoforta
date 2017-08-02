@@ -45,7 +45,7 @@ DataAccessLayer::~DataAccessLayer()
 }
 
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag,const QString& progressDialogTitle) const
+DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag) const
 {
     qDebug() << SB_DEBUG_INFO << allQueries.count();
     //	Perform all queries in one transaction
@@ -54,16 +54,11 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     QString errorMsg;
     bool successFlag=1;
     QString q;
-    int currentValue=0;
-    int maxValue=allQueries.count()+1;
-    QProgressDialog pd(progressDialogTitle,QString(),0,maxValue);
-    if(progressDialogTitle.length()!=0)
-    {
-        pd.setWindowModality(Qt::WindowModal);
-        pd.show();
-        pd.raise();
-        pd.activateWindow();
-    }
+
+    //	Set up progress dialog
+    int progressCurrentValue=0;
+    int progressMaxValue=allQueries.count()+1;
+    ProgressDialog::instance()->update("DataAccessLayer::executeBatch",progressCurrentValue,progressMaxValue);
 
     successFlag=db.transaction();
     if(successFlag==1)
@@ -83,9 +78,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
                 successFlag=0;
                 qDebug() << SB_DEBUG_ERROR << errorMsg;
             }
-            pd.setValue(++currentValue);
-            QCoreApplication::processEvents();
-
+            ProgressDialog::instance()->update("DataAccessLayer::executeBatch",progressCurrentValue++,progressMaxValue);
         }
 
         if(successFlag==1 && commitFlag==1)
@@ -100,7 +93,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             db.rollback();
         }
     }
-    pd.setValue(maxValue);
+    ProgressDialog::instance()->finishStep("DataAccessLayer::executeBatch");
+
     if(successFlag==0 && ignoreErrorsFlag==0)
     {
         QMessageBox msgBox;
@@ -119,10 +113,10 @@ DataAccessLayer::createRestorePoint() const
     QStringList ID;
     ID.append("restorepoint");
 
-    for(size_t i=0;i<11;i++)
+    for(size_t i=1;i<13;i++)
     {
         QString q;
-        switch((SBIDBase::sb_type)i)
+        switch(i)
         {
         case 1:
             q=QString("SELECT MAX(artist_id) FROM ___SB_SCHEMA_NAME___artist");
@@ -163,6 +157,14 @@ DataAccessLayer::createRestorePoint() const
         case 10:
             q=QString("SELECT MAX(toplay_id) FROM ___SB_SCHEMA_NAME___toplay");
             break;
+
+        case 11:
+            q=QString("SELECT MAX(chart_id) FROM ___SB_SCHEMA_NAME___chart");
+            break;
+
+        case 12:
+            q=QString("SELECT MAX(chart_performance_id) FROM ___SB_SCHEMA_NAME___chart_performance");
+            break;
         }
         if(q.length()>0)
         {
@@ -172,6 +174,7 @@ DataAccessLayer::createRestorePoint() const
             ID.append(qID.value(0).toString());
         }
     }
+    qDebug() << SB_DEBUG_INFO << ID.join(':');
     return ID.join(':');
 }
 
@@ -188,42 +191,40 @@ DataAccessLayer::restore(const QString &restorePoint) const
     int performerID=IDs[1].toInt()+1;
     int performerRelID=IDs[2].toInt()+1;
     int songID=IDs[3].toInt()+1;
-    int performanceID=IDs[3].toInt()+1;
+    int songPerformanceID=IDs[3].toInt()+1;
     int albumID=IDs[5].toInt()+1;
     int albumPerformanceID=IDs[6].toInt()+1;
     int onlinePerformanceID=IDs[7].toInt()+1;
     int playlistID=IDs[8].toInt()+1;
     int playlistDetailID=IDs[9].toInt()+1;
     int toplayID=IDs[10].toInt()+1;
+    int chartID=IDs[11].toInt()+1;
+    int chartPerformanceID=IDs[12].toInt()+1;
 
     QStringList SQL;
 
-//    //	Charts
-//    SQL.append(QString(
-//        "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
-//        "WHERE "
-//            "song_id>=%1 OR "
-//            "artist_id>=%2 OR "
-//            "chart_id>=%3"
-//    )
-//        .arg(songID)
-//        .arg(performerID)
-//        .arg(chartID)
-//    );
+    //	Charts
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
+        "WHERE "
+            "chart_performance_id>=%1 "
+    )
+        .arg(chartPerformanceID)
+    );
 
-//    SQL.append(QString(
-//        "DELETE FROM ___SB_SCHEMA_NAME___chart "
-//        "WHERE "
-//            "chart_id>=%1"
-//    )
-//        .arg(chartID)
-//    );
+    SQL.append(QString(
+        "DELETE FROM ___SB_SCHEMA_NAME___chart "
+        "WHERE "
+            "chart_id>=%1"
+    )
+        .arg(chartID)
+    );
 
     //	toplay
     SQL.append(QString(
         "DELETE FROM ___SB_SCHEMA_NAME___toplay "
         "WHERE "
-            "toplay_id>=%1 "
+            "toplay_detail_id>=%1 "
     )
         .arg(toplayID)
     );
@@ -279,7 +280,7 @@ DataAccessLayer::restore(const QString &restorePoint) const
         "WHERE "
             "performance_id>=%1 "
     )
-        .arg(performanceID)
+        .arg(songPerformanceID)
     );
 
     //	Song
@@ -403,6 +404,23 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
+int
+DataAccessLayer::retrieveLastInsertedKey() const
+{
+    QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
+    QString q=retrieveLastInsertedKeySQL();
+    this->customize(q);
+    QSqlQuery qID(q,db);
+    qID.next();
+    return qID.value(0).toInt();
+}
+
+QString
+DataAccessLayer::retrieveLastInsertedKeySQL() const
+{
+    return QString("SELECT last_insert_rowid();");
+}
+
 bool
 DataAccessLayer::setSchema(const QString &schema)
 {
@@ -447,7 +465,7 @@ DataAccessLayer::addMissingDatabaseItems()
         QStringList SQL;
 
         SQL.append(allSQL[i]);
-        executeBatch(SQL,1,1,0);
+        executeBatch(SQL,1,1);
     }
 }
 
