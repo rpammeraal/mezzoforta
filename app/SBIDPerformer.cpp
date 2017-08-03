@@ -313,72 +313,60 @@ SBIDPerformer::key() const
 
 ///
 /// \brief SBIDPerformer::userMatch
-/// \param toBeMatched: new or edited performer name
-/// \param existingPerformerPtr: exclude matches on this performer
-/// \return selectedPerformer: SBIDPerformer selected. This may be a newly created one or an existing one, if result code=1 it exist in the database
+/// \param p: new or edited performer name
+/// \param exclude: exclude matches on this performer
+/// \param found: SBIDPerformer selected. This may be a newly created one or an existing one, if result code=1 it exist in the database
 ///
 ///
-SBIDPerformerPtr
-SBIDPerformer::userMatch(const Common::sb_parameters& tobeMatched, SBIDPerformerPtr existingPerformerPtr)
+Common::result
+SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    SBIDPerformerPtr selectedPerformerPtr;
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    bool resultCode=1;
+    Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDPerformerPtr>> matches;
-    bool createNewFlag=0;
 
-    int findCount=pemgr->find(tobeMatched,existingPerformerPtr,matches);
+    pemgr->find(p,exclude,matches);
 
-    if(findCount)
+    if(pemgr->find(p,exclude,matches))
     {
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            selectedPerformerPtr=matches[0][0];
-            resultCode=1;
+            found=matches[0][0];
+            result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
             //	If there is *exactly* one match without articles, take it.
-            selectedPerformerPtr=matches[1][0];
-            resultCode=1;
+            found=matches[1][0];
+            result=Common::result_exists;
         }
         else
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(tobeMatched.performerName,existingPerformerPtr,matches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(p.performerName,exclude,matches);
             pu->exec();
 
             //	Go back to screen if no item has been selected
-            if(pu->hasSelectedItem()==0)
-            {
-                qDebug() << SB_DEBUG_INFO << "none selected";
-                return selectedPerformerPtr;
-            }
-            else
+            if(pu->hasSelectedItem()!=0)
             {
                 SBIDPtr selected=pu->getSelected();
                 if(selected)
                 {
                     //	Existing performer is choosen
-                    selectedPerformerPtr=std::dynamic_pointer_cast<SBIDPerformer>(selected);
+                    found=std::dynamic_pointer_cast<SBIDPerformer>(selected);
+                    found->refreshDependents();
+                    result=Common::result_exists;
                 }
                 else
                 {
-                    createNewFlag=1;
+                    result=Common::result_missing;
                 }
             }
         }
     }
-    if(findCount==0 || createNewFlag)
-    {
-        selectedPerformerPtr=pemgr->createInDB();
-        selectedPerformerPtr->setPerformerName(tobeMatched.performerName);
-        pemgr->commit(selectedPerformerPtr,dal);
-    }
-    return selectedPerformerPtr;
+    return result;
 }
 
 void
@@ -420,16 +408,15 @@ SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 SBIDPerformerPtr
 SBIDPerformer::retrieveVariousPerformers()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     Properties* properties=Context::instance()->getProperties();
     int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
     SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID,1);
     if(!performerPtr)
     {
-        performerPtr=pemgr->createInDB();
-        performerPtr->setPerformerName("VARIOUS ARTISTS");
-        pemgr->commit(performerPtr,dal);
+        Common::sb_parameters p;
+        p.performerName="VARIOUS ARTISTS";
+        performerPtr=pemgr->createInDB(p);
     }
     return  performerPtr;
 }
@@ -451,61 +438,56 @@ SBIDPerformer::operator=(const SBIDPerformer& t)
 
 ///	Methods used by SBIDManager
 SBIDPerformerPtr
-SBIDPerformer::createInDB()
+SBIDPerformer::createInDB(Common::sb_parameters& p)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    //	Get next ID available
-    q=QString("SELECT %1(MAX(artist_id),0)+1 FROM ___SB_SCHEMA_NAME___artist ").arg(dal->getIsNull());
-    dal->customize(q);
-    QSqlQuery qID(q,db);
-    qID.next();
-
-    //	Instantiate
-    SBIDPerformer performer;
-    performer._performerID=qID.value(0).toInt();
-    performer._performerName="Artist1";
-
-    //	Give new playlist unique name
-    int maxNum=1;
-    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___artist WHERE name %1 \"New Performer%\"").arg(dal->getILike());
-    dal->customize(q);
-    QSqlQuery qName(q,db);
-
-    while(qName.next())
+    if(p.performerName.length()==0)
     {
-        QString existing=qName.value(0).toString();
-        existing.replace("New Performer","");
-        int i=existing.toInt();
-        if(i>=maxNum)
+        //	Give new performer unique name
+        int maxNum=1;
+        q=QString("SELECT name FROM ___SB_SCHEMA_NAME___artist WHERE name %1 \"New Performer%\"").arg(dal->getILike());
+        dal->customize(q);
+        QSqlQuery qName(q,db);
+
+        while(qName.next())
         {
-            maxNum=i+1;
+            p.performerName=qName.value(0).toString();
+            p.performerName.replace("New Performer ","");
+            int i=p.performerName.toInt();
+            if(i>=maxNum)
+            {
+                maxNum=i+1;
+            }
         }
+        p.performerName=QString("New Performer %1").arg(maxNum);
     }
-    performer._performerName=QString("New Performer%1").arg(maxNum);
 
     //	Insert
-    QString newSoundex=Common::soundex(performer._performerName);
+    QString newSoundex=Common::soundex(p.performerName);
     q=QString
     (
         "INSERT INTO ___SB_SCHEMA_NAME___artist "
         "( "
-            "artist_id, "
             "name, "
             "sort_name, "
+            "www, "
+            "notes, "
             "soundex "
         ") "
         "SELECT "
-            "%1, "
+            "'%1'', "
             "'%2', "
             "'%3', "
-            "'%4' "
+            "'%4', "
+            "'%5' "
     )
-        .arg(performer._performerID)
-        .arg(Common::escapeSingleQuotes(performer._performerName))
-        .arg(Common::escapeSingleQuotes(Common::removeArticles(Common::removeAccents(performer._performerName))))
+        .arg(Common::escapeSingleQuotes(p.performerName))
+        .arg(Common::escapeSingleQuotes(Common::removeArticles(Common::removeAccents(p.performerName))))
+        .arg(p.www)
+        .arg(p.notes)
         .arg(newSoundex)
     ;
 
@@ -513,8 +495,14 @@ SBIDPerformer::createInDB()
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 
+    //	Instantiate
+    SBIDPerformer pe;
+    pe._performerID   = dal->retrieveLastInsertedKey();
+    pe._performerName=p.performerName;
+    pe._notes        =p.notes;
+
     //	Done
-    return std::make_shared<SBIDPerformer>(performer);
+    return std::make_shared<SBIDPerformer>(pe);
 }
 
 SBSqlQueryModel*
@@ -1095,6 +1083,7 @@ SBIDPerformer::_init()
     _albumList.clear();
     _albumPerformances.clear();
     _relatedPerformerKey.clear();
+    _songPerformances.clear();
 }
 
 void

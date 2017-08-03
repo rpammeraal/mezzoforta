@@ -41,7 +41,6 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual bool save();
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -65,7 +64,7 @@ public:
     void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
     inline int songID() const { return _songID; }
     inline QString songTitle() const { return _songTitle; }
-    static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
+    //static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
     //	Pointers
@@ -92,7 +91,7 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
-    friend class SBIDAlbum;
+    friend class SBIDAlbum;	//	CWIP: needs to be seen if neccessary
 
     SBIDSong();
 
@@ -100,7 +99,7 @@ protected:
     SBIDSong& operator=(const SBIDSong& t);
 
     //	Methods used by SBIDManager
-    static SBIDSongPtr createInDB();
+    static SBIDSongPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDSongPtr& to);
@@ -109,7 +108,7 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _songID=PK;  }
     QStringList updateSQL() const;
-    static SBIDSongPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr);
+    static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found);
 
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 

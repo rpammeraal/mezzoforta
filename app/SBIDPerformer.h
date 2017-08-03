@@ -80,7 +80,7 @@ protected:
     //	Operators
     SBIDPerformer& operator=(const SBIDPerformer& t);
 
-    static SBIDPerformerPtr createInDB();
+    static SBIDPerformerPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDPerformerPtr& to);
@@ -89,7 +89,7 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _performerID=PK;  }
     QStringList updateSQL() const;
-    static SBIDPerformerPtr userMatch(const Common::sb_parameters& parameters, SBIDPerformerPtr existingPerformerPtr);
+    static Common::result userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found);
 
     //	Helper methods
     QString addRelatedPerformerSQL(const QString& key) const;
@@ -103,8 +103,8 @@ private:
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPtr>             _albumList;
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
-    QVector<SBIDSongPerformancePtr>   _songPerformances;
     QVector<QString>                  _relatedPerformerKey;
+    QVector<SBIDSongPerformancePtr>   _songPerformances;
 
     //	Methods
     void _copy(const SBIDPerformer& c);

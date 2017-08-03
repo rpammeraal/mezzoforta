@@ -8,8 +8,6 @@ CREATE TABLE ---SQL_SCHEMA_NAME---online_performance
 	record_performance_id INT NOT NULL, 
 	path                  CHARACTER VARYING NOT NULL, 
 	last_play_date        TIMESTAMP without time zone, 
-	play_order            INT, 
-	insert_order          INT NOT NULL, 
 	CONSTRAINT fk_online_performance_record_performance_id_record_performance_record_performance_id FOREIGN KEY (record_performance_id) REFERENCES ---SQL_SCHEMA_NAME---record_performance(record_performance_id) 
 ); 
 
@@ -17,18 +15,12 @@ INSERT INTO ---SQL_SCHEMA_NAME---online_performance
 (
 	record_performance_id,
 	path,
-	last_play_date,
-	play_order,
-	insert_order
+	last_play_date
 )
 SELECT
 	rp.record_performance_id,
-	opo.format_id,
 	opo.path,
-	opo.source_id,
-	opo.last_play_date,
-	opo.play_order,
-	opo.insert_order
+	opo.last_play_date
 FROM
 	---SQL_SCHEMA_NAME---online_performance_old opo
 		JOIN ---SQL_SCHEMA_NAME---performance p ON

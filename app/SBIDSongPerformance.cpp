@@ -273,6 +273,54 @@ SBIDSongPerformance::operator=(const SBIDSongPerformance& t)
     return *this;
 }
 
+//	Methods used by SBIDManager
+SBIDSongPerformancePtr
+SBIDSongPerformance::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___song_performance "
+        "( "
+            "song_id, "
+            "artist_id, "
+            "year, "
+            "notes "
+        ") "
+        "VALUES "
+        "( "
+            "%1', "
+            "%2', "
+            "%3', "
+            "'%4' "
+        ") "
+    )
+        .arg(p.songID)
+        .arg(p.performerID)
+        .arg(p.year)
+        .arg(p.notes)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDSongPerformance sp;
+    sp._songPerformanceID=dal->retrieveLastInsertedKey();
+    sp._songID           =p.songID;
+    sp._performerID      =p.performerID;
+    sp._year             =p.year;
+    sp._notes            =p.notes;
+
+    //	Done
+    return std::make_shared<SBIDSongPerformance>(sp);
+}
+
 SBSqlQueryModel*
 SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr)
 {
@@ -387,7 +435,6 @@ SBIDSongPerformance::retrieveSQL(const QString &key)
 QStringList
 SBIDSongPerformance::updateSQL() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
 
     if(deletedFlag() && !newFlag())

@@ -173,6 +173,54 @@ SBIDChartPerformance::operator=(const SBIDChartPerformance& t)
 
 ///	Helper methods for SBIDManagerTemplate
 SBIDChartPerformancePtr
+SBIDChartPerformance::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___chart_performance "
+        "( "
+            "chart_id, "
+            "performance_id, "
+            "chart_position, "
+            "notes "
+        ") "
+        "VALUES "
+        "( "
+            "%1', "
+            "%2, "
+            "%3, "
+            "%4, "
+            "%5 "
+        ") "
+    )
+        .arg(p.chartID)
+        .arg(p.songPerformanceID)
+        .arg(p.chartPosition)
+        .arg(p.notes)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDChartPerformance cp;
+    cp._chartPerformanceID=dal->retrieveLastInsertedKey();
+    cp._chartID           =p.chartID;
+    cp._songPerformanceID =p.songPerformanceID;
+    cp._chartPosition     =p.chartPosition;
+    cp._notes             =p.notes;
+
+    //	Done
+    return std::make_shared<SBIDChartPerformance>(cp);
+}
+
+SBIDChartPerformancePtr
 SBIDChartPerformance::instantiate(const QSqlRecord &r)
 {
     SBIDChartPerformance cp;

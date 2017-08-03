@@ -192,6 +192,73 @@ SBIDChart::operator=(const SBIDChart& t)
     return *this;
 }
 
+
+//	Methods used by SBIDManager (these should all become pure virtual if not static)
+SBIDChartPtr
+SBIDChart::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    if(p.chartName.length()==0)
+    {
+        //	Give new chart unique name
+        int maxNum=0;
+        q=QString("SELECT name FROM ___SB_SCHEMA_NAME___chart WHERE name %1 \"New Chart%\"").arg(dal->getILike());
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery qName(q,db);
+
+        while(qName.next())
+        {
+            p.chartName=qName.value(0).toString();
+            p.chartName.replace("New Chart ","");
+            int i=p.chartName.toInt();
+            if(i>=maxNum)
+            {
+                maxNum=i+1;
+            }
+        }
+        p.chartName=QString("New Chart %1").arg(maxNum);
+    }
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___chart "
+        "( "
+            "name, "
+            "release_date, "
+            "notes "
+        ") "
+        "VALUES "
+        "( "
+            "'%1', "
+            "'%2'::DATE, "
+            "'%3' "
+        ")"
+    )
+        .arg(p.chartName)
+        .arg(p.releaseDate.toString("YYYY-MM-dd"))
+        .arg(p.notes)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDChart c;
+    c._chartID    =dal->retrieveLastInsertedKey();
+    c._chartName  =p.chartName;
+    c._notes      =p.notes;
+    c._releaseDate=p.releaseDate;
+
+    //	Done
+    return std::make_shared<SBIDChart>(c);
+}
+
 SBIDChartPtr
 SBIDChart::instantiate(const QSqlRecord &r)
 {

@@ -64,13 +64,13 @@ SBIDSong::itemType() const
     return SBIDBase::sb_type_song;
 }
 
-bool
-SBIDSong::save()
-{
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList SQL;
-
+//bool
+//SBIDSong::save()
+//{
+    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    //QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    //QStringList SQL;
+//
 //    if(this->_songID==-1)
 //    {
 //        QString newSoundex=Common::soundex(this->_songTitle);
@@ -169,8 +169,8 @@ SBIDSong::save()
 //    {
 //        //	Update existing
 //    }
-    return dal->executeBatch(SQL);
-}
+    //return dal->executeBatch(SQL);
+//}
 
 void
 SBIDSong::sendToPlayQueue(bool enqueueFlag)
@@ -567,465 +567,465 @@ SBIDSong::performerIDList() const
 //    return _sb_song_performer_id;
 //}
 
-bool
-SBIDSong::updateExistingSong(const SBIDBase &oldSongID, SBIDSong &newSongID, const QStringList& extraSQL,bool commitFlag)
-{
-    Q_UNUSED(oldSongID);
-    Q_UNUSED(newSongID);
-    Q_UNUSED(extraSQL);
-    Q_UNUSED(commitFlag);
+//bool
+//SBIDSong::updateExistingSong(const SBIDBase &oldSongID, SBIDSong &newSongID, const QStringList& extraSQL,bool commitFlag)
+//{
+//    Q_UNUSED(oldSongID);
+//    Q_UNUSED(newSongID);
+//    Q_UNUSED(extraSQL);
+//    Q_UNUSED(commitFlag);
 
-    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    //QStringList allQueries;
-    //QString q;
-    bool resultFlag=1;
+//    //DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+//    //QStringList allQueries;
+//    //QString q;
+//    bool resultFlag=1;
 
-    /*
-    //	The following flags should be mutually exclusive.
-    bool titleRenameFlag=0;
-    bool mergeToNewSongFlag=0;
-    bool mergeToExistingSongFlag=0;
-    bool updatePerformerFlag=0;
+//    /*
+//    //	The following flags should be mutually exclusive.
+//    bool titleRenameFlag=0;
+//    bool mergeToNewSongFlag=0;
+//    bool mergeToExistingSongFlag=0;
+//    bool updatePerformerFlag=0;
 
-    //	The following flags can be set independently from eachother.
-    //	However, they can be turned of by detecting any of the flags above.
-    bool yearOfReleaseChangedFlag=0;
-    bool notesChangedFlag=0;
-    bool lyricsChangedFlag=0;
-    bool extraSQLFlag=0;
+//    //	The following flags can be set independently from eachother.
+//    //	However, they can be turned of by detecting any of the flags above.
+//    bool yearOfReleaseChangedFlag=0;
+//    bool notesChangedFlag=0;
+//    bool lyricsChangedFlag=0;
+//    bool extraSQLFlag=0;
 
-    qDebug() << SB_DEBUG_INFO << "old"
-        << ":sb_song_id=" << oldSongID.songID()
-        << ":sb_song_performer_id=" << oldSongID.songPerformerID()
-        << ":isOriginalPerformerFlag=" << oldSongID.originalPerformerFlag()
-    ;
-    qDebug() << SB_DEBUG_INFO << "new"
-        << ":sb_song_id=" << newSongID.songID()
-        << ":sb_song_performer_id=" << newSongID.songPerformerID()
-        << ":isOriginalPerformerFlag=" << newSongID.originalPerformerFlag()
-    ;
+//    qDebug() << SB_DEBUG_INFO << "old"
+//        << ":sb_song_id=" << oldSongID.songID()
+//        << ":sb_song_performer_id=" << oldSongID.songPerformerID()
+//        << ":isOriginalPerformerFlag=" << oldSongID.originalPerformerFlag()
+//    ;
+//    qDebug() << SB_DEBUG_INFO << "new"
+//        << ":sb_song_id=" << newSongID.songID()
+//        << ":sb_song_performer_id=" << newSongID.songPerformerID()
+//        << ":isOriginalPerformerFlag=" << newSongID.originalPerformerFlag()
+//    ;
 
-    //	1.	Set attribute flags
-    if(oldSongID.year()!=newSongID.year())
-    {
-        yearOfReleaseChangedFlag=1;
-    }
-    if(oldSongID.notes()!=newSongID.notes())
-    {
-        notesChangedFlag=1;
-    }
-    if(oldSongID.lyrics()!=newSongID.lyrics())
-    {
-        lyricsChangedFlag=1;
-    }
+//    //	1.	Set attribute flags
+//    if(oldSongID.year()!=newSongID.year())
+//    {
+//        yearOfReleaseChangedFlag=1;
+//    }
+//    if(oldSongID.notes()!=newSongID.notes())
+//    {
+//        notesChangedFlag=1;
+//    }
+//    if(oldSongID.lyrics()!=newSongID.lyrics())
+//    {
+//        lyricsChangedFlag=1;
+//    }
 
-    //	2.	Determine what need to be done.
-    if(newSongID.songID()==-1)
-    {
-        //	New song does NOT exists
-        if(oldSongID.songPerformerID()!=newSongID.songPerformerID())
-        {
-            //	Different performer
-            mergeToNewSongFlag=1;
-        }
-        else
-        {
-            //	Same performer
-            titleRenameFlag=1;
-            newSongID.setSongID(oldSongID.songID());
-        }
-    }
-    else
-    {
-        //	New song exists
-        if(oldSongID.songID()!=newSongID.songID())
-        {
-            //	Songs are not the same -> merge
-            mergeToExistingSongFlag=1;
-        }
-        else if(oldSongID.songPerformerID()!=newSongID.songPerformerID())
-        {
-            //	Songs are the same, update performer
-            updatePerformerFlag=1;
-        }
-    }
+//    //	2.	Determine what need to be done.
+//    if(newSongID.songID()==-1)
+//    {
+//        //	New song does NOT exists
+//        if(oldSongID.songPerformerID()!=newSongID.songPerformerID())
+//        {
+//            //	Different performer
+//            mergeToNewSongFlag=1;
+//        }
+//        else
+//        {
+//            //	Same performer
+//            titleRenameFlag=1;
+//            newSongID.setSongID(oldSongID.songID());
+//        }
+//    }
+//    else
+//    {
+//        //	New song exists
+//        if(oldSongID.songID()!=newSongID.songID())
+//        {
+//            //	Songs are not the same -> merge
+//            mergeToExistingSongFlag=1;
+//        }
+//        else if(oldSongID.songPerformerID()!=newSongID.songPerformerID())
+//        {
+//            //	Songs are the same, update performer
+//            updatePerformerFlag=1;
+//        }
+//    }
 
-    if(extraSQL.count()>0)
-    {
-        extraSQLFlag=1;
-    }
+//    if(extraSQL.count()>0)
+//    {
+//        extraSQLFlag=1;
+//    }
 
-    //	3.	Sanity check on flags
-    if(
-        titleRenameFlag==0 &&
-        mergeToNewSongFlag==0 &&
-        mergeToExistingSongFlag==0 &&
-        updatePerformerFlag==0 &&
+//    //	3.	Sanity check on flags
+//    if(
+//        titleRenameFlag==0 &&
+//        mergeToNewSongFlag==0 &&
+//        mergeToExistingSongFlag==0 &&
+//        updatePerformerFlag==0 &&
 
-        yearOfReleaseChangedFlag==0 &&
-        notesChangedFlag==0 &&
-        lyricsChangedFlag==0 &&
+//        yearOfReleaseChangedFlag==0 &&
+//        notesChangedFlag==0 &&
+//        lyricsChangedFlag==0 &&
 
-        extraSQLFlag==0
-    )
-    {
-        SBMessageBox::standardWarningBox("No flags are set in saveSong");
-        return 0;
-    }
+//        extraSQLFlag==0
+//    )
+//    {
+//        SBMessageBox::standardWarningBox("No flags are set in saveSong");
+//        return 0;
+//    }
 
-    if((int)titleRenameFlag+(int)mergeToNewSongFlag+(int)mergeToExistingSongFlag+(int)updatePerformerFlag>1)
-    {
-        SBMessageBox::standardWarningBox("SaveSong: multiple flags set!");
-        return 0;
-    }
+//    if((int)titleRenameFlag+(int)mergeToNewSongFlag+(int)mergeToExistingSongFlag+(int)updatePerformerFlag>1)
+//    {
+//        SBMessageBox::standardWarningBox("SaveSong: multiple flags set!");
+//        return 0;
+//    }
 
-    //	Discard attribute changes when merging
-    if(mergeToExistingSongFlag || mergeToNewSongFlag)
-    {
-        yearOfReleaseChangedFlag=0;
-        notesChangedFlag=0;
-        lyricsChangedFlag=0;
-        extraSQLFlag=0;
-    }
+//    //	Discard attribute changes when merging
+//    if(mergeToExistingSongFlag || mergeToNewSongFlag)
+//    {
+//        yearOfReleaseChangedFlag=0;
+//        notesChangedFlag=0;
+//        lyricsChangedFlag=0;
+//        extraSQLFlag=0;
+//    }
 
-    //	4.	Collect work to be done.
-    if(extraSQLFlag==1)
-    {
-        allQueries.append(extraSQL);
-    }
+//    //	4.	Collect work to be done.
+//    if(extraSQLFlag==1)
+//    {
+//        allQueries.append(extraSQL);
+//    }
 
-    //		A.	Attribute changes
-    if(lyricsChangedFlag==1)
-    {
-        //	Insert record if not exists.
-        q=QString
-        (
-            "INSERT INTO "
-                "___SB_SCHEMA_NAME___lyrics "
-            "SELECT DISTINCT "
-                "%1,'' "
-            "FROM "
-                "___SB_SCHEMA_NAME___lyrics "
-            "WHERE "
-                "NOT EXISTS "
-                "( "
-                    "SELECT "
-                        "NULL "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___lyrics "
-                    "WHERE "
-                        "song_id=%1 "
-                ")"
-        )
-            .arg(newSongID.songID())
-        ;
-        allQueries.append(q);
+//    //		A.	Attribute changes
+//    if(lyricsChangedFlag==1)
+//    {
+//        //	Insert record if not exists.
+//        q=QString
+//        (
+//            "INSERT INTO "
+//                "___SB_SCHEMA_NAME___lyrics "
+//            "SELECT DISTINCT "
+//                "%1,'' "
+//            "FROM "
+//                "___SB_SCHEMA_NAME___lyrics "
+//            "WHERE "
+//                "NOT EXISTS "
+//                "( "
+//                    "SELECT "
+//                        "NULL "
+//                    "FROM "
+//                        "___SB_SCHEMA_NAME___lyrics "
+//                    "WHERE "
+//                        "song_id=%1 "
+//                ")"
+//        )
+//            .arg(newSongID.songID())
+//        ;
+//        allQueries.append(q);
 
-        //	Now do the update
-        q=QString
-        (
-            "UPDATE ___SB_SCHEMA_NAME___lyrics "
-            "SET "
-                "lyrics='%1' "
-            "WHERE "
-                "song_id=%2 "
-        )
-            .arg(Common::escapeSingleQuotes(newSongID.lyrics()))
-            .arg(newSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//        //	Now do the update
+//        q=QString
+//        (
+//            "UPDATE ___SB_SCHEMA_NAME___lyrics "
+//            "SET "
+//                "lyrics='%1' "
+//            "WHERE "
+//                "song_id=%2 "
+//        )
+//            .arg(Common::escapeSingleQuotes(newSongID.lyrics()))
+//            .arg(newSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(notesChangedFlag==1)
-    {
-        q=QString
-        (
-            "UPDATE ___SB_SCHEMA_NAME___song "
-            "SET "
-                "notes='%1' "
-            "WHERE "
-                "song_id=%2 "
-        )
-            .arg(Common::escapeSingleQuotes(newSongID.notes()))
-            .arg(newSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//    if(notesChangedFlag==1)
+//    {
+//        q=QString
+//        (
+//            "UPDATE ___SB_SCHEMA_NAME___song "
+//            "SET "
+//                "notes='%1' "
+//            "WHERE "
+//                "song_id=%2 "
+//        )
+//            .arg(Common::escapeSingleQuotes(newSongID.notes()))
+//            .arg(newSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(yearOfReleaseChangedFlag==1)
-    {
-        q=QString
-        (
-            "UPDATE ___SB_SCHEMA_NAME___performance "
-            "SET "
-                "year='%1' "
-            "WHERE "
-                "song_id=%2 AND "
-                "artist_id=%3 "
-        )
-            .arg(newSongID.year())
-            .arg(newSongID.songID())
-            .arg(newSongID.songPerformerID())
-        ;
-        allQueries.append(q);
-    }
+//    if(yearOfReleaseChangedFlag==1)
+//    {
+//        q=QString
+//        (
+//            "UPDATE ___SB_SCHEMA_NAME___performance "
+//            "SET "
+//                "year='%1' "
+//            "WHERE "
+//                "song_id=%2 AND "
+//                "artist_id=%3 "
+//        )
+//            .arg(newSongID.year())
+//            .arg(newSongID.songID())
+//            .arg(newSongID.songPerformerID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(titleRenameFlag==1 || mergeToNewSongFlag==1)
-    {
-        q=QString
-        (
-            "UPDATE ___SB_SCHEMA_NAME___song "
-            "SET "
-                "title='%1', "
-                "soundex='%2' "
-            "WHERE "
-                "song_id=%3 "
-        )
-            .arg(Common::escapeSingleQuotes(newSongID.songTitle()))
-            .arg(Common::soundex(newSongID.songTitle()))
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
-        newSongID.setSongID(oldSongID.songID());
-    }
+//    if(titleRenameFlag==1 || mergeToNewSongFlag==1)
+//    {
+//        q=QString
+//        (
+//            "UPDATE ___SB_SCHEMA_NAME___song "
+//            "SET "
+//                "title='%1', "
+//                "soundex='%2' "
+//            "WHERE "
+//                "song_id=%3 "
+//        )
+//            .arg(Common::escapeSingleQuotes(newSongID.songTitle()))
+//            .arg(Common::soundex(newSongID.songTitle()))
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
+//        newSongID.setSongID(oldSongID.songID());
+//    }
 
-    //		B.	Non-attribute changes
-    //			A.	Create
-    if(updatePerformerFlag==1 || mergeToNewSongFlag==1 || mergeToExistingSongFlag==1)
-    {
-        //	Create performance if it does not exists.
-        q=QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-            "( "
-                "song_id, "
-                "artist_id, "
-                "sole_id, "
-                "year "
-            ") "
-            "SELECT DISTINCT "
-                "%1, "
-                "%2, "
-                "0, "
-                "year "
-            "FROM "
-                "___SB_SCHEMA_NAME___performance "
-            "WHERE "
-                "song_id=%1 AND "
-                "sole_id=0 AND "
-                "NOT EXISTS "
-                "( "
-                    "SELECT "
-                        "NULL "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___performance "
-                    "WHERE "
-                        "song_id=%1 AND "
-                        "artist_id=%2 "
-                ") "
-        )
-            .arg(newSongID.songID())
-            .arg(newSongID.songPerformerID())
-        ;
-        allQueries.append(q);
-    }
+//    //		B.	Non-attribute changes
+//    //			A.	Create
+//    if(updatePerformerFlag==1 || mergeToNewSongFlag==1 || mergeToExistingSongFlag==1)
+//    {
+//        //	Create performance if it does not exists.
+//        q=QString
+//        (
+//            "INSERT INTO ___SB_SCHEMA_NAME___performance "
+//            "( "
+//                "song_id, "
+//                "artist_id, "
+//                "sole_id, "
+//                "year "
+//            ") "
+//            "SELECT DISTINCT "
+//                "%1, "
+//                "%2, "
+//                "0, "
+//                "year "
+//            "FROM "
+//                "___SB_SCHEMA_NAME___performance "
+//            "WHERE "
+//                "song_id=%1 AND "
+//                "sole_id=0 AND "
+//                "NOT EXISTS "
+//                "( "
+//                    "SELECT "
+//                        "NULL "
+//                    "FROM "
+//                        "___SB_SCHEMA_NAME___performance "
+//                    "WHERE "
+//                        "song_id=%1 AND "
+//                        "artist_id=%2 "
+//                ") "
+//        )
+//            .arg(newSongID.songID())
+//            .arg(newSongID.songPerformerID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    //			B.	Update
-    if(updatePerformerFlag==1 || mergeToNewSongFlag==1)
-    {
-        //	Update non-original performances
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___performance "
-            "SET "
-                "song_id=%2 "
-            "WHERE "
-                "song_id=%1 "
-        )
-            .arg(newSongID.songID())
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
+//    //			B.	Update
+//    if(updatePerformerFlag==1 || mergeToNewSongFlag==1)
+//    {
+//        //	Update non-original performances
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___performance "
+//            "SET "
+//                "song_id=%2 "
+//            "WHERE "
+//                "song_id=%1 "
+//        )
+//            .arg(newSongID.songID())
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
 
-        //	Switch flag
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___performance "
-            "SET "
-                "sole_id=CASE WHEN artist_id=%1 THEN 0 ELSE 1 END "
-            "WHERE "
-                "song_id=%2 "
-        )
-            .arg(newSongID.songPerformerID())
-            .arg(newSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//        //	Switch flag
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___performance "
+//            "SET "
+//                "sole_id=CASE WHEN artist_id=%1 THEN 0 ELSE 1 END "
+//            "WHERE "
+//                "song_id=%2 "
+//        )
+//            .arg(newSongID.songPerformerID())
+//            .arg(newSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
-    {
-        //	Merge old with new.
+//    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
+//    {
+//        //	Merge old with new.
 
-        //	1.	Update performance tables
-        QStringList performanceTable;
-        performanceTable.append("chart_performance");
-        performanceTable.append("collection_performance");
-        performanceTable.append("online_performance");
-        //performanceTable.append("playlist_performance");
+//        //	1.	Update performance tables
+//        QStringList performanceTable;
+//        performanceTable.append("chart_performance");
+//        performanceTable.append("collection_performance");
+//        performanceTable.append("online_performance");
+//        //performanceTable.append("playlist_performance");
 
-        for(int i=0;i<performanceTable.size();i++)
-        {
-            q=QString
-            (
-                "UPDATE "
-                    "___SB_SCHEMA_NAME___%1 "
-                "SET "
-                    "song_id=%2, "
-                    "artist_id=CASE WHEN artist_id=%5 THEN %3 ELSE artist_id END "
-                "WHERE "
-                    "song_id=%4 "
-             )
-                .arg(performanceTable.at(i))
-                .arg(newSongID.songID())
-                .arg(newSongID.songPerformerID())
-                .arg(oldSongID.songID())
-                .arg(oldSongID.songPerformerID())
-            ;
-            allQueries.append(q);
-        }
+//        for(int i=0;i<performanceTable.size();i++)
+//        {
+//            q=QString
+//            (
+//                "UPDATE "
+//                    "___SB_SCHEMA_NAME___%1 "
+//                "SET "
+//                    "song_id=%2, "
+//                    "artist_id=CASE WHEN artist_id=%5 THEN %3 ELSE artist_id END "
+//                "WHERE "
+//                    "song_id=%4 "
+//             )
+//                .arg(performanceTable.at(i))
+//                .arg(newSongID.songID())
+//                .arg(newSongID.songPerformerID())
+//                .arg(oldSongID.songID())
+//                .arg(oldSongID.songPerformerID())
+//            ;
+//            allQueries.append(q);
+//        }
 
-        //	2.	Update record_performance for non-op_ fields
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET     "
-                "song_id=%1, "
-                "artist_id=CASE WHEN artist_id=%4 THEN %2 ELSE artist_id END "
-            "WHERE "
-                "song_id=%3 "
-         )
-            .arg(newSongID.songID())
-            .arg(newSongID.songPerformerID())
-            .arg(oldSongID.songID())
-            .arg(oldSongID.songPerformerID())
-        ;
-        allQueries.append(q);
+//        //	2.	Update record_performance for non-op_ fields
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___record_performance "
+//            "SET     "
+//                "song_id=%1, "
+//                "artist_id=CASE WHEN artist_id=%4 THEN %2 ELSE artist_id END "
+//            "WHERE "
+//                "song_id=%3 "
+//         )
+//            .arg(newSongID.songID())
+//            .arg(newSongID.songPerformerID())
+//            .arg(oldSongID.songID())
+//            .arg(oldSongID.songPerformerID())
+//        ;
+//        allQueries.append(q);
 
-        //	3.	Update record_performance for op_ fields
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET     "
-                "op_song_id=%1, "
-                "op_artist_id=CASE WHEN op_artist_id=%4 THEN %2 ELSE artist_id END "
-            "WHERE "
-                "op_song_id=%3 "
-         )
-            .arg(newSongID.songID())
-            .arg(newSongID.songPerformerID())
-            .arg(oldSongID.songID())
-            .arg(oldSongID.songPerformerID())
-        ;
-        allQueries.append(q);
-    }
+//        //	3.	Update record_performance for op_ fields
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___record_performance "
+//            "SET     "
+//                "op_song_id=%1, "
+//                "op_artist_id=CASE WHEN op_artist_id=%4 THEN %2 ELSE artist_id END "
+//            "WHERE "
+//                "op_song_id=%3 "
+//         )
+//            .arg(newSongID.songID())
+//            .arg(newSongID.songPerformerID())
+//            .arg(oldSongID.songID())
+//            .arg(oldSongID.songPerformerID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(mergeToNewSongFlag==1)
-    {
-        //	1.	Update lyrics to point to new song
-        q=QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___lyrics "
-            "SET     "
-                "song_id=%1 "
-            "WHERE "
-                "song_id=%2 "
-         )
-            .arg(newSongID.songID())
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//    if(mergeToNewSongFlag==1)
+//    {
+//        //	1.	Update lyrics to point to new song
+//        q=QString
+//        (
+//            "UPDATE "
+//                "___SB_SCHEMA_NAME___lyrics "
+//            "SET     "
+//                "song_id=%1 "
+//            "WHERE "
+//                "song_id=%2 "
+//         )
+//            .arg(newSongID.songID())
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    //			C.	Remove
-    if(mergeToExistingSongFlag==1)
-    {
-        //	1.	Remove lyrics
-        q=QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___lyrics "
-            "WHERE "
-                "song_id=%1 "
-        )
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
+//    //			C.	Remove
+//    if(mergeToExistingSongFlag==1)
+//    {
+//        //	1.	Remove lyrics
+//        q=QString
+//        (
+//            "DELETE FROM "
+//                "___SB_SCHEMA_NAME___lyrics "
+//            "WHERE "
+//                "song_id=%1 "
+//        )
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
 
-        //	2.	Remove online_performance
-        q=QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___online_performance "
-            "WHERE "
-                "song_id=%1 "
-        )
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
+//        //	2.	Remove online_performance
+//        q=QString
+//        (
+//            "DELETE FROM "
+//                "___SB_SCHEMA_NAME___online_performance "
+//            "WHERE "
+//                "song_id=%1 "
+//        )
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
 
-        //	3.	Remove toplay
-        q=QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "song_id=%1 "
-        )
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//        //	3.	Remove toplay
+//        q=QString
+//        (
+//            "DELETE FROM "
+//                "___SB_SCHEMA_NAME___toplay "
+//            "WHERE "
+//                "song_id=%1 "
+//        )
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
-    {
-        //	Remove original performance
-        q=QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___performance "
-            "WHERE "
-                "song_id=%1 "
-                //"artist_id=%2 "
-        )
-            .arg(oldSongID.songID())
-            //.arg(oldSongID.songPerformerID())
-        ;
-        allQueries.append(q);
-    }
+//    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
+//    {
+//        //	Remove original performance
+//        q=QString
+//        (
+//            "DELETE FROM "
+//                "___SB_SCHEMA_NAME___performance "
+//            "WHERE "
+//                "song_id=%1 "
+//                //"artist_id=%2 "
+//        )
+//            .arg(oldSongID.songID())
+//            //.arg(oldSongID.songPerformerID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    if(mergeToExistingSongFlag==1)
-    {
-        //	Remove original song
-        q=QString
-        (
-            "DELETE FROM ___SB_SCHEMA_NAME___song "
-            "WHERE song_id=%1 "
-        )
-            .arg(oldSongID.songID())
-        ;
-        allQueries.append(q);
-    }
+//    if(mergeToExistingSongFlag==1)
+//    {
+//        //	Remove original song
+//        q=QString
+//        (
+//            "DELETE FROM ___SB_SCHEMA_NAME___song "
+//            "WHERE song_id=%1 "
+//        )
+//            .arg(oldSongID.songID())
+//        ;
+//        allQueries.append(q);
+//    }
 
-    resultFlag=dal->executeBatch(allQueries,commitFlag);
-    */
+//    resultFlag=dal->executeBatch(allQueries,commitFlag);
+//    */
 
-    return resultFlag;
-}
+//    return resultFlag;
+//}
 
 void
 SBIDSong::updateSoundexFields()
@@ -1227,78 +1227,67 @@ SBIDSong::operator=(const SBIDSong& t)
 }
 
 SBIDSongPtr
-SBIDSong::createInDB()
+SBIDSong::createInDB(Common::sb_parameters& p)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-//    //	Get next ID available
-//    q=QString("SELECT %1(MAX(song_id),0)+1 FROM ___SB_SCHEMA_NAME___song ").arg(dal->getIsNull());
-//    dal->customize(q);
-//    QSqlQuery qID(q,db);
-//    qID.next();
+    if(p.songTitle.length()==0)
+    {
+        //	Give new song unique name
+        int maxNum=1;
+        q=QString("SELECT title FROM ___SB_SCHEMA_NAME___song WHERE name %1 \"New Song%\"")
+            .arg(dal->getILike())
+        ;
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery qName(q,db);
 
-//    //	Give new song unique name
-//    int maxNum=1;
-//    QString newSongTitle="New Song";
-//    q=QString("SELECT title FROM ___SB_SCHEMA_NAME___song WHERE name %1 \"%2%\"")
-//        .arg(dal->getILike())
-//        .arg(Common::escapeSingleQuotes(newSongTitle))
-//    ;
-//    dal->customize(q);
-//    QSqlQuery qName(q,db);
+        while(qName.next())
+        {
+            p.songTitle=qName.value(0).toString();
+            p.songTitle.replace("New Song ","");
+            int i=p.songTitle.toInt();
+            if(i>=maxNum)
+            {
+                maxNum=i+1;
+            }
+        }
+        p.songTitle=QString("New Song %1").arg(maxNum);
+    }
 
-//    while(qName.next())
-//    {
-//        QString existing=qName.value(0).toString();
-//        existing.replace(newSongTitle,"");
-//        int i=existing.toInt();
-//        if(i>=maxNum)
-//        {
-//            maxNum=i+1;
-//        }
-//    }
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___song "
+        "( "
+            "title, "
+            "notes, "
+            "soundex "
+        ") "
+        "SELECT "
+            "'%1', "
+            "'%2', "
+            "'%3' "
+    )
+        .arg(Common::escapeSingleQuotes(p.songTitle))
+        .arg(Common::escapeSingleQuotes(p.notes))
+        .arg(Common::soundex(p.songTitle))
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
 
-//    //	Instantiate
-//    SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
-//    SBIDSong song;
-//    song._songID=qID.value(0).toInt();
-//    song._songTitle=QString("%1%2").arg(newSongTitle).arg(maxNum);
-//    song._sb_song_performer_id=variousPerformerPtr->performerID();
-//    song._year=QDate(QDate::currentDate()).year();
-//    song._notes="Inserted by us!";
+    //	Instantiate
+    SBIDSong s;
+    s._songID   =dal->retrieveLastInsertedKey();
+    s._songTitle=p.songTitle;
+    s._notes    =p.notes;
 
-//    QStringList SQL;
-
-//    //	Insert
-//    SQL.append(QString
-//    (
-//        "INSERT INTO ___SB_SCHEMA_NAME___song "
-//        "( "
-//            "song_id, "
-//            "title, "
-//            "notes, "
-//            "soundex "
-//        ") "
-//        "SELECT "
-//            "%1, "
-//            "'%2', "
-//            "'%3', "
-//            "'%4' "
-//    )
-//        .arg(song._songID)
-//        .arg(Common::escapeSingleQuotes(song._songTitle))
-//        .arg(Common::escapeSingleQuotes(song._notes))
-//        .arg(Common::soundex(song._songTitle))
-//    );
-
-//    bool successFlag=dal->executeBatch(SQL);
-//    if(successFlag)
-//    {
-//        return std::make_shared<SBIDSong>(song);
-//    }
-    return SBIDSongPtr();
+    //	Done
+    return std::make_shared<SBIDSong>(s);
 }
 
 SBSqlQueryModel*
@@ -1449,49 +1438,47 @@ SBIDSong::updateSQL() const
     return SQL;
 }
 
-SBIDSongPtr
-SBIDSong::userMatch(const Common::sb_parameters& tobeMatched, SBIDSongPtr existingSongPtr)
+Common::result
+SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found)
 {
-    SBIDSongPtr selectedSongPtr;
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-    bool resultCode=1;
+    Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDSongPtr>> matches;
 
-    int findCount=smgr->find(tobeMatched,existingSongPtr,matches);
-
-    if(findCount)
+    if(smgr->find(p,exclude,matches))
     {
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            selectedSongPtr=matches[0][0];
-            resultCode=1;
+            found=matches[0][0];
+            result=Common::result_exists;
         }
         else
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(tobeMatched,existingSongPtr,matches);
+            SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(p,exclude,matches);
             pu->exec();
 
             //	Go back to screen if no item has been selected
-            if(pu->hasSelectedItem()==0)
-            {
-                qDebug() << SB_DEBUG_INFO << "none selected";
-                return selectedSongPtr;
-            }
-            else
+            if(pu->hasSelectedItem()!=0)
             {
                 SBIDPtr selected=pu->getSelected();
                 if(selected)
                 {
                     //	Existing song is choosen
-                    selectedSongPtr=std::dynamic_pointer_cast<SBIDSong>(selected);
+                    found=std::dynamic_pointer_cast<SBIDSong>(selected);
+                    found->refreshDependents();
+                    result=Common::result_exists;
+                }
+                else
+                {
+                    result=Common::result_missing;
                 }
             }
         }
     }
-    return selectedSongPtr;
+    return result;
 }
 
 void

@@ -333,7 +333,9 @@ void
 Chooser::playlistNew()
 {
     SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
-    SBIDPlaylistPtr ptr=pmgr->createInDB();
+    Common::sb_parameters p;
+
+    SBIDPlaylistPtr ptr=pmgr->createInDB(p);
 
     //	Refresh our tree structure
     this->_populate();

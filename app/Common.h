@@ -91,23 +91,37 @@ public:
         sb_field_online_performance_id
     };
 
+    enum result
+    {
+        result_canceled=0,
+        result_exists=1,
+        result_missing=2
+    };
+
     struct sb_parameters
     {
         int albumID;
         int albumPerformanceID;
+        int albumPerformerID;
         int albumPosition;
-        int songID;
+        int chartID;
+        int chartPosition;
         int performerID;
+        int songID;
         int songPerformanceID;
 
         QString albumTitle;
-        QString performerName;
-        QString songTitle;
-        QString notes;
-        int year;
-        QString genre;
+        QString chartName;
         SBDuration duration;
+        QString genre;
+        QString notes;
         QString path;
+        QString performerName;
+        QString playlistName;
+        QDate releaseDate;
+        QString songTitle;
+        QString www;
+        int year;
     };
 
     static QStringList articles();

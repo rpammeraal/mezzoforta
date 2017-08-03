@@ -77,6 +77,7 @@ protected:
     SBIDOnlinePerformance& operator=(const SBIDOnlinePerformance& t);
 
     //	Methods used by SBIDManager
+    static SBIDOnlinePerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDOnlinePerformancePtr existingPtr);
     static SBIDOnlinePerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& songID);

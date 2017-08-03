@@ -211,8 +211,8 @@ SBTabPerformerEdit::save() const
         Common::sb_parameters tobeMatched;
         tobeMatched.performerName=editPerformerName;
         tobeMatched.performerID=orgPerformerPtr->performerID();
-        selectedPerformerPtr=pemgr->userMatch(tobeMatched,SBIDPerformerPtr());
-        if(!selectedPerformerPtr)
+        Common::result result=pemgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
+        if(result==Common::result_canceled)
         {
             qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
             return;

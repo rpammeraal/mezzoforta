@@ -56,7 +56,7 @@ protected:
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     //bool addDependent(SBIDPtr tobeAddedPtr);
-    //static SBIDChartPtr createInDB();
+    static SBIDChartPtr createInDB(Common::sb_parameters& p);
     static SBIDChartPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDChartPtr& ptr);

@@ -35,6 +35,7 @@ public:
     };
 };
 
+
 template <class T, class parentT>
 class SBIDManagerTemplate : public OpenFlags
 {
@@ -52,18 +53,18 @@ public:
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
 
     //	Update
-    void add(const std::shared_ptr<T>& ptr);
+    void add(const std::shared_ptr<T>& ptr);	//	CWIP: not sure if needed, when we have createInDB
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL);
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChanges=0);
     bool commitAll(DataAccessLayer* dal);
-    std::shared_ptr<T> createInDB();
+    std::shared_ptr<T> createInDB(Common::sb_parameters& p);
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL);
     void remove(std::shared_ptr<T> ptr);
     bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL);
     void rollbackChanges1();
     void setChanged(std::shared_ptr<T> ptr);
-    std::shared_ptr<T> userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr);
+    Common::result userMatch(const Common::sb_parameters& p, std::shared_ptr<T> exclude, std::shared_ptr<T>& result);
 
     //	Misc
     void clear();
@@ -415,9 +416,9 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 }
 
 template <class T, class parentT> std::shared_ptr<T>
-SBIDManagerTemplate<T,parentT>::createInDB()
+SBIDManagerTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 {
-    std::shared_ptr<T> newT=T::createInDB();
+    std::shared_ptr<T> newT=T::createInDB(p);
     QString key=newT->key();
     _leMap[key]=newT;
     return newT;
@@ -499,15 +500,26 @@ SBIDManagerTemplate<T,parentT>::setChanged(std::shared_ptr<T> ptr)
     _addToChangedList(ptr);
 }
 
-template <class T, class parentT> std::shared_ptr<T>
-SBIDManagerTemplate<T,parentT>::userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> excludedPtr)
+///
+///	userMatch(const Common::sb_parameters& tobeMatched, std::shared_ptr<T> exclude, std::shared_ptr<T>& result)
+///
+/// Finds matches based on parameters p, excluding `exclude', storing result in `result'.
+/// Returns:
+///		0:	canceled
+///		1:	selected
+///		-1:	create new
+template <class T, class parentT> Common::result
+SBIDManagerTemplate<T,parentT>::userMatch(const Common::sb_parameters& p, std::shared_ptr<T> exclude, std::shared_ptr<T>& found)
 {
-    std::shared_ptr<T> ptr=T::userMatch(tobeMatched,excludedPtr);
-    if(ptr && !contains(ptr->key()))
+    Common::result result=exclude->userMatch(p,exclude,found);
+    if(result==Common::result_missing)
     {
-        addItem(ptr);
     }
-    return ptr;
+    //if(ptr && !contains(ptr->key()))
+    //{
+        //addItem(ptr);
+    //}
+    return result;
 }
 
 

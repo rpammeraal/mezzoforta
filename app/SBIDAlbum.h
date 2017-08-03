@@ -36,7 +36,7 @@ public:
 
     //	Album specific methods
     inline int albumID() const { return _albumID; }
-    inline int albumPerformerID() const { return _performerID; }
+    inline int albumPerformerID() const { return _albumPerformerID; }
     inline QString albumTitle() const { return _albumTitle; }
     QStringList addSongToAlbum(const SBIDSong& song) const;
     SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes);
@@ -61,7 +61,7 @@ public:
 
     //	Setters
     void setAlbumTitle(const QString& albumTitle) { _albumTitle=albumTitle; setChangedFlag(); }
-    void setAlbumPerformerID(int performerID) { _performerID=performerID; setChangedFlag(); }
+    void setAlbumPerformerID(int performerID) { _albumPerformerID=performerID; setChangedFlag(); }
     void setYear(int year) { _year=year; setChangedFlag(); }
     void setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
 
@@ -97,7 +97,7 @@ protected:
     SBIDAlbum& operator=(const SBIDAlbum& t);	//	CWIP: to be moved to protected
 
     //	Methods used by SBIDManager
-    static SBIDAlbumPtr createInDB();
+    static SBIDAlbumPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeTo(SBIDAlbumPtr& to);
@@ -106,7 +106,7 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key);
     virtual void setPrimaryKey(int PK) { _albumID=PK;  }
     QStringList updateSQL() const;
-    static SBIDAlbumPtr userMatch(const Common::sb_parameters& tobeMatched, SBIDAlbumPtr existingSongPtr);
+    static Common::result userMatch(const Common::sb_parameters& p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found);
 
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();
@@ -114,7 +114,7 @@ protected:
 
 private:
     int                               _albumID;
-    int                               _performerID;
+    int                               _albumPerformerID;
     QString                           _albumTitle;
     QString                           _genre;
     QString                           _notes;

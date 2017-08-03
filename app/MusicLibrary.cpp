@@ -476,8 +476,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
                     Common::sb_parameters tobeMatched;
                     tobeMatched.performerName=entityPtr->songPerformerName;
                     tobeMatched.performerID=-1;
-                    selectedPerformerPtr=pemgr->userMatch(tobeMatched,SBIDPerformerPtr());
-                    if(!selectedPerformerPtr)
+                    Common::result result=pemgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
+                    if(result!=Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return 0;
@@ -663,11 +663,12 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
             {
                 if(entityPtr->createArtificialAlbumFlag || greatestHitsAlbums.contains(entityPtr->albumTitle))
                 {
-                    selectedAlbumPtr=amgr->createInDB();
-                    selectedAlbumPtr->setAlbumTitle(entityPtr->albumTitle);
-                    selectedAlbumPtr->setAlbumPerformerID(entityPtr->albumPerformerID);
-                    selectedAlbumPtr->setYear(entityPtr->year);
-                    selectedAlbumPtr->setGenre(entityPtr->genre);
+                    Common::sb_parameters p;
+                    p.albumTitle=entityPtr->albumTitle;
+                    p.albumPerformerID=entityPtr->albumPerformerID;
+                    p.year=entityPtr->year;
+                    p.genre=entityPtr->genre;
+                    selectedAlbumPtr=amgr->createInDB(p);
 
                     qDebug() << SB_DEBUG_INFO << "CRT ALBUM:"
                              << selectedAlbumPtr->albumTitle()
@@ -694,9 +695,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
                              << entityPtr->filePath
                              << entityPtr->key
                     ;
-                    selectedAlbumPtr=amgr->userMatch(parameters,SBIDAlbumPtr());
-                    qDebug() << SB_DEBUG_INFO;
-                    if(!selectedAlbumPtr)
+                    Common::result result=amgr->userMatch(parameters,SBIDAlbumPtr(),selectedAlbumPtr);
+                    if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return 0;
@@ -754,18 +754,24 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
                 const QString key=QString("%1:%2").arg(entityPtr->songTitle).arg(entityPtr->songPerformerID);
                 if(!songTitle2songIDMap.contains(key))
                 {
-                    Common::sb_parameters parameters;
-                    parameters.songTitle=entityPtr->songTitle;
-                    parameters.performerID=entityPtr->songPerformerID;
-                    parameters.performerName=entityPtr->songPerformerName;
-                    parameters.year=entityPtr->year;
-                    parameters.notes=entityPtr->notes;
+                    Common::sb_parameters p;
+                    p.songTitle=entityPtr->songTitle;
+                    p.performerID=entityPtr->songPerformerID;
+                    p.performerName=entityPtr->songPerformerName;
+                    p.year=entityPtr->year;
+                    p.notes=entityPtr->notes;
 
-                    selectedSongPtr=smgr->userMatch(parameters,SBIDSongPtr());
-                    if(!selectedSongPtr)
+                    Common::result result=smgr->userMatch(p,SBIDSongPtr(),selectedSongPtr);
+                    if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return 0;
+                    }
+
+                    //	Create song
+                    if(result==Common::result_missing)
+                    {
+                        selectedSongPtr=smgr->createInDB(p);
                     }
 
                     songTitle2songIDMap[key]=selectedSongPtr->songID();

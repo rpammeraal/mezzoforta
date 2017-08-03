@@ -420,6 +420,57 @@ SBIDAlbumPerformance::operator=(const SBIDAlbumPerformance& t)
     return *this;
 }
 
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___record_performance "
+        "( "
+            "performance_id, "
+            "record_id, "
+            "record_position, "
+            "duration, "
+            "notes"
+        ")"
+        "VALUES "
+        "( "
+            "%1, "
+            "%2, "
+            "%3, "
+            "'%4', "
+            "'%5' "
+        ") "
+    )
+        .arg(p.songPerformanceID)
+        .arg(p.albumID)
+        .arg(p.albumPosition)
+        .arg(p.duration.toString(SBDuration::sb_hhmmss_format))
+        .arg(p.notes)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDAlbumPerformance ap;
+    ap._albumPerformanceID=dal->retrieveLastInsertedKey();
+    ap._songPerformanceID =p.songPerformanceID;
+    ap._albumID           =p.albumID;
+    ap._albumPosition     =p.albumPosition;
+    ap._duration          =p.duration;
+    ap._notes             =p.notes;
+
+    //	Done
+    return std::make_shared<SBIDAlbumPerformance>(ap);
+}
+
 ///
 /// \brief SBIDAlbumPerformance::find
 /// \param tobeFound

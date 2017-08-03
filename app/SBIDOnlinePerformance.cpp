@@ -302,8 +302,6 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
 SBSqlQueryModel*
 SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-
     QString limitClause;
 
     if(limit)
@@ -429,6 +427,46 @@ SBIDOnlinePerformance::operator=(const SBIDOnlinePerformance& t)
 {
     _copy(t);
     return *this;
+}
+
+///	Methods used by SBIDManager
+SBIDOnlinePerformancePtr
+SBIDOnlinePerformance::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
+        "( "
+            "record_performance_id, "
+            "path "
+        ") "
+        "VALUES "
+        "( "
+            "%1', "
+            "'%2' "
+        ") "
+    )
+        .arg(p.albumPerformanceID)
+        .arg(p.path)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDOnlinePerformance op;
+    op._onlinePerformanceID=dal->retrieveLastInsertedKey();
+    op._albumPerformanceID =p.albumPerformanceID;
+    op._path               =p.path;
+
+    //	Done
+    return std::make_shared<SBIDOnlinePerformance>(op);
 }
 
 SBSqlQueryModel*

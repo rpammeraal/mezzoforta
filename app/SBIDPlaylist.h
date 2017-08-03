@@ -61,14 +61,14 @@ protected:
     friend class Preloader;
 
     SBIDPlaylist();
-    SBIDPlaylist(int itemID);
+    //	SBIDPlaylist(int itemID);
 
     //	Operators
     SBIDPlaylist& operator=(const SBIDPlaylist& t);
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     bool addDependent(SBIDPtr tobeAddedPtr);
-    static SBIDPlaylistPtr createInDB();
+    static SBIDPlaylistPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
@@ -81,7 +81,7 @@ protected:
 private:
     int               _playlistID;
     QString           _playlistName;
-    SBDuration          _duration;
+    SBDuration        _duration;
 
     //	Not instantiated
     int               _numItems;	//	may only be used until _items has been loaded

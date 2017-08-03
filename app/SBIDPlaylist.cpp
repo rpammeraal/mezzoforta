@@ -682,11 +682,11 @@ SBIDPlaylist::operator=(const SBIDPlaylist& t)
     return *this;
 }
 
-SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
-{
-    _init();
-    _playlistID=itemID;
-}
+//SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
+//{
+//    _init();
+//    _playlistID=itemID;
+//}
 
 ///	Methods used by SBIDManager
 bool
@@ -718,56 +718,67 @@ SBIDPlaylist::addDependent(SBIDPtr tobeAddedPtr)
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::createInDB()
+SBIDPlaylist::createInDB(Common::sb_parameters& p)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    //	Get next ID available
-    q=QString("SELECT %1(MAX(playlist_id),0)+1 FROM ___SB_SCHEMA_NAME___playlist ").arg(dal->getIsNull());
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery qID(q,db);
-    qID.next();
-
-    //	Instantiate
-    SBIDPlaylist playlist;
-    playlist._playlistID=qID.value(0).toInt();
-    playlist._playlistName="111111111111";
-    playlist._numItems=0;
-
-    //	Give new playlist unique name
-    int maxNum=1;
-    q=QString("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery qName(q,db);
-
-    while(qName.next())
+    if(p.playlistName.length()==0)
     {
-        QString existing=qName.value(0).toString();
-        existing.replace("New Playlist","");
-        int i=existing.toInt();
-        if(i>=maxNum)
+        //	Give new playlist unique name
+        int maxNum=0;
+        q=QString
+        ("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
+        dal->customize(q);
+        qDebug() << SB_DEBUG_INFO << q;
+        QSqlQuery qName(q,db);
+
+        while(qName.next())
         {
-            maxNum=i+1;
+            p.playlistName=qName.value(0).toString();
+            p.playlistName.replace("New Playlist ","");
+            int i=p.playlistName.toInt();
+            if(i>=maxNum)
+            {
+                maxNum=i+1;
+            }
         }
+        p.playlistName=QString("New Playlist %1").arg(maxNum);
     }
-    playlist._playlistName=QString("New Playlist%1").arg(maxNum);
 
     //	Insert
-    q=QString("INSERT INTO ___SB_SCHEMA_NAME___playlist (playlist_id, name,created,play_mode) VALUES(%1,'%2',%3,1)")
-            .arg(playlist.playlistID())
-            .arg(playlist.playlistName())
-            .arg(dal->getGetDate());
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___playlist "
+        "( "
+            "name, "
+            "created, "
+            "play_mode "
+        ") "
+        "VALUES "
+        "( "
+            "'%1', "
+            "%2, "
+            ",0)"
+        ") "
+    )
+        .arg(p.playlistName)
+        .arg(dal->getGetDate())
+    ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 
+    //	Instantiate
+    SBIDPlaylist pl;
+    pl._playlistID  =dal->retrieveLastInsertedKey();
+    pl._playlistName=p.playlistName;
+    pl._duration    =SBDuration();
+
     //	Done
-    return std::make_shared<SBIDPlaylist>(playlist);
+    return std::make_shared<SBIDPlaylist>(pl);
 }
 
 SBIDPlaylistPtr

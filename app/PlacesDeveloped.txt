@@ -872,10 +872,17 @@ Current:
 -	search for 'creo en ti'. Select 'Moose!Music Al Sur De Troya'. Drag 'Creo en Ti' to Latina!Latina!
 +	switched gears to getting import to work
 
+::Import
+-	save(): depreciated
+-	updateExisting*(): depreciated
+-	updateSQL(): only handles updates/removals (the latter maybe in a different method).
+-	createInDB: creates an actual record (fully populated) in the database and stores in mgr. Used by mgr.
+
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used.
 *	Play Nevermind/Nirvana album -- not all songs are put in playlist.
+*	Play Regatta De Blanc -- songs not in order
 
 Todo:
 *	Edit.

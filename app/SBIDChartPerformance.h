@@ -58,6 +58,7 @@ protected:
     SBIDChartPerformance& operator=(const SBIDChartPerformance& t);
 
     //	Methods used by SBIDManager
+    static SBIDChartPerformancePtr createInDB(Common::sb_parameters& p);
     static SBIDChartPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& chartPerformanceID);
     void postInstantiate(SBIDChartPerformancePtr& ptr);

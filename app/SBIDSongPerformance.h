@@ -3,21 +3,6 @@
 
 #include "SBIDBase.h"
 
-//class SBIDAlbumPerformance;
-//typedef std::shared_ptr<SBIDAlbumPerformance> SBIDAlbumPerformancePtr;
-
-//class SBIDOnlinePerformance;
-//typedef std::shared_ptr<SBIDOnlinePerformance> SBIDOnlinePerformancePtr;
-
-//class SBIDAlbum;
-//typedef std::shared_ptr<SBIDAlbum> SBIDAlbumPtr;
-
-//class SBIDPerformer;
-//typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
-
-//class SBIDSong;
-//typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
-
 class SBIDSongPerformance : public SBIDBase
 {
 public:
@@ -83,6 +68,7 @@ protected:
     SBIDSongPerformance& operator=(const SBIDSongPerformance& t);
 
     //	Methods used by SBIDManager
+    static SBIDSongPerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr);
     static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& songPerformanceID);

@@ -90,6 +90,7 @@ protected:
     SBIDAlbumPerformance& operator=(const SBIDAlbumPerformance& t);
 
     //	Methods used by SBIDManager
+    static SBIDAlbumPerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingPtr);
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumPerformanceID);
