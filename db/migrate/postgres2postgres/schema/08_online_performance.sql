@@ -29,9 +29,9 @@ FROM
 		JOIN ---SQL_SCHEMA_NAME---record_performance rp ON
 			p.performance_id=rp.performance_id AND
 			opo.record_id=rp.record_id AND
-			opo.record_position=rp.record_position;
+			opo.record_position=rp.record_position
 ORDER BY
-	insert_order
+	opo.insert_order
 ;
 
 UPDATE conversion AS c

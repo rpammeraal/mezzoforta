@@ -1,0 +1,49 @@
+#!/bin/sh
+
+OPLPD='/tmp/update.sql';
+
+echo 'BEGIN;' > $OPLPD
+psql -t -p 22500 -h mars songbase.20170801 << EOF  >> $OPLPD
+--SELECT
+	--'UPDATE rock.online_performance SET last_play_date =''' || last_play_date::VARCHAR || ''' WHERE REPLACE(path,'''''''',''___QUOTE___'') =   ''' || REPLACE(path,'''','___QUOTE___') || ''';'
+--FROM
+	--rock.online_performance
+--;
+SELECT 
+	'SELECT ' ||
+		pd.playlist_id::VARCHAR || ' AS playlist_id, ' ||
+		pd.playlist_position::VARCHAR  || ' AS playlist_position; ' ||
+	'INSERT INTO rock.playlist_detail ' ||
+	'( playlist_id,playlist_position,online_performance_id,child_playlist_id,chart_id,record_id,artist_id,timestamp,notes ) ' ||
+	'SELECT ' ||
+		pd.playlist_id::VARCHAR || ' AS playlist_id, ' ||
+		pd.playlist_position::VARCHAR  || ' AS playlist_position, ' ||
+		'op.online_performance_id AS online_performance_id, ' || 
+		COALESCE(pd.child_playlist_id::VARCHAR,'NULL')  || ' AS child_playlist_id, ' ||
+		COALESCE(pd.chart_id::VARCHAR,'NULL')  || ' AS chart_id, ' ||
+		COALESCE(pd.record_id::VARCHAR,'NULL')  || ' AS record_id, ' ||
+		COALESCE(pd.artist_id::VARCHAR,'NULL')  || ' AS artist_id, ' ||
+		'''' || pd.timestamp || ''' AS timestamp, ' ||
+		COALESCE(''''|| REPLACE(pd.notes,'''','''''') || '''','NULL')  || ' AS notes ' ||
+	'FROM ' ||
+		'rock.playlist p, ' ||
+		'rock.online_performance op ' ||
+	'WHERE ' ||
+		' REPLACE(COALESCE(op.path,''aap''),'''''''',''___QUOTE___'') =   ''' || REPLACE(COALESCE(op.path,''),'''','___QUOTE___') || ''' AND ' ||
+		'playlist_id= ' || p.playlist_id::VARCHAR || ' AND ' ||
+		'NOT EXISTS ( SELECT NULL FROM rock.playlist_detail pd WHERE pd.playlist_id=p.playlist_id AND pd.playlist_position= ' || pd.playlist_position::VARCHAR || '); '
+FROM
+	rock.playlist_detail pd
+		LEFT JOIN rock.playlist p USING(playlist_id)
+		LEFT JOIN rock.online_performance op USING(online_performance_id)
+ORDER BY 
+	pd.playlist_id,
+	pd.playlist_position
+;
+EOF
+	
+echo 'COMMIT;' >> $OPLPD
+
+
+ls -las $OPLPD
+

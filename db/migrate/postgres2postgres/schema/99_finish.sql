@@ -219,4 +219,7 @@ CREATE UNIQUE INDEX ui_artist_match ON ---SQL_SCHEMA_NAME---artist_match (artist
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance WHERE preferred_record_performance_id IS NULL;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_performance WHERE preferred_online_performance_id IS NULL;
 
+DROP TABLE config_host_old CASCADE;
+DROP TABLE digital_format_old CASCADE;
+
 COMMIT;

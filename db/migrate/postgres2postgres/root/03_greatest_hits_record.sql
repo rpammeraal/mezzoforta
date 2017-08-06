@@ -1,6 +1,6 @@
 CREATE TABLE greatest_hits_record 
 ( 
-	greatest_hits_record_id INT PRIMARY KEY NOT NULL, 
+	greatest_hits_record_id SERIAL PRIMARY KEY NOT NULL, 
 	title                   VARCHAR NOT NULL 
 ); 
 
