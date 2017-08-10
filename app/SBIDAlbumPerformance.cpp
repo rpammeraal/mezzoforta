@@ -247,33 +247,24 @@ SBIDAlbumPerformance::createKey(int albumPerformanceID)
     return key;
 }
 
-SBSqlQueryModel*
-SBIDAlbumPerformance::performancesBySong(int songID)
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
 {
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "rp.record_performance_id, "
-            "rp.performance_id, "
-            "rp.record_id, "
-            "rp.record_position, "
-            "rp.duration, "
-            "rp.notes, "
-            "rp.preferred_online_performance_id "
-        "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
-                    "s.song_id=p.song_id "
-                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
-                    "p.performance_id=rp.performance_id "
-        "WHERE s.song_id=%1 "
-    )
-        .arg(songID)
-    ;
+    SBIDAlbumPerformancePtr spPtr;
+    SBIDAlbumPerformanceMgr* spMgr=Context::instance()->getAlbumPerformanceMgr();
+    QMap<int,QList<SBIDAlbumPerformancePtr>> matches;
+    int count=spMgr->find(p,SBIDAlbumPerformancePtr(),matches,1);
 
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-
+    if(count)
+    {
+        if(matches[0].count()==1)
+        {
+            spPtr=matches[0][0];
+            qDebug() << SB_DEBUG_INFO << spPtr->text();
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
+    return spPtr;
 }
 
 QString
@@ -394,6 +385,34 @@ SBIDAlbumPerformance::performancesByPerformer_Preloader(int performerID)
     ;
 }
 
+SBSqlQueryModel*
+SBIDAlbumPerformance::performancesBySong(int songID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "rp.record_performance_id, "
+            "rp.performance_id, "
+            "rp.record_id, "
+            "rp.record_position, "
+            "rp.duration, "
+            "rp.notes, "
+            "rp.preferred_online_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
+                    "s.song_id=p.song_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
+                    "p.performance_id=rp.performance_id "
+        "WHERE s.song_id=%1 "
+    )
+        .arg(songID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+
+}
 
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
@@ -450,7 +469,7 @@ SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
         .arg(p.songPerformanceID)
         .arg(p.albumID)
         .arg(p.albumPosition)
-        .arg(p.duration.toString(SBDuration::sb_hhmmss_format))
+        .arg(p.duration.toString(SBDuration::sb_full_hhmmss_format))
         .arg(p.notes)
     ;
     dal->customize(q);
@@ -480,7 +499,7 @@ SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
 /// Only used by SBIDAlbum::addAlbumPerformance.
 /// If multiple ways to find is needed, add.
 SBSqlQueryModel*
-SBIDAlbumPerformance::find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingAlbumPerformancePtr)
+SBIDAlbumPerformance::find(const Common::sb_parameters& p,SBIDAlbumPerformancePtr existingAlbumPerformancePtr)
 {
     Q_UNUSED(existingAlbumPerformancePtr);
 
@@ -488,6 +507,12 @@ SBIDAlbumPerformance::find(const Common::sb_parameters& tobeFound,SBIDAlbumPerfo
     //	0	-	exact match with specified artist (0 or 1 in data set).
     //	1	-	exact match with any other artist (0 or more in data set).
     //	2	-	soundex match with any other artist (0 or more in data set).
+    qDebug() << SB_DEBUG_INFO
+             << "songPerformanceID=" << p.songPerformanceID
+             << "albumID=" << p.albumID
+             << "albumPosition=" << p.albumPosition
+    ;
+
     QString q=QString
     (
         //	match on foreign keys
@@ -507,10 +532,11 @@ SBIDAlbumPerformance::find(const Common::sb_parameters& tobeFound,SBIDAlbumPerfo
             "p.record_id=%2 AND "
             "p.record_position=%3 "
     )
-        .arg(tobeFound.songPerformanceID)
-        .arg(tobeFound.albumID)
-        .arg(tobeFound.albumPosition)
+        .arg(p.songPerformanceID)
+        .arg(p.albumID)
+        .arg(p.albumPosition)
     ;
+    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -529,6 +555,29 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     ap._preferredOnlinePerformanceID=Common::parseIntFieldDB(&r,i++);
 
     ap._orgAlbumPosition=ap._albumPosition;
+
+    if(ap._albumPerformanceID==31512)
+    {
+        qDebug() << SB_DEBUG_INFO
+                 << "albumPerformanceID=" << ap._albumPerformanceID
+                 << "prefOnlinePerfID=" << ap._preferredOnlinePerformanceID
+        ;
+        qDebug() << SB_DEBUG_INFO
+                 << "col=5"
+                 << "isNULL" << r.isNull(5)
+                 << "value" << r.value(5).toString()
+        ;
+        qDebug() << SB_DEBUG_INFO
+                 << "col=6"
+                 << "isNULL" << r.isNull(6)
+                 << "value" << r.value(6).toString()
+        ;
+        qDebug() << SB_DEBUG_INFO
+                 << "col=7"
+                 << "isNULL" << r.isNull(7)
+                 << "value" << r.value(7).toString()
+        ;
+    }
 
     return std::make_shared<SBIDAlbumPerformance>(ap);
 }
@@ -583,30 +632,16 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
 QStringList
 SBIDAlbumPerformance::updateSQL() const
 {
+    qDebug() << SB_DEBUG_INFO
+             << this->_albumPerformanceID
+             << this->deletedFlag()
+             << this->mergedFlag()
+             << this->changedFlag()
+    ;
     QStringList SQL;
 
-    if(deletedFlag() && !newFlag())
+    if(deletedFlag())
     {
-        SQL.append(QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "online_performance_id IN "
-                "( "
-                    "SELECT "
-                        "online_performance_id "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___online_performance op "
-                            "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                                "rp.record_id=%1 AND "
-                                "rp.record_position=%2 "
-                ") "
-        )
-            .arg(this->_albumID)
-            .arg(this->_albumPosition)
-        );
-
         SQL.append(QString
         (
             "DELETE FROM "
@@ -636,75 +671,34 @@ SBIDAlbumPerformance::updateSQL() const
             .arg(this->_albumPosition)
         );
     }
-    else if(newFlag() && !deletedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
-        //	Insert with NULL values for op_fields
         SQL.append(QString
         (
-            "INSERT INTO ___SB_SCHEMA_NAME___record_performance "
-            "( "
-                "performance_id, "
-                "record_id, "
-                "record_position, "
-                "duration, "
-                "notes "
-            ") "
-            "VALUES  "
-            "( "
-                "%1, "
-                "%2, "
-                "%3, "
-                "'%4', "
-                "'%5' "
-            ") "
+            "UPDATE ___SB_SCHEMA_NAME___record_performance "
+            "SET "
+                "performance_id=%1, "
+                "preferred_online_performance_id=%2, "
+                "record_id=%3, "
+                "record_position=%4, "
+                "duration='%5', "
+                "notes='%6' "
+            "WHERE "
+                "record_performance_id=%7 "
         )
-            .arg(this->songPerformanceID())
+            .arg(this->_songPerformanceID)
+            .arg(this->_preferredOnlinePerformanceID)
             .arg(this->_albumID)
             .arg(this->_albumPosition)
             .arg(this->_duration.toString(SBDuration::sb_full_hhmmss_format))
-            .arg(Common::escapeSingleQuotes(this->notes()))
+            .arg(this->_notes)
+            .arg(this->_albumPerformanceID)
         );
     }
 
     qDebug() << SB_DEBUG_INFO << SQL;
     return SQL;
 }
-
-SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::createNew(const Common::sb_parameters& p)
-{
-    SBIDAlbumPerformance ap;
-
-    ap._songPerformanceID=p.songPerformanceID;
-    ap._albumID=p.albumID;
-    ap._albumPosition=p.albumPosition;
-    ap._duration=p.duration;
-    ap._notes=p.notes;
-    ap._preferredOnlinePerformanceID=-1;
-
-    ap.setNewFlag();
-
-    return std::make_shared<SBIDAlbumPerformance>(ap);
-}
-
-SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
-{
-    SBIDAlbumPerformancePtr spPtr;
-    SBIDAlbumPerformanceMgr* spMgr=Context::instance()->getAlbumPerformanceMgr();
-    QMap<int,QList<SBIDAlbumPerformancePtr>> matches;
-    int count=spMgr->find(p,SBIDAlbumPerformancePtr(),matches);
-
-    if(count)
-    {
-        if(matches[0].count()==1)
-        {
-            spPtr=matches[0][0];
-        }
-    }
-    return spPtr;
-}
-
 
 //	Private methods
 void

@@ -50,6 +50,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
+    static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
     static QString performancesByPerformer_Preloader(int performerID);
     static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=1);
 
@@ -59,8 +60,6 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
-    friend class SBIDAlbum;
-    friend class SBIDSong;
 
     SBIDSongPerformance();
 
@@ -82,9 +81,8 @@ protected:
     //void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
     //void setYear(int year) { _year=year; setChangedFlag(); }
     //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    static SBIDSongPerformancePtr createNew(const Common::sb_parameters& p);
-    static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
 
+    friend class SBIDAlbum;
     inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); }
 
 private:

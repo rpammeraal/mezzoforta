@@ -255,6 +255,26 @@ SBIDOnlinePerformance::createKey(int onlinePerformanceID)
 }
 
 SBIDOnlinePerformancePtr
+SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
+{
+    SBIDOnlinePerformancePtr spPtr;
+    SBIDOnlinePerformanceMgr* spMgr=Context::instance()->getOnlinePerformanceMgr();
+    QMap<int,QList<SBIDOnlinePerformancePtr>> matches;
+    int count=spMgr->find(p,SBIDOnlinePerformancePtr(),matches,1);
+
+    if(count)
+    {
+        if(matches[0].count()==1)
+        {
+            spPtr=matches[0][0];
+            qDebug() << SB_DEBUG_INFO << spPtr->text();
+        }
+    }
+    qDebug() << SB_DEBUG_INFO;
+    return spPtr;
+}
+
+SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag)
 {
     SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
@@ -447,12 +467,12 @@ SBIDOnlinePerformance::createInDB(Common::sb_parameters& p)
         ") "
         "VALUES "
         "( "
-            "%1', "
+            "%1, "
             "'%2' "
         ") "
     )
         .arg(p.albumPerformanceID)
-        .arg(p.path)
+        .arg(Common::escapeSingleQuotes(p.path))
     ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
@@ -495,6 +515,7 @@ SBIDOnlinePerformance::find(const Common::sb_parameters& tobeFound,SBIDOnlinePer
     )
         .arg(tobeFound.albumPerformanceID)
     ;
+    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -552,76 +573,29 @@ SBIDOnlinePerformance::updateSQL() const
 {
     QStringList SQL;
 
-    if(deletedFlag() && !newFlag())
+    if(deletedFlag())
     {
         //	CWIP
     }
-    else if(newFlag() && !deletedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
-        //	Insert with NULL values for op_fields
         SQL.append(QString
         (
-            "WITH max1 "
-            "AS "
-            "( "
-                "SELECT "
-                    "MAX(insert_order)+1 AS insert_order "
-                "FROM "
-                    "___SB_SCHEMA_NAME___online_performance "
-                "UNION "
-                "SELECT 1"
-            ") "
-            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
-            "( "
-                "record_performance_id, "
-                "path, "
-                "insert_order "
-            ") "
-            "SELECT  "
-                "%1, "
-                "'%2', "
-                "MAX(insert_order) "
-            "FROM "
-                "max1 "
+            "UPDATE ___SB_SCHEMA_NAME___online_performance "
+            "SET "
+                "record_performance_id=%1, "
+                "path='%2' "
+            "WHERE "
+                "online_performance_id=%3 "
         )
-            .arg(this->albumPerformanceID())
-            .arg(this->path())
+            .arg(this->_albumPerformanceID)
+            .arg(this->_path)
+            .arg(this->_onlinePerformanceID)
         );
     }
 
     qDebug() << SB_DEBUG_INFO << SQL;
     return SQL;
-}
-
-SBIDOnlinePerformancePtr
-SBIDOnlinePerformance::createNew(const Common::sb_parameters &p)
-{
-    SBIDOnlinePerformance op;
-
-    op._albumPerformanceID=p.albumPerformanceID;
-    op._path=p.path;
-
-    op.setNewFlag();
-
-    return std::make_shared<SBIDOnlinePerformance>(op);
-}
-
-SBIDOnlinePerformancePtr
-SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
-{
-    SBIDOnlinePerformancePtr spPtr;
-    SBIDOnlinePerformanceMgr* spMgr=Context::instance()->getOnlinePerformanceMgr();
-    QMap<int,QList<SBIDOnlinePerformancePtr>> matches;
-    int count=spMgr->find(p,SBIDOnlinePerformancePtr(),matches);
-
-    if(count)
-    {
-        if(matches[0].count()==1)
-        {
-            spPtr=matches[0][0];
-        }
-    }
-    return spPtr;
 }
 
 ///	Private methods

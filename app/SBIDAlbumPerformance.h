@@ -71,18 +71,18 @@ public:
 
     //	Static methods
     static QString createKey(int albumPerformanceID);
+    static SBIDAlbumPerformancePtr findByFK(const Common::sb_parameters& p);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
     static QString performancesByAlbum_Preloader(int albumID);
     static QString performancesByPerformer_Preloader(int performerID);
+    static SBSqlQueryModel* performancesBySong(int songID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
 
 	//	Helper methods for SBIDManagerTemplate
-    static SBSqlQueryModel* performancesBySong(int songID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;  //	loads data
-    friend class SBIDAlbum;  //	adds performances
 
     SBIDAlbumPerformance();
 
@@ -99,11 +99,8 @@ protected:
     virtual void setPrimaryKey(int PK) { _albumPerformanceID=PK;  }
     QStringList updateSQL() const;
 
-    //static SBIDAlbumPerformancePtr createNew(int songID, int performerID, int albumID, int albumPosition, int year, const Duration& duration, const QString& notes);
-    static SBIDAlbumPerformancePtr createNew(const Common::sb_parameters& p);
-    static SBIDAlbumPerformancePtr findByFK(const Common::sb_parameters& p);
-
-    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
+    friend class SBIDAlbum;
+    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { qDebug() << SB_DEBUG_INFO << albumPerformanceID() << preferredOnlinePerformanceID; _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes

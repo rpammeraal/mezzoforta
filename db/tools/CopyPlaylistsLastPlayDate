@@ -3,12 +3,14 @@
 OPLPD='/tmp/update.sql';
 
 echo 'BEGIN;' > $OPLPD
-psql -t -p 22500 -h mars songbase.20170801 << EOF  >> $OPLPD
---SELECT
-	--'UPDATE rock.online_performance SET last_play_date =''' || last_play_date::VARCHAR || ''' WHERE REPLACE(path,'''''''',''___QUOTE___'') =   ''' || REPLACE(path,'''','___QUOTE___') || ''';'
---FROM
-	--rock.online_performance
---;
+psql -t -p 22500 -h mars songbase << EOF  >> $OPLPD
+SELECT
+	'UPDATE rock.online_performance SET last_play_date =''' || last_play_date::VARCHAR || ''' WHERE REPLACE(path,'''''''',''___QUOTE___'') =   ''' || REPLACE(path,'''','___QUOTE___') || ''';'
+FROM
+	rock.online_performance
+ORDER BY 
+	last_play_date DESC
+;
 SELECT 
 	'SELECT ' ||
 		pd.playlist_id::VARCHAR || ' AS playlist_id, ' ||

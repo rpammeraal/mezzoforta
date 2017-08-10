@@ -325,24 +325,28 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDPerformerPtr>> matches;
 
-    pemgr->find(p,exclude,matches);
-
+    qDebug() << SB_DEBUG_INFO;
     if(pemgr->find(p,exclude,matches))
     {
+    qDebug() << SB_DEBUG_INFO;
+        qDebug() << SB_DEBUG_INFO << matches.count();
         if(matches[0].count()==1)
         {
+    qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
+    qDebug() << SB_DEBUG_INFO;
             //	If there is *exactly* one match without articles, take it.
             found=matches[1][0];
             result=Common::result_exists;
         }
         else
         {
+    qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(p.performerName,exclude,matches);
@@ -366,6 +370,11 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
             }
         }
     }
+    else
+    {
+        result=Common::result_missing;
+    }
+    qDebug() << SB_DEBUG_INFO << found->text() << (int)result;
     return result;
 }
 
@@ -571,7 +580,9 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                 "substr(s.soundex,1,length('%3'))='%3' OR "
                 "substr('%3',1,length(s.soundex))=s.soundex "
             ") AND "
-            "length(s.soundex)<= 2*length('%3') "
+            "length(s.soundex)<= 2*length('%3') AND "
+            //	avoid matches already categorized for rank=0
+            "REPLACE(LOWER(s.name),' ','') = REPLACE(LOWER('%1'),' ','') "
         "ORDER BY "
             "1, 3"
     )
@@ -580,6 +591,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         .arg(newSoundex)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.performerName)))
     ;
+    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -785,29 +797,6 @@ SBIDPerformer::updateSQL() const
     //	Deleted
     if(deletedFlag)
     {
-        //	Remove toplay data
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "online_performance_id IN "
-                "( "
-                    "SELECT "
-                        "online_performance_id "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___online_performance op "
-                            "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                                "op.record_performance_id=rp.record_performance_id "
-                            "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                                "rp.performance_id=p.performance_id AND "
-                                "p.artist_id=%1 "
-                ") "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
         //	Remove online_performance
         q=QString
         (
@@ -934,22 +923,22 @@ SBIDPerformer::updateSQL() const
                 "UPDATE "
                     "___SB_SCHEMA_NAME___artist "
                 "SET     "
-                    "name='%2', "
-                    "sort_name='%3', "
-                    "notes='%4', "
-                    "www='%5', "
-                    "mbid='%6', "
-                    "soundex='%7' "
+                    "name='%1', "
+                    "sort_name='%2', "
+                    "notes='%3', "
+                    "www='%4', "
+                    "mbid='%5', "
+                    "soundex='%6' "
                 "WHERE "
-                    "artist_id=%1 "
+                    "artist_id=%7 "
              )
-                .arg(this->performerID())
-                .arg(Common::escapeSingleQuotes(this->performerName()))
+                .arg(Common::escapeSingleQuotes(this->_performerName))
                 .arg(Common::escapeSingleQuotes(sortName))
-                .arg(Common::escapeSingleQuotes(this->notes()))
+                .arg(Common::escapeSingleQuotes(this->_notes))
                 .arg(Common::escapeSingleQuotes(this->url()))
                 .arg(Common::escapeSingleQuotes(this->MBID()))
-                .arg(Common::soundex(Common::escapeSingleQuotes(this->performerName())))
+                .arg(Common::soundex(Common::escapeSingleQuotes(this->_performerName)))
+                .arg(this->_performerID)
             ;
             SQL.append(q);
         }

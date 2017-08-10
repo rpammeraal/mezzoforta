@@ -27,6 +27,8 @@ private:
     static SBIDOnlinePerformancePtr _instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDPerformerPtr _instantiatePerformer(SBIDPerformerMgr* pemgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDSongPtr _instantiateSong(SBIDSongMgr* smgr,const QStringList& fields, const QSqlQuery& queryList);
+
+    static QSqlRecord _populate(const QStringList& fields, const QSqlQuery& queryList);
 };
 
 #endif // PRELOADER_H

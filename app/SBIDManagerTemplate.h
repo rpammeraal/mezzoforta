@@ -46,7 +46,7 @@ public:
 
     //	Retrieve
     bool contains(const QString& key) const;
-    int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches);
+    int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches, bool exactMatchOnlyFlag=0);
     std::shared_ptr<T> retrieve(QString key, open_flag openFlag=OpenFlags::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
@@ -72,7 +72,7 @@ public:
 
 protected:
     friend class Preloader;
-    void addItem(const std::shared_ptr<T>& ptr);
+    std::shared_ptr<T> addItem(const std::shared_ptr<T>& ptr);
 
 private:
     QList<QString>                   _changes;	//	Contains keys of objects changed
@@ -80,6 +80,7 @@ private:
 
     void _init();
     void _addToChangedList(std::shared_ptr<T> changedPtr);
+    int _nextID;
 };
 
 ///	Ctors
@@ -101,7 +102,7 @@ SBIDManagerTemplate<T,parentT>::contains(const QString& key) const
 }
 
 template <class T, class parentT> int
-SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches)
+SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches, bool exactMatchOnlyFlag)
 {
     int count=0;
     SBSqlQueryModel* qm=T::find(tobeFound,excludePtr);
@@ -119,24 +120,27 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
         QSqlRecord r=qm->record(i);
 
         int bucket=r.value(0).toInt();
-        //int k1=r.value(1).toInt();
-        //int k2=r.value(2).toInt();
-        //QString key=T::createKey(k1,k2);
-        r.remove(0);
-        currentPtr=T::instantiate(r);
-        addItem(currentPtr);
-        QString key=currentPtr->key();
 
-        if(!processedKeys.contains(key))
+        if( (exactMatchOnlyFlag && bucket==0) || (!exactMatchOnlyFlag))
         {
-            if(!excludePtr || (excludePtr && excludePtr->key()==key))
-            {
-                //	Retrieve and store
-                matches[bucket].append(currentPtr);
-                count++;
+            r.remove(0);
+            currentPtr=T::instantiate(r);
 
+            //	Add if not exist, retrieve if exists
+            currentPtr=addItem(currentPtr);
+            QString key=currentPtr->key();
+
+            if(!processedKeys.contains(key))
+            {
+                if(!excludePtr || (excludePtr && excludePtr->key()==key))
+                {
+                    //	Retrieve and store
+                    matches[bucket].append(currentPtr);
+                    count++;
+
+                }
+                processedKeys.append(key);
             }
-            processedKeys.append(key);
         }
     }
     return count;
@@ -364,8 +368,6 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChangesFlag)
 {
-    QList<std::shared_ptr<T>> list;
-
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
@@ -380,12 +382,11 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 
     if(successFlag)
     {
-        if(ptr->newFlag())
+        const QString key=ptr->key();
+        if(_changes.contains(key))
         {
-            int ptrID=dal->retrieveLastInsertedKey();
-            ptr->setPrimaryKey(ptrID);
+            _changes.removeOne(key);
         }
-        _changes.clear();
         ptr->clearChangedFlag();
     }
     return successFlag;
@@ -399,16 +400,16 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
     std::shared_ptr<T> ptr;
 
     //	Collect SQL for changes
-    qDebug() << SB_DEBUG_INFO << _changes.count();
-    for(int i=0;i<_changes.count();i++)
+    QList<QString> allChanges=_changes;
+    const int numChanges=allChanges.count();
+    for(int i=0;i<numChanges;i++)
     {
-        const QString key=_changes.at(i);
+        const QString key=allChanges.at(i);
         ptr=retrieve(key);
         commit(ptr,dal);
 
         if(ptr->deletedFlag())
         {
-            qDebug() << SB_DEBUG_INFO;
             _leMap.remove(ptr->key());
         }
     }
@@ -418,10 +419,11 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 {
-    std::shared_ptr<T> newT=T::createInDB(p);
-    QString key=newT->key();
-    _leMap[key]=newT;
-    return newT;
+    std::shared_ptr<T> ptr=T::createInDB(p);
+    QString key=ptr->key();
+    ptr->_id=++_nextID;
+    _leMap[key]=ptr;
+    return ptr;
 }
 
 template <class T, class parentT> void
@@ -511,7 +513,7 @@ SBIDManagerTemplate<T,parentT>::setChanged(std::shared_ptr<T> ptr)
 template <class T, class parentT> Common::result
 SBIDManagerTemplate<T,parentT>::userMatch(const Common::sb_parameters& p, std::shared_ptr<T> exclude, std::shared_ptr<T>& found)
 {
-    Common::result result=exclude->userMatch(p,exclude,found);
+    Common::result result=T::userMatch(p,exclude,found);	//	static method is called
     if(result==Common::result_missing)
     {
     }
@@ -534,6 +536,7 @@ template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 {
     qDebug() << SB_DEBUG_INFO << text;
+    qDebug() << SB_DEBUG_INFO << "_nextID=" << _nextID;
     qDebug() << SB_DEBUG_INFO << "start #=" << _leMap.count();
     QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
     while(it.hasNext())
@@ -542,22 +545,40 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
         std::shared_ptr<T> ptr=it.value();
         if(ptr)
         {
-            qDebug() << SB_DEBUG_INFO << it.key() << ptr->genericDescription();
+            qDebug() << SB_DEBUG_INFO << ptr->ID() << it.key() << ptr->genericDescription() << ptr->changedFlag();
         }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << "NOPTR";
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << "changes" << _changes.count();
+    for(int i=0;i<_changes.count();i++)
+    {
+        const QString key=_changes.at(i);
+        qDebug() << SB_DEBUG_INFO << i << _changes.at(i);
     }
 }
 
 ///	Protected methods
-template <class T, class parentT> void
+template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
 {
+    std::shared_ptr<T> foundPtr;
     if(ptr)
     {
         if(!contains(ptr->key()))
         {
+            ptr->_id=++_nextID;
             _leMap[ptr->key()]=ptr;
+            foundPtr=ptr;
+        }
+        else
+        {
+            foundPtr=_leMap[ptr->key()];
         }
     }
+    return foundPtr;
 }
 
 ///	Private methods
@@ -566,6 +587,7 @@ SBIDManagerTemplate<T,parentT>::_init()
 {
     _leMap.clear();
     _changes.clear();
+    _nextID=17;
 }
 
 template <class T, class parentT> void
@@ -573,7 +595,6 @@ SBIDManagerTemplate<T,parentT>::_addToChangedList(const std::shared_ptr<T> ptr)
 {
     if(!_changes.contains(ptr->key()))
     {
-    qDebug() << SB_DEBUG_INFO;
         _changes.append(ptr->key());
     }
 }

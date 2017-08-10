@@ -244,18 +244,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
 
             SQL.append(Common::escapeSingleQuotes(
-                "CREATE TABLE toplay \n"
-                "( \n"
-                    "toplay_id             INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
-                    "online_performance_id INTEGER NOT NULL, \n"
-                    "insert_order          INTEGER NOT NULL, \n"
-                    "play_order            INTEGER, \n"
-                    "last_play_date        TIMESTAMP WITHOUT TIME ZONE, \n"
-                    "CONSTRAINT fk_toplay_online_performance_online_performance_id FOREIGN KEY (online_performance_id) REFERENCES online_performance(online_performance_id) \n"
-                "); \n"
-            ));
-
-            SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE config_host \n"
                 "( \n"
                     "config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"

@@ -9,7 +9,7 @@ SQL_SCHEMA="$PSQL_SCHEMA_NAME."
 DB_EXEC=$PSQL_EXEC
 echo $DB_EXEC $SQL_SCHEMA
 
-for f in 01_config.sql 02_digital_format.sql 03_greatest_hits_record.sql
+for f in 01_config.sql 02_digital_format.sql 03_greatest_hits_record.sql 99_finish.sql
 do
 	echo "Processing $f"
 	cat $f | \

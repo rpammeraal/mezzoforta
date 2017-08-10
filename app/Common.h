@@ -100,9 +100,11 @@ public:
 
     struct sb_parameters
     {
+        //	An sb_parameter is used to search existing or create a new SBIDBase* dependend instances.
+        //	An instance of this parameter is only to contain parameters for either a song, perfomer, album, etc.
+        //	It should never include extended attributes (eg.: for a song, the album performer name, etc).
         int albumID;
         int albumPerformanceID;
-        int albumPerformerID;
         int albumPosition;
         int chartID;
         int chartPosition;

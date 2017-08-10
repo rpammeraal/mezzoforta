@@ -163,6 +163,35 @@ SBIDSongPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFl
 }
 
 //	Static methods
+SBIDSongPerformancePtr
+SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
+{
+    SBIDSongPerformancePtr spPtr;
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    QMap<int,QList<SBIDSongPerformancePtr>> matches;
+    qDebug() << SB_DEBUG_INFO;
+    const int count=spMgr->find(p,SBIDSongPerformancePtr(),matches,1);
+
+    qDebug() << SB_DEBUG_INFO << count ;
+    if(count)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        if(matches[0].count()==1)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            spPtr=matches[0][0];
+            qDebug() << SB_DEBUG_INFO << spPtr->genericDescription();
+        }
+    }
+    if(spPtr)
+    {
+        qDebug() << SB_DEBUG_INFO << spPtr->genericDescription();
+    }
+            qDebug() << SB_DEBUG_INFO;
+
+    return spPtr;
+}
+
 QString
 SBIDSongPerformance::performancesByPerformer_Preloader(int performerID)
 {
@@ -281,10 +310,14 @@ SBIDSongPerformance::createInDB(Common::sb_parameters& p)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
+    if(p.year<1900)
+    {
+        p.year=1900;
+    }
     //	Insert
     q=QString
     (
-        "INSERT INTO ___SB_SCHEMA_NAME___song_performance "
+        "INSERT INTO ___SB_SCHEMA_NAME___performance "
         "( "
             "song_id, "
             "artist_id, "
@@ -293,9 +326,9 @@ SBIDSongPerformance::createInDB(Common::sb_parameters& p)
         ") "
         "VALUES "
         "( "
-            "%1', "
-            "%2', "
-            "%3', "
+            "%1, "
+            "%2, "
+            "%3, "
             "'%4' "
         ") "
     )
@@ -336,6 +369,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         //	match on foreign keys
         "SELECT "
             "0 AS matchRank, "
+            "p.performance_id, "
             "p.song_id, "
             "p.artist_id, "
             "p.year, "
@@ -349,6 +383,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         //	match on title and optional performerID
         "SELECT "
             "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
+            "p.performance_id, "
             "s.song_id, "
             "p.artist_id, "
             "p.year, "
@@ -364,6 +399,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         //	soundex match
         "SELECT "
             "2 AS matchRank, "
+            "p.performance_id, "
             "s.song_id, "
             "p.artist_id, "
             "p.year, "
@@ -388,6 +424,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         .arg(excludeID==-1?"":QString(" AND s.song_id!=(%1)").arg(excludeID))
         .arg(tobeFound.songID)
     ;
+    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -437,7 +474,7 @@ SBIDSongPerformance::updateSQL() const
 {
     QStringList SQL;
 
-    if(deletedFlag() && !newFlag())
+    if(deletedFlag())
     {
         SQL.append(QString
         (
@@ -449,84 +486,29 @@ SBIDSongPerformance::updateSQL() const
             .arg(this->_songPerformanceID)
         );
     }
-    else if(newFlag() && !deletedFlag())
-    {
-        SQL.append(QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-            "( "
-                "song_id, "
-                "artist_id, "
-                "year, "
-                "notes "
-            ") "
-            "SELECT "
-                "%1 as song_id, "
-                "%2 as artist_id, "
-                "%3 as year, "
-                "CAST('%4' AS VARCHAR) as notes "
-        )
-            .arg(_songID)
-            .arg(_performerID)
-            .arg(_year<1900?1900:_year)
-            .arg(Common::escapeSingleQuotes(_notes))
-        );
-    }
-    else if(changedFlag() && !deletedFlag() && !newFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
         SQL.append(QString
         (
             "UPDATE ___SB_SCHEMA_NAME___performance "
             "SET "
-                "year=%3, "
-                "notes='%4' "
+                "song_id=%1, "
+                "artist_id=%2, "
+                "preferred_record_performance_id=%3, "
+                "year=%4, "
+                "notes='%5' "
             "WHERE "
-                "song_id=%1 AND "
-                "artist_id=%2 "
+                "performance_id=%6 "
         )
-            .arg(this->songID())
-            .arg(this->songPerformerID())
-            .arg(this->year())
+            .arg(this->_songID)
+            .arg(this->_performerID)
+            .arg(this->_preferredAlbumPerformanceID)
+            .arg(this->_year)
             .arg(Common::escapeSingleQuotes(this->notes()))
+            .arg(this->_songPerformanceID)
         );
     }
     return SQL;
-}
-
-//	Creates an instance. This runtime instance should eventually be added to SBIDManager.
-SBIDSongPerformancePtr
-SBIDSongPerformance::createNew(const Common::sb_parameters& p)
-{
-    SBIDSongPerformance songPerformance;
-
-    songPerformance._songID=p.songID;
-    songPerformance._performerID=p.performerID;
-    songPerformance._year=p.year;
-    songPerformance._notes=p.notes;
-
-    songPerformance.setNewFlag();
-
-
-
-    return std::make_shared<SBIDSongPerformance>(songPerformance);
-}
-
-SBIDSongPerformancePtr
-SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
-{
-    SBIDSongPerformancePtr spPtr;
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-    QMap<int,QList<SBIDSongPerformancePtr>> matches;
-    int count=spMgr->find(p,SBIDSongPerformancePtr(),matches);
-
-    if(count)
-    {
-        if(matches[0].count()==1)
-        {
-            spPtr=matches[0][0];
-        }
-    }
-    return spPtr;
 }
 
 //	Private methods

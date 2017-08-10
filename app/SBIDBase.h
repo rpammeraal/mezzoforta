@@ -73,7 +73,7 @@ public:
 
     //	Methods specific to SBIDBase
     QString errorMessage() const { return _errorMsg; }
-    QString ID() const { return QString("[ID=%1]").arg(_id); }
+    QString ID() const { return QString("ID=%1").arg(_id); }
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
 
@@ -121,22 +121,22 @@ protected:
     //	Used by SBIDManager*:: and SBID*:: classes
     inline bool changedFlag() const { return _changedFlag; }
     virtual void clearChangedFlag();
-    virtual void clearNewFlag() { _newFlag=0; }
+    //virtual void clearNewFlag() { _newFlag=0; }
     inline bool deletedFlag() const { return _deletedFlag; }
     inline bool mergedFlag() const { return _mergedWithID!=-1; }
     inline int mergedWithID() const { return _mergedWithID; }
-	inline int newFlag() const { return _newFlag; }
+    //inline int newFlag() const { return _newFlag; }
     virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
     inline void setDeletedFlag() { _deletedFlag=1; }
-    inline void setNewFlag() { _newFlag=1; }
+    //inline void setNewFlag() { _newFlag=1; }
     inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;
 
 private:
     bool        _changedFlag;
     int         _id;
-    bool        _newFlag;
+    //bool        _newFlag;
     sb_type     _sb_item_type;
     QString     _sb_mbid;
     int         _sb_model_position;

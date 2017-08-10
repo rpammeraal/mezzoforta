@@ -189,95 +189,10 @@ SBIDAlbum::type() const
     return "album";
 }
 
-///	Album specific methods
-//	either add to a list of songs in SBIDAlbum (preferred)
-//	or as saveSongToAlbum().
-QStringList
-SBIDAlbum::addSongToAlbum(const SBIDSong &song) const
-{
-    Q_UNUSED(song);
-    QStringList SQL;
-
-//    //	Insert performance if not exists
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-//            "( "
-//                "song_id, "
-//                "artist_id, "
-//                "year, "
-//                "notes "
-//            ") "
-//            "SELECT "
-//                "song_id, "
-//                "%1, "	//	artist_id
-//                "%3, "
-//                "'' "
-//            "FROM "
-//                "___SB_SCHEMA_NAME___song s "
-//            "WHERE "
-//                "song_id=%2 AND "
-//                "NOT EXISTS "
-//                "( "
-//                    "SELECT "
-//                        "1 "
-//                    "FROM "
-//                        "___SB_SCHEMA_NAME___performance "
-//                    "WHERE "
-//                        "song_id=%2 AND "
-//                        "artist_id=%1 "
-//                ") "
-//        )
-//            .arg(song.songPerformerID())
-//            .arg(song.songID())
-//            .arg(song.year())
-//    );
-
-//    //	Insert record performance
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___record_performance "
-//            "( "
-//                "song_id, "
-//                "artist_id, "
-//                "record_id, "
-//                "record_position, "
-////                "op_song_id, "
-////                "op_artist_id, "
-////                "op_record_id, "
-////                "op_record_position, "
-//                "duration "
-//            ") "
-
-//            "VALUES "
-//            "( "
-//                "%1, "
-//                "%2, "
-//                "%3, "
-//                "%4, "
-////                "%1, "
-////                "%2, "
-////                "%3, "
-////                "%4, "
-//                "'00:00:00' "
-//             ") "
-//        )
-//            .arg(song.songID())
-//            .arg(song.songPerformerID())
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-    return SQL;
-}
-
 SBIDAlbumPerformancePtr
 SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
     SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
     SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
@@ -288,6 +203,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     bool newSongPerformanceFlag=0;
     bool newAlbumPerformanceFlag=0;
 
+    qDebug() << SB_DEBUG_INFO << path;
     if(_albumPerformances.count()==0)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -302,73 +218,90 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         return apPtr;
     }
 
+    qDebug() << SB_DEBUG_INFO << sPtr->songID() << sPtr->genericDescription();
+    qDebug() << SB_DEBUG_INFO << songID << performerID;
     //	Look up song performance
     p.songID=songID;
     p.performerID=performerID;
     p.year=year;
     spPtr=SBIDSongPerformance::findByFK(p);
+    qDebug() << SB_DEBUG_INFO << sPtr->genericDescription();
     if(!spPtr)
     {
         newSongPerformanceFlag=1;
-        spPtr=SBIDSongPerformance::createNew(p);
-        spMgr->add(spPtr);
-        spMgr->commit(spPtr,dal);
+        spPtr=spMgr->createInDB(p);
         qDebug() << SB_DEBUG_INFO
                  << "new apID=" << spPtr->songPerformanceID()
         ;
     }
 
+    qDebug() << SB_DEBUG_INFO;
     //	Lookup album performance
     p.songPerformanceID=spPtr->songPerformanceID();
     p.albumID=this->albumID();
     p.albumPosition=albumPosition;
     p.duration=duration;
     p.notes=notes;
+    qDebug() << SB_DEBUG_INFO << p.duration << p.year;
     apPtr=SBIDAlbumPerformance::findByFK(p);
     if(!apPtr)
     {
         newAlbumPerformanceFlag=1;
-        apPtr=SBIDAlbumPerformance::createNew(p);
-        apMgr->add(apPtr);
-        apMgr->commit(apPtr,dal);
+        apPtr=apMgr->createInDB(p);
         qDebug() << SB_DEBUG_INFO
                  << "new apID=" << apPtr->albumID()
         ;
     }
+    qDebug() << SB_DEBUG_INFO
+             << "apPtr->albumPerformanceID=" << apPtr->albumPerformanceID()
+             << "apPtr:ID=" << apPtr->ID();
     if(!_albumPerformances.contains(apPtr->albumPerformanceID()))
     {
+    qDebug() << SB_DEBUG_INFO;
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
         this->setChangedFlag();
     }
 
-
+    qDebug() << SB_DEBUG_INFO;
     //	Lookup online performance
     p.albumPerformanceID=apPtr->albumPerformanceID();
     p.path=path;
     SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::findByFK(p);
     if(!opPtr)
     {
-        opPtr=SBIDOnlinePerformance::createNew(p);
-        opMgr->add(opPtr);
-        opMgr->commit(opPtr,dal);
+        opPtr=opMgr->createInDB(p);
         qDebug() << SB_DEBUG_INFO
                  << "new opID=" << opPtr->onlinePerformanceID()
+                 << "id=" << opPtr->ID();
         ;
     }
+    qDebug() << SB_DEBUG_INFO
+             << "id=" << opPtr->ID();
 
+    qDebug() << SB_DEBUG_INFO << sPtr->originalSongPerformanceID();
     //	Set ID's pointing down the hierarchy
     if(sPtr->originalSongPerformanceID()<0)
     {
+    qDebug() << SB_DEBUG_INFO;
         sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
+        sMgr->setChanged(sPtr);
     }
+    qDebug() << SB_DEBUG_INFO << spPtr->preferredAlbumPerformanceID();
     if(spPtr->preferredAlbumPerformanceID()<0)
     {
+    qDebug() << SB_DEBUG_INFO;
         spPtr->setPreferredAlbumPerformanceID(apPtr->albumPerformanceID());
+        spMgr->setChanged(spPtr);
     }
+    qDebug() << SB_DEBUG_INFO << apPtr->preferredOnlinePerformanceID();
     if(apPtr->preferredOnlinePerformanceID()<0)
     {
+    qDebug() << SB_DEBUG_INFO;
         apPtr->setPreferredOnlinePerformanceID(opPtr->onlinePerformanceID());
+        apMgr->setChanged(apPtr);
+        qDebug() << SB_DEBUG_INFO << changedFlag();
     }
+    qDebug() << SB_DEBUG_INFO;
 
     return apPtr;
 }
@@ -443,286 +376,10 @@ SBIDAlbum::duration() const
 //    return new SBSqlQueryModel(q);
 //}
 
-QStringList
-SBIDAlbum::mergeAlbum(const SBIDBase& to) const
-{
-    Q_UNUSED(to);
-    QStringList SQL;
-    /*
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    int maxPosition=0;
-
-    //	Find max position in to
-    QString q=QString
-    (
-        "SELECT DISTINCT "
-            "MAX(record_position) "
-        "FROM "
-            "___SB_SCHEMA_NAME___record_performance rp "
-        "WHERE "
-            "rp.record_id=%1 "
-    )
-        .arg(to.albumID())
-    ;
-    dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
-
-    if(query.next())
-    {
-        maxPosition=query.value(0).toInt();
-        maxPosition++;
-    }
-
-    //	Update rock_performance.non_op fields
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "op_record_id=%1, "
-                "op_record_position=op_record_position+%2 "
-            "WHERE "
-                "op_record_id=%3 "
-        )
-            .arg(to.albumID())
-            .arg(maxPosition)
-            .arg(this->albumID())
-    );
-
-    //	Update rock_performance.op fields
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "record_id=%1, "
-                "record_position=record_position+%2 "
-            "WHERE "
-                "record_id=%3 "
-        )
-            .arg(to.albumID())
-            .arg(maxPosition)
-            .arg(this->albumID())
-    );
-
-    //	Update online_performance
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___online_performance "
-            "SET "
-                "record_id=%1, "
-                "record_position=record_position+%2 "
-            "WHERE "
-                "record_id=%3 "
-        )
-            .arg(to.albumID())
-            .arg(maxPosition)
-            .arg(this->albumID())
-    );
-
-    //	Update toplay
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___toplay "
-            "SET "
-                "record_id=%1, "
-                "record_position=record_position+%2 "
-            "WHERE "
-                "record_id=%3 "
-        )
-            .arg(to.albumID())
-            .arg(maxPosition)
-            .arg(this->albumID())
-    );
-
-    //	Update playlist_performance
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___playlist_performance "
-            "SET "
-                "record_id=%1, "
-                "record_position=record_position+%2 "
-            "WHERE "
-                "record_id=%3 "
-        )
-            .arg(to.albumID())
-            .arg(maxPosition)
-            .arg(this->albumID())
-    );
-
-    //	Add existing category items to new album
-    SQL.append
-    (
-        QString
-        (
-            "INSERT INTO ___SB_SCHEMA_NAME___category_record "
-            "( "
-                "record_id, "
-                "category_id "
-            ") "
-            "SELECT "
-                "record_id, "
-                "category_id "
-            "FROM "
-                "___SB_SCHEMA_NAME___category_record cr "
-            "WHERE "
-                "cr.record_id=%1 "
-            "AND  "
-                "NOT EXISTS "
-                "( "
-                    "SELECT NULL "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___category_record ce "
-                    "WHERE "
-                        "ce.record_id=%2 AND "
-                        "ce.record_id=cr.record_id AND "
-                        "ce.category_id=cr.category_id "
-                ") "
-        )
-            .arg(this->albumID())
-            .arg(to.albumID())
-    );
-
-    //	Remove category items from album
-    SQL.append
-    (
-        QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___category_record "
-            "WHERE "
-                "record_id=%1 "
-        )
-            .arg(this->albumID())
-    );
-    */
-
-    return SQL;
-}
-
 void
 SBIDAlbum::postInstantiate(SBIDAlbumPtr &ptr)
 {
     Q_UNUSED(ptr);
-}
-
-QStringList
-SBIDAlbum::mergeSongInAlbum(int newPosition, const SBIDBase& song) const
-{
-    Q_UNUSED(newPosition);
-    Q_UNUSED(song);
-    QStringList SQL;
-
-//    //	Move any performances from merged song to alt table
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___online_performance_alt "
-//            "SELECT "
-//                "song_id, "
-//                "artist_id, "
-//                "record_id, "
-//                "%1, "
-//                "format_id, "
-//                "path, "
-//                "source_id, "
-//                "last_play_date, "
-//                "play_order, "
-//                "insert_order "
-//            "FROM "
-//                "___SB_SCHEMA_NAME___online_performance op "
-//            "WHERE"
-//                "record_id=%2 AND "
-//                "record_position=%3 "
-//        )
-//            .arg(newPosition)
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    //	Delete performance from op table
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "DELETE ___SB_SCHEMA_NAME___online_performance op "
-//            "WHERE"
-//                "record_id=%1 AND "
-//                "record_position=%2 "
-//        )
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    //	Update toplay
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___toplay "
-//            "SET "
-//                "record_position=%1 "
-//            "WHERE "
-//                "record_id=%2 AND "
-//                "record_position=%3 "
-//        )
-//            .arg(newPosition)
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    //	Update playlist_performance
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___playlist_performance "
-//            "SET "
-//                "record_position=%1 "
-//            "WHERE "
-//                "record_id=%2 AND "
-//                "record_position=%3 "
-//        )
-//            .arg(newPosition)
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    //	Delete song from record_performance
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "DELETE FROM "
-//                "___SB_SCHEMA_NAME___record_performance "
-//            "WHERE "
-//                "record_id=%1 AND "
-//                "record_position=%2 "
-//        )
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-    return SQL;
 }
 
 int
@@ -950,18 +607,6 @@ SBIDAlbum::removeAlbum()
         QString
         (
             "DELETE FROM "
-                "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "record_id=%1 "
-        )
-            .arg(this->albumID())
-    );
-
-    SQL.append
-    (
-        QString
-        (
-            "DELETE FROM "
                 "___SB_SCHEMA_NAME___online_performance "
             "WHERE "
                 "record_id=%1 "
@@ -1012,20 +657,6 @@ QStringList
 SBIDAlbum::removeSongFromAlbum(int position)
 {
     QStringList SQL;
-
-    SQL.append
-    (
-        QString
-        (
-            "DELETE FROM "
-                "___SB_SCHEMA_NAME___toplay "
-            "WHERE "
-                "record_id=%1 AND "
-                "record_position=%2 "
-        )
-            .arg(this->albumID())
-            .arg(position)
-    );
 
     SQL.append
     (
@@ -1115,106 +746,6 @@ SBIDAlbum::repositionSongOnAlbum(int fromPosition, int toPosition)
 }
 
 bool
-SBIDAlbum::saveSongToAlbum(const SBIDSong &song) const
-{
-    Q_UNUSED(song);
-//    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-//    QStringList SQL;
-
-//    //	Determine extension
-//    QFileInfo fi(song._path);
-//    QString suffix=fi.suffix().trimmed().toLower();
-
-//    //	Determine relative path
-//    Properties* p=Context::instance()->getProperties();
-//    QString pathRoot=p->musicLibraryDirectorySchema()+'/';
-
-//    QString relPath=song._path;
-//    relPath=relPath.replace(pathRoot,QString(),Qt::CaseInsensitive);
-
-//    //	It is assumed that song and performance already exist
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___record_performance "
-//            "( "
-//                "song_id, "
-//                "artist_id, "
-//                "record_id, "
-//                "record_position, "
-//                "op_song_id, "
-//                "op_artist_id, "
-//                "op_record_id, "
-//                "op_record_position, "
-//                "duration "
-//            ") "
-//            "VALUES "
-//            "( "
-//                "%1, "
-//                "%2, "
-//                "%3, "
-//                "%4, "
-//                "%1, "
-//                "%2, "
-//                "%3, "
-//                "%4, "
-//                "'%5' "
-//             ") "
-//        )
-//            .arg(song.songID())
-//            .arg(song.songPerformerID())
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//            .arg(song.duration().toString(Duration::sb_full_hhmmss_format))
-//    );
-
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___online_performance "
-//            "( "
-//                "song_id, "
-//                "artist_id, "
-//                "record_id, "
-//                "record_position, "
-//                "format_id, "
-//                "path, "
-//                "source_id, "
-//                "insert_order "
-//            ") "
-//            "SELECT "
-//                "%1, "
-//                "%2, "
-//                "%3, "
-//                "%4, "
-//                "df.format_id, "
-//                "E'%6', "
-//                "0, "
-//                "___SB_DB_ISNULL___(m.max_insert_order,0)+1 "
-//            "FROM "
-//                "digital_format df, "
-//                "( "
-//                    "SELECT MAX(insert_order) AS max_insert_order "
-//                    "FROM ___SB_SCHEMA_NAME___online_performance "
-//                ") m "
-//            "WHERE "
-//                "df.extension=E'%5' "
-
-//        )
-//            .arg(song.songID())
-//            .arg(song.songPerformerID())
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//            .arg(suffix)
-//            .arg(Common::escapeSingleQuotes(relPath))
-//    );
-//    return dal->executeBatch(SQL);
-    return 0;
-}
-
-bool
 SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList &extraSQL,bool commitFlag)
 {
     Q_UNUSED(orgAlbum);
@@ -1285,168 +816,6 @@ SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbu
     */
 
     return resultFlag;
-}
-
-
-QStringList
-SBIDAlbum::updateSongOnAlbumWithNewOriginal(const SBIDSong &song)
-{
-    Q_UNUSED(song);
-    QStringList SQL;
-
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___online_performance "
-//            "SET "
-//                "song_id=%1, "
-//                "artist_id=%2 "
-//            "WHERE "
-//                "record_id=%3 AND "
-//                "record_position=%4 "
-//        )
-//            .arg(song.songID())
-//            .arg(song.songPerformerID())
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    SQL.append
-//    (
-//        QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___record_performance "
-//            "SET "
-//                "song_id=%1, "
-//                "artist_id=%2 "
-//            "WHERE "
-//                "record_id=%3 AND "
-//                "record_position=%4 "
-//        )
-//            .arg(song.songID())
-//            .arg(song.songPerformerID())
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-//    SQL.append
-//    (
-//        QString
-//        (
-//            ";WITH a AS "
-//            "( "
-//                "SELECT "
-//                    "song_id, "
-//                    "artist_id "
-//                "FROM "
-//                    "online_performance "
-//                "WHERE  "
-//                    "record_id=%1 AND  "
-//                    "record_position=%2  "
-//            ") "
-//            "UPDATE record_performance  "
-//            "SET  "
-//                "op_song_id=(SELECT song_id FROM a), "
-//                "op_artist_id=(SELECT artist_id FROM a) "
-//            "WHERE  "
-//                "record_id=%1 AND  "
-//                "record_position=%2  "
-//        )
-//            .arg(this->albumID())
-//            .arg(song.albumPosition())
-//    );
-
-    return SQL;
-}
-
-QStringList
-SBIDAlbum::updateSongOnAlbum(const SBIDSong &song)
-{
-    Q_UNUSED(song);
-    QStringList SQL;
-    /*
-
-    qDebug() << SB_DEBUG_INFO
-             << song.songID()
-             << song.songPerformerID()
-             << song.albumID()
-             << song.albumPosition()
-             << song.notes()
-    ;
-    //	Update notes
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "notes=E'%1' "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(Common::escapeSingleQuotes(song.notes()))
-            .arg(this->albumID())
-            .arg(song.albumPosition())
-    );
-
-    //	Update performer
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___online_performance "
-            "SET "
-                "artist_id=%1 "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(song.songPerformerID())
-            .arg(this->albumID())
-            .arg(song.albumPosition())
-    );
-
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "op_artist_id=%1 "
-            "WHERE "
-                "op_record_id=%2 AND "
-                "op_record_position=%3 "
-        )
-            .arg(song.songPerformerID())
-            .arg(this->albumID())
-            .arg(song.albumPosition())
-    );
-
-    SQL.append
-    (
-        QString
-        (
-            "UPDATE "
-                "___SB_SCHEMA_NAME___record_performance "
-            "SET "
-                "artist_id=%1 "
-            "WHERE "
-                "record_id=%2 AND "
-                "record_position=%3 "
-        )
-            .arg(song.songPerformerID())
-            .arg(this->albumID())
-            .arg(song.albumPosition())
-    );
-    */
-    return SQL;
 }
 
 ///	Pointers
@@ -1616,9 +985,12 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
         p.albumTitle=QString("New Album %1").arg(maxNum);
     }
 
-    //	Find performer 'VARIOUS ARTISTS'
-    SBIDPerformerPtr peptr=SBIDPerformer::retrieveVariousPerformers();
-    p.albumPerformerID=peptr->performerID();
+    if(p.performerID==-1)
+    {
+        //	Find performer 'VARIOUS ARTISTS' and set performerID
+        SBIDPerformerPtr peptr=SBIDPerformer::retrieveVariousPerformers();
+        p.performerID=peptr->performerID();
+    }
 
     //	Insert
     q=QString
@@ -1642,7 +1014,7 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
             "%6 "
         ") "
     )
-        .arg(p.albumPerformerID)
+        .arg(p.performerID)
         .arg(Common::escapeSingleQuotes(p.albumTitle))
         .arg("CD")
         .arg(p.genre)
@@ -1658,7 +1030,7 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     //	Instantiate
     SBIDAlbum album;
     album._albumID         =dal->retrieveLastInsertedKey();
-    album._albumPerformerID=p.albumPerformerID;
+    album._albumPerformerID=p.performerID;
     album._albumTitle      =p.albumTitle;
     album._genre           =p.genre;
     album._notes           =p.notes;
@@ -1686,8 +1058,8 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
         "SELECT "
             "CASE WHEN a.artist_id=%2 THEN 0 ELSE 2 END AS matchRank, "
             "p.record_id, "
-            "p.title, "
             "a.artist_id, "
+            "p.title, "
             "p.year, "
             "p.genre, "
             "p.notes "
@@ -1702,8 +1074,8 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
         "SELECT "
             "CASE WHEN a.artist_id=%2 THEN 1 ELSE 3 END AS matchRank, "
             "p.record_id, "
-            "p.title, "
             "a.artist_id, "
+            "p.title, "
             "p.year, "
             "p.genre, "
             "p.notes "
@@ -1713,8 +1085,6 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
                     "p.artist_id=a.artist_id, "
             "article t "
         "WHERE "
-            //"LOWER(p.title)!=LOWER(regexp_replace(p.title,'^'||aa.word,'','i')) AND "
-            //"LOWER(regexp_replace(p.title,'^'||aa.word,'','i'))=LOWER('%4') AND "
             "p.record_id!=(%3) AND "
             "( "
                 "p.title!=('%5') AND "
@@ -1751,8 +1121,8 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._albumPerformerID=r.value(1).toInt();
     album._albumTitle      =r.value(2).toString();
     album._genre           =r.value(3).toString();
-    album._notes           =r.value(4).toString();
-    album._year            =r.value(5).toInt();
+    album._year            =r.value(4).toInt();
+    album._notes           =r.value(5).toString();
 
     return std::make_shared<SBIDAlbum>(album);
 }
@@ -1803,16 +1173,11 @@ SBIDAlbum::updateSQL() const
 
     qDebug() << SB_DEBUG_INFO
              << deletedFlag()
-             << newFlag()
              << mergedFlag()
              << changedFlag()
     ;
 
-    if(deletedFlag() && !newFlag())
-    {
-
-    }
-    else if(newFlag() && !deletedFlag())
+    if(deletedFlag())
     {
 
     }
@@ -1821,20 +1186,20 @@ SBIDAlbum::updateSQL() const
         SQL.append(QString(
             "UPDATE ___SB_SCHEMA_NAME___record "
             "SET "
-                "artist_id=%2, "
-                "title='%3', "
-                "year=%4, "
-                "notes='%5', "
-                "genre='%6' "
+                "artist_id=%1, "
+                "title='%2', "
+                "year=%3, "
+                "notes='%4', "
+                "genre='%5' "
             "WHERE "
-                "record_id=%1 "
+                "record_id=%6 "
         )
-            .arg(this->albumID())
-            .arg(this->albumPerformerID())
-            .arg(Common::escapeSingleQuotes(this->albumTitle()))
-            .arg(this->year())
-            .arg(Common::escapeSingleQuotes(this->notes()))
-            .arg(Common::escapeSingleQuotes(this->genre()))
+            .arg(this->_albumPerformerID)
+            .arg(Common::escapeSingleQuotes(this->_albumTitle))
+            .arg(this->_year)
+            .arg(Common::escapeSingleQuotes(this->_notes))
+            .arg(Common::escapeSingleQuotes(this->_genre))
+            .arg(this->_albumID)
         );
 
         SQL.append(_updateSQLAlbumPerformances());
@@ -1844,6 +1209,7 @@ SBIDAlbum::updateSQL() const
     {
         SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
     }
+    qDebug() << SB_DEBUG_INFO << SQL;
 
     return SQL;
 }
@@ -1855,16 +1221,20 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
 
+    qDebug() << SB_DEBUG_INFO << p.albumTitle;
     if(amgr->find(p,exclude,matches))
     {
+        qDebug() << SB_DEBUG_INFO << matches[0].count();
         if(matches[0].count()==1)
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
@@ -1880,14 +1250,24 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
                     found=std::dynamic_pointer_cast<SBIDAlbum>(selected);
                     found->refreshDependents();
                     result=Common::result_exists;
+            qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
                     result=Common::result_missing;
+            qDebug() << SB_DEBUG_INFO;
                 }
+            qDebug() << SB_DEBUG_INFO;
             }
+            qDebug() << SB_DEBUG_INFO;
         }
+            qDebug() << SB_DEBUG_INFO;
     }
+    else
+    {
+        result=Common::result_missing;
+    }
+            qDebug() << SB_DEBUG_INFO;
     return result;
 }
 

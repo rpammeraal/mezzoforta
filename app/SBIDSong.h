@@ -91,7 +91,6 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
-    friend class SBIDAlbum;	//	CWIP: needs to be seen if neccessary
 
     SBIDSong();
 
@@ -110,10 +109,11 @@ protected:
     QStringList updateSQL() const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found);
 
-    inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
-
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();
+
+    friend class SBIDAlbum;
+    inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
 private:
     int                                _songID;
@@ -142,7 +142,6 @@ private:
     //	Aux helper methods
     QVector<SBIDSong::PlaylistOnlinePerformance> _loadPlaylistOnlinePerformanceListFromDB() const;
     QMap<int,SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;
-    QStringList _updateSQLSongPerformances() const;
 };
 
 #endif // SBIDSONG_H

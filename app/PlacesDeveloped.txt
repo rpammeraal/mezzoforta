@@ -871,10 +871,14 @@ Between 20161215 and 20170604:
 Current:
 -	search for 'creo en ti'. Select 'Moose!Music Al Sur De Troya'. Drag 'Creo en Ti' to Latina!Latina!
 +	switched gears to getting import to work
+*	recreate database, fix restorepoint issue
+*	song from album tab should play that song_performance -- not the preferred one.
+*	playing album should play online performances from that album -- not the preferred ones.
 
 ::Import
 -	save(): depreciated
 -	updateExisting*(): depreciated
+-	createNew(): depreciated
 -	updateSQL(): only handles updates/removals (the latter maybe in a different method).
 -	createInDB: creates an actual record (fully populated) in the database and stores in mgr. Used by mgr.
 

@@ -373,18 +373,33 @@ PlayManager::_loadRadio()
     int nextOpenSlotIndex=0;
     tqs->setViewLayout();
     int index=0;
+
+    //	Find number of unplayed songs first.
+    int nextPlayedSongID=0;
+    while(qm->record(nextPlayedSongID++).value(1).toDate()==QDate(1900,1,1))
+    {
+    }
+    qDebug() << SB_DEBUG_INFO << nextPlayedSongID;
+
     while(index<numPerformances)
     {
         found=0;
         int idx=-1;
 
-        for(int j=maxNumberAttempts;j && !found;j--)
+        if(index<nextPlayedSongID)
         {
-            idx=Common::randomOldestFirst(maxNumberToRandomize);
-            if(indexCovered.contains(idx)==0)
+            idx=index;
+        }
+        else
+        {
+            for(int j=maxNumberAttempts;j && !found;j--)
             {
-                found=1;
-                indexCovered.append(idx);
+                idx=Common::randomOldestFirst(maxNumberToRandomize);
+                if(indexCovered.contains(idx)==0)
+                {
+                    found=1;
+                    indexCovered.append(idx);
+                }
             }
         }
 

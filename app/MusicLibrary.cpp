@@ -27,6 +27,7 @@ MusicLibrary::rescanMusicLibrary()
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
+
     const QString schema=dal->schema();
 
     //	Important lists: all have `path' as key (in lowercase)
@@ -34,7 +35,11 @@ MusicLibrary::rescanMusicLibrary()
     QHash<QString,MLperformancePtr> pathToSong;	//	existing songs as known in database
 
     //	SBIDManager
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
+    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
+    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
 
     //	Init
     int progressCurrentValue=0;
@@ -45,7 +50,7 @@ MusicLibrary::rescanMusicLibrary()
         +schema
         +(schema.length()?"/":"");
 
-    ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary",3);
+    ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary",4);
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section A:	Retrieve paths found in directory
@@ -179,11 +184,6 @@ MusicLibrary::rescanMusicLibrary()
         pathToSong[pathToSongKey]=std::make_shared<MLperformance>(performance);
         existingPath[pathToSongKey]=0;
 
-        if(performance.songID==4058)
-        {
-            qDebug() << SB_DEBUG_INFO << performance.songID <<  pathToSongKey;
-        }
-
         ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary",progressCurrentValue++,progressMaxValue);
         if(time.elapsed()>700)
         {
@@ -243,6 +243,7 @@ MusicLibrary::rescanMusicLibrary()
             entityPtr->notes=md.notes();
             entityPtr->year=md.year();
 
+            qDebug() << SB_DEBUG_INFO << entityPtr->duration << entityPtr->year;
             //	Misc. data
             entityPtr->key=key;	//	used for debugging purposes only
 
@@ -334,7 +335,6 @@ MusicLibrary::rescanMusicLibrary()
     if(validateEntityList(foundEntities)==0)
     {
         dal->restore(databaseRestorePoint);
-        return;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -373,6 +373,7 @@ MusicLibrary::rescanMusicLibrary()
 
     //	2.	Save to database
     qDebug() << SB_DEBUG_INFO << "SANITYCHECK";
+    apMgr->debugShow("BEFORE ADDALBUMPERFORMANCE");
     feIT.toFront();
     while(feIT.hasNext())
     {
@@ -381,7 +382,7 @@ MusicLibrary::rescanMusicLibrary()
         if(!entityPtr->errorFlag())
         {
             qDebug() << SB_DEBUG_INFO;
-            SBIDAlbumPtr albumPtr=amgr->retrieve(SBIDAlbum::createKey(entityPtr->albumID),SBIDAlbumMgr::open_flag_foredit);
+            SBIDAlbumPtr albumPtr=aMgr->retrieve(SBIDAlbum::createKey(entityPtr->albumID),SBIDAlbumMgr::open_flag_foredit);
             albumPtr->addAlbumPerformance(
                         entityPtr->songID,
                         entityPtr->songPerformerID,
@@ -393,11 +394,40 @@ MusicLibrary::rescanMusicLibrary()
         }
     }
 
+    bool resultFlag=1;
     qDebug() << SB_DEBUG_INFO;
-        dal->restore(databaseRestorePoint);
-        return;
+    if(resultFlag)
+    {
+        resultFlag=aMgr->commitAll(dal);
+    }
 
-    if(amgr->commitAll(dal)==0)
+    qDebug() << SB_DEBUG_INFO;
+    apMgr->debugShow("BEFORE COMMIT");
+    if(resultFlag)
+    {
+        resultFlag=apMgr->commitAll(dal);
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    if(resultFlag)
+    {
+        resultFlag=opMgr->commitAll(dal);
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    if(resultFlag)
+    {
+        resultFlag=sMgr->commitAll(dal);
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    if(resultFlag)
+    {
+        resultFlag=spMgr->commitAll(dal);
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    if(resultFlag==0)
     {
         dal->restore(databaseRestorePoint);
     }
@@ -426,6 +456,7 @@ MusicLibrary::rescanMusicLibrary()
     Context::instance()->getController()->preloadAllSongs();
 
     ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary");
+    ProgressDialog::instance()->hide();
 
     qDebug() << SB_DEBUG_INFO << "Finished";
     return;
@@ -477,7 +508,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
                     tobeMatched.performerName=entityPtr->songPerformerName;
                     tobeMatched.performerID=-1;
                     Common::result result=pemgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
-                    if(result!=Common::result_canceled)
+                    if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return 0;
@@ -625,17 +656,19 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
         qDebug() << SB_DEBUG_INFO << "SECTION D2b";
         while(eIT.hasNext())
         {
-            MLentityPtr e=eIT.next();
-            if(e && e->errorFlag()==0)
+            MLentityPtr ePtr=eIT.next();
+            if(ePtr && ePtr->errorFlag()==0)
             {
                 {
                     qDebug() << SB_DEBUG_INFO
-                             << e->filePath
-                             << e->songPerformerName
-                             << e->songPerformerID
-                             << e->albumTitle
-                             << e->albumPosition
-                             << e->createArtificialAlbumFlag
+                             << ePtr->filePath
+                             << ePtr->songPerformerID
+                             << ePtr->songPerformerName
+                             << ePtr->albumPerformerID
+                             << ePtr->albumPerformerName
+                             << ePtr->albumID
+                             << ePtr->albumTitle
+                             << ePtr->createArtificialAlbumFlag
                     ;
                 }
             }
@@ -653,66 +686,83 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
     QHash<QString,int> albumTitle2albumIDMap;	//	key: <album title>:<album performer id>
     while(feIT.hasNext())
     {
-        MLentityPtr entityPtr=feIT.next();
+        MLentityPtr ePtr=feIT.next();
         SBIDAlbumPtr selectedAlbumPtr;
 
-        if(entityPtr && !entityPtr->errorFlag() && (!entityPtr->removedFlag))
+        if(ePtr && !ePtr->errorFlag() && (!ePtr->removedFlag))
         {
-            const QString key=QString("%1:%2").arg(entityPtr->albumTitle).arg(entityPtr->albumPerformerID);
+            const QString key=QString("%1:%2").arg(ePtr->albumTitle).arg(ePtr->albumPerformerID);
             if(!albumTitle2albumIDMap.contains(key))
             {
-                if(entityPtr->createArtificialAlbumFlag || greatestHitsAlbums.contains(entityPtr->albumTitle))
+                if(ePtr->createArtificialAlbumFlag || greatestHitsAlbums.contains(ePtr->albumTitle))
                 {
+                    //	Create greatest hits  album
                     Common::sb_parameters p;
-                    p.albumTitle=entityPtr->albumTitle;
-                    p.albumPerformerID=entityPtr->albumPerformerID;
-                    p.year=entityPtr->year;
-                    p.genre=entityPtr->genre;
+                    p.albumTitle=ePtr->albumTitle;
+                    p.performerID=ePtr->albumPerformerID;
+                    p.year=ePtr->year;
+                    p.genre=ePtr->genre;
                     selectedAlbumPtr=amgr->createInDB(p);
 
                     qDebug() << SB_DEBUG_INFO << "CRT ALBUM:"
                              << selectedAlbumPtr->albumTitle()
                              << selectedAlbumPtr->albumPerformerID()
                     ;
-                    amgr->commit(selectedAlbumPtr,dal);
                 }
                 else
                 {
                     //	Let user select
-                    Common::sb_parameters parameters;
-                    parameters.albumTitle=entityPtr->albumTitle;
-                    parameters.performerName=entityPtr->albumPerformerName;
-                    parameters.performerID=entityPtr->albumPerformerID;
-                    parameters.year=entityPtr->year;
-                    parameters.genre=entityPtr->genre;
+                    Common::sb_parameters p;
+                    p.albumTitle=ePtr->albumTitle;
+                    p.performerID=ePtr->albumPerformerID;
+                    p.performerName=ePtr->albumPerformerName;
+                    p.year=ePtr->year;
+                    p.genre=ePtr->genre;
 
                     qDebug() << SB_DEBUG_INFO
-                             << parameters.albumTitle
-                             << parameters.performerName
-                             << parameters.performerID
-                             << parameters.year
-                             << parameters.genre
-                             << entityPtr->filePath
-                             << entityPtr->key
+                             << ePtr->filePath
+                             << p.albumTitle
+                             << p.performerID
+                             << p.performerName
+                             << p.year
+                             << p.genre
                     ;
-                    Common::result result=amgr->userMatch(parameters,SBIDAlbumPtr(),selectedAlbumPtr);
+                    Common::result result=amgr->userMatch(p,SBIDAlbumPtr(),selectedAlbumPtr);
+                    qDebug() << SB_DEBUG_INFO;
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return 0;
                     }
+                    if(result==Common::result_missing)
+                    {
+                    qDebug() << SB_DEBUG_INFO
+                             << ePtr->filePath
+                             << p.albumTitle
+                             << p.performerID
+                             << p.performerName
+                             << p.year
+                             << p.genre
+                    ;
+                        //	albumPerformerID not set
+                        selectedAlbumPtr=amgr->createInDB(p);
+                    }
                 }
                 albumTitle2albumIDMap[key]=selectedAlbumPtr->albumID();
+                    qDebug() << SB_DEBUG_INFO;
             }
             else
             {
+                    qDebug() << SB_DEBUG_INFO;
                 selectedAlbumPtr=amgr->retrieve(SBIDAlbum::createKey(albumTitle2albumIDMap[key]));
             }
-            entityPtr->albumID=selectedAlbumPtr->albumID();
-            entityPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
+                    qDebug() << SB_DEBUG_INFO;
+            ePtr->albumID=selectedAlbumPtr->albumID();
+            ePtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
         }
         ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
+    qDebug() << SB_DEBUG_INFO;
 
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);

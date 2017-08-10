@@ -106,6 +106,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     return successFlag;
 }
 
+#define NUM_RESTORE_POINTS 12
+
 QString
 DataAccessLayer::createRestorePoint() const
 {
@@ -113,7 +115,7 @@ DataAccessLayer::createRestorePoint() const
     QStringList ID;
     ID.append("restorepoint");
 
-    for(size_t i=1;i<13;i++)
+    for(size_t i=1;i<NUM_RESTORE_POINTS;i++)
     {
         QString q;
         switch(i)
@@ -155,14 +157,10 @@ DataAccessLayer::createRestorePoint() const
             break;
 
         case 10:
-            q=QString("SELECT MAX(toplay_id) FROM ___SB_SCHEMA_NAME___toplay");
-            break;
-
-        case 11:
             q=QString("SELECT MAX(chart_id) FROM ___SB_SCHEMA_NAME___chart");
             break;
 
-        case 12:
+        case 11:
             q=QString("SELECT MAX(chart_performance_id) FROM ___SB_SCHEMA_NAME___chart_performance");
             break;
         }
@@ -171,6 +169,7 @@ DataAccessLayer::createRestorePoint() const
             this->customize(q);
             QSqlQuery qID(q,db);
             qID.next();
+            qDebug() << SB_DEBUG_INFO << i << q << qID.value(0).toInt();
             ID.append(qID.value(0).toString());
         }
     }
@@ -183,9 +182,10 @@ DataAccessLayer::restore(const QString &restorePoint) const
 {
     qDebug() << SB_DEBUG_INFO << restorePoint;
     QStringList IDs=restorePoint.split(':');
-    if(restorePoint.length()==0 || IDs.count()!=5 || IDs[0]!="restorepoint")
+    if(restorePoint.length()==0 || IDs.count()!=NUM_RESTORE_POINTS || IDs[0]!="restorepoint")
     {
         qDebug() << SB_DEBUG_ERROR << "Invalid restorepoint:" << restorePoint;
+        qDebug() << SB_DEBUG_ERROR << "count:" << IDs.count();
     }
     qDebug() << SB_DEBUG_INFO << IDs;
     int performerID=IDs[1].toInt()+1;
@@ -197,9 +197,8 @@ DataAccessLayer::restore(const QString &restorePoint) const
     int onlinePerformanceID=IDs[7].toInt()+1;
     int playlistID=IDs[8].toInt()+1;
     int playlistDetailID=IDs[9].toInt()+1;
-    int toplayID=IDs[10].toInt()+1;
-    int chartID=IDs[11].toInt()+1;
-    int chartPerformanceID=IDs[12].toInt()+1;
+    int chartID=IDs[10].toInt()+1;
+    int chartPerformanceID=IDs[11].toInt()+1;
 
     QStringList SQL;
 
@@ -218,15 +217,6 @@ DataAccessLayer::restore(const QString &restorePoint) const
             "chart_id>=%1"
     )
         .arg(chartID)
-    );
-
-    //	toplay
-    SQL.append(QString(
-        "DELETE FROM ___SB_SCHEMA_NAME___toplay "
-        "WHERE "
-            "toplay_detail_id>=%1 "
-    )
-        .arg(toplayID)
     );
 
     //	Playlistdetail
@@ -452,10 +442,6 @@ DataAccessLayer::addMissingDatabaseItems()
 {
     QStringList allSQL;
 
-    allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN soundex VARCHAR NULL");
-    allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___artist ADD COLUMN mbid VARCHAR NULL");
-    allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___song ADD COLUMN soundex VARCHAR NULL");
-    allSQL.append("CREATE TABLE IF NOT EXISTS ___SB_SCHEMA_NAME___online_performance_alt( LIKE ___SB_SCHEMA_NAME___online_performance)");
     //allSQL.append("ALTER TABLE ___SB_SCHEMA_NAME___record_performance ALTER COLUMN duration TYPE interval");
 
     //	Execute each statement in its own transaction -- one statement (incorrectly) will prevent the

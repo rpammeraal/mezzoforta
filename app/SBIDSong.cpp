@@ -979,17 +979,6 @@ SBIDSong::performerIDList() const
 //        allQueries.append(q);
 
 //        //	3.	Remove toplay
-//        q=QString
-//        (
-//            "DELETE FROM "
-//                "___SB_SCHEMA_NAME___toplay "
-//            "WHERE "
-//                "song_id=%1 "
-//        )
-//            .arg(oldSongID.songID())
-//        ;
-//        allQueries.append(q);
-//    }
 
 //    if(mergeToExistingSongFlag==1 || mergeToNewSongFlag==1)
 //    {
@@ -1291,10 +1280,17 @@ SBIDSong::createInDB(Common::sb_parameters& p)
 }
 
 SBSqlQueryModel*
-SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr)
+SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
 {
-    QString newSoundex=Common::soundex(tobeFound.songTitle);
+    QString newSoundex=Common::soundex(p.songTitle);
     int excludeSongID=(existingSongPtr?existingSongPtr->songID():-1);
+
+    qDebug() << SB_DEBUG_INFO
+             << "title=" << p.songTitle
+             << "performerID=" << p.performerID
+             << "songID=" << p.songID
+    ;
+
 
     //	MatchRank:
     //	0	-	exact match with specified artist (0 or 1 in data set).
@@ -1342,11 +1338,11 @@ SBIDSong::find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPt
         "ORDER BY "
             "1,3 "
     )
-        .arg(Common::escapeSingleQuotes(tobeFound.songTitle.toLower()))
-        .arg(tobeFound.performerID)
+        .arg(Common::escapeSingleQuotes(p.songTitle.toLower()))
+        .arg(p.performerID)
         .arg(newSoundex)
         .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
-        .arg(tobeFound.songID)
+        .arg(p.songID)
     ;
     return new SBSqlQueryModel(q);
 }
@@ -1417,23 +1413,23 @@ SBIDSong::updateSQL() const
 {
     QStringList SQL;
 
-    if(changedFlag())
+    if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
         SQL.append(QString
         (
             "UPDATE ___SB_SCHEMA_NAME___song "
             "SET "
+                "original_performance_id=%1, "
                 "title='%2', "
                 "notes='%3' "
             "WHERE "
-                "song_id=%1 "
+                "song_id=%4 "
         )
-            .arg(this->songID())
-            .arg(Common::escapeSingleQuotes(this->songTitle()))
-            .arg(Common::escapeSingleQuotes(this->notes()))
+            .arg(_originalSongPerformanceID)
+            .arg(Common::escapeSingleQuotes(this->_songTitle))
+            .arg(Common::escapeSingleQuotes(this->_notes))
+            .arg(this->_songID)
         );
-
-        SQL.append(_updateSQLSongPerformances());
     }
     return SQL;
 }
@@ -1447,14 +1443,17 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 
     if(smgr->find(p,exclude,matches))
     {
+        qDebug() << SB_DEBUG_INFO << matches.count();
         if(matches[0].count()==1)
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(p,exclude,matches);
@@ -1478,6 +1477,11 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
             }
         }
     }
+    else
+    {
+        result=Common::result_missing;
+    }
+    qDebug() << SB_DEBUG_INFO << result;
     return result;
 }
 
@@ -1652,16 +1656,3 @@ SBIDSong::_loadSongPerformancesFromDB() const
     return songPerformances;
 }
 
-QStringList
-SBIDSong::_updateSQLSongPerformances() const
-{
-    QStringList SQL;
-
-    QMapIterator<int,SBIDSongPerformancePtr> spIT(_songPerformances);
-    while(spIT.hasNext())
-    {
-        spIT.next();
-        SQL.append(spIT.value()->updateSQL());
-    }
-    return SQL;
-}

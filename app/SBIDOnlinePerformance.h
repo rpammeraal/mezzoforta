@@ -61,6 +61,7 @@ public:
 
     //	Static methods
     static QString createKey(int onlinePerformanceID);
+    static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);
@@ -69,7 +70,6 @@ public:
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
     friend class Preloader;
-    friend class SBIDAlbum;  //	adds performances
 
     SBIDOnlinePerformance();
 
@@ -85,9 +85,6 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _onlinePerformanceID=PK;  }
     QStringList updateSQL() const;
-
-    static SBIDOnlinePerformancePtr createNew(const Common::sb_parameters& p);
-    static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
 
 private:
     //	Attributes

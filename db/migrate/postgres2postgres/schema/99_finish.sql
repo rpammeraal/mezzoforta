@@ -1,75 +1,68 @@
 BEGIN;
 
 --	1.	DROP OLD TABLES
-ALTER TABLE ---SQL_SCHEMA_NAME---record_performance_old
-DROP CONSTRAINT record_perf_online_performance;
-ALTER TABLE ---SQL_SCHEMA_NAME---record_performance_old
-DROP CONSTRAINT record_perf_performance;
-ALTER TABLE ---SQL_SCHEMA_NAME---record_performance_old
-DROP CONSTRAINT record_perf_record_performance;
 
-ALTER TABLE ---SQL_SCHEMA_NAME---online_performance_old
-DROP CONSTRAINT online_perf_record_performance;
+DROP TABLE ---SQL_SCHEMA_NAME---artist_old CASCADE
+;
+DROP TABLE ---SQL_SCHEMA_NAME---artist_rel_old CASCADE
+;
+DROP TABLE ---SQL_SCHEMA_NAME---performance_old CASCADE
+;
+DROP TABLE ---SQL_SCHEMA_NAME---record_old CASCADE;
 
-ALTER TABLE ---SQL_SCHEMA_NAME---collection_performance
-DROP CONSTRAINT collection_perf_dc_id;
-ALTER TABLE ---SQL_SCHEMA_NAME---collection_performance
-DROP CONSTRAINT collection_perf_performance;
-ALTER TABLE ---SQL_SCHEMA_NAME---collection_performance
-DROP CONSTRAINT record_perf_fi;
-
-ALTER TABLE ---SQL_SCHEMA_NAME---playlist_performance
-DROP CONSTRAINT playlist_perf_col_performance;
-
-DROP VIEW  ---SQL_SCHEMA_NAME---v_performance
+DROP TABLE ---SQL_SCHEMA_NAME---record_performance_old CASCADE
 ;
-DROP VIEW  ---SQL_SCHEMA_NAME---v_online_performance
+DROP VIEW  IF EXISTS ---SQL_SCHEMA_NAME---v_performance 
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---collection_performance
+DROP VIEW  IF EXISTS ---SQL_SCHEMA_NAME---v_online_performance
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---collection
+DROP TABLE ---SQL_SCHEMA_NAME---collection_performance CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---playlist_composite
+DROP TABLE ---SQL_SCHEMA_NAME---collection CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---chart_performance_old
+DROP TABLE ---SQL_SCHEMA_NAME---playlist_composite CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---chart_old
+DROP TABLE ---SQL_SCHEMA_NAME---chart_performance_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---toplay_old
+DROP TABLE ---SQL_SCHEMA_NAME---chart_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---playlist_performance
+DROP TABLE ---SQL_SCHEMA_NAME---toplay CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---playlist_old
+DROP TABLE ---SQL_SCHEMA_NAME---playlist_performance CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---online_performance_old
+DROP TABLE ---SQL_SCHEMA_NAME---playlist_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---record_performance_old
+DROP TABLE ---SQL_SCHEMA_NAME---online_performance_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---category_record
+DROP TABLE ---SQL_SCHEMA_NAME---category_record CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---record_old
+DROP TABLE ---SQL_SCHEMA_NAME---lyrics_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---performance_old
+DROP TABLE ---SQL_SCHEMA_NAME---song_old CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---lyrics_old
+DROP TABLE IF EXISTS ---SQL_SCHEMA_NAME---index
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---song_old
+DROP TABLE IF EXISTS ---SQL_SCHEMA_NAME---category CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---artist_rel_old
+DROP TABLE IF EXISTS ---SQL_SCHEMA_NAME---category_index CASCADE
 ;
-DROP TABLE ---SQL_SCHEMA_NAME---artist_old
+DROP TABLE IF EXISTS ---SQL_SCHEMA_NAME---radio_stat CASCADE
+;
+DROP TABLE IF EXISTS ---SQL_SCHEMA_NAME---to_be_indexed CASCADE
 ;
 
 CREATE VIEW ---SQL_SCHEMA_NAME---all
 AS
 SELECT
 	a.artist_id,
-	a.name,
+	a.name AS artist_name,
 	s.song_id,
 	s.title AS song_title,
 	r.record_id,
 	rp.record_position,
 	r.title AS record_title,
+	p.performance_id,
+	rp.record_performance_id,
 	op.online_performance_id,
 	op.path
 FROM
@@ -219,7 +212,17 @@ CREATE UNIQUE INDEX ui_artist_match ON ---SQL_SCHEMA_NAME---artist_match (artist
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance WHERE preferred_record_performance_id IS NULL;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---record_performance WHERE preferred_online_performance_id IS NULL;
 
-DROP TABLE config_host_old CASCADE;
-DROP TABLE digital_format_old CASCADE;
+
+--	Reset sequences
+SELECT setval('---SQL_SCHEMA_NAME---artist_artist_id_seq', MAX(artist_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---artist;
+SELECT setval('---SQL_SCHEMA_NAME---chart_chart_id_seq', MAX(chart_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---chart;
+SELECT setval('---SQL_SCHEMA_NAME---chart_performance_chart_performance_id_seq', MAX(chart_performance_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---chart_performance;
+SELECT setval('---SQL_SCHEMA_NAME---online_performance_online_performance_id_seq', MAX(online_performance_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---online_performance;
+SELECT setval('---SQL_SCHEMA_NAME---performance_performance_id_seq', MAX(performance_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---performance;
+SELECT setval('---SQL_SCHEMA_NAME---playlist_playlist_id_seq', MAX(playlist_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---playlist;
+SELECT setval('---SQL_SCHEMA_NAME---playlist_detail_playlist_detail_id_seq', MAX(playlist_detail_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---playlist_detail;
+SELECT setval('---SQL_SCHEMA_NAME---record_record_id_seq', MAX(record_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---record;
+SELECT setval('---SQL_SCHEMA_NAME---record_performance_record_performance_id_seq', MAX(record_performance_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---record_performance;
+SELECT setval('---SQL_SCHEMA_NAME---song_song_id_seq', MAX(song_id)+1, FALSE) FROM ---SQL_SCHEMA_NAME---song;
 
 COMMIT;

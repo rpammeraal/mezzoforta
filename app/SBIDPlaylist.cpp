@@ -906,7 +906,7 @@ SBIDPlaylist::updateSQL() const
             SQL.append(q);
         }
     }
-    else if(changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
         QString q=QString
         (
@@ -917,8 +917,8 @@ SBIDPlaylist::updateSQL() const
             "WHERE "
                 "playlist_id=%2 "
         )
-            .arg(Common::escapeSingleQuotes(this->playlistName()))
-            .arg(this->playlistID())
+            .arg(Common::escapeSingleQuotes(this->_playlistName))
+            .arg(this->_playlistID)
         ;
         SQL.append(q);
 

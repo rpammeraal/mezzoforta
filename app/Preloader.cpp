@@ -989,17 +989,7 @@ Preloader::songPerformances(QString query)
 SBIDAlbumPtr
 Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
-    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
-    f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
-    f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(fields.at(5).toInt()).toInt());    r.append(f);
-
-    SBIDAlbumPtr albumPtr=SBIDAlbum::instantiate(r);
+    SBIDAlbumPtr albumPtr=SBIDAlbum::instantiate(_populate(fields,queryList));
     amgr->addItem(albumPtr);
     return albumPtr;
 }
@@ -1007,17 +997,7 @@ Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, cons
 SBIDChartPtr
 Preloader::_instantiateChart(SBIDChartMgr* cmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());     r.append(f);
-    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());     r.append(f);
-    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString());  r.append(f);
-    f=QSqlField("f4",QVariant::Date);   f.setValue(queryList.value(fields.at(3).toInt()).toDate()); r.append(f);
-    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());     r.append(f);
-
-
-    SBIDChartPtr cPtr=SBIDChart::instantiate(r);
+    SBIDChartPtr cPtr=SBIDChart::instantiate(_populate(fields,queryList));
     cmgr->addItem(cPtr);
     return cPtr;
 }
@@ -1025,16 +1005,7 @@ Preloader::_instantiateChart(SBIDChartMgr* cmgr, const QStringList& fields, cons
 SBIDChartPerformancePtr
 Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
-    f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
-    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
-
-    SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::instantiate(r);
+    SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::instantiate(_populate(fields,queryList));
     cpmgr->addItem(cpPtr);
     return cpPtr;
 }
@@ -1043,17 +1014,7 @@ Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QS
 SBIDSongPerformancePtr
 Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
-    f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
-    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
-    f=QSqlField("f6",QVariant::Int);    f.setValue(queryList.value(fields.at(5).toInt()).toInt());    r.append(f);
-
-    SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(r);
+    SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(_populate(fields,queryList));
     spmgr->addItem(performancePtr);
     return performancePtr;
 }
@@ -1061,18 +1022,7 @@ Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStr
 SBIDAlbumPerformancePtr
 Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
-    f=QSqlField("f3",QVariant::Int);    f.setValue(queryList.value(fields.at(2).toInt()).toInt());    r.append(f);
-    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(fields.at(3).toInt()).toInt());    r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
-    f=QSqlField("f6",QVariant::String); f.setValue(queryList.value(fields.at(5).toInt()).toString()); r.append(f);
-    f=QSqlField("f7",QVariant::Int);    f.setValue(queryList.value(fields.at(6).toInt()).toInt());    r.append(f);
-
-    SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::instantiate(r);
+    SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::instantiate(_populate(fields,queryList));
     apmgr->addItem(performancePtr);
     return performancePtr;
 }
@@ -1080,14 +1030,7 @@ Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QS
 SBIDOnlinePerformancePtr
 Preloader::_instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* opmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
-    QSqlRecord r;
-    QSqlField f;
-
-    f=QSqlField("f01",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f02",QVariant::Int);    f.setValue(queryList.value(fields.at(1).toInt()).toInt());    r.append(f);
-    f=QSqlField("f03",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
-
-    SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::instantiate(r);
+    SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::instantiate(_populate(fields,queryList));
     opmgr->addItem(performancePtr);
     return performancePtr;
 }
@@ -1104,7 +1047,7 @@ Preloader::_instantiatePerformer(SBIDPerformerMgr* pemgr, const QStringList& fie
     f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
     f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
 
-    SBIDPerformerPtr performerPtr=SBIDPerformer::instantiate(r);
+    SBIDPerformerPtr performerPtr=SBIDPerformer::instantiate(_populate(fields,queryList));
     pemgr->addItem(performerPtr);
     return performerPtr;
 }
@@ -1121,7 +1064,22 @@ Preloader::_instantiateSong(SBIDSongMgr* smgr, const QStringList& fields, const 
     f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
     f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
 
-    SBIDSongPtr songPtr=SBIDSong::instantiate(r);
+    SBIDSongPtr songPtr=SBIDSong::instantiate(_populate(fields,queryList));
     smgr->addItem(songPtr);
     return songPtr;
+}
+
+QSqlRecord
+Preloader::_populate(const QStringList& fields, const QSqlQuery& queryList)
+{
+    QSqlRecord r;
+
+    for(int i=0;i<fields.length();i++)
+    {
+        QVariant v=queryList.value(fields.at(i).toInt());
+        QSqlField f=QSqlField(QString("f%1").arg(i+1),v.type());
+        f.setValue(v);
+        r.append(f);
+    }
+    return r;
 }

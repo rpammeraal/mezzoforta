@@ -28,7 +28,7 @@ private:
 
     QString         _albumTitle;
     int             _albumPosition;
-    SBDuration        _duration;
+    SBDuration      _duration;
     QString         _genre;
     QString         _notes;
     QString         _songPerformerName;
