@@ -325,28 +325,22 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDPerformerPtr>> matches;
 
-    qDebug() << SB_DEBUG_INFO;
     if(pemgr->find(p,exclude,matches))
     {
-    qDebug() << SB_DEBUG_INFO;
-        qDebug() << SB_DEBUG_INFO << matches.count();
         if(matches[0].count()==1)
         {
-    qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
-    qDebug() << SB_DEBUG_INFO;
             //	If there is *exactly* one match without articles, take it.
             found=matches[1][0];
             result=Common::result_exists;
         }
         else
         {
-    qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(p.performerName,exclude,matches);
@@ -374,7 +368,6 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
     {
         result=Common::result_missing;
     }
-    qDebug() << SB_DEBUG_INFO << found->text() << (int)result;
     return result;
 }
 
@@ -453,6 +446,8 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
+    qDebug() << SB_DEBUG_INFO << p.performerName;
+
     if(p.performerName.length()==0)
     {
         //	Give new performer unique name
@@ -487,7 +482,7 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
             "soundex "
         ") "
         "SELECT "
-            "'%1'', "
+            "'%1', "
             "'%2', "
             "'%3', "
             "'%4', "
@@ -501,6 +496,7 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
     ;
 
     dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 

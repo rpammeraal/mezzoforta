@@ -265,18 +265,29 @@ Properties::userSetMusicLibraryDirectory()
 void
 Properties::doInit()
 {
-    _enumToKeyword[sb_version]=QString("version_qt");
+    QMap<QString,bool> isConfigured;
+
     _enumToKeyword[sb_default_schema]=QString("default_schema");
-    _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
-    _enumToKeyword[sb_unknown_album_id]=QString("unknown_album_id");
     _enumToKeyword[sb_performer_album_directory_structure_flag]=QString("performer_album_directory_structure_flag");
     _enumToKeyword[sb_run_import_on_startup_flag]=QString("run_import_on_startup_flag");
+    _enumToKeyword[sb_unknown_album_id]=QString("unknown_album_id");
+    _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
+    _enumToKeyword[sb_version]=QString("version");
+
+    _default[sb_version]=QString("20170101");
+    _default[sb_default_schema]=QString("rock");
+    _default[sb_various_performer_id]=QString("1");
+    _default[sb_unknown_album_id]=QString("0");
+    _default[sb_performer_album_directory_structure_flag]=QString("1");
+    _default[sb_run_import_on_startup_flag]=QString("0");
+
 
     QMapIterator<sb_configurable,QString> etkIT(_enumToKeyword);
     while(etkIT.hasNext())
     {
         etkIT.next();
         _keywordToEnum[etkIT.value()]=etkIT.key();
+        isConfigured[etkIT.value()]=0;
     }
 
     DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
@@ -284,7 +295,6 @@ Properties::doInit()
 
     //	Load configuration from table
     QString q="SELECT keyword,value FROM configuration";
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qID(q,db);
     while(qID.next())
     {
@@ -295,6 +305,20 @@ Properties::doInit()
         {
             sb_configurable key=_keywordToEnum[keyword];
             _configuration[key]=value;
+            isConfigured[keyword]=1;
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO << isConfigured.count();
+    //	Make sure all properties exists in database
+    QMapIterator<QString,bool> isConfiguredIT(isConfigured);
+    while(isConfiguredIT.hasNext())
+    {
+        isConfiguredIT.next();
+        if(isConfiguredIT.value()==0)
+        {
+            QString keyword=isConfiguredIT.key();
+            setConfigValue(_keywordToEnum[keyword],_default[_keywordToEnum[keyword]]);
         }
     }
 }

@@ -115,9 +115,6 @@ bool
 SBDuration::setHMS(int hours, int minutes, int seconds, int ms)
 {
     _ms=(1000  *seconds)+(1000*60*minutes)+(1000*60*24*hours)+ms;
-    qDebug() << _ms << hour() << minute() << second() << toTime();
-    qDebug() << toString(SBDuration::sb_hhmmss_format);
-    qDebug() << toString(SBDuration::sb_full_hhmmss_format);
 
     if(ms<0)
     {

@@ -1330,10 +1330,11 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
                     "s.song_id=l.song_id "
         "WHERE "
             "( "
-                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
-                "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
+                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3'  "
+                //"SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
             ") AND "
-            "length(s.soundex)<= 2*length('%3') "
+            "length(s.soundex)<= 2*length('%3') AND "
+            "REPLACE(LOWER(s.title),' ','') != REPLACE(LOWER('%1'),' ','') "
             "%4 "
         "ORDER BY "
             "1,3 "
@@ -1404,7 +1405,6 @@ SBIDSong::retrieveSQL(const QString& key)
         .arg(key.length()==0?"":QString("WHERE s.song_id=%1").arg(songID))
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

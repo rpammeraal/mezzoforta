@@ -98,8 +98,10 @@ public:
         result_missing=2
     };
 
-    struct sb_parameters
+    class sb_parameters
     {
+    public:
+        sb_parameters() { _init(); }
         //	An sb_parameter is used to search existing or create a new SBIDBase* dependend instances.
         //	An instance of this parameter is only to contain parameters for either a song, perfomer, album, etc.
         //	It should never include extended attributes (eg.: for a song, the album performer name, etc).
@@ -124,9 +126,23 @@ public:
         QString songTitle;
         QString www;
         int year;
+
+    private:
+        void _init()
+        {
+            albumID=0;
+            albumPerformanceID=0;
+            albumPosition=0;
+            chartID=0;
+            chartPosition=0;
+            performerID=0;
+            songID=0;
+            songPerformanceID=0;
+        }
     };
 
     static QStringList articles();
+    static QString correctArticle(const QString& );
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return ++ID; }

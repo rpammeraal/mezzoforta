@@ -474,6 +474,11 @@ SBIDSongPerformance::updateSQL() const
 {
     QStringList SQL;
 
+    if(this->_year<1900)
+    {
+        const_cast<SBIDSongPerformance *>(this)->_year=1900;
+    }
+
     if(deletedFlag())
     {
         SQL.append(QString

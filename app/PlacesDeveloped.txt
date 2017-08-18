@@ -868,12 +868,28 @@ Between 20161215 and 20170604:
 -	Editing performers seem to work for now.
 +	Modifying album edit in progress.
 
-Current:
+20170810:
 -	search for 'creo en ti'. Select 'Moose!Music Al Sur De Troya'. Drag 'Creo en Ti' to Latina!Latina!
 +	switched gears to getting import to work
-*	recreate database, fix restorepoint issue
+-	recreate database, fix restorepoint issue
+-	Play Regatta De Blanc -- songs not in order
+-	Play Nevermind/Nirvana album -- not all songs are put in playlist.
+-	enable saving last played to online_performance (not sure if this works) -- this should be implemented as an explicit non-interruptible save.
+
+Current:
+-	Importing album for single performer gets more stable
+-	Properties to write defaults if they don't exists
+    -	Database table cleaned up
+-	character after ' is capitalized in import.
+-	Flag that takes directory name as album name
+*	Creating new playlist does not get saved to database
 *	song from album tab should play that song_performance -- not the preferred one.
-*	playing album should play online performances from that album -- not the preferred ones.
+*	Show Albums for Abba: year released displays 0 even though it is set.
+*	Edit record crashes
+*	New playlist:
+    -	New Playlist 0 instead of New Playlist 1
+	-	should scroll down to new playlist
+* 	After import, show in status bar (bottom) how many songs where imported.
 
 ::Import
 -	save(): depreciated
@@ -881,12 +897,18 @@ Current:
 -	createNew(): depreciated
 -	updateSQL(): only handles updates/removals (the latter maybe in a different method).
 -	createInDB: creates an actual record (fully populated) in the database and stores in mgr. Used by mgr.
+-	DataAccessLayer::createRestorePoint to be revisited
+-	double check sqlite database schema is the same as postgres database schema
 
 Bugs that need to be fixed:
 *	Open up 'Holiday Rap' -- hangs (test under windows)
 *	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used.
-*	Play Nevermind/Nirvana album -- not all songs are put in playlist.
-*	Play Regatta De Blanc -- songs not in order
+*	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
+*	Open performer 'Maná'. Songs show -1 as year.
+*	Open performer 'Birdy'. Albums show -1 as year.
+*	Search box: albums should appear as <album name> - album instead of <album name> - record.
+*	Remove instances of screenstack:debugshow
+*	Reordering in playlist does not get saved.
 
 Todo:
 *	Edit.
@@ -924,7 +946,7 @@ Near future:
 *	Charts/Playlists to be minimized.
 
 Import bugs/features/missing:
-*	DataAccessLayer::createRestorePoint to be revisited
+*	Look up record_performance by title, performer & title in addition to album position
 *	Dialogbox needed at additional places during import
 *	Validate album positions
 *	Import songbase directory:
@@ -933,7 +955,6 @@ Import bugs/features/missing:
 	*	Doobie Brothers: The Doobie Brothers
 	*	It should not mix: The Specials and De Specials
 	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
-*	double check sqlite database schema is the same as postgres database schema
 *	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.
 *	MusicLibrary:
     -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
@@ -941,7 +962,6 @@ Import bugs/features/missing:
 *	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
 *	need to trim down list of alternatives shown for song
 *	albumtitle from metadata not taken into account
-*	enable saving last played to online_performance (not sure if this works) -- this should be implemented as an explicit non-interruptible save.
 *	Include feature to stop asking for user input during file import.
 *   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
 *	remove dots at start of any item (song, album, performer) when creating path

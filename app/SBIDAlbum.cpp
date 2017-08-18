@@ -249,7 +249,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         newAlbumPerformanceFlag=1;
         apPtr=apMgr->createInDB(p);
         qDebug() << SB_DEBUG_INFO
-                 << "new apID=" << apPtr->albumID()
+                 << "new apID=" << apPtr->albumPerformanceID()
         ;
     }
     qDebug() << SB_DEBUG_INFO
@@ -1035,6 +1035,8 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     album._genre           =p.genre;
     album._notes           =p.notes;
     album._year            =p.year;
+
+    qDebug() << SB_DEBUG_INFO << album._albumID;
 
     //	Done
     return std::make_shared<SBIDAlbum>(album);

@@ -46,6 +46,31 @@ Common::articles()
     return _articles;
 }
 
+QString
+Common::correctArticle(const QString &s)
+{
+    QStringList articles=Common::articles();
+    QString result=s;
+    bool processedFlag=0;
+
+    QStringListIterator it(articles);
+    while(it.hasNext() && !processedFlag)
+    {
+        QString a=it.next();
+        QString r=QString(", %1$").arg(a);
+        QRegExp re=QRegExp(r,Qt::CaseInsensitive);
+        if(s.contains(re))
+        {
+            processedFlag=1;
+            result=QString("%1 %2")
+                .arg(a)
+                .arg(s.left(s.length()-(r.length()-1)))
+            ;
+        }
+    }
+    toTitleCase(result);
+    return result;
+}
 
 QString
 Common::escapeSingleQuotes(const QString &s)
@@ -320,6 +345,21 @@ Common::toTitleCase(QString &s)
 
     for(int i=0;i<s.length();i++)
     {
+        QChar prev;
+        QChar curr;
+        QChar next;
+
+
+        if(i-1>=0)
+        {
+            prev=s[i-1];
+        }
+        if(i+1<s.length())
+        {
+            next=s[i+1];
+        }
+        curr=s[i];
+
         if(i==0)
         {
             s[i]=s[i].toUpper();
@@ -328,7 +368,12 @@ Common::toTitleCase(QString &s)
         {
             s[i]=s[i].toLower();
         }
-        else if(s.at(i).isLetter()==0)
+        else if(prev=='\'' && curr.isLetter()==1 && next.isSpace()==1)
+        {
+            //	account for 's<space> situation
+            s[i]=s[i].toLower();
+        }
+        else if(s.at(i).isLetter()==0 && curr!='\'')
         {
             while(i<s.length() && s.at(i).isLetter()==0)
             {

@@ -36,6 +36,7 @@ protected:
 
 private:
     QMap<sb_configurable,QString> _configuration;
+    QMap<sb_configurable,QString> _default;
     DataAccessLayer*              _dal;
     QMap<sb_configurable,QString> _enumToKeyword;
     QMap<QString,sb_configurable> _keywordToEnum;

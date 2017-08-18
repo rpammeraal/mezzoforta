@@ -360,6 +360,33 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
     return new SBSqlQueryModel(q);
 }
 
+int
+SBIDOnlinePerformance::totalNumberOnlinePerformances()
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+    int numSongs=0;
+
+    //	Insert
+    q=QString
+    (
+        "SELECT COUNT(*) FROM  ___SB_SCHEMA_NAME___online_performance "
+    )
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery query(q,db);
+
+    if(query.next())
+    {
+        numSongs=query.value(0).toInt();
+    }
+    qDebug() << SB_DEBUG_INFO << numSongs;
+    return numSongs;
+}
+
 QString
 SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
 {
