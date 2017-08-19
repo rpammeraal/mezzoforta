@@ -39,6 +39,7 @@ pg_dump --dbname=$DB --host=$HOST --port=$PORT \
 	-T config_host_digital_format  \
 	-T configuration               \
 	-T digital_format              \
+	-T greatest_hits_record        \
 	-T namespace                   \
 	-T password                    \
 	-T source                      \
@@ -47,10 +48,12 @@ pg_dump --dbname=$DB --host=$HOST --port=$PORT \
 	-T search_result               \
 	-T $SCHEMA.category            \
 	-T $SCHEMA.category_index      \
-	-t genre                       \
+	-T genre                       \
 	-t $SCHEMA.artist              \
+	-t $SCHEMA.artist_match        \
 	-t $SCHEMA.artist_rel          \
 	-t $SCHEMA.song                \
+	-t $SCHEMA.lyrics              \
 	-t $SCHEMA.performance         \
 	-t $SCHEMA.record              \
 	-t $SCHEMA.record_performance  \

@@ -175,12 +175,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                     "record_performance_id INTEGER NOT NULL, \n"
                     "path                  CHARACTER VARYING NOT NULL, \n"
                     "last_play_date        TIMESTAMP without time zone, \n"
-                    "play_order            INTEGER, \n"
-                    "insert_order          INTEGER NOT NULL, \n"
                     "CONSTRAINT fk_online_performance_record_performance_id_record_performance_record_performance_id FOREIGN KEY (record_performance_id) REFERENCES record_performance(record_performance_id) \n"
                 "); \n"
             ));
-            SQL.append("CREATE UNIQUE INDEX idx_online_performance_insert_order ON online_performance (insert_order); ");
             SQL.append("CREATE INDEX idx_online_performance_last_play_date ON online_performance (last_play_date); ");
 
             SQL.append(Common::escapeSingleQuotes(
@@ -338,10 +335,10 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "CREATE TABLE artist_match \n"
                 "( \n"
                     "artist_name             VARCHAR NOT NULL, \n"
-                    "artist_alternative_name VARCHAR NOT NULL, \n"
+                    "artist_alternative_name VARCHAR NOT NULL \n"
                 "); \n"
             ));
-            SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_correct_name);");
+            SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
 
             ProgressDialog::instance()->show("Creating Database","DataAccessLayerSQLite::createDatabase",1);
             if(dal.executeBatch(SQL,1,0)==0)
