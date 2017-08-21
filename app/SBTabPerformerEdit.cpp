@@ -288,7 +288,7 @@ SBTabPerformerEdit::save() const
     pemgr->setChanged(orgPerformerPtr);
     successFlag=pemgr->commitAll(dal);
 
-    Context::instance()->getScreenStack()->debugShow("before finish");
+    //Context::instance()->getScreenStack()->debugShow("before finish");
     if(successFlag)
     {
         if(successFlag==1)
@@ -320,7 +320,7 @@ SBTabPerformerEdit::save() const
     //	Close screen
     Context::instance()->getNavigator()->closeCurrentTab();
 
-    Context::instance()->getScreenStack()->debugShow("after finish");
+    //Context::instance()->getScreenStack()->debugShow("after finish");
 }
 
 ///	Private slots

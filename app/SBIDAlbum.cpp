@@ -203,10 +203,8 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     bool newSongPerformanceFlag=0;
     bool newAlbumPerformanceFlag=0;
 
-    qDebug() << SB_DEBUG_INFO << path;
     if(_albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         _loadAlbumPerformances();
     }
 
@@ -218,51 +216,37 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         return apPtr;
     }
 
-    qDebug() << SB_DEBUG_INFO << sPtr->songID() << sPtr->genericDescription();
-    qDebug() << SB_DEBUG_INFO << songID << performerID;
     //	Look up song performance
     p.songID=songID;
     p.performerID=performerID;
     p.year=year;
     spPtr=SBIDSongPerformance::findByFK(p);
-    qDebug() << SB_DEBUG_INFO << sPtr->genericDescription();
     if(!spPtr)
     {
         newSongPerformanceFlag=1;
         spPtr=spMgr->createInDB(p);
-        qDebug() << SB_DEBUG_INFO
-                 << "new apID=" << spPtr->songPerformanceID()
         ;
     }
 
-    qDebug() << SB_DEBUG_INFO;
     //	Lookup album performance
     p.songPerformanceID=spPtr->songPerformanceID();
     p.albumID=this->albumID();
     p.albumPosition=albumPosition;
     p.duration=duration;
     p.notes=notes;
-    qDebug() << SB_DEBUG_INFO << p.duration << p.year;
     apPtr=SBIDAlbumPerformance::findByFK(p);
     if(!apPtr)
     {
         newAlbumPerformanceFlag=1;
         apPtr=apMgr->createInDB(p);
-        qDebug() << SB_DEBUG_INFO
-                 << "new apID=" << apPtr->albumPerformanceID()
         ;
     }
-    qDebug() << SB_DEBUG_INFO
-             << "apPtr->albumPerformanceID=" << apPtr->albumPerformanceID()
-             << "apPtr:ID=" << apPtr->ID();
     if(!_albumPerformances.contains(apPtr->albumPerformanceID()))
     {
-    qDebug() << SB_DEBUG_INFO;
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
         this->setChangedFlag();
     }
 
-    qDebug() << SB_DEBUG_INFO;
     //	Lookup online performance
     p.albumPerformanceID=apPtr->albumPerformanceID();
     p.path=path;
@@ -270,38 +254,24 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(!opPtr)
     {
         opPtr=opMgr->createInDB(p);
-        qDebug() << SB_DEBUG_INFO
-                 << "new opID=" << opPtr->onlinePerformanceID()
-                 << "id=" << opPtr->ID();
-        ;
     }
-    qDebug() << SB_DEBUG_INFO
-             << "id=" << opPtr->ID();
 
-    qDebug() << SB_DEBUG_INFO << sPtr->originalSongPerformanceID();
     //	Set ID's pointing down the hierarchy
     if(sPtr->originalSongPerformanceID()<0)
     {
-    qDebug() << SB_DEBUG_INFO;
         sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
         sMgr->setChanged(sPtr);
     }
-    qDebug() << SB_DEBUG_INFO << spPtr->preferredAlbumPerformanceID();
     if(spPtr->preferredAlbumPerformanceID()<0)
     {
-    qDebug() << SB_DEBUG_INFO;
         spPtr->setPreferredAlbumPerformanceID(apPtr->albumPerformanceID());
         spMgr->setChanged(spPtr);
     }
-    qDebug() << SB_DEBUG_INFO << apPtr->preferredOnlinePerformanceID();
     if(apPtr->preferredOnlinePerformanceID()<0)
     {
-    qDebug() << SB_DEBUG_INFO;
         apPtr->setPreferredOnlinePerformanceID(opPtr->onlinePerformanceID());
         apMgr->setChanged(apPtr);
-        qDebug() << SB_DEBUG_INFO << changedFlag();
     }
-    qDebug() << SB_DEBUG_INFO;
 
     return apPtr;
 }
@@ -926,8 +896,8 @@ SBIDAlbum::albumsByPerformer(int performerID)
             "r.artist_id, "
             "r.title, "
             "r.genre, "
-            "r.notes, "
-            "r.year "
+            "r.year, "
+            "r.notes "
         "FROM "
                 "___SB_SCHEMA_NAME___record r "
                     "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
@@ -1126,6 +1096,7 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._year            =r.value(4).toInt();
     album._notes           =r.value(5).toString();
 
+    album._year=(album._year<1900?1900:album._year);
     return std::make_shared<SBIDAlbum>(album);
 }
 
@@ -1136,7 +1107,7 @@ SBIDAlbum::mergeTo(SBIDAlbumPtr &to)
 }
 
 void
-SBIDAlbum::openKey(const QString &key, int &albumID)
+SBIDAlbum::openKey(const QString& key, int& albumID)
 {
     QStringList l=key.split(":");
     albumID=l.count()==2?l[1].toInt():-1;
@@ -1223,20 +1194,16 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
 
-    qDebug() << SB_DEBUG_INFO << p.albumTitle;
     if(amgr->find(p,exclude,matches))
     {
-        qDebug() << SB_DEBUG_INFO << matches[0].count();
         if(matches[0].count()==1)
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
@@ -1252,24 +1219,18 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
                     found=std::dynamic_pointer_cast<SBIDAlbum>(selected);
                     found->refreshDependents();
                     result=Common::result_exists;
-            qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
                     result=Common::result_missing;
-            qDebug() << SB_DEBUG_INFO;
                 }
-            qDebug() << SB_DEBUG_INFO;
             }
-            qDebug() << SB_DEBUG_INFO;
         }
-            qDebug() << SB_DEBUG_INFO;
     }
     else
     {
         result=Common::result_missing;
     }
-            qDebug() << SB_DEBUG_INFO;
     return result;
 }
 

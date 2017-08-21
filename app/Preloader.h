@@ -15,13 +15,14 @@ public:
     static QVector<SBIDAlbumPerformancePtr> albumPerformances(QString query);
     static QVector<SBIDOnlinePerformancePtr> onlinePerformances(QString query);
     static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query);
-    static QMap<int,SBIDPtr> playlistItems(int playlistID);
+    static QMap<int,SBIDPlaylistDetailPtr> playlistItems(int playlistID);
     static QVector<SBIDSongPerformancePtr> songPerformances(QString query);
 
 private:
     static SBIDAlbumPtr _instantiateAlbum(SBIDAlbumMgr* amgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDChartPtr _instantiateChart(SBIDChartMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDChartPerformancePtr _instantiateChartPerformance(SBIDChartPerformanceMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
+    static SBIDPlaylistDetailPtr _instantiatePlaylistDetailInstance(SBIDPlaylistDetailMgr* pdmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDSongPerformancePtr _instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDAlbumPerformancePtr _instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDOnlinePerformancePtr _instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);

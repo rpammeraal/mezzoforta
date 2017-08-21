@@ -42,6 +42,7 @@ private:
     QMap<QString,sb_configurable> _keywordToEnum;
 
     int _getHostID() const;
+    void _setConfigValue(sb_configurable keyword, const QString& value);
 };
 
 #endif // PROPERTIES_H

@@ -876,20 +876,12 @@ Between 20161215 and 20170604:
 -	Play Nevermind/Nirvana album -- not all songs are put in playlist.
 -	enable saving last played to online_performance (not sure if this works) -- this should be implemented as an explicit non-interruptible save.
 
-Current:
+20170818:
 -	Importing album for single performer gets more stable
 -	Properties to write defaults if they don't exists
     -	Database table cleaned up
 -	character after ' is capitalized in import.
 -	Flag that takes directory name as album name
-*	Creating new playlist does not get saved to database
-*	song from album tab should play that song_performance -- not the preferred one.
-*	Show Albums for Abba: year released displays 0 even though it is set.
-*	Edit record crashes
-*	New playlist:
-    -	New Playlist 0 instead of New Playlist 1
-	-	should scroll down to new playlist
-* 	After import, show in status bar (bottom) how many songs where imported.
 
 ::Import
 -	save(): depreciated
@@ -900,15 +892,27 @@ Current:
 -	DataAccessLayer::createRestorePoint to be revisited
 -	double check sqlite database schema is the same as postgres database schema
 
-Bugs that need to be fixed:
-*	Open up 'Holiday Rap' -- hangs (test under windows)
-*	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used.
-*	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
-*	Open performer 'Maná'. Songs show -1 as year.
-*	Open performer 'Birdy'. Albums show -1 as year.
-*	Search box: albums should appear as <album name> - album instead of <album name> - record.
-*	Remove instances of screenstack:debugshow
+20170820:
+-	Open up 'Holiday Rap' -- hangs (test under windows)
+-	New playlist:
+	-	New Playlist 1 instead of New Playlist 0
+	-	should scroll down to new playlist
+	-	Creating new playlist does not get saved to database
+-	Show Albums for Abba: year released displays 0 even though it is set.
+-	Open performer 'Birdy'. Albums show -1 as year.
+-	Remove instances of screenstack:debugshow
+-	song from album tab should play that song_performance -- not the preferred one.
+-	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 *	Reordering in playlist does not get saved.
+!	Open performer 'Maná'. Songs show -1 as year (double check on postgres)
+!	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
+
+Bugs that need to be fixed:
+*	Edit record crashes
+* 	After import, show in status bar (bottom) how many songs where imported.
+*	Search box:
+	*	albums should appear as <album name> - album instead of <album name> - record.
+	*	performers should appear without accents
 
 Todo:
 *	Edit.

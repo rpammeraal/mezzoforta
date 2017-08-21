@@ -9,6 +9,7 @@ class SBIDPlaylist;
 typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
 
 #include "SBIDSong.h"
+#include "SBIDPlaylistDetail.h"
 
 class SBTableModel;
 class QProgressDialog;
@@ -67,7 +68,7 @@ protected:
     SBIDPlaylist& operator=(const SBIDPlaylist& t);
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
-    bool addDependent(SBIDPtr tobeAddedPtr);
+    bool addDependent(SBIDPtr ptr);
     static SBIDPlaylistPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID);
@@ -86,14 +87,14 @@ private:
     //	Not instantiated
     int               _numItems;	//	may only be used until _items has been loaded
 
-    QMap<int,SBIDPtr> _items;
+    QMap<int,SBIDPlaylistDetailPtr> _items;
 
     //	Methods
     static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root);
     void _copy(const SBIDPlaylist& c);
     void _init();
     void _loadPlaylistItems();
-    QMap<int,SBIDPtr> _loadPlaylistItemsFromDB() const;
+    QMap<int,SBIDPlaylistDetailPtr> _loadPlaylistItemsFromDB() const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID);
 

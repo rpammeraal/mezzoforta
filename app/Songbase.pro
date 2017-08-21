@@ -77,7 +77,8 @@ HEADERS     = \
     SBTabChooser.h \
     SBIDChartPerformance.h \
     ProgressDialog.h \
-    SBDuration.h
+    SBDuration.h \
+    SBIDPlaylistDetail.h
 
 SOURCES     = \
     main.cpp \
@@ -155,7 +156,8 @@ SOURCES     = \
     SBTabChooser.cpp \
     SBIDChartPerformance.cpp \
     ProgressDialog.cpp \
-    SBDuration.cpp
+    SBDuration.cpp \
+    SBIDPlaylistDetail.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

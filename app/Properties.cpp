@@ -23,6 +23,7 @@ Properties::configValue(sb_configurable keyword) const
 {
     if(_configuration.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         const_cast<Properties *>(this)->doInit();
     }
 
@@ -39,6 +40,7 @@ Properties::debugShow(const QString &title)
 {
     if(_configuration.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         doInit();
     }
     qDebug() << SB_DEBUG_INFO << title;
@@ -120,56 +122,15 @@ Properties::musicLibraryDirectorySchema()
 }
 
 void
-Properties::setConfigValue(sb_configurable keyword, const QString &value)
+Properties::setConfigValue(sb_configurable keyword, const QString& value)
 {
     if(_configuration.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         doInit();
     }
 
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
-    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QString q;
-
-    if(!_configuration.contains(keyword))
-    {
-        //	Insert in db
-        q=QString
-        (
-            "INSERT INTO configuration "
-            "( "
-                "keyword, "
-                "value "
-            ") "
-            "VALUES "
-            "( "
-                "'%1', "
-                "'%2' "
-            ")"
-        )
-            .arg(_enumToKeyword[keyword])
-            .arg(value)
-        ;
-    }
-    else
-    {
-        //	Update in db
-        q=QString
-        (
-            "UPDATE configuration "
-            "SET value='%2' "
-            "WHERE keyword='%1' "
-        )
-            .arg(_enumToKeyword[keyword])
-            .arg(value)
-        ;
-    }
-
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery upsert(q,db);
-    Q_UNUSED(upsert);
-
-    _configuration[keyword]=value;
+    _setConfigValue(keyword,value);
 }
 
 void
@@ -203,10 +164,16 @@ Properties::setMusicLibraryDirectory(const QString musicLibraryDirectory)
                 "local_data_path "
             ") "
             "SELECT "
-                "'%2', "
-                "'%3' "
+                "'%1', "
+                "'%2' "
+            "WHERE "
+                "NOT EXISTS "
+                "( "
+                    "SELECT NULL "
+                    "FROM config_host "
+                    "WHERE hostname='%1' "
+                ") "
         )
-            .arg(dal->getIsNull())
             .arg(Common::escapeSingleQuotes(Network::hostName()))
             .arg(Common::escapeSingleQuotes(musicLibraryDirectory))
         ;
@@ -265,6 +232,7 @@ Properties::userSetMusicLibraryDirectory()
 void
 Properties::doInit()
 {
+        qDebug() << SB_DEBUG_INFO;
     QMap<QString,bool> isConfigured;
 
     _enumToKeyword[sb_default_schema]=QString("default_schema");
@@ -314,11 +282,14 @@ Properties::doInit()
     QMapIterator<QString,bool> isConfiguredIT(isConfigured);
     while(isConfiguredIT.hasNext())
     {
+        qDebug() << SB_DEBUG_INFO;
         isConfiguredIT.next();
         if(isConfiguredIT.value()==0)
         {
+        qDebug() << SB_DEBUG_INFO;
             QString keyword=isConfiguredIT.key();
-            setConfigValue(_keywordToEnum[keyword],_default[_keywordToEnum[keyword]]);
+        qDebug() << SB_DEBUG_INFO;
+            _setConfigValue(_keywordToEnum[keyword],_default[_keywordToEnum[keyword]]);
         }
     }
 }
@@ -350,4 +321,52 @@ Properties::_getHostID() const
     }
 
     return hostID;
+}
+
+void
+Properties::_setConfigValue(sb_configurable keyword, const QString& value)
+{
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    if(!_configuration.contains(keyword))
+    {
+        //	Insert in db
+        q=QString
+        (
+            "INSERT INTO configuration "
+            "( "
+                "keyword, "
+                "value "
+            ") "
+            "VALUES "
+            "( "
+                "'%1', "
+                "'%2' "
+            ")"
+        )
+            .arg(_enumToKeyword[keyword])
+            .arg(value)
+        ;
+    }
+    else
+    {
+        //	Update in db
+        q=QString
+        (
+            "UPDATE configuration "
+            "SET value='%2' "
+            "WHERE keyword='%1' "
+        )
+            .arg(_enumToKeyword[keyword])
+            .arg(value)
+        ;
+    }
+
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery upsert(q,db);
+    Q_UNUSED(upsert);
+
+    _configuration[keyword]=value;
 }

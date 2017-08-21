@@ -59,7 +59,6 @@ SBTableModel::data(const QModelIndex &item, int role) const
 bool
 SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
-    qDebug() << SB_DEBUG_INFO << parent.row() << row << column;
     //	Always -1 for drag/drop in editAlbum, maybe fine for other
     //if(parent.row()==-1)
     //{
@@ -69,26 +68,21 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
     if (!canDropMimeData(data, action, row, column, parent))
     {
-        qDebug() << SB_DEBUG_INFO;
         return false;
     }
 
     if (action == Qt::IgnoreAction)
     {
-        qDebug() << SB_DEBUG_INFO;
         return true;
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
 
     const QModelIndex n=this->index(parent.row(),0);
-    qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
     SBIDPtr toIDPtr=determineSBID(n);
 
-    qDebug() << SB_DEBUG_INFO;
     //emit assign(fromIDPtr,toIDPtr);
     if(row>=0)
     {
@@ -99,15 +93,12 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 //        {
 //            row+=1;
 //        }
-//        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
-    qDebug() << SB_DEBUG_INFO;
         emit assign(fromIDPtr,row);
     }
     else
     {
         qDebug() << SB_DEBUG_INFO << "row < 0" << row << "drag/drop abortée";
     }
-    qDebug() << SB_DEBUG_INFO;
     return 1;
 }
 
@@ -121,7 +112,6 @@ SBTableModel::flags(const QModelIndex &index) const
 QMimeData*
 SBTableModel::mimeData(const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
     return SBModel::_mimeData(this,indexes);
 }
 
@@ -366,7 +356,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
         if(apPtr)
         {
             _setItem(i, 0,QString("%1").arg(apPtr->albumPosition()));
-            _setItem(i, 1,apPtr->songPtr()->key());
+            _setItem(i, 1,SBIDOnlinePerformance::createKey(apPtr->preferredOnlinePerformanceID()));
             _setItem(i, 2,apPtr->songTitle());
             _setItem(i, 3,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i, 4,apPtr->songPerformerKey());
@@ -409,7 +399,6 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
     //	Populate data
     QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(list);
     int i=0;
-    qDebug() << SB_DEBUG_INFO;
     while(it.hasNext())
     {
         SBIDSong::PlaylistOnlinePerformance pop=it.next();
@@ -428,7 +417,6 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
 
         if(plPtr && opPtr)
         {
-            qDebug() << SB_DEBUG_INFO << plPtr->playlistID() << opPtr->onlinePerformanceID();
             _setItem(i,0,plPtr->key());
             _setItem(i,1,plPtr->playlistName());
             _setItem(i,2,opPtr->songPerformerKey());
@@ -440,11 +428,10 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
             i++;
         }
     }
-    qDebug() << SB_DEBUG_INFO << i;
 }
 
 void
-SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
+SBTableModel::populatePlaylistContent(const QMap<int, SBIDPlaylistDetailPtr> &items)
 {
     _init();
 
@@ -456,7 +443,7 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPtr> &items)
     header.append("item");
     setHorizontalHeaderLabels(header);
 
-    QMapIterator<int,SBIDPtr> it(items);
+    QMapIterator<int,SBIDPlaylistDetailPtr> it(items);
     int i=0;
     while(it.hasNext())
     {

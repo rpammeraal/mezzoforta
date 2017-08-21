@@ -184,6 +184,7 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
         SBIDPtr ptr=mqs->selectedItem(sourceIDX);
+        qDebug() << SB_DEBUG_INFO << ptr->text();
         Context::instance()->getNavigator()->openScreen(ptr);
     }
 }

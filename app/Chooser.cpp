@@ -64,7 +64,6 @@ public:
         }
 
         QByteArray encodedData = data->data("application/vnd.text.list");
-        qDebug() << SB_DEBUG_INFO << encodedData.length();
         SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
 
         if(_c && ptr && ptr->itemType()!=SBIDBase::sb_type_invalid)
@@ -550,7 +549,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     pmgr->commit(playlistPtr,dal);
 
     this->_populate();
-    QModelIndex in=_findItem(playlistPtr);
+    QModelIndex in=_findItem(playlistPtr->playlistName());
     if(in.isValid())
     {
         _setCurrentIndex(in);
@@ -592,12 +591,12 @@ Chooser::_findItem(const QString& toFind)
                     si1=si0->child(i,1);
                     if(si1)
                     {
-                        qDebug() << SB_DEBUG_INFO << "c+1" << si1->text();
+                        //qDebug() << SB_DEBUG_INFO << "c+1" << si1->text();
                     }
                     si1=si0->child(i,2);
                     if(si1)
                     {
-                        qDebug() << SB_DEBUG_INFO << "c+2" << si1->text();
+                        //qDebug() << SB_DEBUG_INFO << "c+2" << si1->text();
                     }
                 }
             }

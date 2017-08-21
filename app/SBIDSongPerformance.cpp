@@ -441,6 +441,7 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     sP._notes                      =Common::parseTextFieldDB(&r,i++);
     sP._preferredAlbumPerformanceID=Common::parseIntFieldDB(&r,i++);
 
+    sP._year=(sP._year<1900?1900:sP._year);
     return std::make_shared<SBIDSongPerformance>(sP);
 }
 

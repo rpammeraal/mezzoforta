@@ -99,7 +99,7 @@ Navigator::openScreen(const ScreenItem &si)
     }
 
     ScreenStack* st=Context::instance()->getScreenStack();
-    st->debugShow("openScreen:113");
+    //st->debugShow("openScreen:113");
     SBIDPtr ptr;
 
     //	Check for valid parameter

@@ -41,8 +41,16 @@ SBSortFilterProxyQueuedSongsModel::flags(const QModelIndex &index) const
 QMimeData*
 SBSortFilterProxyQueuedSongsModel::mimeData(const QModelIndexList &indexes) const
 {
+    QModelIndexList n;
+    foreach (const QModelIndex &idx, indexes)
+    {
+        if (idx.isValid())
+        {
+            n.append(mapToSource(idx));
+        }
+    }
     qDebug() << SB_DEBUG_INFO;
-    return sourceModel()->mimeData(indexes);
+    return sourceModel()->mimeData(n);
 }
 
 QStringList

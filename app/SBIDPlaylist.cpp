@@ -102,8 +102,8 @@ SBIDPlaylist::items() const
 {
     if(_items.count()==0)
     {
-        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
-        somewhere->refreshDependents();
+        SBIDPlaylist* pl=const_cast<SBIDPlaylist *>(this);
+        pl->refreshDependents();
     }
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylistContent(_items);
@@ -690,20 +690,22 @@ SBIDPlaylist::operator=(const SBIDPlaylist& t)
 
 ///	Methods used by SBIDManager
 bool
-SBIDPlaylist::addDependent(SBIDPtr tobeAddedPtr)
+SBIDPlaylist::addDependent(SBIDPtr ptr)
 {
+    SBIDPlaylistDetailPtr pdPtr=std::dynamic_pointer_cast<SBIDPlaylistDetail>(ptr);
+
     if(_items.count()==0)
     {
-        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
-        somewhere->refreshDependents();
+        SBIDPlaylist* pl=const_cast<SBIDPlaylist *>(this);
+        pl->refreshDependents();
     }
 
     bool found=0;
-    QMapIterator<int,SBIDPtr> it(_items);
+    QMapIterator<int,SBIDPlaylistDetailPtr> it(_items);
     while(it.hasNext())
     {
         it.next();
-        if(it.value()->key()==tobeAddedPtr->key())
+        if(it.value()->key()==pdPtr->key())
         {
             found=1;
         }
@@ -711,7 +713,7 @@ SBIDPlaylist::addDependent(SBIDPtr tobeAddedPtr)
 
     if(!found)
     {
-        _items[_items.count()]=tobeAddedPtr;
+        _items[_items.count()]=pdPtr;
     }
     setChangedFlag();
     return !found;
@@ -727,7 +729,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
     if(p.playlistName.length()==0)
     {
         //	Give new playlist unique name
-        int maxNum=0;
+        int maxNum=1;
         q=QString
         ("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
         dal->customize(q);
@@ -760,7 +762,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
         "( "
             "'%1', "
             "%2, "
-            ",0)"
+            "0"
         ") "
     )
         .arg(p.playlistName)
@@ -818,7 +820,7 @@ SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
     {
         return 0;
     }
-    SBIDPtr tmpPtr=_items[fromPosition];
+    SBIDPlaylistDetailPtr tmpPtr=_items[fromPosition];
     if(toPosition>fromPosition)
     {
         for(int i=fromPosition;i<toPosition;i++)
@@ -835,8 +837,20 @@ SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
         }
         _items[toPosition]=tmpPtr;
     }
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    for(int i=0;i<_items.count();i++)
+    {
+        SBIDPlaylistDetailPtr pdPtr=_items[i];
 
-    setChangedFlag();
+        if(pdPtr->playlistPosition()!=i+1)
+        {
+            //	playlistIndex is 0 based, playlistPosition is 1 based
+            //	Do after increment of playlistIndex
+            pdPtr->setPlaylistPosition(i+1);	//	in case of data inconsistencies :)
+            pdmgr->commit(pdPtr,dal);
+        }
+    }
     return 1;
 }
 
@@ -846,8 +860,8 @@ SBIDPlaylist::removeDependent(int position)
     position--;	//	Position as parameter is 1-based, we need 0-based
     if(_items.count()==0)
     {
-        SBIDPlaylist* somewhere=const_cast<SBIDPlaylist *>(this);
-        somewhere->refreshDependents();
+        SBIDPlaylist* pl=const_cast<SBIDPlaylist *>(this);
+        pl->refreshDependents();
     }
 
     if(position>=_items.count())
@@ -855,12 +869,13 @@ SBIDPlaylist::removeDependent(int position)
         return 0;
     }
 
-    for(int i=position;i<_items.count()-1;i++)
-    {
-        _items[i]=_items[i+1];
-    }
-    _items.remove(_items.count()-1);
-    setChangedFlag();
+    SBIDPlaylistDetailPtr pdPtr=_items[position];
+    moveDependent(position,_items.count());
+    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    pdmgr->remove(pdPtr);
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    pdmgr->commit(pdPtr,dal);
+
     return 1;
 }
 
@@ -924,7 +939,7 @@ SBIDPlaylist::updateSQL() const
 
         //	Assign all items in the database to a temporary position, so it will be
         //	easier to deal with moving items
-        const int delta=10;
+        const int delta=100;
         q=QString
         (
             "UPDATE "
@@ -940,9 +955,9 @@ SBIDPlaylist::updateSQL() const
         SQL.append(q);
 
         //	Create reverse lookups of old and new
-        QMap<int, SBIDPtr> oldItems=Preloader::playlistItems(this->playlistID());
+        QMap<int, SBIDPlaylistDetailPtr> oldItems=Preloader::playlistItems(this->playlistID());
         QMap<QString,int> oldItemKeys;	//	key -> position in playlist
-        QMapIterator<int,SBIDPtr> oldItemsIt(oldItems);
+        QMapIterator<int,SBIDPlaylistDetailPtr> oldItemsIt(oldItems);
         while(oldItemsIt.hasNext())
         {
             oldItemsIt.next();
@@ -950,7 +965,7 @@ SBIDPlaylist::updateSQL() const
         }
 
         QMap<QString,int> newItemKeys;	//	key -> position in playlist
-        QMapIterator<int,SBIDPtr> newItemsIt(_items);
+        QMapIterator<int,SBIDPlaylistDetailPtr> newItemsIt(_items);
         while(newItemsIt.hasNext())
         {
             newItemsIt.next();
@@ -1297,7 +1312,7 @@ SBIDPlaylist::_loadPlaylistItems()
     _items=_loadPlaylistItemsFromDB();
 }
 
-QMap<int,SBIDPtr>
+QMap<int,SBIDPlaylistDetailPtr>
 SBIDPlaylist::_loadPlaylistItemsFromDB() const
 {
     return Preloader::playlistItems(playlistID());
@@ -1445,7 +1460,6 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
 
     case SBIDBase::sb_type_online_performance:
     {
-        qDebug() << SB_DEBUG_INFO << itemPtr->text();
         SBIDOnlinePerformancePtr opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(itemPtr);
         SB_DEBUG_IF_NULL(opPtr);
         q=QString
@@ -1459,7 +1473,7 @@ SBIDPlaylist::_generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPosition
             ") "
             "VALUES "
             "( "
-                "%1, %2, %3, '%4' "
+                "%1, %2, %3, %4 "
             ") "
         )
             .arg(this->playlistID())

@@ -36,7 +36,7 @@ public:
     void populateChartContent(const QMap<int,SBIDChartPerformancePtr>& items);
     void populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances);
     void populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> list);
-    void populatePlaylistContent(const QMap<int,SBIDPtr>& items);
+    void populatePlaylistContent(const QMap<int,SBIDPlaylistDetailPtr>& items);
     void populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& performances);
 
 signals:

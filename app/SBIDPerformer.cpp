@@ -446,8 +446,6 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    qDebug() << SB_DEBUG_INFO << p.performerName;
-
     if(p.performerName.length()==0)
     {
         //	Give new performer unique name

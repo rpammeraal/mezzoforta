@@ -37,6 +37,7 @@ typedef SBIDManagerTemplate<SBIDChartPerformance,SBIDBase> SBIDChartPerformanceM
 typedef SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase> SBIDAlbumPerformanceMgr;
 typedef SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase> SBIDOnlinePerformanceMgr;
 typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
+typedef SBIDManagerTemplate<SBIDPlaylistDetail,SBIDBase> SBIDPlaylistDetailMgr;
 typedef SBIDManagerTemplate<SBIDPerformer,SBIDBase> SBIDPerformerMgr;
 typedef SBIDManagerTemplate<SBIDSong,SBIDBase> SBIDSongMgr;
 typedef SBIDManagerTemplate<SBIDSongPerformance,SBIDBase> SBIDSongPerformanceMgr;
@@ -70,6 +71,7 @@ public:
     inline SBIDOnlinePerformanceMgr* getOnlinePerformanceMgr() { return &_onlinePerformanceMgr; }
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
+    inline SBIDPlaylistDetailMgr* getPlaylistDetailMgr() { return &_playlistDetailMgr; }
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
@@ -114,6 +116,7 @@ private:
     SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
+    SBIDPlaylistDetailMgr _playlistDetailMgr;
     SBIDSongMgr _songMgr;
     SBIDSongPerformanceMgr _songPerformanceMgr;
     ScreenStack _st;

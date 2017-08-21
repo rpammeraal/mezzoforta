@@ -36,7 +36,7 @@ public:
     SBIDSong(const SBIDSong& c);
     ~SBIDSong();
 
-    //	Public methods
+    //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;

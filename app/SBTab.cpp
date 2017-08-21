@@ -398,8 +398,7 @@ SBTab::tabBarClicked(int index)
             st->updateCurrentScreen(si);
         }
     }
-    //_setCurrentScreenItem(si);
-    st->debugShow("end of tabBarClicked");
+    //st->debugShow("end of tabBarClicked");
 }
 
 void
