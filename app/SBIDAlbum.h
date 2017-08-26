@@ -115,7 +115,6 @@ private:
     int                               _year;
 
     QMap<int,SBIDAlbumPerformancePtr> _albumPerformances;         //	index is album_performance_id
-    QMap<int,int>                     _albumPerformanceID2AlbumPositionMap;
     QVector<SBIDAlbumPerformancePtr>  _addedAlbumPerformances;
     QVector<SBIDAlbumPerformancePtr>  _removedAlbumPerformances;
 

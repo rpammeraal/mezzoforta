@@ -22,6 +22,7 @@ private:
     static SBIDAlbumPtr _instantiateAlbum(SBIDAlbumMgr* amgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDChartPtr _instantiateChart(SBIDChartMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDChartPerformancePtr _instantiateChartPerformance(SBIDChartPerformanceMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
+    static SBIDPlaylistPtr _instantiatePlaylist(SBIDPlaylistMgr* plmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDPlaylistDetailPtr _instantiatePlaylistDetailInstance(SBIDPlaylistDetailMgr* pdmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDSongPerformancePtr _instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDAlbumPerformancePtr _instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr,const QStringList& fields, const QSqlQuery& queryList);

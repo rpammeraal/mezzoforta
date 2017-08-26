@@ -147,18 +147,19 @@ void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
     ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",3);
-    QMap<int,SBIDOnlinePerformancePtr> list;
 
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
 
-    int index=0;
     int progressCurrentValue=0;
-    int progressMaxValue=_albumPerformances.count();
+    int progressMaxValue=_albumPerformances.count()*2;
+
+    //	Collect onlinePerformancePtrs and their album position
     ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",0,progressMaxValue);
     QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
+    QMap<int, SBIDOnlinePerformancePtr> position2OnlinePerformancePtr;
     while(pIT.hasNext())
     {
         pIT.next();
@@ -166,8 +167,19 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
         const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
         if(opPtr && opPtr->path().length()>0)
         {
-            list[index++]=opPtr;
+            position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
         }
+        ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
+    }
+
+    //	Now put everything in order. Note that some albumPositions may be missing.
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    QMapIterator<int,SBIDOnlinePerformancePtr> po2olIT(position2OnlinePerformancePtr);
+    int index=0;
+    while(po2olIT.hasNext())
+    {
+        po2olIT.next();
+        list[index++]=po2olIT.value();
         ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
     }
     ProgressDialog::instance()->finishStep("SBIDAlbum::sendToPlayQueue");
@@ -1264,7 +1276,6 @@ SBIDAlbum::_copy(const SBIDAlbum &t)
     _year                               =t._year;
 
     _albumPerformances                  =t._albumPerformances;
-    _albumPerformanceID2AlbumPositionMap=t._albumPerformanceID2AlbumPositionMap;
     _addedAlbumPerformances             =t._addedAlbumPerformances;
     _removedAlbumPerformances           =t._removedAlbumPerformances;
 }
@@ -1282,7 +1293,6 @@ SBIDAlbum::_init()
     _year=-1;
 
     _albumPerformances.clear();
-    _albumPerformanceID2AlbumPositionMap.clear();
     _addedAlbumPerformances.clear();
     _removedAlbumPerformances.clear();
 }

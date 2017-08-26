@@ -59,9 +59,7 @@ public:
     bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB(Common::sb_parameters& p);
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
-    bool moveDependent(std::shared_ptr<T> parentPtr, int fromPosition, int toPosition, DataAccessLayer* dal=NULL);
     void remove(std::shared_ptr<T> ptr);
-    bool removeDependent(std::shared_ptr<T> parentPtr, int position, DataAccessLayer* dal=NULL);
     void rollbackChanges1();
     void setChanged(std::shared_ptr<T> ptr);
     Common::result userMatch(const Common::sb_parameters& p, std::shared_ptr<T> exclude, std::shared_ptr<T>& result);
@@ -436,25 +434,6 @@ SBIDManagerTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_p
     _addToChangedList(toPtr);
 }
 
-template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::moveDependent(const std::shared_ptr<T> ptr, int fromPosition, int toPosition, DataAccessLayer* dal)
-{
-    bool successFlag=ptr->moveDependent(fromPosition,toPosition);
-    if(successFlag)
-    {
-        if(dal)
-        {
-            successFlag=commit(ptr,dal);
-        }
-        else
-        {
-            _addToChangedList(ptr);
-        }
-    }
-    return successFlag;
-}
-
-
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)
 {
@@ -470,24 +449,6 @@ SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)
     {
         qDebug() << SB_DEBUG_WARNING << "Item not found: " << ptr->text();
     }
-}
-
-template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::removeDependent(const std::shared_ptr<T> ptr, int position, DataAccessLayer* dal)
-{
-    bool successFlag=ptr->removeDependent(position);
-    if(successFlag)
-    {
-        if(dal)
-        {
-            successFlag=commit(ptr,dal);
-        }
-        else
-        {
-            _addToChangedList(ptr);
-        }
-    }
-    return successFlag;
 }
 
 template <class T, class parentT> void

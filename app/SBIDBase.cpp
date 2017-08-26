@@ -80,6 +80,10 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
         ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
         break;
 
+    case SBIDBase::sb_type_playlist_detail:
+        ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID,noDependentsFlag);
+		break;
+
     case SBIDBase::sb_type_song_performance:
     case SBIDBase::sb_type_invalid:
         break;

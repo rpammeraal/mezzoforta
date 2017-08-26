@@ -73,7 +73,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
 }
 
 void
-SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
+SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromPtr, int row)
 {
     _init();
 
@@ -82,13 +82,14 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromIDPtr, int row)
 
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
     {
-        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
-        if(playlistPtr)
+        SBIDPlaylistPtr pPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
+        SBIDPlaylistDetailPtr pdPtr=std::dynamic_pointer_cast<SBIDPlaylistDetail>(fromPtr);
+        if(pPtr && pdPtr)
         {
-            bool successFlag=playlistPtr->moveItem(fromIDPtr,row);
+            bool successFlag=pPtr->moveItem(pdPtr,row);
             if(!successFlag)
             {
-                playlistPtr->refreshDependents(1,1);
+                pPtr->refreshDependents(1,1);
             }
         }
     }
@@ -209,6 +210,10 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
 
     QTableView* tv=mw->ui.playlistDetailSongList;
     SBTableModel* tm=playlistPtr->items();
+    QList<bool> dragableColumns;
+    dragableColumns.clear();
+    dragableColumns << 0 << 0 << 1;
+    tm->setDragableColumns(dragableColumns);
     populateTableView(tv,tm,0);
     connect(tm, SIGNAL(assign(const SBIDPtr&,int)),
             this, SLOT(movePlaylistItem(const SBIDPtr&, int)));

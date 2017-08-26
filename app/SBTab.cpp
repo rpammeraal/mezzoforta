@@ -433,6 +433,10 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
         {
             Context::instance()->getNavigator()->openScreen(ptr);
         }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "ptr not defined";
+        }
     }
 }
 

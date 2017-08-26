@@ -41,8 +41,7 @@ public:
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
     bool removePlaylistItem(int playlistPosition);
-    bool moveItem(const SBIDPtr& fromPtr, int toRow);
-    //void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
+    bool moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toRow);
     void setPlaylistID(int playlistID) { _playlistID=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
 
@@ -74,7 +73,6 @@ protected:
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
     bool moveDependent(int fromPosition, int toPosition);
-    bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _playlistID=PK;  }
     QStringList updateSQL() const;
@@ -97,10 +95,6 @@ private:
     QMap<int,SBIDPlaylistDetailPtr> _loadPlaylistItemsFromDB() const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
     static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID);
-
-    QStringList _generateSQLdeleteItem(int playlistPosition) const;
-    QStringList _generateSQLinsertItem(const SBIDPtr itemPtr, int playlistPositionDB) const;
-    QStringList _generateSQLmoveItem(int fromPlaylistPositionDB, int toPlaylistPosition) const;
 
 };
 

@@ -24,6 +24,7 @@
 #include "SBIDBase.h"
 #include "SBIDManagerTemplate.h"
 #include "SBIDPlaylist.h"
+#include "SBIDPlaylistDetail.h"
 #include "SBIDOnlinePerformance.h"
 #include "SBDialogSelectItem.h"
 #include "SBSqlQueryModel.h"
@@ -86,7 +87,16 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
-    openScreen(ScreenItem(ptr));
+    SBIDPtr p;
+    if(ptr->itemType()==SBIDBase::sb_type_playlist_detail)
+    {
+        p=std::dynamic_pointer_cast<SBIDPlaylistDetail>(ptr)->ptr();
+    }
+    else
+    {
+        p=ptr;
+    }
+    openScreen(ScreenItem(p));
 }
 
 void
@@ -643,7 +653,6 @@ Navigator::_activateScreen()
             canBeEditedFlag=0;
         break;
 
-
         default:
             qDebug() << SB_DEBUG_ERROR << "!!!!!!!!!!!!!!!!!!!!!! UNHANDLED CASE: " << si.screenType();
     }
@@ -658,6 +667,11 @@ Navigator::_activateScreen()
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
         si=tab->populate(si);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_ERROR << "UNHANDLED CASE\n";
+        return 0;
     }
 
     ProgressDialog::instance()->hide();

@@ -20,43 +20,15 @@ SBIDPlaylistDetail::~SBIDPlaylistDetail()
 int
 SBIDPlaylistDetail::commonPerformerID() const
 {
-    switch(_consistOfItemType())
-    {
-    case SBIDBase::sb_type_online_performance:
-        return onlinePerformancePtr()->commonPerformerID();
-
-    case SBIDBase::sb_type_playlist:
-        return playlistPtr()->commonPerformerID();
-
-    case SBIDBase::sb_type_chart:
-        return chartPtr()->commonPerformerID();
-
-    case SBIDBase::sb_type_album:
-        return albumPtr()->commonPerformerID();
-
-    }
-    return -1;
+    SBIDBasePtr p=ptr();
+    return (p?p->commonPerformerID():-1);
 }
 
 QString
 SBIDPlaylistDetail::commonPerformerName() const
 {
-    switch(_consistOfItemType())
-    {
-    case SBIDBase::sb_type_online_performance:
-        return onlinePerformancePtr()->commonPerformerName();
-
-    case SBIDBase::sb_type_playlist:
-        return playlistPtr()->commonPerformerName();
-
-    case SBIDBase::sb_type_chart:
-        return chartPtr()->commonPerformerName();
-
-    case SBIDBase::sb_type_album:
-        return albumPtr()->commonPerformerName();
-
-    }
-    return QString("n/a");
+    SBIDBasePtr p=ptr();
+    return (p?p->commonPerformerName():QString());
 }
 
 int
@@ -75,61 +47,25 @@ QString
 SBIDPlaylistDetail::genericDescription() const
 {
     QString g;
-    switch(_consistOfItemType())
-    {
-    case SBIDBase::sb_type_online_performance:
-        g+=onlinePerformancePtr()->genericDescription();
-
-    case SBIDBase::sb_type_playlist:
-        g+=playlistPtr()->genericDescription();
-
-    case SBIDBase::sb_type_chart:
-        g+=chartPtr()->genericDescription();
-
-    case SBIDBase::sb_type_album:
-        g+=albumPtr()->genericDescription();
-
-    }
+    SBIDBasePtr p=ptr();
+    g+=(p?p->genericDescription():QString());
     return g;
 }
 
 QString
 SBIDPlaylistDetail::iconResourceLocation() const
 {
-    switch(_consistOfItemType())
-    {
-    case SBIDBase::sb_type_online_performance:
-        return onlinePerformancePtr()->iconResourceLocation();
-
-    case SBIDBase::sb_type_playlist:
-        return playlistPtr()->iconResourceLocation();
-
-    case SBIDBase::sb_type_chart:
-        return chartPtr()->iconResourceLocation();
-
-    case SBIDBase::sb_type_album:
-        return albumPtr()->iconResourceLocation();
-
-    }
-    return QString();
+    SBIDBasePtr p=ptr();
+    return (p?p->iconResourceLocation():QString());
 }
 
 void
 SBIDPlaylistDetail::sendToPlayQueue(bool enqueueFlag)
 {
-    switch(_consistOfItemType())
+    SBIDBasePtr p=ptr();
+    if(p)
     {
-    case SBIDBase::sb_type_online_performance:
-        return onlinePerformancePtr()->sendToPlayQueue(enqueueFlag);
-
-    case SBIDBase::sb_type_playlist:
-        return playlistPtr()->sendToPlayQueue(enqueueFlag);
-
-    case SBIDBase::sb_type_chart:
-        return chartPtr()->sendToPlayQueue(enqueueFlag);
-
-    case SBIDBase::sb_type_album:
-        return albumPtr()->sendToPlayQueue(enqueueFlag);
+        p->sendToPlayQueue(enqueueFlag);
     }
 }
 
@@ -200,7 +136,63 @@ SBIDPlaylistDetail::performerPtr() const
                 SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
 }
 
+//	Redirectors
+int
+SBIDPlaylistDetail::onlinePerformanceID() const
+{
+    SBIDOnlinePerformancePtr opPtr=onlinePerformancePtr();
+    return (opPtr?opPtr->onlinePerformanceID():-1);
+}
+
+QString
+SBIDPlaylistDetail::childKey() const
+{
+    SBIDPtr p=ptr();
+    return (p?p->key():QString());
+}
+
+SBIDPtr
+SBIDPlaylistDetail::ptr() const
+{
+    switch(_consistOfItemType())
+    {
+    case SBIDBase::sb_type_online_performance:
+        return onlinePerformancePtr();
+
+    case SBIDBase::sb_type_playlist:
+        return playlistPtr();
+
+    case SBIDBase::sb_type_chart:
+        return chartPtr();
+
+    case SBIDBase::sb_type_album:
+        return albumPtr();
+
+    case SBIDBase::sb_type_performer:
+        return performerPtr();
+
+    case SBIDBase::sb_type_album_performance:
+    case SBIDBase::sb_type_chart_performance:
+    case SBIDBase::sb_type_playlist_detail:
+    case SBIDBase::sb_type_song:
+    case SBIDBase::sb_type_song_performance:
+    case SBIDBase::sb_type_invalid:
+        break;
+    }
+    return SBIDPtr();
+}
+
 //	Methods required by SBIDManagerTemplate
+QString
+SBIDPlaylistDetail::createKey(int playlistDetailID)
+{
+    const QString key= (playlistDetailID>=0)?QString("%1:%2")
+        .arg(SBIDBase::sb_type_playlist_detail)
+        .arg(playlistDetailID):QString("x:x")	//	Return invalid key if one or both parameters<0
+    ;
+    return key;
+}
+
 QString
 SBIDPlaylistDetail::key() const
 {
@@ -228,7 +220,11 @@ SBIDPlaylistDetail::updateSQL() const
 
     if(deletedFlag())
     {
-
+        SQL.append(QString
+        (
+            "DELETE FROM ___SB_SCHEMA_NAME___playlist_detail "
+            "WHERE playlist_detail_id=%1 "
+        ).arg(this->_playlistDetailID));
     }
     else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
@@ -270,20 +266,132 @@ SBIDPlaylistDetail::updateSQL() const
 }
 
 //	Static methods
-QString
-SBIDPlaylistDetail::createKey(int playlistDetailID)
+SBIDPlaylistDetailPtr
+SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
 {
-    const QString key= (playlistDetailID>=0)?QString("%1:%2")
-        .arg(SBIDBase::sb_type_playlist_detail)
-        .arg(playlistDetailID):QString("x:x")	//	Return invalid key if one or both parameters<0
-    ;
-    return key;
+    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    SBIDPlaylistDetailPtr pdPtr;
+    if(playlistDetailID>=0)
+    {
+    pdPtr=pdmgr->retrieve(createKey(playlistDetailID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylistDetail,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylistDetail,SBIDBase>::open_flag_default));
+    }
+    return pdPtr;
+}
+
+SBIDPlaylistDetailPtr
+SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr)
+{
+    Common::sb_parameters p;
+    p.playlistID=playlistID;
+    p.playlistPosition=playlistPosition;
+
+    switch(ptr->itemType())
+    {
+    case SBIDBase::sb_type_online_performance:
+        p.onlinePerformanceID=ptr->itemID();
+        break;
+
+    case SBIDBase::sb_type_playlist:
+        p.childPlaylistID=ptr->itemID();
+        break;
+
+    case SBIDBase::sb_type_chart:
+        p.chartID=ptr->itemID();
+        break;
+
+    case SBIDBase::sb_type_album:
+        p.albumID=ptr->itemID();
+        break;
+
+    case SBIDBase::sb_type_performer:
+        p.performerID=ptr->itemID();
+        break;
+
+    case SBIDBase::sb_type_album_performance:
+    case SBIDBase::sb_type_chart_performance:
+    case SBIDBase::sb_type_playlist_detail:
+    case SBIDBase::sb_type_song:
+    case SBIDBase::sb_type_song_performance:
+    case SBIDBase::sb_type_invalid:
+        break;
+    }
+
+    SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createInDB(p);
+
+    return pdPtr;
 }
 
 ///	Protected
 SBIDPlaylistDetail::SBIDPlaylistDetail()
 {
     _init();
+}
+
+SBIDPlaylistDetailPtr
+SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    QString q;
+
+    //	Insert
+    q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___playlist_detail "
+        "( "
+            "playlist_id, "
+            "playlist_position, "
+            "online_performance_id, "
+            "child_playlist_id, "
+            "chart_id, "
+            "record_id, "
+            "artist_id, "
+            "timestamp, "
+            "notes "
+        ") "
+        "VALUES "
+        "( "
+            "%1, "
+            "%2, "
+            "NULLIF(%3,-1), "
+            "NULLIF(%4,-1), "
+            "NULLIF(%5,-1), "
+            "NULLIF(%6,-1), "
+            "NULLIF(%7,-1), "
+            "%8, "
+            "'%9' "
+        ") "
+    )
+        .arg(p.playlistID)
+        .arg(p.playlistPosition)
+        .arg(p.onlinePerformanceID)
+        .arg(p.childPlaylistID)
+        .arg(p.chartID)
+        .arg(p.albumID)
+        .arg(p.performerID)
+        .arg(dal->getGetDateTime())
+        .arg(p.notes)
+    ;
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
+
+    //	Instantiate
+    SBIDPlaylistDetail pd;
+    pd._playlistDetailID   =dal->retrieveLastInsertedKey();
+    pd._playlistID         =p.playlistID;
+    pd._playlistPosition   =p.playlistPosition;
+    pd._onlinePerformanceID=p.onlinePerformanceID;
+    pd._childPlaylistID    =p.childPlaylistID;
+    pd._chartID            =p.chartID;
+    pd._albumID            =p.albumID;
+    pd._performerID        =p.performerID;
+    pd._notes              =p.notes;
+
+    //	Done
+    return std::make_shared<SBIDPlaylistDetail>(pd);
+
 }
 
 SBIDPlaylistDetailPtr
@@ -302,6 +410,49 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
     pd._performerID        =r.value(i++).toInt();
     pd._notes              =r.value(i++).toString();
 
+    if(pd._onlinePerformanceID!=-1)
+    {
+        pd._childPlaylistID=-1;
+        pd._chartID=-1;
+        pd._albumID=-1;
+        pd._performerID=-1;
+    }
+    if(pd._childPlaylistID!=-1)
+    {
+        pd._onlinePerformanceID=-1;
+        pd._chartID=-1;
+        pd._albumID=-1;
+        pd._performerID=-1;
+    }
+    if(pd._chartID!=-1)
+    {
+        pd._onlinePerformanceID=-1;
+        pd._childPlaylistID=-1;
+        pd._albumID=-1;
+        pd._performerID=-1;
+    }
+    if(pd._albumID!=-1)
+    {
+        pd._onlinePerformanceID=-1;
+        pd._childPlaylistID=-1;
+        pd._chartID=-1;
+        pd._performerID=-1;
+    }
+    if(pd._performerID!=-1)
+    {
+        pd._onlinePerformanceID=-1;
+        pd._childPlaylistID=-1;
+        pd._chartID=-1;
+        pd._albumID=-1;
+    }
+    qDebug() << SB_DEBUG_INFO
+             << "pos" << pd._playlistPosition
+             << "opID=" << pd._onlinePerformanceID
+             << "cpID=" << pd._childPlaylistID
+             << "cID=" << pd._chartID
+             << "aID=" << pd._albumID
+             << "pID=" << pd._performerID
+    ;
     return std::make_shared<SBIDPlaylistDetail>(pd);
 }
 

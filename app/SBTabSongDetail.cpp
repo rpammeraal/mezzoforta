@@ -46,6 +46,11 @@ SBIDOnlinePerformancePtr
 SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
 {
     SBIDOnlinePerformancePtr opPtr;
+    if(!songPtr)
+    {
+        qDebug() << SB_DEBUG_NPTR;
+        return opPtr;
+    }
     QVector<SBIDOnlinePerformancePtr> allOPPtr=songPtr->onlinePerformances();
 
     if(allOPPtr.count()==0)

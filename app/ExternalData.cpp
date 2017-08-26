@@ -659,12 +659,19 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                             this, SLOT(handlePerformerImageURLFromWC(QNetworkReply*)));
 
                                     QStringList parts=e.text().split(":");
-                                    QString imageFileName=parts[2];
+                                    if(parts.count()==3)
+                                    {
+                                        QString imageFileName=parts[2];
 
-                                    QString urlString=QString("https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&redirects&format=xml&iiurlwidth=250&titles=File:%1")
-                                        .arg(imageFileName)
-                                    ;
-                                    mb->get(QNetworkRequest(QUrl(urlString)));
+                                        QString urlString=QString("https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&redirects&format=xml&iiurlwidth=250&titles=File:%1")
+                                            .arg(imageFileName)
+                                        ;
+                                        mb->get(QNetworkRequest(QUrl(urlString)));
+                                    }
+                                    else
+                                    {
+                                        qDebug() << SB_DEBUG_ERROR << "parts.count!=3:" << parts.count();
+                                    }
                                 }
                             }
                         }

@@ -43,6 +43,7 @@ Preloader::chartItems(const SBIDBase& id)
         case SBIDBase::sb_type_album_performance:
         case SBIDBase::sb_type_online_performance:
         case SBIDBase::sb_type_chart_performance:
+        case SBIDBase::sb_type_playlist_detail:
             whereClause="1=0";
             break;
     }
@@ -569,14 +570,15 @@ Preloader::playlistItems(int playlistID)
     QMap<int,SBIDPlaylistDetailPtr> items;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields                           << "29" << "20" << "21" << "24" << "36";
-    QStringList albumFields; albumFields                         << "10" << "12" << "11" << "14" << "15" << "13";
-    QStringList performerFields; performerFields                 << "5"  << "6"  << "7"  << "8"  << "9";
-    QStringList songPerformanceFields; songPerformanceFields     << "31" << "29" << "5"  << "26" << "35" << "37";
-    QStringList albumPerformanceFields; albumPerformanceFields   << "30" << "31" << "3"  << "4"  << "25" << "32" << "33";
-    QStringList onlinePerformanceFields; onlinePerformanceFields << "2"  << "30" << "28";
-    QStringList chartFields; chartFields                         << "43" << "38" << "39" << "40";
-    QStringList playlistDetailFields; playlistDetailFields       << "41" << "42" <<  "0" <<  "2" << "43" << "10" <<  "5" << "44";
+    QStringList songFields; songFields                           << "14" << "15" << "16" << "17" << "18";
+    QStringList albumFields; albumFields                         <<  "6" << "22" << "23" << "24" << "25" << "26";
+    QStringList performerFields; performerFields                 <<  "7" << "10" << "11" << "12" << "13";
+    QStringList songPerformanceFields; songPerformanceFields     << "18" << "14" <<  "7" << "19" << "20" << "21";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "18" <<  "6" << "27" << "28" << "29" <<  "4";
+    QStringList onlinePerformanceFields; onlinePerformanceFields <<  "3" << "21";
+    QStringList chartFields; chartFields                         <<  "5" << "30" << "31" << "32" << "33";
+    QStringList playlistFields; playlistFields                   <<  "2" << "34" << "35" << "33";
+    QStringList playlistDetailFields; playlistDetailFields       <<  "0" <<  "1" <<  "2" <<  "3" <<  "4" <<  "5" <<  "6" <<  "7" <<  "8";
 
     QString q;
 
@@ -584,138 +586,114 @@ Preloader::playlistItems(int playlistID)
     q=QString
     (
         "SELECT "
-            "pc.playlist_position as \"#\", "                       //	0
-            "CASE "
-                "WHEN pc.child_playlist_id IS NOT NULL THEN %2 "
-                "WHEN pc.record_id         IS NOT NULL THEN %3 "
-                "WHEN pc.artist_id         IS NOT NULL THEN %4 "
-                "WHEN pc.chart_id          IS NOT NULL THEN %6 "
-            "END AS SB_ITEM_TYPE, "
-            "COALESCE(pc.child_playlist_id,pc.record_id,pc.artist_id,pc.chart_id) AS SB_ITEM_ID, "
-            "0 AS SB_ALBUM_ID, "
-            "0 AS SB_POSITION_ID, "
+            "pd.playlist_detail_id, "                   //	0
+            "pd.playlist_id, "
+            "pd.playlist_position, "
+            "NULL AS online_performance_id, "
+            "pd.child_playlist_id, "
 
-            "a.artist_id, "                                        //	5
-            "a.name, "
+            "pd.chart_id, "                             //	5
+            "pd.record_id, "
+            "pd.artist_id, "
+            "pd.notes, "
+            "NULL, "	//	future use
+
+            "a.name, "                                  //	10
             "a.www, "
             "a.notes, "
             "a.mbid, "
-
-            "r.record_id, "                                        //	10
-            "r.title, "
-            "r.artist_id, "
-            "r.year, "
-            "r.genre, "
-
-            "r.notes, "                                            //	15
-            "pl.playlist_id, "
-            "pl.name AS playlist_name, "
-            "pl.duration AS playlist_duration, "
-            "0 AS playlist_num_items, "
-
-            "NULL AS song_title, "                                 //	20
-            "NULL AS notes, "
-            "NULL AS artist_id, "
-            "NULL AS year, "
-            "NULL AS lyrics, "
-
-            "NULL AS duration, "                                   //	25
-            "NULL AS year, "
-            "NULL AS notes, "
-            "NULL AS path, "
             "NULL AS song_id, "
 
-            "NULL AS record_performance_id, "                       //	30
-            "NULL AS performance_id, "
+            "NULL AS title, "                           //	15
             "NULL AS notes, "
-            "NULL AS preferred_online_performance_id, "
-            "NULL AS sole_id, "
+            "NULL AS lyrics, "
+            "NULL AS song_performance_id, "
+            "NULL AS year, "
 
-            "NULL AS notes1, "                                     //	35
-            "NULL AS original_performance_id, "
-            "NULL AS preferred_record_performance_id, "
-            "c.name, "
+            "NULL AS notes, "                           //	20
+            "NULL AS album_performance_id, "
+            "r.artist_id, "
+            "r.title, "
+            "r.genre, "
+
+            "r.year, "                                  //	25
+            "r.notes, "
+            "NULL AS record_position, "
+            "NULL AS duration, "
+            "NULL AS notes, "
+
+            "c.name, "                                  //	30
+            "c.notes, "
             "c.release_date, "
+            "0 AS playlist_num_items, "
+            "pl.name, "
 
-            "c.notes, "                                            //	40
-            "pc.playlist_detail_id, "
-            "pc.playlist_id, "
-            "c.chart_id, "
-            "pc.notes "
+            "pl.duration "                             //	35
+
         "FROM "
-            "___SB_SCHEMA_NAME___playlist_detail pc "
+            "___SB_SCHEMA_NAME___playlist_detail pd "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "pc.artist_id=a.artist_id "
+                    "pd.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
-                    "pc.record_id=r.record_id "
+                    "pd.record_id=r.record_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___playlist pl ON "
-                    "pc.child_playlist_id=pl.playlist_id "
+                    "pd.child_playlist_id=pl.playlist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___chart c ON "
-                    "pc.chart_id=c.chart_id "
+                    "pd.chart_id=c.chart_id "
         "WHERE "
-            "pc.online_performance_id IS NULL AND "
-            "pc.playlist_id=%1 "
+            "pd.online_performance_id IS NULL AND "
+            "pd.playlist_id=%1 "
         "UNION "
         "SELECT "
-            "pp.playlist_position, "                                //	0
-            "%5, "
-            "op.online_performance_id, "	//	not used, only to indicate a performance
-            "rp.record_id AS SB_ALBUM_ID, "
-            "rp.record_position AS SB_POSITION_ID, "
+            "pd.playlist_detail_id, "                   //	0
+            "pd.playlist_id, "
+            "pd.playlist_position, "
+            "pd.online_performance_id, "
+            "NULL AS child_playlist_id, "
 
-            "a.artist_id, "                                         //	5
-            "a.name, "
+            "NULL AS chart_id, "                        //	5
+            "r.record_id, "
+            "a.artist_id, "
+            "pd.notes, "
+            "NULL, "	//	future use
+
+            "a.name, "                                  //	10
             "a.www, "
             "a.notes, "
             "a.mbid, "
-
-            "r.record_id, "                                         //	10
-            "r.title, "
-            "r.artist_id, "
-            "r.year, "
-            "r.genre, "
-
-            "r.notes, "                                             //	15
-            "NULL AS playlist_id, "
-            "NULL AS playlist_name, "
-            "NULL AS playlist_duration, "
-            "NULL AS playlist_num_items, "
-
-            "s.title, "                                             //	20
-            "s.notes, "
-            "p.artist_id, "
-            "p.year, "
-            "l.lyrics, "
-
-            "rp.duration, "                                         //	25
-            "p.year, "
-            "NULL, "
-            "op.path, "
             "s.song_id, "
 
-            "rp.record_performance_id, "                            //	30
+            "s.title, "                                 //	15
+            "s.notes, "
+            "l.lyrics, "
             "p.performance_id, "
+            "p.year, "
+
+            "s.notes, "                                 //	20
+            "rp.record_performance_id, "
+            "r.artist_id, "
+            "r.title, "
+            "r.genre, "
+
+            "r.year, "                                  //	25
+            "r.notes, "
+            "rp.record_position, "
+            "rp.duration, "
             "rp.notes, "
-            "COALESCE(rp.preferred_online_performance_id,-1), "
-            "NULL AS sole_id, "
 
-            "p.notes, "                                            //	35
-            "s.original_performance_id, "
-            "p.preferred_record_performance_id, "
-            "NULL, "
-            "NULL, "
+            "NULL AS name, "                            //	30
+            "NULL AS notes, "
+            "NULL AS release_date, "
+            "0 AS playlist_num_items, "
+            "NULL AS pl_name, "
 
-            "NULL, "                                               //	40
-            "pp.playlist_detail_id, "
-            "pp.playlist_id, "
-            "NULL, "
-            "pp.notes "
+            "NULL AS pl_duration "                      //	35
 
         "FROM "
-            "___SB_SCHEMA_NAME___playlist_detail pp  "
+            "___SB_SCHEMA_NAME___playlist_detail pd  "
                 //	perform a LEFT JOIN ON online_performance to show everything.
                 "LEFT JOIN ___SB_SCHEMA_NAME___online_performance op ON "
-                    "op.online_performance_id=pp.online_performance_id "
+                    "op.online_performance_id=pd.online_performance_id "
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
                     "op.record_performance_id=rp.record_performance_id "
                 "JOIN ___SB_SCHEMA_NAME___record r ON "
@@ -729,9 +707,9 @@ Preloader::playlistItems(int playlistID)
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
         "WHERE "
-            "pp.online_performance_id IS NOT NULL AND "
-            "pp.playlist_id=%1 "
-        "ORDER BY 1"
+            "pd.online_performance_id IS NOT NULL AND "
+            "pd.playlist_id=%1 "
+        "ORDER BY 3"
     )
             .arg(playlistID)
             .arg(Common::sb_field_playlist_id)
@@ -755,7 +733,6 @@ Preloader::playlistItems(int playlistID)
     items.clear();
     while(queryList.next())
     {
-        qDebug() << SB_DEBUG_INFO;
         QSqlRecord r;
         QSqlField f;
         QString key;
@@ -766,7 +743,7 @@ Preloader::playlistItems(int playlistID)
         //	Process performer
         if(itemType==Common::sb_field_performer_id)
         {
-            key=SBIDPerformer::createKey(queryList.value(5).toInt());
+            key=SBIDPerformer::createKey(queryList.value(7).toInt());
             if(key.length()>0)
             {
                 itemPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
@@ -776,7 +753,7 @@ Preloader::playlistItems(int playlistID)
         //	Process album
         if(itemType==Common::sb_field_album_id)
         {
-            key=SBIDAlbum::createKey(queryList.value(10).toInt());
+            key=SBIDAlbum::createKey(queryList.value(6).toInt());
             if(key.length()>0)
             {
                 itemPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
@@ -786,7 +763,7 @@ Preloader::playlistItems(int playlistID)
         //	Process chart
         if(itemType==Common::sb_field_chart_id)
         {
-            key=SBIDChart::createKey(queryList.value(2).toInt());
+            key=SBIDChart::createKey(queryList.value(5).toInt());
             if(key.length()>0)
             {
                 itemPtr=(cmgr->contains(key)? cmgr->retrieve(key,SBIDChartMgr::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
@@ -796,25 +773,10 @@ Preloader::playlistItems(int playlistID)
         //	Process playlist
         if(itemType==Common::sb_field_playlist_id)
         {
-            key=SBIDPlaylist::createKey(queryList.value(16).toInt());
+            key=SBIDPlaylist::createKey(queryList.value(2).toInt());
             if(key.length()>0)
             {
-                if(plmgr->contains(key))
-                {
-                    itemPtr=plmgr->retrieve(key,SBIDPlaylistMgr::open_flag_parentonly);
-                }
-                else
-                {
-                    //	Instantiate playlist
-                    r.clear();
-                    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(16).toInt());    r.append(f);
-                    f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(17).toString()); r.append(f);
-                    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(18).toString()); r.append(f);
-                    f=QSqlField("f4",QVariant::Int);    f.setValue(queryList.value(19).toInt());    r.append(f);
-                    playlistPtr=SBIDPlaylist::instantiate(r);
-                    plmgr->addItem(playlistPtr);
-                    itemPtr=playlistPtr;
-                }
+                itemPtr=(plmgr->contains(key)? plmgr->retrieve(key,SBIDPlaylistMgr::open_flag_parentonly): _instantiatePlaylist(plmgr,playlistFields,queryList));
             }
         }
 
@@ -822,42 +784,28 @@ Preloader::playlistItems(int playlistID)
         if(itemType==Common::sb_field_online_performance_id)
         {
             //	Load song in cache
-            key=SBIDSong::createKey(queryList.value(2).toInt());
+            key=SBIDSong::createKey(queryList.value(3).toInt());
             if(key.length()>0)
             {
                 (smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
 
             //	Load songPerformance in cache
-            key=SBIDSongPerformance::createKey(queryList.value(32).toInt());
+            key=SBIDSongPerformance::createKey(queryList.value(18).toInt());
             if(key.length()>0)
             {
                 (spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
             }
 
             //	Load albumPerformance in cache
-            key=SBIDAlbumPerformance::createKey(queryList.value(32).toInt());
+            key=SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
             if(key.length()>0)
             {
                 (apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
 
-            //	Load album in cache
-            key=SBIDAlbum::createKey(queryList.value(10).toInt());
-            if(key.length()>0)
-            {
-                (amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
-            }
-
-            //	Load performer in cache
-            key=SBIDPerformer::createKey(queryList.value(5).toInt());
-            if(key.length()>0)
-            {
-                (pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
-            }
-
             //	Load onlinePerformance in cache
-            key=SBIDOnlinePerformance::createKey(queryList.value(2).toInt());
+            key=SBIDOnlinePerformance::createKey(queryList.value(3).toInt());
             if(key.length()>0)
             {
                 itemPtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
@@ -865,10 +813,9 @@ Preloader::playlistItems(int playlistID)
         }
 
         //	Load playlistDetail in cache
-        key=SBIDPlaylistDetail::createKey(queryList.value(41).toInt());
+        key=SBIDPlaylistDetail::createKey(queryList.value(0).toInt());
         SBIDPlaylistDetailPtr pdPtr=(pdmgr->contains(key)? pdmgr->retrieve(key,SBIDPlaylistDetailMgr::open_flag_parentonly): _instantiatePlaylistDetailInstance(pdmgr,playlistDetailFields,queryList));
 
-        qDebug() << SB_DEBUG_INFO;
         if(pdPtr)
         {
             items[playlistIndex++]=pdPtr;
@@ -879,7 +826,6 @@ Preloader::playlistItems(int playlistID)
                 pdPtr->setPlaylistPosition(playlistIndex);	//	in case of data inconsistencies :)
                 pdmgr->commit(pdPtr,dal);
             }
-            qDebug() << SB_DEBUG_INFO << pdPtr->text();
         }
         ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue++,progressMaxValue);
     }
@@ -1032,6 +978,14 @@ Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QS
     SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::instantiate(_populate(fields,queryList));
     cpmgr->addItem(cpPtr);
     return cpPtr;
+}
+
+SBIDPlaylistPtr
+Preloader::_instantiatePlaylist(SBIDPlaylistMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
+{
+    SBIDPlaylistPtr pPtr=SBIDPlaylist::instantiate(_populate(fields,queryList));
+    pdmgr->addItem(pPtr);
+    return pPtr;
 }
 
 SBIDPlaylistDetailPtr

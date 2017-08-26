@@ -110,9 +110,12 @@ public:
         int albumPosition;
         int chartID;
         int chartPosition;
+        int childPlaylistID;
         int performerID;
+        int playlistID;
         int songID;
         int songPerformanceID;
+        int onlinePerformanceID;
 
         QString albumTitle;
         QString chartName;
@@ -122,6 +125,7 @@ public:
         QString path;
         QString performerName;
         QString playlistName;
+        int playlistPosition;
         QDate releaseDate;
         QString songTitle;
         QString www;
@@ -130,14 +134,18 @@ public:
     private:
         void _init()
         {
-            albumID=0;
-            albumPerformanceID=0;
-            albumPosition=0;
-            chartID=0;
-            chartPosition=0;
-            performerID=0;
-            songID=0;
-            songPerformanceID=0;
+            albumID=-1;
+            albumPerformanceID=-1;
+            albumPosition=-1;
+            chartID=-1;
+            chartPosition=-1;
+            childPlaylistID=-1;
+            performerID=-1;
+            playlistPosition=-1;
+            playlistID=-1;
+            songID=-1;
+            songPerformanceID=-1;
+            onlinePerformanceID=-1;
         }
     };
 

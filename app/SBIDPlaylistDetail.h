@@ -39,13 +39,18 @@ public:
     SBIDPerformerPtr performerPtr() const;
 
     //	Redirectors
+    int onlinePerformanceID() const;
+    QString childKey() const;
+    SBIDPtr ptr() const;
 
     //	Methods required by SBIDBase
+    static QString createKey(int playlistDetailID);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static QString createKey(int playlistDetailID);
+    static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
+    static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -54,6 +59,7 @@ protected:
     SBIDPlaylistDetail();
 
     //	Methods used by SBIDManager
+    static SBIDPlaylistDetailPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistDetailPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& playlistDetailID);
     void postInstantiate(SBIDPlaylistDetailPtr& ptr);

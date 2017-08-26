@@ -903,9 +903,12 @@ Between 20161215 and 20170604:
 -	Remove instances of screenstack:debugshow
 -	song from album tab should play that song_performance -- not the preferred one.
 -	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
-*	Reordering in playlist does not get saved.
-!	Open performer 'Maná'. Songs show -1 as year (double check on postgres)
-!	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
+
+20170826:
+-	Open Moose!Music: Mheer. Play -> songs does not get inserted in order.
+-	Reordering in playlist does not get saved.
+-	Open performer 'Maná'. Songs show -1 as year (double check on postgres)
+-	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
 
 Bugs that need to be fixed:
 *	Edit record crashes
@@ -913,11 +916,15 @@ Bugs that need to be fixed:
 *	Search box:
 	*	albums should appear as <album name> - album instead of <album name> - record.
 	*	performers should appear without accents
+*	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
+* 	Show window with songs to be imported.
 
 Todo:
 *	Edit.
 *	Import.
 
+Enhancements:
+*	SBIDPlaylist::_getAllItemsByPlaylistRecursive: need to be based on _items instead of querying database.
 
 Near future:
 *1	Create
