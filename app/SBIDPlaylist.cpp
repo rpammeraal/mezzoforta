@@ -802,6 +802,7 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
     case SBIDBase::sb_type_online_performance:
     case SBIDBase::sb_type_invalid:
     case SBIDBase::sb_type_song:
+    case SBIDBase::sb_type_playlist_detail:
         break;
     }
 

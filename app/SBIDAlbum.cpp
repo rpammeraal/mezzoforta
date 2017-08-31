@@ -944,6 +944,7 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
+    qDebug() << SB_DEBUG_INFO << p.year;
     if(p.albumTitle.length()==0)
     {
         //	Give new playlist unique name
@@ -1035,8 +1036,10 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
     ;
 
     //	MatchRank:
-    //	0	-	exact match with specified artist (0 or 1 in data set).
-    //	2	-	exact match with any other artist (0 or more in data set).
+    //	0	-	exact match with specified performer (0 or 1)
+	//	1	-	other match with specified performer (0 or more)
+    //	2	-	exact match with any other artist (0 or more)
+    //	3	-	other match with any other artist (0 or more)
     QString q=QString
     (
         "SELECT "
@@ -1108,6 +1111,8 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._year            =r.value(4).toInt();
     album._notes           =r.value(5).toString();
 
+    qDebug() << SB_DEBUG_INFO << album._albumTitle << album._year;
+
     album._year=(album._year<1900?1900:album._year);
     return std::make_shared<SBIDAlbum>(album);
 }
@@ -1137,8 +1142,8 @@ SBIDAlbum::retrieveSQL(const QString& key)
             "r.artist_id, "
             "r.title, "
             "r.genre, "
-            "r.notes, "
-            "r.year "
+            "r.year, "
+            "r.notes "
         "FROM "
             "___SB_SCHEMA_NAME___record r "
         "%1 "

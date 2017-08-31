@@ -88,6 +88,10 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
     case SBIDBase::sb_type_invalid:
         break;
     }
+    if(!ptr)
+    {
+        qDebug() << SB_DEBUG_NPTR;
+    }
     return ptr;
 }
 
@@ -106,12 +110,10 @@ SBIDBase::createPtr(const QByteArray& encodedData)
 SBIDPtr
 SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
     SBIDPtr ptr=SBIDPtr();
     if(key.length())
     {
         const QStringList list=key.split(":");
-        qDebug() << SB_DEBUG_INFO << key;
         const SBIDBase::sb_type itemType=static_cast<SBIDBase::sb_type>(list[0].toInt());
         const int itemID=list[1].toInt();
         ptr=SBIDBase::createPtr(itemType,itemID,noDependentsFlag);

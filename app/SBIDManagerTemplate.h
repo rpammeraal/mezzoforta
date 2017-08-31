@@ -67,13 +67,18 @@ public:
     //	Misc
     void clear();
     void debugShow(const QString title="");
+    void id() const { return _id; }
 
 protected:
     friend class Preloader;
+    friend class Context;
+
     std::shared_ptr<T> addItem(const std::shared_ptr<T>& ptr);
+    void setID(int id) { _id=id; }
 
 private:
     QList<QString>                   _changes;	//	Contains keys of objects changed
+    int                              _id;
     QMap<QString,std::shared_ptr<T>> _leMap;
 
     void _init();
@@ -148,11 +153,11 @@ template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
 {
     std::shared_ptr<T> ptr;
-    //if(_leMap.contains(key))
     if(contains(key))
     {
         ptr=_leMap[key];
     }
+
     if(!ptr || openFlag==open_flag_refresh)
     {
         SBSqlQueryModel* qm=T::retrieveSQL(key);
@@ -525,21 +530,10 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
 {
-    std::shared_ptr<T> foundPtr;
-    if(ptr)
-    {
-        if(!contains(ptr->key()))
-        {
-            ptr->_id=++_nextID;
-            _leMap[ptr->key()]=ptr;
-            foundPtr=ptr;
-        }
-        else
-        {
-            foundPtr=_leMap[ptr->key()];
-        }
-    }
-    return foundPtr;
+    Q_ASSERT(ptr);
+    ptr->_id=++_nextID;
+    _leMap[ptr->key()]=ptr;
+    return ptr;
 }
 
 ///	Private methods

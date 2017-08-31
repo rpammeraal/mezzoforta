@@ -635,6 +635,7 @@ Navigator::_activateScreen()
                 canBeEditedFlag=0;
                 break;
 
+            case SBIDBase::sb_type_playlist_detail:
             case SBIDBase::sb_type_chart_performance:
             case SBIDBase::sb_type_invalid:
                 break;

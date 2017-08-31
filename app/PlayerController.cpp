@@ -92,6 +92,7 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     if(_state==PlayerController::sb_player_state_play)
     {
         //	Continue with next song
+qDebug() << SB_DEBUG_INFO << "emit playNextSong";
         emit playNextSong();
     }
 }

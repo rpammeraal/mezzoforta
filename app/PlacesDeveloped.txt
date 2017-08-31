@@ -902,7 +902,6 @@ Between 20161215 and 20170604:
 -	Open performer 'Birdy'. Albums show -1 as year.
 -	Remove instances of screenstack:debugshow
 -	song from album tab should play that song_performance -- not the preferred one.
--	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 
 20170826:
 -	Open Moose!Music: Mheer. Play -> songs does not get inserted in order.
@@ -911,6 +910,7 @@ Between 20161215 and 20170604:
 -	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
 
 Bugs that need to be fixed:
+*	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 *	Edit record crashes
 * 	After import, show in status bar (bottom) how many songs where imported.
 *	Search box:

@@ -30,7 +30,7 @@ public:
     inline void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    inline SBIDPtr ptr() const { return _ptr; }
+    SBIDBasePtr ptr() const;
     void updateSBIDBase(const SBIDPtr& ptr);	//	CWIP: rename to updateSBIDPtr
 
     bool operator==(const ScreenItem& i) const;
@@ -39,8 +39,8 @@ public:
 
 private:
     screen_type _screenType;
-    SBIDPtr     _ptr;
     bool        _editFlag;
+    QString     _key;
     QString     _searchCriteria;
     int         _subtabID;
     int         _sortColumn;

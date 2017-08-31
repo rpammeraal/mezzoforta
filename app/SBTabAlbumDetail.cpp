@@ -239,19 +239,24 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBIDAlbumPtr albumPtr;
+    SBIDAlbumPtr aPtr;
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_album)
     {
-        albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(si.ptr());
+        aPtr=std::dynamic_pointer_cast<SBIDAlbum>(si.ptr());
     }
-    if(!albumPtr)
+    if(!aPtr)
     {
         //	Not found
         return ScreenItem();
     }
+    qDebug() << SB_DEBUG_INFO << aPtr->albumTitle() << aPtr->ID() << aPtr->year();
+
+    SBIDAlbumPtr aPtr1=SBIDAlbum::retrieveAlbum(aPtr->albumID());
+    qDebug() << SB_DEBUG_INFO << aPtr1->albumTitle() << aPtr1->ID() << aPtr1->year();
+
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(albumPtr);
-    mw->ui.labelAlbumDetailIcon->setPtr(albumPtr);
+    currentScreenItem.updateSBIDBase(aPtr);
+    mw->ui.labelAlbumDetailIcon->setPtr(aPtr);
 
     //	Clear image
     setAlbumImage(QPixmap());
@@ -266,15 +271,15 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
-    ed->loadAlbumData(albumPtr);
+    ed->loadAlbumData(aPtr);
 
     //	Populate record detail tab
-    mw->ui.labelAlbumDetailAlbumTitle->setText(albumPtr->albumTitle());
-    mw->ui.labelAlbumDetailAlbumNotes->setText(albumPtr->notes());
+    mw->ui.labelAlbumDetailAlbumTitle->setText(aPtr->albumTitle());
+    mw->ui.labelAlbumDetailAlbumNotes->setText(aPtr->notes());
 
     QString t=QString("<A style=\"color: black\" HREF=\"%1\">%2</A>")
-        .arg(albumPtr->albumPerformerID())
-        .arg(albumPtr->albumPerformerName());
+        .arg(aPtr->albumPerformerID())
+        .arg(aPtr->albumPerformerName());
     mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
     mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
     connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
@@ -285,21 +290,21 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    tm=albumPtr->performances();
+    tm=aPtr->performances();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
     populateTableView(tv,tm,0);
 
     //	Populate details
-    QString genre=albumPtr->genre();
+    QString genre=aPtr->genre();
     genre.replace("|",",");
     QString details;
 
     //	Details 1: release year
-    if(albumPtr->year()>0)
+    if(aPtr->year()>0)
     {
-        details=QString("Released: %1").arg(albumPtr->year());
+        details=QString("Released: %1").arg(aPtr->year());
     }
 
     //	Details 2: duration
@@ -308,7 +313,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
         //	8226 is el buleto
         details=details+" "+QChar(8226)+" ";
     }
-    details+=QString("Duration: %1").arg(albumPtr->duration().toString(SBDuration::sb_playlist_format));
+    details+=QString("Duration: %1").arg(aPtr->duration().toString(SBDuration::sb_playlist_format));
 
     //	Details 3: number of songs
     if(details.length()>0)

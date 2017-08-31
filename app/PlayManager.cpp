@@ -29,6 +29,7 @@ PlayManager::songPlayingFlag() const
 void
 PlayManager::playerPrevious()
 {
+    qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
     playerNext(1);
 }
 
@@ -201,6 +202,7 @@ PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
 
     if(enqueueFlag==0)
     {
+qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
         isPlayingFlag=this->playerNext();
     }
     return isPlayingFlag;
@@ -438,6 +440,7 @@ PlayManager::_loadRadio()
                 mqs->populate(playList);
                 tqs->setViewLayout();
 
+qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
                 this->playerNext();
                 emit playlistChanged(-1);
 
