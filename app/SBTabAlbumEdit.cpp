@@ -776,10 +776,8 @@ SBTabAlbumEdit::save() const
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDAlbumPtr selectedAlbumPtr;
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
     bool albumMetaDataChangedFlag=0;
-    bool possibleMergeFlag=0;
     bool cancelSave=0;
     bool successFlag=0;
 
@@ -813,7 +811,10 @@ SBTabAlbumEdit::save() const
     }
     else
     {
-        Common::toTitleCase(editAlbumTitle);
+        if(Common::removeAccents(Common::simplified(editAlbumTitle)).toLower()!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumTitle())).toLower())
+        {
+            Common::toTitleCase(editAlbumTitle);
+        }
     }
 
     if(Common::removeAccents(Common::simplified(editAlbumPerformerName))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())))
@@ -822,7 +823,10 @@ SBTabAlbumEdit::save() const
     }
     else
     {
-        Common::toTitleCase(editAlbumPerformerName);
+        if(Common::removeAccents(Common::simplified(editAlbumPerformerName)).toLower()!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())).toLower())
+        {
+            Common::toTitleCase(editAlbumPerformerName);
+        }
     }
 
     if(editAlbumYear!=orgAlbumPtr->year())
@@ -830,97 +834,7 @@ SBTabAlbumEdit::save() const
         albumMetaDataChangedFlag=1;
     }
 
-    //	If only case is different in album title, save the new name as is.
-    if(albumMetaDataChangedFlag!=0 || albumMetaDataChangedFlag!=0)
-    {
-        possibleMergeFlag=1;
-    }
-
-    Common::sb_parameters p;
-    p.albumTitle=editAlbumTitle;
-    p.performerName=editAlbumPerformerName;
-    p.genre=orgAlbumPtr->genre();
-    p.notes=orgAlbumPtr->notes();
-    p.year=editAlbumYear;
-
-    QMap<int, QList<SBIDAlbumPtr>> matches;
-    int count=amgr->find(p, orgAlbumPtr, matches);
-    qDebug() << SB_DEBUG_INFO << orgAlbumPtr->text() << orgAlbumPtr->albumID();
-    qDebug() << SB_DEBUG_INFO << count << albumMetaDataChangedFlag << albumMetaDataChangedFlag;
-    if(
-        albumMetaDataChangedFlag==1
-    )
-    {
-            qDebug() << SB_DEBUG_INFO;
-        if(matches.contains(0) && matches[0].count()==1)
-        {
-            //	Album has changed and there is exactly one match
-            selectedAlbumPtr=matches[0][1];
-            qDebug() << SB_DEBUG_INFO;
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << count;
-            if(matches.contains(0))
-            {
-                count-=matches[0].count();	//	should be 1
-            }
-            qDebug() << SB_DEBUG_INFO << count;
-
-            if(count)
-            {
-                qDebug() << SB_DEBUG_INFO;
-                //	Album has changed and there are multiple matches
-                SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,orgAlbumPtr,matches);
-                pu->exec();
-
-                if(pu->hasSelectedItem()==0)
-                {
-                qDebug() << SB_DEBUG_INFO;
-                    dal->restore(restorePoint);
-                    amgr->retrieve(orgAlbumPtr->key(),SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_refresh);
-                    cancelSave=1;
-                }
-                else
-                {
-                qDebug() << SB_DEBUG_INFO;
-                    SBIDPtr selected=pu->getSelected();
-                    if(selected)
-                    {
-                qDebug() << SB_DEBUG_INFO;
-                        selectedAlbumPtr=std::dynamic_pointer_cast<SBIDAlbum>(selected);
-                    }
-                }
-            }
-            else
-            {
-                //	No possible matches found. Perform changes on orgAlbumPtr
-                selectedAlbumPtr=orgAlbumPtr;
-                qDebug() << SB_DEBUG_INFO;
-            }
-        }
-    }
-
-    qDebug() << SB_DEBUG_INFO;
-    if(selectedAlbumPtr)
-    {
-       qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->text() << selectedAlbumPtr->itemID();
-    }
-    else
-    {
-       qDebug() << SB_DEBUG_INFO << "NOT DEFINED";
-       return;
-    }
-
-    //	After this point, orgAlbumPtr should NOT be used anymore.
-
-    //	Set data on album level
-    //	albumPerformer?
-    selectedAlbumPtr->setAlbumTitle(editAlbumTitle);
-    selectedAlbumPtr->setYear(editAlbumYear);
-
-
-    //	B.	Create edited song list on the album
+    //	B.	Create edited list on the album
     if(!cancelSave)
     {
         QTableView* tv=mw->ui.albumEditSongList;
@@ -940,7 +854,6 @@ SBTabAlbumEdit::save() const
                 editedSong.albumPosition=item->text().toInt();
             }
 
-            editedSong.albumTitle=editAlbumTitle;
             item=aem->item(i,AlbumEditModel::sb_column_performername);
             if(item)
             {
@@ -954,13 +867,12 @@ SBTabAlbumEdit::save() const
             }
 
             //	Secondary meta data attributes
-            editedSong.albumPerformerName=editAlbumPerformerName;
             item=aem->item(i,AlbumEditModel::sb_column_notes);
             if(item)
             {
                 editedSong.notes=item->text();
             }
-            editedSong.year=p.year;
+            editedSong.year=orgAlbumPtr->year();
 
             //	Album edit
             item=aem->item(i,AlbumEditModel::sb_column_mergedtoindex);
@@ -994,14 +906,12 @@ SBTabAlbumEdit::save() const
                 editedSong.songPerformanceID=item->text().toInt();
             }
 
-            editedSong.albumID=selectedAlbumPtr->albumID();
-            editedSong.albumPerformerID=selectedAlbumPtr->albumPerformerID();
-
             item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
             if(item)
             {
                 editedSong.albumPerformanceID=item->text().toInt();
             }
+            editedSong.albumID=orgAlbumPtr->albumID();
 
             //	Helper attributes
             editedSong.createArtificialAlbumFlag=0;
@@ -1017,29 +927,63 @@ SBTabAlbumEdit::save() const
     }
     qDebug() << SB_DEBUG_INFO << songList.count();
 
+    //	Add header data
+    {
+        //	Keep scope of editedAlbum local
+        MusicLibrary::MLentity editedAlbum;
+        editedAlbum.albumTitle=editAlbumTitle;
+        editedAlbum.albumPerformerName=editAlbumPerformerName;
+        editedAlbum.genre=orgAlbumPtr->genre();
+        editedAlbum.notes=orgAlbumPtr->notes();	//	CWIP: need to have editbox
+        editedAlbum.year=editAlbumYear;
+        editedAlbum.albumID=orgAlbumPtr->albumID();
+        editedAlbum.albumPerformerID=orgAlbumPtr->albumPerformerID();
+        editedAlbum.headerFlag=1;
+
+        MusicLibrary::MLentityPtr ePtr=std::make_shared<MusicLibrary::MLentity>(editedAlbum);
+        songList.append(ePtr);
+    qDebug() << SB_DEBUG_INFO << ePtr->headerFlag;
+    }
+
+    qDebug() << SB_DEBUG_INFO << songList.count();
+
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "PRIOR TO VALIDATION" << songList.count();
         while(eIT.hasNext())
         {
-            MusicLibrary::MLentityPtr e=eIT.next();
-            if(e && e->errorFlag()==0)
+            MusicLibrary::MLentityPtr ePtr=eIT.next();
+            if(ePtr)
             {
-                qDebug() << SB_DEBUG_INFO
-                         << e->songTitle
-                         << e->songPerformerName
-                         << e->albumTitle
-                         << e->albumPosition
-                         << e->albumPerformerName
-                         << e->mergedToAlbumPosition
-                         << e->removedFlag
-                ;
+                if(ePtr->headerFlag)
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumTitle
+                         << ePtr->albumID
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
+                    ;
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumID
+                         << ePtr->albumPosition
+                         << ePtr->songTitle
+                         << ePtr->songPerformerName
+                         << ePtr->mergedToAlbumPosition
+                         << ePtr->removedFlag
+                    ;
+                }
             }
             else
             {
                 qDebug() << SB_DEBUG_INFO << "NOT DEFINED";
             }
         }
+        qDebug() << SB_DEBUG_INFO << "END";
     }
 
     //	D.	Validate
@@ -1049,34 +993,88 @@ SBTabAlbumEdit::save() const
         cancelSave=1;
     }
 
+
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "AFTER VALIDATION";
         while(eIT.hasNext())
         {
-            MusicLibrary::MLentityPtr e=eIT.next();
-            if(e && e->errorFlag()==0)
+            MusicLibrary::MLentityPtr ePtr=eIT.next();
+            if(ePtr && ePtr->errorFlag()==0)
             {
-                qDebug() << SB_DEBUG_INFO
-                         << e->songTitle
-                         << e->songID
-                         << e->albumID
-                         << e->songPerformerID
-                         << e->albumPerformerName
-                ;
+                if(ePtr->headerFlag)
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumTitle
+                         << ePtr->albumID
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
+                    ;
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumID
+                         << ePtr->albumPosition
+                         << ePtr->songTitle
+                         << ePtr->songPerformerName
+                         << ePtr->mergedToAlbumPosition
+                         << ePtr->removedFlag
+                    ;
+                }
             }
         }
+    }
+
+    //	Now need to figure out if we still are 'talking' to the same album or
+    //	if we got merged.
+    //		a.	find header record
+    SBIDAlbumPtr newAlbumPtr;
+    QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
+    while(eIT.hasNext() && !newAlbumPtr)
+    {
+        MusicLibrary::MLentityPtr ePtr=eIT.next();
+        if(ePtr)
+        {
+            if(ePtr->headerFlag)
+            {
+                newAlbumPtr=SBIDAlbum::retrieveAlbum(ePtr->albumID);
+            }
+        }
+    }
+
+    if(!newAlbumPtr)
+    {
+        qDebug() << SB_DEBUG_ERROR << "NO ALBUM FOUND";
+        return;
+    }
+
+    if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
+    {
+        newAlbumPtr->setAlbumTitle(editAlbumTitle);
+        newAlbumPtr->setYear(editAlbumYear);
+        //	performer
+
+
+        qDebug() << SB_DEBUG_INFO << editAlbumTitle;
+        qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
+    }
+    else
+    {
+        //	merge
     }
 
     if(!cancelSave)
     {
         //	E.	Throw to SBIDAlbum for saving to database.
         qDebug() << SB_DEBUG_INFO;
-        selectedAlbumPtr->processNewSongList(songList);
+        orgAlbumPtr->processNewSongList(songList);
 
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
-        successFlag=amgr->commit(selectedAlbumPtr,dal);
+        successFlag=amgr->commit(newAlbumPtr,dal);
 
         //	G.	Refresh all models
     }
@@ -1087,7 +1085,7 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO;
         dal->restore(restorePoint);
     }
-    SBIDAlbumPtr aPtr=amgr->retrieve(selectedAlbumPtr->key(),SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_refresh);
+    SBIDAlbumPtr aPtr=amgr->retrieve(newAlbumPtr->key(),SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_refresh);
     qDebug() << SB_DEBUG_INFO << aPtr->albumTitle() << aPtr->ID() << aPtr->year();
 
     SBIDAlbumPtr aPtr1=SBIDAlbum::retrieveAlbum(aPtr->albumID());

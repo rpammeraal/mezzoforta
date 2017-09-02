@@ -77,6 +77,7 @@ public:
         int albumPerformanceID;
 
         //	Helper attributes
+        bool headerFlag;
         bool createArtificialAlbumFlag;
         QString errorMsg;
         int ID;
@@ -85,7 +86,7 @@ public:
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
     private:
-        void _init() { songID=-1; songPerformerID=-1; songPerformanceID=-1; albumID=-1; albumPerformerID=-1; albumPerformanceID=-1; albumPosition=-1;  createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; ID=-1; }
+        void _init() { songID=-1; songPerformerID=-1; songPerformanceID=-1; albumID=-1; albumPerformerID=-1; albumPerformanceID=-1; albumPosition=-1;  createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; newFlag=0; headerFlag=0; ID=-1; }
     };
     typedef std::shared_ptr<MLentity> MLentityPtr;
 

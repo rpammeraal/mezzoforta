@@ -74,6 +74,7 @@ PlayManager::playerPlay()
 bool
 PlayManager::playerNext(bool previousFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     PlayerController* pc=Context::instance()->getPlayerController();
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     int numSongs=mqs?mqs->numSongs():0;
@@ -222,7 +223,6 @@ PlayManager::playItemNow(unsigned int playlistIndex)
     Context::instance()->getProperties()->musicLibraryDirectory();
 
     PlayerController* pc=Context::instance()->getPlayerController();
-    QString errorMsg;
     bool isPlayingFlag=0;
     _setCurrentPlayID(playlistIndex);
 
@@ -230,6 +230,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
 
     if(!performancePtr)
     {
+        qDebug() << SB_DEBUG_INFO << "returning 0";
         return 0;
     }
     else
@@ -239,6 +240,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         isPlayingFlag=pc->playSong(performancePtr);
         if(isPlayingFlag==0)
         {
+            qDebug() << SB_DEBUG_INFO << "returning 0";
             return 0;
         }
         else if(_radioModeFlag)
@@ -247,6 +249,7 @@ PlayManager::playItemNow(unsigned int playlistIndex)
 
         }
     }
+    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
     return isPlayingFlag;
 }
 
