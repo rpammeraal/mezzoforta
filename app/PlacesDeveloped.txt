@@ -909,6 +909,9 @@ Between 20161215 and 20170604:
 -	Open performer 'Maná'. Songs show -1 as year (double check on postgres)
 -	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
 
+20170606:
+-	Album level data can be edited, modified matching of performers so it is actually working.
+
 Bugs that need to be fixed:
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 *	Edit record crashes
@@ -999,6 +1002,7 @@ Import bugs/features/missing:
 *	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
 *	remove SBID*::save() methods
+*	support 24kb/s flac. See AudioDecoderFlac, search for _sampleFormat=paInt24;
 
 <near future>
 *	Redesign/larger font 'now playing' in player section.

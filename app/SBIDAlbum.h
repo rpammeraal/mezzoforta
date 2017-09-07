@@ -54,10 +54,10 @@ public:
     inline int year() const { return _year; }
 
     //	Setters
-    void setAlbumTitle(const QString& albumTitle) { qDebug() << SB_DEBUG_INFO; _albumTitle=albumTitle; setChangedFlag(); }
-    void setAlbumPerformerID(int performerID) { _albumPerformerID=performerID; setChangedFlag(); }
-    void setYear(int year) { _year=year; setChangedFlag(); }
-    void setGenre(const QString& genre) { _genre=genre; setChangedFlag(); }
+    void setAlbumTitle(const QString& albumTitle) { qDebug() << SB_DEBUG_INFO; if(albumTitle!=_albumTitle) { _albumTitle=albumTitle; setChangedFlag(); } }
+    void setAlbumPerformerID(int performerID) { if(performerID!=_albumPerformerID) { _albumPerformerID=performerID; setChangedFlag(); } }
+    void setYear(int year) { if(year!=_year) { _year=year; setChangedFlag(); } }
+    void setGenre(const QString& genre) { if(genre!=_genre) { _genre=genre; setChangedFlag(); } }
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;

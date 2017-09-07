@@ -385,6 +385,12 @@ MusicLibrary::rescanMusicLibrary()
         //	2.	Save to database
         qDebug() << SB_DEBUG_INFO << "SANITYCHECK";
         apMgr->debugShow("BEFORE ADDALBUMPERFORMANCE");
+
+        progressCurrentValue=0;
+        progressMaxValue=foundEntities.count();
+        ProgressDialog::instance()->setLabelText("Store in database...");
+        ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_save",progressCurrentValue,progressMaxValue);
+        time.restart();
         feIT.toFront();
         while(feIT.hasNext())
         {
@@ -402,6 +408,14 @@ MusicLibrary::rescanMusicLibrary()
                             ePtr->filePath,
                             ePtr->duration,
                             ePtr->notes);
+                //	CWIP: do progressbox
+            }
+            if(time.elapsed()>700)
+            {
+                const QString title=QString("Saving album '%1'").arg(ePtr->albumTitle);
+                ProgressDialog::instance()->setLabelText(title);
+                ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_save",progressCurrentValue,progressMaxValue);
+                time.restart();
             }
         }
 
@@ -443,6 +457,7 @@ MusicLibrary::rescanMusicLibrary()
             dal->restore(databaseRestorePoint);
         }
         qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_savedata");
 
         //	Collect all errors
         QMap<QString,QString> errors;

@@ -1033,6 +1033,7 @@ SBTabAlbumEdit::save() const
     //		a.	find header record
     SBIDAlbumPtr newAlbumPtr;
     QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
+    MusicLibrary::MLentityPtr newAlbumEntityPtr=eIT.next();
     while(eIT.hasNext() && !newAlbumPtr)
     {
         MusicLibrary::MLentityPtr ePtr=eIT.next();
@@ -1041,6 +1042,7 @@ SBTabAlbumEdit::save() const
             if(ePtr->headerFlag)
             {
                 newAlbumPtr=SBIDAlbum::retrieveAlbum(ePtr->albumID);
+                newAlbumEntityPtr=ePtr;
             }
         }
     }
@@ -1053,11 +1055,17 @@ SBTabAlbumEdit::save() const
 
     if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
     {
+        //	Take care of typical album level dat94100a
         newAlbumPtr->setAlbumTitle(editAlbumTitle);
         newAlbumPtr->setYear(editAlbumYear);
-        //	performer
 
+        //	Set performer
+        if(newAlbumEntityPtr->albumPerformerID!=newAlbumPtr->albumPerformerID())
+        {
+            newAlbumPtr->setAlbumPerformerID(newAlbumEntityPtr->albumPerformerID);
+        }
 
+        //	No matching being done eg Dire Straitz
         qDebug() << SB_DEBUG_INFO << editAlbumTitle;
         qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
     }
