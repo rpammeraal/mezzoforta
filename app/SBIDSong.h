@@ -43,6 +43,7 @@ public:
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
@@ -56,7 +57,7 @@ public:
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
     int numAlbumPerformances() const;
-    QVector<SBIDOnlinePerformancePtr> onlinePerformances() const;
+    QVector<SBIDOnlinePerformancePtr> onlinePerformancesPreloader() const;
     inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;

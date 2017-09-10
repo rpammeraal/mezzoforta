@@ -64,6 +64,7 @@ public:
     virtual QString iconResourceLocation() const=0;
     virtual int itemID() const=0;
     virtual sb_type itemType() const=0;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
     virtual QString type() const=0;

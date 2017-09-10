@@ -46,6 +46,18 @@ SBIDChartPerformance::genericDescription() const
     ;
 }
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDChartPerformance::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    const SBIDSongPerformancePtr spPtr=songPerformancePtr();
+    if(spPtr)
+    {
+        list=spPtr->onlinePerformances(updateProgressDialogFlag);
+    }
+    return list;
+}
+
 void
 SBIDChartPerformance::sendToPlayQueue(bool enqueueFlag)
 {
@@ -230,7 +242,7 @@ SBIDChartPerformance::instantiate(const QSqlRecord &r)
     cp._chartID           =Common::parseIntFieldDB(&r,i++);
     cp._songPerformanceID =Common::parseIntFieldDB(&r,i++);
     cp._chartPosition     =Common::parseIntFieldDB(&r,i++);
-    cp._notes             =Common::parseTextFieldDB(&r,i++);
+    cp._notes             =r.value(i++).toString();
 
     return std::make_shared<SBIDChartPerformance>(cp);
 }

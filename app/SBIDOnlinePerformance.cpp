@@ -65,12 +65,23 @@ SBIDOnlinePerformance::itemType() const
     return SBIDBase::sb_type_online_performance;
 }
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDOnlinePerformance::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    Q_UNUSED(updateProgressDialogFlag);
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    const SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(this->_onlinePerformanceID);
+    if(opPtr)
+    {
+        list[0]=opPtr;
+    }
+    return list;
+}
+
 void
 SBIDOnlinePerformance::sendToPlayQueue(bool enqueueFlag)
 {
-    QMap<int,SBIDOnlinePerformancePtr> list;
-    const SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(this->_onlinePerformanceID);
-    list[0]=opPtr;
+    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 }

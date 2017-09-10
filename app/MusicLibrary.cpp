@@ -647,6 +647,10 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
                          << ePtr->songTitle
                          << ePtr->songPerformerName
                          << ePtr->mergedToAlbumPosition
+                         << ePtr->albumTitle
+                         << ePtr->albumID
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
                          << ePtr->removedFlag
                     ;
                 }
@@ -787,7 +791,7 @@ qDebug() << SB_DEBUG_INFO;
 
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);
-        qDebug() << SB_DEBUG_INFO << "SECTION D2b";
+        qDebug() << SB_DEBUG_INFO << "BEFORE ALBUM VALIDATION";
         while(eIT.hasNext())
         {
             MLentityPtr ePtr=eIT.next();
@@ -812,6 +816,10 @@ qDebug() << SB_DEBUG_INFO;
                          << ePtr->songTitle
                          << ePtr->songPerformerName
                          << ePtr->mergedToAlbumPosition
+                         << ePtr->albumTitle
+                         << ePtr->albumID
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
                          << ePtr->removedFlag
                     ;
                 }
@@ -823,6 +831,7 @@ qDebug() << SB_DEBUG_INFO;
     progressCurrentValue=0;
     progressMaxValue=list.count();
     ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
+    qDebug() << SB_DEBUG_INFO << progressMaxValue;
 
     QStringList greatestHitsAlbums=_greatestHitsAlbums();
 
@@ -832,15 +841,32 @@ qDebug() << SB_DEBUG_INFO;
     {
         MLentityPtr ePtr=listIT.next();
         SBIDAlbumPtr selectedAlbumPtr;
+        qDebug() << SB_DEBUG_INFO;
 
-        if(ePtr && ePtr->albumID==-1 && !ePtr->errorFlag() && (!ePtr->removedFlag))
+        //if(ePtr && ePtr->albumID==-1 && !ePtr->errorFlag() && (!ePtr->removedFlag))
+        //	Ignore albumID==-1, since we want to validate existing albums
+        if(ePtr && !ePtr->errorFlag() && (!ePtr->removedFlag) && ePtr->albumTitle.length()>0)
         {
-            //	Only validate albums if the albumID==-1.
+            qDebug() << SB_DEBUG_INFO
+                 << ePtr->headerFlag
+                 << ePtr->albumID
+                 << ePtr->albumPosition
+                 << ePtr->songTitle
+                 << ePtr->songPerformerName
+                 << ePtr->mergedToAlbumPosition
+                 << ePtr->albumTitle
+                 << ePtr->albumID
+                 << ePtr->albumPerformerName
+                 << ePtr->albumPerformerID
+                 << ePtr->removedFlag;
+
+            //	Only validate albums if the albumID==-1. <-- incorrect. Need to validate existing albums
             const QString key=QString("%1:%2").arg(ePtr->albumTitle).arg(ePtr->albumPerformerID);
             if(!albumTitle2albumIDMap.contains(key))
             {
                 if(ePtr->createArtificialAlbumFlag || greatestHitsAlbums.contains(ePtr->albumTitle))
                 {
+                    qDebug() << SB_DEBUG_INFO;
                     //	Create greatest hits album
                     Common::sb_parameters p;
                     p.albumTitle=ePtr->albumTitle;
@@ -856,6 +882,7 @@ qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
+                    qDebug() << SB_DEBUG_INFO;
                     //	Let user select
                     Common::sb_parameters p;
                     p.albumID=ePtr->albumID;
@@ -890,8 +917,8 @@ qDebug() << SB_DEBUG_INFO;
                              << p.year
                              << p.genre
                     ;
-                        //	albumPerformerID not set
-                        selectedAlbumPtr=amgr->createInDB(p);
+                    //	albumPerformerID not set
+                    selectedAlbumPtr=amgr->createInDB(p);
                     }
                 }
                 albumTitle2albumIDMap[key]=selectedAlbumPtr->albumID();
@@ -903,26 +930,44 @@ qDebug() << SB_DEBUG_INFO;
             ePtr->albumID=selectedAlbumPtr->albumID();
             ePtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
         }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << "albumTitle empty";
+        }
         ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
     qDebug() << SB_DEBUG_INFO;
 
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);
-        qDebug() << SB_DEBUG_INFO << "SECTION D2c" << list.count();
+        qDebug() << SB_DEBUG_INFO << "BEFORE SONG VALIDATION" << list.count();
         while(eIT.hasNext())
         {
-            MLentityPtr e=eIT.next();
-            if(e && !e->errorFlag())
+            MLentityPtr ePtr=eIT.next();
+            if(ePtr && !ePtr->errorFlag())
             {
-                qDebug() << SB_DEBUG_INFO
-                         << e->filePath
-                         << e->albumTitle
-                         << e->createArtificialAlbumFlag
-                         << e->albumID
-                         << e->albumPerformerID
-                         << e->albumPosition
-                ;
+                if(ePtr->headerFlag)
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumTitle
+                         << ePtr->albumID
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
+                    ;
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_INFO
+                         << ePtr->headerFlag
+                         << ePtr->albumID
+                         << ePtr->albumPosition
+                         << ePtr->songTitle
+                         << ePtr->songPerformerName
+                         << ePtr->mergedToAlbumPosition
+                         << ePtr->removedFlag
+                    ;
+                }
             }
         }
     }

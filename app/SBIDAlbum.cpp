@@ -143,22 +143,20 @@ SBIDAlbum::save()
     return true;
 }
 
-void
-SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
 {
-    ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",3);
-
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
-    }
+    QMap<int,SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
 
     int progressCurrentValue=0;
-    int progressMaxValue=_albumPerformances.count()*2;
+    int progressMaxValue=albumPerformances.count()*2;
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",0,progressMaxValue);
+    }
 
     //	Collect onlinePerformancePtrs and their album position
-    ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",0,progressMaxValue);
-    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPerformances);
+    QMapIterator<int,SBIDAlbumPerformancePtr> pIT(albumPerformances);
     QMap<int, SBIDOnlinePerformancePtr> position2OnlinePerformancePtr;
     while(pIT.hasNext())
     {
@@ -169,7 +167,10 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
         {
             position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
         }
-        ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
+        if(updateProgressDialogFlag)
+        {
+            ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        }
     }
 
     //	Now put everything in order. Note that some albumPositions may be missing.
@@ -180,12 +181,28 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     {
         po2olIT.next();
         list[index++]=po2olIT.value();
-        ProgressDialog::instance()->update("SBIDAlbum::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
+        if(updateProgressDialogFlag)
+        {
+            ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        }
     }
-    ProgressDialog::instance()->finishStep("SBIDAlbum::sendToPlayQueue");
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->finishStep("SBIDAlbum::onlinePerformances");
+    }
 
+    return list;
+}
+
+void
+SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
+{
+    ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",1);
+
+    QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+
     ProgressDialog::instance()->hide();
 }
 
@@ -1104,12 +1121,14 @@ SBIDAlbumPtr
 SBIDAlbum::instantiate(const QSqlRecord &r)
 {
     SBIDAlbum album;
-    album._albumID         =r.value(0).toInt();
-    album._albumPerformerID=r.value(1).toInt();
-    album._albumTitle      =r.value(2).toString();
-    album._genre           =r.value(3).toString();
-    album._year            =r.value(4).toInt();
-    album._notes           =r.value(5).toString();
+    int i=0;
+
+    album._albumID         =Common::parseIntFieldDB(&r,i++);
+    album._albumPerformerID=Common::parseIntFieldDB(&r,i++);
+    album._albumTitle      =r.value(i++).toString();
+    album._genre           =r.value(i++).toString();
+    album._year            =r.value(i++).toInt();
+    album._notes           =r.value(i++).toString();
 
     qDebug() << SB_DEBUG_INFO << album._albumTitle << album._year;
 

@@ -921,6 +921,7 @@ Bugs that need to be fixed:
 	*	performers should appear without accents
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 * 	Show window with songs to be imported.
+*	Weird stuff happens when an item is removed from 'Songs In Queue'.
 
 Todo:
 *	Edit.

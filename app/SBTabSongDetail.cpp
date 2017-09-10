@@ -51,7 +51,7 @@ SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
         qDebug() << SB_DEBUG_NPTR;
         return opPtr;
     }
-    QVector<SBIDOnlinePerformancePtr> allOPPtr=songPtr->onlinePerformances();
+    QVector<SBIDOnlinePerformancePtr> allOPPtr=songPtr->onlinePerformancesPreloader();
 
     if(allOPPtr.count()==0)
     {
@@ -84,8 +84,8 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     qDebug() << SB_DEBUG_INFO;
     QTableView* tv=_determineViewCurrentTab();
 
-    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
-    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
+    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_RETURN_VOID_IF_NULL(pm);
+    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_RETURN_VOID_IF_NULL(sm);
     SBIDPtr selectPtr=sm->determineSBID(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 

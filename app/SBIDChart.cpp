@@ -51,23 +51,21 @@ SBIDChart::itemType() const
     return SBIDBase::sb_type_chart;
 }
 
-void
-SBIDChart::sendToPlayQueue(bool enqueueFlag)
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDChart::onlinePerformances(bool updateProgressDialogFlag) const
 {
-    ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",4);
-
-    if(_items.count()==0)
-    {
-        this->refreshDependents();
-    }
     QMap<int,SBIDOnlinePerformancePtr> list;
-    QMapIterator<int,SBIDChartPerformancePtr> it(_items);
+    QMap<int,SBIDChartPerformancePtr> items=this->items();
+    QMapIterator<int,SBIDChartPerformancePtr> it(items);
     int index=0;
 
     //	Set up progress dialog
     int progressCurrentValue=0;
-    int progressMaxValue=_items.count();
-    ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",progressCurrentValue,progressMaxValue);
+    int progressMaxValue=items.count();
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->update("SBIDChart::onlinePerformances",progressCurrentValue,progressMaxValue);
+    }
 
     while(it.hasNext())
     {
@@ -81,12 +79,27 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
         {
             list[index++]=opPtr;
         }
-        ProgressDialog::instance()->update("SBIDChart::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
+        if(updateProgressDialogFlag)
+        {
+            ProgressDialog::instance()->update("SBIDChart::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        }
     }
-    ProgressDialog::instance()->finishStep("SBIDChart::sendToPlayQueue");
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->finishStep("SBIDChart::onlinePerformances");
+    }
+    return list;
+}
 
+void
+SBIDChart::sendToPlayQueue(bool enqueueFlag)
+{
+    ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",4);
+
+    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+
     ProgressDialog::instance()->hide();
 }
 
@@ -103,29 +116,29 @@ SBIDChart::type() const
 }
 
 //	Methods specific to SBIDChart
-SBTableModel*
+QMap<int,SBIDChartPerformancePtr>
 SBIDChart::items() const
 {
     if(_items.count()==0)
     {
-        SBIDChart* c=const_cast<SBIDChart *>(this);
-        c->refreshDependents();
+        const_cast<SBIDChart *>(this)->refreshDependents();
     }
-    SBTableModel* tm=new SBTableModel();
-    tm->populateChartContent(_items);
-    return tm;
+    return _items;
 }
-
 int
 SBIDChart::numItems() const
 {
-    if(_items.count()==0)
-    {
-        //	Items are not loaded (yet) -- use precalculated _numItems
-        return _numItems;
-    }
-    return _items.count();
+    return items().count();
 }
+
+SBTableModel*
+SBIDChart::tableModelItems() const
+{
+    SBTableModel* tm=new SBTableModel();
+    tm->populateChartContent(items());
+    return tm;
+}
+
 
 SBIDChart::operator QString() const
 {
@@ -263,12 +276,13 @@ SBIDChartPtr
 SBIDChart::instantiate(const QSqlRecord &r)
 {
     SBIDChart chart;
+    int i=0;
 
-    chart._chartID    =r.value(0).toInt();
-    chart._chartName  =r.value(1).toString();
-    chart._notes      =r.value(2).toString();
-    chart._releaseDate=r.value(3).toDate();
-    chart._numItems   =r.value(4).toInt();
+    chart._chartID    =Common::parseIntFieldDB(&r,i++);
+    chart._chartName  =r.value(i++).toString();
+    chart._notes      =r.value(i++).toString();
+    chart._releaseDate=r.value(i++).toDate();
+    chart._numItems   =r.value(i++).toInt();
 
     return std::make_shared<SBIDChart>(chart);
 }

@@ -61,18 +61,19 @@ SBIDPerformer::itemType() const
     return SBIDBase::sb_type_performer;
 }
 
-void
-SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDPerformer::onlinePerformances(bool updateProgressDialogFlag) const
 {
-    ProgressDialog::instance()->show("Loading songs","SBIDPerformer::sendToPlayQueue",3);
-
     QMap<int,SBIDOnlinePerformancePtr> list;
     QVector<SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
 
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=albumPerformances.count();
-    ProgressDialog::instance()->update("SBIDPerformer::sendToPlayQueue",progressCurrentValue,progressMaxValue);
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->update("SBIDPerformer::onlinePerformances",progressCurrentValue,progressMaxValue);
+    }
 
     int index=0;
     for(int i=0;i<albumPerformances.count();i++)
@@ -82,12 +83,27 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
         {
             list[index++]=opPtr;
         }
-        ProgressDialog::instance()->update("SBIDPerformer::sendToPlayQueue",progressCurrentValue++,progressMaxValue);
+        if(updateProgressDialogFlag)
+        {
+            ProgressDialog::instance()->update("SBIDPerformer::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        }
     }
-    ProgressDialog::instance()->finishStep("SBIDPerformer::sendToPlayQueue");
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->finishStep("SBIDPerformer::onlinePerformances");
+    }
+    return list;
+}
 
+void
+SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
+{
+    ProgressDialog::instance()->show("Loading songs","SBIDPerformer::sendToPlayQueue",2);
+
+    QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
+
     ProgressDialog::instance()->hide();
 }
 
@@ -664,12 +680,13 @@ SBIDPerformerPtr
 SBIDPerformer::instantiate(const QSqlRecord &r)
 {
     SBIDPerformer performer;
+    int i=0;
 
-    performer._performerID  =r.value(0).toInt();
-    performer._performerName=r.value(1).toString();
-    performer._url          =r.value(2).toString();
-    performer._notes        =r.value(3).toString();
-    performer._sb_mbid      =r.value(4).toString();
+    performer._performerID  =Common::parseIntFieldDB(&r,i++);
+    performer._performerName=r.value(i++).toString();
+    performer._url          =r.value(i++).toString();
+    performer._notes        =r.value(i++).toString();
+    performer._sb_mbid      =r.value(i++).toString();
 
     return std::make_shared<SBIDPerformer>(performer);
 }

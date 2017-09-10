@@ -59,6 +59,19 @@ SBIDAlbumPerformance::genericDescription() const
     ;
 }
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDAlbumPerformance::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    Q_UNUSED(updateProgressDialogFlag);
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    const SBIDOnlinePerformancePtr opPtr=preferredOnlinePerformancePtr();
+    if(opPtr)
+    {
+        list[0]=opPtr;
+    }
+    return list;
+}
+
 void
 SBIDAlbumPerformance::sendToPlayQueue(bool enqueueFlag)
 {
@@ -553,31 +566,7 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     ap._duration                    =r.value(i++).toString();
     ap._notes                       =r.value(i++).toString();
     ap._preferredOnlinePerformanceID=Common::parseIntFieldDB(&r,i++);
-
     ap._orgAlbumPosition=ap._albumPosition;
-
-    if(ap._albumPerformanceID==31512)
-    {
-        qDebug() << SB_DEBUG_INFO
-                 << "albumPerformanceID=" << ap._albumPerformanceID
-                 << "prefOnlinePerfID=" << ap._preferredOnlinePerformanceID
-        ;
-        qDebug() << SB_DEBUG_INFO
-                 << "col=5"
-                 << "isNULL" << r.isNull(5)
-                 << "value" << r.value(5).toString()
-        ;
-        qDebug() << SB_DEBUG_INFO
-                 << "col=6"
-                 << "isNULL" << r.isNull(6)
-                 << "value" << r.value(6).toString()
-        ;
-        qDebug() << SB_DEBUG_INFO
-                 << "col=7"
-                 << "isNULL" << r.isNull(7)
-                 << "value" << r.value(7).toString()
-        ;
-    }
 
     return std::make_shared<SBIDAlbumPerformance>(ap);
 }

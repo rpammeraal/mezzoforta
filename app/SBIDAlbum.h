@@ -30,6 +30,7 @@ public:
     virtual int itemID() const;
     virtual sb_type itemType() const;
     virtual bool save();
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;

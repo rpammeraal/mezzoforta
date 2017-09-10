@@ -19,6 +19,7 @@ public:
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
@@ -28,8 +29,9 @@ public:
     inline QString chartName() const { return _chartName; }
     inline QString chartNotes() const { return _notes; }
     inline QDate chartReleaseDate() const { return _releaseDate; }
-    SBTableModel* items() const;
+    QMap<int,SBIDChartPerformancePtr> items() const;
     int numItems() const;
+    SBTableModel* tableModelItems() const;
     //bool removeChartItem(int chartPosition);
     //bool moveItem(const SBIDPtr& fromPtr, int toRow);
     //void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite

@@ -16,6 +16,7 @@ public:
     virtual int itemID() const;
     virtual SBIDBase::sb_type itemType() const;
     virtual QString genericDescription() const;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;

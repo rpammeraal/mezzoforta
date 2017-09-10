@@ -28,6 +28,7 @@ public:
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
     virtual sb_type itemType() const;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
@@ -35,7 +36,7 @@ public:
     //	Methods specific to SBIDPlaylist
     bool addPlaylistItem(SBIDPtr ptr);
     inline SBDuration duration() const { return _duration; }
-    SBTableModel* items() const;
+    QMap<int,SBIDPlaylistDetailPtr> items() const;
     int numItems() const;
     inline int playlistID() const { return _playlistID; }
     inline QString playlistName() const { return _playlistName; }
@@ -44,6 +45,7 @@ public:
     bool moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toRow);
     void setPlaylistID(int playlistID) { _playlistID=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
+    SBTableModel* tableModelItems() const;
 
     //	Operators
     virtual operator QString() const;
@@ -88,13 +90,13 @@ private:
     QMap<int,SBIDPlaylistDetailPtr> _items;
 
     //	Methods
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, SBIDPtr root);
+    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag=0);
     void _copy(const SBIDPlaylist& c);
     void _init();
     void _loadPlaylistItems();
     QMap<int,SBIDPlaylistDetailPtr> _loadPlaylistItemsFromDB() const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID);
+    static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID,bool updateProgressDialogFlag=0);
 
 };
 

@@ -47,6 +47,18 @@ SBIDSongPerformance::genericDescription() const
     ;
 }
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDSongPerformance::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    const SBIDAlbumPerformancePtr apPtr=preferredAlbumPerformancePtr();
+    if(apPtr)
+    {
+        list=apPtr->onlinePerformances(updateProgressDialogFlag);
+    }
+    return list;
+}
+
 void
 SBIDSongPerformance::sendToPlayQueue(bool enqueueFlag)
 {
@@ -437,8 +449,8 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     sP._songPerformanceID          =Common::parseIntFieldDB(&r,i++);
     sP._songID                     =Common::parseIntFieldDB(&r,i++);
     sP._performerID                =Common::parseIntFieldDB(&r,i++);
-    sP._year                       =Common::parseIntFieldDB(&r,i++);
-    sP._notes                      =Common::parseTextFieldDB(&r,i++);
+    sP._year                       =r.value(i++).toInt();
+    sP._notes                      =r.value(i++).toString();
     sP._preferredAlbumPerformanceID=Common::parseIntFieldDB(&r,i++);
 
     sP._year=(sP._year<1900?1900:sP._year);

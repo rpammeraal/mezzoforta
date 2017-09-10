@@ -59,6 +59,19 @@ SBIDPlaylistDetail::iconResourceLocation() const
     return (p?p->iconResourceLocation():QString());
 }
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    QMap<int,SBIDOnlinePerformancePtr> list;
+
+    SBIDBasePtr p=ptr();
+    if(p)
+    {
+        list=p->onlinePerformances(updateProgressDialogFlag);
+    }
+    return list;
+}
+
 void
 SBIDPlaylistDetail::sendToPlayQueue(bool enqueueFlag)
 {
@@ -400,15 +413,24 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
     SBIDPlaylistDetail pd;
     int i=0;
 
-    pd._playlistDetailID   =r.value(i++).toInt();
-    pd._playlistID         =r.value(i++).toInt();
-    pd._playlistPosition   =r.value(i++).toInt();
-    pd._onlinePerformanceID=r.value(i++).toInt();
-    pd._childPlaylistID    =r.value(i++).toInt();
-    pd._chartID            =r.value(i++).toInt();
-    pd._albumID            =r.value(i++).toInt();
-    pd._performerID        =r.value(i++).toInt();
+    pd._playlistDetailID   =Common::parseIntFieldDB(&r,i++);
+    pd._playlistID         =Common::parseIntFieldDB(&r,i++);
+    pd._playlistPosition   =Common::parseIntFieldDB(&r,i++);
+    pd._onlinePerformanceID=Common::parseIntFieldDB(&r,i++);
+    pd._childPlaylistID    =Common::parseIntFieldDB(&r,i++);
+    pd._chartID            =Common::parseIntFieldDB(&r,i++);
+    pd._albumID            =Common::parseIntFieldDB(&r,i++);
+    pd._performerID        =Common::parseIntFieldDB(&r,i++);
     pd._notes              =r.value(i++).toString();
+
+    qDebug() << SB_DEBUG_INFO << "BEFORE"
+             << "pos" << pd._playlistPosition
+             << "opID=" << pd._onlinePerformanceID
+             << "cpID=" << pd._childPlaylistID
+             << "cID=" << pd._chartID
+             << "aID=" << pd._albumID
+             << "pID=" << pd._performerID
+	;
 
     if(pd._onlinePerformanceID!=-1)
     {
@@ -445,7 +467,7 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
         pd._chartID=-1;
         pd._albumID=-1;
     }
-    qDebug() << SB_DEBUG_INFO
+    qDebug() << SB_DEBUG_INFO << "AFTER"
              << "pos" << pd._playlistPosition
              << "opID=" << pd._onlinePerformanceID
              << "cpID=" << pd._childPlaylistID
@@ -491,7 +513,7 @@ SBIDPlaylistDetail::retrieveSQL(const QString &key)
         "%1 "
         "LIMIT 1 "
     )
-        .arg(key.length()==0?"":QString("WHERE r.playlist_detail_id=%1").arg(playlistDetailID))
+        .arg(key.length()==0?"":QString("WHERE pd.playlist_detail_id=%1").arg(playlistDetailID))
     ;
 
     qDebug() << SB_DEBUG_INFO << q;

@@ -209,7 +209,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     mw->ui.labelPlaylistDetailPlaylistDetail->setText(detail);
 
     QTableView* tv=mw->ui.playlistDetailSongList;
-    SBTableModel* tm=playlistPtr->items();
+    SBTableModel* tm=playlistPtr->tableModelItems();
     QList<bool> dragableColumns;
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1;

@@ -121,7 +121,7 @@ SBTabChartDetail::_populate(const ScreenItem& si)
     mw->ui.labelChartDetailChartDetail->setText(cPtr->chartReleaseDate().toString());
 
     QTableView* tv=mw->ui.chartDetailSongList;
-    SBTableModel* tm=cPtr->items();
+    SBTableModel* tm=cPtr->tableModelItems();
     QList<bool> dragableColumns;
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 1;

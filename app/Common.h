@@ -21,6 +21,7 @@ class QTableView;
 #define SB_DEBUG_INFO  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__
 #define SB_DEBUG_NPTR SB_DEBUG_INFO << "NULL PTR"
 #define SB_DEBUG_IF_NULL(x) if(!x) { qDebug() << SB_DEBUG_NPTR; }
+#define SB_RETURN_IF_NULL(x,y) if(!x) { SB_DEBUG_IF_NULL(x); return (y); }
 #define SB_RETURN_NULL_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return NULL; }
 #define SB_RETURN_VOID_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return; }
 

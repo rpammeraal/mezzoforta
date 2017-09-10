@@ -172,6 +172,19 @@ SBIDSong::itemType() const
     //return dal->executeBatch(SQL);
 //}
 
+QMap<int,SBIDOnlinePerformancePtr>
+SBIDSong::onlinePerformances(bool updateProgressDialogFlag) const
+{
+    QMap<int,SBIDOnlinePerformancePtr> list;
+    const SBIDSongPerformancePtr spPtr=originalSongPerformancePtr();
+    if(spPtr)
+    {
+        list=spPtr->onlinePerformances(updateProgressDialogFlag);
+    }
+    //	CWIP: if !spPtr, find other songPerformance that can be played
+    return list;
+}
+
 void
 SBIDSong::sendToPlayQueue(bool enqueueFlag)
 {
@@ -339,7 +352,7 @@ SBIDSong::playlists()
 }
 
 QVector<SBIDOnlinePerformancePtr>
-SBIDSong::onlinePerformances() const
+SBIDSong::onlinePerformancesPreloader() const
 {
     return Preloader::onlinePerformances(SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(this->songID()));
 }
@@ -1352,11 +1365,13 @@ SBIDSongPtr
 SBIDSong::instantiate(const QSqlRecord &r)
 {
     SBIDSong song;
-    song._songID                      =r.value(0).toInt();
-    song._songTitle                   =r.value(1).toString();
-    song._notes                       =r.value(2).toString();
-    song._lyrics                      =r.value(3).toString();
-    song._originalSongPerformanceID   =r.value(4).toInt();
+    int i=0;
+
+    song._songID                      =Common::parseIntFieldDB(&r,i++);
+    song._songTitle                   =r.value(i++).toString();
+    song._notes                       =r.value(i++).toString();
+    song._lyrics                      =r.value(i++).toString();
+    song._originalSongPerformanceID   =r.value(i++).toInt();
 
     return std::make_shared<SBIDSong>(song);
 }
