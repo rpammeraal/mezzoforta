@@ -64,6 +64,7 @@ public:
     static QString createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
+    static SBSqlQueryModel* retrieveOnlinePerformancesByAlbumPerformance(int albumPerformanceID);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);
     static int totalNumberOnlinePerformances();
@@ -88,6 +89,8 @@ protected:
     virtual void setPrimaryKey(int PK) { _onlinePerformanceID=PK;  }
     QStringList updateSQL() const;
 
+    friend class SBIDAlbumPerformance;
+    void setAlbumPerformanceID(int albumPerformanceID) { if(_albumPerformanceID!=albumPerformanceID) { _albumPerformanceID=albumPerformanceID; setChangedFlag(); } }
 private:
     //	Attributes
     int                     _onlinePerformanceID;	//	PK

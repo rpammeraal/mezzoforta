@@ -232,10 +232,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     bool newSongPerformanceFlag=0;
     bool newAlbumPerformanceFlag=0;
 
-    if(_albumPerformances.count()==0)
-    {
-        _loadAlbumPerformances();
-    }
+    albumPerformances();	//	load albumPerformances if not already loaded
 
     //	Look up song (should exists)
     sPtr=SBIDSong::retrieveSong(songID);
@@ -270,7 +267,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         apPtr=apMgr->createInDB(p);
         ;
     }
-    if(!_albumPerformances.contains(apPtr->albumPerformanceID()))
+    if(!albumPerformances().contains(apPtr->albumPerformanceID()))
     {
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
         this->setChangedFlag();
@@ -305,26 +302,12 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     return apPtr;
 }
 
-QMap<int,SBIDAlbumPerformancePtr>
-SBIDAlbum::albumPerformances() const
-{
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDAlbum *>(this)->refreshDependents();
-    }
-    return _albumPerformances;
-}
-
 SBDuration
 SBIDAlbum::duration() const
 {
     SBDuration duration;
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
-    }
 
-    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(albumPerformances());
     while(apIT.hasNext())
     {
         apIT.next();
@@ -384,23 +367,17 @@ SBIDAlbum::postInstantiate(SBIDAlbumPtr &ptr)
 int
 SBIDAlbum::numPerformances() const
 {
-    if(_albumPerformances.count()==0)
-    {
-        const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
-    }
-    return _albumPerformances.count();
+    return albumPerformances().count();
 }
 
-SBTableModel*
-SBIDAlbum::performances() const
+QMap<int,SBIDAlbumPerformancePtr>
+SBIDAlbum::albumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDAlbum *>(this)->refreshDependents(0,0);
     }
-    SBTableModel* tm=new SBTableModel();
-    tm->populatePerformancesByAlbum(_albumPerformances);
-    return tm;
+    return _albumPerformances;
 }
 
 ///
@@ -744,6 +721,14 @@ SBIDAlbum::repositionSongOnAlbum(int fromPosition, int toPosition)
     return SQL;
 }
 
+SBTableModel*
+SBIDAlbum::tableModelPerformances() const
+{
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePerformancesByAlbum(albumPerformances());
+    return tm;
+}
+
 bool
 SBIDAlbum::updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList &extraSQL,bool commitFlag)
 {
@@ -1048,6 +1033,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
     int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
 
     qDebug() << SB_DEBUG_INFO
+             << tobeFound.albumID
              << tobeFound.albumTitle
              << tobeFound.performerID
     ;
@@ -1130,16 +1116,76 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
     album._year            =r.value(i++).toInt();
     album._notes           =r.value(i++).toString();
 
-    qDebug() << SB_DEBUG_INFO << album._albumTitle << album._year;
+    qDebug() << SB_DEBUG_INFO << album._albumID << album._albumTitle << album._year;
 
     album._year=(album._year<1900?1900:album._year);
     return std::make_shared<SBIDAlbum>(album);
 }
 
 void
-SBIDAlbum::mergeTo(SBIDAlbumPtr &to)
+SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
 {
-    Q_UNUSED(to);
+    qDebug() << SB_DEBUG_INFO;
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    //	Find next albumPosition
+    int nextAlbumPosition=0;
+    QMapIterator<int,SBIDAlbumPerformancePtr> to(albumPerformances());
+    while(to.hasNext())
+    {
+        to.next();
+        SBIDAlbumPerformancePtr apPtr=to.value();
+        nextAlbumPosition=apPtr->albumPosition()>nextAlbumPosition?apPtr->albumPosition():nextAlbumPosition;
+    }
+    nextAlbumPosition++;
+    qDebug() << SB_DEBUG_INFO << nextAlbumPosition;
+
+    //	Go thu each albumPerformance in from and merge
+    QMapIterator<int,SBIDAlbumPerformancePtr> from(aPtrFrom->albumPerformances());
+    while(from.hasNext())
+    {
+        from.next();
+        SBIDAlbumPerformancePtr fromApPtr=from.value();
+        qDebug() << SB_DEBUG_INFO << "from=" << fromApPtr->itemID() << fromApPtr->text();
+        SBIDAlbumPerformancePtr toApPtr=_findAlbumPerformanceBySongPerformanceID(fromApPtr->songPerformanceID());
+        if(toApPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "merge to=" << toApPtr->itemID() << toApPtr->text();
+            apmgr->merge(fromApPtr,toApPtr);
+        }
+        else
+        {
+            //	Append
+            qDebug() << SB_DEBUG_INFO << "append";
+            fromApPtr->setAlbumPosition(nextAlbumPosition++);
+            fromApPtr->setAlbumID(this->albumID());
+            apmgr->setChanged(fromApPtr);
+            apmgr->debugShow("apmgr:merge");
+            _addedAlbumPerformances.append(fromApPtr);
+            qDebug() << SB_DEBUG_INFO << "append" << fromApPtr->itemID() << fromApPtr->changedFlag();
+            qDebug() << SB_DEBUG_INFO << apmgr->numChanges();
+        }
+    }
+
+    //	Go through playlist items and replace
+    SBSqlQueryModel* qm=SBIDPlaylistDetail::playlistDetailsByAlbum(aPtrFrom->albumID());
+    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    SB_RETURN_VOID_IF_NULL(qm);
+    SB_RETURN_VOID_IF_NULL(pdmgr);
+
+    for(int i=0;i>qm->rowCount();i++)
+    {
+        int playlistDetailID=qm->record(i).value(0).toInt();
+        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(playlistDetailID);
+        if(pdPtr)
+        {
+            pdPtr->setAlbumID(this->albumID());
+            pdmgr->setChanged(pdPtr);
+        }
+    }
+
+    qDebug() << SB_DEBUG_INFO << "End";
+    qDebug() << SB_DEBUG_INFO << apmgr->numChanges();
+
 }
 
 void
@@ -1188,7 +1234,14 @@ SBIDAlbum::updateSQL() const
 
     if(deletedFlag())
     {
-
+        SQL.append(QString(
+            "DELETE FROM "
+                "___SB_SCHEMA_NAME___record "
+            "WHERE "
+                "record_id=%1 "
+        )
+            .arg(this->_albumID)
+        );
     }
     else if(!mergedFlag() && !deletedFlag() && changedFlag())
     {
@@ -1226,20 +1279,24 @@ SBIDAlbum::updateSQL() const
 Common::result
 SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found)
 {
+    qDebug() << SB_DEBUG_INFO;
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
 
     if(amgr->find(p,exclude,matches))
     {
+            qDebug()<< SB_DEBUG_INFO;
         if(matches[0].count()==1)
         {
+            qDebug()<< SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else
         {
+            qDebug()<< SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
@@ -1265,6 +1322,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     }
     else
     {
+            qDebug()<< SB_DEBUG_INFO;
         result=Common::result_missing;
     }
     return result;
@@ -1321,6 +1379,22 @@ SBIDAlbum::_init()
     _removedAlbumPerformances.clear();
 }
 
+SBIDAlbumPerformancePtr
+SBIDAlbum::_findAlbumPerformanceBySongPerformanceID(int songPerformanceID) const
+{
+    SBIDAlbumPerformancePtr apPtr;
+
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(albumPerformances());
+    while(!apPtr && apIT.hasNext())
+    {
+        apIT.next();
+        SBIDAlbumPerformancePtr ptr=apIT.value();
+        apPtr=(ptr && ptr->songPerformanceID()==songPerformanceID)?ptr:SBIDAlbumPerformancePtr();
+    }
+
+    return apPtr;
+}
+
 void
 SBIDAlbum::_loadAlbumPerformances()
 {
@@ -1338,7 +1412,7 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
 {
     QStringList SQL;
 
-//    QVectorIterator<SBIDOnlinePerformancePtr> opIT(_albumPerformances);
+//    QVectorIterator<SBIDOnlinePerformancePtr> opIT(albumPerformances());
 //    while(opIT.hasNext())
 //    {
 //        qDebug() << SB_DEBUG_INFO;
@@ -1351,7 +1425,7 @@ SBIDAlbum::_updateSQLAlbumPerformances() const
 void
 SBIDAlbum::_showAlbumPerformances(const QString& title) const
 {
-    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(_albumPerformances);
+    QMapIterator<int,SBIDAlbumPerformancePtr> apIT(albumPerformances());
     qDebug() << SB_DEBUG_INFO << title;
     while(apIT.hasNext())
     {

@@ -578,6 +578,48 @@ SBIDAlbumPerformance::postInstantiate(SBIDAlbumPerformancePtr &ptr)
 }
 
 void
+SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
+{
+    SB_RETURN_VOID_IF_NULL(fromApPtr);
+    qDebug() << SB_DEBUG_INFO << fromApPtr->itemID() << fromApPtr->text();
+    //	Reset albumPerformanceID in online_performance
+    SBSqlQueryModel* qm;
+
+    qm=SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(fromApPtr->albumPerformanceID());
+    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
+    SB_RETURN_VOID_IF_NULL(qm);
+    SB_RETURN_VOID_IF_NULL(opmgr);
+
+    for(int i=0;i>qm->rowCount();i++)
+    {
+        int onlinePerformanceID=qm->record(i).value(0).toInt();
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
+        if(opPtr)
+        {
+            opPtr->setAlbumPerformanceID(this->albumPerformanceID());
+            opmgr->setChanged(opPtr);
+        }
+    }
+
+    //	Reset preferredAlbumPerformanceID in performance
+    qm=SBIDSongPerformance::performancesByPreferredAlbumPerformanceID(fromApPtr->albumPerformanceID());
+    SBIDSongPerformanceMgr* smgr=Context::instance()->getSongPerformanceMgr();
+    SB_RETURN_VOID_IF_NULL(qm);
+    SB_RETURN_VOID_IF_NULL(smgr);
+
+    for(int i=0;i>qm->rowCount();i++)
+    {
+        int songPerformanceID=qm->record(i).value(0).toInt();
+        SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformance(songPerformanceID);
+        if(spPtr)
+        {
+            spPtr->setPreferredAlbumPerformanceID(this->albumPerformanceID());
+            smgr->setChanged(spPtr);
+        }
+    }
+}
+
+void
 SBIDAlbumPerformance::openKey(const QString& key, int& albumPerformanceID)
 {
     QStringList l=key.split(":");

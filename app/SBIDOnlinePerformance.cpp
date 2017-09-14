@@ -298,6 +298,23 @@ SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool n
     return opPtr;
 }
 
+SBSqlQueryModel*
+SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(int albumPerformanceID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "op.online_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance op "
+        "WHERE "
+            "album_performance_id=%1 "
+    )
+        .arg(albumPerformanceID)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
 
 SBSqlQueryModel*
 SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)

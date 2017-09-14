@@ -68,6 +68,7 @@ public:
     void clear();
     void debugShow(const QString title="");
     void id() const { return _id; }
+    int numChanges() const { return _changes.count(); }
 
 protected:
     friend class Preloader;
@@ -135,7 +136,7 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
 
             if(!processedKeys.contains(key))
             {
-                if(!excludePtr || (excludePtr && excludePtr->key()==key))
+                if(!excludePtr || (excludePtr && excludePtr->key()!=key))
                 {
                     //	Retrieve and store
                     matches[bucket].append(currentPtr);
@@ -371,17 +372,21 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChangesFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
+    qDebug() << SB_DEBUG_INFO;
     if(SQL.count()==0 && errorOnNoChangesFlag==1)
     {
         qDebug() << SB_DEBUG_ERROR << "No changes. Erroring out (errorOnNoChangesFlag=" << errorOnNoChangesFlag << ")";
         return 0;
     }
+    qDebug() << SB_DEBUG_INFO;
 
     bool successFlag=0;
     successFlag=dal->executeBatch(SQL,1,0);
+	ptr->refreshDependents(0,1);
 
     if(successFlag)
     {
@@ -392,12 +397,14 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
         }
         ptr->clearChangedFlag();
     }
+    qDebug() << SB_DEBUG_INFO << successFlag;
     return successFlag;
 }
 
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 {
+    qDebug() << SB_DEBUG_INFO;
     //	CWIP: see if either multipe transactions can be nested or
     //	tell dal that we keep track of the transaction.
     std::shared_ptr<T> ptr;
@@ -405,11 +412,14 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
     //	Collect SQL for changes
     QList<QString> allChanges=_changes;
     const int numChanges=allChanges.count();
+    qDebug() << SB_DEBUG_INFO << numChanges;
     for(int i=0;i<numChanges;i++)
     {
         const QString key=allChanges.at(i);
         ptr=retrieve(key);
+        qDebug() << SB_DEBUG_INFO << key << ptr->itemID() << ptr->changedFlag() << ptr->text();
         commit(ptr,dal);
+        qDebug() << SB_DEBUG_INFO;
 
         if(ptr->deletedFlag())
         {
@@ -432,7 +442,7 @@ SBIDManagerTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
 {
-    fromPtr->mergeTo(toPtr);
+	toPtr->mergeFrom(fromPtr);
     fromPtr->setDeletedFlag();
     toPtr->setChangedFlag();
     _addToChangedList(fromPtr);

@@ -50,6 +50,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
+    static SBSqlQueryModel* playlistDetailsByAlbum(int albumID);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
 
@@ -67,6 +68,9 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key);
     virtual void setPrimaryKey(int PK) { _playlistDetailID=PK;  }
     QStringList updateSQL() const;
+
+    friend class SBIDAlbum;
+    void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
 
 private:
     int     _playlistDetailID;

@@ -692,17 +692,17 @@ SBIDPerformer::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDPerformer::mergeTo(SBIDPerformerPtr &to)
+SBIDPerformer::mergeFrom(SBIDPerformerPtr &from)
 {
     //	Transfer related performers from `from' to `to' :)
-    for(int i=0;i<_relatedPerformerKey.count();i++)
-    {
-        if(!(to->_relatedPerformerKey.contains(_relatedPerformerKey.at(i))))
-        {
-            to->_relatedPerformerKey.append(_relatedPerformerKey.at(i));
-        }
-    }
-    setMergedWithID(to->performerID());
+//    for(int i=0;i<_relatedPerformerKey.count();i++)
+//    {
+//        if(!(to->_relatedPerformerKey.contains(_relatedPerformerKey.at(i))))
+//        {
+//            to->_relatedPerformerKey.append(_relatedPerformerKey.at(i));
+//        }
+//    }
+//    setMergedWithID(to->performerID());
 }
 
 void

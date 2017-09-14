@@ -46,11 +46,11 @@ public:
     //SBSqlQueryModel* matchAlbum() const;
     inline QString notes() const { return _notes; }
     int numPerformances() const;
-    SBTableModel* performances() const;
     void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
+    SBTableModel* tableModelPerformances() const;
     static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
     inline int year() const { return _year; }
 
@@ -95,7 +95,7 @@ protected:
     static SBIDAlbumPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
-    void mergeTo(SBIDAlbumPtr& to);
+    void mergeFrom(SBIDAlbumPtr& from);
     static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key);
@@ -124,6 +124,7 @@ private:
     void _loadAlbumPerformances();
 
     //	Aux helper methods
+    SBIDAlbumPerformancePtr _findAlbumPerformanceBySongPerformanceID(int songPerformanceID) const;
     QMap<int,SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QStringList _updateSQLAlbumPerformances() const;
     void _showAlbumPerformances(const QString& title) const;

@@ -94,14 +94,17 @@ protected:
     static SBIDAlbumPerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingPtr);
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
+    void mergeFrom(SBIDAlbumPerformancePtr fromApPtr);
     static void openKey(const QString& key, int& albumPerformanceID);
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _albumPerformanceID=PK;  }
     QStringList updateSQL() const;
 
-    friend class SBIDAlbum;
-    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { qDebug() << SB_DEBUG_INFO << albumPerformanceID() << preferredOnlinePerformanceID; _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
+    //	Protected setters
+    friend class SBIDAlbum;  //	merges album performances
+    inline void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
+    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes

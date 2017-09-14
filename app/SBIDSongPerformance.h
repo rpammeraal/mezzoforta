@@ -57,6 +57,7 @@ public:
 
     //	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
+    static SBSqlQueryModel* performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID);
 
 protected:
     template <class T, class parentT> friend class SBIDManagerTemplate;
@@ -84,7 +85,8 @@ protected:
     //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
 
     friend class SBIDAlbum;
-    inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); }
+    friend class SBIDAlbumPerformance;
+    inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { if(_preferredAlbumPerformanceID!=preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); } }
 
 private:
     //	Attributes

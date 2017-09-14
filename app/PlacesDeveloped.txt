@@ -909,12 +909,20 @@ Between 20161215 and 20170604:
 -	Open performer 'Maná'. Songs show -1 as year (double check on postgres)
 -	Drag/drop Come as you are from Nevermind album to playlist -- different performance gets used. (double check on postgres).
 
-20170606:
+20170906:
 -	Album level data can be edited, modified matching of performers so it is actually working.
+
+20170913: 5.5 years...
+-	Edit record crashes: fixed
+-	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
+    -	the former is not removed from database
+
+Current:
+*	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
+	*	entry still exists in 'All Songs'
 
 Bugs that need to be fixed:
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
-*	Edit record crashes
 * 	After import, show in status bar (bottom) how many songs where imported.
 *	Search box:
 	*	albums should appear as <album name> - album instead of <album name> - record.
@@ -922,6 +930,7 @@ Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 * 	Show window with songs to be imported.
 *	Weird stuff happens when an item is removed from 'Songs In Queue'.
+*	Rene Froger, Winter In America in songlist shows year as 1978. Should be 1988.
 
 Todo:
 *	Edit.

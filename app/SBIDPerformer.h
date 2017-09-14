@@ -84,7 +84,7 @@ protected:
     static SBIDPerformerPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
-    void mergeTo(SBIDPerformerPtr& to);
+    void mergeFrom(SBIDPerformerPtr& from);
     static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");

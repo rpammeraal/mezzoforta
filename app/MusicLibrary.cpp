@@ -892,6 +892,11 @@ qDebug() << SB_DEBUG_INFO;
                     p.year=ePtr->year;
                     p.genre=ePtr->genre;
 
+                    //	Set up excluding album:
+                    //	-	if ePtr.albumID=-1 then empty,
+                    //	-	otherwise lookup existing album
+                    const SBIDAlbumPtr aPtr=(ePtr->albumID==-1?SBIDAlbumPtr():SBIDAlbum::retrieveAlbum(ePtr->albumID));
+
                     qDebug() << SB_DEBUG_INFO
                              << ePtr->filePath
                              << p.albumID
@@ -901,7 +906,12 @@ qDebug() << SB_DEBUG_INFO;
                              << p.year
                              << p.genre
                     ;
-                    Common::result result=amgr->userMatch(p,SBIDAlbumPtr(),selectedAlbumPtr);
+                    Common::result result=amgr->userMatch(p,aPtr,selectedAlbumPtr);
+                    qDebug() << SB_DEBUG_INFO << result;
+                    if(selectedAlbumPtr)
+                    {
+                        qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->text();
+                    }
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
@@ -909,16 +919,28 @@ qDebug() << SB_DEBUG_INFO;
                     }
                     if(result==Common::result_missing)
                     {
-                        qDebug() << SB_DEBUG_INFO
-                             << ePtr->filePath
-                             << p.albumTitle
-                             << p.performerID
-                             << p.performerName
-                             << p.year
-                             << p.genre
-                    ;
-                    //	albumPerformerID not set
-                    selectedAlbumPtr=amgr->createInDB(p);
+                        qDebug() << SB_DEBUG_INFO;
+                        //	If we work based on an existing album this means that the title has
+                        //	changed. Therefore, the selectedAlbumPtr
+                        if(aPtr)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                            selectedAlbumPtr=aPtr;
+                        }
+                        else
+                        {
+                            //	Only create if truly new album
+                            qDebug() << SB_DEBUG_INFO
+                                 << ePtr->filePath
+                                 << p.albumTitle
+                                 << p.performerID
+                                 << p.performerName
+                                 << p.year
+                                 << p.genre
+                            ;
+                            //	albumPerformerID not set
+                            selectedAlbumPtr=amgr->createInDB(p);
+                        }
                     }
                 }
                 albumTitle2albumIDMap[key]=selectedAlbumPtr->albumID();

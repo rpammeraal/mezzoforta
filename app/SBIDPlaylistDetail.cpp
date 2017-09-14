@@ -279,6 +279,24 @@ SBIDPlaylistDetail::updateSQL() const
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDPlaylistDetail::playlistDetailsByAlbum(int albumID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "op.playlist_detail_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_detail op "
+        "WHERE "
+            "record_id=%1 "
+    )
+        .arg(albumID)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 SBIDPlaylistDetailPtr
 SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
 {

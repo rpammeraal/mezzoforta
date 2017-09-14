@@ -139,6 +139,18 @@ ScreenStack::getScreenCount() const
     return _stack.length();
 }
 
+void
+ScreenStack::replace(const ScreenItem &from, const ScreenItem &to)
+{
+    for(int i=0;i<_stack.size();i++)
+    {
+        if(from==_stack.at(i))
+        {
+            _stack.replace(i,to);
+        }
+    }
+}
+
 //	Remove the current screen from stack.
 void
 ScreenStack::removeCurrentScreen()

@@ -301,6 +301,24 @@ SBIDSongPerformance::performancesBySong(int songID)
     return new SBSqlQueryModel(q);
 }
 
+SBSqlQueryModel*
+SBIDSongPerformance::performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID)
+{
+    QString q=QString
+    (
+        "SELECT "
+            "performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance  "
+        "WHERE "
+            "preferred_record_performance_id=%1 "
+    )
+        .arg(preferredAlbumPerformanceID)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 ///	Protected methods
 SBIDSongPerformance::SBIDSongPerformance()
 {

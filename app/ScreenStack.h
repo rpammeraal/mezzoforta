@@ -30,6 +30,7 @@ public:
 
     int getCurrentScreenID() const;
     int getScreenCount() const;
+    void replace(const ScreenItem& from, const ScreenItem& to);
     void removeCurrentScreen();
     void removeForward();
     void removeScreen(const ScreenItem& id,bool editOnlyFlag=0);

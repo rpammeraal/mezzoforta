@@ -290,7 +290,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.albumDetailAlbumContents;
-    tm=aPtr->performances();
+    tm=aPtr->tableModelPerformances();
     dragableColumns.clear();
     dragableColumns << 0 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);

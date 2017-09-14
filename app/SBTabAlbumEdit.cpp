@@ -16,6 +16,7 @@
 #include "Navigator.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDAlbum.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"
@@ -780,6 +781,7 @@ SBTabAlbumEdit::save() const
     bool albumMetaDataChangedFlag=0;
     bool cancelSave=0;
     bool successFlag=0;
+    bool albumMergedFlag=0;
 
     //QList<QString> performerList;                              //	list of unique performers in songList
     QVector<MusicLibrary::MLentityPtr> songList;               //	<position:1,SBIDSong:song>
@@ -1053,6 +1055,10 @@ SBTabAlbumEdit::save() const
         return;
     }
 
+    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
+    SBIDSongPerformanceMgr* smgr=Context::instance()->getSongPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+
     if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
     {
         //	Take care of typical album level dat94100a
@@ -1071,20 +1077,51 @@ SBTabAlbumEdit::save() const
     }
     else
     {
-        //	merge
+        //	Merge.
+        qDebug() << SB_DEBUG_INFO << "MERGÉÉ!";
+        SBIDAlbumPtr fromPtr=orgAlbumPtr;
+        amgr->merge(fromPtr,newAlbumPtr);
+        albumMergedFlag=1;
     }
 
+        qDebug() << SB_DEBUG_INFO;
     if(!cancelSave)
     {
+
+        qDebug() << SB_DEBUG_INFO;
+        opmgr->debugShow("opmgr:1091");
+        qDebug() << SB_DEBUG_INFO;
+        opmgr->commitAll(dal);
+
+        qDebug() << SB_DEBUG_INFO;
+        smgr->debugShow("opmgr:1096");
+        qDebug() << SB_DEBUG_INFO;
+        smgr->commitAll(dal);
+
+        qDebug() << SB_DEBUG_INFO;
+        apmgr->debugShow("apmgr:1101");
+        qDebug() << SB_DEBUG_INFO;
+        apmgr->commitAll(dal);
+
+
         //	E.	Throw to SBIDAlbum for saving to database.
         qDebug() << SB_DEBUG_INFO;
-        orgAlbumPtr->processNewSongList(songList);
+        newAlbumPtr->processNewSongList(songList);
 
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
-        successFlag=amgr->commit(newAlbumPtr,dal);
+        successFlag=amgr->commitAll(dal);
 
-        //	G.	Refresh all models
+        //	G.	Tell screenstack to update any entry pointing to
+        if(albumMergedFlag)
+        {
+            ScreenStack* st=Context::instance()->getScreenStack();
+            SB_RETURN_VOID_IF_NULL(st);
+
+            ScreenItem from(orgAlbumPtr);
+            ScreenItem to(newAlbumPtr);
+            st->replace(from,to);
+        }
     }
 
     qDebug() << SB_DEBUG_INFO;
