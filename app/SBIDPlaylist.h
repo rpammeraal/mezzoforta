@@ -90,13 +90,12 @@ private:
     QMap<int,SBIDPlaylistDetailPtr> _items;
 
     //	Methods
-    static void _getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag=0);
+    static void _getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag=0);
     void _copy(const SBIDPlaylist& c);
     void _init();
     void _loadPlaylistItems();
     QMap<int,SBIDPlaylistDetailPtr> _loadPlaylistItemsFromDB() const;
     void _reorderPlaylistPositions(int maxPosition=INT_MAX) const;
-    static QMap<int,SBIDOnlinePerformancePtr> _retrievePlaylistItems(int playlistID,bool updateProgressDialogFlag=0);
 
 };
 

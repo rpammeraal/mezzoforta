@@ -1,18 +1,23 @@
 #ifndef COMPLETERFACTORY_H
 #define COMPLETERFACTORY_H
 
+#include <QObject>
+
 class QCompleter;
 class QSqlQueryModel;
 class QString;
 
-class CompleterFactory
+
+class CompleterFactory : public QObject
 {
+    Q_OBJECT
+
 public:
-    static QCompleter* getCompleterAll();
-    static QCompleter* getCompleterAlbum();
-    static QCompleter* getCompleterPerformer();
-    static QCompleter* getCompleterPlaylist();
-    static QCompleter* getCompleterSong();
+    QCompleter* getCompleterAll();
+    QCompleter* getCompleterAlbum();
+    QCompleter* getCompleterPerformer();
+    QCompleter* getCompleterPlaylist();
+    QCompleter* getCompleterSong();
 
 private:
     static QCompleter* createCompleter(QString& query);

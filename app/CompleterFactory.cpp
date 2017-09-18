@@ -153,6 +153,7 @@ CompleterFactory::createCompleter(QString& query)
     c->setCaseSensitivity(Qt::CaseInsensitive);
     c->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     c->setFilterMode(Qt::MatchStartsWith);
+    qDebug() << SB_DEBUG_INFO;
 
     return c;
 }

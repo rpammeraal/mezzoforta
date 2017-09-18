@@ -6,10 +6,12 @@
 #include "SBIDBase.h"
 
 class QSemaphore;
+class QSqlQueryModel;
 
 class BackgroundThread : public QObject
 {
     Q_OBJECT
+
 public:
     explicit BackgroundThread(QObject *parent = 0);
 

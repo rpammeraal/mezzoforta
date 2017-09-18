@@ -46,11 +46,8 @@ SBIDOnlinePerformancePtr
 SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
 {
     SBIDOnlinePerformancePtr opPtr;
-    if(!songPtr)
-    {
-        qDebug() << SB_DEBUG_NPTR;
-        return opPtr;
-    }
+    SB_RETURN_IF_NULL(songPtr,opPtr);
+
     QVector<SBIDOnlinePerformancePtr> allOPPtr=songPtr->onlinePerformancesPreloader();
 
     if(allOPPtr.count()==0)
@@ -58,7 +55,7 @@ SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
         //	Can't assign -- does not exist on an album
         QMessageBox mb;
         mb.setText("This song does not appear on any album.");
-        mb.setInformativeText("Songs that do not appear on an album cannot be used.");
+        mb.setInformativeText("Songs that do not appear on an album cannot be played or used.");
         mb.exec();
     }
     else if(allOPPtr.count()==1)
@@ -81,13 +78,15 @@ SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
 void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
     QTableView* tv=_determineViewCurrentTab();
+    SBIDPtr selectPtr;
 
-    QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_RETURN_VOID_IF_NULL(pm);
-    SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_RETURN_VOID_IF_NULL(sm);
-    SBIDPtr selectPtr=sm->determineSBID(_lastClickedIndex);
-    PlayManager* pmgr=Context::instance()->getPlayManager();
+    if(tv)
+    {
+        QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_RETURN_VOID_IF_NULL(pm);
+        SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_RETURN_VOID_IF_NULL(sm);
+        selectPtr=sm->determineSBID(_lastClickedIndex);
+    }
 
     if(!selectPtr)
     {
@@ -98,6 +97,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     }
     if(selectPtr)
     {
+        PlayManager* pmgr=Context::instance()->getPlayManager();
         pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
     }
     SBTab::playNow(enqueueFlag);
@@ -381,7 +381,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     {
             cs=cs+QString(",&nbsp;...");
     }
-        qDebug() << SB_DEBUG_INFO << cs;
     cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
     frAlsoPerformedBy->setText(cs);
     connect(frAlsoPerformedBy, SIGNAL(anchorClicked(QUrl)),

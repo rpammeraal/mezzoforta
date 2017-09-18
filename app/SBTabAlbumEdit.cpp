@@ -336,14 +336,15 @@ public:
         QLineEdit* editor=new QLineEdit(parent);
         QCompleter* c;
 
+        CompleterFactory* cf=Context::instance()->completerFactory();
         switch(_type)
         {
             case SBIDBase::sb_type_performer:
-                c=CompleterFactory::getCompleterPerformer();
+                c=cf->getCompleterPerformer();
             break;
 
             case SBIDBase::sb_type_song:
-                c=CompleterFactory::getCompleterSong();
+                c=cf->getCompleterSong();
             break;
 
             default:
@@ -1659,8 +1660,9 @@ SBTabAlbumEdit::_init()
         connect(mw->ui.pbAlbumEditMergeSong, SIGNAL(clicked(bool)),
                 this, SLOT(mergeSong()));
 
-        mw->ui.albumEditTitle->setCompleter(CompleterFactory::getCompleterAlbum());
-        mw->ui.albumEditPerformer->setCompleter(CompleterFactory::getCompleterPerformer());
+        CompleterFactory* cf=Context::instance()->completerFactory();
+        mw->ui.albumEditTitle->setCompleter(cf->getCompleterAlbum());
+        mw->ui.albumEditPerformer->setCompleter(cf->getCompleterPerformer());
 
         //	Context menu
         tv->setContextMenuPolicy(Qt::CustomContextMenu);

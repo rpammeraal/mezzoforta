@@ -61,10 +61,11 @@ SBIDPlaylist::itemType() const
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDPlaylist::onlinePerformances(bool updateProgressDialogFlag) const
 {
+    qDebug() << SB_DEBUG_INFO;
     QList<SBIDPtr> compositesTraversed;
     QList<SBIDOnlinePerformancePtr> opList;
 
-    _getAllItemsByPlaylistRecursive(compositesTraversed,opList,std::make_shared<SBIDPlaylist>(*this),updateProgressDialogFlag);
+    _getOnlineItemsByPlaylist(compositesTraversed,opList,std::make_shared<SBIDPlaylist>(*this),updateProgressDialogFlag);
 
     QMap<int,SBIDOnlinePerformancePtr> list;
     QListIterator<SBIDOnlinePerformancePtr> it(opList);
@@ -146,19 +147,15 @@ SBIDPlaylist::numItems() const
 void
 SBIDPlaylist::recalculatePlaylistDuration()
 {
-    QList<SBIDPtr> compositesTraversed;
-    QList<SBIDOnlinePerformancePtr> allPerformances;
-
-    //	Get all songs
-    compositesTraversed.clear();
-    allPerformances.clear();
-    _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,std::make_shared<SBIDPlaylist>(*this),0);
+    QMap<int,SBIDOnlinePerformancePtr> allPerformances=onlinePerformances();
 
     //	Calculate duration
     SBDuration duration;
-    for(int i=0;i<allPerformances.count();i++)
+    QMapIterator<int,SBIDOnlinePerformancePtr> it(allPerformances);
+    while(it.hasNext())
     {
-        duration+=allPerformances.at(i)->duration();
+        it.next();
+        duration+=it.value()->duration();
     }
 
     //	Store calculation
@@ -581,8 +578,9 @@ SBIDPlaylist::operator QString() const
 
 ///	Private methods
 void
-SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allOpPtr, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag)
+SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allOpPtr, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag)
 {
+    qDebug() << SB_DEBUG_INFO << rootPlPtr->text() << updateProgressDialogFlag;
     int progressCurrentValue=0;
     int progressMaxValue=rootPlPtr->items().count();
     if(updateProgressDialogFlag)
@@ -595,9 +593,10 @@ SBIDPlaylist::_getAllItemsByPlaylistRecursive(QList<SBIDPtr>& compositesTraverse
         it.next();
 
         SBIDPlaylistDetailPtr pdPtr=it.value();
-        if(pdPtr->itemType()==SBIDBase::sb_type_playlist)
+        if(pdPtr->consistOfItemType()==SBIDBase::sb_type_playlist)
         {
-            _getAllItemsByPlaylistRecursive(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr(),0);
+            SBIDPlaylistPtr childPlPtr=pdPtr->childPlaylistPtr();
+            _getOnlineItemsByPlaylist(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr(),0);
         }
         else
         {
@@ -713,48 +712,4 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
         }
         newPosition++;
     }
-}
-
-QMap<int,SBIDOnlinePerformancePtr>
-SBIDPlaylist::_retrievePlaylistItems(int playlistID,bool updateProgressDialogFlag)
-{
-    QList<SBIDPtr> compositesTraversed;
-    QList<SBIDOnlinePerformancePtr> allPerformances;
-    QMap<int,SBIDOnlinePerformancePtr> playList;
-    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(playlistID,0);
-
-    if(playlistPtr)
-    {
-        int progressCurrentValue=0;
-        int progressMaxValue=playlistPtr->numItems();
-        if(updateProgressDialogFlag)
-        {
-            ProgressDialog::instance()->update("SBIDPlaylist::_retrievePlaylistItems",0,progressMaxValue);
-        }
-
-        //	Get all songs
-        compositesTraversed.clear();
-        allPerformances.clear();
-        _getAllItemsByPlaylistRecursive(compositesTraversed,allPerformances,playlistPtr,updateProgressDialogFlag);
-
-        //	Populate playlist
-        int index=0;
-        for(int i=0;i<allPerformances.count();i++)
-        {
-            const SBIDOnlinePerformancePtr opPtr=allPerformances.at(i);
-            if(opPtr->path().length()>0)
-            {
-                playList[index++]=opPtr;
-            }
-            if(updateProgressDialogFlag)
-            {
-                ProgressDialog::instance()->update("SBIDPlaylist::_retrievePlaylistItems",progressCurrentValue++,progressMaxValue);
-            }
-        }
-        if(updateProgressDialogFlag)
-        {
-            ProgressDialog::instance()->finishStep("SBIDPlaylist::_retrievePlaylistItems");
-        }
-    }
-    return playList;
 }

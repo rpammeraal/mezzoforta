@@ -55,7 +55,8 @@ Navigator::clearSearchFilter()
     QCompleter* completer=lineEdit->completer();
     if(completer==NULL && lineEdit!=NULL)
     {
-        completer=CompleterFactory::getCompleterAll();
+        CompleterFactory* cf=Context::instance()->completerFactory();
+        completer=cf->getCompleterAll();
         lineEdit->setCompleter(completer);
     }
     completer->setCurrentRow(0);

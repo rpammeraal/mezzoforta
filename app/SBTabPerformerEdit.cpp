@@ -74,7 +74,9 @@ SBTabPerformerEdit::addNewRelatedPerformer()
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-    _addNewRelatedPerformerCompleter=CompleterFactory::getCompleterPerformer();
+    CompleterFactory* cf=Context::instance()->completerFactory();
+
+    _addNewRelatedPerformerCompleter=cf->getCompleterPerformer();
     connect(_addNewRelatedPerformerCompleter, SIGNAL(activated(QModelIndex)),
             this, SLOT(relatedPerformerSelected(QModelIndex)));
 

@@ -5,6 +5,7 @@
 
 #include "Chooser.h"
 #include "Common.h"
+#include "CompleterFactory.h"
 #include "DataAccessLayer.h"
 #include "DBManager.h"
 #include "KeyboardEventCatcher.h"
@@ -56,6 +57,7 @@ public:
     }
 
     inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
+    inline CompleterFactory* completerFactory() { return &_cf; }
     inline Chooser* getChooser() { return &_lcc; }
     inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
     inline DataAccessLayer* getDataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
@@ -101,6 +103,7 @@ private:
     SBTabQueuedSongs* _tabQS;
 
     //	Instantiated
+    CompleterFactory _cf;
     Chooser _lcc;
     DBManager _dbm;
     KeyboardEventCatcher _kec;

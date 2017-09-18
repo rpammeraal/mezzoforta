@@ -94,6 +94,34 @@ SBIDPlaylistDetail::type() const
     return QString("playlistdetail");
 }
 
+///	SBIDPlaylistDetail specific methods
+SBIDBase::sb_type
+SBIDPlaylistDetail::consistOfItemType() const
+{
+    if(_onlinePerformanceID!=-1)
+    {
+        return SBIDBase::sb_type_online_performance;
+    }
+    else if(_childPlaylistID!=-1)
+    {
+        return SBIDBase::sb_type_playlist;
+    }
+    else if(_chartID!=-1)
+    {
+        return SBIDBase::sb_type_chart;
+    }
+    else if(_albumID!=-1)
+    {
+        return SBIDBase::sb_type_album;
+    }
+    else if(_performerID!=-1)
+    {
+        return SBIDBase::sb_type_performer;
+    }
+    return SBIDBase::sb_type_invalid;
+}
+
+
 ///	Pointers
 SBIDPlaylistPtr
 SBIDPlaylistDetail::playlistPtr() const
@@ -167,7 +195,7 @@ SBIDPlaylistDetail::childKey() const
 SBIDPtr
 SBIDPlaylistDetail::ptr() const
 {
-    switch(_consistOfItemType())
+    switch(consistOfItemType())
     {
     case SBIDBase::sb_type_online_performance:
         return onlinePerformancePtr();
@@ -224,12 +252,6 @@ SBIDPlaylistDetail::updateSQL() const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
-
-    qDebug() << SB_DEBUG_INFO
-             << deletedFlag()
-             << mergedFlag()
-             << changedFlag()
-    ;
 
     if(deletedFlag())
     {
@@ -441,15 +463,6 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
     pd._performerID        =Common::parseIntFieldDB(&r,i++);
     pd._notes              =r.value(i++).toString();
 
-    qDebug() << SB_DEBUG_INFO << "BEFORE"
-             << "pos" << pd._playlistPosition
-             << "opID=" << pd._onlinePerformanceID
-             << "cpID=" << pd._childPlaylistID
-             << "cID=" << pd._chartID
-             << "aID=" << pd._albumID
-             << "pID=" << pd._performerID
-	;
-
     if(pd._onlinePerformanceID!=-1)
     {
         pd._childPlaylistID=-1;
@@ -485,14 +498,6 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
         pd._chartID=-1;
         pd._albumID=-1;
     }
-    qDebug() << SB_DEBUG_INFO << "AFTER"
-             << "pos" << pd._playlistPosition
-             << "opID=" << pd._onlinePerformanceID
-             << "cpID=" << pd._childPlaylistID
-             << "cID=" << pd._chartID
-             << "aID=" << pd._albumID
-             << "pID=" << pd._performerID
-    ;
     return std::make_shared<SBIDPlaylistDetail>(pd);
 }
 
@@ -539,32 +544,6 @@ SBIDPlaylistDetail::retrieveSQL(const QString &key)
 }
 
 ///	Private methods
-SBIDBase::sb_type
-SBIDPlaylistDetail::_consistOfItemType() const
-{
-    if(_onlinePerformanceID!=-1)
-    {
-        return SBIDBase::sb_type_online_performance;
-    }
-    else if(_childPlaylistID!=-1)
-    {
-        return SBIDBase::sb_type_playlist;
-    }
-    else if(_chartID!=-1)
-    {
-        return SBIDBase::sb_type_chart;
-    }
-    else if(_albumID!=-1)
-    {
-        return SBIDBase::sb_type_album;
-    }
-    else if(_performerID!=-1)
-    {
-        return SBIDBase::sb_type_performer;
-    }
-    return SBIDBase::sb_type_invalid;
-}
-
 void
 SBIDPlaylistDetail::_copy(const SBIDPlaylistDetail &c)
 {

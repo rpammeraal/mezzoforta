@@ -917,9 +917,14 @@ Between 20161215 and 20170604:
 -	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
     -	the former is not removed from database
 
+29170917
+-	Look for Portishead, go to songs, select 'Numb'. Right click song icon to play song.
+-	Playlist: Goud van Oud. Try play, crashes.
+
 Current:
 *	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
 	*	entry still exists in 'All Songs'
+*	Search drop down list Moose!Music - On Road (should not be there) as well as Moose!Music - On The Road
 
 Bugs that need to be fixed:
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged

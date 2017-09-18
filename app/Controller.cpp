@@ -72,10 +72,11 @@ Controller::refreshModels()
     n->resetAllFiltersAndSelections();
 
     //	Completers
-    //	mw->ui.searchEdit: taken care of in Navigator::clearSearchFilter
-    mw->ui.songEditTitle->setCompleter(CompleterFactory::getCompleterSong());
-    mw->ui.songEditPerformerName->setCompleter(CompleterFactory::getCompleterPerformer());
-    mw->ui.performerEditName->setCompleter(CompleterFactory::getCompleterPerformer());
+    CompleterFactory* cf=Context::instance()->completerFactory();
+
+    mw->ui.songEditTitle->setCompleter(cf->getCompleterSong());
+    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
+    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
 
     //	SEARCH
     QCompleter* c=mw->ui.searchEdit->completer();

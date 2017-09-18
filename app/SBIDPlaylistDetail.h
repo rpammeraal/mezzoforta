@@ -28,6 +28,7 @@ public:
     virtual QString type() const;
 
     //	SBIDPlaylistDetail specific methods
+    virtual SBIDBase::sb_type consistOfItemType() const;
     int playlistPosition() const { return _playlistPosition; }
     void setPlaylistPosition(int i) { if (i!=_playlistPosition) { _playlistPosition=i; setChangedFlag(); }}
 
@@ -83,7 +84,6 @@ private:
     int     _performerID;
     QString _notes;
 
-    SBIDBase::sb_type _consistOfItemType() const;
     void _copy(const SBIDPlaylistDetail& c);
     void _init();
 };

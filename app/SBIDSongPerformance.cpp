@@ -530,7 +530,7 @@ SBIDSongPerformance::updateSQL() const
             "SET "
                 "song_id=%1, "
                 "artist_id=%2, "
-                "preferred_record_performance_id=%3, "
+                "preferred_record_performance_id=NULLIF(%3,-1), "
                 "year=%4, "
                 "notes='%5' "
             "WHERE "
