@@ -15,6 +15,7 @@ class QStandardItemModel;
 class QSqlDatabase;
 
 class BackgroundThread;
+class DataAccessLayer;
 class MainWindow;
 class DataEntityPlaylist;
 class Navigator;
@@ -33,6 +34,9 @@ class Controller : public QObject
 public:
     explicit Controller(int argc, char* argv[], QApplication* napp);
     ~Controller();
+
+    void clearAllCaches() const;
+    void commitAllCaches(DataAccessLayer* dal) const;
     bool initSuccessFull() const;
     void preloadAllSongs() const;
     void refreshModels();

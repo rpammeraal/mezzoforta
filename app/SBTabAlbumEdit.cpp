@@ -1056,10 +1056,6 @@ SBTabAlbumEdit::save() const
         return;
     }
 
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDSongPerformanceMgr* smgr=Context::instance()->getSongPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-
     if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
     {
         //	Take care of typical album level dat94100a
@@ -1075,6 +1071,8 @@ SBTabAlbumEdit::save() const
         //	No matching being done eg Dire Straitz
         qDebug() << SB_DEBUG_INFO << editAlbumTitle;
         qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
+        qDebug() << SB_DEBUG_INFO << newAlbumPtr->changedFlag();
+        amgr->setChanged(newAlbumPtr);
     }
     else
     {
@@ -1088,30 +1086,14 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO;
     if(!cancelSave)
     {
-
-        qDebug() << SB_DEBUG_INFO;
-        opmgr->debugShow("opmgr:1091");
-        qDebug() << SB_DEBUG_INFO;
-        opmgr->commitAll(dal);
-
-        qDebug() << SB_DEBUG_INFO;
-        smgr->debugShow("opmgr:1096");
-        qDebug() << SB_DEBUG_INFO;
-        smgr->commitAll(dal);
-
-        qDebug() << SB_DEBUG_INFO;
-        apmgr->debugShow("apmgr:1101");
-        qDebug() << SB_DEBUG_INFO;
-        apmgr->commitAll(dal);
-
-
         //	E.	Throw to SBIDAlbum for saving to database.
         qDebug() << SB_DEBUG_INFO;
         newAlbumPtr->processNewSongList(songList);
 
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
-        successFlag=amgr->commitAll(dal);
+        Controller* c=Context::instance()->getController();
+        c->commitAllCaches(dal);
 
         //	G.	Tell screenstack to update any entry pointing to
         if(albumMergedFlag)
@@ -1131,11 +1113,6 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO;
         dal->restore(restorePoint);
     }
-    SBIDAlbumPtr aPtr=amgr->retrieve(newAlbumPtr->key(),SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_refresh);
-    qDebug() << SB_DEBUG_INFO << aPtr->albumTitle() << aPtr->ID() << aPtr->year();
-
-    SBIDAlbumPtr aPtr1=SBIDAlbum::retrieveAlbum(aPtr->albumID());
-    qDebug() << SB_DEBUG_INFO << aPtr1->albumTitle() << aPtr1->ID() << aPtr1->year();
 
     //	G.	Close screen
     qDebug() << SB_DEBUG_INFO << successFlag;

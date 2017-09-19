@@ -47,7 +47,6 @@ DataAccessLayer::~DataAccessLayer()
 bool
 DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag) const
 {
-    qDebug() << SB_DEBUG_INFO << allQueries.count();
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
     QSqlError r;
@@ -169,25 +168,21 @@ DataAccessLayer::createRestorePoint() const
             this->customize(q);
             QSqlQuery qID(q,db);
             qID.next();
-            qDebug() << SB_DEBUG_INFO << i << q << qID.value(0).toInt();
             ID.append(qID.value(0).toString());
         }
     }
-    qDebug() << SB_DEBUG_INFO << ID.join(':');
     return ID.join(':');
 }
 
 bool
 DataAccessLayer::restore(const QString &restorePoint) const
 {
-    qDebug() << SB_DEBUG_INFO << restorePoint;
     QStringList IDs=restorePoint.split(':');
     if(restorePoint.length()==0 || IDs.count()!=NUM_RESTORE_POINTS || IDs[0]!="restorepoint")
     {
         qDebug() << SB_DEBUG_ERROR << "Invalid restorepoint:" << restorePoint;
         qDebug() << SB_DEBUG_ERROR << "count:" << IDs.count();
     }
-    qDebug() << SB_DEBUG_INFO << IDs;
     int performerID=IDs[1].toInt()+1;
     int performerRelID=IDs[2].toInt()+1;
     int songID=IDs[3].toInt()+1;

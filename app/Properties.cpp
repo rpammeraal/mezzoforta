@@ -23,7 +23,6 @@ Properties::configValue(sb_configurable keyword) const
 {
     if(_configuration.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         const_cast<Properties *>(this)->doInit();
     }
 
@@ -40,7 +39,6 @@ Properties::debugShow(const QString &title)
 {
     if(_configuration.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         doInit();
     }
     qDebug() << SB_DEBUG_INFO << title;
@@ -126,7 +124,6 @@ Properties::setConfigValue(sb_configurable keyword, const QString& value)
 {
     if(_configuration.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         doInit();
     }
 
@@ -232,7 +229,6 @@ Properties::userSetMusicLibraryDirectory()
 void
 Properties::doInit()
 {
-        qDebug() << SB_DEBUG_INFO;
     QMap<QString,bool> isConfigured;
 
     _enumToKeyword[sb_default_schema]=QString("default_schema");
@@ -277,18 +273,14 @@ Properties::doInit()
         }
     }
 
-    qDebug() << SB_DEBUG_INFO << isConfigured.count();
     //	Make sure all properties exists in database
     QMapIterator<QString,bool> isConfiguredIT(isConfigured);
     while(isConfiguredIT.hasNext())
     {
-        qDebug() << SB_DEBUG_INFO;
         isConfiguredIT.next();
         if(isConfiguredIT.value()==0)
         {
-        qDebug() << SB_DEBUG_INFO;
             QString keyword=isConfiguredIT.key();
-        qDebug() << SB_DEBUG_INFO;
             _setConfigValue(_keywordToEnum[keyword],_default[_keywordToEnum[keyword]]);
         }
     }

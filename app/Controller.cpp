@@ -24,6 +24,7 @@
 #include "PlayerController.h"
 #include "Properties.h"
 #include "SBIDBase.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
@@ -46,6 +47,39 @@ Controller::~Controller()
     backgroundThread.quit();
     backgroundThread.wait();
 }
+
+void
+Controller::clearAllCaches() const
+{
+    Context* c=Context::instance();
+    c->getAlbumMgr()->clear();
+    c->getAlbumPerformanceMgr()->clear();
+    c->getChartMgr()->clear();
+    c->getChartPerformanceMgr()->clear();
+    c->getOnlinePerformanceMgr()->clear();
+    c->getPerformerMgr()->clear();
+    c->getPlaylistMgr()->clear();
+    c->getPlaylistDetailMgr()->clear();
+    c->getSongMgr()->clear();
+    c->getSongPerformanceMgr()->clear();
+}
+
+void
+Controller::commitAllCaches(DataAccessLayer* dal) const
+{
+    Context* c=Context::instance();
+    c->getAlbumMgr()->commitAll(dal);
+    c->getAlbumPerformanceMgr()->commitAll(dal);
+    //c->getChartMgr()->commitAll(dal);
+    //c->getChartPerformanceMgr()->commitAll(dal);
+    c->getOnlinePerformanceMgr()->commitAll(dal);
+    c->getPerformerMgr()->commitAll(dal);
+    c->getPlaylistMgr()->commitAll(dal);
+    c->getPlaylistDetailMgr()->commitAll(dal);
+    c->getSongMgr()->commitAll(dal);
+    c->getSongPerformanceMgr()->commitAll(dal);
+}
+
 
 bool
 Controller::initSuccessFull() const
@@ -92,12 +126,7 @@ Controller::refreshModels()
         Qt::QueuedConnection);	//	this will clear the search box
 
     //	Clear caches
-    Context::instance()->getAlbumMgr()->clear();
-    Context::instance()->getAlbumPerformanceMgr()->clear();
-    Context::instance()->getPerformerMgr()->clear();
-    Context::instance()->getPlaylistMgr()->clear();
-    Context::instance()->getSongMgr()->clear();
-    Context::instance()->getSongPerformanceMgr()->clear();
+    this->clearAllCaches();
     qDebug() << SB_DEBUG_INFO;
 }
 

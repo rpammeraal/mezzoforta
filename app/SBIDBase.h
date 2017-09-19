@@ -56,6 +56,10 @@ public:
 
     //	Public methods
     virtual QByteArray encode() const;
+    inline bool changedFlag() const { return _changedFlag; }
+    inline bool deletedFlag() const { return _deletedFlag; }
+    inline bool mergedFlag() const { return _mergedWithID!=-1; }
+    inline int mergedWithID() const { return _mergedWithID; }
 
     //	Public virtual methods (Methods that only apply to subclasseses)
     virtual int commonPerformerID() const=0;
@@ -121,12 +125,8 @@ protected:
     int         _mergedWithID;	//	CWIP: move to private
 
     //	Used by SBIDManager*:: and SBID*:: classes
-    inline bool changedFlag() const { return _changedFlag; }
     virtual void clearChangedFlag();
     //virtual void clearNewFlag() { _newFlag=0; }
-    inline bool deletedFlag() const { return _deletedFlag; }
-    inline bool mergedFlag() const { return _mergedWithID!=-1; }
-    inline int mergedWithID() const { return _mergedWithID; }
     //inline int newFlag() const { return _newFlag; }
     virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
