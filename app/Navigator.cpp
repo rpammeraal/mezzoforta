@@ -89,6 +89,8 @@ void
 Navigator::openScreen(const SBIDPtr &ptr)
 {
     SBIDPtr p;
+    SB_RETURN_VOID_IF_NULL(ptr);
+
     if(ptr->itemType()==SBIDBase::sb_type_playlist_detail)
     {
         p=std::dynamic_pointer_cast<SBIDPlaylistDetail>(ptr)->ptr();
@@ -164,7 +166,6 @@ Navigator::keyPressEvent(QKeyEvent *event)
 {
     SBTab* tab=Context::instance()->getTab();
     ScreenStack* st=Context::instance()->getScreenStack();
-    bool closeTabFlag=0;
 
     if(event==NULL)
     {
@@ -225,16 +226,21 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     else if(eventKey==0x1000000)
     {
+        qDebug() << SB_DEBUG_INFO;
         //	Escape key: move 1 screen back
         if(st->count()==0)
         {
+        qDebug() << SB_DEBUG_INFO;
             showSonglist();
         }
         else
         {
+        qDebug() << SB_DEBUG_INFO;
             if(tab)
             {
-                closeTabFlag=tab->handleEscapeKey();
+        qDebug() << SB_DEBUG_INFO;
+                closeCurrentTab();
+                return;
             }
         }
     }
@@ -249,7 +255,6 @@ Navigator::keyPressEvent(QKeyEvent *event)
     else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && Qt::ControlModifier)
     {
         navigateDetailTab((eventKey==Qt::Key_PageDown)?1:-1);
-        closeTabFlag=0;
     }
     else if(eventKey==Qt::Key_Asterisk)
     {
@@ -269,10 +274,6 @@ Navigator::keyPressEvent(QKeyEvent *event)
     else if(eventKey==16777346)
     {
         Context::instance()->getPlayManager()->playerPrevious();
-    }
-    if(closeTabFlag==1)
-    {
-        _moveFocusToScreen(-1);
     }
 }
 
@@ -417,9 +418,20 @@ Navigator::applySonglistFilter()
 void
 Navigator::closeCurrentTab()
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
-    st->removeCurrentScreen();
-    _activateScreen();
+    ScreenStack* st=Context::instance()->getScreenStack(); SB_RETURN_VOID_IF_NULL(st);
+    SBTab* tab=Context::instance()->getTab(); SB_RETURN_VOID_IF_NULL(tab);
+    if(tab->handleEscapeKey())
+    {
+        if(tab->editTabFlag())
+        {
+            st->removeCurrentScreen();
+            _activateScreen();
+        }
+        else
+        {
+            _moveFocusToScreen(-1);
+        }
+    }
 }
 
 void

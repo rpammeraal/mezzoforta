@@ -1267,12 +1267,6 @@ SBIDAlbum::updateSQL() const
         SQL.append(_updateSQLAlbumPerformances());
     }
 
-    if(SQL.count()==0)
-    {
-        SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
-    }
-    qDebug() << SB_DEBUG_INFO << SQL;
-
     return SQL;
 }
 

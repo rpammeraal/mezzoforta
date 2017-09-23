@@ -27,7 +27,7 @@ public:
     ScreenItem currentScreenItem() const;
     int getFirstEligibleSubtabID() const;
     inline int currentSubtabID() const { return _currentSubtabID; }
-    inline bool isEditTab() const { return _isEditTabFlag; }
+    inline bool editTabFlag() const { return _editTabFlag; }
     void refreshTabIfCurrent(const SBIDPtr& ptr);
 
     //	Virtual UI
@@ -77,7 +77,7 @@ protected slots:
     void tableViewCellClicked(const QModelIndex& i);
 
 private:
-    bool          _isEditTabFlag;
+    bool          _editTabFlag;
     int           _currentSubtabID;
     QMap<int,int> _tabSortMap;	//	last sort column by tab
 

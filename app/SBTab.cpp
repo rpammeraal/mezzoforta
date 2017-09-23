@@ -18,7 +18,7 @@
 SBTab::SBTab(QWidget *parent, bool isEditTabFlag) : QWidget(parent)
 {
     init();
-    _isEditTabFlag=isEditTabFlag;
+    _editTabFlag=isEditTabFlag;
 }
 
 ScreenItem
@@ -78,7 +78,7 @@ bool
 SBTab::handleEscapeKey()
 {
     bool closeTabFlag=1;
-    if(isEditTab()==1 && hasEdits()==1)
+    if(editTabFlag()==1 && hasEdits()==1)
     {
         closeTabFlag=(SBMessageBox::createSBMessageBox("Discard Changes?",
                                                    "",
@@ -159,7 +159,7 @@ SBTab::save() const
 void
 SBTab::init()
 {
-    _isEditTabFlag=0;
+    _editTabFlag=0;
     _initDoneFlag=0;
     _tabSortMap.clear();
     _currentSubtabID=0;

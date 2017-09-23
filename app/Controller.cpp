@@ -307,7 +307,6 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     //	Kick off import
     Properties* properties=Context::instance()->getProperties();
-    properties->debugShow("Configuration");
     if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
     {
         MusicLibrary ml;
@@ -392,9 +391,9 @@ Controller::setupUI()
         mw->ui.frSchema->setVisible(0);
     }
 
-    qDebug() << SB_DEBUG_INFO << "playground";
+    //qDebug() << SB_DEBUG_INFO << "playground";
+    //emit populateSearchItems();
 
-    qDebug() << SB_DEBUG_INFO << dal->createRestorePoint();
 
 
 //    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
@@ -570,6 +569,12 @@ Controller::init()
     bgt->moveToThread(&backgroundThread);
     backgroundThread.start();
     Context::instance()->setBackgroundThread(bgt);
+
+    SearchItemModel* sim=Context::instance()->searchItemManager();
+
+    connect(this, SIGNAL(populateSearchItems()),
+            sim, SLOT(populate()));
+
 
     //	Recalculate playlist duration -- NOT USED ANYMORE
     //	CODE LEFT AS EXAMPLE

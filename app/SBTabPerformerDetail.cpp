@@ -202,32 +202,42 @@ SBTabPerformerDetail::refreshPerformerNews()
 void
 SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.performerDetailHomepage->setUrl(url);
-    mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
+    if(isVisible())
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.performerDetailHomepage->setUrl(url);
+        mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
+    }
 }
 
 void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().ptr());
+    if(isVisible())
+    {
+        setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().ptr());
+    }
 }
 
 void
 SBTabPerformerDetail::setPerformerNews(const QList<NewsItem>& news)
 {
-    _currentNews=news;
-    refreshPerformerNews();
+    if(isVisible())
+    {
+        _currentNews=news;
+        refreshPerformerNews();
+    }
 }
 
 void
 SBTabPerformerDetail::setPerformerWikipediaPage(const QString &url)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.performerDetailWikipediaPage->setUrl(url);
-    mw->ui.tabPerformerDetailLists->setTabEnabled(4,1);
-
-    //	CWIP: save to database
+    if(isVisible())
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.performerDetailWikipediaPage->setUrl(url);
+        mw->ui.tabPerformerDetailLists->setTabEnabled(4,1);
+    }
 }
 
 ///	Private methods

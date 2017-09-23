@@ -43,6 +43,7 @@ public:
 
 signals:
     void schemaChanged();
+    void populateSearchItems();
 
 public slots:
     //	MENU::FILE

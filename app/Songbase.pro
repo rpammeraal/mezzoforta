@@ -78,7 +78,8 @@ HEADERS     = \
     SBIDChartPerformance.h \
     ProgressDialog.h \
     SBDuration.h \
-    SBIDPlaylistDetail.h
+    SBIDPlaylistDetail.h \
+    SearchItemModel.h
 
 SOURCES     = \
     main.cpp \
@@ -157,7 +158,8 @@ SOURCES     = \
     SBIDChartPerformance.cpp \
     ProgressDialog.cpp \
     SBDuration.cpp \
-    SBIDPlaylistDetail.cpp
+    SBIDPlaylistDetail.cpp \
+    SearchItemModel.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

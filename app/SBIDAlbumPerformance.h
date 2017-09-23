@@ -103,8 +103,11 @@ protected:
 
     //	Protected setters
     friend class SBIDAlbum;  //	merges album performances
+    friend class SBTabAlbumEdit;
+
     inline void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
-    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
+    inline void setNotes(const QString& notes) { if(_notes!=notes) { _notes=notes; setChangedFlag(); } }
+    inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { if(_preferredOnlinePerformanceID!=preferredOnlinePerformanceID) _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes

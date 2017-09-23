@@ -165,20 +165,26 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
 void
 SBTabSongDetail::setSongLyricsPage(const QString& url)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    if(mw->ui.tabSongDetailLists->isTabEnabled(SBTabSongDetail::sb_tab_lyrics)==0)
+    if(isVisible())
     {
-        mw->ui.songDetailLyrics->setUrl(url);
-        mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,1);
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        if(mw->ui.tabSongDetailLists->isTabEnabled(SBTabSongDetail::sb_tab_lyrics)==0)
+        {
+            mw->ui.songDetailLyrics->setUrl(url);
+            mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,1);
+        }
     }
 }
 
 void
 SBTabSongDetail::setSongWikipediaPage(const QString &url)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.songDetailWikipediaPage->setUrl(url);
-    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,1);
+    if(isVisible())
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.songDetailWikipediaPage->setUrl(url);
+        mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,1);
+    }
 }
 
 ///	Private methods

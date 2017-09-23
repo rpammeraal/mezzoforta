@@ -105,6 +105,7 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 void
 SBTabAlbumDetail::refreshAlbumReviews()
 {
+    qDebug() << SB_DEBUG_INFO;
     const MainWindow* mw=Context::instance()->getMainWindow();
     QString html;
 
@@ -124,31 +125,43 @@ SBTabAlbumDetail::refreshAlbumReviews()
         mw->ui.tabAlbumDetailLists->setTabEnabled(1,1);
         mw->ui.albumDetailReviews->setHtml(html);
     }
-    mw->ui.searchEdit->setFocus();
+    ScreenItem si=currentScreenItem();
+
+    if(QWidget::isVisible())
+    {
+        mw->ui.searchEdit->setFocus();
+    }
 }
 
 void
 SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
-    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().ptr());
+    if(isVisible())
+    {
+        setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().ptr());
+    }
 }
 
 void
 SBTabAlbumDetail::setAlbumReviews(const QList<QString> &reviews)
 {
-    _currentReviews=reviews;
-    refreshAlbumReviews();
+    if(isVisible())
+    {
+        _currentReviews=reviews;
+        refreshAlbumReviews();
+    }
 }
 
 void
 SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    mw->ui.albumDetailsWikipediaPage->setUrl(url);
-    mw->ui.tabAlbumDetailLists->setTabEnabled(2,1);
-    mw->ui.searchEdit->setFocus();
-
-    //	CWIP: save to database
+    if(isVisible())
+    {
+        const MainWindow* mw=Context::instance()->getMainWindow();
+        mw->ui.albumDetailsWikipediaPage->setUrl(url);
+        mw->ui.tabAlbumDetailLists->setTabEnabled(2,1);
+        mw->ui.searchEdit->setFocus();
+    }
 }
 
 ///	Private methods

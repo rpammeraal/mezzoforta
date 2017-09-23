@@ -983,6 +983,7 @@ qDebug() << SB_DEBUG_INFO;
                     qDebug() << SB_DEBUG_INFO
                          << ePtr->headerFlag
                          << ePtr->albumID
+                         << ePtr->songID
                          << ePtr->albumPosition
                          << ePtr->songTitle
                          << ePtr->songPerformerName
@@ -1008,7 +1009,7 @@ qDebug() << SB_DEBUG_INFO;
 
         if(entityPtr)
         {
-            if(!entityPtr->errorFlag() && !(entityPtr->removedFlag))
+            if(!entityPtr->headerFlag && !entityPtr->errorFlag() && !(entityPtr->removedFlag))
             {
                 SBIDSongPtr selectedSongPtr;
 
@@ -1021,6 +1022,7 @@ qDebug() << SB_DEBUG_INFO;
                     p.performerName=entityPtr->songPerformerName;
                     p.year=entityPtr->year;
                     p.notes=entityPtr->notes;
+                    p.songID=entityPtr->songID;
 
                     qDebug() << SB_DEBUG_INFO << p.songID;
 

@@ -343,6 +343,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
     header.append("duration");
     header.append("SB_ITEM_KEY2");
     header.append("performer");
+    header.append("notes");
     setHorizontalHeaderLabels(header);
 
     //	Populate data
@@ -361,6 +362,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
             _setItem(i, 3,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i, 4,apPtr->songPerformerKey());
             _setItem(i, 5,apPtr->songPerformerName());
+            _setItem(i, 6,apPtr->notes());
             i++;
         }
     }

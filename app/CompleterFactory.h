@@ -1,6 +1,7 @@
 #ifndef COMPLETERFACTORY_H
 #define COMPLETERFACTORY_H
 
+#include <QAbstractTableModel>
 #include <QObject>
 
 class QCompleter;
@@ -20,7 +21,8 @@ public:
     QCompleter* getCompleterSong();
 
 private:
-    static QCompleter* createCompleter(QString& query);
+    static QCompleter* _createCompleter(QString& query);
+    static QCompleter* _instantiateCompleter(QAbstractTableModel* atm);
 };
 
 #endif // COMPLETERFACTORY_H

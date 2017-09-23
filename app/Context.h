@@ -22,6 +22,7 @@
 #include "SBIDAlbumPerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
+#include "SearchItemModel.h"
 #include "ScreenStack.h"
 
 class BackgroundThread;
@@ -74,6 +75,7 @@ public:
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline SBIDPlaylistDetailMgr* getPlaylistDetailMgr() { return &_playlistDetailMgr; }
+    inline SearchItemModel* searchItemManager() { return &_sim; }
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
@@ -122,6 +124,7 @@ private:
     SBIDPlaylistDetailMgr _playlistDetailMgr;
     SBIDSongMgr _songMgr;
     SBIDSongPerformanceMgr _songPerformanceMgr;
+    SearchItemModel _sim;
     ScreenStack _st;
 
     Context();

@@ -32,6 +32,7 @@ private slots:
     void removeSong();
     void rowSelected(const QItemSelection& i, const QItemSelection& j);
     virtual void save() const;
+    void setEditFlag();
 
 
 private:

@@ -921,13 +921,18 @@ Between 20161215 and 20170604:
 -	Look for Portishead, go to songs, select 'Numb'. Right click song icon to play song.
 -	Playlist: Goud van Oud. Try play, crashes.
 
+20170923:
+-	Create:
+    -	Controller:commitAll() -- commit all managers (better naming)
+	-	Controller::clearAll() -- clear all managers (better naming)
+-	AlbumEdit done.
+-	Fixed annoying bug (everywhere) where focus gets taken away when editing.
+-	Close button or Escape both will check for outstanding edits.
+
 Current:
 *	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
 	*	entry still exists in 'All Songs'
 *	Search drop down list Moose!Music - On Road (should not be there) as well as Moose!Music - On The Road
-*	Create:
-	Controller:commitAll() -- commit all managers (better naming)
-	Controller::clearAll() -- clear all managers (better naming)
 
 Bugs that need to be fixed:
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged

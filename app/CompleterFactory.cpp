@@ -3,12 +3,16 @@
 #include <QCompleter>
 #include <QString>
 
-#include <Context.h>
-#include <DataAccessLayer.h>
+#include "Context.h"
+#include "DataAccessLayer.h"
+#include "SearchItemModel.h"
 
 QCompleter*
 CompleterFactory::getCompleterAll()
 {
+    //SearchItemModel* sim=Context::instance()->searchItemManager();
+    //return _instantiateCompleter(sim);
+
     QStringList articles=Common::articles();
     articles.append(QString());
 
@@ -73,7 +77,7 @@ CompleterFactory::getCompleterAll()
     query.append(" ORDER BY 1");
 
     qDebug() << SB_DEBUG_INFO << query;
-    return createCompleter(query);
+    return _createCompleter(query);
 }
 
 QCompleter*
@@ -87,7 +91,7 @@ CompleterFactory::getCompleterAlbum()
         "ORDER BY 1 ";
 
 
-    return createCompleter(query);
+    return _createCompleter(query);
 }
 
 QCompleter*
@@ -101,7 +105,7 @@ CompleterFactory::getCompleterPerformer()
             "___SB_SCHEMA_NAME___artist a "
         "ORDER BY 1 ";
 
-    return createCompleter(query);
+    return _createCompleter(query);
 }
 
 QCompleter*
@@ -115,7 +119,7 @@ CompleterFactory::getCompleterPlaylist()
             "___SB_SCHEMA_NAME___playlist a "
         "ORDER BY 1 ";
 
-    return createCompleter(query);
+    return _createCompleter(query);
 }
 
 QCompleter*
@@ -128,11 +132,11 @@ CompleterFactory::getCompleterSong()
             "___SB_SCHEMA_NAME___song s "
         "ORDER BY 1 ";
 
-    return createCompleter(query);
+    return _createCompleter(query);
 }
 
 QCompleter*
-CompleterFactory::createCompleter(QString& query)
+CompleterFactory::_createCompleter(QString& query)
 {
     //	Prep query
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
@@ -142,17 +146,36 @@ CompleterFactory::createCompleter(QString& query)
     //	Get data
     QSqlQueryModel* sqm = new QSqlQueryModel();
     sqm->setQuery(query,QSqlDatabase::database(dal->getConnectionName()));
-    while (sqm->canFetchMore())
-    {
-        sqm->fetchMore();
-    }
+//    while (sqm->canFetchMore())
+//    {
+//        sqm->fetchMore();
+//    }
 
+    return _instantiateCompleter(sqm);
+}
+
+QCompleter*
+CompleterFactory::_instantiateCompleter(QAbstractTableModel* qtm)
+{
+    SB_RETURN_NULL_IF_NULL(qtm);
+
+    for(int i=0;i<3;i++)
+    {
+        for(int j=0;j<qtm->columnCount();j++)
+        {
+            QModelIndex mi=qtm->index(i,j);
+            QVariant v=qtm->data(mi);
+            qDebug() << SB_DEBUG_INFO << i << j << v.toString() << qtm->flags(mi);
+        }
+    }
     //	Create completer and set with default parameters
     QCompleter* c=new QCompleter();
-    c->setModel(sqm);
+    c->setModel(qtm);
     c->setCaseSensitivity(Qt::CaseInsensitive);
     c->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     c->setFilterMode(Qt::MatchStartsWith);
+    c->setCompletionMode(QCompleter::PopupCompletion);
+    c->setCompletionColumn(0);
     qDebug() << SB_DEBUG_INFO;
 
     return c;

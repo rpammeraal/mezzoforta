@@ -33,12 +33,14 @@ public:
         sb_column_mergedtoindex=2,
         sb_column_orgitemnumber=3,
         sb_column_orgalbumperformanceid=4,
-        sb_column_orgsongperformanceid=5,
-        sb_column_itemnumber=6,
+        sb_column_orgsongid=5,
+        sb_column_sortfield=6,
+        sb_column_itemnumber=7,
         sb_column_startofdata=7,
-        sb_column_songtitle=7,
-        sb_column_performername=8,
-        sb_column_notes=9
+        sb_column_songtitle=8,
+        sb_column_performername=9,
+        sb_column_notes=10
+        //	make sure hidden columns are updated in ::_populate()
     };
 
     AlbumEditModel(SBIDAlbumPtr albumPtr, QObject* parent=0):QStandardItemModel(parent)
@@ -57,7 +59,8 @@ public:
         item=new QStandardItem("0"); column.append(item);	                       //	sb_column_mergedtoindex
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_orgitemnumber
         item=new QStandardItem("0"); column.append(item);	                       //	sb_column_orgalbumperformanceid
-        item=new QStandardItem("0"); column.append(item);	                       //	sb_column_orgsongperformanceid
+        item=new QStandardItem("0"); column.append(item);	                       //	sb_column_orgsongid
+        item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_sortfield
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_itemnumber
         item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_songtitle
         item=new QStandardItem("Performer"); column.append(item);	               //	sb_column_performername
@@ -129,13 +132,17 @@ public:
     {
         if(index.isValid())
         {
-            if(index.column()<sb_column_startofdata || index.column()==sb_column_notes)
+            if(index.column()<sb_column_startofdata)
             {
                 return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
             }
             if(index.column()>=sb_column_startofdata && index.column()<sb_column_notes)
             {
-                return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
+                return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+            }
+            if(index.column()==sb_column_notes)
+            {
+                return  Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
             }
             return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
         }
@@ -252,16 +259,19 @@ public:
         {
             pIT.next();
             SBIDAlbumPerformancePtr apPtr=pIT.value();
+
+            QString itemNumber=QString("%1").arg(apPtr->albumPosition(),10,10,QLatin1Char('0'));
             item=new QStandardItem("0"); column.append(item);                                            //	sb_column_deleteflag
             item=new QStandardItem("0"); column.append(item);                                            //	sb_column_newflag
             item=new QStandardItem("0"); column.append(item);                                            //	sb_column_mergedtoindex
-            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);                         //	sb_column_orgitemnumber
+            item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_orgitemnumber
             item=new QStandardItem(QString("%1").arg(apPtr->albumPerformanceID())); column.append(item); //	sb_column_orgalbumperformanceid
-            item=new QStandardItem(QString("%1").arg(apPtr->songPerformanceID())); column.append(item);  //	sb_column_orgsongperformanceid
-            item=new QStandardItem(QString("%1").arg(i+1)); column.append(item);                         //	sb_column_itemnumber
+            item=new QStandardItem(QString("%1").arg(apPtr->songID())); column.append(item);             //	sb_column_orgsongid
+            item=new QStandardItem(itemNumber); column.append(item);                                     //	sb_column_sortfield
+            item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_itemnumber
             item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_songtitle
             item=new QStandardItem(QString("%1").arg(apPtr->songPerformerName())); column.append(item);  //	sb_column_performername
-            item=new QStandardItem(""); column.append(item);                                             //	sb_column_notes
+            item=new QStandardItem(apPtr->notes()); column.append(item);                                 //	sb_column_notes
             this->appendRow(column); column.clear();
             i++;
         }
@@ -272,13 +282,14 @@ public:
         item=new QStandardItem("MRG"); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_mergedtoindex
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgitemnumber
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgalbumperformanceid
-        item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongperformanceid
+        item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongid
+        item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_sortfield
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_itemnumber
         item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
         item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
         item=new QStandardItem("Notes"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_notes
 
-        debugShow("end of populate");
+        this->sort(sb_column_type::sb_column_sortfield);
     }
 
     void debugShow(const QString& title=QString())
@@ -307,88 +318,91 @@ private:
     SBIDAlbumPtr _albumPtr;
 };
 
-class AlbumItemEditDelegate : public QItemDelegate
-{
+//class AlbumItemEditDelegate : public QItemDelegate
+//{
 
-public:
-    AlbumItemEditDelegate(SBIDBase::sb_type type, QObject *parent = 0) : QItemDelegate(parent)
-    {
-        _type=type;
-    }
+//public:
+//    AlbumItemEditDelegate(SBIDBase::sb_type type, QObject *parent = 0) : QItemDelegate(parent)
+//    {
+//        _type=type;
+//    }
 
-    ~AlbumItemEditDelegate()
-    {
+//    ~AlbumItemEditDelegate()
+//    {
 
-    }
+//    }
 
-    QWidget* createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
-    {
-        Q_UNUSED(option);
+//    QWidget* createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+//    {
+//        Q_UNUSED(option);
 
-        //	Figure out if record has been deleted
-        bool isDeletedFlag=index.sibling(index.row(),0).data().toInt();
-        if(isDeletedFlag)
-        {
-            return NULL;
-        }
+//        //	Figure out if record has been deleted
+//        bool isDeletedFlag=index.sibling(index.row(),0).data().toInt();
+//        if(isDeletedFlag)
+//        {
+//            return NULL;
+//        }
 
-        //	Not deleted
-        QLineEdit* editor=new QLineEdit(parent);
-        QCompleter* c;
+//        //	Not deleted
+//        QLineEdit* editor=new QLineEdit(parent);
+//        QCompleter* c;
 
-        CompleterFactory* cf=Context::instance()->completerFactory();
-        switch(_type)
-        {
-            case SBIDBase::sb_type_performer:
-                c=cf->getCompleterPerformer();
-            break;
+//        qDebug() << SB_DEBUG_INFO << _type;
+//        CompleterFactory* cf=Context::instance()->completerFactory();
+//        switch(_type)
+//        {
+//            case SBIDBase::sb_type_performer:
+//                return NULL;
+//                c=cf->getCompleterPerformer();
+//            break;
 
-            case SBIDBase::sb_type_song:
-                c=cf->getCompleterSong();
-            break;
+//            case SBIDBase::sb_type_song:
+//                return NULL;
+//                c=cf->getCompleterSong();
+//            break;
 
-            default:
-                c=NULL;
-            break;
-        }
+//            default:
+//                c=NULL;
+//            break;
+//        }
 
-        editor->setCompleter(c);
-        return editor;
-    }
+//        editor->setCompleter(c);
+//        return editor;
+//    }
 
-    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
-    {
-        QItemDelegate::paint(painter,option,index);
-    }
+//    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
+//    {
+//        QItemDelegate::paint(painter,option,index);
+//    }
 
-    void setEditorData(QWidget * editor, const QModelIndex & index) const
-    {
+//    void setEditorData(QWidget * editor, const QModelIndex & index) const
+//    {
 
-        QLineEdit* le = static_cast<QLineEdit*>(editor);
-        QString value = index.model()->data(index, Qt::EditRole).toString();
-        le->setText(value);
-    }
+//        QLineEdit* le = static_cast<QLineEdit*>(editor);
+//        QString value = index.model()->data(index, Qt::EditRole).toString();
+//        le->setText(value);
+//    }
 
-    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
-    {
-        QLineEdit *le = static_cast<QLineEdit*>(editor);
-        model->setData(index, le->text(), Qt::EditRole);
-    }
+//    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
+//    {
+//        QLineEdit *le = static_cast<QLineEdit*>(editor);
+//        model->setData(index, le->text(), Qt::EditRole);
+//    }
 
-    QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
-    {
-        return QItemDelegate::sizeHint(option,index);
-    }
+//    QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+//    {
+//        return QItemDelegate::sizeHint(option,index);
+//    }
 
-    void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
-    {
-        Q_UNUSED(index);
-        editor->setGeometry(option.rect);
-    }
+//    void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
+//    {
+//        Q_UNUSED(index);
+//        editor->setGeometry(option.rect);
+//    }
 
-private:
-    SBIDBase::sb_type _type;
-};
+//private:
+//    SBIDBase::sb_type _type;
+//};
 
 ///	Public methods
 SBTabAlbumEdit::SBTabAlbumEdit(QWidget* parent) : SBTab(parent,1)
@@ -567,170 +581,174 @@ SBTabAlbumEdit::clearAll()
 void
 SBTabAlbumEdit::mergeSong()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=mw->ui.albumEditSongList;
-    QItemSelectionModel* ism=tv->selectionModel();
-    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
-    bool cannotMergeFlag=0;
-    bool removedFlag=0;
-    if(ism)
-    {
-        int toBeMergedToIndex=-1;
-        QString toBeMergedSongTitle;
+//	COMMENTED OUT FOR FUTURE USE
 
-        QModelIndexList mil=ism->selectedRows();
-        for(int i=0;cannotMergeFlag==0 && i<mil.count();i++)
-        {
-            QModelIndex idx=mil.at(i);
-            if(i==0)
-            {
-                //	First item selected
-                toBeMergedToIndex=mil.at(i).row();
-                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_songtitle)->text();
-                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
-                if(removedFlag==1)
-                {
-                    cannotMergeFlag=1;
-                }
-            }
-            else
-            {
-                //	Second and other items selected
-                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
-                if(removedFlag==1)
-                {
-                    cannotMergeFlag=1;
-                }
-            }
-        }
+//    const MainWindow* mw=Context::instance()->getMainWindow();
+//    QTableView* tv=mw->ui.albumEditSongList;
+//    QItemSelectionModel* ism=tv->selectionModel();
+//    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+//    bool cannotMergeFlag=0;
+//    bool removedFlag=0;
+//    if(ism)
+//    {
+//        int toBeMergedToIndex=-1;
+//        QString toBeMergedSongTitle;
 
-        for(int i=1;cannotMergeFlag==0 && i<mil.count();i++)
-        {
-            QModelIndex idx=mil.at(i);
+//        QModelIndexList mil=ism->selectedRows();
+//        for(int i=0;cannotMergeFlag==0 && i<mil.count();i++)
+//        {
+//            QModelIndex idx=mil.at(i);
+//            if(i==0)
+//            {
+//                //	First item selected
+//                toBeMergedToIndex=mil.at(i).row();
+//                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_songtitle)->text();
+//                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
+//                if(removedFlag==1)
+//                {
+//                    cannotMergeFlag=1;
+//                }
+//            }
+//            else
+//            {
+//                //	Second and other items selected
+//                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
+//                if(removedFlag==1)
+//                {
+//                    cannotMergeFlag=1;
+//                }
+//            }
+//        }
 
-            for(int j=0;j<aem->columnCount();j++)
-            {
-                QStandardItem* it=NULL;
-                it=aem->item(idx.row(),j);
+//        for(int i=1;cannotMergeFlag==0 && i<mil.count();i++)
+//        {
+//            QModelIndex idx=mil.at(i);
 
-                if(it)
-                {
-                    it->setBackground(QBrush(QColor("lightgrey")));
-                    it->setForeground(QBrush(QColor("darkslategrey")));
-                    QFont f=it->font();
-                    f.setItalic(1);
-                    it->setFont(f);
-                    if(j==aem->columnCount()-1)
-                    {
-                        it->setText(QString("Merged with song %1 '%2'")
-                                    .arg(toBeMergedToIndex+1)
-                                    .arg(toBeMergedSongTitle));
-                    }
+//            for(int j=0;j<aem->columnCount();j++)
+//            {
+//                QStandardItem* it=NULL;
+//                it=aem->item(idx.row(),j);
 
-                    if(j==AlbumEditModel::sb_column_deleteflag)
-                    {
-                        it->setText("1");
-                    }
-                    if(j==AlbumEditModel::sb_column_mergedtoindex)
-                    {
-                        it->setText(QString("%1").arg(toBeMergedToIndex+1));
-                    }
-                }
-                else
-                {
-                    qDebug() << SB_DEBUG_NPTR;
-                }
-            }
-        }
-        tv->selectionModel()->clear();
-        tv->setSelectionModel(ism);
-    }
-    if(cannotMergeFlag)
-    {
-        SBMessageBox::createSBMessageBox("Cannot merge removed songs",
-                                         "Select songs that are not removed.",
-                                         QMessageBox::Warning,
-                                         QMessageBox::Close,
-                                         QMessageBox::Close,
-                                         QMessageBox::Close);
-    }
-    aem->debugShow("mergeSong:end");
-    _hasChanges=1;
+//                if(it)
+//                {
+//                    it->setBackground(QBrush(QColor("lightgrey")));
+//                    it->setForeground(QBrush(QColor("darkslategrey")));
+//                    QFont f=it->font();
+//                    f.setItalic(1);
+//                    it->setFont(f);
+//                    if(j==aem->columnCount()-1)
+//                    {
+//                        it->setText(QString("Merged with song %1 '%2'")
+//                                    .arg(toBeMergedToIndex+1)
+//                                    .arg(toBeMergedSongTitle));
+//                    }
+
+//                    if(j==AlbumEditModel::sb_column_deleteflag)
+//                    {
+//                        it->setText("1");
+//                    }
+//                    if(j==AlbumEditModel::sb_column_mergedtoindex)
+//                    {
+//                        it->setText(QString("%1").arg(toBeMergedToIndex+1));
+//                    }
+//                }
+//                else
+//                {
+//                    qDebug() << SB_DEBUG_NPTR;
+//                }
+//            }
+//        }
+//        tv->selectionModel()->clear();
+//        tv->setSelectionModel(ism);
+//    }
+//    if(cannotMergeFlag)
+//    {
+//        SBMessageBox::createSBMessageBox("Cannot merge removed songs",
+//                                         "Select songs that are not removed.",
+//                                         QMessageBox::Warning,
+//                                         QMessageBox::Close,
+//                                         QMessageBox::Close,
+//                                         QMessageBox::Close);
+//    }
+//    aem->debugShow("mergeSong:end");
+//    _hasChanges=1;
 }
 
 void
 SBTabAlbumEdit::removeSong()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    QTableView* tv=mw->ui.albumEditSongList;
-    QItemSelectionModel* ism=tv->selectionModel();
-    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
-    bool isDeletedFlag=0;
-    if(ism)
-    {
-        QModelIndexList mil=ism->selectedRows();
-        for(int i=0;i<mil.count();i++)
-        {
-            QModelIndex idx=mil.at(i);
+//	COMMENTED OUT FOR FUTURE USE
 
-            for(int j=0;j<aem->columnCount();j++)
-            {
-                QStandardItem* it=NULL;
-                it=aem->item(idx.row(),j);
+//    const MainWindow* mw=Context::instance()->getMainWindow();
+//    QTableView* tv=mw->ui.albumEditSongList;
+//    QItemSelectionModel* ism=tv->selectionModel();
+//    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+//    bool isDeletedFlag=0;
+//    if(ism)
+//    {
+//        QModelIndexList mil=ism->selectedRows();
+//        for(int i=0;i<mil.count();i++)
+//        {
+//            QModelIndex idx=mil.at(i);
 
-                if(it)
-                {
-                    if(j==AlbumEditModel::sb_column_deleteflag)
-                    {
-                        isDeletedFlag=it->text().toInt();
+//            for(int j=0;j<aem->columnCount();j++)
+//            {
+//                QStandardItem* it=NULL;
+//                it=aem->item(idx.row(),j);
 
-                        isDeletedFlag ^= 1 << 0;
-                    }
+//                if(it)
+//                {
+//                    if(j==AlbumEditModel::sb_column_deleteflag)
+//                    {
+//                        isDeletedFlag=it->text().toInt();
 
-                    if(isDeletedFlag)
-                    {
-                        it->setBackground(QBrush(QColor("lightgrey")));
-                        it->setForeground(QBrush(QColor("darkslategrey")));
-                        QFont f=it->font();
-                        f.setItalic(1);
-                        it->setFont(f);
-                        if(j==aem->columnCount()-1)
-                        {
-                            it->setText("Removed");
-                        }
-                    }
-                    else
-                    {
-                        it->setBackground(QBrush(QColor("white")));
-                        it->setForeground(QBrush(QColor("black")));
-                        QFont f=it->font();
-                        f.setItalic(0);
-                        it->setFont(f);
-                        if(j==aem->columnCount()-1)
-                        {
-                            it->setText("");
-                        }
-                    }
+//                        isDeletedFlag ^= 1 << 0;
+//                    }
 
-                    if(j==AlbumEditModel::sb_column_deleteflag)
-                    {
-                        it->setText(QString("%1").arg(isDeletedFlag));
-                    }
-                    if(j==AlbumEditModel::sb_column_mergedtoindex && !isDeletedFlag)
-                    {
-                        it->setText("0");
-                    }
-                }
-                else
-                {
-                    qDebug() << SB_DEBUG_NPTR;
-                }
-            }
-        }
-        tv->selectionModel()->clear();
-        tv->setSelectionModel(ism);
-    }
-    _hasChanges=1;
+//                    if(isDeletedFlag)
+//                    {
+//                        it->setBackground(QBrush(QColor("lightgrey")));
+//                        it->setForeground(QBrush(QColor("darkslategrey")));
+//                        QFont f=it->font();
+//                        f.setItalic(1);
+//                        it->setFont(f);
+//                        if(j==aem->columnCount()-1)
+//                        {
+//                            it->setText("Removed");
+//                        }
+//                    }
+//                    else
+//                    {
+//                        it->setBackground(QBrush(QColor("white")));
+//                        it->setForeground(QBrush(QColor("black")));
+//                        QFont f=it->font();
+//                        f.setItalic(0);
+//                        it->setFont(f);
+//                        if(j==aem->columnCount()-1)
+//                        {
+//                            it->setText("");
+//                        }
+//                    }
+
+//                    if(j==AlbumEditModel::sb_column_deleteflag)
+//                    {
+//                        it->setText(QString("%1").arg(isDeletedFlag));
+//                    }
+//                    if(j==AlbumEditModel::sb_column_mergedtoindex && !isDeletedFlag)
+//                    {
+//                        it->setText("0");
+//                    }
+//                }
+//                else
+//                {
+//                    qDebug() << SB_DEBUG_NPTR;
+//                }
+//            }
+//        }
+//        tv->selectionModel()->clear();
+//        tv->setSelectionModel(ism);
+//    }
+//    _hasChanges=1;
 }
 
 void
@@ -738,7 +756,6 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 {
     Q_UNUSED(i);
     Q_UNUSED(j);
-    const MainWindow* mw=Context::instance()->getMainWindow();
 
     bool canRemoveFlag=0;
     bool canMergeFlag=0;
@@ -755,27 +772,15 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
     {
         canRemoveFlag=1;
     }
-    mw->ui.pbAlbumEditRemoveSong->setEnabled(canRemoveFlag);
-    mw->ui.pbAlbumEditMergeSong->setEnabled(canMergeFlag);
 }
-
-//	Scenarios:
-//	1.	Summer Wine/Nancy Sinatra on Greatest Hits: change performer to Nancy Sinatra & Lee Hazelwood: update performer_id
-//	2.	Elusive Dreams/Nancy Sinatra on Greatest Hits: change performer to U2 as original artist: update performer_id and song_id
-//	3.	Elusive Dreams/Nancy Sinatra on Greatest Hits: change performer to U2 as covering artist: update performer_id and song_id
 
 void
 SBTabAlbumEdit::save() const
 {
-    //	Test cases:
-
-    //	A1.	[merge song with existing song by renaming original performer]
-    //		E.g.: Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
-    //	A2.	Edit albums to correct performers.
-
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
@@ -783,18 +788,7 @@ SBTabAlbumEdit::save() const
     bool cancelSave=0;
     bool successFlag=0;
     bool albumMergedFlag=0;
-
-    //QList<QString> performerList;                              //	list of unique performers in songList
     QVector<MusicLibrary::MLentityPtr> songList;               //	<position:1,SBIDSong:song>
-    //QMap<int,MusicLibrary::MLentityPtr> songListByPosition;    //	<position:1,SBIDSong:song>
-    //QMap<int,MusicLibrary::MLentityPtr> orgSongListByPosition; //	<position:1,SBIDSong:song>
-    //QMap<int,bool> isRemovedMap;                  //	<position:1,isRemoved>
-    //QMap<int,bool> isNewMap;                      //	<position:1,isNew>
-    //QMap<int,bool> hasChangedMap;                 //	<position:1,hasChanged>
-
-    //QMap<int,int> mergedTo;                     //	<position:1,mergedToIndex:1>
-    //QMap<int,int> fromTo;                       //	<oldPosition:1,newPosition:1>
-    //QMap<int,int> toFrom;                       //	<newPosition:1,oldPosition:1>
 
     if(currentScreenItem.editFlag()==0)
     {
@@ -856,6 +850,12 @@ SBTabAlbumEdit::save() const
             {
                 editedSong.albumPosition=item->text().toInt();
             }
+            int orgAlbumPosition=editedSong.albumPosition;
+            item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
+            if(item)
+            {
+                orgAlbumPosition=item->text().toInt();
+            }
 
             item=aem->item(i,AlbumEditModel::sb_column_performername);
             if(item)
@@ -878,12 +878,6 @@ SBTabAlbumEdit::save() const
             editedSong.year=orgAlbumPtr->year();
 
             //	Album edit
-            item=aem->item(i,AlbumEditModel::sb_column_mergedtoindex);
-            if(item)
-            {
-                editedSong.mergedToAlbumPosition=item->text().toInt();
-            }
-
             item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
             if(item)
             {
@@ -903,10 +897,10 @@ SBTabAlbumEdit::save() const
             }
 
             //	Songbase ids
-            item=aem->item(i,AlbumEditModel::sb_column_orgsongperformanceid);
+            item=aem->item(i,AlbumEditModel::sb_column_orgsongid);
             if(item)
             {
-                editedSong.songPerformanceID=item->text().toInt();
+                editedSong.songID=item->text().toInt();
             }
 
             item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
@@ -924,8 +918,19 @@ SBTabAlbumEdit::save() const
                 editedSong.ID=item->text().toInt();
             }
 
+            item=aem->item(i,AlbumEditModel::sb_column_newflag);
+            if(item)
+            {
+                editedSong.newFlag=item->text().toInt();
+            }
+
             MusicLibrary::MLentityPtr entityPtr=std::make_shared<MusicLibrary::MLentity>(editedSong);
             songList.append(entityPtr);
+
+            qDebug() << SB_DEBUG_INFO
+                     << entityPtr->albumPosition
+                     << entityPtr->orgAlbumPosition
+            ;
         }
     }
     qDebug() << SB_DEBUG_INFO << songList.count();
@@ -974,9 +979,9 @@ SBTabAlbumEdit::save() const
                          << ePtr->headerFlag
                          << ePtr->albumID
                          << ePtr->albumPosition
+                         << ePtr->songID
                          << ePtr->songTitle
                          << ePtr->songPerformerName
-                         << ePtr->mergedToAlbumPosition
                          << ePtr->removedFlag
                     ;
                 }
@@ -995,6 +1000,7 @@ SBTabAlbumEdit::save() const
     {
         cancelSave=1;
     }
+        qDebug() << SB_DEBUG_INFO << "END";
 
 
     {	//	DEBUG
@@ -1021,9 +1027,9 @@ SBTabAlbumEdit::save() const
                          << ePtr->headerFlag
                          << ePtr->albumID
                          << ePtr->albumPosition
+                         << ePtr->albumPerformanceID
                          << ePtr->songTitle
                          << ePtr->songPerformerName
-                         << ePtr->mergedToAlbumPosition
                          << ePtr->removedFlag
                     ;
                 }
@@ -1056,9 +1062,60 @@ SBTabAlbumEdit::save() const
         return;
     }
 
+    //	Process updates in album performances
+
+    //	1.	Update sb_position for final list, taking into account merges and removals.
+    //		Also keep track if original song has been removed.
+    //		Also keep track if song has switched performer -> mark as New
+    QMutableVectorIterator<MusicLibrary::MLentityPtr> slIT(songList);
+    slIT.toFront();
+    while(slIT.hasNext())
+    {
+        MusicLibrary::MLentityPtr ePtr=slIT.next();
+        if(!ePtr->headerFlag)
+        {
+            qDebug() << SB_DEBUG_INFO
+                     << ePtr->albumPosition
+                     << ePtr->orgAlbumPosition
+                     << ePtr->albumPerformanceID
+                     << "processing"
+                     << ePtr->songTitle
+            ;
+
+            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(ePtr->albumPerformanceID);
+            if(apPtr)
+            {
+                if(ePtr->albumPosition!=ePtr->orgAlbumPosition)
+                {
+                    //	assign new album position
+                    qDebug() << SB_DEBUG_INFO
+                             << ePtr->albumPosition
+                             << ePtr->orgAlbumPosition
+                             << apPtr->albumPerformanceID()
+                             << "assigning pos " << ePtr->albumPosition
+                             << "to" << ePtr->songTitle
+                    ;
+                    apPtr->setAlbumPosition(ePtr->albumPosition);
+                    apmgr->setChanged(apPtr);
+
+                    qDebug() << SB_DEBUG_INFO
+                             << apPtr->albumPerformanceID()
+                             << apPtr->albumPosition()
+                    ;
+                }
+                if(ePtr->notes!=apPtr->notes())
+                {
+                    apPtr->setNotes(ePtr->notes);
+                    apmgr->setChanged(apPtr);
+                }
+            }
+        }
+    }
+
+
     if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
     {
-        //	Take care of typical album level dat94100a
+        //	Take care of typical album level data
         newAlbumPtr->setAlbumTitle(editAlbumTitle);
         newAlbumPtr->setYear(editAlbumYear);
 
@@ -1119,432 +1176,15 @@ SBTabAlbumEdit::save() const
     Context::instance()->getNavigator()->closeCurrentTab();
 
     return;
-
-    /*
-     * DEBUGGING: UNCOMMENT AS NEEDED
-    qDebug() << SB_DEBUG_INFO << "Removed list:";
-    QMapIterator<int,bool> it1(isRemovedMap);
-    while(it1.hasNext())
-    {
-        it1.next();
-        qDebug() << SB_DEBUG_INFO << it1.key() << it1.value();
-    }
-
-    qDebug() << SB_DEBUG_INFO << "New list:";
-    QMapIterator<int,bool> it4(isNewMap);
-    while(it4.hasNext())
-    {
-        it4.next();
-        qDebug() << SB_DEBUG_INFO << it4.key() << it4.value();
-    }
-
-    qDebug() << SB_DEBUG_INFO << "Merged list:";
-    QMapIterator<int,int> it2(mergedTo);
-    while(it2.hasNext())
-    {
-        it2.next();
-        qDebug() << SB_DEBUG_INFO << it2.key() << it2.value();
-    }
-
-    qDebug() << SB_DEBUG_INFO << "Moved list:";
-    QMapIterator<int,int> it3(fromTo);
-    while(it3.hasNext())
-    {
-        it3.next();
-        qDebug() << SB_DEBUG_INFO << "FROM:" << it3.key() << "TO:" << it3.value();
-    }
-    */
-
-//    //	Add album performer
-//    if(mw->ui.albumEditPerformer->text().length()>0 && performerList.contains(mw->ui.albumEditPerformer->text())==0)
-//    {
-//        performerList.append(mw->ui.albumEditPerformer->text());
-//    }
-
-//    //	E.	Validate performers
-//    for(int i=0;i<performerList.count();i++)
-//    {
-//        SBIDPerformerPtr selectedPerformerPtr;
-
-//        //	Performers are saved in processPerformerEdit
-//        if(SBIDPerformer::selectSavePerformer(performerList.at(i),selectedPerformerPtr,selectedPerformerPtr,NULL,1))
-//        {
-//            qDebug() << SB_DEBUG_INFO << "selected performer" << (*selectedPerformerPtr) << selectedPerformerPtr->songPerformerID();
-
-//            //	Go thru each song and update sb_song_performer_id
-//            QMutableMapIterator<int,SBIDSong> it(songList);
-//            while(it.hasNext())
-//            {
-//                it.next();
-
-//                int index=it.key();
-//                if(isRemovedMap[index]==0 && mergedTo[index]==0)
-//                {
-//                    SBIDSong currentSong=it.value();
-
-//                    if(currentSong.songPerformerName()==performerList.at(i))
-//                    {
-//                        currentSong.setSongPerformerID(selectedPerformerPtr->songPerformerID());
-//                        it.setValue(currentSong);
-
-//                        //	Reset performer name by taking the 1-based index and
-//                        //	translating this to the 0-based position in model.
-//                        QStandardItem* si=aem->takeItem(index-1,AlbumEditModel::sb_column_performername);
-//                        if(si)
-//                        {
-//                            si->setText(selectedPerformerPtr->songPerformerName());
-//                            aem->setItem(index-1,AlbumEditModel::sb_column_performername,si);
-//                        }
-//                    }
-//                }
-//            }
-
-//            //	Check album performer
-//            if(mw->ui.albumEditPerformer->text()==performerList.at(i))
-//            {
-//                newAlbum.setAlbumPerformerName(selectedPerformerPtr->performerName());
-//                newAlbum.setAlbumPerformerID(selectedPerformerPtr->performerID());
-//                mw->ui.albumEditPerformer->setText(selectedPerformerPtr->performerName());
-//            }
-//        }
-//        else
-//        {
-//            //	Abort saving
-//            return;
-//        }
-
-//        QMutableMapIterator<int,SBIDSong> songListIt(songList);
-//        songListIt.toFront();
-//        while(songListIt.hasNext())
-//        {
-//            songListIt.next();
-//            int index=songListIt.key();
-//            if(isRemovedMap[index]==0 && mergedTo[index]==0)
-//            {
-//                qDebug() << SB_DEBUG_INFO << "after validating performer" << index << songListIt.value();
-//            }
-//        }
-//    }
-
-//    //	F.	Validate songs
-//    songListIt.toFront();
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-
-//        int index=songListIt.key();
-
-//        if(isRemovedMap[index]==0 && mergedTo[index]==0)
-//        {
-//            SBIDSong currentSong=songListIt.value();
-
-//            //	Match song and performer. Song could have its original performer someone else than entered.
-//            SBSqlQueryModel* songMatches=currentSong.matchSong();
-
-//            if(songMatches->rowCount()>1)
-//            {
-//                SBIDSong selectedSong=currentSong;
-
-//                if(songMatches->rowCount()>=2 &&
-//                    songMatches->record(1).value(0).toInt()==1
-//                )
-//                {
-//                    selectedSong.setSongID(songMatches->record(1).value(1).toInt());
-//                    selectedSong.setSongTitle(songMatches->record(1).value(2).toString());
-//                }
-//                else
-//                {
-//                    SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(std::make_shared<SBIDSong>(currentSong),songMatches);
-//                    pu->exec();
-
-//                    SBIDPtr selected=pu->getSelected();
-//                    if(selected)
-//                    {
-//                        SBIDSong selectedSong=static_cast<SBIDSong>(*selected);
-
-//                        //	Go back to screen if no item has been selected
-//                        if(pu->hasSelectedItem()==0)
-//                        {
-//                            return;
-//                        }
-//                        if(selectedSong.songID()==-1)
-//                        {
-//                            selectedSong.save();
-//                            if(isNewMap[index]==0)
-//                            {
-//                                changedSongIsNewOriginalMap[index]=1;
-//                                hasChangedMap[index]=1;
-//                            }
-//                        }
-//                    }
-//                }
-
-//                //	Update fields
-//                QStandardItem* si;
-
-//                //	Update song -- not performer! Goal is to select existing song with existing
-//                //	performer.
-//                si=aem->takeItem(index-1,AlbumEditModel::sb_column_songtitle);
-//                if(si)
-//                {
-//                    si->setText(selectedSong.songTitle());
-//                    aem->setItem(index-1,AlbumEditModel::sb_column_songtitle,si);
-//                }
-
-//                currentSong.setSongID(selectedSong.songID());
-//                currentSong.setSongTitle(selectedSong.songTitle());
-
-//                songListIt.setValue(currentSong);
-//            }
-//        }
-//    }
-
-    /*
-    //	E.	Update sb_position for final list, taking into account merges and removals.
-    //		Also keep track if original song has been removed.
-    //		Also keep track if song has switched performer -> mark as New
-    QMutableVectorIterator<MusicLibrary::MLentityPtr> slIT(songList);
-    slIT.toFront();
-    int position=1;
-    while(slIT.hasNext())
-    {
-        MusicLibrary::MLentityPtr currentPtr=slIT.next();
-        qDebug() << SB_DEBUG_INFO
-                 << currentPtr->songTitle
-                 << currentPtr->songPerformerName
-                 << isRemovedMap[currentPtr->albumPosition]
-                 << mergedTo[currentPtr->albumPosition]
-        ;
-
-        if(isRemovedMap[currentPtr->albumPosition]==0 && mergedTo[currentPtr->albumPosition]==0)
-        {
-            currentPtr->albumPosition=position++;
-        }
-
-        //	Compare if song is still the same.
-        MusicLibrary::MLentityPtr orgPtr=orgSongListByPosition[toFrom[currentPtr->albumPosition]];
-        //SBIDSong org=orgSongList[toFrom[songListIt.key()]];
-        if(
-                orgPtr->songID!=currentPtr->songID ||
-                orgPtr->songPerformerID!=currentPtr->songPerformerID ||
-                orgPtr->notes!=currentPtr->notes
-          )
-        {
-            hasChangedMap[currentPtr->albumPosition]=1;
-        }
-    }
-    */
-
-//    qDebug() << SB_DEBUG_INFO << "FINAL LIST:";
-//    QMapIterator<int,int> fromToIt(fromTo);
-//    fromToIt.toFront();
-//    while(fromToIt.hasNext())
-//    {
-//        fromToIt.next();
-//        qDebug() << SB_DEBUG_INFO
-//                 << "#=" << fromToIt.key()
-//                 << "o_rm" << isRemovedMapOrg[fromToIt.key()]
-//                 << "pos" << songList[fromToIt.value()].albumPosition()
-//                 << "new" << isNewMap[fromToIt.value()]
-//                 << "rm" << isRemovedMap[fromToIt.value()]
-//                 << "mrg" << mergedTo[fromToIt.value()]
-//                 << "chg" << hasChangedMap[fromToIt.value()]
-//                 << "chg_norg" << changedSongIsNewOriginalMap[fromToIt.value()]
-//                 << songList[fromToIt.value()]
-//        ;
-//    }
-//    qDebug() << SB_DEBUG_INFO << "FINAL LIST END";
-
-    //	F.	Start collecting SQL queries
-//    QStringList SQL;
-
-//    //	1.	Removals.
-//    fromToIt.toFront();
-//    qDebug() << SB_DEBUG_INFO << "REMOVALS START";
-//    while(fromToIt.hasNext())
-//    {
-//        fromToIt.next();
-
-//        if(isRemovedMap[fromToIt.value()])
-//        {
-//            qDebug() << SB_DEBUG_INFO << "DEL:" << fromToIt.key();
-//            SQL.append(newAlbum.removeSongFromAlbum(fromToIt.key()));
-//        }
-
-//        if(isRemovedMapOrg[fromToIt.key()])
-//        {
-//            qDebug() << SB_DEBUG_INFO << "DELorg:" << fromToIt.key();
-//            SQL.append(newAlbum.removeSongFromAlbum(fromToIt.key()));
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << "REMOVALS END";
-
-//    //	2.	Merges
-//    songListIt.toFront();
-//    qDebug() << SB_DEBUG_INFO << "MERGED START";
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-
-//        if(mergedTo[songListIt.key()]!=0)
-//        {
-//            int mergedToPos=mergedTo[songListIt.key()];
-//            SBIDSong t=songList[mergedToPos];
-//            qDebug() << SB_DEBUG_INFO << "MRG:" << "from:" << songListIt.key() << "to:" << t.albumPosition() << songListIt.value();
-//            SQL.append(newAlbum.mergeSongInAlbum(mergedTo[songListIt.key()],songListIt.value()));
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << "MERGED END";
-
-//    //	3.	Repositions -- add MaxCount+1 to existing positions.
-//    int maxCount=songList.count()+1;
-//    songListIt.toFront();
-//    QStringList tmpList;
-//    qDebug() << SB_DEBUG_INFO << "REPOSITIONS START";
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-//        int currentPosition=songListIt.key();
-//        int orgPosition=toFrom[songListIt.key()];
-
-//        if(currentPosition!=orgPosition &&
-//            songListIt.value().albumPosition()!=-1 &&   //	new position != -1
-//            songListIt.value().songID()!=-1 &&          //	skip new songs
-//            isRemovedMap[songListIt.key()]==0 &&        //	not removed
-//            mergedTo[songListIt.key()]==0)              //	not merged
-//        {
-//            qDebug() << SB_DEBUG_INFO << "RPS:" << "from:" << orgPosition << "to:" << currentPosition << songListIt.value();
-//            SQL.append(newAlbum.repositionSongOnAlbum(orgPosition,currentPosition+maxCount));
-//            tmpList.append(newAlbum.repositionSongOnAlbum(currentPosition+maxCount,currentPosition));
-//        }
-//    }
-//    SQL.append(tmpList); tmpList.clear();
-//    qDebug() << SB_DEBUG_INFO << "REPOSITIONS END";
-
-//    //	4.	Changed songs that are new originals
-//    QList<SBIDSong> possibleOrphan;
-
-//    songListIt.toFront();
-//    qDebug() << SB_DEBUG_INFO << "NEW ORG START";
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-//        const int currentPosition=songListIt.key();
-//        if(changedSongIsNewOriginalMap[currentPosition])
-//        {
-//            qDebug() << SB_DEBUG_INFO << "NEW ORG:" << currentPosition << songListIt.value();
-
-//            //	Need to point all *performance records to point to new original.
-//            SQL.append(newAlbum.updateSongOnAlbumWithNewOriginal(songListIt.value()));
-
-//            //	Changes are now taken care of
-//            hasChangedMap[currentPosition]=0;
-
-//            //	Save for possible orphan detection
-//            possibleOrphan.append(orgSongList[toFrom[songListIt.key()]]);
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << "NEW ORG END";
-
-//    //	5.	'Plain' changes
-//    songListIt.toFront();
-//    qDebug() << SB_DEBUG_INFO << "CHG START";
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-//        const int currentPosition=songListIt.key();
-
-//        if(hasChangedMap[currentPosition])
-//        {
-//            qDebug() << SB_DEBUG_INFO << "CHG:" << currentPosition << songListIt.value();
-
-//            SQL.append(newAlbum.updateSongOnAlbum(songListIt.value()));
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << "CHG END";
-
-//    //	Insert new songs
-//    songListIt.toFront();
-//    qDebug() << SB_DEBUG_INFO << "NEW START";
-//    while(songListIt.hasNext())
-//    {
-//        songListIt.next();
-
-//        if(isNewMap[songListIt.key()])
-//        {
-//            qDebug() << SB_DEBUG_INFO << "NEW:" << "at:" << songListIt.value().albumPosition() << songListIt.value();
-//            SQL.append(newAlbum.addSongToAlbum(songListIt.value()));
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << "NEW END";
-//    qDebug() << SB_DEBUG_INFO << *orgAlbum
-//    qDebug() << SB_DEBUG_INFO << newAlbum;
-
-//    if(orgAlbum->albumID()!=newAlbum.albumID() && newAlbum.albumID()!=-1)
-//    {
-//        qDebug() << SB_DEBUG_INFO << "CMB:" << "from:" << *orgAlbum;
-//        qDebug() << SB_DEBUG_INFO << "CMB:" << "to:" << newAlbum;
-//        SQL.append(oorgAlbumrgAlbum.mergeAlbum(newAlbum));
-//        removedAlbum=orgAlbum;
-//    }
-
-//    //	G.	Remove original database items
-//    if(removedAlbum.albumID()!=-1)
-//    {
-//        qDebug() << SB_DEBUG_INFO << "Remove ORG album";
-//        SQL.append(orgAlbum.removeAlbum());
-//    }
-
-//    if(
-//        (
-//            orgAlbum.albumID()!=newAlbum.albumID() ||
-//            orgAlbum.albumTitle()!=newAlbum.albumTitle() ||
-//            orgAlbum.albumPerformerID()!=newAlbum.albumPerformerID() ||
-//            orgAlbum.year()!=newAlbum.year() ||
-//            SQL.count()>0
-//        ) &&
-//            newAlbum.albumID()!=-1
-//    )
-//    {
-//        const bool successFlag=SBIDAlbum::updateExistingAlbum(orgAlbum,newAlbum,SQL,1);
-
-//        //	Go through the list of possible orphans
-//        QListIterator<SBIDSong> li(possibleOrphan);
-//        while(li.hasNext())
-//        {
-//            SBIDSong song=li.next();
-//            song.deleteIfOrphanized();
-//        }
-
-//        if(successFlag==1)
-//        {
-//            QString updateText=QString("Saved song %1%2%3.")
-//                .arg(QChar(96))      //	1
-//                .arg(newAlbum.albumTitle())
-//                .arg(QChar(180));    //	3
-//            Context::instance()->getController()->updateStatusBarText(updateText);
-
-//            //	Update models!
-//            Context::instance()->getController()->refreshModels();
-
-//            //	Update screenstack
-
-//            ScreenStack* st=Context::instance()->getScreenStack();
-//            ScreenItem currentScreenItem=st->currentScreen();
-//            currentScreenItem.setEditFlag(0);
-
-//            //	Remove from screenstack removed album
-//            if(removedAlbum.albumID()!=-1)
-//            {
-//                st->removeScreen(ScreenItem(std::make_shared<SBIDAlbum>(removedAlbum)));
-//            }
-//            st->updateCurrentScreen(currentScreenItem);
-//        }
-//    }
-
 }
 
 
+void
+SBTabAlbumEdit::setEditFlag()
+{
+    qDebug() << SB_DEBUG_INFO;
+    _hasChanges=1;
+}
 
 ///	Private methods
 int
@@ -1630,12 +1270,6 @@ SBTabAlbumEdit::_init()
                 this, SLOT(save()));
         connect(mw->ui.pbAlbumEditCancel, SIGNAL(clicked(bool)),
                 Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
-        connect(mw->ui.pbAlbumEditAddSong, SIGNAL(clicked(bool)),
-                this, SLOT(addSong()));
-        connect(mw->ui.pbAlbumEditRemoveSong, SIGNAL(clicked(bool)),
-                this,SLOT(removeSong()));
-        connect(mw->ui.pbAlbumEditMergeSong, SIGNAL(clicked(bool)),
-                this, SLOT(mergeSong()));
 
         CompleterFactory* cf=Context::instance()->completerFactory();
         mw->ui.albumEditTitle->setCompleter(cf->getCompleterAlbum());
@@ -1698,6 +1332,8 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     tv->setColumnHidden(AlbumEditModel::sb_column_mergedtoindex,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_orgitemnumber,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_orgalbumperformanceid,1);
+    tv->setColumnHidden(AlbumEditModel::sb_column_orgsongid,1);
+    tv->setColumnHidden(AlbumEditModel::sb_column_sortfield,1);
 
     QHeaderView* hv=NULL;
     hv=tv->horizontalHeader();
@@ -1710,19 +1346,26 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
 
     tv->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
-    AlbumItemEditDelegate* aied;
-    aied=new AlbumItemEditDelegate(SBIDBase::sb_type_song,this);
-    tv->setItemDelegateForColumn(AlbumEditModel::sb_column_songtitle,aied);
-    aied=new AlbumItemEditDelegate(SBIDBase::sb_type_performer,this);
-    tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
+    //	LEFT FOR FUTURE USE
+    //	Also see itemFlags() in AlbumEditModel to control what columns can be edited.
+    //	AlbumItemEditDelegate* aied;
+    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_song,this);
+    //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_songtitle,aied);
+    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_performer,this);
+    //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
+    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_notes,this);
+    //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_notes,aied);
 
     //	Set correct focus
     mw->ui.albumEditTitle->selectAll();
     mw->ui.albumEditTitle->setFocus();
 
     //	The rest
-    connect(mw->ui.albumEditSongList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection& ,const QItemSelection&)),
-            this, SLOT(rowSelected(const QItemSelection&,const QItemSelection&)));
+    //connect(mw->ui.albumEditSongList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection& ,const QItemSelection&)),
+            //this, SLOT(rowSelected(const QItemSelection&,const QItemSelection&)));
+
+    connect(aem, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(setEditFlag()));
 
     return currentScreenItem;
 }
