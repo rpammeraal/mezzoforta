@@ -448,9 +448,8 @@ Navigator::editItem()
 void
 Navigator::openItemFromCompleter(const QModelIndex& i)
 {
-    SBIDPtr ptr=SBIDBase::createPtr(
-             static_cast<SBIDBase::sb_type>(i.sibling(i.row(), i.column()+2).data().toInt()),
-             i.sibling(i.row(), i.column()+1).data().toInt());
+    QString key=i.sibling(i.row(), i.column()+1).data().toString();
+    SBIDPtr ptr=SBIDBase::createPtr(key);
     openScreen(ptr);
     clearSearchFilter();
 }

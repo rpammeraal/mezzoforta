@@ -10,8 +10,8 @@
 QCompleter*
 CompleterFactory::getCompleterAll()
 {
-    //SearchItemModel* sim=Context::instance()->searchItemManager();
-    //return _instantiateCompleter(sim);
+    SearchItemModel* sim=Context::instance()->searchItemManager();
+    return _instantiateCompleter(sim);
 
     QStringList articles=Common::articles();
     articles.append(QString());
@@ -155,7 +155,7 @@ CompleterFactory::_createCompleter(QString& query)
 }
 
 QCompleter*
-CompleterFactory::_instantiateCompleter(QAbstractTableModel* qtm)
+CompleterFactory::_instantiateCompleter(QAbstractItemModel* qtm)
 {
     SB_RETURN_NULL_IF_NULL(qtm);
 

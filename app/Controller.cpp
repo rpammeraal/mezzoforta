@@ -391,8 +391,8 @@ Controller::setupUI()
         mw->ui.frSchema->setVisible(0);
     }
 
-    //qDebug() << SB_DEBUG_INFO << "playground";
-    //emit populateSearchItems();
+    qDebug() << SB_DEBUG_INFO << "playground";
+    emit populateSearchItems();
 
 
 

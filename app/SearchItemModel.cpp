@@ -7,74 +7,11 @@ SearchItemModel::SearchItemModel()
 {
 }
 
-int
-SearchItemModel::rowCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return _searchItems.count();
-}
-
-int
-SearchItemModel::columnCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return 3;
-}
-
-QVariant
-SearchItemModel::data(const QModelIndex &index, int role) const
-{
-    Q_UNUSED(role);
-    if(_searchItems.count()==0 || !index.isValid())
-    {
-        return QVariant();
-    }
-
-    if(index.row()<_searchItems.count())
-    {
-        Tuple t=_searchItems.at(index.row());
-        switch(index.column())
-        {
-        case 0:
-            return t.display;
-            break;
-
-        case 1:		// 	itemid
-            int itemID;
-            switch(t.itemType)
-            {
-                case SBIDBase::sb_type_song:
-                    itemID=t.songID;
-                    break;
-
-                case SBIDBase::sb_type_performer:
-                    itemID=t.performerID;
-                    break;
-
-                case SBIDBase::sb_type_album:
-                    itemID=t.albumID;
-                    break;
-
-                default:
-                    itemID=-1;
-            }
-            return itemID;
-            break;
-
-        case 2:		//	itemtype
-            return t.itemType;
-            break;
-        }
-    }
-    return QVariant();
-}
-
-
 ///	Slots
 void
 SearchItemModel::populate()
 {
-    beginResetModel();
+    //	Set up query
     qDebug() << SB_DEBUG_INFO;
     QString query=QString
     (
@@ -127,47 +64,70 @@ SearchItemModel::populate()
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;
 
+    //	Start populating model.
+    beginResetModel();
+
+    QList<QStandardItem *>column;
+    QStandardItem* item;
+
     QSqlQuery queryList(query,db);
     while(queryList.next())
     {
-        QString key;
         QSqlRecord r=queryList.record();
-        struct Tuple t;
-        int i=0;
-        t.itemType=(SBIDBase::sb_type)queryList.value(i++).toInt();
-        t.songID=Common::parseIntFieldDB(&r,queryList.value(i++).toInt());
-        t.songTitle=queryList.value(i++).toString();
-        t.performerID=Common::parseIntFieldDB(&r,queryList.value(i++).toInt());
-        t.performerName=queryList.value(i++).toString();
-        t.albumID=Common::parseIntFieldDB(&r,queryList.value(i++).toInt());
-        t.albumTitle=queryList.value(i++).toString();
 
-        switch(t.itemType)
+        int i=0;
+        SBIDBase::sb_type itemType=(SBIDBase::sb_type)queryList.value(i++).toInt();
+        int songID=Common::parseIntFieldDB(&r,i++);
+        QString songTitle=queryList.value(i++).toString();
+        int performerID=Common::parseIntFieldDB(&r,i++);
+        QString performerName=queryList.value(i++).toString();
+        int albumID=Common::parseIntFieldDB(&r,i++);
+        QString albumTitle=queryList.value(i++).toString();
+
+        QString display;
+        QString key;
+
+        switch(itemType)
         {
         case SBIDBase::sb_type_song:
-            t.display=QString("%1 - song by %2").arg(t.songTitle).arg(t.performerName);
-            key=SBIDSong::createKey(t.songID);
+            display=QString("%1 - song by %2").arg(songTitle).arg(performerName);
+            key=SBIDSong::createKey(songID);
             break;
 
         case SBIDBase::sb_type_album:
-            t.display=QString("%1 - album by %2").arg(t.albumTitle).arg(t.performerName);
-            key=SBIDAlbum::createKey(t.albumID);
+            display=QString("%1 - album by %2").arg(albumTitle).arg(performerName);
+            key=SBIDAlbum::createKey(albumID);
             break;
 
         case SBIDBase::sb_type_performer:
-            t.display=QString("%1 - performer").arg(t.performerName);
-            key=SBIDPerformer::createKey(t.performerID);
+            display=QString("%1 - performer").arg(performerName);
+            key=SBIDPerformer::createKey(performerID);
             break;
 
         default:
             qDebug() << SB_DEBUG_ERROR << "Should not come here";
         }
-        qDebug() << SB_DEBUG_INFO << t.display;
-        _searchItems.append(t);
+
+        item=new QStandardItem(display); column.append(item);                        //	sb_column_display
+        item=new QStandardItem(key); column.append(item);                            //	sb_column_itemid
+        item=new QStandardItem(QString("%1").arg(songID)); column.append(item);      //	sb_column_song_id
+        item=new QStandardItem(songTitle); column.append(item);                      //	sb_column_song_title
+        item=new QStandardItem(QString("%1").arg(performerID)); column.append(item); //	sb_column_performer_id
+        item=new QStandardItem(performerName); column.append(item);                  //	sb_column_performer_id
+        item=new QStandardItem(QString("%1").arg(albumID)); column.append(item);     //	sb_column_album_id
+        item=new QStandardItem(albumTitle); column.append(item);                     //	sb_column_album_title
+        this->appendRow(column); column.clear();
+
     }
-    qDebug() << SB_DEBUG_INFO << _searchItems.count();
+    qDebug() << SB_DEBUG_INFO << this->rowCount();
     QModelIndex s=this->index(0,0);
-    QModelIndex e=this->index(3,_searchItems.count());
+    QModelIndex e=this->index(this->rowCount(),this->columnCount());
     endResetModel();
     emit dataChanged(s,e);
+}
+
+void
+SearchItemModel::_init()
+{
+
 }

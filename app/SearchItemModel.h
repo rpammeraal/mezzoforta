@@ -7,36 +7,29 @@
 
 #include "SBIDBase.h"
 
-class SearchItemModel : public QAbstractTableModel
+class SearchItemModel : public QStandardItemModel
 {
     Q_OBJECT
 
 public:
+    enum sb_column_type
+    {
+        sb_column_display=0,
+        sb_column_key=1,	//	CWIP: replace 2,3 by key
+        sb_column_song_id=2,
+        sb_column_song_title=3,
+        sb_column_performer_id=4,
+        sb_column_performer_name=5,
+        sb_column_album_id=6,
+        sb_column_album_title=7
+    };
+
     SearchItemModel();
-
-    int rowCount(const QModelIndex &parent) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const { Q_UNUSED(index); return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren; }
-    int columnCount(const QModelIndex &parent) const;
-    QVariant data(const QModelIndex &index, int role) const;
-
 
 public slots:
     void populate();
 
 private:
-    typedef struct Tuple
-    {
-        SBIDBase::sb_type itemType;
-        int               songID;
-        QString           songTitle;
-        int 	          performerID;
-        QString           performerName;
-        int               albumID;
-        QString           albumTitle;
-        QString           display;
-    } Tuple;
-
-    QList<Tuple> _searchItems;
 
     void _init();
 };

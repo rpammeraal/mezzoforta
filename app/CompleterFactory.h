@@ -22,7 +22,7 @@ public:
 
 private:
     static QCompleter* _createCompleter(QString& query);
-    static QCompleter* _instantiateCompleter(QAbstractTableModel* atm);
+    static QCompleter* _instantiateCompleter(QAbstractItemModel* atm);
 };
 
 #endif // COMPLETERFACTORY_H
