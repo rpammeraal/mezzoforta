@@ -11,6 +11,7 @@
 #include "Common.h"
 #include "DataAccessLayer.h"
 #include "ProgressDialog.h"
+#include "SBIDManagerHelper.h"
 #include "SBSqlQueryModel.h"
 
 //	LAX-DUB-AMS-Maastricht-Luik-Sint Truiden-Leuven-Diest-Lommel-Eindhoven
@@ -396,6 +397,16 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
             _changes.removeOne(key);
         }
         ptr->clearChangedFlag();
+
+        if(ptr->deletedFlag())
+        {
+            _leMap.remove(ptr->key());
+            SBIDManagerHelper::emitRemovedSBIDPtrStatic(ptr);
+        }
+        else
+        {
+            SBIDManagerHelper::emitUpdatedSBIDPtrStatic(ptr);
+        }
     }
     qDebug() << SB_DEBUG_INFO << successFlag;
     return successFlag;
@@ -421,10 +432,6 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
         commit(ptr,dal);
         qDebug() << SB_DEBUG_INFO;
 
-        if(ptr->deletedFlag())
-        {
-            _leMap.remove(ptr->key());
-        }
     }
     return 1;
 }

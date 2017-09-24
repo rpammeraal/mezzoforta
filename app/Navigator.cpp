@@ -397,7 +397,7 @@ Navigator::applySonglistFilter()
     {
         return;
     }
-    re=QRegExp("- record$");
+    re=QRegExp("- album by ");
     if(filter.contains(re))
     {
         return;

@@ -79,7 +79,8 @@ HEADERS     = \
     ProgressDialog.h \
     SBDuration.h \
     SBIDPlaylistDetail.h \
-    SearchItemModel.h
+    SearchItemModel.h \
+    SBIDManagerHelper.h
 
 SOURCES     = \
     main.cpp \
@@ -159,7 +160,8 @@ SOURCES     = \
     ProgressDialog.cpp \
     SBDuration.cpp \
     SBIDPlaylistDetail.cpp \
-    SearchItemModel.cpp
+    SearchItemModel.cpp \
+    SBIDManagerHelper.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

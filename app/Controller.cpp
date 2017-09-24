@@ -105,6 +105,10 @@ Controller::refreshModels()
     //	Now that we have a database connection, create a searchItem model.
     SearchItemModel* sim=new SearchItemModel();
     Context::instance()->setSearchItemModel(sim);
+    connect(Context::instance()->managerHelper(), SIGNAL(removedSBIDPtr(SBIDPtr)),
+            sim, SLOT(remove(SBIDPtr)));
+    connect(Context::instance()->managerHelper(), SIGNAL(updatedSBIDPtr(SBIDPtr)),
+            sim, SLOT(update(SBIDPtr)));
 
     Navigator* n=Context::instance()->getNavigator();
     n->resetAllFiltersAndSelections();

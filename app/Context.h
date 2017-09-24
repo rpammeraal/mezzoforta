@@ -17,6 +17,7 @@
 #include "SBIDAlbum.h"
 #include "SBIDChart.h"
 #include "SBIDChartPerformance.h"
+#include "SBIDManagerHelper.h"
 #include "SBIDManagerTemplate.h"
 #include "SBIDSongPerformance.h"
 #include "SBIDAlbumPerformance.h"
@@ -71,6 +72,7 @@ public:
     inline SBIDAlbumPerformanceMgr* getAlbumPerformanceMgr() { return &_albumPerformanceMgr; }
     inline SBIDChartMgr* getChartMgr() { return &_chartMgr; }
     inline SBIDChartPerformanceMgr* getChartPerformanceMgr() { return &_chartPerformanceMgr; }
+    inline SBIDManagerHelper* managerHelper() { return &_mh; }
     inline SBIDOnlinePerformanceMgr* getOnlinePerformanceMgr() { return &_onlinePerformanceMgr; }
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
@@ -120,6 +122,7 @@ private:
     SBIDChartMgr _chartMgr;
     SBIDChartPerformanceMgr _chartPerformanceMgr;
     SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
+    SBIDManagerHelper _mh;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
     SBIDPlaylistDetailMgr _playlistDetailMgr;

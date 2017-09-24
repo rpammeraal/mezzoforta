@@ -15,25 +15,26 @@ public:
     enum sb_column_type
     {
         sb_column_display=0,
-        sb_column_key=1,	//	CWIP: replace 2,3 by key
-        sb_column_song_id=2,
-        sb_column_song_title=3,
-        sb_column_performer_id=4,
-        sb_column_performer_name=5,
-        sb_column_album_id=6,
-        sb_column_album_title=7,
-        sb_column_main_entry_flag=8
+        sb_column_key=1,
+        sb_column_main_entry_flag=2
     };
 
     SearchItemModel();
 
+    void debugShow(const QString& key) const;
+    QString key(const QModelIndex& i) const;
+
 public slots:
     void populate();
+    void remove(const SBIDPtr& ptr);
+    void update(const SBIDPtr& ptr);
 
 private:
 
+    void _add(SBIDBase::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
     void _constructDisplay(SBIDBase::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,QString& key, QString& display, QString& altDisplay);
     void _init();
+    void _remove(const SBIDPtr& ptr);
 };
 
 #endif // SEARCHITEMMANAGER_H

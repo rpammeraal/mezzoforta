@@ -159,15 +159,6 @@ CompleterFactory::_instantiateCompleter(QAbstractItemModel* qtm)
 {
     SB_RETURN_NULL_IF_NULL(qtm);
 
-    for(int i=0;i<3;i++)
-    {
-        for(int j=0;j<qtm->columnCount();j++)
-        {
-            QModelIndex mi=qtm->index(i,j);
-            QVariant v=qtm->data(mi);
-            qDebug() << SB_DEBUG_INFO << i << j << v.toString() << qtm->flags(mi);
-        }
-    }
     //	Create completer and set with default parameters
     QCompleter* c=new QCompleter();
     c->setModel(qtm);
