@@ -102,6 +102,10 @@ Controller::refreshModels()
     //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->getMainWindow();
 
+    //	Now that we have a database connection, create a searchItem model.
+    SearchItemModel* sim=new SearchItemModel();
+    Context::instance()->setSearchItemModel(sim);
+
     Navigator* n=Context::instance()->getNavigator();
     n->resetAllFiltersAndSelections();
 
@@ -392,9 +396,6 @@ Controller::setupUI()
     }
 
     qDebug() << SB_DEBUG_INFO << "playground";
-    emit populateSearchItems();
-
-
 
 //    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
 
@@ -569,12 +570,6 @@ Controller::init()
     bgt->moveToThread(&backgroundThread);
     backgroundThread.start();
     Context::instance()->setBackgroundThread(bgt);
-
-    SearchItemModel* sim=Context::instance()->searchItemManager();
-
-    connect(this, SIGNAL(populateSearchItems()),
-            sim, SLOT(populate()));
-
 
     //	Recalculate playlist duration -- NOT USED ANYMORE
     //	CODE LEFT AS EXAMPLE

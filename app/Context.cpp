@@ -35,6 +35,12 @@ Context::setMainWindow(MainWindow* mw)
 //}
 
 void
+Context::setSearchItemModel(SearchItemModel *sim)
+{
+    _sim=sim;
+}
+
+void
 Context::setTab(SBTab *tab)
 {
     _tab=tab;

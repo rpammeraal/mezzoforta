@@ -1353,8 +1353,6 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_songtitle,aied);
     //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_performer,this);
     //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
-    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_notes,this);
-    //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_notes,aied);
 
     //	Set correct focus
     mw->ui.albumEditTitle->selectAll();

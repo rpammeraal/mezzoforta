@@ -21,7 +21,8 @@ public:
         sb_column_performer_id=4,
         sb_column_performer_name=5,
         sb_column_album_id=6,
-        sb_column_album_title=7
+        sb_column_album_title=7,
+        sb_column_main_entry_flag=8
     };
 
     SearchItemModel();
@@ -31,6 +32,7 @@ public slots:
 
 private:
 
+    void _constructDisplay(SBIDBase::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,QString& key, QString& display, QString& altDisplay);
     void _init();
 };
 

@@ -75,7 +75,7 @@ public:
     inline SBIDPerformerMgr* getPerformerMgr() { return &_performerMgr; }
     inline SBIDPlaylistMgr* getPlaylistMgr() { return &_playlistMgr; }
     inline SBIDPlaylistDetailMgr* getPlaylistDetailMgr() { return &_playlistDetailMgr; }
-    inline SearchItemModel* searchItemManager() { return &_sim; }
+    inline SearchItemModel* searchItemManager() { return _sim; }
     inline PlayManager* getPlayManager() { return &_pm; }
     inline Properties* getProperties() { return &_p; }
     inline ScreenStack* getScreenStack() { return &_st; }
@@ -88,6 +88,7 @@ public:
     void setBackgroundThread(BackgroundThread* bgt);
     void setController(Controller* c);
     void setMainWindow(MainWindow* mw);
+    void setSearchItemModel(SearchItemModel* sim);
     void setTab(SBTab* tab);
     void setTabQueuedSongs(SBTabQueuedSongs* tabQS);
 
@@ -124,7 +125,7 @@ private:
     SBIDPlaylistDetailMgr _playlistDetailMgr;
     SBIDSongMgr _songMgr;
     SBIDSongPerformanceMgr _songPerformanceMgr;
-    SearchItemModel _sim;
+    SearchItemModel* _sim;
     ScreenStack _st;
 
     Context();

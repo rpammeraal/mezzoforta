@@ -5,6 +5,7 @@
 
 SearchItemModel::SearchItemModel()
 {
+    _init();
 }
 
 ///	Slots
@@ -84,40 +85,33 @@ SearchItemModel::populate()
         int albumID=Common::parseIntFieldDB(&r,i++);
         QString albumTitle=queryList.value(i++).toString();
 
-        QString display;
         QString key;
+        QString display;
+        QString altDisplay;
+        _constructDisplay(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle,key,display,altDisplay);
 
-        switch(itemType)
+        for(int i=0;i<2;i++)
         {
-        case SBIDBase::sb_type_song:
-            display=QString("%1 - song by %2").arg(songTitle).arg(performerName);
-            key=SBIDSong::createKey(songID);
-            break;
+            QString currentDisplay=display;
 
-        case SBIDBase::sb_type_album:
-            display=QString("%1 - album by %2").arg(albumTitle).arg(performerName);
-            key=SBIDAlbum::createKey(albumID);
-            break;
-
-        case SBIDBase::sb_type_performer:
-            display=QString("%1 - performer").arg(performerName);
-            key=SBIDPerformer::createKey(performerID);
-            break;
-
-        default:
-            qDebug() << SB_DEBUG_ERROR << "Should not come here";
+            if((i==0) || (i && display!=altDisplay))
+            {
+                if(i)
+                {
+                    currentDisplay=altDisplay;
+                }
+                item=new QStandardItem(currentDisplay); column.append(item);                 //	sb_column_display
+                item=new QStandardItem(key); column.append(item);                            //	sb_column_itemid
+                item=new QStandardItem(QString("%1").arg(songID)); column.append(item);      //	sb_column_song_id
+                item=new QStandardItem(songTitle); column.append(item);                      //	sb_column_song_title
+                item=new QStandardItem(QString("%1").arg(performerID)); column.append(item); //	sb_column_performer_id
+                item=new QStandardItem(performerName); column.append(item);                  //	sb_column_performer_id
+                item=new QStandardItem(QString("%1").arg(albumID)); column.append(item);     //	sb_column_album_id
+                item=new QStandardItem(albumTitle); column.append(item);                     //	sb_column_album_title
+                item=new QStandardItem(i); column.append(item);                              //	sb_column_main_entry_flag
+                this->appendRow(column); column.clear();
+            }
         }
-
-        item=new QStandardItem(display); column.append(item);                        //	sb_column_display
-        item=new QStandardItem(key); column.append(item);                            //	sb_column_itemid
-        item=new QStandardItem(QString("%1").arg(songID)); column.append(item);      //	sb_column_song_id
-        item=new QStandardItem(songTitle); column.append(item);                      //	sb_column_song_title
-        item=new QStandardItem(QString("%1").arg(performerID)); column.append(item); //	sb_column_performer_id
-        item=new QStandardItem(performerName); column.append(item);                  //	sb_column_performer_id
-        item=new QStandardItem(QString("%1").arg(albumID)); column.append(item);     //	sb_column_album_id
-        item=new QStandardItem(albumTitle); column.append(item);                     //	sb_column_album_title
-        this->appendRow(column); column.clear();
-
     }
     qDebug() << SB_DEBUG_INFO << this->rowCount();
     QModelIndex s=this->index(0,0);
@@ -127,7 +121,35 @@ SearchItemModel::populate()
 }
 
 void
+SearchItemModel::_constructDisplay(SBIDBase::sb_type itemType, int songID, const QString &songTitle, int performerID, const QString &performerName, int albumID, const QString &albumTitle, QString &key, QString& display, QString& altDisplay)
+{
+    switch(itemType)
+    {
+    case SBIDBase::sb_type_song:
+        display=QString("%1 - song by %2").arg(songTitle).arg(performerName);
+        altDisplay=QString("%1 - song by %2").arg(Common::removeArticles(songTitle)).arg(performerName);
+        key=SBIDSong::createKey(songID);
+        break;
+
+    case SBIDBase::sb_type_album:
+        display=QString("%1 - album by %2").arg(albumTitle).arg(performerName);
+        altDisplay=QString("%1 - album by %2").arg(Common::removeArticles(albumTitle)).arg(performerName);
+        key=SBIDAlbum::createKey(albumID);
+        break;
+
+    case SBIDBase::sb_type_performer:
+        display=QString("%1 - performer").arg(performerName);
+        altDisplay=QString("%1 - performer").arg(Common::removeArticles(performerName));
+        key=SBIDPerformer::createKey(performerID);
+        break;
+
+    default:
+        qDebug() << SB_DEBUG_ERROR << "Should not come here";
+    }
+}
+
+void
 SearchItemModel::_init()
 {
-
+    populate();
 }

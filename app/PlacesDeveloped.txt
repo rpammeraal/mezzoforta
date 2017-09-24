@@ -928,6 +928,7 @@ Between 20161215 and 20170604:
 -	AlbumEdit done.
 -	Fixed annoying bug (everywhere) where focus gets taken away when editing.
 -	Close button or Escape both will check for outstanding edits.
+-	SeachItem now populated with article words removed.
 
 Current:
 *	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:

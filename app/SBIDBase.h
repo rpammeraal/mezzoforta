@@ -42,8 +42,7 @@ public:
         sb_type_album_performance=7,
         sb_type_online_performance=8,
         sb_type_chart_performance=9,
-        sb_type_playlist_detail=10,
-        sb_type_notes=11
+        sb_type_playlist_detail=10
     };
 
     static size_t sb_type_count() { return 10; }
