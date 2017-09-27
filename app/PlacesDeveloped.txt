@@ -933,14 +933,17 @@ Between 20161215 and 20170604:
 	-	now populated with article words removed.
 	-	Consider populating SearchItemModel with items without accents.
 
+20170924:
+-	Search drop down list Moose!Music - On Road (should not be there) as well as Moose!Music - On The Road
+-	Add 'mbe/baka beyong' to cross culture. Status shows: '' already contains 'bme': unable to reproduce, put in debug message
+-	Go to The East & West Rockers, from the songs tab, play 'I Put A Spell On You' -> does not play.
+-	Merging Sparkle In The Rain/Simple Minds to War/U2 stopped working.
+    -	If fixed, check that search drop down box does not contain Sparkle In The Rain.
+
 Current:
 *	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
-	*	entry still exists in 'All Songs'
-*	Search drop down list Moose!Music - On Road (should not be there) as well as Moose!Music - On The Road
-*	Add 'mbe/baka beyong' to cross culture. Status shows: '' already contains 'bme'
-*	Go to The East & West Rockers, from the songs tab, play 'I Put A Spell On You' -> does not play.
-*	Merging Sparkle In The Rain/Simple Minds to War/U2 stopped working.
-    *	If fixed, check that search drop down box does not contain Sparkle In The Rain.
+    *	entry still exists in 'All Songs'
+*	Open up album with picture available. Then open album Fuck/Buckcherry. Previous album is visible.
 
 Bugs that need to be fixed:
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged

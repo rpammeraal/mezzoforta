@@ -68,16 +68,16 @@ void
 Controller::commitAllCaches(DataAccessLayer* dal) const
 {
     Context* c=Context::instance();
-    c->getAlbumMgr()->commitAll(dal);
-    c->getAlbumPerformanceMgr()->commitAll(dal);
-    //c->getChartMgr()->commitAll(dal);
-    //c->getChartPerformanceMgr()->commitAll(dal);
     c->getOnlinePerformanceMgr()->commitAll(dal);
-    c->getPerformerMgr()->commitAll(dal);
     c->getPlaylistMgr()->commitAll(dal);
     c->getPlaylistDetailMgr()->commitAll(dal);
-    c->getSongMgr()->commitAll(dal);
+    c->getAlbumPerformanceMgr()->commitAll(dal);
+    c->getAlbumMgr()->commitAll(dal);
+    //c->getChartMgr()->commitAll(dal);
+    //c->getChartPerformanceMgr()->commitAll(dal);
+    c->getPerformerMgr()->commitAll(dal);
     c->getSongPerformanceMgr()->commitAll(dal);
+    c->getSongMgr()->commitAll(dal);
 }
 
 

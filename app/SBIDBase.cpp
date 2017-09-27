@@ -85,6 +85,9 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
 		break;
 
     case SBIDBase::sb_type_song_performance:
+        ptr=SBIDSongPerformance::retrieveSongPerformance(itemID,noDependentsFlag);
+        break;
+
     case SBIDBase::sb_type_invalid:
         break;
     }

@@ -1164,7 +1164,7 @@ SBTabAlbumEdit::save() const
         }
     }
 
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << cancelSave << successFlag;
     if(cancelSave || !successFlag)
     {
         qDebug() << SB_DEBUG_INFO;
@@ -1173,7 +1173,7 @@ SBTabAlbumEdit::save() const
 
     //	G.	Close screen
     qDebug() << SB_DEBUG_INFO << successFlag;
-    Context::instance()->getNavigator()->closeCurrentTab();
+    Context::instance()->getNavigator()->closeCurrentTab(1);
 
     return;
 }

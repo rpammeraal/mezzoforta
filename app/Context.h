@@ -117,19 +117,20 @@ private:
     PlayManager _pm;
     Properties _p;
     SBModelQueuedSongs _mqs;
+    SBIDManagerHelper _mh;
+    SearchItemModel* _sim;
+    ScreenStack _st;
+
     SBIDAlbumMgr _albumMgr;
     SBIDAlbumPerformanceMgr _albumPerformanceMgr;
     SBIDChartMgr _chartMgr;
     SBIDChartPerformanceMgr _chartPerformanceMgr;
     SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
-    SBIDManagerHelper _mh;
     SBIDPerformerMgr _performerMgr;
     SBIDPlaylistMgr _playlistMgr;
     SBIDPlaylistDetailMgr _playlistDetailMgr;
     SBIDSongMgr _songMgr;
     SBIDSongPerformanceMgr _songPerformanceMgr;
-    SearchItemModel* _sim;
-    ScreenStack _st;
 
     Context();
     ~Context();

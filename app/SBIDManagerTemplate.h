@@ -70,6 +70,7 @@ public:
     void debugShow(const QString title="");
     void id() const { return _id; }
     int numChanges() const { return _changes.count(); }
+    void setName(const QString& name) { _name=name; }
 
 protected:
     friend class Preloader;
@@ -79,6 +80,7 @@ protected:
     void setID(int id) { _id=id; }
 
 private:
+    QString                          _name;
     QList<QString>                   _changes;	//	Contains keys of objects changed
     int                              _id;
     QMap<QString,std::shared_ptr<T>> _leMap;
@@ -373,17 +375,17 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChangesFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _name;
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _name;
     if(SQL.count()==0 && errorOnNoChangesFlag==1)
     {
-        qDebug() << SB_DEBUG_ERROR << "No changes. Erroring out (errorOnNoChangesFlag=" << errorOnNoChangesFlag << ")";
+        qDebug() << SB_DEBUG_ERROR << _name << "No changes. Erroring out (errorOnNoChangesFlag=" << errorOnNoChangesFlag << ")";
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _name;
 
     bool successFlag=0;
     successFlag=dal->executeBatch(SQL,1,0);
@@ -408,14 +410,14 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
             SBIDManagerHelper::emitUpdatedSBIDPtrStatic(ptr);
         }
     }
-    qDebug() << SB_DEBUG_INFO << successFlag;
+    qDebug() << SB_DEBUG_INFO << _name << successFlag;
     return successFlag;
 }
 
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _name;
     //	CWIP: see if either multipe transactions can be nested or
     //	tell dal that we keep track of the transaction.
     std::shared_ptr<T> ptr;
@@ -423,14 +425,14 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
     //	Collect SQL for changes
     QList<QString> allChanges=_changes;
     const int numChanges=allChanges.count();
-    qDebug() << SB_DEBUG_INFO << numChanges;
+    qDebug() << SB_DEBUG_INFO << _name << numChanges;
     for(int i=0;i<numChanges;i++)
     {
         const QString key=allChanges.at(i);
         ptr=retrieve(key);
-        qDebug() << SB_DEBUG_INFO << key << ptr->itemID() << ptr->changedFlag() << ptr->text();
+        qDebug() << SB_DEBUG_INFO << _name << key << ptr->itemID() << ptr->changedFlag() << ptr->text();
         commit(ptr,dal);
-        qDebug() << SB_DEBUG_INFO;
+        qDebug() << SB_DEBUG_INFO << _name;
 
     }
     return 1;
@@ -469,7 +471,7 @@ SBIDManagerTemplate<T,parentT>::remove(const std::shared_ptr<T> ptr)
     }
     else
     {
-        qDebug() << SB_DEBUG_WARNING << "Item not found: " << ptr->text();
+        qDebug() << SB_DEBUG_WARNING << _name << "Item not found: " << ptr->text();
     }
 }
 
@@ -518,9 +520,9 @@ SBIDManagerTemplate<T,parentT>::clear()
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
 {
-    qDebug() << SB_DEBUG_INFO << text;
-    qDebug() << SB_DEBUG_INFO << "_nextID=" << _nextID;
-    qDebug() << SB_DEBUG_INFO << "start #=" << _leMap.count();
+    qDebug() << SB_DEBUG_INFO << _name << text;
+    qDebug() << SB_DEBUG_INFO << _name << "_nextID=" << _nextID;
+    qDebug() << SB_DEBUG_INFO << _name << "start #=" << _leMap.count();
     QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
     while(it.hasNext())
     {
@@ -528,18 +530,18 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
         std::shared_ptr<T> ptr=it.value();
         if(ptr)
         {
-            qDebug() << SB_DEBUG_INFO << ptr->ID() << it.key() << ptr->genericDescription() << ptr->changedFlag();
+            qDebug() << SB_DEBUG_INFO << _name << ptr->ID() << it.key() << ptr->genericDescription() << ptr->changedFlag();
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << "NOPTR";
+            qDebug() << SB_DEBUG_INFO << _name << "NOPTR";
         }
     }
-    qDebug() << SB_DEBUG_INFO << "changes" << _changes.count();
+    qDebug() << SB_DEBUG_INFO << _name << "changes" << _changes.count();
     for(int i=0;i<_changes.count();i++)
     {
         const QString key=_changes.at(i);
-        qDebug() << SB_DEBUG_INFO << i << _changes.at(i);
+        qDebug() << SB_DEBUG_INFO << _name << i << _changes.at(i) << key;
     }
 }
 

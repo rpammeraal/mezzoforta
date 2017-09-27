@@ -419,11 +419,11 @@ Navigator::applySonglistFilter()
 }
 
 void
-Navigator::closeCurrentTab()
+Navigator::closeCurrentTab(bool forcedFlag)
 {
     ScreenStack* st=Context::instance()->getScreenStack(); SB_RETURN_VOID_IF_NULL(st);
     SBTab* tab=Context::instance()->getTab(); SB_RETURN_VOID_IF_NULL(tab);
-    if(tab->handleEscapeKey())
+    if(forcedFlag || tab->handleEscapeKey())
     {
         if(tab->editTabFlag())
         {

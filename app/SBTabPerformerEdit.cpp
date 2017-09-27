@@ -320,7 +320,7 @@ SBTabPerformerEdit::save() const
     }
 
     //	Close screen
-    Context::instance()->getNavigator()->closeCurrentTab();
+    Context::instance()->getNavigator()->closeCurrentTab(1);
 
     //Context::instance()->getScreenStack()->debugShow("after finish");
 }

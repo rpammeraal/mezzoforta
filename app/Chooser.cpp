@@ -242,7 +242,10 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                         }
                         else
                         {
-                            //UpdateText=QString("Warning: %5 %1%2%3 already contains %5 %1%2%3.")
+                            if(toBeAssignedToPtr->text().length()==0)
+                            {
+                                qDebug() << SB_DEBUG_ERROR << "toBeAssignedToPtr.text().length=0! ";
+                            }
                             updateText=QString("Warning: %1%4%3 already contains %1%2%3.")
                                 .arg(QChar(96))                 //	1
                                 .arg(toBeAssignedToPtr->text()) //	2

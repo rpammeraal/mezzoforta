@@ -46,7 +46,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     QVariant v;
     QString header;
     SBIDPtr ptr;
-    QString text;
     QModelIndex n;
     SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
     int itemID=-1;

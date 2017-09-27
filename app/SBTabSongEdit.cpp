@@ -251,7 +251,7 @@ SBTabSongEdit::save() const
 //        }
 //    }
     //	Close screen
-    Context::instance()->getNavigator()->closeCurrentTab();
+    Context::instance()->getNavigator()->closeCurrentTab(1);
 }
 
 void

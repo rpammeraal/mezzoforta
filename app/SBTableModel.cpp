@@ -483,7 +483,7 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& pe
 
         if(spPtr && !songID.contains(spPtr->songID()))
         {
-            _setItem(index, 0,spPtr->songPtr()->key());
+            _setItem(index, 0,spPtr->key());
             _setItem(index, 1,spPtr->songTitle());
             _setItem(index, 2,QString("%1").arg(spPtr->year()));
             index++;

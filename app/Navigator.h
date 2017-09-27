@@ -47,7 +47,7 @@ public:
 
 public slots:
     void applySonglistFilter();
-    void closeCurrentTab();
+    void closeCurrentTab(bool forcedFlag=0);
     void editItem();
     void openItemFromCompleter(const QModelIndex& i);
     void openChooserItem(const QModelIndex& i);
