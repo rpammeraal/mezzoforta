@@ -136,9 +136,15 @@ SBTabAlbumDetail::refreshAlbumReviews()
 void
 SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
-    if(isVisible())
+    qDebug() << SB_DEBUG_INFO << isVisible();
+    QWidget* w=QApplication::focusWidget();
+    //if(isVisible())
     {
         setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().ptr());
+    }
+    if(w)
+    {
+        w->setFocus();
     }
 }
 

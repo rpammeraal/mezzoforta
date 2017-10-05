@@ -122,6 +122,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
     if(!found)
     {
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
+        SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
         this->recalculatePlaylistDuration();
     }
@@ -361,6 +362,7 @@ SBIDPlaylist::addDependent(SBIDPtr ptr)
     if(!found)
     {
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
+        SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
         this->recalculatePlaylistDuration();
     }

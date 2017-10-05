@@ -56,7 +56,7 @@ public:
     //	Update
     void add(const std::shared_ptr<T>& ptr);	//	CWIP: not sure if needed, when we have createInDB
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL);
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChanges=0);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool emitFlag=1);
     bool commitAll(DataAccessLayer* dal);
     std::shared_ptr<T> createInDB(Common::sb_parameters& p);
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
@@ -71,6 +71,7 @@ public:
     void id() const { return _id; }
     int numChanges() const { return _changes.count(); }
     void setName(const QString& name) { _name=name; }
+    void stats() const;
 
 protected:
     friend class Preloader;
@@ -373,17 +374,17 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool errorOnNoChangesFlag)
+SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal, bool emitFlag)
 {
     qDebug() << SB_DEBUG_INFO << _name;
     //	Collect SQL to update changes
     QStringList SQL=ptr->updateSQL();
 
     qDebug() << SB_DEBUG_INFO << _name;
-    if(SQL.count()==0 && errorOnNoChangesFlag==1)
+    if(SQL.count()==0)
     {
-        qDebug() << SB_DEBUG_ERROR << _name << "No changes. Erroring out (errorOnNoChangesFlag=" << errorOnNoChangesFlag << ")";
-        return 0;
+        qDebug() << SB_DEBUG_WARNING << _name << "No changes!";
+        return 1;
     }
     qDebug() << SB_DEBUG_INFO << _name;
 
@@ -403,11 +404,17 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
         if(ptr->deletedFlag())
         {
             _leMap.remove(ptr->key());
-            SBIDManagerHelper::emitRemovedSBIDPtrStatic(ptr);
+            if(emitFlag)
+            {
+                SBIDManagerHelper::emitRemovedSBIDPtrStatic(ptr);
+            }
         }
         else
         {
-            SBIDManagerHelper::emitUpdatedSBIDPtrStatic(ptr);
+            if(emitFlag)
+            {
+                SBIDManagerHelper::emitUpdatedSBIDPtrStatic(ptr);
+            }
         }
     }
     qDebug() << SB_DEBUG_INFO << _name << successFlag;
@@ -418,9 +425,9 @@ template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 {
     qDebug() << SB_DEBUG_INFO << _name;
-    //	CWIP: see if either multipe transactions can be nested or
-    //	tell dal that we keep track of the transaction.
     std::shared_ptr<T> ptr;
+    QStringList updatedKeys;
+    QStringList removedKeys;
 
     //	Collect SQL for changes
     QList<QString> allChanges=_changes;
@@ -430,11 +437,27 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
     {
         const QString key=allChanges.at(i);
         ptr=retrieve(key);
-        qDebug() << SB_DEBUG_INFO << _name << key << ptr->itemID() << ptr->changedFlag() << ptr->text();
-        commit(ptr,dal);
-        qDebug() << SB_DEBUG_INFO << _name;
 
+        if(ptr->deletedFlag())
+        {
+            removedKeys.append(ptr->key());
+        }
+        else
+        {
+            updatedKeys.append(ptr->key());
+        }
+        commit(ptr,dal);
     }
+
+    if(removedKeys.count())
+    {
+        SBIDManagerHelper::emitRemovedSBIDPtrArrayStatic(removedKeys);
+    }
+    else if(updatedKeys.count())
+    {
+        SBIDManagerHelper::emitUpdatedSBIDPtrArrayStatic(updatedKeys);
+    }
+
     return 1;
 }
 
@@ -543,6 +566,15 @@ SBIDManagerTemplate<T,parentT>::debugShow(const QString text)
         const QString key=_changes.at(i);
         qDebug() << SB_DEBUG_INFO << _name << i << _changes.at(i) << key;
     }
+}
+
+template <class T, class parentT> void
+SBIDManagerTemplate<T,parentT>::stats() const
+{
+    qDebug() << SB_DEBUG_INFO << _name << "Stats:";
+    qDebug() << SB_DEBUG_INFO << _name << "#items: " << _leMap.count();
+    qDebug() << SB_DEBUG_INFO << _name << "#changed: " << _changes.count();
+    qDebug() << SB_DEBUG_INFO << _name << "nextID: " << _nextID;
 }
 
 ///	Protected methods

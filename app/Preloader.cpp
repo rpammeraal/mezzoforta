@@ -938,6 +938,40 @@ Preloader::songPerformances(QString query)
     return items;
 }
 
+void
+Preloader::loadAll()
+{
+    loadAllSongs();
+    loadAllPerformers();
+}
+
+void
+Preloader::loadAllSongs()
+{
+    SBIDSongMgr* mgr=Context::instance()->getSongMgr();
+    QSqlQueryModel* qm=SBIDSong::retrieveSQL();
+    SB_RETURN_VOID_IF_NULL(qm);
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        SBIDSongPtr Ptr=SBIDSong::instantiate(qm->record(i));
+        mgr->addItem(Ptr);
+    }
+}
+
+void
+Preloader::loadAllPerformers()
+{
+    SBIDPerformerMgr* mgr=Context::instance()->getPerformerMgr();
+    QSqlQueryModel* qm=SBIDPerformer::retrieveSQL();
+    SB_RETURN_VOID_IF_NULL(qm);
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        SBIDPerformerPtr sPtr=SBIDPerformer::instantiate(qm->record(i));
+        mgr->addItem(sPtr);
+    }
+}
+
+
 ///	Private methods
 SBIDAlbumPtr
 Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, const QSqlQuery& queryList)

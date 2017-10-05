@@ -18,6 +18,10 @@ public:
     static QMap<int,SBIDPlaylistDetailPtr> playlistItems(int playlistID);
     static QVector<SBIDSongPerformancePtr> songPerformances(QString query);
 
+    static void loadAll();
+    static void loadAllSongs();
+    static void loadAllPerformers();
+
 private:
     static SBIDAlbumPtr _instantiateAlbum(SBIDAlbumMgr* amgr,const QStringList& fields, const QSqlQuery& queryList);
     static SBIDChartPtr _instantiateChart(SBIDChartMgr* spmgr,const QStringList& fields, const QSqlQuery& queryList);

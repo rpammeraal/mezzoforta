@@ -10,7 +10,8 @@
 QCompleter*
 CompleterFactory::getCompleterAll()
 {
-    SearchItemModel* sim=Context::instance()->searchItemManager();
+    SearchItemModel* sim=Context::instance()->searchItemModel();
+    qDebug() << SB_DEBUG_INFO;
     return _instantiateCompleter(sim);
 
     QStringList articles=Common::articles();
@@ -151,6 +152,7 @@ CompleterFactory::_createCompleter(QString& query)
 //        sqm->fetchMore();
 //    }
 
+    qDebug() << SB_DEBUG_INFO;
     return _instantiateCompleter(sqm);
 }
 

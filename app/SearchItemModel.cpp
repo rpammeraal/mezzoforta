@@ -122,6 +122,7 @@ SearchItemModel::populate()
 
         _add(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle);
     }
+    qDebug() << SB_DEBUG_INFO;
 
     QModelIndex s=this->index(0,0);
     QModelIndex e=this->index(this->rowCount(),this->columnCount());

@@ -334,6 +334,7 @@ SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependen
 SBIDPlaylistDetailPtr
 SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr)
 {
+    SB_RETURN_IF_NULL(ptr,SBIDPlaylistDetailPtr());
     Common::sb_parameters p;
     p.playlistID=playlistID;
     p.playlistPosition=playlistPosition;
@@ -360,18 +361,27 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
         p.performerID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_album_performance:
-    case SBIDBase::sb_type_chart_performance:
-    case SBIDBase::sb_type_playlist_detail:
-    case SBIDBase::sb_type_song:
     case SBIDBase::sb_type_song_performance:
-    case SBIDBase::sb_type_invalid:
+    {
+        const SBIDSongPerformancePtr spPtr=std::dynamic_pointer_cast<SBIDSongPerformance>(ptr);
+        if(spPtr)
+        {
+            const SBIDOnlinePerformancePtr opPtr=spPtr->preferredOnlinePerformancePtr();
+            if(opPtr)
+            {
+                p.onlinePerformanceID=opPtr->onlinePerformanceID();
+            }
+        }
         break;
     }
 
-    SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createInDB(p);
+    default:
+        qDebug() << SB_DEBUG_ERROR << "Case not handled:" << ptr->itemType();
+        return SBIDPlaylistDetailPtr();
+        break;
+    }
 
-    return pdPtr;
+    return SBIDPlaylistDetail::createInDB(p);
 }
 
 ///	Protected

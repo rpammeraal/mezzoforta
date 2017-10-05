@@ -17,8 +17,10 @@ public:
     explicit SBIDManagerHelper(QObject *parent = 0);
     void emitUpdatedSBIDPtr(SBIDBasePtr ptr);
     void emitRemovedSBIDPtr(SBIDBasePtr ptr);
-    static void emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr);
+    static void emitRemovedSBIDPtrArrayStatic(const QStringList& keyList);
     static void emitRemovedSBIDPtrStatic(SBIDBasePtr ptr);
+    static void emitUpdatedSBIDPtrArrayStatic(const QStringList& keyList);
+    static void emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr);
 
 signals:
     void updatedSBIDPtr(SBIDPtr);

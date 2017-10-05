@@ -36,7 +36,7 @@ public:
     ~Controller();
 
     void clearAllCaches() const;
-    void commitAllCaches(DataAccessLayer* dal) const;
+    bool commitAllCaches(DataAccessLayer* dal) const;
     bool initSuccessFull() const;
     void preloadAllSongs() const;
     void refreshModels();
@@ -79,6 +79,7 @@ private:
         void configureMenus();
         void configureMenuItems(const QList<QAction *>& list);
         void setFontSizes() const;
+        void setupModels();
 
     void init();
 

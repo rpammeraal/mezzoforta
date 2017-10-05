@@ -1150,7 +1150,7 @@ SBTabAlbumEdit::save() const
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
         Controller* c=Context::instance()->getController();
-        c->commitAllCaches(dal);
+        successFlag=c->commitAllCaches(dal);
 
         //	G.	Tell screenstack to update any entry pointing to
         if(albumMergedFlag)

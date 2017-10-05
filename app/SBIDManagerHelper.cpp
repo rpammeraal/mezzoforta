@@ -26,16 +26,26 @@ SBIDManagerHelper::emitRemovedSBIDPtr(SBIDBasePtr ptr)
 }
 
 void
+SBIDManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
+{
+    Q_UNUSED(keyList);
+}
+
+void
 SBIDManagerHelper::emitRemovedSBIDPtrStatic(SBIDBasePtr ptr)
 {
-    qDebug() << SB_DEBUG_INFO;
     Context::instance()->managerHelper()->emitRemovedSBIDPtr(ptr);
+}
+
+void
+SBIDManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
+{
+    Q_UNUSED(keyList);
 }
 
 void
 SBIDManagerHelper::emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr)
 {
-    qDebug() << SB_DEBUG_INFO;
     Context::instance()->managerHelper()->emitUpdatedSBIDPtr(ptr);
 }
 

@@ -102,6 +102,17 @@ SBIDSongPerformance::preferredAlbumPerformancePtr() const
                 SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
 }
 
+SBIDOnlinePerformancePtr
+SBIDSongPerformance::preferredOnlinePerformancePtr() const
+{
+    const SBIDAlbumPerformancePtr apPtr=preferredAlbumPerformancePtr();
+    if(apPtr)
+    {
+        return apPtr->preferredOnlinePerformancePtr();
+    }
+    return SBIDOnlinePerformancePtr();
+}
+
 SBIDSongPtr
 SBIDSongPerformance::songPtr() const
 {

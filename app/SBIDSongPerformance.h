@@ -34,6 +34,7 @@ public:
     //	Pointers
     SBIDPerformerPtr performerPtr() const;
     SBIDAlbumPerformancePtr preferredAlbumPerformancePtr() const;
+    SBIDOnlinePerformancePtr preferredOnlinePerformancePtr() const;
     SBIDSongPtr songPtr() const;
 
     //	Redirectors

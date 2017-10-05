@@ -36,6 +36,7 @@ ExternalData::loadAlbumData(const SBIDBasePtr& ptr)
     QPixmap p;
     if(_loadImageFromCache(p,_currentPtr))
     {
+        qDebug() << SB_DEBUG_INFO;
         _artworkRetrievedFlag=1;
         emit imageDataReady(p);
     }
@@ -43,6 +44,7 @@ ExternalData::loadAlbumData(const SBIDBasePtr& ptr)
     //	2.	Wikipedia page
     if(ptr->wiki().length()>0)
     {
+        qDebug() << SB_DEBUG_INFO;
         _wikipediaURLRetrievedFlag=1;
         emit albumWikipediaPageAvailable(ptr->wiki());
     }
@@ -117,10 +119,12 @@ bool
 ExternalData::_loadImageFromCache(QPixmap& p,const SBIDBasePtr& ptr)
 {
     QString fn=getCachePath(ptr);
+    qDebug() << SB_DEBUG_INFO << fn;
     QFile f(fn);
 
     if(f.open(QIODevice::ReadOnly))
     {
+        qDebug() << SB_DEBUG_INFO;
         int len=f.size();
         char* mem=(char *)malloc(len);
         QDataStream s(&f);
@@ -129,12 +133,15 @@ ExternalData::_loadImageFromCache(QPixmap& p,const SBIDBasePtr& ptr)
 
         if(n>0)
         {
+        qDebug() << SB_DEBUG_INFO;
             QByteArray a=QByteArray(mem,len);
             p.loadFromData(a);
             return 1;
         }
+        qDebug() << SB_DEBUG_INFO;
         free(mem);
     }
+        qDebug() << SB_DEBUG_INFO;
     return 0;
 }
 
@@ -232,6 +239,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 void
 ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(_currentPtr->itemType()==SBIDBase::sb_type_album)
     {
         SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
@@ -312,6 +320,7 @@ ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
             emit albumReviewsAvailable(_allReviews);
         }
     }
+    qDebug() << SB_DEBUG_INFO;
 }
 
 void
@@ -387,6 +396,7 @@ ExternalData::handleMBIDNetwork(QNetworkReply *r)
                                     {
                                         if(Common::removeNonAlphanumeric(e.text().toLower())==title)
                                         {
+                                            qDebug() << SB_DEBUG_INFO << MBID << _currentPtr->text();
                                             _currentPtr->setMBID(MBID);
                                             matchFound=1;
                                         }
@@ -895,6 +905,7 @@ ExternalData::_getMBIDAndMore()
         QString urlString=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1")
             .arg(_currentPtr->commonPerformerName())
         ;
+        qDebug() << SB_DEBUG_INFO << urlString;
         _sendMusicBrainzQuery(m,urlString);
     }
     else
@@ -945,6 +956,7 @@ ExternalData::_getMBIDAndMore()
 
                 QString urlString=QString("http://ws.audioscrobbler.com/2.0/?method=album.search&limit=9999&api_key=5dacbfb3b24d365bcd43050c6149a40d&album=%1").
                         arg(albumPtr->albumTitle());
+                qDebug() << SB_DEBUG_INFO << urlString;
                 m->get(QNetworkRequest(QUrl(urlString)));
 
             }
@@ -1025,6 +1037,7 @@ void
 ExternalData::_storeInCache(QByteArray *a) const
 {
     QString fn=getCachePath(_currentPtr);
+    qDebug() << SB_DEBUG_INFO << fn;
     QFile f(fn);
     if(f.open(QIODevice::WriteOnly))
     {

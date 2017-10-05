@@ -154,10 +154,11 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
         //	Check if we're still the current screen. If not, ignore
-        ScreenStack* st=Context::instance()->getScreenStack();
-        ScreenItem si=st->currentScreen();
+        //	ScreenStack* st=Context::instance()->getScreenStack();
+        //	ScreenItem si=st->currentScreen();
 
-        if(si.ptr()==ptr)
+        //	No reason to ignore this if the screen is not active.
+        //	if(si.ptr()==ptr)
         {
             SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
             DataAccessLayer* dal=Context::instance()->getDataAccessLayer();

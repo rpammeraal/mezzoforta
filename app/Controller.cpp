@@ -22,6 +22,7 @@
 #include "Navigator.h"
 #include "Network.h"
 #include "PlayerController.h"
+#include "Preloader.h"
 #include "Properties.h"
 #include "SBIDBase.h"
 #include "SBIDOnlinePerformance.h"
@@ -64,7 +65,7 @@ Controller::clearAllCaches() const
     c->getSongPerformanceMgr()->clear();
 }
 
-void
+bool
 Controller::commitAllCaches(DataAccessLayer* dal) const
 {
     Context* c=Context::instance();
@@ -78,6 +79,13 @@ Controller::commitAllCaches(DataAccessLayer* dal) const
     c->getPerformerMgr()->commitAll(dal);
     c->getSongPerformanceMgr()->commitAll(dal);
     c->getSongMgr()->commitAll(dal);
+
+    //	CWIP: remove when database is cached
+    SearchItemModel* sim=Context::instance()->searchItemModel();
+    sim->populate();
+
+    //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
+    return 1;
 }
 
 
@@ -100,38 +108,18 @@ void
 Controller::refreshModels()
 {
     //	Allows some data models to be refreshed
-    MainWindow* mw=Context::instance()->getMainWindow();
 
     //	Now that we have a database connection, create a searchItem model.
-    SearchItemModel* sim=new SearchItemModel();
-    Context::instance()->setSearchItemModel(sim);
-    connect(Context::instance()->managerHelper(), SIGNAL(removedSBIDPtr(SBIDPtr)),
-            sim, SLOT(remove(SBIDPtr)));
-    connect(Context::instance()->managerHelper(), SIGNAL(updatedSBIDPtr(SBIDPtr)),
-            sim, SLOT(update(SBIDPtr)));
+    qDebug() << SB_DEBUG_INFO;
+
+//	Disabled for now. If the database is cached in memory, this will be useful.
+//	connect(Context::instance()->managerHelper(), SIGNAL(removedSBIDPtr(SBIDPtr)),
+//		sim, SLOT(remove(SBIDPtr)));
+//	connect(Context::instance()->managerHelper(), SIGNAL(updatedSBIDPtr(SBIDPtr)),
+//		sim, SLOT(update(SBIDPtr)));
 
     Navigator* n=Context::instance()->getNavigator();
     n->resetAllFiltersAndSelections();
-
-    //	Completers
-    CompleterFactory* cf=Context::instance()->completerFactory();
-
-    mw->ui.songEditTitle->setCompleter(cf->getCompleterSong());
-    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
-    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
-
-    //	SEARCH
-    QCompleter* c=mw->ui.searchEdit->completer();
-    connect(
-        c, SIGNAL(activated(const QModelIndex&)),
-        Context::instance()->getNavigator(), SLOT(openItemFromCompleter(const QModelIndex&)));
-    connect(
-        mw->ui.searchEdit,SIGNAL(returnPressed()),
-        Context::instance()->getNavigator(),SLOT(applySonglistFilter()));
-    connect(
-        c, SIGNAL(activated(QString)),
-        mw->ui.searchEdit, SLOT(clear()),
-        Qt::QueuedConnection);	//	this will clear the search box
 
     //	Clear caches
     this->clearAllCaches();
@@ -292,6 +280,10 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     init();
 
+    qDebug() << SB_DEBUG_INFO;
+    setupModels();
+
+    qDebug() << SB_DEBUG_INFO;
     refreshModels();
 
     setupUI();
@@ -400,6 +392,9 @@ Controller::setupUI()
     }
 
     qDebug() << SB_DEBUG_INFO << "playground";
+    Preloader::loadAll();
+    Context::instance()->getSongMgr()->stats();
+    Context::instance()->getPerformerMgr()->stats();
 
 //    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
 
@@ -562,6 +557,42 @@ Controller::setFontSizes() const
         }
     }
 }
+
+void
+Controller::setupModels()
+{
+    qDebug() << SB_DEBUG_INFO;
+    MainWindow* mw=Context::instance()->getMainWindow();
+    Navigator* n=Context::instance()->getNavigator();
+
+    qDebug() << SB_DEBUG_INFO;
+    SearchItemModel* sim=new SearchItemModel();
+    Context::instance()->setSearchItemModel(sim);
+
+    //	Completers
+    CompleterFactory* cf=Context::instance()->completerFactory();
+
+    mw->ui.songEditTitle->setCompleter(cf->getCompleterSong());
+    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
+    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
+
+    n->resetAllFiltersAndSelections();
+
+    //	SEARCH
+    QCompleter* c=mw->ui.searchEdit->completer();
+    connect(
+        c, SIGNAL(activated(const QModelIndex&)),
+        Context::instance()->getNavigator(), SLOT(openItemFromCompleter(const QModelIndex&)));
+    connect(
+        mw->ui.searchEdit,SIGNAL(returnPressed()),
+        Context::instance()->getNavigator(),SLOT(applySonglistFilter()));
+    connect(
+        c, SIGNAL(activated(QString)),
+        mw->ui.searchEdit, SLOT(clear()),
+        Qt::QueuedConnection);	//	this will clear the search box
+
+}
+
 void
 Controller::init()
 {

@@ -55,9 +55,7 @@ Navigator::clearSearchFilter()
     QCompleter* completer=lineEdit->completer();
     if(completer==NULL && lineEdit!=NULL)
     {
-        //	Only set up if not done. This should *never* happen, as this is done elsewhere
-        //	in Controller.
-        qDebug() << SB_DEBUG_ERROR << "SHOULD NOT HAPPEN! -- CHECK CODE";
+        //	Only set up if not done yet.
         CompleterFactory* cf=Context::instance()->completerFactory();
         completer=cf->getCompleterAll();
         lineEdit->setCompleter(completer);

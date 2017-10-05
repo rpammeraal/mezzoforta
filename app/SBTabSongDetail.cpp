@@ -295,6 +295,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
+    qDebug() << SB_DEBUG_INFO << si.ptr()->itemType();
     if(si.ptr())
     {
         if(si.ptr()->itemType()==SBIDBase::sb_type_song)
@@ -311,10 +312,20 @@ SBTabSongDetail::_populate(const ScreenItem& si)
             SBIDOnlinePerformancePtr opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(si.ptr());
             songPtr=opPtr->songPtr();
         }
+        else if(si.ptr()->itemType()==SBIDBase::sb_type_song_performance)
+        {
+            SBIDSongPerformancePtr opPtr=std::dynamic_pointer_cast<SBIDSongPerformance>(si.ptr());
+            songPtr=opPtr->songPtr();
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "should not come here.";
+        }
     }
 
     if(!songPtr)
     {
+        qDebug() << SB_DEBUG_ERROR << "Unknown item.";
         return ScreenItem();
     }
 
