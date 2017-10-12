@@ -945,11 +945,21 @@ Between 20161215 and 20170604:
 -	Search for De Mens, assign 'Dit Is Mijn Huis' to Belgica
 -	Open up album with picture available. Then open album Fuck/Buckcherry. Previous album is visible.
 
+20171011
+-	Add item to playlist, drag item in playlist anywhere else.
+-	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
+    -	entry still exists in 'All Songs'
+-	Open 'All:Ethnic' playlist, all items empty.
+
 Current:
-*	Album Edit. When Sparkle In The Rain/Simple Minds is merged with War/U2:
-    *	entry still exists in 'All Songs'
+*	Open 'The Boxer Rebellion', right click Misplaced.
+    Looks like preferredPerformanceID is NOT populated
+*	SearchItemModel is reloaded after album change. See if we can create one from scratch and replace the current one.
 
 Bugs that need to be fixed:
+*	Change import that it only displays:
+    *	choose performer box (already there)
+	*	choose performance -- only when the exact song title match appears for a different performer
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 * 	After import, show in status bar (bottom) how many songs where imported.
 *	Search box:

@@ -51,7 +51,6 @@ SBStandardItemModel::canDropMimeData(const QMimeData* data, Qt::DropAction actio
 bool
 SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-    qDebug() << SB_DEBUG_INFO << parent << row << column << parent.row();
     //	parent.row() always -1 with album edit, drag & drop with songs
     //if(parent.row()==-1)
     //{
@@ -70,10 +69,6 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << *ptr;
-
-    //const QModelIndex n=this->index(parent.row(),parent.column());
-    qDebug() << SB_DEBUG_INFO << "Dropping on " << row;
 
     this->beginRemoveRows(parent,ptr->modelPosition(),ptr->modelPosition());
     this->removeRow(ptr->modelPosition());
@@ -95,7 +90,6 @@ SBStandardItemModel::flags(const QModelIndex &index) const
 bool
 SBStandardItemModel::insertRows(int row, int count, const QModelIndex &parent)
 {
-    qDebug() << SB_DEBUG_INFO << row << count;
     return QStandardItemModel::insertRows(row,count,parent);
 }
 
@@ -103,7 +97,6 @@ SBStandardItemModel::insertRows(int row, int count, const QModelIndex &parent)
 QMimeData*
 SBStandardItemModel::mimeData(const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
     return SBModel::_mimeData(this,indexes);
 }
 
@@ -116,14 +109,12 @@ SBStandardItemModel::mimeTypes() const
 bool
 SBStandardItemModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    qDebug() << SB_DEBUG_INFO << row << count;
     return QStandardItemModel::removeRows(row,count,parent);
 }
 
 bool
 SBStandardItemModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    //qDebug() << SB_DEBUG_INFO << index << value << role;
     QStandardItemModel::setData(index,value,role);
     Q_UNUSED(value);
     QVector<int> v;

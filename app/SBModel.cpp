@@ -51,16 +51,13 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     int itemID=-1;
     bool dragableColumnFlag=0;
 
-    qDebug() << SB_DEBUG_INFO;
     if((_dragableColumnList.count()>0) && (idx.column()>=0) && (idx.column()<_dragableColumnList.count()))
     {
-        qDebug() << SB_DEBUG_INFO;
         dragableColumnFlag=_dragableColumnList.at(idx.column());
     }
 
     if(_dragableColumnList.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Determine sbid by going through all columns.
 
         for(int i=0;i<aim->columnCount();i++)
@@ -70,8 +67,6 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             header=aim->headerData(i,Qt::Horizontal).toString().toLower();
             n=aim->index(idx.row(),i);
             v=aim->data(n, Qt::DisplayRole);
-
-            qDebug() << SB_DEBUG_INFO << header;
 
             if(header=="sb_item_key")
             {
@@ -111,18 +106,15 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     }
     else if(dragableColumnFlag==1)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Determine sbid from relatively from actual column that is clicked
         QModelIndex n;
 
         //	key
         n=aim->index(idx.row(),idx.column()-1);
         QString key=aim->data(n, Qt::DisplayRole).toString();
-        qDebug() << SB_DEBUG_INFO << n << key;
 
         if((!ptr) && key.length())
         {
-            qDebug() << SB_DEBUG_INFO << key;
             ptr=SBIDBase::createPtr(key,1);
             return ptr;
         }

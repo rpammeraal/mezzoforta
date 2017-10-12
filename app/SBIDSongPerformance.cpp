@@ -63,10 +63,13 @@ void
 SBIDSongPerformance::sendToPlayQueue(bool enqueueFlag)
 {
     const SBIDAlbumPerformancePtr apPtr=preferredAlbumPerformancePtr();
+        qDebug() << SB_DEBUG_INFO << this->key();
     if(apPtr)
     {
+        qDebug() << SB_DEBUG_INFO << apPtr->key();
         apPtr->sendToPlayQueue(enqueueFlag);
     }
+        qDebug() << SB_DEBUG_INFO;
 }
 
 QString

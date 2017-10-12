@@ -577,7 +577,7 @@ Preloader::playlistItems(int playlistID)
     QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "18" <<  "6" << "27" << "28" << "29" <<  "4";
     QStringList onlinePerformanceFields; onlinePerformanceFields <<  "3" << "21" << "36";
     QStringList chartFields; chartFields                         <<  "5" << "30" << "31" << "32" << "33";
-    QStringList playlistFields; playlistFields                   <<  "2" << "34" << "35" << "33";
+    QStringList playlistFields; playlistFields                   <<  "4" << "34" << "35";
     QStringList playlistDetailFields; playlistDetailFields       <<  "0" <<  "1" <<  "2" <<  "3" <<  "4" <<  "5" <<  "6" <<  "7" <<  "8";
 
     QString q;
@@ -760,7 +760,7 @@ Preloader::playlistItems(int playlistID)
         }
 
         //	Process playlist
-        key=queryList.isNull(2)?QString():SBIDPlaylist::createKey(queryList.value(2).toInt());
+        key=queryList.isNull(4)?QString():SBIDPlaylist::createKey(queryList.value(2).toInt());
         if(key.length()>0)
         {
             itemPtr=(plmgr->contains(key)? plmgr->retrieve(key,SBIDPlaylistMgr::open_flag_parentonly): _instantiatePlaylist(plmgr,playlistFields,queryList));

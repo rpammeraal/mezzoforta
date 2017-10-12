@@ -30,7 +30,14 @@ public:
     //	SBIDPlaylistDetail specific methods
     virtual SBIDBase::sb_type consistOfItemType() const;
     int playlistPosition() const { return _playlistPosition; }
-    void setPlaylistPosition(int i) { if (i!=_playlistPosition) { _playlistPosition=i; setChangedFlag(); }}
+    void setPlaylistPosition(int i)
+    {
+        if (i!=_playlistPosition)
+        {
+            _playlistPosition=i;
+            setChangedFlag();
+        }
+    }
 
     //	Pointers
     SBIDPlaylistPtr playlistPtr() const;

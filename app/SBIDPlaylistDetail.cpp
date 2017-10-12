@@ -201,7 +201,7 @@ SBIDPlaylistDetail::ptr() const
         return onlinePerformancePtr();
 
     case SBIDBase::sb_type_playlist:
-        return playlistPtr();
+        return childPlaylistPtr();
 
     case SBIDBase::sb_type_chart:
         return chartPtr();
@@ -294,7 +294,7 @@ SBIDPlaylistDetail::updateSQL() const
     {
         SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
     }
-    qDebug() << SB_DEBUG_INFO << SQL;
+    qDebug() << SB_DEBUG_INFO << ID() << SQL;
 
     return SQL;
 
@@ -381,7 +381,8 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
         break;
     }
 
-    return SBIDPlaylistDetail::createInDB(p);
+    SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
+    return pdMgr->createInDB(p);
 }
 
 ///	Protected
@@ -454,7 +455,6 @@ SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
 
     //	Done
     return std::make_shared<SBIDPlaylistDetail>(pd);
-
 }
 
 SBIDPlaylistDetailPtr

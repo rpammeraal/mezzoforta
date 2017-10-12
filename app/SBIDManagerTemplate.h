@@ -54,7 +54,7 @@ public:
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=OpenFlags::open_flag_default);
 
     //	Update
-    void add(const std::shared_ptr<T>& ptr);	//	CWIP: not sure if needed, when we have createInDB
+    std::shared_ptr<T> add(const std::shared_ptr<T>& ptr);	//	CWIP: not sure if needed, when we have createInDB
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL);
     bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool emitFlag=1);
     bool commitAll(DataAccessLayer* dal);
@@ -349,10 +349,10 @@ SBIDManagerTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openF
 }
 
 //	Update
-template <class T, class parentT> void
+template <class T, class parentT> std::shared_ptr<T>
 SBIDManagerTemplate<T,parentT>::add(const std::shared_ptr<T>& ptr)
 {
-    addItem(ptr);
+    return addItem(ptr);
 }
 
 template <class T, class parentT> bool
@@ -424,7 +424,6 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 template <class T, class parentT> bool
 SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
 {
-    qDebug() << SB_DEBUG_INFO << _name;
     std::shared_ptr<T> ptr;
     QStringList updatedKeys;
     QStringList removedKeys;
@@ -437,17 +436,21 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
     {
         const QString key=allChanges.at(i);
         ptr=retrieve(key);
+        qDebug() << SB_DEBUG_INFO << _name << "committing " << ptr->ID() << key;
 
         if(ptr->deletedFlag())
         {
+            qDebug() << SB_DEBUG_INFO << _name << "removed";
             removedKeys.append(ptr->key());
         }
         else
         {
             updatedKeys.append(ptr->key());
+            qDebug() << SB_DEBUG_INFO << _name << "updated";
         }
         commit(ptr,dal);
     }
+    qDebug() << SB_DEBUG_INFO << _name << "Done committing";
 
     if(removedKeys.count())
     {
@@ -507,6 +510,7 @@ SBIDManagerTemplate<T,parentT>::rollbackChanges1()
 template <class T, class parentT> void
 SBIDManagerTemplate<T,parentT>::setChanged(std::shared_ptr<T> ptr)
 {
+    SB_RETURN_VOID_IF_NULL(ptr);
     _addToChangedList(ptr);
 }
 

@@ -70,14 +70,6 @@ SBSqlQueryModel::data(const QModelIndex &item, int role) const
 bool
 SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
-    qDebug() << SB_DEBUG_INFO << parent.row() << row << column;
-    //	Always -1 for drag/drop in editAlbum, maybe fine for other
-    //if(parent.row()==-1)
-    //{
-        //qDebug() << SB_DEBUG_INFO;
-        //return false;
-    //}
-
     if (!canDropMimeData(data, action, row, column, parent))
     {
         return false;
@@ -90,10 +82,8 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
-    qDebug() << SB_DEBUG_INFO << "Dropping " << *fromIDPtr;
 
     const QModelIndex n=this->index(parent.row(),0);
-    qDebug() << SB_DEBUG_INFO << "idx=" << n;
 
     SBIDPtr toIDPtr=determineSBID(n);
 
@@ -112,7 +102,7 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "row < 0" << row << "drag/drop abortée";
+        qDebug() << SB_DEBUG_WARNING << "row < 0" << row << "drag/drop abortée";
     }
     return 1;
 }
@@ -126,7 +116,6 @@ SBSqlQueryModel::flags(const QModelIndex &index) const
 QMimeData*
 SBSqlQueryModel::mimeData(const QModelIndexList & indexes) const
 {
-    qDebug() << SB_DEBUG_INFO;
     return SBModel::_mimeData(this,indexes);
 }
 

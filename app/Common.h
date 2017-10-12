@@ -63,7 +63,7 @@ class QTableView;
 
 #include "SBDuration.h"
 
-static int ID=0;
+static int ID=-1;
 
 class Common
 {
@@ -154,7 +154,7 @@ public:
     static QString correctArticle(const QString& );
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
-    static int nextID() { return ++ID; }
+    static int nextID() { return --ID; }
     static int parseIntFieldDB(const QSqlRecord* sr, int index);
     static QString parseTextFieldDB(const QSqlRecord* sr, int index);
     static quint64 random(quint64 max);

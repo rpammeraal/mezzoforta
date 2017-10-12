@@ -605,67 +605,6 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
             "r.rank=1 "
         "ORDER BY "
             "1, 3"
-
-
-//        "SELECT "
-//            "0 AS matchRank, "
-//            "s.artist_id, "
-//            "s.name, "
-//            "s.www, "
-//            "s.mbid "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___artist s "
-//        "WHERE "
-//            "REPLACE(LOWER(s.name),' ','') = REPLACE(LOWER('%1'),' ','') "
-//        "UNION "
-//        "SELECT DISTINCT "
-//            "1 AS matchRank, "
-//            "a.artist_id, "
-//            "a.name, "
-//            "a.www, "
-//            "a.mbid "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___artist a, "
-//            "article t "
-//        "WHERE "
-//            //"LOWER(a.name)!=LOWER(regexp_replace(a.name,E'^'||aa.word,'','i')) AND "
-//            //"LOWER(regexp_replace(a.name,E'^'||aa.word,'','i'))=LOWER('%4') "
-//            //"LOWER(SUBSTR(a.name,LENGTH(aa.word || ' ')+1,LENGTH(a.name))) = LOWER('%4') "
-//            "( "
-//                "a.artist_id!=(%2) AND "
-//                "LENGTH(a.name)>LENGTH(t.word) AND "
-//                "LOWER(SUBSTR(a.name,1,LENGTH(t.word))) || ' '= t.word || ' ' AND "
-//                "LOWER(SUBSTR(a.name,LENGTH(t.word)+2))=LOWER('%4') "
-//            ") "
-//            "OR "
-//            "( "
-//                "LENGTH(a.name)>LENGTH(t.word) AND "
-//                "LOWER(SUBSTR(a.name,1,LENGTH('%4')))=LOWER('%4') AND "
-//                "( "
-//                    "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=' '||LOWER(t.word) OR "
-//                    "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=','||LOWER(t.word)  "
-//                ") "
-//            ") "
-//        "UNION "
-//        "SELECT DISTINCT "
-//            "2 AS matchRank, "
-//            "s.artist_id, "
-//            "s.name, "
-//            "s.www, "
-//            "s.mbid "
-//        "FROM "
-//            "___SB_SCHEMA_NAME___artist s "
-//        "WHERE "
-//            "s.artist_id!=(%2) AND "
-//            "( "
-//                "substr(s.soundex,1,length('%3'))='%3' OR "
-//                "substr('%3',1,length(s.soundex))=s.soundex "
-//            ") AND "
-//            "length(s.soundex)<= 2*length('%3') AND "
-//            //	avoid matches already categorized for rank=0
-//            "REPLACE(LOWER(s.name),' ','') != REPLACE(LOWER('%1'),' ','') "
-//        "ORDER by "
-//            "1, 3"
     )
         .arg(Common::escapeSingleQuotes(tobeFound.performerName))
         .arg(excludeID)
@@ -692,17 +631,46 @@ SBIDPerformer::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDPerformer::mergeFrom(SBIDPerformerPtr &from)
+SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
 {
-//    //	Transfer related performers from `from' to `to' :)
-//    for(int i=0;i<_relatedPerformerKey.count();i++)
-//    {
-//        if(!(to->_relatedPerformerKey.contains(_relatedPerformerKey.at(i))))
-//        {
-//            to->_relatedPerformerKey.append(_relatedPerformerKey.at(i));
-//        }
-//    }
-//    setMergedWithID(to->performerID());
+    SB_RETURN_VOID_IF_NULL(pPtrFrom);
+    refreshDependents(0,0);
+
+    SBIDPerformerMgr* peMgr=Context::instance()->getPerformerMgr();
+    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
+
+    //	Merge related performers
+    QVectorIterator<SBIDPerformerPtr> it(pPtrFrom->relatedPerformers());
+    while(it.hasNext())
+    {
+        SBIDPerformerPtr pPtr=it.next();
+        if(!_relatedPerformerKey.contains(pPtr->key()))
+        {
+            _relatedPerformerKey.append(pPtr->key());
+        }
+
+        //	Each related performer of the mergee needs to be known
+        //	that its related performer (the mergee) is now (*this).
+        pPtr->_mergeRelatedPerformer(pPtrFrom->key(),this->key());
+        peMgr->setChanged(pPtr);
+    }
+
+    //	Remove pPtrFrom from related performers, as to avoid referring
+    //	to ourselves.
+    if(_relatedPerformerKey.contains(pPtrFrom->key()))
+    {
+        _relatedPerformerKey.removeAll(pPtrFrom->key());
+    }
+
+    QVectorIterator<SBIDAlbumPtr> albumListIT(pPtrFrom->albumList());
+    while(albumListIT.hasNext())
+    {
+        SBIDAlbumPtr aPtr=albumListIT.next();
+        aPtr->setAlbumPerformerID(this->performerID());
+        aMgr->setChanged(aPtr);
+    }
+
+
 }
 
 void
@@ -1232,6 +1200,20 @@ SBIDPerformer::_loadSongPerformances()
     _songPerformances=_loadSongPerformancesFromDB();
 }
 
+void
+SBIDPerformer::_mergeRelatedPerformer(const QString &fromKey, const QString &toKey)
+{
+    if(_relatedPerformerKey.contains(fromKey))
+    {
+        _relatedPerformerKey.removeAll(fromKey);
+        setChangedFlag();
+    }
+    if(!_relatedPerformerKey.contains(toKey))
+    {
+        _relatedPerformerKey.append(toKey);
+        setChangedFlag();
+    }
+}
 
 QVector<SBIDAlbumPerformancePtr>
 SBIDPerformer::_loadAlbumPerformancesFromDB() const

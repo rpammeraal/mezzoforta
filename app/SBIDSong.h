@@ -108,7 +108,7 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _songID=PK;  }
     QStringList updateSQL() const;
-    static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found);
+    static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);
 
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();

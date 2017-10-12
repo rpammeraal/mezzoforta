@@ -24,7 +24,7 @@ public:
     SBIDPerformer(const SBIDPerformer& c);
     ~SBIDPerformer();
 
-    //	Public methods
+//	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
@@ -84,7 +84,7 @@ protected:
     static SBIDPerformerPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
-    void mergeFrom(SBIDPerformerPtr& from);
+    void mergeFrom(SBIDPerformerPtr& pPtrFrom);
     static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
@@ -102,10 +102,10 @@ private:
     QString                           _notes;
 
     //	Attributes derived from core attributes
-    QVector<SBIDAlbumPtr>             _albumList;
-    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;
+    QVector<SBIDAlbumPtr>             _albumList;	//	replace with string keys
+    QVector<SBIDAlbumPerformancePtr>  _albumPerformances;	//	replace with string keys
     QVector<QString>                  _relatedPerformerKey;
-    QVector<SBIDSongPerformancePtr>   _songPerformances;
+    QVector<SBIDSongPerformancePtr>   _songPerformances;	//	replace with string keys
 
     //	Methods
     void _copy(const SBIDPerformer& c);
@@ -114,6 +114,7 @@ private:
     void _loadAlbumPerformances();
     QVector<QString> _loadRelatedPerformers() const;
     void _loadSongPerformances();
+    void _mergeRelatedPerformer(const QString& fromKey, const QString& toKey);
 
     QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QVector<SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;

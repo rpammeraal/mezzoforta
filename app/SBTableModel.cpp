@@ -59,13 +59,6 @@ SBTableModel::data(const QModelIndex &item, int role) const
 bool
 SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
-    //	Always -1 for drag/drop in editAlbum, maybe fine for other
-    //if(parent.row()==-1)
-    //{
-        //qDebug() << SB_DEBUG_INFO;
-        //return false;
-    //}
-
     if (!canDropMimeData(data, action, row, column, parent))
     {
         return false;
@@ -81,8 +74,6 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
     const QModelIndex n=this->index(parent.row(),0);
 
-    SBIDPtr toIDPtr=determineSBID(n);
-
     //emit assign(fromIDPtr,toIDPtr);
     if(row>=0)
     {
@@ -97,7 +88,7 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "row < 0" << row << "drag/drop abortée";
+        qDebug() << SB_DEBUG_WARNING << "row < 0" << row << "drag/drop abortée";
     }
     return 1;
 }
@@ -391,11 +382,11 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
         r=list.at(list.count()-1);
         if(!r.plPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "plPtr NOT defined\n";
+            qDebug() << SB_DEBUG_ERROR << "plPtr NOT defined\n";
         }
         if(!r.opPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined\n";
+            qDebug() << SB_DEBUG_ERROR << "opPtr NOT defined\n";
         }
     }
     //	Populate data
@@ -410,11 +401,11 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
 
         if(!plPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "plPtr NOT defined!";
+            qDebug() << SB_DEBUG_ERROR << "plPtr NOT defined!";
         }
         if(!opPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined!";
+            qDebug() << SB_DEBUG_ERROR << "opPtr NOT defined!";
         }
 
         if(plPtr && opPtr)
@@ -450,11 +441,9 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPlaylistDetailPtr> &it
     while(it.hasNext())
     {
         it.next();
-        SBIDPtr itemPtr=it.value();
-
+        SBIDPlaylistDetailPtr itemPtr=it.value();	//	Don't descent down and get the ptr inside PlaylistDetail
         if(itemPtr)
         {
-
             _setItem(i,0,QString("%1").arg(it.key()+1));
             _setItem(i,1,QString("%1").arg(itemPtr->key()));
             _setItem(i,2,QString("%1").arg(itemPtr->genericDescription()));

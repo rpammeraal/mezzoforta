@@ -61,7 +61,6 @@ SBIDPlaylist::itemType() const
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDPlaylist::onlinePerformances(bool updateProgressDialogFlag) const
 {
-    qDebug() << SB_DEBUG_INFO;
     QList<SBIDPtr> compositesTraversed;
     QList<SBIDOnlinePerformancePtr> opList;
 
@@ -121,6 +120,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 
     if(!found)
     {
+        SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
@@ -246,14 +246,14 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
 
         if(pdPtr)
         {
-            qDebug() << SB_DEBUG_INFO << i << pdPtr->text() << pdPtr->playlistPosition();
             if(pdPtr->playlistPosition()!=i+1)
             {
                 //	playlistIndex is 0 based, playlistPosition is 1 based
                 //	Do after increment of playlistIndex
                 qDebug() << SB_DEBUG_INFO
-                         << pdPtr->onlinePerformanceID()
-                         << pdPtr->playlistPosition()
+                         << pdPtr->key()
+                         << "old pos" << pdPtr->playlistPosition()
+                         << "new position=" << i+1
                 ;
                 pdPtr->setPlaylistPosition(i+1);
                 pdmgr->setChanged(pdPtr);
@@ -266,7 +266,6 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
     }
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    qDebug() << SB_DEBUG_INFO;
     return pdmgr->commitAll(dal);
 }
 
@@ -361,6 +360,7 @@ SBIDPlaylist::addDependent(SBIDPtr ptr)
 
     if(!found)
     {
+        SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
@@ -582,7 +582,6 @@ SBIDPlaylist::operator QString() const
 void
 SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allOpPtr, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag)
 {
-    qDebug() << SB_DEBUG_INFO << rootPlPtr->text() << updateProgressDialogFlag;
     int progressCurrentValue=0;
     int progressMaxValue=rootPlPtr->items().count();
     if(updateProgressDialogFlag)

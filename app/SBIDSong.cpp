@@ -1450,7 +1450,7 @@ SBIDSong::updateSQL() const
 }
 
 Common::result
-SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found)
+SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag)
 {
     SBIDSongMgr* smgr=Context::instance()->getSongMgr();
     Common::result result=Common::result_canceled;
@@ -1458,6 +1458,10 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 
     if(smgr->find(p,exclude,matches))
     {
+        for(int i=0;i<matches.count();i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i << matches[i].count();
+        }
         qDebug() << SB_DEBUG_INFO << matches.count();
         if(matches[0].count()==1)
         {

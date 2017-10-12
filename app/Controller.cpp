@@ -84,6 +84,10 @@ Controller::commitAllCaches(DataAccessLayer* dal) const
     SearchItemModel* sim=Context::instance()->searchItemModel();
     sim->populate();
 
+    //	CWIP: remove when database is cached
+    this->preloadAllSongs();
+
+
     //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
     return 1;
 }

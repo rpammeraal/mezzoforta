@@ -105,8 +105,11 @@ SearchItemModel::populate()
 
     //	Start populating model.
     beginResetModel();
+    this->clear();
 
     QSqlQuery queryList(query,db);
+    qDebug() << SB_DEBUG_INFO << queryList.size();
+    int j=0;
     while(queryList.next())
     {
         QSqlRecord r=queryList.record();
@@ -120,6 +123,8 @@ SearchItemModel::populate()
         int albumID=Common::parseIntFieldDB(&r,i++);
         QString albumTitle=queryList.value(i++).toString();
 
+        qDebug() << SB_DEBUG_INFO << j++ << queryList.size() << itemType << songTitle << performerName << albumTitle;
+
         _add(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle);
     }
     qDebug() << SB_DEBUG_INFO;
@@ -128,6 +133,7 @@ SearchItemModel::populate()
     QModelIndex e=this->index(this->rowCount(),this->columnCount());
     endResetModel();
     emit dataChanged(s,e);
+    qDebug() << SB_DEBUG_INFO;
     debugShow("populate");
 }
 

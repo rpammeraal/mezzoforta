@@ -61,6 +61,7 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     if(selectedPtr)
     {
+        qDebug() << SB_DEBUG_INFO << selectedPtr->key();
         pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }

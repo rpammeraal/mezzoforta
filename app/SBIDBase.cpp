@@ -29,7 +29,7 @@ SBIDBase::SBIDBase(const SBIDBase &c)
 
 
     _changedFlag=c._changedFlag;
-    _id=c._id;
+    _id=-2;	//	do NOT copy -- identifies copy
     //_newFlag=c._newFlag;
     _sb_item_type=c._sb_item_type;
     _sb_mbid=c._sb_mbid;
