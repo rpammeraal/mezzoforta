@@ -110,6 +110,7 @@ SearchItemModel::populate()
     QSqlQuery queryList(query,db);
     qDebug() << SB_DEBUG_INFO << queryList.size();
     int j=0;
+    QTime time; time.start();
     while(queryList.next())
     {
         QSqlRecord r=queryList.record();
@@ -123,18 +124,20 @@ SearchItemModel::populate()
         int albumID=Common::parseIntFieldDB(&r,i++);
         QString albumTitle=queryList.value(i++).toString();
 
-        qDebug() << SB_DEBUG_INFO << j++ << queryList.size() << itemType << songTitle << performerName << albumTitle;
-
         _add(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle);
+        if(time.elapsed()>700)
+        {
+            QCoreApplication::processEvents();
+            time.restart();
+        }
     }
-    qDebug() << SB_DEBUG_INFO;
 
     QModelIndex s=this->index(0,0);
     QModelIndex e=this->index(this->rowCount(),this->columnCount());
     endResetModel();
     emit dataChanged(s,e);
+    this->sort(0);
     qDebug() << SB_DEBUG_INFO;
-    debugShow("populate");
 }
 
 void
@@ -209,11 +212,6 @@ SearchItemModel::update(const SBIDPtr& ptr)
             qDebug() << SB_DEBUG_ERROR << "Should not come here";
     }
 
-    QString display;
-    QString altDisplay;
-    QString k;
-    _constructDisplay(ptr->itemType(),songID,songTitle,performerID,performerName,albumID,albumTitle,k,display,altDisplay);
-
     _add(ptr->itemType(),songID,songTitle,performerID,performerName,albumID,albumTitle);
 
     endResetModel();
@@ -233,6 +231,9 @@ SearchItemModel::_add(SBIDBase::sb_type itemType, int songID, const QString &son
     QString display;
     QString altDisplay;
     _constructDisplay(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle,key,display,altDisplay);
+
+    display=Common::removeExtraSpaces(display);
+    altDisplay=Common::removeExtraSpaces(altDisplay);
 
     for(int i=0;i<2;i++)
     {
@@ -259,6 +260,11 @@ SearchItemModel::_constructDisplay(SBIDBase::sb_type itemType, int songID, const
     QString performerNameAdj=Common::removeAccents(performerName);
     QString songTitleAdj=Common::removeAccents(songTitle);
     QString albumTitleAdj=Common::removeAccents(albumTitle);
+
+    Common::toTitleCase(performerNameAdj);
+    Common::toTitleCase(songTitleAdj);
+    Common::toTitleCase(albumTitleAdj);
+
     switch(itemType)
     {
     case SBIDBase::sb_type_song:

@@ -77,6 +77,7 @@ public:
 
     //	Helper methods for SBIDManagerTemplate
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
+    static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveUnknownAlbum();
 
     //	Static methods

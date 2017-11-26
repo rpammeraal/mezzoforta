@@ -61,7 +61,6 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     if(selectedPtr)
     {
-        qDebug() << SB_DEBUG_INFO << selectedPtr->key();
         pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }
@@ -496,13 +495,13 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     rowCount=populateTableView(tv,tm,4);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,rowCount>0);
 
-    //QUrl url(performer.url);
-    //if(url.isValid()==1)
-    //{
-        //mw->ui.performerDetailHomepage->load(url);
-        //mw->ui.performerDetailHomepage->show();
-    //}
-    //mw->ui.tabPerformerDetailLists->setTabEnabled(3,url.isValid());
+    QUrl url(performerPtr->url());
+    if(url.isValid()==1)
+    {
+        mw->ui.performerDetailHomepage->load(url);
+        mw->ui.performerDetailHomepage->show();
+    }
+    mw->ui.tabPerformerDetailLists->setTabEnabled(5,url.isValid());
 
     //	Update current eligible tabID
     currentScreenItem.setSubtabID(mw->ui.tabPerformerDetailLists->currentIndex());

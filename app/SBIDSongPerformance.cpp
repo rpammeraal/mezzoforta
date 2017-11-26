@@ -63,13 +63,10 @@ void
 SBIDSongPerformance::sendToPlayQueue(bool enqueueFlag)
 {
     const SBIDAlbumPerformancePtr apPtr=preferredAlbumPerformancePtr();
-        qDebug() << SB_DEBUG_INFO << this->key();
     if(apPtr)
     {
-        qDebug() << SB_DEBUG_INFO << apPtr->key();
         apPtr->sendToPlayQueue(enqueueFlag);
     }
-        qDebug() << SB_DEBUG_INFO;
 }
 
 QString
@@ -195,25 +192,15 @@ SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
     SBIDSongPerformancePtr spPtr;
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
     QMap<int,QList<SBIDSongPerformancePtr>> matches;
-    qDebug() << SB_DEBUG_INFO;
     const int count=spMgr->find(p,SBIDSongPerformancePtr(),matches,1);
 
-    qDebug() << SB_DEBUG_INFO << count ;
     if(count)
     {
-        qDebug() << SB_DEBUG_INFO;
         if(matches[0].count()==1)
         {
-            qDebug() << SB_DEBUG_INFO;
             spPtr=matches[0][0];
-            qDebug() << SB_DEBUG_INFO << spPtr->genericDescription();
         }
     }
-    if(spPtr)
-    {
-        qDebug() << SB_DEBUG_INFO << spPtr->genericDescription();
-    }
-            qDebug() << SB_DEBUG_INFO;
 
     return spPtr;
 }
@@ -440,7 +427,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         "WHERE "
             "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
         "UNION "
-        //	soundex match
+        //	soundex match, only if length of soundex > 0
         "SELECT "
             "2 AS matchRank, "
             "p.performance_id, "
@@ -454,13 +441,13 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
                     "p.performance_id=s.original_performance_id "
                     "%4 "
         "WHERE "
+            "LENGTH('%3')!=0 AND "
             "( "
                 "SUBSTR(s.soundex,1,LENGTH('%3'))='%3' OR "
                 "SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
             ") "
         "ORDER BY "
             "1,3 "
-
     )
         .arg(Common::escapeSingleQuotes(Common::simplified(tobeFound.songTitle)))
         .arg(tobeFound.performerID)

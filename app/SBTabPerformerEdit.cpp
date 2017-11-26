@@ -185,13 +185,9 @@ SBTabPerformerEdit::save() const
     QString editPerformerName=mw->ui.performerEditName->text();
     QString editNotes=mw->ui.performerEditNotes->text();
     QString editURL=mw->ui.performerEditWebSite->text();
-    if(editURL.right(8).toLower()=="https://")
+    if((editURL.left(8).toLower()!="https://") &&  (editURL.right(7).toLower()!="http://"))
     {
-        editURL=editURL.mid(8);
-    }
-    else if(editURL.right(7).toLower()=="http://")
-    {
-        editURL=editURL.mid(7);
+        editURL=QString("http://%1").arg(editURL);
     }
 
     //	If only case is different in performerName, save the new name as is.
@@ -235,7 +231,6 @@ SBTabPerformerEdit::save() const
 
     if(mergeFlag==0)
     {
-        qDebug() << SB_DEBUG_INFO << editNotes;
         //	Same performer. All is needed is to save orgPerformer.
         orgPerformerPtr->setPerformerName(editPerformerName);
         orgPerformerPtr->setURL(editURL);

@@ -81,7 +81,8 @@ public:
         bool createArtificialAlbumFlag;
         QString errorMsg;
         int ID;
-        QString key;
+        QString searchKey;	//	file path to online song
+        QString parentKey;	//	file path to directory (this is compatible with MLalbumPath.searchkey
 
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
@@ -95,13 +96,24 @@ public:
     public:
         MLalbumPath() { _init(); }
 
-        int maxPosition;
+        int              albumID;
+        int              albumPerformerID;
+        QString          albumPerformerName;
+        QString          albumTitle;
+        QString          genre;
+        int              maxPosition;
+        QString          parentDirectoryName;
+        QString          searchKey;	//	file path to directory
         QVector<QString> uniqueAlbumTitles;
-        QVector<int> uniqueSongPerformerIDs;
+        QVector<int>     uniqueSongPerformerIDs;
+        bool             variousPerformerFlag;
+        int              year;
 
-        bool multipleEntriesFlag() const { return (uniqueAlbumTitles.count()>1 || uniqueSongPerformerIDs.count()>1)?1:0; }
+        bool             newFlag;
+
+        bool multipleEntriesFlag() const { return (variousPerformerFlag || uniqueAlbumTitles.count()>1 || uniqueSongPerformerIDs.count()>1)?1:0; }
     private:
-        void _init() { maxPosition=0; }
+        void _init() { albumID=-1; albumPerformerID=-1; maxPosition=0; variousPerformerFlag=0; year=-1; }
 
     };
     typedef std::shared_ptr<MLalbumPath> MLalbumPathPtr;

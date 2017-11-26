@@ -120,7 +120,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 
     if(!found)
     {
-        SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
+        //SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
@@ -360,7 +360,7 @@ SBIDPlaylist::addDependent(SBIDPtr ptr)
 
     if(!found)
     {
-        SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
+        //SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;

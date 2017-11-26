@@ -1298,13 +1298,6 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
     QString newSoundex=Common::soundex(p.songTitle);
     int excludeSongID=(existingSongPtr?existingSongPtr->songID():-1);
 
-    qDebug() << SB_DEBUG_INFO
-             << "title=" << p.songTitle
-             << "performerID=" << p.performerID
-             << "songID=" << p.songID
-    ;
-
-
     //	MatchRank:
     //	0	-	exact match with specified artist (0 or 1 in data set).
     //	0	-	exact match based on ID's
@@ -1458,21 +1451,14 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 
     if(smgr->find(p,exclude,matches))
     {
-        for(int i=0;i<matches.count();i++)
-        {
-            qDebug() << SB_DEBUG_INFO << i << matches[i].count();
-        }
-        qDebug() << SB_DEBUG_INFO << matches.count();
         if(matches[0].count()==1)
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
-        else
+        else if((showAllChoicesFlag==1) || (matches[1].count()>1))
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(p,exclude,matches);
@@ -1495,12 +1481,15 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
                 }
             }
         }
+        else if(showAllChoicesFlag==0)
+        {
+            result=Common::result_missing;
+        }
     }
     else
     {
         result=Common::result_missing;
     }
-    qDebug() << SB_DEBUG_INFO << result;
     return result;
 }
 

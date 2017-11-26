@@ -35,6 +35,7 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 {
     if(!_visible)
     {
+        qDebug() << SB_DEBUG_INFO;
         return;
     }
     if(!_stepList.contains(step))
@@ -83,13 +84,13 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 
     if(offset!=_prevOffset)
     {
-        if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
+        //	if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
         {
             _pd.setValue(offset);
             _prevOffset=offset;
-            QCoreApplication::processEvents();
         }
     }
+    QCoreApplication::processEvents();
 }
 
 void

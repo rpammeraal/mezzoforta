@@ -81,12 +81,18 @@ Controller::commitAllCaches(DataAccessLayer* dal) const
     c->getSongMgr()->commitAll(dal);
 
     //	CWIP: remove when database is cached
-    SearchItemModel* sim=Context::instance()->searchItemModel();
-    sim->populate();
+    SearchItemModel* oldSim=Context::instance()->searchItemModel();
+    SearchItemModel* newSim=new SearchItemModel();
+
+    QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+    QCompleter* completer=lineEdit->completer();
+    completer->setModel(newSim);
+
+    delete(oldSim); oldSim=NULL;
+    Context::instance()->setSearchItemModel(newSim);
 
     //	CWIP: remove when database is cached
     this->preloadAllSongs();
-
 
     //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
     return 1;
@@ -104,7 +110,6 @@ Controller::preloadAllSongs() const
 {
     MainWindow* mw=Context::instance()->getMainWindow();
     SBTabSongsAll* tsa=mw->ui.tabAllSongs;
-    qDebug() << SB_DEBUG_INFO;
     tsa->preload();
 }
 
@@ -114,7 +119,6 @@ Controller::refreshModels()
     //	Allows some data models to be refreshed
 
     //	Now that we have a database connection, create a searchItem model.
-    qDebug() << SB_DEBUG_INFO;
 
 //	Disabled for now. If the database is cached in memory, this will be useful.
 //	connect(Context::instance()->managerHelper(), SIGNAL(removedSBIDPtr(SBIDPtr)),
@@ -127,7 +131,6 @@ Controller::refreshModels()
 
     //	Clear caches
     this->clearAllCaches();
-    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Public slots:
@@ -284,10 +287,8 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     init();
 
-    qDebug() << SB_DEBUG_INFO;
     setupModels();
 
-    qDebug() << SB_DEBUG_INFO;
     refreshModels();
 
     setupUI();
@@ -327,7 +328,6 @@ Controller::setupUI()
     //	Frequently used pointers
     MainWindow* mw=Context::instance()->getMainWindow();
 
-    qDebug() << SB_DEBUG_INFO << "Controller:setupUI:start";
 
     ///	Statusbar
     mw->ui.statusBar->setReadOnly(true);
@@ -395,7 +395,6 @@ Controller::setupUI()
         mw->ui.frSchema->setVisible(0);
     }
 
-    qDebug() << SB_DEBUG_INFO << "playground";
     Preloader::loadAll();
     Context::instance()->getSongMgr()->stats();
     Context::instance()->getPerformerMgr()->stats();
@@ -565,11 +564,9 @@ Controller::setFontSizes() const
 void
 Controller::setupModels()
 {
-    qDebug() << SB_DEBUG_INFO;
     MainWindow* mw=Context::instance()->getMainWindow();
     Navigator* n=Context::instance()->getNavigator();
 
-    qDebug() << SB_DEBUG_INFO;
     SearchItemModel* sim=new SearchItemModel();
     Context::instance()->setSearchItemModel(sim);
 

@@ -161,6 +161,7 @@ public:
     static quint64 randomOldestFirst(quint64 max);
     static QString removeAccents(const QString& s);
     static QString removeArticles(const QString& s);
+    static QString removeExtraSpaces(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);
     static QString sanitize(const QString& s);
     static QString simplified(const QString& s);

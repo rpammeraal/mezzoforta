@@ -12,13 +12,14 @@ SQLITEDB=$3
 PORT=22500
 HOST=mars
 TEMPDB=tempdb
+OUTFILE=/tmp/$DB\_$SCHEMA
 
 echo DB $DB
 echo SCHEMA $SCHEMA
 echo SQLITEDB $SQLITEDB
+echo OUTFILE $OUTFILE
 
 echo exporting database
-OUTFILE=/tmp/$DB\_$SCHEMA
 
 cat >$OUTFILE <<EOF
 BEGIN;
@@ -32,7 +33,9 @@ pg_dump --dbname=$DB --host=$HOST --port=$PORT \
 	--column-inserts \
 	--inserts \
 	--no-security-labels \
+	--section=pre-data \
 	--section=data \
+	-C \
 	-T article                     \
 	-T config_daemon               \
 	-T config_host                 \
@@ -50,18 +53,6 @@ pg_dump --dbname=$DB --host=$HOST --port=$PORT \
 	-T $SCHEMA.category_index      \
 	-T genre                       \
 	-t $SCHEMA.artist              \
-	-t $SCHEMA.artist_match        \
-	-t $SCHEMA.artist_rel          \
-	-t $SCHEMA.song                \
-	-t $SCHEMA.lyrics              \
-	-t $SCHEMA.performance         \
-	-t $SCHEMA.record              \
-	-t $SCHEMA.record_performance  \
-	-t $SCHEMA.online_performance  \
-	-t $SCHEMA.playlist            \
-	-t $SCHEMA.playlist_detail     \
-	-t $SCHEMA.chart               \
-	-t $SCHEMA.chart_performance   \
 | grep -v '^SET'  \
 | grep -v '^\-\-'  \
 | grep -v '^SELECT pg_catalog'  \
@@ -73,3 +64,15 @@ echo "COMMIT;" >> $OUTFILE
 echo build sqlite database
 cat $OUTFILE | sqlite3 $SQLITEDB
 
+#	-t $SCHEMA.artist_match        \
+#	-t $SCHEMA.artist_rel          \
+#	-t $SCHEMA.song                \
+#	-t $SCHEMA.lyrics              \
+#	-t $SCHEMA.performance         \
+#	-t $SCHEMA.record              \
+#	-t $SCHEMA.record_performance  \
+#	-t $SCHEMA.online_performance  \
+#	-t $SCHEMA.playlist            \
+#	-t $SCHEMA.playlist_detail     \
+#	-t $SCHEMA.chart               \
+#	-t $SCHEMA.chart_performance   \

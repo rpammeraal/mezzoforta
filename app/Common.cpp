@@ -1,5 +1,4 @@
 #include <QString>
-#include <QDebug>
 #include <QHeaderView>
 #include <QSqlQuery>
 #include <QStringListIterator>
@@ -203,7 +202,7 @@ Common::removeArticles(const QString &s)
         }
 
         //	Match on end with <word><space><article>
-        as=a;
+        as=" "+a;
         if(t.indexOf(as)>=0 && t.indexOf(as)==t.length()-as.length())
         {
             t.remove(t.length()-as.length(),as.length());
@@ -217,6 +216,18 @@ Common::removeArticles(const QString &s)
         t=s;
     }
     return sanitize(t);
+}
+
+QString
+Common::removeExtraSpaces(const QString &s)
+{
+    QString t=s;
+    do
+    {
+        t.replace("  "," ");
+    }
+    while(t.indexOf("  ")!=-1);
+    return  t;
 }
 
 QString

@@ -42,7 +42,7 @@ MusicLibrary::rescanMusicLibrary()
     SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
 
     //	Init
-    ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary",4);
+    ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary_scan",1);
 
     const int numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
     int progressCurrentValue=0;
@@ -162,7 +162,7 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=sqm->rowCount();
-    ProgressDialog::instance()->setLabelText("Retrieving existing songs...");
+    ProgressDialog::instance()->show("Retrieving existing songs...","MusicLibrary::rescanMusicLibrary_scan",1);
     ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_retrieve",progressCurrentValue,progressMaxValue);
     time.restart();
 
@@ -209,7 +209,7 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=foundEntities.count();
-    ProgressDialog::instance()->setLabelText("Retrieving meta data...");
+    ProgressDialog::instance()->show("Getting meta data...","MusicLibrary::rescanMusicLibrary_metadata",1);
     ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_metadata",progressCurrentValue,progressMaxValue);
     time.restart();
 
@@ -246,7 +246,7 @@ MusicLibrary::rescanMusicLibrary()
             entityPtr->year=md.year();
 
             //	Misc. data
-            entityPtr->key=key;	//	used for debugging purposes only
+            entityPtr->searchKey=key;
 
             //	Check on album title, take parent directory name if not exists
             if(entityPtr->albumTitle.length()==0)
@@ -277,6 +277,10 @@ MusicLibrary::rescanMusicLibrary()
             {
                 numNewSongs++;
             }
+            if(entityPtr->errorMsg.length())
+            {
+                qDebug() << SB_DEBUG_ERROR << entityPtr->errorMsg;
+            }
         }
 
         if(time.elapsed()>700)
@@ -290,7 +294,7 @@ MusicLibrary::rescanMusicLibrary()
     }
     ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_metadata");
 
-    if(0)
+    if(1)
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(foundEntities);
         qDebug() << SB_DEBUG_INFO << "SECTION C";
@@ -388,7 +392,7 @@ MusicLibrary::rescanMusicLibrary()
 
         progressCurrentValue=0;
         progressMaxValue=foundEntities.count();
-        ProgressDialog::instance()->setLabelText("Store in database...");
+        ProgressDialog::instance()->show("Saving album data...","MusicLibrary::rescanMusicLibrary_save",1);
         ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_save",progressCurrentValue,progressMaxValue);
         time.restart();
         feIT.toFront();
@@ -442,13 +446,13 @@ MusicLibrary::rescanMusicLibrary()
         qDebug() << SB_DEBUG_INFO;
         if(resultFlag)
         {
-            resultFlag=sMgr->commitAll(dal);
+            resultFlag=spMgr->commitAll(dal);
         }
 
         qDebug() << SB_DEBUG_INFO;
         if(resultFlag)
         {
-            resultFlag=spMgr->commitAll(dal);
+            resultFlag=sMgr->commitAll(dal);
         }
 
         qDebug() << SB_DEBUG_INFO;
@@ -542,11 +546,10 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
     }
 
     //	1.	Validate performers
-    QVectorIterator<MLentityPtr> listIT(list);
+    QMutableVectorIterator<MLentityPtr> listIT(list);
 
     //		a.	Collect performer names from songPerformer and albumPerformer in list.
     QStringList allPerformers;
-    listIT.toFront();
     while(listIT.hasNext())
     {
         const MLentityPtr ePtr=listIT.next();
@@ -572,7 +575,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
     ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
     //		b.	Go through all collected performer names and validate these.
-    listIT.toFront();
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
     QStringListIterator allPerformersIT(allPerformers);
     while(allPerformersIT.hasNext())
     {
@@ -606,7 +609,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
     }
 
     //		c.	Go through list and set performerID's accordingly.
-    listIT.toFront();
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
     while(listIT.hasNext())
     {
         MLentityPtr ePtr=listIT.next();
@@ -660,10 +663,17 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
     }
 
     //	2.	Validate albums
+    //	This maps a parent directory path to an MLalbumPtr
+    QHash<QString,MLalbumPathPtr> directory2AlbumPathMap;
+    directory2AlbumPathMap.reserve(list.count());
 
-    //		a.	Find out if header records are created
+    //	CWIP:	need createArtificialAlbumFlag?
+
+    //		a.	Find out if header records are created:
+    //			-	move these to MLAlbumPathPtr structures
+    //			-	remove these from list
     bool headerDefinedFlag=0;
-    listIT.toFront();
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
     while(listIT.hasNext() && headerDefinedFlag==0)
     {
         const MLentityPtr ePtr=listIT.next();
@@ -673,62 +683,87 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list)
             if(ePtr->headerFlag)
             {
                 headerDefinedFlag=1;
+                QString searchKey=ePtr->parentDirectoryPath;
+
+                if(!directory2AlbumPathMap.contains(searchKey))
+                {
+                    MLalbumPath albumPath;
+                    albumPath.uniqueAlbumTitles.append(ePtr->albumTitle);
+                    albumPath.uniqueSongPerformerIDs.append(ePtr->songPerformerID);
+                    qDebug() << SB_DEBUG_INFO << albumPath.albumTitle << albumPath.albumPerformerName;
+
+                    directory2AlbumPathMap[searchKey]=std::make_shared<MLalbumPath>(albumPath);
+                }
+                listIT.remove();
             }
         }
     }
 
+    //	At this point we should have no more header records.
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
+    while(listIT.hasNext() && headerDefinedFlag==0)
+    {
+        const MLentityPtr ePtr=listIT.next();
 
-    //		a.	Handle abums with multiple artists
-qDebug() << SB_DEBUG_INFO;
+        if(ePtr && !ePtr->errorFlag() && !ePtr->removedFlag)
+        {
+            if(ePtr->headerFlag)
+            {
+                qDebug() << SB_DEBUG_ERROR << "Header records found. Aborting";
+                return 0;
+            }
+        }
+    }
+
+    //	Create MLalbumPath entries if no headers existed.
     if(headerDefinedFlag==0 && properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1")
     {
 qDebug() << SB_DEBUG_INFO;
         //	If music library is organized <performer>/<album>, we'll always assign parent directory name as the album title.
         //	For self made/collection albums, renumber album positions.
-
-        //	This maps a parent directory path to an MLalbumPtr
-        QHash<QString,MLalbumPathPtr> directory2AlbumPathMap;
-        directory2AlbumPathMap.reserve(list.count());
-
         progressCurrentValue=0;
         progressMaxValue=list.count();
         ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
         //	Collect unique album titles for each parent directory
-        listIT.toFront();
+        listIT=QMutableVectorIterator<MLentityPtr>(list);
         while(listIT.hasNext())
         {
             MLentityPtr ePtr=listIT.next();
 
             if(ePtr)
             {
-                if(ePtr->headerFlag==0 && ePtr->albumID==-1 && !ePtr->errorFlag() && !(ePtr->removedFlag))
-                {
-                    const QString key=ePtr->parentDirectoryPath;
+                ePtr->albumTitle=ePtr->parentDirectoryName;	//	Assign directory name to album title.
+                ePtr->parentKey=ePtr->parentDirectoryPath;	//	Key to MLalbumPath
 
-                    if(!directory2AlbumPathMap.contains(key))
+                if(!ePtr->errorFlag() && !(ePtr->removedFlag))
+                {
+                    qDebug() << SB_DEBUG_INFO << "songtitle:" << ePtr->songTitle;
+
+                    const QString searchKey=ePtr->parentDirectoryPath;
+
+                    if(!directory2AlbumPathMap.contains(searchKey))
                     {
                         //	Haven't seen this album yet.
+                        qDebug() << SB_DEBUG_INFO << ePtr->filePath;
+                        qDebug() << SB_DEBUG_INFO << ePtr->parentDirectoryName;
+                        qDebug() << SB_DEBUG_INFO << ePtr->parentDirectoryPath;
 
                         MLalbumPath albumPath;
+                        albumPath.searchKey=searchKey;
                         albumPath.uniqueAlbumTitles.append(ePtr->albumTitle);
                         albumPath.uniqueSongPerformerIDs.append(ePtr->songPerformerID);
+                        albumPath.parentDirectoryName=ePtr->parentDirectoryName;
+                        albumPath.albumTitle=ePtr->albumTitle;
+                        albumPath.albumPerformerName=ePtr->albumPerformerName;
+                        albumPath.year=ePtr->year;
+                        albumPath.newFlag=1;
 
-                        directory2AlbumPathMap[key]=std::make_shared<MLalbumPath>(albumPath);
-
-                        MLentity newAlbum;
-                        newAlbum.albumTitle=ePtr->albumTitle;
-                        newAlbum.albumPerformerName=ePtr->albumPerformerName;
-                        newAlbum.year=ePtr->year;
-                        newAlbum.newFlag=1;
-                        newAlbum.headerFlag=1;
-
-                        MusicLibrary::MLentityPtr ePtr=std::make_shared<MusicLibrary::MLentity>(newAlbum);
-                        list.append(ePtr);
+                        directory2AlbumPathMap[searchKey]=std::make_shared<MLalbumPath>(albumPath);
                     }
                     else
                     {
-                        MLalbumPathPtr albumPathPtr=directory2AlbumPathMap[key];
+                        MLalbumPathPtr albumPathPtr=directory2AlbumPathMap[searchKey];
 
                         if(!albumPathPtr->uniqueAlbumTitles.contains(ePtr->albumTitle))
                         {
@@ -744,29 +779,58 @@ qDebug() << SB_DEBUG_INFO;
             ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
         }
 
-        progressCurrentValue=0;
-        progressMaxValue=list.count();
-        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
+        //	Collection albums contain at least two songs with different performerID's. If the directory name is used for
+        //	album title, the individual entityPtr entries must be adjusted to all point to the same album.
+//        progressCurrentValue=0;
+//        progressMaxValue=list.count();
+//        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
 
-        listIT.toFront();
-        while(listIT.hasNext())
-        {
-            MLentityPtr entityPtr=listIT.next();
+//        listIT=QMutableVectorIterator<MLentityPtr>(list);
+//        while(listIT.hasNext())
+//        {
+//            MLentityPtr entityPtr=listIT.next();
 
-            if(entityPtr && entityPtr->headerFlag && entityPtr->albumID==-1 && !entityPtr->errorFlag() && !(entityPtr->removedFlag))
-            {
-                MLalbumPathPtr albumPathPtr=directory2AlbumPathMap[entityPtr->parentDirectoryPath];
-                if(albumPathPtr->multipleEntriesFlag())
-                {
-                    entityPtr->albumTitle=entityPtr->parentDirectoryName;
-                    entityPtr->albumPosition=++(albumPathPtr->maxPosition);
-                    entityPtr->albumPerformerID=variousPerformerPtr->performerID();
-                    entityPtr->albumPerformerName=variousPerformerPtr->performerName();
-                    entityPtr->createArtificialAlbumFlag=1;
-                }
-            }
-            ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
-        }
+//            if(entityPtr)
+//            {
+//                qDebug() << SB_DEBUG_INFO << entityPtr->headerFlag << entityPtr->albumTitle << entityPtr->songTitle;
+//                if(!entityPtr->errorFlag() && !(entityPtr->removedFlag))
+//                {
+//                    qDebug() << SB_DEBUG_INFO
+//                             << "albumTitle=" << entityPtr->albumTitle
+//                             << "albumID=" << entityPtr->albumID
+//                             << "key=" << entityPtr->parentDirectoryPath
+//                    ;
+//                    MLalbumPathPtr albumPathPtr=directory2AlbumPathMap[entityPtr->parentDirectoryPath];
+//                    if(albumPathPtr)
+//                    {
+//                        qDebug() << SB_DEBUG_INFO
+//                                 << "albumTitle=" << entityPtr->parentDirectoryPath
+//                                 << "flag=" << albumPathPtr->multipleEntriesFlag()
+//                        ;
+//                        if(albumPathPtr->multipleEntriesFlag())
+//                        {
+//                            qDebug() << SB_DEBUG_INFO << "setting album attributes";
+//                            entityPtr->albumTitle=entityPtr->parentDirectoryName;
+//                            entityPtr->albumPosition=++(albumPathPtr->maxPosition);
+//                            entityPtr->albumPerformerID=variousPerformerPtr->performerID();
+//                            entityPtr->albumPerformerName=variousPerformerPtr->performerName();
+//                            entityPtr->createArtificialAlbumFlag=1;
+//                        }
+//                    }
+//                    else
+//                    {
+//                        qDebug() << SB_DEBUG_ERROR << "album path not defined. Aborting";
+//                        return 0;
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                qDebug() << SB_DEBUG_ERROR << "Non-existing ptr. Aborting";
+//                return 0;
+//            }
+//            ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
+//        }
     }
     //	CWIP
 //    else
@@ -799,19 +863,17 @@ qDebug() << SB_DEBUG_INFO;
             {
                 if(ePtr->headerFlag)
                 {
-                    qDebug() << SB_DEBUG_INFO
-                         << ePtr->headerFlag
-                         << ePtr->albumTitle
-                         << ePtr->albumID
-                         << ePtr->albumPerformerName
-                         << ePtr->albumPerformerID
-                    ;
+                    qDebug() << SB_DEBUG_ERROR << "Header record found. Aborting.";
+                    return 0;
                 }
                 else
                 {
                     qDebug() << SB_DEBUG_INFO
                          << ePtr->headerFlag
                          << ePtr->albumID
+                         << ePtr->albumTitle
+                         << ePtr->albumPerformerName
+                         << ePtr->albumPerformerID
                          << ePtr->albumPosition
                          << ePtr->songTitle
                          << ePtr->songPerformerName
@@ -825,9 +887,140 @@ qDebug() << SB_DEBUG_INFO;
                 }
             }
         }
+
+        QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
+        while(albumIT.hasNext())
+        {
+            albumIT.next();
+            MLalbumPathPtr apPtr=albumIT.value();
+            qDebug() << SB_DEBUG_INFO
+                     << apPtr->albumID
+                     << apPtr->albumTitle
+                     << apPtr->albumPerformerID
+                     << apPtr->albumPerformerName
+                     << apPtr->multipleEntriesFlag()
+            ;
+        }
     }
 
-    //	c.	Actual user validation of albums
+    //		b.	Actual user validation of albums
+    QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
+    while(albumIT.hasNext())
+    {
+        albumIT.next();
+        MLalbumPathPtr apPtr=albumIT.value();
+        SBIDAlbumPtr selectedAlbumPtr;
+
+        if(apPtr)
+        {
+            qDebug() << SB_DEBUG_INFO
+                     << apPtr->albumID
+                     << apPtr->albumTitle
+                     << apPtr->albumPerformerID
+                     << apPtr->albumPerformerName
+            ;
+
+            if(apPtr->multipleEntriesFlag())
+            {
+                //	No validation needed -- create collection album
+                Common::sb_parameters p;
+                p.albumTitle=apPtr->albumTitle;
+                p.performerID=apPtr->albumPerformerID;
+                p.year=apPtr->year;
+                p.genre=apPtr->genre;
+                selectedAlbumPtr=amgr->createInDB(p);
+
+                qDebug() << SB_DEBUG_INFO << "Create collection album"
+                         << selectedAlbumPtr->albumTitle()
+                         << selectedAlbumPtr->albumPerformerID()
+                ;
+            }
+            else
+            {
+                //	Let user select
+                Common::sb_parameters p;
+                p.albumID=apPtr->albumID;
+                p.albumTitle=apPtr->albumTitle;
+                p.performerID=apPtr->albumPerformerID;
+                p.performerName=apPtr->albumPerformerName;
+                p.year=apPtr->year;
+                p.genre=apPtr->genre;
+
+                //	Set up excluding album:
+                //	-	if ePtr.albumID=-1 then empty,
+                //	-	otherwise lookup existing album
+                const SBIDAlbumPtr aPtr=(apPtr->albumID==-1?SBIDAlbumPtr():SBIDAlbum::retrieveAlbum(apPtr->albumID));
+
+                qDebug() << SB_DEBUG_INFO
+                         << apPtr->searchKey
+                         << p.albumID
+                         << p.albumTitle
+                         << p.performerID
+                         << p.performerName
+                         << p.year
+                         << p.genre
+                ;
+                Common::result result=amgr->userMatch(p,aPtr,selectedAlbumPtr);
+                qDebug() << SB_DEBUG_INFO << result;
+                if(selectedAlbumPtr)
+                {
+                    qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->text();
+                }
+                if(result==Common::result_canceled)
+                {
+                    qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+                    return 0;
+                }
+                if(result==Common::result_missing)
+                {
+                    qDebug() << SB_DEBUG_INFO;
+                    //	If we work based on an existing album this means that the title has
+                    //	changed. Therefore, the selectedAlbumPtr
+                    if(aPtr)
+                    {
+                        qDebug() << SB_DEBUG_INFO;
+                        selectedAlbumPtr=aPtr;
+                    }
+                    else
+                    {
+                        //	Only create if truly new album
+                        qDebug() << SB_DEBUG_INFO
+                             << apPtr->searchKey
+                             << p.albumTitle
+                             << p.performerID
+                             << p.performerName
+                             << p.year
+                             << p.genre
+                        ;
+
+                        //	albumPerformerID not set
+                        selectedAlbumPtr=amgr->createInDB(p);
+                        apPtr->albumID=selectedAlbumPtr->albumID();
+                        apPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
+                    }
+                }
+            }
+
+            //	Assign ID's back to apPtr
+            qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->albumID() << selectedAlbumPtr->numPerformances();
+            apPtr->albumID=selectedAlbumPtr->albumID();
+            apPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
+            apPtr->maxPosition=selectedAlbumPtr->numPerformances();
+
+            //	Set multiple entries flag if collection album
+            if(selectedAlbumPtr->albumPerformerID()==variousPerformerPtr->performerID())
+            {
+                apPtr->variousPerformerFlag=1;
+            }
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "apPtr not defined. Aborting.";
+            return 0;
+        }
+    }
+
+    //		c.	Assign album data to entity pointers
     progressCurrentValue=0;
     progressMaxValue=list.count();
     ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
@@ -835,7 +1028,7 @@ qDebug() << SB_DEBUG_INFO;
 
     QStringList greatestHitsAlbums=_greatestHitsAlbums();
 
-    listIT.toFront();
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
     QHash<QString,int> albumTitle2albumIDMap;	//	key: <album title>:<album performer id>
     while(listIT.hasNext())
     {
@@ -843,118 +1036,55 @@ qDebug() << SB_DEBUG_INFO;
         SBIDAlbumPtr selectedAlbumPtr;
         qDebug() << SB_DEBUG_INFO;
 
-        //if(ePtr && ePtr->albumID==-1 && !ePtr->errorFlag() && (!ePtr->removedFlag))
-        //	Ignore albumID==-1, since we want to validate existing albums
-        if(ePtr && !ePtr->errorFlag() && (!ePtr->removedFlag) && ePtr->albumTitle.length()>0)
+        if(ePtr)
         {
-            qDebug() << SB_DEBUG_INFO
-                 << ePtr->headerFlag
-                 << ePtr->albumID
-                 << ePtr->albumPosition
-                 << ePtr->songTitle
-                 << ePtr->songPerformerName
-                 << ePtr->mergedToAlbumPosition
-                 << ePtr->albumTitle
-                 << ePtr->albumID
-                 << ePtr->albumPerformerName
-                 << ePtr->albumPerformerID
-                 << ePtr->removedFlag;
-
-            //	Only validate albums if the albumID==-1. <-- incorrect. Need to validate existing albums
-            const QString key=QString("%1:%2").arg(ePtr->albumTitle).arg(ePtr->albumPerformerID);
-            if(!albumTitle2albumIDMap.contains(key))
+            if(!ePtr->errorFlag() && (!ePtr->removedFlag))
             {
-                if(ePtr->createArtificialAlbumFlag || greatestHitsAlbums.contains(ePtr->albumTitle))
-                {
-                    qDebug() << SB_DEBUG_INFO;
-                    //	Create greatest hits album
-                    Common::sb_parameters p;
-                    p.albumTitle=ePtr->albumTitle;
-                    p.performerID=ePtr->albumPerformerID;
-                    p.year=ePtr->year;
-                    p.genre=ePtr->genre;
-                    selectedAlbumPtr=amgr->createInDB(p);
+                qDebug() << SB_DEBUG_INFO
+                     << ePtr->headerFlag
+                     << ePtr->albumID
+                     << ePtr->albumPosition
+                     << ePtr->mergedToAlbumPosition
+                     << ePtr->albumTitle
+                     << ePtr->albumPerformerID
+                     << ePtr->removedFlag;
 
-                    qDebug() << SB_DEBUG_INFO << "CRT ALBUM:"
-                             << selectedAlbumPtr->albumTitle()
-                             << selectedAlbumPtr->albumPerformerID()
-                    ;
+                MLalbumPathPtr apPtr=directory2AlbumPathMap[ePtr->parentDirectoryPath];
+                if(apPtr)
+                {
+                    selectedAlbumPtr=amgr->retrieve(SBIDAlbum::createKey(apPtr->albumID));
+                    if(selectedAlbumPtr)
+                    {
+                        ePtr->albumID=selectedAlbumPtr->albumID();
+                        ePtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
+
+                        if(apPtr->multipleEntriesFlag())
+                        {
+                            //	Overwrite and assign new album position if collection album.
+                            ePtr->albumPosition=++(apPtr->maxPosition);
+                        }
+                    }
+                    else
+                    {
+                        qDebug() << SB_DEBUG_ERROR << "selectedAlbumPtr not defined. Aborting.";
+                        return 0;
+                    }
                 }
                 else
                 {
-                    qDebug() << SB_DEBUG_INFO;
-                    //	Let user select
-                    Common::sb_parameters p;
-                    p.albumID=ePtr->albumID;
-                    p.albumTitle=ePtr->albumTitle;
-                    p.performerID=ePtr->albumPerformerID;
-                    p.performerName=ePtr->albumPerformerName;
-                    p.year=ePtr->year;
-                    p.genre=ePtr->genre;
-
-                    //	Set up excluding album:
-                    //	-	if ePtr.albumID=-1 then empty,
-                    //	-	otherwise lookup existing album
-                    const SBIDAlbumPtr aPtr=(ePtr->albumID==-1?SBIDAlbumPtr():SBIDAlbum::retrieveAlbum(ePtr->albumID));
-
-                    qDebug() << SB_DEBUG_INFO
-                             << ePtr->filePath
-                             << p.albumID
-                             << p.albumTitle
-                             << p.performerID
-                             << p.performerName
-                             << p.year
-                             << p.genre
-                    ;
-                    Common::result result=amgr->userMatch(p,aPtr,selectedAlbumPtr);
-                    qDebug() << SB_DEBUG_INFO << result;
-                    if(selectedAlbumPtr)
-                    {
-                        qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->text();
-                    }
-                    if(result==Common::result_canceled)
-                    {
-                        qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
-                        return 0;
-                    }
-                    if(result==Common::result_missing)
-                    {
-                        qDebug() << SB_DEBUG_INFO;
-                        //	If we work based on an existing album this means that the title has
-                        //	changed. Therefore, the selectedAlbumPtr
-                        if(aPtr)
-                        {
-                            qDebug() << SB_DEBUG_INFO;
-                            selectedAlbumPtr=aPtr;
-                        }
-                        else
-                        {
-                            //	Only create if truly new album
-                            qDebug() << SB_DEBUG_INFO
-                                 << ePtr->filePath
-                                 << p.albumTitle
-                                 << p.performerID
-                                 << p.performerName
-                                 << p.year
-                                 << p.genre
-                            ;
-                            //	albumPerformerID not set
-                            selectedAlbumPtr=amgr->createInDB(p);
-                        }
-                    }
+                    qDebug() << SB_DEBUG_ERROR << "apPtr not defined. Aborting.";
+                    return 0;
                 }
-                albumTitle2albumIDMap[key]=selectedAlbumPtr->albumID();
             }
             else
             {
-                selectedAlbumPtr=amgr->retrieve(SBIDAlbum::createKey(albumTitle2albumIDMap[key]));
+                qDebug() << SB_DEBUG_ERROR << ePtr->errorFlag() << ePtr->removedFlag;
             }
-            ePtr->albumID=selectedAlbumPtr->albumID();
-            ePtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << "albumTitle empty";
+            qDebug() << SB_DEBUG_ERROR << "ePtr NULL pointer. Aborting.";
+            return 0;
         }
         ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
     }
@@ -970,13 +1100,8 @@ qDebug() << SB_DEBUG_INFO;
             {
                 if(ePtr->headerFlag)
                 {
-                    qDebug() << SB_DEBUG_INFO
-                         << ePtr->headerFlag
-                         << ePtr->albumTitle
-                         << ePtr->albumID
-                         << ePtr->albumPerformerName
-                         << ePtr->albumPerformerID
-                    ;
+                    qDebug() << SB_DEBUG_ERROR << "Header entry found. Aborting.";
+                    return 0;
                 }
                 else
                 {
@@ -993,13 +1118,27 @@ qDebug() << SB_DEBUG_INFO;
                 }
             }
         }
+
+        QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
+        while(albumIT.hasNext())
+        {
+            albumIT.next();
+            MLalbumPathPtr apPtr=albumIT.value();
+            qDebug() << SB_DEBUG_INFO
+                     << apPtr->albumID
+                     << apPtr->albumTitle
+                     << apPtr->albumPerformerID
+                     << apPtr->albumPerformerName
+                     << apPtr->multipleEntriesFlag()
+            ;
+        }
     }
 
     //	3.	Validate songs
     progressCurrentValue=0;
     progressMaxValue=list.count();
     ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
-    listIT.toFront();
+    listIT=QMutableVectorIterator<MLentityPtr>(list);
 
     QHash<QString,int> songTitle2songIDMap;	//	key: <song title>:<song performer id>
     songTitle2songIDMap.reserve(list.count());

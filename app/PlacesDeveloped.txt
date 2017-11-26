@@ -951,20 +951,32 @@ Between 20161215 and 20170604:
     -	entry still exists in 'All Songs'
 -	Open 'All:Ethnic' playlist, all items empty.
 
-Current:
-*	Open 'The Boxer Rebellion', right click Misplaced.
+20171025:
+-	SearchItemModel is reloaded after album change. See if we can create one from scratch and replace the current one.
+-	Open 'The Boxer Rebellion', right click Misplaced.
     Looks like preferredPerformanceID is NOT populated
-*	SearchItemModel is reloaded after album change. See if we can create one from scratch and replace the current one.
+-	Changing performer URL does not seems to be reflected in performer page
+-	Change import that it only displays:
+    -	choose performer box (already there)
+	-	choose performance -- only when the exact song title match appears for a different performer
+-	Search box:
+    -	albums should appear as <album name> - album instead of <album name> - record.
+	-	performers should appear without accents
+	-	Foute collectie 7/10 shows up twice
+	-	Moose!Music Hotel and Moose!Music Hot show up
+	-	Sort
+
+20171126:
+-	Import of compilation albums now supported.
 
 Bugs that need to be fixed:
-*	Change import that it only displays:
-    *	choose performer box (already there)
-	*	choose performance -- only when the exact song title match appears for a different performer
+*	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
+*	Assignment of songs from another playlist does not work:  Assign If God Will Send His Angeles/Heverlee Lommel to Herinneringen aan Holland.
+*	Search for Limburg/Rowwen Heze: Does not play
+*	Search for Hear That Sound/INXS Heze: Does not play
+*	New Gold Dream/Simple Minds: click to play, does not play album songs.
 *	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 * 	After import, show in status bar (bottom) how many songs where imported.
-*	Search box:
-	*	albums should appear as <album name> - album instead of <album name> - record.
-	*	performers should appear without accents
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 * 	Show window with songs to be imported.
 *	Weird stuff happens when an item is removed from 'Songs In Queue'.

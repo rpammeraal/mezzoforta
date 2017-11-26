@@ -158,6 +158,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     //	Collect onlinePerformancePtrs and their album position
     QMapIterator<int,SBIDAlbumPerformancePtr> pIT(albumPerformances);
     QMap<int, SBIDOnlinePerformancePtr> position2OnlinePerformancePtr;
+    int i=0;
     while(pIT.hasNext())
     {
         pIT.next();
@@ -165,7 +166,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
         if(opPtr && opPtr->path().length()>0)
         {
-            position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
+            position2OnlinePerformancePtr[i++]=opPtr;
         }
         if(updateProgressDialogFlag)
         {
@@ -880,6 +881,47 @@ SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 }
 
 SBIDAlbumPtr
+SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QString &performerName, bool noDependentsFlag)
+{
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    SBIDAlbumPtr aPtr;
+
+    //	Find albumID, then retrieve through aMgr
+    int albumID=-1;
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "r.record_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___record r "
+                "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "r.artist_id=a.artist_id "
+        "WHERE "
+            "r.title=%1 AND "
+            "a.name=%2 "
+    )
+        .arg(albumTitle)
+        .arg(performerName)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qID(q,db);
+    while(albumID==-1 && qID.next())
+    {
+        albumID=qID.value(0).toInt();
+    }
+
+    if(albumID!=-1)
+    {
+        aPtr=SBIDAlbum::retrieveAlbum(albumID,noDependentsFlag);
+    }
+
+    return aPtr;
+}
+
+SBIDAlbumPtr
 SBIDAlbum::retrieveUnknownAlbum()
 {
     Properties* properties=Context::instance()->getProperties();
@@ -913,9 +955,9 @@ SBIDAlbum::albumsByPerformer(int performerID)
             "r.year, "
             "r.notes "
         "FROM "
-                "___SB_SCHEMA_NAME___record r "
-                    "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
-                        "r.artist_id=a.artist_id "
+            "___SB_SCHEMA_NAME___record r "
+                "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "r.artist_id=a.artist_id "
         "WHERE "
             "r.artist_id=%1 "
     )
@@ -946,7 +988,6 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    qDebug() << SB_DEBUG_INFO << p.year;
     if(p.albumTitle.length()==0)
     {
         //	Give new playlist unique name
@@ -1020,8 +1061,6 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     album._genre           =p.genre;
     album._notes           =p.notes;
     album._year            =p.year;
-
-    qDebug() << SB_DEBUG_INFO << album._albumID;
 
     //	Done
     return std::make_shared<SBIDAlbum>(album);
@@ -1123,7 +1162,6 @@ SBIDAlbum::instantiate(const QSqlRecord &r)
 void
 SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
 {
-    qDebug() << SB_DEBUG_INFO;
     SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
     //	Find next albumPosition
     int nextAlbumPosition=0;
@@ -1135,7 +1173,6 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         nextAlbumPosition=apPtr->albumPosition()>nextAlbumPosition?apPtr->albumPosition():nextAlbumPosition;
     }
     nextAlbumPosition++;
-    qDebug() << SB_DEBUG_INFO << nextAlbumPosition;
 
     //	Go thu each albumPerformance in from and merge
     QMapIterator<int,SBIDAlbumPerformancePtr> from(aPtrFrom->albumPerformances());
@@ -1143,24 +1180,19 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
     {
         from.next();
         SBIDAlbumPerformancePtr fromApPtr=from.value();
-        qDebug() << SB_DEBUG_INFO << "from=" << fromApPtr->itemID() << fromApPtr->text();
         SBIDAlbumPerformancePtr toApPtr=_findAlbumPerformanceBySongPerformanceID(fromApPtr->songPerformanceID());
         if(toApPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "merge to=" << toApPtr->itemID() << toApPtr->text();
             apmgr->merge(fromApPtr,toApPtr);
         }
         else
         {
             //	Append
-            qDebug() << SB_DEBUG_INFO << "append";
             fromApPtr->setAlbumPosition(nextAlbumPosition++);
             fromApPtr->setAlbumID(this->albumID());
             apmgr->setChanged(fromApPtr);
             apmgr->debugShow("apmgr:merge");
             _addedAlbumPerformances.append(fromApPtr);
-            qDebug() << SB_DEBUG_INFO << "append" << fromApPtr->itemID() << fromApPtr->changedFlag();
-            qDebug() << SB_DEBUG_INFO << apmgr->numChanges();
         }
     }
 
@@ -1180,10 +1212,6 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
             pdmgr->setChanged(pdPtr);
         }
     }
-
-    qDebug() << SB_DEBUG_INFO << "End";
-    qDebug() << SB_DEBUG_INFO << apmgr->numChanges();
-
 }
 
 void
@@ -1278,7 +1306,16 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
 
     if(amgr->find(p,exclude,matches))
     {
-            qDebug()<< SB_DEBUG_INFO;
+        int totalMatches=0;
+        QMapIterator<int,QList<SBIDAlbumPtr>> itTMP(matches);
+        while(itTMP.hasNext())
+        {
+            itTMP.next();
+            int i=itTMP.key();
+            totalMatches+=matches[i].count();
+            qDebug()<< SB_DEBUG_INFO << i << matches[i].count();
+        }
+
         if(matches[0].count()==1)
         {
             qDebug()<< SB_DEBUG_INFO;
@@ -1286,7 +1323,21 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
             found=matches[0][0];
             result=Common::result_exists;
         }
-        else
+        else if(totalMatches==1 && matches[2].count()==1)
+        {
+            qDebug()<< SB_DEBUG_INFO;
+            //	Catch collection album as the one and only choice.
+            SBIDAlbumPtr aPtr=matches[2][0];
+            SBIDPerformerPtr vpPtr=SBIDPerformer::retrieveVariousPerformers();
+            if(aPtr->albumPerformerID()==vpPtr->performerID())
+            {
+            qDebug()<< SB_DEBUG_INFO;
+                found=aPtr;
+                result=Common::result_exists;
+            }
+        }
+
+        if(!found)
         {
             qDebug()<< SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
