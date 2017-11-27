@@ -1075,6 +1075,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
              << tobeFound.albumID
              << tobeFound.albumTitle
              << tobeFound.performerID
+             << tobeFound.performerName
     ;
 
     //	MatchRank:
@@ -1085,7 +1086,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
     QString q=QString
     (
         "SELECT "
-            "CASE WHEN a.artist_id=%2 THEN 0 ELSE 2 END AS matchRank, "
+            "CASE WHEN a.artist_id=%2 OR REPLACE(LOWER(a.name),' ','')=REPLACE(LOWER('%6'),' ','') THEN 0 ELSE 2 END AS matchRank, "
             "p.record_id, "
             "a.artist_id, "
             "p.title, "
@@ -1138,6 +1139,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
         .arg(excludeID)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.albumTitle)))
         .arg(Common::escapeSingleQuotes(tobeFound.albumTitle))
+        .arg(Common::escapeSingleQuotes(Common::removeAccents(tobeFound.performerName)))
     ;
     return new SBSqlQueryModel(q);
 }

@@ -81,7 +81,7 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids);
+    SBIDPtr selected=sm->determineSBID(ids);  SB_RETURN_VOID_IF_NULL(selected);
 
     if(selected->itemType()!=SBIDBase::sb_type_invalid)
     {

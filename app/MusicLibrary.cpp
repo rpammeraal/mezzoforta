@@ -779,79 +779,7 @@ qDebug() << SB_DEBUG_INFO;
             ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
         }
 
-        //	Collection albums contain at least two songs with different performerID's. If the directory name is used for
-        //	album title, the individual entityPtr entries must be adjusted to all point to the same album.
-//        progressCurrentValue=0;
-//        progressMaxValue=list.count();
-//        ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue,progressMaxValue);
-
-//        listIT=QMutableVectorIterator<MLentityPtr>(list);
-//        while(listIT.hasNext())
-//        {
-//            MLentityPtr entityPtr=listIT.next();
-
-//            if(entityPtr)
-//            {
-//                qDebug() << SB_DEBUG_INFO << entityPtr->headerFlag << entityPtr->albumTitle << entityPtr->songTitle;
-//                if(!entityPtr->errorFlag() && !(entityPtr->removedFlag))
-//                {
-//                    qDebug() << SB_DEBUG_INFO
-//                             << "albumTitle=" << entityPtr->albumTitle
-//                             << "albumID=" << entityPtr->albumID
-//                             << "key=" << entityPtr->parentDirectoryPath
-//                    ;
-//                    MLalbumPathPtr albumPathPtr=directory2AlbumPathMap[entityPtr->parentDirectoryPath];
-//                    if(albumPathPtr)
-//                    {
-//                        qDebug() << SB_DEBUG_INFO
-//                                 << "albumTitle=" << entityPtr->parentDirectoryPath
-//                                 << "flag=" << albumPathPtr->multipleEntriesFlag()
-//                        ;
-//                        if(albumPathPtr->multipleEntriesFlag())
-//                        {
-//                            qDebug() << SB_DEBUG_INFO << "setting album attributes";
-//                            entityPtr->albumTitle=entityPtr->parentDirectoryName;
-//                            entityPtr->albumPosition=++(albumPathPtr->maxPosition);
-//                            entityPtr->albumPerformerID=variousPerformerPtr->performerID();
-//                            entityPtr->albumPerformerName=variousPerformerPtr->performerName();
-//                            entityPtr->createArtificialAlbumFlag=1;
-//                        }
-//                    }
-//                    else
-//                    {
-//                        qDebug() << SB_DEBUG_ERROR << "album path not defined. Aborting";
-//                        return 0;
-//                    }
-//                }
-//            }
-//            else
-//            {
-//                qDebug() << SB_DEBUG_ERROR << "Non-existing ptr. Aborting";
-//                return 0;
-//            }
-//            ProgressDialog::instance()->update("MusicLibrary::validateEntityList",progressCurrentValue++,progressMaxValue);
-//        }
     }
-    //	CWIP
-//    else
-//    {
-//        //	b.	For unorganized libraries, we'll need to depend on the album title in the meta data.
-//        //		This will mean that if we encounter two different performers with the same album name,
-//        //		that all entries will be all merged into one big album.
-//        feIT.toFront();
-//        while(feIT.hasNext())
-//        {
-//            MLentityPtr entityPtr=feIT.next();
-//            QMap<QString,int> albumTitle2albumIDMap;	//	key: <album title>:<album performer id>
-//            SBIDAlbumPtr selectedAlbumPtr;
-
-//            if(!entityPtr->errorFlag())
-//            {
-
-//            }
-//        }
-//    }
-
 
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);
@@ -883,6 +811,7 @@ qDebug() << SB_DEBUG_INFO;
                          << ePtr->albumPerformerName
                          << ePtr->albumPerformerID
                          << ePtr->removedFlag
+                         << ePtr->filePath
                     ;
                 }
             }

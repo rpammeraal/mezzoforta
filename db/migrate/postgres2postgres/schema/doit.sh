@@ -9,7 +9,7 @@ read -n1 -r -p "Press any key to continue..." key
 
 
 PSQL_EXEC="psql -p 22500 songbase -h mars -e "
-PSQL_SCHEMA_NAME='rock'
+PSQL_SCHEMA_NAME='xmas'
 
 SQL_SCHEMA="$PSQL_SCHEMA_NAME."
 DB_EXEC=$PSQL_EXEC
