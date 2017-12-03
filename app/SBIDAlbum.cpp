@@ -881,6 +881,57 @@ SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 }
 
 SBIDAlbumPtr
+SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
+{
+    //	CWIP: need to store mapping in memory for faster retrieval. Maybe store path
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    SBIDAlbumPtr aPtr;
+
+    //	Find albumID, then retrieve through aMgr
+    int albumID=-1;
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "r.record_id, "
+            "COUNT(DISTINCT r.record_id) "
+        "FROM "
+            "___SB_SCHEMA_NAME___online_performance op "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp USING(record_performance_id) "
+                "JOIN ___SB_SCHEMA_NAME___record r USING(record_id) "
+        "WHERE "
+            "LEFT(path,LENGTH('%1'))='%1' "
+        "GROUP BY "
+            "r.record_id "
+        "HAVING "
+            "COUNT(DISTINCT r.record_id)=1 "
+    )
+        .arg(albumPath)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery qID(q,db);
+    while(albumID==-1 && qID.next())
+    {
+        albumID=qID.value(0).toInt();
+        int count=qID.value(1).toInt();
+        qDebug() << SB_DEBUG_INFO << albumID << count;
+        if(count!=1)
+        {
+            qDebug() << SB_DEBUG_INFO;
+            albumID=-1;
+        }
+    }
+
+    if(albumID!=-1)
+    {
+        aPtr=SBIDAlbum::retrieveAlbum(albumID,noDependentsFlag);
+    }
+    return aPtr;
+}
+
+SBIDAlbumPtr
 SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QString &performerName, bool noDependentsFlag)
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();

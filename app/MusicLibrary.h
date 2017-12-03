@@ -44,9 +44,10 @@ public:
         MLentity() { _init(); }
 
         //	File attributes
-        QString filePath;
-        QString parentDirectoryName;
-        QString parentDirectoryPath;
+        QString filePath;                     //	relative path to file
+        QString parentDirectoryName;          //	name of parent directory
+        QString parentDirectoryPath;          //	relative path to parent directory
+        QString absoluteParentDirectoryPath;  //	absolute path to parent directory
         QString extension;
 
         //	Primary meta data attributes (need to exist)
@@ -77,17 +78,15 @@ public:
         int albumPerformanceID;
 
         //	Helper attributes
-        bool headerFlag;
         bool createArtificialAlbumFlag;
         QString errorMsg;
         int ID;
         QString searchKey;	//	file path to online song
-        QString parentKey;	//	file path to directory (this is compatible with MLalbumPath.searchkey
 
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
     private:
-        void _init() { songID=-1; songPerformerID=-1; songPerformanceID=-1; albumID=-1; albumPerformerID=-1; albumPerformanceID=-1; albumPosition=-1;  createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; newFlag=0; headerFlag=0; ID=-1; }
+        void _init() { songID=-1; songPerformerID=-1; songPerformanceID=-1; albumID=-1; albumPerformerID=-1; albumPerformanceID=-1; albumPosition=-1;  createArtificialAlbumFlag=0; mergedToAlbumPosition=-1; orgAlbumPosition=-1; removedFlag=0; newFlag=0; ID=-1; }
     };
     typedef std::shared_ptr<MLentity> MLentityPtr;
 
@@ -102,16 +101,14 @@ public:
         QString          albumTitle;
         QString          genre;
         int              maxPosition;
-        QString          parentDirectoryName;
-        QString          searchKey;	//	file path to directory
+        QString          path;
+        QString          directoryName;
         QVector<QString> uniqueAlbumTitles;
-        QVector<int>     uniqueSongPerformerIDs;
+        QVector<QString> uniqueSongPerformerNames;
         bool             variousPerformerFlag;
         int              year;
 
-        bool             newFlag;
-
-        bool multipleEntriesFlag() const { return (variousPerformerFlag || uniqueAlbumTitles.count()>1 || uniqueSongPerformerIDs.count()>1)?1:0; }
+        bool multipleEntriesFlag() const { return (variousPerformerFlag || uniqueAlbumTitles.count()>1 || uniqueSongPerformerNames.count()>1)?1:0; }
     private:
         void _init() { albumID=-1; albumPerformerID=-1; maxPosition=0; variousPerformerFlag=0; year=-1; }
 
@@ -121,7 +118,7 @@ public:
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary();
-    bool validateEntityList(QVector<MLentityPtr>& list);
+    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr> directory2albumPathMap);
 
 signals:
 

@@ -43,6 +43,8 @@ WHERE
 	c.path=op.path
 ;
 
+UPDATE ---SQL_SCHEMA_NAME---online_performance SET path=REPLACE(path,'\','') WHERE path LIKE '%\\%';
+
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---online_performance;
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---online_performance_old;
 SELECT COUNT(DISTINCT online_performance_id) FROM conversion;

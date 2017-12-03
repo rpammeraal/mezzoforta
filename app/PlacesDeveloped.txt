@@ -969,6 +969,9 @@ Between 20161215 and 20170604:
 20171126:
 -	Import of compilation albums now supported.
 
+20171202:
+-	Fixed bugs on importing albums.
+
 Bugs that need to be fixed:
 *	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
 *	Assignment of songs from another playlist does not work:  Assign If God Will Send His Angeles/Heverlee Lommel to Herinneringen aan Holland.

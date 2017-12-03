@@ -55,13 +55,14 @@ AS
 				c.song_id=p_o.song_id AND
 				p_o.role_id=0
 )
-UPDATE rock.song AS s
+UPDATE ---SQL_SCHEMA_NAME---song AS s
 SET
 	original_performance_id=op.performance_id
 FROM
 	orgPerformer op
 WHERE
-	op.song_id=s.song_id
+	op.song_id=s.song_id AND
+	original_performance_id IS NULL;
 ;
 
 SELECT COUNT(*) FROM ---SQL_SCHEMA_NAME---performance_old;

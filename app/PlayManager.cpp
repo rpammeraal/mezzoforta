@@ -367,10 +367,10 @@ PlayManager::_loadRadio()
     }
     const int maxNumberAttempts=numberSongsToDisplay/2;
     int maxNumberToRandomize=qm->rowCount();
-    if(maxNumberToRandomize>(4 * numberSongsToDisplay))
-    {
-        maxNumberToRandomize=maxNumberToRandomize/2;	//	don't give the last <numberSongsToDisplay> a change to be played again
-    }
+    //	If collection greater than 400, limit to 1st third of least recent played songs.
+    maxNumberToRandomize=(maxNumberToRandomize>(4 * numberSongsToDisplay)?maxNumberToRandomize/3:maxNumberToRandomize);
+    //	If greater than 5000, limit to 5000 to avoid long term starvation.
+    maxNumberToRandomize=(maxNumberToRandomize>5000?5000:maxNumberToRandomize);
 
     int songInterval=numPerformances/10;
 

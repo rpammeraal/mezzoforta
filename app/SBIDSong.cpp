@@ -1319,8 +1319,12 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
         "WHERE "
-            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') OR "
-            "s.song_id=%5 "
+            "s.original_performance_id IS NOT NULL AND "
+            "( "
+                //"REPLACE(LOWER(s.title),' ','') = (LOWER('%1'),' ','') OR "
+                "REGEXP_REPLACE(title,'[^A-Za-z]','','g') = '%1' OR "
+                "s.song_id=%5 "
+            ") "
             "%4 "
         "UNION "
         "SELECT "
@@ -1335,17 +1339,19 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
                 "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
                     "s.song_id=l.song_id "
         "WHERE "
+            "s.original_performance_id IS NOT NULL AND "
             "( "
                 "SUBSTR(s.soundex,1,LENGTH('%3'))='%3'  "
                 //"SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
             ") AND "
             "length(s.soundex)<= 2*length('%3') AND "
-            "REPLACE(LOWER(s.title),' ','') != REPLACE(LOWER('%1'),' ','') "
+            //	"REPLACE(LOWER(s.title),' ','') != REPLACE(LOWER('%1'),' ','') "
+            "REGEXP_REPLACE(title,'[^A-Za-z]','','g') = '%1'  "
             "%4 "
         "ORDER BY "
             "1,3 "
     )
-        .arg(Common::escapeSingleQuotes(p.songTitle.toLower()))
+        .arg(Common::removeNonAlphanumeric(p.songTitle.toLower()))
         .arg(p.performerID)
         .arg(newSoundex)
         .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
