@@ -132,11 +132,19 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
         if( (exactMatchOnlyFlag && bucket==0) || (!exactMatchOnlyFlag))
         {
             r.remove(0);
-            currentPtr=T::instantiate(r);
+            currentPtr=T::instantiate(r);	//	instantiate to use key
+            QString key=currentPtr->key();
 
             //	Add if not exist, retrieve if exists
-            currentPtr=addItem(currentPtr);
-            QString key=currentPtr->key();
+            if(!contains(key))
+            {
+                currentPtr=addItem(currentPtr);
+            }
+            else
+            {
+                currentPtr=_leMap[key];
+            }
+
 
             if(!processedKeys.contains(key))
             {
@@ -145,7 +153,6 @@ SBIDManagerTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std
                     //	Retrieve and store
                     matches[bucket].append(currentPtr);
                     count++;
-
                 }
                 processedKeys.append(key);
             }

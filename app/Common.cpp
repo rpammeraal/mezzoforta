@@ -237,6 +237,14 @@ Common::removeNonAlphanumeric(const QString &s)
     return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
 }
 
+QString
+Common::removeNonAlphanumericIncludingSpaces(const QString &s)
+{
+    QString t=removeNonAlphanumeric(s);
+    t.replace(" ","");
+    return t;
+}
+
 ///
 /// \brief Common::sanitize
 /// \param s

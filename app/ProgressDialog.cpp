@@ -35,7 +35,6 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 {
     if(!_visible)
     {
-        qDebug() << SB_DEBUG_INFO;
         return;
     }
     if(!_stepList.contains(step))

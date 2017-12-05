@@ -76,8 +76,8 @@ Controller::commitAllCaches(DataAccessLayer* dal) const
     c->getAlbumMgr()->commitAll(dal);
     //c->getChartMgr()->commitAll(dal);
     //c->getChartPerformanceMgr()->commitAll(dal);
-    c->getPerformerMgr()->commitAll(dal);
     c->getSongPerformanceMgr()->commitAll(dal);
+    c->getPerformerMgr()->commitAll(dal);
     c->getSongMgr()->commitAll(dal);
 
     //	CWIP: remove when database is cached
@@ -465,6 +465,7 @@ Controller::setupUI()
 //    qDebug() << SB_DEBUG_INFO << u2ptr2->genericDescription();
 
 
+    qDebug() << SB_DEBUG_INFO << "playground start";
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }

@@ -30,6 +30,7 @@ public:
     inline int year() const { return _year; }
 
     //	Setters
+    void setSongPerformerID(int songPerformerID) { _performerID=songPerformerID; setChangedFlag(); }
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;

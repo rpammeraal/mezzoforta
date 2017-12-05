@@ -1322,7 +1322,7 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
             "s.original_performance_id IS NOT NULL AND "
             "( "
                 //"REPLACE(LOWER(s.title),' ','') = (LOWER('%1'),' ','') OR "
-                "REGEXP_REPLACE(title,'[^A-Za-z]','','g') = '%1' OR "
+                "REGEXP_REPLACE(LOWER(title),'[^A-Za-z]','','g') = '%1' OR "
                 "s.song_id=%5 "
             ") "
             "%4 "
@@ -1346,12 +1346,12 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
             ") AND "
             "length(s.soundex)<= 2*length('%3') AND "
             //	"REPLACE(LOWER(s.title),' ','') != REPLACE(LOWER('%1'),' ','') "
-            "REGEXP_REPLACE(title,'[^A-Za-z]','','g') = '%1'  "
+            "REGEXP_REPLACE(LOWER(title),'[^A-Za-z]','','g') = '%1'  "
             "%4 "
         "ORDER BY "
             "1,3 "
     )
-        .arg(Common::removeNonAlphanumeric(p.songTitle.toLower()))
+        .arg(Common::removeNonAlphanumericIncludingSpaces(p.songTitle.toLower()))
         .arg(p.performerID)
         .arg(newSoundex)
         .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))

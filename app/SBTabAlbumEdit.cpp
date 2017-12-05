@@ -774,6 +774,10 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
     }
 }
 
+//	Use cases:
+//	Change performer specific album to collection album
+//	Change collection specific album to performer specific album
+//	Merge from performer specific album to performer specific album
 void
 SBTabAlbumEdit::save() const
 {
@@ -839,7 +843,6 @@ SBTabAlbumEdit::save() const
         songList=QVector<MusicLibrary::MLentityPtr>();
         for(int i=0;i<aem->rowCount();i++)
         {
-            qDebug() << SB_DEBUG_INFO << songList.count();
             MusicLibrary::MLentity editedSong;
             QStandardItem* item;
 
@@ -911,7 +914,6 @@ SBTabAlbumEdit::save() const
             editedSong.albumID=orgAlbumPtr->albumID();
 
             //	Helper attributes
-            editedSong.createArtificialAlbumFlag=0;
             item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
             if(item)
             {
@@ -924,13 +926,9 @@ SBTabAlbumEdit::save() const
                 editedSong.newFlag=item->text().toInt();
             }
 
+            editedSong.absoluteParentDirectoryPath="current";
             MusicLibrary::MLentityPtr entityPtr=std::make_shared<MusicLibrary::MLentity>(editedSong);
             songList.append(entityPtr);
-
-            qDebug() << SB_DEBUG_INFO
-                     << entityPtr->albumPosition
-                     << entityPtr->orgAlbumPosition
-            ;
         }
     }
     qDebug() << SB_DEBUG_INFO << songList.count();
@@ -943,7 +941,7 @@ SBTabAlbumEdit::save() const
         //	Keep scope of editedAlbum local
         MusicLibrary::MLalbumPath albumPath;
         albumPath.albumID=orgAlbumPtr->albumID();
-        albumPath.albumPerformerID=orgAlbumPtr->albumPerformerID();
+        albumPath.albumPerformerID=(orgAlbumPtr->albumPerformerName()==editAlbumPerformerName)?orgAlbumPtr->albumPerformerID():-1;
         albumPath.albumPerformerName=editAlbumPerformerName;
         albumPath.albumTitle=editAlbumTitle;
         albumPath.genre=orgAlbumPtr->genre();
@@ -955,8 +953,6 @@ SBTabAlbumEdit::save() const
         MusicLibrary::MLalbumPathPtr albumPathPtr=std::make_shared<MusicLibrary::MLalbumPath>(albumPath);
         directory2AlbumPathMap[QString("current")]=albumPathPtr;
     }
-
-    qDebug() << SB_DEBUG_INFO << songList.count();
 
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
@@ -984,14 +980,16 @@ SBTabAlbumEdit::save() const
     }
 
     //	D.	Validate
+    ProgressDialog::instance()->show("Validating","MusicLibrary::rescanMusicLibrary_scan",1);
     MusicLibrary ml;
+    ProgressDialog::instance()->hide();
     if(!cancelSave && !ml.validateEntityList(songList,directory2AlbumPathMap))
     {
         cancelSave=1;
     }
-        qDebug() << SB_DEBUG_INFO << "END";
 
 
+    if(1)
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "AFTER VALIDATION";
@@ -1010,140 +1008,148 @@ SBTabAlbumEdit::save() const
                 ;
             }
         }
+
+        QHashIterator<QString,MusicLibrary::MLalbumPathPtr> albumIT(directory2AlbumPathMap);
+        while(albumIT.hasNext())
+        {
+            albumIT.next();
+            MusicLibrary::MLalbumPathPtr apPtr=albumIT.value();
+            qDebug() << SB_DEBUG_INFO
+                     << apPtr->albumID
+                     << apPtr->albumTitle
+                     << apPtr->albumPerformerID
+                     << apPtr->albumPerformerName
+                     << apPtr->multipleEntriesFlag()
+            ;
+        }
     }
 
     //	Now need to figure out if we still are 'talking' to the same album or
     //	if we got merged.
     //		a.	find header record
-
-//	CWIP: to be worked on after MusicLibrary is updated.
-//    SBIDAlbumPtr newAlbumPtr;
-//    QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
-//    MusicLibrary::MLentityPtr newAlbumEntityPtr=eIT.next();
-//    while(eIT.hasNext() && !newAlbumPtr)
-//    {
-//        MusicLibrary::MLentityPtr ePtr=eIT.next();
-//        if(ePtr)
-//        {
-//            if(ePtr->headerFlag)
-//            {
-//                newAlbumPtr=SBIDAlbum::retrieveAlbum(ePtr->albumID);
-//                newAlbumEntityPtr=ePtr;
-//            }
-//        }
-//    }
-
-//    if(!newAlbumPtr)
-//    {
-//        qDebug() << SB_DEBUG_ERROR << "NO ALBUM FOUND";
-//        return;
-//    }
-
-//    //	Process updates in album performances
-
-//    //	1.	Update sb_position for final list, taking into account merges and removals.
-//    //		Also keep track if original song has been removed.
-//    //		Also keep track if song has switched performer -> mark as New
-//    QMutableVectorIterator<MusicLibrary::MLentityPtr> slIT(songList);
-//    slIT.toFront();
-//    while(slIT.hasNext())
-//    {
-//        MusicLibrary::MLentityPtr ePtr=slIT.next();
-//		qDebug() << SB_DEBUG_INFO
-//				 << ePtr->albumPosition
-//				 << ePtr->orgAlbumPosition
-//				 << ePtr->albumPerformanceID
-//				 << "processing"
-//				 << ePtr->songTitle
-//		;
-
-//		SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(ePtr->albumPerformanceID);
-//		if(apPtr)
-//		{
-//			if(ePtr->albumPosition!=ePtr->orgAlbumPosition)
-//			{
-//				//	assign new album position
-//				qDebug() << SB_DEBUG_INFO
-//						 << ePtr->albumPosition
-//						 << ePtr->orgAlbumPosition
-//						 << apPtr->albumPerformanceID()
-//						 << "assigning pos " << ePtr->albumPosition
-//						 << "to" << ePtr->songTitle
-//				;
-//				apPtr->setAlbumPosition(ePtr->albumPosition);
-//				apmgr->setChanged(apPtr);
-
-//				qDebug() << SB_DEBUG_INFO
-//						 << apPtr->albumPerformanceID()
-//						 << apPtr->albumPosition()
-//				;
-//			}
-//			if(ePtr->notes!=apPtr->notes())
-//			{
-//				apPtr->setNotes(ePtr->notes);
-//				apmgr->setChanged(apPtr);
-//			}
-//		}
-//    }
+    MusicLibrary::MLalbumPathPtr apPtr;
+    QHashIterator<QString,MusicLibrary::MLalbumPathPtr> d2apmIT(directory2AlbumPathMap);
+    qDebug() << SB_DEBUG_INFO << directory2AlbumPathMap.count();
+    if(d2apmIT.hasNext())
+    {
+        d2apmIT.next();
+        qDebug() << SB_DEBUG_INFO << d2apmIT.key();
+        apPtr=d2apmIT.value();
+        SB_RETURN_VOID_IF_NULL(apPtr);
+    }
+    if(!apPtr || apPtr->albumID==-1)
+    {
+        qDebug() << SB_DEBUG_ERROR << "NO ALBUM FOUND";
+        return;
+    }
 
 
-//    if(newAlbumPtr->albumID()==orgAlbumPtr->albumID())
-//    {
-//        //	Take care of typical album level data
-//        newAlbumPtr->setAlbumTitle(editAlbumTitle);
-//        newAlbumPtr->setYear(editAlbumYear);
+    //	Process updates in album performances
 
-//        //	Set performer
-//        if(newAlbumEntityPtr->albumPerformerID!=newAlbumPtr->albumPerformerID())
-//        {
-//            newAlbumPtr->setAlbumPerformerID(newAlbumEntityPtr->albumPerformerID);
-//        }
+    //	1.	Update sb_position for final list, taking into account merges and removals.
+    //		Also keep track if original song has been removed.
+    //		Also keep track if song has switched performer -> mark as New
+    QMutableVectorIterator<MusicLibrary::MLentityPtr> slIT(songList);
+    slIT.toFront();
+    while(slIT.hasNext())
+    {
+        MusicLibrary::MLentityPtr ePtr=slIT.next();
+        qDebug() << SB_DEBUG_INFO
+                 << ePtr->albumPosition
+                 << ePtr->orgAlbumPosition
+                 << ePtr->albumPerformanceID
+                 << "processing"
+                 << ePtr->songTitle
+        ;
 
-//        //	No matching being done eg Dire Straitz
-//        qDebug() << SB_DEBUG_INFO << editAlbumTitle;
-//        qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
-//        qDebug() << SB_DEBUG_INFO << newAlbumPtr->changedFlag();
-//        amgr->setChanged(newAlbumPtr);
-//    }
-//    else
-//    {
-//        //	Merge.
-//        qDebug() << SB_DEBUG_INFO << "MERGÉÉ!";
-//        SBIDAlbumPtr fromPtr=orgAlbumPtr;
-//        amgr->merge(fromPtr,newAlbumPtr);
-//        albumMergedFlag=1;
-//    }
+        SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(ePtr->albumPerformanceID);
+        if(apPtr)
+        {
+            if(ePtr->albumPosition!=ePtr->orgAlbumPosition)
+            {
+                //	assign new album position
+                qDebug() << SB_DEBUG_INFO
+                         << ePtr->albumPosition
+                         << ePtr->orgAlbumPosition
+                         << apPtr->albumPerformanceID()
+                         << "assigning pos " << ePtr->albumPosition
+                         << "to" << ePtr->songTitle
+                ;
+                apPtr->setAlbumPosition(ePtr->albumPosition);
+                apmgr->setChanged(apPtr);
 
-//        qDebug() << SB_DEBUG_INFO;
-//    if(!cancelSave)
-//    {
-//        //	E.	Throw to SBIDAlbum for saving to database.
-//        qDebug() << SB_DEBUG_INFO;
-//        newAlbumPtr->processNewSongList(songList);
+                qDebug() << SB_DEBUG_INFO
+                         << apPtr->albumPerformanceID()
+                         << apPtr->albumPosition()
+                ;
+            }
+            if(ePtr->notes!=apPtr->notes())
+            {
+                apPtr->setNotes(ePtr->notes);
+                apmgr->setChanged(apPtr);
+            }
+        }
+    }
 
-//        //	F.	Commit all
-//        qDebug() << SB_DEBUG_INFO;
-//        Controller* c=Context::instance()->getController();
-//        successFlag=c->commitAllCaches(dal);
+    SBIDAlbumPtr newAlbumPtr;
+    if(apPtr->albumID==orgAlbumPtr->albumID())
+    {
+        //	Take care of typical album level data
+        newAlbumPtr=orgAlbumPtr;
 
-//        //	G.	Tell screenstack to update any entry pointing to
-//        if(albumMergedFlag)
-//        {
-//            ScreenStack* st=Context::instance()->getScreenStack();
-//            SB_RETURN_VOID_IF_NULL(st);
+        newAlbumPtr->setAlbumTitle(editAlbumTitle);
+        newAlbumPtr->setYear(editAlbumYear);
 
-//            ScreenItem from(orgAlbumPtr);
-//            ScreenItem to(newAlbumPtr);
-//            st->replace(from,to);
-//        }
-//    }
+        //	Set performer
+        if(newAlbumPtr->albumPerformerID()!=apPtr->albumPerformerID)
+        {
+            newAlbumPtr->setAlbumPerformerID(apPtr->albumPerformerID);
+        }
 
-//    qDebug() << SB_DEBUG_INFO << cancelSave << successFlag;
-//    if(cancelSave || !successFlag)
-//    {
-//        qDebug() << SB_DEBUG_INFO;
-//        dal->restore(restorePoint);
-//    }
+        //	No matching being done eg Dire Straitz
+        qDebug() << SB_DEBUG_INFO << editAlbumTitle;
+        qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
+        qDebug() << SB_DEBUG_INFO << newAlbumPtr->changedFlag();
+        amgr->setChanged(newAlbumPtr);
+    }
+    else
+    {
+        newAlbumPtr=SBIDAlbum::retrieveAlbum(apPtr->albumID);
+        //	Merge.
+        qDebug() << SB_DEBUG_INFO << "MERGÉÉ!";
+        SBIDAlbumPtr fromPtr=orgAlbumPtr;
+        amgr->merge(fromPtr,newAlbumPtr);
+        albumMergedFlag=1;
+    }
+
+    if(!cancelSave)
+    {
+        //	E.	Throw to SBIDAlbum for saving to database.
+        qDebug() << SB_DEBUG_INFO;
+        newAlbumPtr->processNewSongList(songList);
+
+        //	F.	Commit all
+        qDebug() << SB_DEBUG_INFO;
+        Controller* c=Context::instance()->getController();
+        successFlag=c->commitAllCaches(dal);
+
+        //	G.	Tell screenstack to update any entry pointing to
+        if(albumMergedFlag)
+        {
+            ScreenStack* st=Context::instance()->getScreenStack();
+            SB_RETURN_VOID_IF_NULL(st);
+
+            ScreenItem from(orgAlbumPtr);
+            ScreenItem to(newAlbumPtr);
+            st->replace(from,to);
+        }
+    }
+
+    if(cancelSave || !successFlag)
+    {
+        qDebug() << SB_DEBUG_INFO;
+        dal->restore(restorePoint);
+    }
 
     //	G.	Close screen
     qDebug() << SB_DEBUG_INFO << successFlag;

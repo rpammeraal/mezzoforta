@@ -130,7 +130,7 @@ protected:
     //inline int newFlag() const { return _newFlag; }
     virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
-    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
+    inline void setDeletedFlag() { qDebug() << SB_DEBUG_INFO << this->key() << this->ID(); _deletedFlag=1; setChangedFlag(); }
     //inline void setNewFlag() { _newFlag=1; }
     inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;

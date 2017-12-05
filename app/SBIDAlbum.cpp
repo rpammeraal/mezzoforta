@@ -900,7 +900,8 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp USING(record_performance_id) "
                 "JOIN ___SB_SCHEMA_NAME___record r USING(record_id) "
         "WHERE "
-            "LEFT(path,LENGTH('%1'))='%1' "
+            "LEFT(path,LENGTH('%1'))='%1' AND "
+            "LENGTH('%1')<>0 "
         "GROUP BY "
             "r.record_id "
         "HAVING "
@@ -1313,6 +1314,7 @@ SBIDAlbum::updateSQL() const
 
     if(deletedFlag())
     {
+        //	Do not remove descendants, this needs to be taken care of by SBIDMgrs.
         SQL.append(QString(
             "DELETE FROM "
                 "___SB_SCHEMA_NAME___record "

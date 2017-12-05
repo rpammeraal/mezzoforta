@@ -169,7 +169,7 @@ SBTabPerformerEdit::save() const
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDPerformerPtr orgPerformerPtr=std::dynamic_pointer_cast<SBIDPerformer>(currentScreenItem.ptr());
+    SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.ptr()->itemID());
     SBIDPerformerPtr selectedPerformerPtr;
     bool mergeFlag=0;
     bool successFlag=0;
@@ -283,7 +283,7 @@ SBTabPerformerEdit::save() const
     }
 
     pemgr->setChanged(orgPerformerPtr);
-    successFlag=pemgr->commitAll(dal);
+    successFlag=Context::instance()->getController()->commitAllCaches(dal);
 
     //Context::instance()->getScreenStack()->debugShow("before finish");
     if(successFlag)

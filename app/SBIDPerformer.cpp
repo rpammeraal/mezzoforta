@@ -340,19 +340,20 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
     SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDPerformerPtr>> matches;
+    found=SBIDPerformerPtr();
 
     if(pemgr->find(p,exclude,matches))
     {
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            found=matches[0][0];
+            found=SBIDPerformer::retrievePerformer(matches[0][0]->itemID());
             result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
             //	If there is *exactly* one match without articles, take it.
-            found=matches[1][0];
+            found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists;
         }
         else
@@ -369,7 +370,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                 if(selected)
                 {
                     //	Existing performer is choosen
-                    found=std::dynamic_pointer_cast<SBIDPerformer>(selected);
+                    found=SBIDPerformer::retrievePerformer(selected->itemID());
                     found->refreshDependents();
                     result=Common::result_exists;
                 }
@@ -637,7 +638,6 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     refreshDependents(0,0);
 
     SBIDPerformerMgr* peMgr=Context::instance()->getPerformerMgr();
-    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
 
     //	Merge related performers
     QVectorIterator<SBIDPerformerPtr> it(pPtrFrom->relatedPerformers());
@@ -662,6 +662,8 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
         _relatedPerformerKey.removeAll(pPtrFrom->key());
     }
 
+    //	Merge albums
+    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
     QVectorIterator<SBIDAlbumPtr> albumListIT(pPtrFrom->albumList());
     while(albumListIT.hasNext())
     {
@@ -670,7 +672,15 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
         aMgr->setChanged(aPtr);
     }
 
-
+    //	Merge song performances
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    QVectorIterator<SBIDSongPerformancePtr> spIT(pPtrFrom->songPerformances());
+    while(spIT.hasNext())
+    {
+        SBIDSongPerformancePtr spPtr=spIT.next();
+        spPtr->setSongPerformerID(this->performerID());
+        spMgr->setChanged(spPtr);
+    }
 }
 
 void
@@ -720,6 +730,8 @@ SBIDPerformer::updateSQL() const
     bool deletedFlag=this->deletedFlag();
 
     qDebug() << SB_DEBUG_INFO
+             << this->key()
+             << this->ID()
              << mergedFlag()
              << deletedFlag
              << changedFlag()
@@ -847,108 +859,8 @@ SBIDPerformer::updateSQL() const
     //	Deleted
     if(deletedFlag)
     {
-        //	Remove online_performance
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___online_performance "
-            "WHERE "
-                "record_performance_id IN "
-                "( "
-                    "SELECT "
-                        "record_performance_id "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___record_performance rp "
-                            "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                                "rp.performance_id=p.performance_id AND "
-                                "p.artist_id=%1 "
-                ") "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
-
-        //	Remove playlist data: explicitly referring to performerID
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___playlist_detail "
-            "WHERE "
-                "artist_id=%1 "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___playlist_detail "
-            "WHERE "
-                "online_performance_id IN "
-                "( "
-                    "SELECT "
-                        "online_performance_id "
-                    "FROM "
-                        "___SB_SCHEMA_NAME___online_performance pp "
-                            "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
-                                "pp.record_performance_id=rp.record_performance_id "
-                            "JOIN ___SB_SCHEMA_NAME___performance p ON "
-                                "rp.performance_id=p.performance_id AND "
-                                "p.artist_id=%1 "
-                ") "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
-        //	4.	Remove from record_performance
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___record_performance "
-            "WHERE "
-                "performance_id IN "
-                "( "
-                    "SELECT "
-                        "performance_id "
-                    "FROM "
-                        "performance p "
-                    "WHERE "
-                        "p.artist_id=%1 "
-                ") "
-         )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
-        //	6.	Remove performance
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___performance "
-            "WHERE "
-                "artist_id=%1 "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
-        //	Remove entries in artist_rel
-        q=QString
-        (
-            "DELETE FROM  "
-                "___SB_SCHEMA_NAME___artist_rel "
-            "WHERE "
-                "artist1_id=%1 OR "
-                "artist2_id=%1 "
-        )
-            .arg(this->performerID())
-        ;
-        SQL.append(q);
-
         //	Remove artist
+        //	Do NOT remove anything else -- this should be performed by SBIDMgr
         q=QString
         (
             "DELETE FROM  "
