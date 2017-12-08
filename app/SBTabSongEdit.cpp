@@ -43,7 +43,6 @@ SBTabSongEdit::hasEdits() const
 }
 
 ///	Public slots
-/// CWIP: smgr
 void
 SBTabSongEdit::save() const
 {
@@ -55,6 +54,7 @@ SBTabSongEdit::save() const
 
     //	E.	[switch original performer to completely new performer] Bad - U2: change performer to U22.
     //	F1.	[merge song (within performer)] Badaa - U22 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
+    //	G.	[Assign song to different song and its non-original performer]  Assign <whatever> to Sunday Bloody Sunday by The Royal Philharmonic Orchestra
 
     //	Refresh database
     //	F2.	[merge song (within performer)] Bad - U2 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
@@ -64,192 +64,299 @@ SBTabSongEdit::save() const
     //	H.	[merge song with existing song by renaming original performer] Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
     //	I.	[simple edits]: 'Elusive Dreams ' -> 'Elusive Dreams': should just save the new title.
 
-//    const MainWindow* mw=Context::instance()->getMainWindow();
-//    ScreenItem currentScreenItem=this->currentScreenItem();
-//    SBIDSong orgSongID=static_cast<SBIDSong>(*(currentScreenItem.ptr()));
-//    SBIDSong newSongID=orgSongID;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QString restorePoint=dal->createRestorePoint();
+    const MainWindow* mw=Context::instance()->getMainWindow();
+    ScreenItem currentScreenItem=this->currentScreenItem();
+    SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().ptr()->itemID());
+    SBIDSongPtr newSongPtr=orgSongPtr;
+    SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
+    SBIDSongPerformancePtr newSpPtr;	//	only populated if a new original spPtr is created.
+    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    SBIDPerformerMgr* peMgr=Context::instance()->getPerformerMgr();
+    bool songMergedFlag=0;
+    int orgSongPerformanceID=orgSongPtr->originalSongPerformanceID();
 
-//    qDebug() << SB_DEBUG_INFO << "orgSong" << orgSongID;
-//    qDebug() << SB_DEBUG_INFO << "newSong" << newSongID;
+    qDebug() << SB_DEBUG_INFO << "orgSong" << orgSongPtr->text();
+    qDebug() << SB_DEBUG_INFO << "newSong" << newSongPtr->text();
 
-//    if(orgSongID.songID()==-1 || newSongID.songID()==-1)
-//    {
-//        QMessageBox msgBox;
-//        msgBox.setText("SBTabSongEdit::save:old or new song undefined");
-//        msgBox.exec();
-//        return;
-//    }
+    if(!orgSongPtr)
+    {
+        qDebug() << SB_DEBUG_ERROR <<  "SBTabSongEdit::save:current song undefined. Aborting.";
+        return;
+    }
 
-//    if(currentScreenItem.editFlag()==0)
-//    {
-//        qDebug() << SB_DEBUG_WARNING << "isEditFlag flag not set -- not continuing";
-//        return;
-//    }
+    if(currentScreenItem.editFlag()==0)
+    {
+        qDebug() << SB_DEBUG_ERROR << "isEditFlag flag not set. Aborting.";
+        return;
+    }
 
-//    QString editTitle=mw->ui.songEditTitle->text();
-//    QString editPerformerName=mw->ui.songEditPerformerName->text();
-//    int editYearOfRelease=mw->ui.songEditYearOfRelease->text().toInt();
-//    QString editNotes=mw->ui.songEditNotes->text();
-//    QString editLyrics=mw->ui.songEditLyrics->toPlainText();
-//    bool hasCaseChange=0;
+    QString editTitle=mw->ui.songEditTitle->text();
+    QString editPerformerName=mw->ui.songEditPerformerName->text();
+    int editYearOfRelease=mw->ui.songEditYearOfRelease->text().toInt();
+    QString editNotes=mw->ui.songEditNotes->text();
+    QString editLyrics=mw->ui.songEditLyrics->toPlainText();
+    bool metaDataChangedFlag=0;
+    bool simpleTitleChangedFlag=0;
+    bool titleChangedFlag=0;
 
-//    qDebug() << SB_DEBUG_INFO << editTitle << editPerformerName;
-//    qDebug() << SB_DEBUG_INFO << orgSongID.songTitle() << newSongID.songPerformerName();
-//    qDebug() << SB_DEBUG_INFO << newSongID;
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.songPerformerID();
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.songID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.songPerformerID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.songID();
+    qDebug() << SB_DEBUG_INFO << editTitle << editPerformerName;
+    qDebug() << SB_DEBUG_INFO << orgSongPtr->songTitle() << newSongPtr->songOriginalPerformerName();
+    qDebug() << SB_DEBUG_INFO << newSongPtr->songID();
+    qDebug() << SB_DEBUG_INFO << "orgSongPtr:sb_song_performer_id" << orgSongPtr->originalSongPerformanceID();
+    qDebug() << SB_DEBUG_INFO << "orgSongPtr:sb_song_id" << orgSongPtr->songID();
+    qDebug() << SB_DEBUG_INFO << "newSongPtr:sb_song_performer_id" << newSongPtr->originalSongPerformanceID();
+    qDebug() << SB_DEBUG_INFO << "newSongPtr:sb_song_id" << newSongPtr->songID();
 
-//    //	If only case is different in songTitle, save the new title as is.
-//    if((Common::simplified(editTitle)==Common::simplified(newSongID.songTitle())) &&
-//        (editTitle!=newSongID.songTitle()) &&
-//        (editPerformerName==newSongID.songPerformerName()))
-//    {
-//        newSongID.setSongID(-1);
-//        newSongID.setSongTitle(editTitle);
-//        hasCaseChange=1;	//	Identify to saveSong that title has changed.
-//    }
-//    else
-//    {
-//        Common::toTitleCase(editTitle);
-//        Common::toTitleCase(editPerformerName);
-//        hasCaseChange=0;
-//    }
-//    qDebug() << SB_DEBUG_INFO << hasCaseChange;
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.songPerformerID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.songPerformerID();
+    ///	Take care of meta data changes and simple title changes.
+    if(
+            editYearOfRelease!=orgSpPtr->year() ||
+            editNotes!=orgSongPtr->notes() ||
+            editLyrics!=orgSongPtr->lyrics()
 
-//    //	Handle performer name edits
-//    if(hasCaseChange==0 && editPerformerName!=newSongID.songPerformerName())
-//    {
-//        SBIDPerformerPtr selectedPerformerPtr;
-//        if(SBIDPerformer::selectSavePerformer(editPerformerName,selectedPerformerPtr,selectedPerformerPtr,mw->ui.songEditPerformerName)==0)
-//        {
-//            return;
-//        }
-//        newSongID.setSongPerformerID(selectedPerformerPtr->songPerformerID());
-//        newSongID.setSongPerformerName(selectedPerformerPtr->songPerformerName());
-//    }
+        )
+    {
+        metaDataChangedFlag=1;
+    }
 
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_performer_id" << orgSongID.songPerformerID();
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.songID();
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:songPerformerName" << orgSongID.songPerformerName();
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:songTitle" << orgSongID.songTitle();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_performer_id" << newSongID.songPerformerID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.songID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:songPerformerName" << newSongID.songPerformerName();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:songTitle" << newSongID.songTitle();
+    if(
+        Common::simplified(editTitle)==Common::simplified(orgSongPtr->songTitle()) &&
+        editPerformerName==newSongPtr->songOriginalPerformerName()
+        )
+    {
+        if(editTitle!=orgSongPtr->songTitle())
+        {
+            qDebug() << SB_DEBUG_INFO << editTitle;
+            qDebug() << SB_DEBUG_INFO << orgSongPtr->songTitle();
+            //	Take care of simple case changes
+            newSongPtr->setSongTitle(editTitle);
+            sMgr->setChanged(newSongPtr);
+            simpleTitleChangedFlag=1;
+            titleChangedFlag=1;
+        }
+    }
 
-//    //	Handle song title edits
-//    if(editTitle.toLower()!=newSongID.songTitle().toLower() &&
-//        hasCaseChange==0)
-//    {
-//        SBIDSong selectedSongID(-1);
-//        selectedSongID.setSongTitle(editTitle);
-//        qDebug() << SB_DEBUG_INFO << selectedSongID;
+    if(editYearOfRelease!=orgSpPtr->year())
+    {
+        orgSpPtr->setYear(editYearOfRelease);
+        spMgr->setChanged(orgSpPtr);
+    }
+    if(editNotes!=orgSongPtr->notes() ||
+        editLyrics!=orgSongPtr->lyrics())
+    {
+        newSongPtr->setNotes(editNotes);
+        newSongPtr->setLyrics(editLyrics);
+        sMgr->setChanged(newSongPtr);
+    }
 
-//        qDebug() << SB_DEBUG_INFO << editTitle << "!=" << newSongID.songTitle() << newSongID.songID();
-//        SBSqlQueryModel* songMatches=newSongID.matchSongWithinPerformer(editTitle);
+    if(simpleTitleChangedFlag==0 && editTitle!=orgSongPtr->songTitle())
+    {
+        Common::toTitleCase(editTitle);
+        Common::toTitleCase(editPerformerName);
+        titleChangedFlag=1;
+    }
 
-//        qDebug() << SB_DEBUG_INFO << songMatches->rowCount();
+    qDebug() << SB_DEBUG_INFO << metaDataChangedFlag << simpleTitleChangedFlag << titleChangedFlag;
 
-//        if(songMatches->rowCount()>1)
-//        {
+    //	Handle performer name edits
+    SBIDPerformerPtr pPtr;
+    if(editPerformerName!=newSongPtr->songOriginalPerformerName())
+    {
+        qDebug() << SB_DEBUG_INFO;
+        Common::sb_parameters p;
+        p.performerName=editPerformerName;
+        p.performerID=-1;
+        Common::result result=peMgr->userMatch(p,SBIDPerformerPtr(),pPtr);
+        if(result==Common::result_canceled)
+        {
+            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            return;
+        }
+        if(result==Common::result_missing)
+        {
+        qDebug() << SB_DEBUG_INFO;
+            //	Create performer
+            Common::sb_parameters performer;
+            performer.performerName=p.performerName;
+            pPtr=peMgr->createInDB(performer);
 
-//            if(songMatches->rowCount()>=2 &&
-//                songMatches->record(1).value(0).toInt()==1
-//            )
-//            {
-//                selectedSongID.setSongID(songMatches->record(1).value(1).toInt());
-//                selectedSongID.setSongTitle(songMatches->record(1).value(2).toString());
-//                qDebug() << SB_DEBUG_INFO << "selectedSongID.sb_song_id" << selectedSongID.songID();
-//            }
-//            else
-//            {
-//                SBDialogSelectItem* pu=SBDialogSelectItem::selectSongByPerformer(std::make_shared<SBIDSong>(selectedSongID),songMatches);
-//                pu->exec();
+            //	CWIP: make sure all attributes are populated
+            p.songID=newSongPtr->songID();
+            p.performerID=pPtr->performerID();
+            p.year=orgSpPtr->year();
+            newSpPtr=spMgr->createInDB(p);
+        }
+        else if(titleChangedFlag==0)
+        {
+        qDebug() << SB_DEBUG_INFO;
+            //	Find out if a songperformance already exists for the unchanged title and changed performer.
+            //	If it not existing, create one. Set original_performance_id to this songPerformance.
+            newSpPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(orgSongPtr->songID(),pPtr->performerID());
+            if(!newSpPtr)
+            {
+        qDebug() << SB_DEBUG_INFO;
+                //	Not found -- create one
+                p.songID=newSongPtr->songID();
+                p.performerID=pPtr->performerID();
+                p.year=orgSpPtr->year();
+                newSpPtr=spMgr->createInDB(p);
+            }
+            newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
+            sMgr->setChanged(newSongPtr);
+        }
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        pPtr=SBIDPerformer::retrievePerformer(newSongPtr->songOriginalPerformerID());
+    }
 
-//                SBIDPtr selected=pu->getSelected();
-//                selectedSongID=SBIDSong(*selected);
+    //	At this point pPtr holds the performer data for the changed song.
+    SB_RETURN_VOID_IF_NULL(pPtr);
+    qDebug() << SB_DEBUG_INFO << pPtr->performerID() << pPtr->performerName();
+    qDebug() << SB_DEBUG_INFO << "orgSongPtr:sb_song_performer_id" << orgSongPtr->songOriginalPerformerID();
 
-//                //	Go back to screen if no item has been selected
-//                if(pu->hasSelectedItem()==0)
-//                {
-//                    return;
-//                }
-//                qDebug() << SB_DEBUG_INFO << "selectedSongID.sb_song_id" << selectedSongID.songID();
-//            }
+//    qDebug() << SB_DEBUG_INFO << "orgSongPtr:sb_song_performer_id" << orgSongPtr.songPerformerID();
+//    qDebug() << SB_DEBUG_INFO << "orgSongPtr:sb_song_id" << orgSongPtr.songID();
+//    qDebug() << SB_DEBUG_INFO << "orgSongPtr:songPerformerName" << orgSongPtr.songPerformerName();
+//    qDebug() << SB_DEBUG_INFO << "orgSongPtr:songTitle" << orgSongPtr.songTitle();
+//    qDebug() << SB_DEBUG_INFO << "newSongPtr:sb_song_performer_id" << newSongPtr.songPerformerID();
+//    qDebug() << SB_DEBUG_INFO << "newSongPtr:sb_song_id" << newSongPtr.songID();
+//    qDebug() << SB_DEBUG_INFO << "newSongPtr:songPerformerName" << newSongPtr.songPerformerName();
+//    qDebug() << SB_DEBUG_INFO << "newSongPtr:songTitle" << newSongPtr.songTitle();
 
-//            //	Update field
-//            mw->ui.songEditTitle->setText(selectedSongID.songTitle());
-//        }
+    //	Handle song title edits
+qDebug() << SB_DEBUG_INFO << titleChangedFlag;
+qDebug() << SB_DEBUG_INFO << simpleTitleChangedFlag;
+    if(titleChangedFlag==1 && simpleTitleChangedFlag==0 && !newSpPtr)
+    {
+qDebug() << SB_DEBUG_INFO;
+        Common::sb_parameters p;
+        p.songTitle=editTitle;
+        p.performerID=pPtr->performerID();
+        p.performerName=pPtr->performerName();
+        p.year=orgSpPtr->year();
+        p.notes=orgSpPtr->notes();
 
-//        //	Update newSongID
-//        newSongID.setSongID(selectedSongID.songID());
-//        newSongID.setSongTitle(selectedSongID.songTitle());
-//        qDebug() << SB_DEBUG_INFO << "selected song" << newSongID.songID() << newSongID.songTitle();
-//    }
-//    newSongID.setYear(editYearOfRelease);
-//    newSongID.setNotes(editNotes);
-//    newSongID.setLyrics(editLyrics);
+        qDebug() << SB_DEBUG_INFO << p.songID;
 
-//    //	H.	Check if there is another song with exactly the same title and performer but with different song_id.
-//    //		Goal is to detect another way of merging songs.
-//    SBSqlQueryModel* existingSongs=newSongID.findSong();
-//    if(existingSongs!=0 && existingSongs->rowCount()==1)
-//    {
-//        qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongID;
-//        newSongID.setSongID(existingSongs->record(0).value(0).toInt());
-//        newSongID.setNotes(existingSongs->record(0).value(2).toString());
-//        newSongID.setSongPerformerID(existingSongs->record(0).value(3).toInt());
-//        newSongID.setYear(existingSongs->record(0).value(5).toInt());
-//        newSongID.setLyrics(existingSongs->record(0).value(6).toString());
+        Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
+        if(result==Common::result_canceled)
+        {
+            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            return;
+        }
+        if(result==Common::result_missing)
+        {
+qDebug() << SB_DEBUG_INFO;
+            //	Back to updating title and performer on original song
+            newSongPtr->setSongTitle(editTitle);
+            newSpPtr=orgSpPtr;
+            newSpPtr->setSongPerformerID(pPtr->performerID());
+            sMgr->setChanged(newSongPtr);
+            spMgr->setChanged(newSpPtr);
+        }
+        if(result==Common::result_exists)
+        {
+qDebug() << SB_DEBUG_INFO;
+            //	Merge to selected
+            sMgr->merge(orgSongPtr,newSongPtr);
+            songMergedFlag=1;
+        }
+    }
+qDebug() << SB_DEBUG_INFO;
 
-//        qDebug() << SB_DEBUG_INFO << "Changed to:" << newSongID;
-//    }
+    //	H.	Check if there is another song with exactly the same title and performer but with different song_id.
+    //		Goal is to detect another way of merging songs.
+    SBIDSongPerformancePtr dupSpPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformer(newSongPtr->songTitle(),newSongPtr->songOriginalPerformerName());
+    if(dupSpPtr)
+    {
+        sMgr->merge(orgSongPtr,newSongPtr);
+        qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongPtr->text();
+    }
 
-//    qDebug() << SB_DEBUG_INFO << "orgSongID:sb_song_id" << orgSongID.songID();
-//    qDebug() << SB_DEBUG_INFO << "newSongID:sb_song_id" << newSongID.songID();
+    //	I.	Consolidate song performances with what is on any album.
+    //		If a non-original performer does not exist on an album, remove this (there is no other way to remove this).
+    qDebug() << SB_DEBUG_INFO << orgSongPerformanceID << newSongPtr->originalSongPerformanceID();
+    if(orgSongPerformanceID!=newSongPtr->originalSongPerformanceID())
+    {
+        qDebug() << SB_DEBUG_INFO;
+        QMapIterator<int,SBIDSongPerformancePtr> it(newSongPtr->songPerformances());
+        while(it.hasNext())
+        {
+            it.next();
+            SBIDSongPerformancePtr spPtr=it.value();
+            int songPerformanceID=spPtr->songPerformanceID();	//	CWIP: new data collection to keep track of this by songPerformanceID
 
-//    if(orgSongID!=newSongID ||
-//        orgSongID.year()!=newSongID.year() ||
-//        orgSongID.notes()!=newSongID.notes() ||
-//        orgSongID.lyrics()!=newSongID.lyrics() ||
-//        hasCaseChange==1)
-//    {
+            qDebug() << SB_DEBUG_INFO << songPerformanceID;
+            QVectorIterator<SBIDAlbumPerformancePtr> apIT(newSongPtr->allPerformances());
+            bool foundFlag=0;
+            while(apIT.hasNext() && !foundFlag)
+            {
+                SBIDAlbumPerformancePtr apPtr=apIT.next();
+                if(apPtr->songPerformanceID()==songPerformanceID)
+                {
+                    foundFlag=1;
+                }
+            }
 
-//        const bool successFlag=SBIDSong::updateExistingSong(orgSongID,newSongID,QStringList(),1);
+            if(!foundFlag)
+            {
+                qDebug() << SB_DEBUG_INFO << "Removing song performance by " << spPtr->songPerformerName() << "id=" << spPtr->songPerformanceID();
+                newSongPtr->removeSongPerformance(spPtr);
+            }
+        }
+    }
 
-//        if(successFlag==1)
-//        {
-//            QString updateText=QString("Saved song %1%2%3.")
-//                .arg(QChar(96))      //	1
-//                .arg(newSongID.songTitle())   //	2
-//                .arg(QChar(180));    //	3
-//            Context::instance()->getController()->updateStatusBarText(updateText);
 
-//            if(orgSongID!=newSongID)
-//            {
-//                //	Update models!
-//                Context::instance()->getController()->refreshModels();
+//
+//	NEW CWIP:
+//	SET ORIGINAL_PERFORMANCE_ID ON NEWSONG TO BE THAT OF NEWSPPTR
+//
 
-//                if(orgSongID.songID()!=newSongID.songID())
-//                {
-//                    //	Remove old from screenstack
-//                    Context::instance()->getScreenStack()->removeScreen(ScreenItem(std::make_shared<SBIDSong>(orgSongID)));
-//                }
-//            }
-//            else
-//            {
-//                //	Update screenstack
-//                currentScreenItem.setEditFlag(0);
 
-//                ScreenStack* st=Context::instance()->getScreenStack();
-//                st->updateSBIDInStack(currentScreenItem);
-//            }
-//        }
-//    }
+    const bool successFlag=Context::instance()->getController()->commitAllCaches(dal);
+
+    if(successFlag==1)
+    {
+        QString updateText=QString("Saved song %1%2%3.")
+            .arg(QChar(96))      //	1
+            .arg(newSongPtr->songTitle())   //	2
+            .arg(QChar(180));    //	3
+        Context::instance()->getController()->updateStatusBarText(updateText);
+
+        if(orgSongPtr!=newSongPtr || songMergedFlag)
+        {
+            //	Update models!
+            Context::instance()->getController()->refreshModels();
+
+            if(orgSongPtr->songID()!=newSongPtr->songID())
+            {
+                //	Remove old from screenstack
+                ScreenStack* st=Context::instance()->getScreenStack();
+
+                ScreenItem from(orgSongPtr);
+                ScreenItem to(newSongPtr);
+                st->replace(from,to);
+            }
+        }
+        else
+        {
+            //	Update screenstack
+            currentScreenItem.setEditFlag(0);
+
+            ScreenStack* st=Context::instance()->getScreenStack();
+            st->updateSBIDInStack(currentScreenItem);
+        }
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO;
+        dal->restore(restorePoint);
+    }
+
     //	Close screen
     Context::instance()->getNavigator()->closeCurrentTab(1);
 }

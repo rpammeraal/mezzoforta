@@ -69,16 +69,45 @@ bool
 Controller::commitAllCaches(DataAccessLayer* dal) const
 {
     Context* c=Context::instance();
-    c->getOnlinePerformanceMgr()->commitAll(dal);
-    c->getPlaylistMgr()->commitAll(dal);
-    c->getPlaylistDetailMgr()->commitAll(dal);
-    c->getAlbumPerformanceMgr()->commitAll(dal);
-    c->getAlbumMgr()->commitAll(dal);
-    //c->getChartMgr()->commitAll(dal);
-    //c->getChartPerformanceMgr()->commitAll(dal);
-    c->getSongPerformanceMgr()->commitAll(dal);
-    c->getPerformerMgr()->commitAll(dal);
-    c->getSongMgr()->commitAll(dal);
+    bool successFlag=1;
+
+    //	CWIP: transactions
+
+    //	Apply inserts.
+    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_insert); }
+    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_insert); }
+    //c->getChartMgr()->commitAll(dal,Common::db_insert);
+    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_insert);
+
+    //	Apply updates.
+    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_update); }
+    //c->getChartMgr()->commitAll(dal,Common::db_update);
+    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_update);
+    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_update); }
+    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_update); }
+
+    //	Apply deletes.
+    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_delete); }
+    //c->getChartMgr()->commitAll(dal,Common::db_delete);
+    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_delete);
+    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_delete); }
+    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_delete); }
 
     //	CWIP: remove when database is cached
     SearchItemModel* oldSim=Context::instance()->searchItemModel();
@@ -95,7 +124,7 @@ Controller::commitAllCaches(DataAccessLayer* dal) const
     this->preloadAllSongs();
 
     //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
-    return 1;
+    return successFlag;
 }
 
 

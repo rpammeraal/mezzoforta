@@ -51,7 +51,7 @@ public:
     //	Song specific methods
     SBTableModel* albums() const;
     SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
-    QVector<SBIDAlbumPerformancePtr> allPerformancesDEP() const;
+    QVector<SBIDAlbumPerformancePtr> allPerformances() const;
     SBTableModel* charts() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
@@ -62,11 +62,17 @@ public:
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlists();
-    void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
     inline int songID() const { return _songID; }
+    QMap<int,SBIDSongPerformancePtr> songPerformances() const;
     inline QString songTitle() const { return _songTitle; }
     //static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
+
+    //	Setters, Changers
+    void removeSongPerformance(SBIDSongPerformancePtr spPtr);
+    void setLyrics(const QString& lyrics) { _lyrics=lyrics; setChangedFlag(); }
+    void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
+    void setSongTitle(const QString& songTitle) { _songTitle=songTitle; setChangedFlag(); }
 
     //	Pointers
     SBIDSongPerformancePtr originalSongPerformancePtr() const;
@@ -102,18 +108,19 @@ protected:
     static SBIDSongPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
-    void mergeTo(SBIDSongPtr& to);
+    void mergeFrom(SBIDSongPtr& to);
     static void openKey(const QString& key, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _songID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);
 
     //	Inherited protected from SBIDBase
     virtual void clearChangedFlag();
 
     friend class SBIDAlbum;
+    friend class SBTabSongEdit;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
 private:
@@ -138,7 +145,6 @@ private:
     //	Internal setters
     void _setSongTitle(const QString& songTitle);
     void _setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-    void _setSongPerformerID(int performerID);
 
     //	Aux helper methods
     QVector<SBIDSong::PlaylistOnlinePerformance> _loadPlaylistOnlinePerformanceListFromDB() const;

@@ -56,8 +56,8 @@ public:
     //	Update
     std::shared_ptr<T> add(const std::shared_ptr<T>& ptr);	//	CWIP: not sure if needed, when we have createInDB
     bool addDependent(std::shared_ptr<T> parentPtr, const std::shared_ptr<parentT> childPtr, DataAccessLayer* dal=NULL);
-    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal,bool emitFlag=1);
-    bool commitAll(DataAccessLayer* dal);
+    bool commit(std::shared_ptr<T> ptr, DataAccessLayer* dal, const Common::db_change db_change, bool emitFlag=1);
+    bool commitAll(DataAccessLayer* dal, const Common::db_change db_change);
     std::shared_ptr<T> createInDB(Common::sb_parameters& p);
     void merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr);
     void remove(std::shared_ptr<T> ptr);
@@ -370,7 +370,7 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
     {
         if(dal)
         {
-            successFlag=commit(parentPtr,dal);
+            successFlag=commit(parentPtr,dal,Common::db_insert);
         }
         else
         {
@@ -381,11 +381,11 @@ SBIDManagerTemplate<T,parentT>::addDependent(std::shared_ptr<T> parentPtr, const
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal, bool emitFlag)
+SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* dal, const Common::db_change db_change, bool emitFlag)
 {
     qDebug() << SB_DEBUG_INFO << _name;
     //	Collect SQL to update changes
-    QStringList SQL=ptr->updateSQL();
+    QStringList SQL=ptr->updateSQL(db_change);
 
     qDebug() << SB_DEBUG_INFO << _name;
     if(SQL.count()==0)
@@ -411,14 +411,14 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
         if(ptr->deletedFlag())
         {
             _leMap.remove(ptr->key());
-            if(emitFlag)
+            if(emitFlag && db_change==Common::db_delete)
             {
                 SBIDManagerHelper::emitRemovedSBIDPtrStatic(ptr);
             }
         }
         else
         {
-            if(emitFlag)
+            if(emitFlag && db_change==Common::db_update)
             {
                 SBIDManagerHelper::emitUpdatedSBIDPtrStatic(ptr);
             }
@@ -429,7 +429,7 @@ SBIDManagerTemplate<T,parentT>::commit(std::shared_ptr<T> ptr, DataAccessLayer* 
 }
 
 template <class T, class parentT> bool
-SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
+SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal, const Common::db_change db_change)
 {
     std::shared_ptr<T> ptr;
     QStringList updatedKeys;
@@ -455,15 +455,15 @@ SBIDManagerTemplate<T,parentT>::commitAll(DataAccessLayer* dal)
             updatedKeys.append(ptr->key());
             qDebug() << SB_DEBUG_INFO << _name << "updated";
         }
-        commit(ptr,dal);
+        commit(ptr,dal,db_change);
     }
     qDebug() << SB_DEBUG_INFO << _name << "Done committing";
 
-    if(removedKeys.count())
+    if(removedKeys.count() && db_change==Common::db_delete)
     {
         SBIDManagerHelper::emitRemovedSBIDPtrArrayStatic(removedKeys);
     }
-    else if(updatedKeys.count())
+    else if(updatedKeys.count() && db_change==Common::db_update)
     {
         SBIDManagerHelper::emitUpdatedSBIDPtrArrayStatic(updatedKeys);
     }

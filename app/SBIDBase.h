@@ -126,19 +126,15 @@ protected:
 
     //	Used by SBIDManager*:: and SBID*:: classes
     virtual void clearChangedFlag();
-    //virtual void clearNewFlag() { _newFlag=0; }
-    //inline int newFlag() const { return _newFlag; }
     virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
-    inline void setDeletedFlag() { qDebug() << SB_DEBUG_INFO << this->key() << this->ID(); _deletedFlag=1; setChangedFlag(); }
-    //inline void setNewFlag() { _newFlag=1; }
+    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
     inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;
 
 private:
     bool        _changedFlag;
     int         _id;
-    //bool        _newFlag;
     sb_type     _sb_item_type;
     QString     _sb_mbid;
     int         _sb_model_position;

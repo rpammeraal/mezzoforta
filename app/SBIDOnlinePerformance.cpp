@@ -624,15 +624,15 @@ SBIDOnlinePerformance::retrieveSQL(const QString &key)
 }
 
 QStringList
-SBIDOnlinePerformance::updateSQL() const
+SBIDOnlinePerformance::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         //	CWIP
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

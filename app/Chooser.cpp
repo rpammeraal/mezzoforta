@@ -307,7 +307,7 @@ Chooser::playlistDelete()
         {
             case QMessageBox::Ok:
                 pmgr->remove(playlistPtr);
-                pmgr->commit(playlistPtr,dal);
+                pmgr->commit(playlistPtr,dal, Common::db_delete);
                 Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr);
                 this->_populate();
 
@@ -549,7 +549,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    pmgr->commit(playlistPtr,dal);
+    pmgr->commit(playlistPtr,dal, Common::db_update);
 
     this->_populate();
     QModelIndex in=_findItem(playlistPtr->playlistName());

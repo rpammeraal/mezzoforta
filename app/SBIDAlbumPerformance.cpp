@@ -661,7 +661,7 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
 }
 
 QStringList
-SBIDAlbumPerformance::updateSQL() const
+SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
 {
     qDebug() << SB_DEBUG_INFO
              << this->_albumPerformanceID
@@ -671,7 +671,7 @@ SBIDAlbumPerformance::updateSQL() const
     ;
     QStringList SQL;
 
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         SQL.append(QString
         (
@@ -702,7 +702,7 @@ SBIDAlbumPerformance::updateSQL() const
             .arg(this->_albumPosition)
         );
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

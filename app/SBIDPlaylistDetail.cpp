@@ -248,12 +248,12 @@ SBIDPlaylistDetail::refreshDependents(bool showProgressDialogFlag,bool forcedFla
 }
 
 QStringList
-SBIDPlaylistDetail::updateSQL() const
+SBIDPlaylistDetail::updateSQL(const Common::db_change db_change) const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QStringList SQL;
 
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         SQL.append(QString
         (
@@ -261,7 +261,7 @@ SBIDPlaylistDetail::updateSQL() const
             "WHERE playlist_detail_id=%1 "
         ).arg(this->_playlistDetailID));
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString(
             "UPDATE ___SB_SCHEMA_NAME___playlist_detail "

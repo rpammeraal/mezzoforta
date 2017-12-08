@@ -3,6 +3,7 @@
 #include "SBIDPlaylist.h"
 
 #include "Context.h"
+#include "Controller.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
 #include "SBIDOnlinePerformance.h"
@@ -200,7 +201,8 @@ SBIDPlaylist::removePlaylistItem(int position)
     SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
     pdPtr->setDeletedFlag();
     pdmgr->remove(pdPtr);
-    pdmgr->commit(pdPtr,dal);
+
+    Context::instance()->getController()->commitAllCaches(dal);
 
     refreshDependents(0,1);
     recalculatePlaylistDuration();
@@ -266,7 +268,7 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
     }
 
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    return pdmgr->commitAll(dal);
+    return Context::instance()->getController()->commitAllCaches(dal);
 }
 
 SBTableModel*
@@ -527,11 +529,11 @@ SBIDPlaylist::retrieveSQL(const QString& key)
 }
 
 QStringList
-SBIDPlaylist::updateSQL() const
+SBIDPlaylist::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
     QString q;
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
 
@@ -545,7 +547,7 @@ SBIDPlaylist::updateSQL() const
             SQL.append(q);
         }
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         QString q=QString
         (

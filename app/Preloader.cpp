@@ -807,7 +807,8 @@ Preloader::playlistItems(int playlistID)
                 //	playlistIndex is 0 based, playlistPosition is 1 based
                 //	Do after increment of playlistIndex
                 pdPtr->setPlaylistPosition(playlistIndex);	//	in case of data inconsistencies :)
-                pdmgr->commit(pdPtr,dal);
+                pdmgr->setChanged(pdPtr);
+                pdmgr->commit(pdPtr,dal,Common::db_update);
             }
         }
         ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue++,progressMaxValue);

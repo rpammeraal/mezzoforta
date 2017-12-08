@@ -75,7 +75,7 @@ protected:
     void postInstantiate(SBIDPlaylistDetailPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key);
     virtual void setPrimaryKey(int PK) { _playlistDetailID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
     friend class SBIDAlbum;
     void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }

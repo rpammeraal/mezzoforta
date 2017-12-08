@@ -1302,7 +1302,7 @@ SBIDAlbum::retrieveSQL(const QString& key)
 }
 
 QStringList
-SBIDAlbum::updateSQL() const
+SBIDAlbum::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
@@ -1312,7 +1312,7 @@ SBIDAlbum::updateSQL() const
              << changedFlag()
     ;
 
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         //	Do not remove descendants, this needs to be taken care of by SBIDMgrs.
         SQL.append(QString(
@@ -1324,7 +1324,7 @@ SBIDAlbum::updateSQL() const
             .arg(this->_albumID)
         );
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString(
             "UPDATE ___SB_SCHEMA_NAME___record "

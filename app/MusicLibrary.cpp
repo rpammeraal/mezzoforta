@@ -458,37 +458,7 @@ MusicLibrary::rescanMusicLibrary()
             }
         }
 
-        bool resultFlag=1;
-        qDebug() << SB_DEBUG_INFO;
-        if(resultFlag)
-        {
-            resultFlag=aMgr->commitAll(dal);
-        }
-
-        qDebug() << SB_DEBUG_INFO;
-        apMgr->debugShow("BEFORE COMMIT");
-        if(resultFlag)
-        {
-            resultFlag=apMgr->commitAll(dal);
-        }
-
-        qDebug() << SB_DEBUG_INFO;
-        if(resultFlag)
-        {
-            resultFlag=opMgr->commitAll(dal);
-        }
-
-        qDebug() << SB_DEBUG_INFO;
-        if(resultFlag)
-        {
-            resultFlag=spMgr->commitAll(dal);
-        }
-
-        qDebug() << SB_DEBUG_INFO;
-        if(resultFlag)
-        {
-            resultFlag=sMgr->commitAll(dal);
-        }
+        bool resultFlag=Context::instance()->getController()->commitAllCaches(dal);
 
         qDebug() << SB_DEBUG_INFO;
         if(resultFlag==0)
@@ -1110,12 +1080,6 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                 if(entityPtr->songPerformerID!=selectedSongPtr->songOriginalPerformerID())
                 {
                     selectedSongPtr->addSongPerformance(entityPtr->songPerformerID,entityPtr->year,entityPtr->notes);
-                    if(smgr->commit(selectedSongPtr,dal)==0)
-                    {
-                        //	something happened -- error out
-                        qDebug() << SB_DEBUG_ERROR << "No go. Error out";
-                        return 0;
-                    }
                 }
             }
         }

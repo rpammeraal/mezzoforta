@@ -31,6 +31,7 @@ public:
 
     //	Setters
     void setSongPerformerID(int songPerformerID) { _performerID=songPerformerID; setChangedFlag(); }
+    void setYear(int year) { _year=year; setChangedFlag(); }
 
     //	Pointers
     SBIDPerformerPtr performerPtr() const;
@@ -56,6 +57,8 @@ public:
     static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
     static QString performancesByPerformer_Preloader(int performerID);
     static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=1);
+    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformer(const QString& songTitle, const QString& performerName, int excludeSongPerformanceID=-1, bool noDependentsFlag=1);
+    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag=1);
 
     //	Helper methods for SBIDManagerTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
@@ -78,7 +81,7 @@ protected:
     void postInstantiate(SBIDSongPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _songPerformanceID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
     //	Setters to accomodate SBIDAlbumPerformance
     //void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; setChangedFlag(); }
@@ -88,7 +91,9 @@ protected:
 
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
+    friend class SBIDSong;
     inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { if(_preferredAlbumPerformanceID!=preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); qDebug() << SB_DEBUG_INFO << "CHANGED" << this->ID() << _preferredAlbumPerformanceID; } }
+    inline void setSongID(int songID) { _songID=songID; setChangedFlag(); }
 
 private:
     //	Attributes

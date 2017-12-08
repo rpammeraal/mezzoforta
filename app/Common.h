@@ -71,6 +71,13 @@ public:
     Common();
     ~Common();
 
+    enum db_change
+    {
+        db_insert=0,
+        db_update=1,
+        db_delete=2
+    };
+
     enum sb_play_mode
     {
         sb_stopped=0,

@@ -77,7 +77,7 @@ protected:
     bool moveDependent(int fromPosition, int toPosition);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _playlistID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
     int               _playlistID;

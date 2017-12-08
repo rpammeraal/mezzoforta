@@ -139,7 +139,7 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDBasePtr &ptr)
             SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
 
             performerPtr->setURL(performerPtr->url());
-            pemgr->commit(performerPtr,dal);
+            pemgr->commit(performerPtr,dal, Common::db_update);
         }
     }
     else
@@ -165,7 +165,7 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
             SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
 
             performerPtr->setMBID(performerPtr->MBID());
-            pemgr->commit(performerPtr,dal);
+            pemgr->commit(performerPtr,dal, Common::db_update);
         }
     }
     else

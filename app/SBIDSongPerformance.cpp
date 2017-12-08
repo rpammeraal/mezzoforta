@@ -278,6 +278,84 @@ SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDepend
     return spPtr;
 }
 
+SBIDSongPerformancePtr
+SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle, const QString &performerName, int excludeSongPerformanceID, bool noDependentsFlag)
+{
+    SBIDSongPerformancePtr spPtr;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    //	Find out songPerformanceID
+    QString q=QString
+    (
+        "SELECT "
+            "p.performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance p "
+                "JOIN ___SB_SCHEMA_NAME___song s ON "
+                    "p.song_id=s.song_id "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "p.artist_id=a.artist_id "
+        "WHERE "
+            "p.performance_id!=%1 AND"
+            "s.title='%2' AND "
+            "a.name='%3' "
+    )
+        .arg(excludeSongPerformanceID)
+        .arg(songTitle)
+        .arg(performerName)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery select(q,db);
+    select.next();
+
+    if(!select.isNull(0))
+    {
+        int songPerformanceID=select.value(0).toInt();
+        spPtr=retrieveSongPerformance(songPerformanceID,noDependentsFlag);
+    }
+    return spPtr;
+}
+
+SBIDSongPerformancePtr
+SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag)
+{
+    SBIDSongPerformancePtr spPtr;
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+
+    //	Find out songPerformanceID
+    QString q=QString
+    (
+        "SELECT "
+            "performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___performance "
+        "WHERE "
+            "song_id=%1 AND "
+            "artist_id=%2 "
+    )
+        .arg(songID)
+        .arg(performerID)
+    ;
+
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+
+    QSqlQuery select(q,db);
+    select.next();
+
+    if(!select.isNull(0))
+    {
+        int songPerformanceID=select.value(0).toInt();
+        spPtr=retrieveSongPerformance(songPerformanceID,noDependentsFlag);
+    }
+    return spPtr;
+}
+
 SBSqlQueryModel*
 SBIDSongPerformance::performancesBySong(int songID)
 {
@@ -502,7 +580,7 @@ SBIDSongPerformance::retrieveSQL(const QString &key)
 }
 
 QStringList
-SBIDSongPerformance::updateSQL() const
+SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
@@ -511,7 +589,7 @@ SBIDSongPerformance::updateSQL() const
         const_cast<SBIDSongPerformance *>(this)->_year=1900;
     }
 
-    if(deletedFlag())
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         SQL.append(QString
         (
@@ -523,7 +601,7 @@ SBIDSongPerformance::updateSQL() const
             .arg(this->_songPerformanceID)
         );
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag())
+    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

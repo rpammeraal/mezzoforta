@@ -99,7 +99,7 @@ protected:
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _albumPerformanceID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
     //	Protected setters
     friend class SBIDAlbum;  //	merges album performances

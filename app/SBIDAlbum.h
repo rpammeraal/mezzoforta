@@ -102,7 +102,7 @@ protected:
     void postInstantiate(SBIDAlbumPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key);
     virtual void setPrimaryKey(int PK) { _albumID=PK;  }
-    QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found);
 
     //	Inherited protected from SBIDBase

@@ -225,36 +225,38 @@ SBIDSong::albums() const
 SBIDSongPerformancePtr
 SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 {
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
     SBIDSongPerformancePtr songPerformancePtr;
     Q_UNUSED(performerID);
     Q_UNUSED(year);
     Q_UNUSED(notes);
-//    if(_songPerformances.count()==0)
-//    {
-//        this->_loadSongPerformances();
-//    }
 
-//    if(!_songPerformances.contains(performerID))
-//    {
-//        setChangedFlag();
-//        songPerformancePtr=SBIDSongPerformance::createNew(this->songID(),performerID,year,notes);
+    if(_songPerformances.count()==0)
+    {
+        this->_loadSongPerformances();
+    }
 
-//        if(_songPerformances.count()==0)
-//        {
-//            songPerformancePtr->setOriginalPerformerFlag(1);
-//            _setSongPerformerID(performerID);
-//        }
-//        _songPerformances[performerID]=songPerformancePtr;
-//    }
-//    else
-//    {
-//        songPerformancePtr=_songPerformances[performerID];
-//    }
+    if(!_songPerformances.contains(performerID))
+    {
+
+        Common::sb_parameters p;
+        p.songID=this->songID();
+        p.performerID=performerID;
+        p.year=year;
+        p.notes=notes;
+
+        songPerformancePtr=spMgr->createInDB(p);
+        _songPerformances[performerID]=songPerformancePtr;
+    }
+    else
+    {
+        songPerformancePtr=_songPerformances[performerID];
+    }
     return songPerformancePtr;
 }
 
 QVector<SBIDAlbumPerformancePtr>
-SBIDSong::allPerformancesDEP() const
+SBIDSong::allPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
@@ -349,6 +351,16 @@ SBIDSong::playlists()
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylists(_playlistOnlinePerformances);
     return tm;
+}
+
+QMap<int,SBIDSongPerformancePtr>
+SBIDSong::songPerformances() const
+{
+    if(_songPerformances.count()==0)
+    {
+        const_cast<SBIDSong *>(this)->_loadSongPerformances();
+    }
+    return _songPerformances;
 }
 
 QVector<SBIDOnlinePerformancePtr>
@@ -1079,6 +1091,22 @@ SBIDSong::updateSoundexFields()
     }
 }
 
+///	Setters, Changers
+void
+SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
+{
+    qDebug() << SB_DEBUG_INFO << ID() << "Removing id " << spPtr->songPerformanceID();
+    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+
+    if(_songPerformances.contains(spPtr->songPerformerID()))
+    {
+        qDebug() << SB_DEBUG_INFO << ID() << "Removing performance for performerID=" << spPtr->songPerformerID();
+        _songPerformances.remove(spPtr->songPerformerID());
+    }
+    spPtr->setDeletedFlag();
+    spMgr->setChanged(spPtr);
+}
+
 ///	Pointers
 SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
@@ -1376,9 +1404,31 @@ SBIDSong::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDSong::mergeTo(SBIDSongPtr &to)
+SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 {
-    Q_UNUSED(to);
+    SBIDSongPerformanceMgr *spMgr=Context::instance()->getSongPerformanceMgr();
+    _loadSongPerformances();	//	make sure list is loaded.
+    QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
+    while(it.hasNext())
+    {
+        it.next();
+        int performerID=it.key();
+        SBIDSongPerformancePtr spPtr=it.value();
+
+        if(_songPerformances.contains(performerID))
+        {
+            //	Remove
+            spPtr->setDeletedFlag();
+        }
+        else
+        {
+            //	Merge to current
+            spPtr->setSongID(this->songID());
+            _songPerformances[performerID]=spPtr;
+
+        }
+        spMgr->setChanged(spPtr);
+    }
 }
 
 void
@@ -1423,11 +1473,11 @@ SBIDSong::retrieveSQL(const QString& key)
 }
 
 QStringList
-SBIDSong::updateSQL() const
+SBIDSong::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
-    if(!mergedFlag() && !deletedFlag() && changedFlag())
+    if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (
@@ -1571,28 +1621,6 @@ SBIDSong::_setSongTitle(const QString &songTitle)
 {
     _songTitle=songTitle;
     setChangedFlag();
-}
-
-void
-SBIDSong::_setSongPerformerID(int performerID)
-{
-    Q_UNUSED(performerID);
-//    _sb_song_performer_id=performerID;
-//    setChangedFlag();
-//    _songPerformerPtr=SBIDPerformerPtr();
-
-//    if(_songPerformances.count()==0)
-//    {
-//        _loadSongPerformances();
-//    }
-
-//    QMapIterator<int,SBIDSongPerformancePtr> spIT(_songPerformances);
-//    while(spIT.hasNext())
-//    {
-//        spIT.next();
-//        SBIDSongPerformancePtr songPerformancePtr=spIT.value();
-//        songPerformancePtr->setOriginalPerformerFlag(songPerformancePtr->songPerformerID()==performerID?1:0);
-//    }
 }
 
 ///	Aux methods
