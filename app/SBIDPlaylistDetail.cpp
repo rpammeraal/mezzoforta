@@ -1,5 +1,6 @@
 #include "SBIDPlaylistDetail.h"
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "SBIDOnlinePerformance.h"
@@ -126,7 +127,8 @@ SBIDPlaylistDetail::consistOfItemType() const
 SBIDPlaylistPtr
 SBIDPlaylistDetail::playlistPtr() const
 {
-    SBIDPlaylistMgr* pMgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pMgr=cm->playlistMgr();
     return pMgr->retrieve(
                 SBIDPlaylist::createKey(_playlistID),
                 SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly);
@@ -135,7 +137,8 @@ SBIDPlaylistDetail::playlistPtr() const
 SBIDOnlinePerformancePtr
 SBIDPlaylistDetail::onlinePerformancePtr() const
 {
-    SBIDOnlinePerformanceMgr* pMgr=Context::instance()->getOnlinePerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDOnlinePerformanceMgr* pMgr=cm->onlinePerformanceMgr();
     return pMgr->retrieve(
                 SBIDOnlinePerformance::createKey(_onlinePerformanceID),
                 SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_parentonly);
@@ -144,7 +147,8 @@ SBIDPlaylistDetail::onlinePerformancePtr() const
 SBIDPlaylistPtr
 SBIDPlaylistDetail::childPlaylistPtr() const
 {
-    SBIDPlaylistMgr* pMgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pMgr=cm->playlistMgr();
     return pMgr->retrieve(
                 SBIDPlaylist::createKey(_childPlaylistID),
                 SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly);
@@ -153,7 +157,8 @@ SBIDPlaylistDetail::childPlaylistPtr() const
 SBIDChartPtr
 SBIDPlaylistDetail::chartPtr() const
 {
-    SBIDChartMgr* pMgr=Context::instance()->getChartMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDChartMgr* pMgr=cm->chartMgr();
     return pMgr->retrieve(
                 SBIDChart::createKey(_chartID),
                 SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_parentonly);
@@ -162,7 +167,8 @@ SBIDPlaylistDetail::chartPtr() const
 SBIDAlbumPtr
 SBIDPlaylistDetail::albumPtr() const
 {
-    SBIDAlbumMgr* pMgr=Context::instance()->getAlbumMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* pMgr=cm->albumMgr();
     return pMgr->retrieve(
                 SBIDAlbum::createKey(_albumID),
                 SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
@@ -171,7 +177,8 @@ SBIDPlaylistDetail::albumPtr() const
 SBIDPerformerPtr
 SBIDPlaylistDetail::performerPtr() const
 {
-    SBIDPerformerMgr* pMgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pMgr=cm->performerMgr();
     return pMgr->retrieve(
                 SBIDPerformer::createKey(_performerID),
                 SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
@@ -322,7 +329,8 @@ SBIDPlaylistDetail::playlistDetailsByAlbum(int albumID)
 SBIDPlaylistDetailPtr
 SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
 {
-    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     SBIDPlaylistDetailPtr pdPtr;
     if(playlistDetailID>=0)
     {
@@ -381,7 +389,8 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
         break;
     }
 
-    SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistDetailMgr* pdMgr=cm->playlistDetailMgr();
     return pdMgr->createInDB(p);
 }
 

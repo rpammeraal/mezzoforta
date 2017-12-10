@@ -6,6 +6,7 @@
 #include "Configuration.h"
 #include "Context.h"
 #include "Network.h"
+#include "ProgressDialog.h"
 #include "SBMessageBox.h"
 
 DataAccessLayerSQLite::DataAccessLayerSQLite()

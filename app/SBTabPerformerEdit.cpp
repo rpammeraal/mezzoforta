@@ -3,6 +3,7 @@
 
 #include "SBTabPerformerEdit.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "CompleterFactory.h"
@@ -165,8 +166,8 @@ SBTabPerformerEdit::save() const
     //	1.	Rename U2 to Simple Minds.
     //	2.	Rename Simple Minds -> Dire Straitz
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.ptr()->itemID());
@@ -283,7 +284,7 @@ SBTabPerformerEdit::save() const
     }
 
     pemgr->setChanged(orgPerformerPtr);
-    successFlag=Context::instance()->getController()->commitAllCaches(dal);
+    successFlag=cm->commitAllCaches();
 
     //Context::instance()->getScreenStack()->debugShow("before finish");
     if(successFlag)

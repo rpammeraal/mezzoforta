@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QListIterator>
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "CompleterFactory.h"
 #include "Context.h"
@@ -783,8 +784,9 @@ SBTabAlbumEdit::save() const
 {
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
@@ -1130,8 +1132,7 @@ SBTabAlbumEdit::save() const
 
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
-        Controller* c=Context::instance()->getController();
-        successFlag=c->commitAllCaches(dal);
+        cm->commitAllCaches();
 
         //	G.	Tell screenstack to update any entry pointing to
         if(albumMergedFlag)

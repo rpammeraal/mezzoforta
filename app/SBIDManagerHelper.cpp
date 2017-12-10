@@ -2,6 +2,7 @@
 
 #include <QSemaphore>
 
+#include "CacheManager.h"
 #include "Context.h"
 
 SBIDManagerHelper::SBIDManagerHelper(QObject *parent) : QObject(parent)
@@ -34,7 +35,8 @@ SBIDManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
 void
 SBIDManagerHelper::emitRemovedSBIDPtrStatic(SBIDBasePtr ptr)
 {
-    Context::instance()->managerHelper()->emitRemovedSBIDPtr(ptr);
+    CacheManager* cm=Context::instance()->cacheManager();
+    cm->managerHelper()->emitRemovedSBIDPtr(ptr);
 }
 
 void
@@ -46,7 +48,8 @@ SBIDManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
 void
 SBIDManagerHelper::emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr)
 {
-    Context::instance()->managerHelper()->emitUpdatedSBIDPtr(ptr);
+    CacheManager* cm=Context::instance()->cacheManager();
+    cm->managerHelper()->emitUpdatedSBIDPtr(ptr);
 }
 
 void

@@ -11,6 +11,12 @@ Context::setBackgroundThread(BackgroundThread* bgt)
 }
 
 void
+Context::setCacheManager(CacheManager *cm)
+{
+    _cm=cm;
+}
+
+void
 Context::setController(Controller* c)
 {
     _c=c;
@@ -87,15 +93,4 @@ Context::_init()
     //_lcc=NULL;
     _mw=NULL;
     _tab=NULL;
-
-    _albumMgr.setName("mgr_a");
-    _albumPerformanceMgr.setName("mgr_ap");
-    _chartMgr.setName("mgr_c");
-    _chartPerformanceMgr.setName("mgr_cm");
-    _onlinePerformanceMgr.setName("mgr_op");
-    _performerMgr.setName("mgr_p");
-    _playlistMgr.setName("mgr_pl");
-    _playlistDetailMgr.setName("mgr_pld");
-    _songMgr.setName("mgr_s");
-    _songPerformanceMgr.setName("mgr_sp");
 }

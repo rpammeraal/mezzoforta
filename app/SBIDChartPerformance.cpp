@@ -1,5 +1,6 @@
 #include "SBIDChartPerformance.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 
 SBIDChartPerformance::SBIDChartPerformance(const SBIDChartPerformance& p):SBIDBase(p)
@@ -88,7 +89,8 @@ SBIDChartPerformance::type() const
 SBIDSongPerformancePtr
 SBIDChartPerformance::songPerformancePtr() const
 {
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_songPerformanceID),
                 SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
@@ -161,7 +163,8 @@ SBIDChartPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 SBIDChartPerformancePtr
 SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDependentsFlag)
 {
-    SBIDChartPerformanceMgr* cpMgr=Context::instance()->getChartPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
     SBIDChartPerformancePtr cpPtr;
     if(chartPerformanceID>=0)
     {

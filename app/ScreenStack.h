@@ -1,6 +1,7 @@
 #ifndef SCREENSTACK_H
 #define SCREENSTACK_H
 
+#include <QObject>
 #include <QList>
 
 #include <ScreenItem.h>

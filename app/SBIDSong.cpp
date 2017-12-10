@@ -2,6 +2,7 @@
 
 #include "SBIDSong.h"
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
@@ -225,7 +226,8 @@ SBIDSong::albums() const
 SBIDSongPerformancePtr
 SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 {
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     SBIDSongPerformancePtr songPerformancePtr;
     Q_UNUSED(performerID);
     Q_UNUSED(year);
@@ -1096,7 +1098,8 @@ void
 SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
 {
     qDebug() << SB_DEBUG_INFO << ID() << "Removing id " << spPtr->songPerformanceID();
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
 
     if(_songPerformances.contains(spPtr->songPerformerID()))
     {
@@ -1111,7 +1114,8 @@ SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
 SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_originalSongPerformanceID),
                 SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
@@ -1228,7 +1232,8 @@ SBIDSong::retrieveAllSongs()
 SBIDSongPtr
 SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
 {
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongMgr* smgr=cm->songMgr();
     SBIDSongPtr songPtr;
     if(songID>=0)
     {
@@ -1406,7 +1411,8 @@ SBIDSong::instantiate(const QSqlRecord &r)
 void
 SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 {
-    SBIDSongPerformanceMgr *spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
     _loadSongPerformances();	//	make sure list is loaded.
     QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
     while(it.hasNext())
@@ -1501,7 +1507,8 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
 Common::result
 SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag)
 {
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongMgr* smgr=cm->songMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDSongPtr>> matches;
 
@@ -1596,7 +1603,8 @@ void
 SBIDSong::_loadAlbumPerformances()
 {
     SBSqlQueryModel* qm=SBIDAlbumPerformance::performancesBySong(songID());
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
     _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
@@ -1690,7 +1698,8 @@ QMap<int,SBIDSongPerformancePtr>
 SBIDSong::_loadSongPerformancesFromDB() const
 {
     SBSqlQueryModel* qm=SBIDSongPerformance::performancesBySong(songID());
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
     QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm,SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default);

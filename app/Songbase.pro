@@ -80,7 +80,8 @@ HEADERS     = \
     SBDuration.h \
     SBIDPlaylistDetail.h \
     SearchItemModel.h \
-    SBIDManagerHelper.h
+    SBIDManagerHelper.h \
+    CacheManager.h
 
 SOURCES     = \
     main.cpp \
@@ -161,7 +162,8 @@ SOURCES     = \
     SBDuration.cpp \
     SBIDPlaylistDetail.cpp \
     SearchItemModel.cpp \
-    SBIDManagerHelper.cpp
+    SBIDManagerHelper.cpp \
+    CacheManager.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

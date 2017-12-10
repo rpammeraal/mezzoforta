@@ -2,6 +2,7 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBIDAlbum.h"
 
 SearchItemModel::SearchItemModel()
 {
@@ -109,7 +110,6 @@ SearchItemModel::populate()
 
     QSqlQuery queryList(query,db);
     qDebug() << SB_DEBUG_INFO << queryList.size();
-    int j=0;
     QTime time; time.start();
     while(queryList.next())
     {

@@ -1,7 +1,9 @@
 #include "SBIDOnlinePerformance.h"
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
+#include "DataAccessLayer.h"
 #include "SBSqlQueryModel.h"
 
 ///	Ctors, dtors
@@ -137,7 +139,8 @@ SBIDOnlinePerformance::albumPtr() const
 SBIDAlbumPerformancePtr
 SBIDOnlinePerformance::albumPerformancePtr() const
 {
-    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
     return apMgr->retrieve(
                 SBIDAlbumPerformance::createKey(_albumPerformanceID),
                 SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
@@ -269,7 +272,8 @@ SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDOnlinePerformancePtr spPtr;
-    SBIDOnlinePerformanceMgr* spMgr=Context::instance()->getOnlinePerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDOnlinePerformanceMgr* spMgr=cm->onlinePerformanceMgr();
     QMap<int,QList<SBIDOnlinePerformancePtr>> matches;
     int count=spMgr->find(p,SBIDOnlinePerformancePtr(),matches,1);
 
@@ -288,7 +292,8 @@ SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag)
 {
-    SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
     SBIDOnlinePerformancePtr opPtr;
 
     if(onlinePerformanceID>=0)

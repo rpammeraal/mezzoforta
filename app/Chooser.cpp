@@ -5,6 +5,7 @@
 
 
 #include "BackgroundThread.h"
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "Chooser.h"
@@ -115,7 +116,8 @@ public:
         this->appendRow(item1);
         _chartRoot=item1;
 
-        SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
+        CacheManager* cm=Context::instance()->cacheManager();
+        SBIDChartMgr* cmgr=cm->chartMgr();
         QVector<SBIDChartPtr> chartList=cmgr->retrieveAll();
         for(int i=0;i<chartList.count();i++)
         {
@@ -132,7 +134,7 @@ public:
         this->appendRow(item1);
         _playlistRoot=item1;
 
-        SBIDPlaylistMgr* plm=Context::instance()->getPlaylistMgr();
+        SBIDPlaylistMgr* plm=cm->playlistMgr();
         QVector<SBIDPlaylistPtr> l=plm->retrieveAll();
         for(int i=0;i<l.count();i++)
         {
@@ -289,7 +291,8 @@ Chooser::chartEnqueue()
 void
 Chooser::playlistDelete()
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 
     _setCurrentIndex(_lastClickedIndex);
@@ -334,7 +337,8 @@ Chooser::playlistEnqueue()
 void
 Chooser::playlistNew()
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
     Common::sb_parameters p;
 
     SBIDPlaylistPtr ptr=pmgr->createInDB(p);
@@ -541,7 +545,8 @@ void
 Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
 
     //	Re-open object for editing
     playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_foredit);

@@ -4,9 +4,11 @@
 #include "MusicLibrary.h"
 
 #include "AudioDecoderFactory.h"
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
+#include "DataAccessLayer.h"
 #include "MetaData.h"
 #include "MusicImportResult.h"
 #include "ProgressDialog.h"
@@ -37,11 +39,9 @@ MusicLibrary::rescanMusicLibrary()
     QHash<QString,MLalbumPathPtr> directory2AlbumPathMap;	//	album path map
 
     //	SBIDManager
-    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
-    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* aMgr=cm->albumMgr();
+    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
 
     //	Init
     ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary_scan",1);
@@ -458,7 +458,7 @@ MusicLibrary::rescanMusicLibrary()
             }
         }
 
-        bool resultFlag=Context::instance()->getController()->commitAllCaches(dal);
+        bool resultFlag=cm->commitAllCaches();
 
         qDebug() << SB_DEBUG_INFO;
         if(resultFlag==0)
@@ -501,9 +501,10 @@ MusicLibrary::rescanMusicLibrary()
 bool
 MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalbumPathPtr>& directory2AlbumPathMap)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     int progressCurrentValue=0;

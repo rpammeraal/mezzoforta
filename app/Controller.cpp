@@ -32,6 +32,7 @@
 #include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
 #include "ScreenStack.h"
+#include "SearchItemModel.h"
 #include "SetupWizard.h"
 
 Controller::Controller(int argc, char *argv[], QApplication* app) : _app(app)
@@ -48,85 +49,6 @@ Controller::~Controller()
     backgroundThread.quit();
     backgroundThread.wait();
 }
-
-void
-Controller::clearAllCaches() const
-{
-    Context* c=Context::instance();
-    c->getAlbumMgr()->clear();
-    c->getAlbumPerformanceMgr()->clear();
-    c->getChartMgr()->clear();
-    c->getChartPerformanceMgr()->clear();
-    c->getOnlinePerformanceMgr()->clear();
-    c->getPerformerMgr()->clear();
-    c->getPlaylistMgr()->clear();
-    c->getPlaylistDetailMgr()->clear();
-    c->getSongMgr()->clear();
-    c->getSongPerformanceMgr()->clear();
-}
-
-bool
-Controller::commitAllCaches(DataAccessLayer* dal) const
-{
-    Context* c=Context::instance();
-    bool successFlag=1;
-
-    //	CWIP: transactions
-
-    //	Apply inserts.
-    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_insert); }
-    //c->getChartMgr()->commitAll(dal,Common::db_insert);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_insert);
-
-    //	Apply updates.
-    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_update); }
-    //c->getChartMgr()->commitAll(dal,Common::db_update);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_update);
-    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_update); }
-
-    //	Apply deletes.
-    if(successFlag) { successFlag=c->getOnlinePerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getPlaylistMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getPlaylistDetailMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getAlbumPerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getAlbumMgr()->commitAll(dal,Common::db_delete); }
-    //c->getChartMgr()->commitAll(dal,Common::db_delete);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_delete);
-    if(successFlag) { successFlag=c->getSongPerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getPerformerMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=c->getSongMgr()->commitAll(dal,Common::db_delete); }
-
-    //	CWIP: remove when database is cached
-    SearchItemModel* oldSim=Context::instance()->searchItemModel();
-    SearchItemModel* newSim=new SearchItemModel();
-
-    QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
-    QCompleter* completer=lineEdit->completer();
-    completer->setModel(newSim);
-
-    delete(oldSim); oldSim=NULL;
-    Context::instance()->setSearchItemModel(newSim);
-
-    //	CWIP: remove when database is cached
-    this->preloadAllSongs();
-
-    //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
-    return successFlag;
-}
-
 
 bool
 Controller::initSuccessFull() const
@@ -159,7 +81,8 @@ Controller::refreshModels()
     n->resetAllFiltersAndSelections();
 
     //	Clear caches
-    this->clearAllCaches();
+    CacheManager* cm=Context::instance()->cacheManager();
+    cm->clearAllCaches();
 }
 
 ///	Public slots:
@@ -258,7 +181,12 @@ Controller::updateStatusBarText(const QString &s)
 bool
 Controller::openMainWindow(bool appStartUpFlag)
 {
+    qDebug() << SB_DEBUG_INFO << "Creating cache manager";
+    CacheManager* cm=new CacheManager();
+    Context::instance()->setCacheManager(cm);
+
     //	Instantiate DatabaseSelector, check if database could be opened.
+    qDebug() << SB_DEBUG_INFO << "Opening database";
     DBManager* dbm=Context::instance()->getDBManager();
     if(appStartUpFlag)
     {
@@ -277,6 +205,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     {
         dbm->userOpenDatabase();
     }
+
 
     if(appStartUpFlag==0 && dbm->databaseChanged()==0)
     {
@@ -425,8 +354,6 @@ Controller::setupUI()
     }
 
     Preloader::loadAll();
-    Context::instance()->getSongMgr()->stats();
-    Context::instance()->getPerformerMgr()->stats();
 
 //    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
 

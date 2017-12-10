@@ -16,6 +16,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    friend class CacheManager;
     friend class Controller;
     friend class Navigator;
     friend class Chooser;

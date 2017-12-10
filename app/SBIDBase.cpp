@@ -5,6 +5,8 @@
 #include "Common.h"
 #include "Context.h"
 #include "SBIDAlbum.h"
+#include "SBIDChart.h"
+#include "SBIDChartPerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
 #include "SBIDManagerTemplate.h"

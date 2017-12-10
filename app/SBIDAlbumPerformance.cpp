@@ -1,5 +1,6 @@
 #include "SBIDAlbumPerformance.h"
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "SBSqlQueryModel.h"
@@ -114,7 +115,8 @@ SBIDAlbumPerformance::setAlbumPosition(int position)
 SBIDAlbumPtr
 SBIDAlbumPerformance::albumPtr() const
 {
-    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* aMgr=cm->albumMgr();
     return aMgr->retrieve(
                 SBIDAlbum::createKey(_albumID),
                 SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
@@ -123,7 +125,8 @@ SBIDAlbumPerformance::albumPtr() const
 SBIDSongPerformancePtr
 SBIDAlbumPerformance::songPerformancePtr() const
 {
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_songPerformanceID),
                 SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
@@ -132,7 +135,8 @@ SBIDAlbumPerformance::songPerformancePtr() const
 SBIDOnlinePerformancePtr
 SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 {
-    SBIDOnlinePerformanceMgr* opMgr=Context::instance()->getOnlinePerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
     return opMgr->retrieve(
                 SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID),
                 SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_parentonly);
@@ -264,7 +268,8 @@ SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDAlbumPerformancePtr spPtr;
-    SBIDAlbumPerformanceMgr* spMgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumPerformanceMgr* spMgr=cm->albumPerformanceMgr();
     QMap<int,QList<SBIDAlbumPerformancePtr>> matches;
     int count=spMgr->find(p,SBIDAlbumPerformancePtr(),matches,1);
 
@@ -430,7 +435,8 @@ SBIDAlbumPerformance::performancesBySong(int songID)
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
 {
-    SBIDAlbumPerformanceMgr* pfMgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();
     SBIDAlbumPerformancePtr apPtr;
     if(albumPerformanceID>=0)
     {
@@ -586,7 +592,8 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
     SBSqlQueryModel* qm;
 
     qm=SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(fromApPtr->albumPerformanceID());
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
     SB_RETURN_VOID_IF_NULL(qm);
     SB_RETURN_VOID_IF_NULL(opmgr);
 
@@ -603,7 +610,7 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
 
     //	Reset preferredAlbumPerformanceID in performance
     qm=SBIDSongPerformance::performancesByPreferredAlbumPerformanceID(fromApPtr->albumPerformanceID());
-    SBIDSongPerformanceMgr* smgr=Context::instance()->getSongPerformanceMgr();
+    SBIDSongPerformanceMgr* smgr=cm->songPerformanceMgr();
     SB_RETURN_VOID_IF_NULL(qm);
     SB_RETURN_VOID_IF_NULL(smgr);
 

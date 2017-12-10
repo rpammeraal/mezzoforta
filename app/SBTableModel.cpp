@@ -3,6 +3,9 @@
 #include "Context.h"
 #include "ProgressDialog.h"
 #include "SBModel.h"
+#include "SBIDAlbum.h"
+#include "SBIDChart.h"
+#include "SBIDChartPerformance.h"
 #include "SBIDPlaylist.h"
 #include "SBIDOnlinePerformance.h"
 
@@ -71,8 +74,6 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
-
-    const QModelIndex n=this->index(parent.row(),0);
 
     //emit assign(fromIDPtr,toIDPtr);
     if(row>=0)

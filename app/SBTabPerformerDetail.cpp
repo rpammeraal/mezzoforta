@@ -1,5 +1,6 @@
 #include "SBTabPerformerDetail.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBIDAlbum.h"
@@ -134,12 +135,11 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDBasePtr &ptr)
 
         if(si.ptr()==ptr)
         {
-            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-            DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-            SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+            CacheManager* cm=Context::instance()->cacheManager();
+            SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
 
             performerPtr->setURL(performerPtr->url());
-            pemgr->commit(performerPtr,dal, Common::db_update);
+            cm->commitAllCaches();
         }
     }
     else
@@ -160,12 +160,11 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
         //	No reason to ignore this if the screen is not active.
         //	if(si.ptr()==ptr)
         {
-            SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-            DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-            SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+            CacheManager* cm=Context::instance()->cacheManager();
+            SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
 
             performerPtr->setMBID(performerPtr->MBID());
-            pemgr->commit(performerPtr,dal, Common::db_update);
+            cm->commitAllCaches();
         }
     }
     else

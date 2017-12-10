@@ -14,11 +14,12 @@
 QMap<SBIDChartPerformancePtr,SBIDChartPtr>
 Preloader::chartItems(const SBIDBase& id)
 {
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
-    SBIDChartPerformanceMgr* cpmgr=Context::instance()->getChartPerformanceMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDChartMgr* cmgr=cm->chartMgr();
+    SBIDChartPerformanceMgr* cpmgr=cm->chartPerformanceMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -201,12 +202,13 @@ Preloader::chartItems(const SBIDBase& id)
 QVector<SBIDAlbumPerformancePtr>
 Preloader::albumPerformances(QString query)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -323,12 +325,13 @@ Preloader::albumPerformances(QString query)
 QVector<SBIDOnlinePerformancePtr>
 Preloader::onlinePerformances(QString query)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDOnlinePerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -445,11 +448,12 @@ Preloader::onlinePerformances(QString query)
 QMap<int,SBIDAlbumPerformancePtr>
 Preloader::performanceMap(QString query)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<int,SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -558,15 +562,16 @@ Preloader::performanceMap(QString query)
 QMap<int,SBIDPlaylistDetailPtr>
 Preloader::playlistItems(int playlistID)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDPlaylistMgr* plmgr=Context::instance()->getPlaylistMgr();
-    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    SBIDChartMgr* cmgr=cm->chartMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    SBIDPlaylistMgr* plmgr=cm->playlistMgr();
+    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
     QMap<int,SBIDPlaylistDetailPtr> items;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -820,12 +825,13 @@ Preloader::playlistItems(int playlistID)
 QVector<SBIDSongPerformancePtr>
 Preloader::songPerformances(QString query)
 {
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
-    SBIDSongPerformanceMgr* spmgr=Context::instance()->getSongPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=Context::instance()->getAlbumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=Context::instance()->getOnlinePerformanceMgr();
-    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    SBIDSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDSongPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -949,7 +955,8 @@ Preloader::loadAll()
 void
 Preloader::loadAllSongs()
 {
-    SBIDSongMgr* mgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongMgr* mgr=cm->songMgr();
     QSqlQueryModel* qm=SBIDSong::retrieveSQL();
     SB_RETURN_VOID_IF_NULL(qm);
     for(int i=0;i<qm->rowCount();i++)
@@ -962,7 +969,8 @@ Preloader::loadAllSongs()
 void
 Preloader::loadAllPerformers()
 {
-    SBIDPerformerMgr* mgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* mgr=cm->performerMgr();
     QSqlQueryModel* qm=SBIDPerformer::retrieveSQL();
     SB_RETURN_VOID_IF_NULL(qm);
     for(int i=0;i<qm->rowCount();i++)

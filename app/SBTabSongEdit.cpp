@@ -2,6 +2,7 @@
 
 #include "SBTabSongEdit.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -72,9 +73,10 @@ SBTabSongEdit::save() const
     SBIDSongPtr newSongPtr=orgSongPtr;
     SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
     SBIDSongPerformancePtr newSpPtr;	//	only populated if a new original spPtr is created.
-    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
-    SBIDPerformerMgr* peMgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongMgr* sMgr=cm->songMgr();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    SBIDPerformerMgr* peMgr=cm->performerMgr();
     bool songMergedFlag=0;
     int orgSongPerformanceID=orgSongPtr->originalSongPerformanceID();
 
@@ -317,7 +319,7 @@ qDebug() << SB_DEBUG_INFO;
 //
 
 
-    const bool successFlag=Context::instance()->getController()->commitAllCaches(dal);
+    const bool successFlag=cm->commitAllCaches();
 
     if(successFlag==1)
     {

@@ -3,6 +3,7 @@
 
 #include "SBIDPerformer.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
@@ -337,7 +338,8 @@ SBIDPerformer::key() const
 Common::result
 SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found)
 {
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDPerformerPtr>> matches;
     found=SBIDPerformerPtr();
@@ -413,7 +415,8 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
     SBIDPerformerPtr performerPtr;
     if(performerID>=0)
     {
@@ -427,7 +430,8 @@ SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 SBIDPerformerPtr
 SBIDPerformer::retrieveVariousPerformers()
 {
-    SBIDPerformerMgr* pemgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pemgr=cm->performerMgr();
     Properties* properties=Context::instance()->getProperties();
     int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
     SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID,1);
@@ -637,7 +641,8 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     SB_RETURN_VOID_IF_NULL(pPtrFrom);
     refreshDependents(0,0);
 
-    SBIDPerformerMgr* peMgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* peMgr=cm->performerMgr();
 
     //	Merge related performers
     QVectorIterator<SBIDPerformerPtr> it(pPtrFrom->relatedPerformers());
@@ -663,7 +668,7 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     }
 
     //	Merge albums
-    SBIDAlbumMgr* aMgr=Context::instance()->getAlbumMgr();
+    SBIDAlbumMgr* aMgr=cm->albumMgr();
     QVectorIterator<SBIDAlbumPtr> albumListIT(pPtrFrom->albumList());
     while(albumListIT.hasNext())
     {
@@ -673,7 +678,7 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     }
 
     //	Merge song performances
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     QVectorIterator<SBIDSongPerformancePtr> spIT(pPtrFrom->songPerformances());
     while(spIT.hasNext())
     {
@@ -1137,7 +1142,8 @@ QVector<SBIDAlbumPtr>
 SBIDPerformer::_loadAlbumsFromDB() const
 {
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
-    SBIDAlbumMgr* amgr=Context::instance()->getAlbumMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumMgr* amgr=cm->albumMgr();
     QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
     delete qm;
     return albums;

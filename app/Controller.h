@@ -35,8 +35,6 @@ public:
     explicit Controller(int argc, char* argv[], QApplication* napp);
     ~Controller();
 
-    void clearAllCaches() const;
-    bool commitAllCaches(DataAccessLayer* dal) const;
     bool initSuccessFull() const;
     void preloadAllSongs() const;
     void refreshModels();

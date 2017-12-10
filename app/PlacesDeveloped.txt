@@ -985,6 +985,7 @@ CURRENT:
     *	each SBIDObject needs to have a pointer to its manager
 	*	need to create a cachemanager.
 	*	individual commits needs to be moved to what is now commitAll
+*	examine all dynamic_casts
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified

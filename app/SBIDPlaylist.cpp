@@ -2,6 +2,7 @@
 
 #include "SBIDPlaylist.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "Preloader.h"
@@ -187,8 +188,6 @@ SBIDPlaylist::recalculatePlaylistDuration()
 bool
 SBIDPlaylist::removePlaylistItem(int position)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-
     position--;	//	Position as parameter is 1-based, we need 0-based
     if(position>=items().count())
     {
@@ -198,11 +197,12 @@ SBIDPlaylist::removePlaylistItem(int position)
     SBIDPlaylistDetailPtr pdPtr=_items[position];
     moveDependent(position,_items.count());
 
-    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     pdPtr->setDeletedFlag();
     pdmgr->remove(pdPtr);
 
-    Context::instance()->getController()->commitAllCaches(dal);
+    cm->commitAllCaches();
 
     refreshDependents(0,1);
     recalculatePlaylistDuration();
@@ -241,7 +241,8 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
         _items[toPosition]=tmpPtr;
     }
 
-    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     for(int i=0;i<_items.count();i++)
     {
         SBIDPlaylistDetailPtr pdPtr=_items[i];
@@ -267,8 +268,7 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
         }
     }
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    return Context::instance()->getController()->commitAllCaches(dal);
+    return cm->commitAllCaches();
 }
 
 SBTableModel*
@@ -315,7 +315,8 @@ SBIDPlaylist::createKey(int playlistID, int unused)
 SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
-    SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
     SBIDPlaylistPtr playlistPtr;
     if(playlistID>=0)
     {
@@ -466,7 +467,8 @@ SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
 bool
 SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
 {
-    SBIDPlaylistDetailMgr* pdmgr=Context::instance()->getPlaylistDetailMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     toPosition=fromPosition<toPosition?toPosition-1:toPosition;
 
     if(fromPosition==toPosition)

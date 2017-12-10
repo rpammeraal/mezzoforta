@@ -1,5 +1,6 @@
 #include "DBManager.h"
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
@@ -102,12 +103,8 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         _createDAL();
 
         //	Clear caches
-        Context::instance()->getAlbumMgr()->clear();
-        Context::instance()->getAlbumPerformanceMgr()->clear();
-        Context::instance()->getPerformerMgr()->clear();
-        Context::instance()->getPlaylistMgr()->clear();
-        Context::instance()->getSongMgr()->clear();
-        Context::instance()->getSongPerformanceMgr()->clear();
+        CacheManager* cm=Context::instance()->cacheManager();
+        cm->clearAllCaches();
     }
     return rc;
 }

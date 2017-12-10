@@ -3,6 +3,7 @@
 
 #include "SBTabPlaylistDetail.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -54,7 +55,8 @@ SBTabPlaylistDetail::deletePlaylistItem()
                     .arg(QChar(180))           //	3
                     .arg(playlistPtr->text())  //	4
                     .arg(playlistPtr->type()); //	5
-                SBIDPlaylistMgr* pmgr=Context::instance()->getPlaylistMgr();
+                CacheManager* cm=Context::instance()->cacheManager();
+                SBIDPlaylistMgr* pmgr=cm->playlistMgr();
                 playlistPtr->refreshDependents(1,1);
                 playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDPlaylistMgr::open_flag_refresh);
                 ptr=playlistPtr;

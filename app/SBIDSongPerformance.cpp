@@ -1,3 +1,4 @@
+#include "CacheManager.h"
 #include "Context.h"
 #include "SBIDSongPerformance.h"
 #include "Context.h"
@@ -87,7 +88,8 @@ SBIDSongPerformance::type() const
 SBIDPerformerPtr
 SBIDSongPerformance::performerPtr() const
 {
-    SBIDPerformerMgr* pMgr=Context::instance()->getPerformerMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerMgr* pMgr=cm->performerMgr();
     return pMgr->retrieve(
                 SBIDPerformer::createKey(_performerID),
                 SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
@@ -96,7 +98,8 @@ SBIDSongPerformance::performerPtr() const
 SBIDAlbumPerformancePtr
 SBIDSongPerformance::preferredAlbumPerformancePtr() const
 {
-    SBIDAlbumPerformanceMgr* apMgr=Context::instance()->getAlbumPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
     return apMgr->retrieve(
                 SBIDAlbumPerformance::createKey(_preferredAlbumPerformanceID),
                 SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
@@ -116,7 +119,8 @@ SBIDSongPerformance::preferredOnlinePerformancePtr() const
 SBIDSongPtr
 SBIDSongPerformance::songPtr() const
 {
-    SBIDSongMgr* sMgr=Context::instance()->getSongMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongMgr* sMgr=cm->songMgr();
     return sMgr->retrieve(
                 SBIDSong::createKey(_songID),
                 SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly);
@@ -190,7 +194,8 @@ SBIDSongPerformancePtr
 SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDSongPerformancePtr spPtr;
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     QMap<int,QList<SBIDSongPerformancePtr>> matches;
     const int count=spMgr->find(p,SBIDSongPerformancePtr(),matches,1);
 
@@ -269,7 +274,8 @@ SBIDSongPerformance::performancesByPerformer_Preloader(int performerID)
 SBIDSongPerformancePtr
 SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
 {
-    SBIDSongPerformanceMgr* spMgr=Context::instance()->getSongPerformanceMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     SBIDSongPerformancePtr spPtr;
     if(songPerformanceID>=0)
     {

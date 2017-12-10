@@ -1,5 +1,6 @@
 #include "SBIDChart.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
@@ -181,7 +182,8 @@ SBIDChart::createKey(int chartID,int unused)
 SBIDChartPtr
 SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
 {
-    SBIDChartMgr* cmgr=Context::instance()->getChartMgr();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDChartMgr* cmgr=cm->chartMgr();
     SBIDChartPtr cPtr;
     if(chartID>=0)
     {

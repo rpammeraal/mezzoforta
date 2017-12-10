@@ -2,9 +2,12 @@
 
 #include "Common.h"
 #include "Context.h"
+#include "DataAccessLayer.h"
 #include "ScreenStack.h"
 
 #include <QMessageBox>
+
+#include "Context.h"
 
 ScreenStack::ScreenStack()
 {
