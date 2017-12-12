@@ -140,10 +140,10 @@ SBIDAlbumPerformancePtr
 SBIDOnlinePerformance::albumPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
     return apMgr->retrieve(
                 SBIDAlbumPerformance::createKey(_albumPerformanceID),
-                SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 SBIDSongPtr
@@ -273,7 +273,7 @@ SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDOnlinePerformancePtr spPtr;
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDOnlinePerformanceMgr* spMgr=cm->onlinePerformanceMgr();
+    CacheOnlinePerformanceMgr* spMgr=cm->onlinePerformanceMgr();
     QMap<int,QList<SBIDOnlinePerformancePtr>> matches;
     int count=spMgr->find(p,SBIDOnlinePerformancePtr(),matches,1);
 
@@ -293,12 +293,12 @@ SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
+    CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
     SBIDOnlinePerformancePtr opPtr;
 
     if(onlinePerformanceID>=0)
     {
-        opPtr=opMgr->retrieve(createKey(onlinePerformanceID),  (noDependentsFlag==1?SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_default));
+        opPtr=opMgr->retrieve(createKey(onlinePerformanceID),  (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return opPtr;
 }

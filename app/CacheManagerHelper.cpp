@@ -1,17 +1,17 @@
-#include "SBIDManagerHelper.h"
+#include "CacheManagerHelper.h"
 
 #include <QSemaphore>
 
 #include "CacheManager.h"
 #include "Context.h"
 
-SBIDManagerHelper::SBIDManagerHelper(QObject *parent) : QObject(parent)
+CacheManagerHelper::CacheManagerHelper(QObject *parent) : QObject(parent)
 {
     _init();
 }
 
 void
-SBIDManagerHelper::emitUpdatedSBIDPtr(SBIDBasePtr ptr)
+CacheManagerHelper::emitUpdatedSBIDPtr(SBIDBasePtr ptr)
 {
     s_cpd->acquire(1);
     emit updatedSBIDPtr(ptr);
@@ -19,7 +19,7 @@ SBIDManagerHelper::emitUpdatedSBIDPtr(SBIDBasePtr ptr)
 }
 
 void
-SBIDManagerHelper::emitRemovedSBIDPtr(SBIDBasePtr ptr)
+CacheManagerHelper::emitRemovedSBIDPtr(SBIDBasePtr ptr)
 {
     s_cpd->acquire(1);
     emit removedSBIDPtr(ptr);
@@ -27,33 +27,33 @@ SBIDManagerHelper::emitRemovedSBIDPtr(SBIDBasePtr ptr)
 }
 
 void
-SBIDManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
+CacheManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
 {
     Q_UNUSED(keyList);
 }
 
 void
-SBIDManagerHelper::emitRemovedSBIDPtrStatic(SBIDBasePtr ptr)
+CacheManagerHelper::emitRemovedSBIDPtrStatic(SBIDBasePtr ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     cm->managerHelper()->emitRemovedSBIDPtr(ptr);
 }
 
 void
-SBIDManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
+CacheManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
 {
     Q_UNUSED(keyList);
 }
 
 void
-SBIDManagerHelper::emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr)
+CacheManagerHelper::emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     cm->managerHelper()->emitUpdatedSBIDPtr(ptr);
 }
 
 void
-SBIDManagerHelper::_init()
+CacheManagerHelper::_init()
 {
     s_cpd=new QSemaphore(1);
 }

@@ -39,7 +39,7 @@ public:
     //	Operators
     virtual operator QString();
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     static QString createKey(int songPerformanceID);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
@@ -47,10 +47,10 @@ public:
     //	Static methods
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=1);
 
-    //	Helper methods for SBIDManagerTemplate
+    //	Helper methods for CacheTemplate
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDChartPerformance();
@@ -65,7 +65,7 @@ protected:
     void postInstantiate(SBIDChartPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _chartPerformanceID=PK;  }
-    //QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
     //	Attributes

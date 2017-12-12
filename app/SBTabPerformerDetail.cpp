@@ -139,7 +139,7 @@ SBTabPerformerDetail::updatePerformerHomePage(const SBIDBasePtr &ptr)
             SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
 
             performerPtr->setURL(performerPtr->url());
-            cm->commitAllCaches();
+            cm->saveChanges();
         }
     }
     else
@@ -164,7 +164,7 @@ SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
             SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
 
             performerPtr->setMBID(performerPtr->MBID());
-            cm->commitAllCaches();
+            cm->saveChanges();
         }
     }
     else

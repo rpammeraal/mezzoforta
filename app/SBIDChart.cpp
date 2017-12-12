@@ -183,13 +183,13 @@ SBIDChartPtr
 SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDChartMgr* cmgr=cm->chartMgr();
+    CacheChartMgr* cmgr=cm->chartMgr();
     SBIDChartPtr cPtr;
     if(chartID>=0)
     {
         cPtr=cmgr->retrieve(
                         createKey(chartID),
-                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChart,SBIDBase>::open_flag_default));
+                        (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return cPtr;
 }
@@ -335,6 +335,13 @@ SBIDChart::retrieveSQL(const QString& key)
         .arg(key.length()==0?"":QString("WHERE p.chart_id=%1").arg(chartID))
     ;
     return new SBSqlQueryModel(q);
+}
+
+QStringList
+SBIDChart::updateSQL(const Common::db_change db_change) const
+{
+    Q_UNUSED(db_change);
+    return QStringList();
 }
 
 ///	Private

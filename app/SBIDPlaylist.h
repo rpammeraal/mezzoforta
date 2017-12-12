@@ -50,7 +50,7 @@ public:
     //	Operators
     virtual operator QString() const;
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
@@ -59,7 +59,7 @@ public:
     static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDPlaylist();

@@ -223,10 +223,10 @@ SBIDAlbumPerformancePtr
 SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* sMgr=cm->songMgr();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
+    CacheSongMgr* sMgr=cm->songMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
+    CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
     SBIDSongPtr sPtr;
     SBIDSongPerformancePtr spPtr;
     SBIDAlbumPerformancePtr apPtr;
@@ -809,10 +809,10 @@ SBIDPerformerPtr
 SBIDAlbum::performerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPerformerMgr* pMgr=cm->performerMgr();
+    CachePerformerMgr* pMgr=cm->performerMgr();
     return pMgr->retrieve(
                 SBIDPerformer::createKey(_albumPerformerID),
-                SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -874,11 +874,11 @@ SBIDAlbumPtr
 SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
     SBIDAlbumPtr albumPtr;
     if(albumID>=0)
     {
-        albumPtr=amgr->retrieve(createKey(albumID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_default));
+        albumPtr=amgr->retrieve(createKey(albumID),(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return albumPtr;
 }
@@ -981,7 +981,7 @@ SBIDAlbum::retrieveUnknownAlbum()
 {
     Properties* properties=Context::instance()->getProperties();
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
     int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();
     SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(albumID,1);
 
@@ -1221,7 +1221,8 @@ void
 SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+
     //	Find next albumPosition
     int nextAlbumPosition=0;
     QMapIterator<int,SBIDAlbumPerformancePtr> to(albumPerformances());
@@ -1233,6 +1234,8 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
     }
     nextAlbumPosition++;
 
+    qDebug() << SB_DEBUG_INFO << aPtrFrom->albumID() << this->albumID() << nextAlbumPosition;
+
     //	Go thu each albumPerformance in from and merge
     QMapIterator<int,SBIDAlbumPerformancePtr> from(aPtrFrom->albumPerformances());
     while(from.hasNext())
@@ -1242,10 +1245,12 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         SBIDAlbumPerformancePtr toApPtr=_findAlbumPerformanceBySongPerformanceID(fromApPtr->songPerformanceID());
         if(toApPtr)
         {
+            qDebug() << SB_DEBUG_INFO << fromApPtr->albumPerformanceID() << toApPtr->albumPerformanceID();
             apmgr->merge(fromApPtr,toApPtr);
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO << fromApPtr->albumPosition() << nextAlbumPosition;
             //	Append
             fromApPtr->setAlbumPosition(nextAlbumPosition++);
             fromApPtr->setAlbumID(this->albumID());
@@ -1257,11 +1262,11 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
 
     //	Go through playlist items and replace
     SBSqlQueryModel* qm=SBIDPlaylistDetail::playlistDetailsByAlbum(aPtrFrom->albumID());
-    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     SB_RETURN_VOID_IF_NULL(qm);
     SB_RETURN_VOID_IF_NULL(pdmgr);
 
-    for(int i=0;i>qm->rowCount();i++)
+    for(int i=0;i<qm->rowCount();i++)
     {
         int playlistDetailID=qm->record(i).value(0).toInt();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(playlistDetailID);
@@ -1312,6 +1317,7 @@ SBIDAlbum::updateSQL(const Common::db_change db_change) const
     QStringList SQL;
 
     qDebug() << SB_DEBUG_INFO
+             << key()
              << deletedFlag()
              << mergedFlag()
              << changedFlag()
@@ -1361,7 +1367,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
 {
     qDebug() << SB_DEBUG_INFO;
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
 

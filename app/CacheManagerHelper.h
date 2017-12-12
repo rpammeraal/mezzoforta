@@ -1,5 +1,5 @@
-#ifndef SBIDMANAGERHELPER_H
-#define SBIDMANAGERHELPER_H
+#ifndef CACHEMANAGERHELPER_H
+#define CACHEMANAGERHELPER_H
 
 #include <QObject>
 
@@ -9,12 +9,12 @@
 
 class QSemaphore;
 
-class SBIDManagerHelper : public QObject
+class CacheManagerHelper : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit SBIDManagerHelper(QObject *parent = 0);
+    explicit CacheManagerHelper(QObject *parent = 0);
     void emitUpdatedSBIDPtr(SBIDBasePtr ptr);
     void emitRemovedSBIDPtr(SBIDBasePtr ptr);
     static void emitRemovedSBIDPtrArrayStatic(const QStringList& keyList);
@@ -34,4 +34,4 @@ private:
     void _init();
 };
 
-#endif // SBIDMANAGERHELPER_H
+#endif // CACHEMANAGERHELPER_H

@@ -74,9 +74,9 @@ SBTabSongEdit::save() const
     SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
     SBIDSongPerformancePtr newSpPtr;	//	only populated if a new original spPtr is created.
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* sMgr=cm->songMgr();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    SBIDPerformerMgr* peMgr=cm->performerMgr();
+    CacheSongMgr* sMgr=cm->songMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CachePerformerMgr* peMgr=cm->performerMgr();
     bool songMergedFlag=0;
     int orgSongPerformanceID=orgSongPtr->originalSongPerformanceID();
 
@@ -319,7 +319,7 @@ qDebug() << SB_DEBUG_INFO;
 //
 
 
-    const bool successFlag=cm->commitAllCaches();
+    const bool successFlag=cm->saveChanges();
 
     if(successFlag==1)
     {

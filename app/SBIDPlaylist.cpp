@@ -198,11 +198,11 @@ SBIDPlaylist::removePlaylistItem(int position)
     moveDependent(position,_items.count());
 
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     pdPtr->setDeletedFlag();
     pdmgr->remove(pdPtr);
 
-    cm->commitAllCaches();
+    cm->saveChanges();
 
     refreshDependents(0,1);
     recalculatePlaylistDuration();
@@ -242,7 +242,7 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
     }
 
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     for(int i=0;i<_items.count();i++)
     {
         SBIDPlaylistDetailPtr pdPtr=_items[i];
@@ -268,7 +268,7 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
         }
     }
 
-    return cm->commitAllCaches();
+    return cm->saveChanges();
 }
 
 SBTableModel*
@@ -316,13 +316,13 @@ SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
+    CachePlaylistMgr* pmgr=cm->playlistMgr();
     SBIDPlaylistPtr playlistPtr;
     if(playlistID>=0)
     {
         playlistPtr=pmgr->retrieve(
                         createKey(playlistID),
-                        (noDependentsFlag==1?SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_default));
+                        (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return playlistPtr;
 }
@@ -468,7 +468,7 @@ bool
 SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     toPosition=fromPosition<toPosition?toPosition-1:toPosition;
 
     if(fromPosition==toPosition)
@@ -564,11 +564,6 @@ SBIDPlaylist::updateSQL(const Common::db_change db_change) const
             .arg(this->_playlistID)
         ;
         SQL.append(q);
-    }
-
-    if(SQL.count()==0)
-    {
-        SBMessageBox::standardWarningBox("__FILE__ __LINE__ No SQL generated.");
     }
     return SQL;
 }

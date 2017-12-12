@@ -48,7 +48,7 @@ public:
     //	Operators
     virtual operator QString();
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     static QString createKey(int songPerformanceID);
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
@@ -60,12 +60,12 @@ public:
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformer(const QString& songTitle, const QString& performerName, int excludeSongPerformanceID=-1, bool noDependentsFlag=1);
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag=1);
 
-    //	Helper methods for SBIDManagerTemplate
+    //	Helper methods for CacheTemplate
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDSongPerformance();

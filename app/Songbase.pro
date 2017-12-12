@@ -60,7 +60,6 @@ HEADERS     = \
     SBCaseInsensitiveString.h \
     SBIDBase.h \
     ScreenItem.h \
-    SBIDManagerTemplate.h \
     SBTableModel.h \
     SBSortFilterProxyTableModel.h \
     Preloader.h \
@@ -80,8 +79,9 @@ HEADERS     = \
     SBDuration.h \
     SBIDPlaylistDetail.h \
     SearchItemModel.h \
-    SBIDManagerHelper.h \
-    CacheManager.h
+    CacheManager.h \
+    CacheTemplate.h \
+    CacheManagerHelper.h
 
 SOURCES     = \
     main.cpp \
@@ -162,8 +162,8 @@ SOURCES     = \
     SBDuration.cpp \
     SBIDPlaylistDetail.cpp \
     SearchItemModel.cpp \
-    SBIDManagerHelper.cpp \
-    CacheManager.cpp
+    CacheManager.cpp \
+    CacheManagerHelper.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

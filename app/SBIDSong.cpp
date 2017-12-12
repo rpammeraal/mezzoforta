@@ -227,7 +227,7 @@ SBIDSongPerformancePtr
 SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     SBIDSongPerformancePtr songPerformancePtr;
     Q_UNUSED(performerID);
     Q_UNUSED(year);
@@ -1099,7 +1099,7 @@ SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
 {
     qDebug() << SB_DEBUG_INFO << ID() << "Removing id " << spPtr->songPerformanceID();
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
 
     if(_songPerformances.contains(spPtr->songPerformerID()))
     {
@@ -1115,10 +1115,10 @@ SBIDSongPerformancePtr
 SBIDSong::originalSongPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_originalSongPerformanceID),
-                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -1233,11 +1233,11 @@ SBIDSongPtr
 SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     SBIDSongPtr songPtr;
     if(songID>=0)
     {
-        songPtr=smgr->retrieve(createKey(songID),(noDependentsFlag==1?SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_default));
+        songPtr=smgr->retrieve(createKey(songID),(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return songPtr;
 }
@@ -1412,7 +1412,7 @@ void
 SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
     _loadSongPerformances();	//	make sure list is loaded.
     QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
     while(it.hasNext())
@@ -1508,7 +1508,7 @@ Common::result
 SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDSongPtr>> matches;
 
@@ -1604,10 +1604,10 @@ SBIDSong::_loadAlbumPerformances()
 {
     SBSqlQueryModel* qm=SBIDAlbumPerformance::performancesBySong(songID());
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _albumPerformances=apmgr->retrieveSet(qm,SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default);
+    _albumPerformances=apmgr->retrieveSet(qm,Cache::open_flag_default);
 
     delete qm;
 }
@@ -1699,10 +1699,10 @@ SBIDSong::_loadSongPerformancesFromDB() const
 {
     SBSqlQueryModel* qm=SBIDSongPerformance::performancesBySong(songID());
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm,SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default);
+    QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm,Cache::open_flag_default);
     delete qm;
     return songPerformances;
 }

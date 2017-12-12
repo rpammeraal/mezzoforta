@@ -54,11 +54,11 @@ public:
     //	Operators
     virtual operator QString();
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
-    //	Helper methods for SBIDManagerTemplate
+    //	Helper methods for CacheTemplate
 
     //	Static methods
     static QString createKey(int onlinePerformanceID);
@@ -71,7 +71,7 @@ public:
     static QString onlinePerformancesBySong_Preloader(int songID);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDOnlinePerformance();

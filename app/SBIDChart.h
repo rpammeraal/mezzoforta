@@ -39,7 +39,7 @@ public:
     //	Operators
     virtual operator QString() const;
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
@@ -48,7 +48,7 @@ public:
     static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDChart();
@@ -66,7 +66,7 @@ protected:
     //bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _chartID=PK;  }
-    //QStringList updateSQL() const;
+    QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
     int                               _chartID;

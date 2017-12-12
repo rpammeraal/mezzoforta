@@ -116,30 +116,30 @@ SBIDAlbumPtr
 SBIDAlbumPerformance::albumPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* aMgr=cm->albumMgr();
+    CacheAlbumMgr* aMgr=cm->albumMgr();
     return aMgr->retrieve(
                 SBIDAlbum::createKey(_albumID),
-                SBIDManagerTemplate<SBIDAlbum,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 SBIDSongPerformancePtr
 SBIDAlbumPerformance::songPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_songPerformanceID),
-                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 SBIDOnlinePerformancePtr
 SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
+    CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
     return opMgr->retrieve(
                 SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID),
-                SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -269,7 +269,7 @@ SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDAlbumPerformancePtr spPtr;
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* spMgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* spMgr=cm->albumPerformanceMgr();
     QMap<int,QList<SBIDAlbumPerformancePtr>> matches;
     int count=spMgr->find(p,SBIDAlbumPerformancePtr(),matches,1);
 
@@ -436,11 +436,11 @@ SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();
     SBIDAlbumPerformancePtr apPtr;
     if(albumPerformanceID>=0)
     {
-        apPtr=pfMgr->retrieve(createKey(albumPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_default));
+        apPtr=pfMgr->retrieve(createKey(albumPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return apPtr;
 }
@@ -593,7 +593,7 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
 
     qm=SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(fromApPtr->albumPerformanceID());
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
     SB_RETURN_VOID_IF_NULL(qm);
     SB_RETURN_VOID_IF_NULL(opmgr);
 
@@ -610,7 +610,7 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
 
     //	Reset preferredAlbumPerformanceID in performance
     qm=SBIDSongPerformance::performancesByPreferredAlbumPerformanceID(fromApPtr->albumPerformanceID());
-    SBIDSongPerformanceMgr* smgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* smgr=cm->songPerformanceMgr();
     SB_RETURN_VOID_IF_NULL(qm);
     SB_RETURN_VOID_IF_NULL(smgr);
 

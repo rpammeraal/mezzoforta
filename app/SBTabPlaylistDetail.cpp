@@ -56,9 +56,9 @@ SBTabPlaylistDetail::deletePlaylistItem()
                     .arg(playlistPtr->text())  //	4
                     .arg(playlistPtr->type()); //	5
                 CacheManager* cm=Context::instance()->cacheManager();
-                SBIDPlaylistMgr* pmgr=cm->playlistMgr();
+                CachePlaylistMgr* pmgr=cm->playlistMgr();
                 playlistPtr->refreshDependents(1,1);
-                playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDPlaylistMgr::open_flag_refresh);
+                playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),CachePlaylistMgr::open_flag_refresh);
                 ptr=playlistPtr;
             }
             refreshTabIfCurrent(ptr);

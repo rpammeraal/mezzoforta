@@ -75,7 +75,7 @@ public:
     virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
-    //	Helper methods for SBIDManagerTemplate
+    //	Helper methods for CacheTemplate
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName,bool noDependentsFlag=1);
@@ -85,7 +85,7 @@ public:
     static SBSqlQueryModel* albumsByPerformer(int performerID);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDAlbum();
@@ -93,7 +93,7 @@ protected:
     //	Operators
     SBIDAlbum& operator=(const SBIDAlbum& t);	//	CWIP: to be moved to protected
 
-    //	Methods used by SBIDManager
+    //	Methods used by CacheTemplate
     static SBIDAlbumPtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);

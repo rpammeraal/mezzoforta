@@ -59,11 +59,12 @@ public:
 
     //	Static methods
     static SBSqlQueryModel* playlistDetailsByAlbum(int albumID);
+    static SBSqlQueryModel* playlistDetailsByPerformer(int performerID);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDPlaylistDetail();
@@ -79,6 +80,9 @@ protected:
 
     friend class SBIDAlbum;
     void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
+
+    friend class SBIDPerformer;
+    void setPerformerID(int performerID) { if(_performerID!=performerID) { _performerID=performerID; setChangedFlag(); } }
 
 private:
     int     _playlistDetailID;

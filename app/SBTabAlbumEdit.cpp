@@ -785,8 +785,8 @@ SBTabAlbumEdit::save() const
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
@@ -1132,7 +1132,7 @@ SBTabAlbumEdit::save() const
 
         //	F.	Commit all
         qDebug() << SB_DEBUG_INFO;
-        cm->commitAllCaches();
+        cm->saveChanges();
 
         //	G.	Tell screenstack to update any entry pointing to
         if(albumMergedFlag)

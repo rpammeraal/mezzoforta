@@ -40,8 +40,8 @@ MusicLibrary::rescanMusicLibrary()
 
     //	SBIDManager
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* aMgr=cm->albumMgr();
-    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
+    CacheAlbumMgr* aMgr=cm->albumMgr();
+    CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
 
     //	Init
     ProgressDialog::instance()->show("Starting","MusicLibrary::rescanMusicLibrary_scan",1);
@@ -438,7 +438,7 @@ MusicLibrary::rescanMusicLibrary()
             if(!ePtr->errorFlag())
             {
                 qDebug() << SB_DEBUG_INFO;
-                SBIDAlbumPtr albumPtr=aMgr->retrieve(SBIDAlbum::createKey(ePtr->albumID),SBIDAlbumMgr::open_flag_foredit);
+                SBIDAlbumPtr albumPtr=aMgr->retrieve(SBIDAlbum::createKey(ePtr->albumID),CacheAlbumMgr::open_flag_foredit);
                 albumPtr->addAlbumPerformance(
                             ePtr->songID,
                             ePtr->songPerformerID,
@@ -458,7 +458,7 @@ MusicLibrary::rescanMusicLibrary()
             }
         }
 
-        bool resultFlag=cm->commitAllCaches();
+        bool resultFlag=cm->saveChanges();
 
         qDebug() << SB_DEBUG_INFO;
         if(resultFlag==0)
@@ -502,9 +502,9 @@ bool
 MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalbumPathPtr>& directory2AlbumPathMap)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     int progressCurrentValue=0;

@@ -89,20 +89,20 @@ SBIDPerformerPtr
 SBIDSongPerformance::performerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPerformerMgr* pMgr=cm->performerMgr();
+    CachePerformerMgr* pMgr=cm->performerMgr();
     return pMgr->retrieve(
                 SBIDPerformer::createKey(_performerID),
-                SBIDManagerTemplate<SBIDPerformer,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 SBIDAlbumPerformancePtr
 SBIDSongPerformance::preferredAlbumPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
+    CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
     return apMgr->retrieve(
                 SBIDAlbumPerformance::createKey(_preferredAlbumPerformanceID),
-                SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 SBIDOnlinePerformancePtr
@@ -120,10 +120,10 @@ SBIDSongPtr
 SBIDSongPerformance::songPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* sMgr=cm->songMgr();
+    CacheSongMgr* sMgr=cm->songMgr();
     return sMgr->retrieve(
                 SBIDSong::createKey(_songID),
-                SBIDManagerTemplate<SBIDSong,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -195,7 +195,7 @@ SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
 {
     SBIDSongPerformancePtr spPtr;
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     QMap<int,QList<SBIDSongPerformancePtr>> matches;
     const int count=spMgr->find(p,SBIDSongPerformancePtr(),matches,1);
 
@@ -275,11 +275,11 @@ SBIDSongPerformancePtr
 SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     SBIDSongPerformancePtr spPtr;
     if(songPerformanceID>=0)
     {
-        spPtr=spMgr->retrieve(createKey(songPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_default));
+        spPtr=spMgr->retrieve(createKey(songPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return spPtr;
 }

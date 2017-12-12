@@ -1,6 +1,7 @@
 #include <QCompleter>
 
 #include "CacheManager.h"
+#include "CacheTemplate.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -14,61 +15,79 @@ CacheManager::CacheManager()
 void
 CacheManager::clearAllCaches()
 {
-    this->albumMgr()->clear();
-    this->albumPerformanceMgr()->clear();
-    this->chartMgr()->clear();
-    this->chartPerformanceMgr()->clear();
-    this->onlinePerformanceMgr()->clear();
-    this->performerMgr()->clear();
-    this->playlistMgr()->clear();
-    this->playlistDetailMgr()->clear();
-    this->songMgr()->clear();
-    this->songPerformanceMgr()->clear();
+    QMapIterator<sb_cache_type,CachePtr> cIT(_cache);
+    while(cIT.hasNext())
+    {
+        cIT.next();
+        CachePtr cPtr=cIT.value();
+        cPtr->clear();
+    }
 }
 
 bool
-CacheManager::commitAllCaches()
+CacheManager::saveChanges()
 {
+    QStringList updateSQL;
+    QStringList insertSQL;
+    QStringList deleteSQL;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    bool successFlag=1;
+    bool performerCacheChangedFlag=0;
 
-    //	CWIP: transactions
+    QMapIterator<sb_cache_type,CachePtr> cIT(_cache);
+    while(cIT.hasNext())
+    {
+        cIT.next();
+        sb_cache_type cache_type=cIT.key();
+        CachePtr cPtr=cIT.value();
+        const int prevCount=insertSQL.count()+updateSQL.count()+deleteSQL.count();
+        insertSQL.append(cPtr->retrieveChanges(Common::db_insert));
+        updateSQL.append(cPtr->retrieveChanges(Common::db_update));
+        deleteSQL.append(cPtr->retrieveChanges(Common::db_delete));
 
-    //	Apply inserts.
-    if(successFlag) { successFlag=this->songMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->performerMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->songPerformanceMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->albumMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->albumPerformanceMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->playlistMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->playlistDetailMgr()->commitAll(dal,Common::db_insert); }
-    if(successFlag) { successFlag=this->onlinePerformanceMgr()->commitAll(dal,Common::db_insert); }
-    //c->getChartMgr()->commitAll(dal,Common::db_insert);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_insert);
+        const int currCount=insertSQL.count()+updateSQL.count()+deleteSQL.count();
+        if(prevCount!=currCount)
+        {
+            performerCacheChangedFlag=(cache_type==sb_cache_performer?1:performerCacheChangedFlag);
+        }
+    }
 
-    //	Apply updates.
-    if(successFlag) { successFlag=this->onlinePerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->playlistMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->playlistDetailMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->albumPerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->albumMgr()->commitAll(dal,Common::db_update); }
-    //c->getChartMgr()->commitAll(dal,Common::db_update);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_update);
-    if(successFlag) { successFlag=this->songPerformanceMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->performerMgr()->commitAll(dal,Common::db_update); }
-    if(successFlag) { successFlag=this->songMgr()->commitAll(dal,Common::db_update); }
+    QStringList SQL=updateSQL;
+    SQL.append(insertSQL);
+    SQL.append(deleteSQL);
 
-    //	Apply deletes.
-    if(successFlag) { successFlag=this->onlinePerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->playlistMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->playlistDetailMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->albumPerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->albumMgr()->commitAll(dal,Common::db_delete); }
-    //c->getChartMgr()->commitAll(dal,Common::db_delete);
-    //c->getChartPerformanceMgr()->commitAll(dal,Common::db_delete);
-    if(successFlag) { successFlag=this->songPerformanceMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->performerMgr()->commitAll(dal,Common::db_delete); }
-    if(successFlag) { successFlag=this->songMgr()->commitAll(dal,Common::db_delete); }
+    QString restorePoint=dal->createRestorePoint();
+    bool resultFlag=dal->executeBatch(SQL);
+    if(!resultFlag)
+    {
+        dal->restore(restorePoint);
+    }
+
+    cIT.toFront();
+    while(cIT.hasNext())
+    {
+        cIT.next();
+        CachePtr cPtr=cIT.value();
+        cPtr->setChangedAsCommited();
+    }
+
+    CachePerformerMgr* pMgr=performerMgr();
+    int performerID=2078;
+    QString key=SBIDPerformer::createKey(performerID);
+    if(pMgr->contains(key))
+    {
+        SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(performerID);
+        qDebug() << SB_DEBUG_INFO << pPtr->key() << pPtr->ID() << pPtr->deletedFlag() << pPtr->mergedFlag() << pPtr->mergedWithID();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "does NOT contain " << key;
+    }
+
+    if(performerCacheChangedFlag)
+    {
+        Controller* c=Context::instance()->getController();
+        c->refreshPerformerCompleters();
+    }
 
     //	CWIP: remove when database is cached
     SearchItemModel* oldSim=Context::instance()->searchItemModel();
@@ -84,22 +103,21 @@ CacheManager::commitAllCaches()
     //	CWIP: remove when database is cached
     Context::instance()->getController()->preloadAllSongs();
 
-    //	Once we get all mgr's to use the same transaction, this could be a meaningful value.
-    return successFlag;
+    return resultFlag;
 }
-
 
 void
 CacheManager::_init()
 {
-    _albumMgr.setName("mgr_a");
-    _albumPerformanceMgr.setName("mgr_ap");
-    _chartMgr.setName("mgr_c");
-    _chartPerformanceMgr.setName("mgr_cm");
-    _onlinePerformanceMgr.setName("mgr_op");
-    _performerMgr.setName("mgr_p");
-    _playlistMgr.setName("mgr_pl");
-    _playlistDetailMgr.setName("mgr_pld");
-    _songMgr.setName("mgr_s");
-    _songPerformanceMgr.setName("mgr_sp");
+    qDebug() << SB_DEBUG_INFO;
+    _cache[sb_cache_album]=std::make_shared<CacheAlbumMgr>(CacheAlbumMgr("a_mgr"));
+    _cache[sb_cache_album_performance]=std::make_shared<CacheAlbumPerformanceMgr>(CacheAlbumPerformanceMgr("ap_mgr"));
+    _cache[sb_cache_chart]=std::make_shared<CacheChartMgr>(CacheChartMgr("c_mgr"));
+    _cache[sb_cache_chart_performance]=std::make_shared<CacheChartPerformanceMgr>(CacheChartPerformanceMgr("cp_mgr"));
+    _cache[sb_cache_online_performance]=std::make_shared<CacheOnlinePerformanceMgr>(CacheOnlinePerformanceMgr("op_mgr"));
+    _cache[sb_cache_performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr"));
+    _cache[sb_cache_playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr"));
+    _cache[sb_cache_playlist_detail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr"));
+    _cache[sb_cache_song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr"));
+    _cache[sb_cache_song_performer]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr"));
 }

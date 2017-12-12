@@ -1,7 +1,7 @@
 #ifndef CACHEMANAGER_H
 #define CACHEMANAGER_H
 
-#include "SBIDManagerTemplate.h"
+#include "CacheTemplate.h"
 #include "SBIDAlbum.h"
 #include "SBIDAlbumPerformance.h"
 #include "SBIDChart.h"
@@ -14,50 +14,58 @@
 #include "SBIDSongPerformance.h"
 
 
-typedef SBIDManagerTemplate<SBIDAlbum,SBIDBase> SBIDAlbumMgr;
-typedef SBIDManagerTemplate<SBIDAlbumPerformance,SBIDBase> SBIDAlbumPerformanceMgr;
-typedef SBIDManagerTemplate<SBIDChart,SBIDBase> SBIDChartMgr;
-typedef SBIDManagerTemplate<SBIDChartPerformance,SBIDBase> SBIDChartPerformanceMgr;
-typedef SBIDManagerTemplate<SBIDOnlinePerformance,SBIDBase> SBIDOnlinePerformanceMgr;
-typedef SBIDManagerTemplate<SBIDPlaylist,SBIDBase> SBIDPlaylistMgr;
-typedef SBIDManagerTemplate<SBIDPlaylistDetail,SBIDBase> SBIDPlaylistDetailMgr;
-typedef SBIDManagerTemplate<SBIDPerformer,SBIDBase> SBIDPerformerMgr;
-typedef SBIDManagerTemplate<SBIDSong,SBIDBase> SBIDSongMgr;
-typedef SBIDManagerTemplate<SBIDSongPerformance,SBIDBase> SBIDSongPerformanceMgr;
+typedef CacheTemplate<SBIDAlbum,SBIDBase> CacheAlbumMgr;
+typedef CacheTemplate<SBIDAlbumPerformance,SBIDBase> CacheAlbumPerformanceMgr;
+typedef CacheTemplate<SBIDChart,SBIDBase> CacheChartMgr;
+typedef CacheTemplate<SBIDChartPerformance,SBIDBase> CacheChartPerformanceMgr;
+typedef CacheTemplate<SBIDOnlinePerformance,SBIDBase> CacheOnlinePerformanceMgr;
+typedef CacheTemplate<SBIDPlaylist,SBIDBase> CachePlaylistMgr;
+typedef CacheTemplate<SBIDPlaylistDetail,SBIDBase> CachePlaylistDetailMgr;
+typedef CacheTemplate<SBIDPerformer,SBIDBase> CachePerformerMgr;
+typedef CacheTemplate<SBIDSong,SBIDBase> CacheSongMgr;
+typedef CacheTemplate<SBIDSongPerformance,SBIDBase> CacheSongPerformanceMgr;
 
 
 class CacheManager
 {
 public:
-    CacheManager();
-    void clearAllCaches();
-    bool commitAllCaches();
+    enum sb_cache_type
+    {
+        sb_cache_none=0,
+        sb_cache_album,
+        sb_cache_album_performance,
+        sb_cache_chart,
+        sb_cache_chart_performance,
+        sb_cache_online_performance,
+        sb_cache_performer,
+        sb_cache_playlist,
+        sb_cache_playlist_detail,
+        sb_cache_song,
+        sb_cache_song_performer
+    };
 
-    inline SBIDAlbumMgr* albumMgr() { return &_albumMgr; }
-    inline SBIDAlbumPerformanceMgr* albumPerformanceMgr() { return &_albumPerformanceMgr; }
-    inline SBIDChartMgr* chartMgr() { return &_chartMgr; }
-    inline SBIDChartPerformanceMgr* chartPerformanceMgr() { return &_chartPerformanceMgr; }
-    inline SBIDManagerHelper* managerHelper() { return &_mh; }
-    inline SBIDOnlinePerformanceMgr* onlinePerformanceMgr() { return &_onlinePerformanceMgr; }
-    inline SBIDPerformerMgr* performerMgr() { return &_performerMgr; }
-    inline SBIDPlaylistMgr* playlistMgr() { return &_playlistMgr; }
-    inline SBIDPlaylistDetailMgr* playlistDetailMgr() { return &_playlistDetailMgr; }
-    inline SBIDSongMgr* songMgr() { return &_songMgr; }
-    inline SBIDSongPerformanceMgr* songPerformanceMgr() { return &_songPerformanceMgr; }
+    CacheManager();
+    virtual ~CacheManager() { }
+
+    void clearAllCaches();
+    bool saveChanges();
+
+    inline CacheManagerHelper* managerHelper() { return &_mh; }
+
+    inline CacheAlbumMgr* albumMgr() const { return dynamic_cast<CacheAlbumMgr *>(_cache[sb_cache_album].get()); }
+    inline CacheAlbumPerformanceMgr* albumPerformanceMgr() const { return dynamic_cast<CacheAlbumPerformanceMgr *>(_cache[sb_cache_album_performance].get()); }
+    inline CacheChartMgr* chartMgr() const { return dynamic_cast<CacheChartMgr *>(_cache[sb_cache_chart].get()); }
+    inline CacheChartPerformanceMgr* chartPerformanceMgr() const { return dynamic_cast<CacheChartPerformanceMgr *>(_cache[sb_cache_chart_performance].get()); }
+    inline CacheOnlinePerformanceMgr* onlinePerformanceMgr() const { return dynamic_cast<CacheOnlinePerformanceMgr *>(_cache[sb_cache_online_performance].get()); }
+    inline CachePerformerMgr* performerMgr() const { return dynamic_cast<CachePerformerMgr *>(_cache[sb_cache_performer].get()); }
+    inline CachePlaylistMgr* playlistMgr() const { return dynamic_cast<CachePlaylistMgr *>(_cache[sb_cache_playlist].get()); }
+    inline CachePlaylistDetailMgr* playlistDetailMgr() const { return dynamic_cast<CachePlaylistDetailMgr *>(_cache[sb_cache_playlist_detail].get()); }
+    inline CacheSongMgr* songMgr() const { return dynamic_cast<CacheSongMgr *>(_cache[sb_cache_song].get()); }
+    inline CacheSongPerformanceMgr* songPerformanceMgr() const { return dynamic_cast<CacheSongPerformanceMgr *>(_cache[sb_cache_song_performer].get()); }
 
 private:
-    SBIDAlbumMgr _albumMgr;
-    SBIDAlbumPerformanceMgr _albumPerformanceMgr;
-    SBIDChartMgr _chartMgr;
-    SBIDChartPerformanceMgr _chartPerformanceMgr;
-    SBIDOnlinePerformanceMgr _onlinePerformanceMgr;
-    SBIDPerformerMgr _performerMgr;
-    SBIDPlaylistMgr _playlistMgr;
-    SBIDPlaylistDetailMgr _playlistDetailMgr;
-    SBIDSongMgr _songMgr;
-    SBIDSongPerformanceMgr _songPerformanceMgr;
-
-    SBIDManagerHelper _mh;
+    QMap<sb_cache_type,CachePtr> _cache;
+    CacheManagerHelper _mh;
 
     void _init();
 };

@@ -72,6 +72,23 @@ Common::correctArticle(const QString &s)
 }
 
 QString
+Common::db_change_to_string(Common::db_change db_change)
+{
+    switch(db_change)
+    {
+    case Common::db_delete:
+        return "delete";
+
+    case Common::db_insert:
+        return "insert";
+
+    case Common::db_update:
+        return "update";
+    }
+    return "unknown db_change";
+}
+
+QString
 Common::escapeSingleQuotes(const QString &s)
 {
     static QString singleQuote=QString("'");	//	No need to instantiate these every time this method is called.

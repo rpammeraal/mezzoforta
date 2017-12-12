@@ -114,7 +114,7 @@ protected:
     friend class SBIDSong;
     friend class SBIDSongPerformance;
     friend class SBModel;
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
 
 
     //	Tertiary identifiers (navigation et al)

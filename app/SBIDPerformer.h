@@ -62,7 +62,7 @@ public:
     //	Operators
     virtual operator QString() const;
 
-    //	Methods required by SBIDManagerTemplate
+    //	Methods required by CacheTemplate
     static QString createKey(int performerID,int unused=-1);
     virtual QString key() const;
     static bool match(const QString& editedPerformerName,int skipID);
@@ -73,7 +73,7 @@ public:
     static SBIDPerformerPtr retrieveVariousPerformers();
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDPerformer();

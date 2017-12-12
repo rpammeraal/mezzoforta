@@ -22,7 +22,7 @@
 #include "PlayerController.h"
 #include "ProgressDialog.h"
 #include "SBIDBase.h"
-#include "SBIDManagerTemplate.h"
+#include "CacheTemplate.h"
 #include "SBIDPlaylist.h"
 #include "SBIDPlaylistDetail.h"
 #include "SBIDOnlinePerformance.h"

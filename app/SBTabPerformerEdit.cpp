@@ -164,10 +164,11 @@ SBTabPerformerEdit::save() const
 {
     //	Test cases:
     //	1.	Rename U2 to Simple Minds.
-    //	2.	Rename Simple Minds -> Dire Straitz
+    //	2.	Simple Minds -> U2 (U2 should appear as complete new performer).
+    //	3.	Rename U2 -> Dire Straitz
 
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
+    CachePerformerMgr* peMgr=cm->performerMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.ptr()->itemID());
@@ -210,14 +211,23 @@ SBTabPerformerEdit::save() const
         Common::sb_parameters tobeMatched;
         tobeMatched.performerName=editPerformerName;
         tobeMatched.performerID=orgPerformerPtr->performerID();
-        Common::result result=pemgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
+        Common::result result=peMgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
         if(result==Common::result_canceled)
         {
             qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
             return;
         }
+        if(result==Common::result_missing)
+        {
+            Common::sb_parameters performer;
+            performer.performerName=tobeMatched.performerName;
+            selectedPerformerPtr=peMgr->createInDB(performer);
+        }
 
         //	At this point, selectedPerformer could be:
+        SB_RETURN_VOID_IF_NULL(orgPerformerPtr);
+        SB_RETURN_VOID_IF_NULL(selectedPerformerPtr);
+
         if(orgPerformerPtr->performerID()!=selectedPerformerPtr->performerID())
         {
             //	A. Different: merge orgPerformerPtr to selectedPerformer.
@@ -280,11 +290,11 @@ SBTabPerformerEdit::save() const
     }
     else
     {
-        pemgr->merge(orgPerformerPtr,selectedPerformerPtr);
+        peMgr->merge(orgPerformerPtr,selectedPerformerPtr);
     }
 
-    pemgr->setChanged(orgPerformerPtr);
-    successFlag=cm->commitAllCaches();
+    peMgr->setChanged(orgPerformerPtr);
+    successFlag=cm->saveChanges();
 
     //Context::instance()->getScreenStack()->debugShow("before finish");
     if(successFlag)

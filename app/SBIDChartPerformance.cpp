@@ -90,10 +90,10 @@ SBIDSongPerformancePtr
 SBIDChartPerformance::songPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     return spMgr->retrieve(
                 SBIDSongPerformance::createKey(_songPerformanceID),
-                SBIDManagerTemplate<SBIDSongPerformance,SBIDBase>::open_flag_parentonly);
+                Cache::open_flag_parentonly);
 }
 
 ///	Redirectors
@@ -164,11 +164,11 @@ SBIDChartPerformancePtr
 SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
+    CacheChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
     SBIDChartPerformancePtr cpPtr;
     if(chartPerformanceID>=0)
     {
-        cpPtr=cpMgr->retrieve(createKey(chartPerformanceID), (noDependentsFlag==1?SBIDManagerTemplate<SBIDChartPerformance,SBIDBase>::open_flag_parentonly:SBIDManagerTemplate<SBIDChartPerformance,SBIDBase>::open_flag_default));
+        cpPtr=cpMgr->retrieve(createKey(chartPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
     }
     return cpPtr;
 }
@@ -286,6 +286,13 @@ SBIDChartPerformance::retrieveSQL(const QString &key)
     ;
 
     return new SBSqlQueryModel(q);
+}
+
+QStringList
+SBIDChartPerformance::updateSQL(const Common::db_change db_change) const
+{
+    Q_UNUSED(db_change);
+    return QStringList();
 }
 
 ///	Helper methods for SBIDManagerTemplate

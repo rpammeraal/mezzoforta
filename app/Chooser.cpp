@@ -117,7 +117,7 @@ public:
         _chartRoot=item1;
 
         CacheManager* cm=Context::instance()->cacheManager();
-        SBIDChartMgr* cmgr=cm->chartMgr();
+        CacheChartMgr* cmgr=cm->chartMgr();
         QVector<SBIDChartPtr> chartList=cmgr->retrieveAll();
         for(int i=0;i<chartList.count();i++)
         {
@@ -134,7 +134,7 @@ public:
         this->appendRow(item1);
         _playlistRoot=item1;
 
-        SBIDPlaylistMgr* plm=cm->playlistMgr();
+        CachePlaylistMgr* plm=cm->playlistMgr();
         QVector<SBIDPlaylistPtr> l=plm->retrieveAll();
         for(int i=0;i<l.count();i++)
         {
@@ -292,8 +292,7 @@ void
 Chooser::playlistDelete()
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    CachePlaylistMgr* pmgr=cm->playlistMgr();
 
     _setCurrentIndex(_lastClickedIndex);
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
@@ -310,7 +309,7 @@ Chooser::playlistDelete()
         {
             case QMessageBox::Ok:
                 pmgr->remove(playlistPtr);
-                pmgr->commit(playlistPtr,dal, Common::db_delete);
+                cm->saveChanges();
                 Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr);
                 this->_populate();
 
@@ -338,7 +337,7 @@ void
 Chooser::playlistNew()
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
+    CachePlaylistMgr* pmgr=cm->playlistMgr();
     Common::sb_parameters p;
 
     SBIDPlaylistPtr ptr=pmgr->createInDB(p);
@@ -546,15 +545,14 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
 {
     const MainWindow* mw=Context::instance()->getMainWindow();
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPlaylistMgr* pmgr=cm->playlistMgr();
+    CachePlaylistMgr* pmgr=cm->playlistMgr();
 
     //	Re-open object for editing
-    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),SBIDManagerTemplate<SBIDPlaylist,SBIDBase>::open_flag_foredit);
+    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),Cache::open_flag_foredit);
 
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    pmgr->commit(playlistPtr,dal, Common::db_update);
+    cm->saveChanges();
 
     this->_populate();
     QModelIndex in=_findItem(playlistPtr->playlistName());

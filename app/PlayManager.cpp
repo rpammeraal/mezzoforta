@@ -384,7 +384,7 @@ PlayManager::_loadRadio()
     while(qm->record(nextPlayedSongID++).value(1).toDate()==QDate(1900,1,1))
     {
     }
-    qDebug() << SB_DEBUG_INFO << nextPlayedSongID;
+    qDebug() << SB_DEBUG_INFO << maxNumberToRandomize << nextPlayedSongID;
 
     while(index<numPerformances)
     {
@@ -400,6 +400,7 @@ PlayManager::_loadRadio()
             for(int j=maxNumberAttempts;j && !found;j--)
             {
                 idx=Common::randomOldestFirst(maxNumberToRandomize);
+                qDebug() << SB_DEBUG_INFO << idx;
                 if(indexCovered.contains(idx)==0)
                 {
                     found=1;

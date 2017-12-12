@@ -61,6 +61,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     ProgressDialog::instance()->update("DataAccessLayer::executeBatch",progressCurrentValue,progressMaxValue);
 
     successFlag=db.transaction();
+    qDebug() << "BEGIN;";
     if(successFlag==1)
     {
         for(int i=0;i<allQueries.size() && successFlag==1;i++)
@@ -68,9 +69,10 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             q=allQueries.at(i);
             this->customize(q);
 
-            qDebug() << q;
+            qDebug().noquote() << q << ";";
 
             QSqlQuery runQuery(q,db);
+
             QSqlError e=runQuery.lastError();
             if(e.isValid() && ignoreErrorsFlag==0)
             {
@@ -83,17 +85,20 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
 
         if(successFlag==1 && commitFlag==1)
         {
+            qDebug() << "COMMIT;";
+            qDebug() << SB_DEBUG_INFO << "--	Attempté to committé";
             successFlag=db.commit();
-            qDebug() << SB_DEBUG_INFO << "Attempté to committé";
         }
         if((successFlag==0 || commitFlag==0 ) && (ignoreErrorsFlag==0))
         {
             r=db.lastError();
-            qDebug() << SB_DEBUG_INFO << "Rollback time";
+            qDebug() << SB_DEBUG_INFO << "--	Rollback time";
+            qDebug() << "ROLLBACK;";
             db.rollback();
         }
     }
     ProgressDialog::instance()->finishStep("DataAccessLayer::executeBatch");
+    qDebug() << "--	END OF BATCH;";
 
     if(successFlag==0 && ignoreErrorsFlag==0)
     {

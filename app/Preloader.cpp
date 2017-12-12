@@ -15,11 +15,11 @@ QMap<SBIDChartPerformancePtr,SBIDChartPtr>
 Preloader::chartItems(const SBIDBase& id)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDChartMgr* cmgr=cm->chartMgr();
-    SBIDChartPerformanceMgr* cpmgr=cm->chartPerformanceMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheChartMgr* cmgr=cm->chartMgr();
+    CacheChartPerformanceMgr* cpmgr=cm->chartPerformanceMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -145,7 +145,7 @@ Preloader::chartItems(const SBIDBase& id)
             key=SBIDChart::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                chartPtr=(cmgr->contains(key)? cmgr->retrieve(key,SBIDChartMgr::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
+                chartPtr=(cmgr->contains(key)? cmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
             }
         }
 
@@ -155,7 +155,7 @@ Preloader::chartItems(const SBIDBase& id)
             key=SBIDChartPerformance::createKey(queryList.value(4).toInt());
             if(key.length()>0)
             {
-                chartPerformancePtr=(cpmgr->contains(key)? cpmgr->retrieve(key,SBIDChartPerformanceMgr::open_flag_parentonly): _instantiateChartPerformance(cpmgr,chartPerformanceFields,queryList));
+                chartPerformancePtr=(cpmgr->contains(key)? cpmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateChartPerformance(cpmgr,chartPerformanceFields,queryList));
             }
         }
 
@@ -165,7 +165,7 @@ Preloader::chartItems(const SBIDBase& id)
             key=SBIDPerformer::createKey(queryList.value(9).toInt());
             if(key.length()>0)
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
@@ -175,7 +175,7 @@ Preloader::chartItems(const SBIDBase& id)
             key=SBIDSong::createKey(queryList.value(8).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
@@ -185,7 +185,7 @@ Preloader::chartItems(const SBIDBase& id)
             key=SBIDSongPerformance::createKey(queryList.value(5).toInt());
             if(key.length()>0)
             {
-                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
             }
         }
 
@@ -203,12 +203,12 @@ QVector<SBIDAlbumPerformancePtr>
 Preloader::albumPerformances(QString query)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -256,7 +256,7 @@ Preloader::albumPerformances(QString query)
             key=SBIDSong::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
@@ -266,7 +266,7 @@ Preloader::albumPerformances(QString query)
             key=SBIDAlbum::createKey(queryList.value(6).toInt());
             if(key.length()>0)
             {
-                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
             }
         }
 
@@ -276,7 +276,7 @@ Preloader::albumPerformances(QString query)
             key=SBIDPerformer::createKey(queryList.value(12).toInt());
             if(key.length()>0)
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
@@ -286,7 +286,7 @@ Preloader::albumPerformances(QString query)
             key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
             if(key.length()>0)
             {
-                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, Cache::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
             }
         }
 
@@ -297,7 +297,7 @@ Preloader::albumPerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
         }
 
@@ -308,7 +308,7 @@ Preloader::albumPerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
             }
         }
 
@@ -326,12 +326,12 @@ QVector<SBIDOnlinePerformancePtr>
 Preloader::onlinePerformances(QString query)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDOnlinePerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -379,7 +379,7 @@ Preloader::onlinePerformances(QString query)
             key=SBIDSong::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
@@ -389,7 +389,7 @@ Preloader::onlinePerformances(QString query)
             key=SBIDAlbum::createKey(queryList.value(6).toInt());
             if(key.length()>0)
             {
-                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
             }
         }
 
@@ -399,7 +399,7 @@ Preloader::onlinePerformances(QString query)
             key=SBIDPerformer::createKey(queryList.value(12).toInt());
             if(key.length()>0)
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
@@ -409,7 +409,7 @@ Preloader::onlinePerformances(QString query)
             key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
             if(key.length()>0)
             {
-                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, Cache::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
             }
         }
 
@@ -420,7 +420,7 @@ Preloader::onlinePerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
         }
 
@@ -431,7 +431,7 @@ Preloader::onlinePerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
             }
         }
 
@@ -449,11 +449,11 @@ QMap<int,SBIDAlbumPerformancePtr>
 Preloader::performanceMap(QString query)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QMap<int,SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -502,7 +502,7 @@ Preloader::performanceMap(QString query)
             key=SBIDSong::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
@@ -512,7 +512,7 @@ Preloader::performanceMap(QString query)
             key=SBIDAlbum::createKey(queryList.value(6).toInt());
             if(key.length()>0)
             {
-                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
             }
         }
 
@@ -522,7 +522,7 @@ Preloader::performanceMap(QString query)
             key=SBIDPerformer::createKey(queryList.value(12).toInt());
             if(key.length()>0)
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
@@ -533,7 +533,7 @@ Preloader::performanceMap(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
             }
         }
 
@@ -544,7 +544,7 @@ Preloader::performanceMap(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
         }
 
@@ -563,15 +563,15 @@ QMap<int,SBIDPlaylistDetailPtr>
 Preloader::playlistItems(int playlistID)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
-    SBIDChartMgr* cmgr=cm->chartMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
-    SBIDPlaylistMgr* plmgr=cm->playlistMgr();
-    SBIDPlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheChartMgr* cmgr=cm->chartMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CachePlaylistMgr* plmgr=cm->playlistMgr();
+    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    CacheSongMgr* smgr=cm->songMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
     QMap<int,SBIDPlaylistDetailPtr> items;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -747,28 +747,28 @@ Preloader::playlistItems(int playlistID)
         key=queryList.isNull(7)?QString():SBIDPerformer::createKey(queryList.value(7).toInt());
         if(key.length()>0)
         {
-            itemPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+            itemPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
         }
 
         //	Process album
         key=queryList.isNull(6)?QString():SBIDAlbum::createKey(queryList.value(6).toInt());
         if(key.length()>0)
         {
-            itemPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+            itemPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
         }
 
         //	Process chart
         key=queryList.isNull(5)?QString():SBIDChart::createKey(queryList.value(5).toInt());
         if(key.length()>0)
         {
-            itemPtr=(cmgr->contains(key)? cmgr->retrieve(key,SBIDChartMgr::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
+            itemPtr=(cmgr->contains(key)? cmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
         }
 
         //	Process playlist
         key=queryList.isNull(4)?QString():SBIDPlaylist::createKey(queryList.value(2).toInt());
         if(key.length()>0)
         {
-            itemPtr=(plmgr->contains(key)? plmgr->retrieve(key,SBIDPlaylistMgr::open_flag_parentonly): _instantiatePlaylist(plmgr,playlistFields,queryList));
+            itemPtr=(plmgr->contains(key)? plmgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePlaylist(plmgr,playlistFields,queryList));
         }
 
         //	Process performance
@@ -776,33 +776,33 @@ Preloader::playlistItems(int playlistID)
         key=queryList.isNull(3)?QString():SBIDSong::createKey(queryList.value(3).toInt());
         if(key.length()>0)
         {
-            (smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+            (smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
         }
 
         //	Load songPerformance in cache
         key=queryList.isNull(18)?QString():SBIDSongPerformance::createKey(queryList.value(18).toInt());
         if(key.length()>0)
         {
-            (spmgr->contains(key)? spmgr->retrieve(key,SBIDSongPerformanceMgr::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+            (spmgr->contains(key)? spmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
         }
 
         //	Load albumPerformance in cache
         key=queryList.isNull(21)?QString():SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
         if(key.length()>0)
         {
-            (apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+            (apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
         }
 
         //	Load onlinePerformance in cache
         key=queryList.isNull(3)?QString():SBIDOnlinePerformance::createKey(queryList.value(3).toInt());
         if(key.length()>0)
         {
-            itemPtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+            itemPtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
         }
 
         //	Load playlistDetail in cache
         key=queryList.isNull(0)?QString():SBIDPlaylistDetail::createKey(queryList.value(0).toInt());
-        SBIDPlaylistDetailPtr pdPtr=(pdmgr->contains(key)? pdmgr->retrieve(key,SBIDPlaylistDetailMgr::open_flag_parentonly): _instantiatePlaylistDetailInstance(pdmgr,playlistDetailFields,queryList));
+        SBIDPlaylistDetailPtr pdPtr=(pdmgr->contains(key)? pdmgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePlaylistDetailInstance(pdmgr,playlistDetailFields,queryList));
 
         if(pdPtr)
         {
@@ -813,7 +813,7 @@ Preloader::playlistItems(int playlistID)
                 //	Do after increment of playlistIndex
                 pdPtr->setPlaylistPosition(playlistIndex);	//	in case of data inconsistencies :)
                 pdmgr->setChanged(pdPtr);
-                pdmgr->commit(pdPtr,dal,Common::db_update);
+                cm->saveChanges();
             }
         }
         ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue++,progressMaxValue);
@@ -826,12 +826,12 @@ QVector<SBIDSongPerformancePtr>
 Preloader::songPerformances(QString query)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDAlbumMgr* amgr=cm->albumMgr();
-    SBIDPerformerMgr* pemgr=cm->performerMgr();
-    SBIDSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
-    SBIDAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
-    SBIDOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
-    SBIDSongMgr* smgr=cm->songMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
+    CachePerformerMgr* pemgr=cm->performerMgr();
+    CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CacheSongMgr* smgr=cm->songMgr();
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
     QVector<SBIDSongPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -879,7 +879,7 @@ Preloader::songPerformances(QString query)
             key=SBIDSong::createKey(queryList.value(0).toInt());
             if(key.length()>0)
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,SBIDSongMgr::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
@@ -889,7 +889,7 @@ Preloader::songPerformances(QString query)
             key=SBIDAlbum::createKey(queryList.value(6).toInt());
             if(key.length()>0)
             {
-                albumPtr=(amgr->contains(key)? amgr->retrieve(key,SBIDAlbumMgr::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+                albumPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
             }
         }
 
@@ -899,7 +899,7 @@ Preloader::songPerformances(QString query)
             key=SBIDPerformer::createKey(queryList.value(12).toInt());
             if(key.length()>0)
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,SBIDPerformerMgr::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
@@ -909,7 +909,7 @@ Preloader::songPerformances(QString query)
             key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
             if(key.length()>0)
             {
-                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, SBIDSongPerformanceMgr::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, Cache::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
             }
         }
 
@@ -920,7 +920,7 @@ Preloader::songPerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,SBIDAlbumPerformanceMgr::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
         }
 
@@ -931,7 +931,7 @@ Preloader::songPerformances(QString query)
             if(key.length()>0)
             {
                 //	checked on albumPerformanceID
-                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,SBIDOnlinePerformanceMgr::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
             }
         }
 
@@ -956,7 +956,7 @@ void
 Preloader::loadAllSongs()
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDSongMgr* mgr=cm->songMgr();
+    CacheSongMgr* mgr=cm->songMgr();
     QSqlQueryModel* qm=SBIDSong::retrieveSQL();
     SB_RETURN_VOID_IF_NULL(qm);
     for(int i=0;i<qm->rowCount();i++)
@@ -970,7 +970,7 @@ void
 Preloader::loadAllPerformers()
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    SBIDPerformerMgr* mgr=cm->performerMgr();
+    CachePerformerMgr* mgr=cm->performerMgr();
     QSqlQueryModel* qm=SBIDPerformer::retrieveSQL();
     SB_RETURN_VOID_IF_NULL(qm);
     for(int i=0;i<qm->rowCount();i++)
@@ -983,7 +983,7 @@ Preloader::loadAllPerformers()
 
 ///	Private methods
 SBIDAlbumPtr
-Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateAlbum(CacheAlbumMgr* amgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDAlbumPtr albumPtr=SBIDAlbum::instantiate(_populate(fields,queryList));
     amgr->addItem(albumPtr);
@@ -991,7 +991,7 @@ Preloader::_instantiateAlbum(SBIDAlbumMgr* amgr, const QStringList& fields, cons
 }
 
 SBIDChartPtr
-Preloader::_instantiateChart(SBIDChartMgr* cmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateChart(CacheChartMgr* cmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDChartPtr cPtr=SBIDChart::instantiate(_populate(fields,queryList));
     cmgr->addItem(cPtr);
@@ -999,7 +999,7 @@ Preloader::_instantiateChart(SBIDChartMgr* cmgr, const QStringList& fields, cons
 }
 
 SBIDChartPerformancePtr
-Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateChartPerformance(CacheChartPerformanceMgr* cpmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::instantiate(_populate(fields,queryList));
     cpmgr->addItem(cpPtr);
@@ -1007,7 +1007,7 @@ Preloader::_instantiateChartPerformance(SBIDChartPerformanceMgr* cpmgr, const QS
 }
 
 SBIDPlaylistPtr
-Preloader::_instantiatePlaylist(SBIDPlaylistMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
+Preloader::_instantiatePlaylist(CachePlaylistMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
 {
     SBIDPlaylistPtr pPtr=SBIDPlaylist::instantiate(_populate(fields,queryList));
     pdmgr->addItem(pPtr);
@@ -1015,7 +1015,7 @@ Preloader::_instantiatePlaylist(SBIDPlaylistMgr *pdmgr, const QStringList &field
 }
 
 SBIDPlaylistDetailPtr
-Preloader::_instantiatePlaylistDetailInstance(SBIDPlaylistDetailMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
+Preloader::_instantiatePlaylistDetailInstance(CachePlaylistDetailMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
 {
     SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::instantiate(_populate(fields,queryList));
     pdmgr->addItem(pdPtr);
@@ -1023,7 +1023,7 @@ Preloader::_instantiatePlaylistDetailInstance(SBIDPlaylistDetailMgr *pdmgr, cons
 }
 
 SBIDSongPerformancePtr
-Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateSongPerformance(CacheSongPerformanceMgr* spmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(_populate(fields,queryList));
     spmgr->addItem(performancePtr);
@@ -1031,7 +1031,7 @@ Preloader::_instantiateSongPerformance(SBIDSongPerformanceMgr* spmgr, const QStr
 }
 
 SBIDAlbumPerformancePtr
-Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateAlbumPerformance(CacheAlbumPerformanceMgr* apmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::instantiate(_populate(fields,queryList));
     apmgr->addItem(performancePtr);
@@ -1039,7 +1039,7 @@ Preloader::_instantiateAlbumPerformance(SBIDAlbumPerformanceMgr* apmgr, const QS
 }
 
 SBIDOnlinePerformancePtr
-Preloader::_instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* opmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateOnlinePerformance(CacheOnlinePerformanceMgr* opmgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::instantiate(_populate(fields,queryList));
     opmgr->addItem(performancePtr);
@@ -1047,7 +1047,7 @@ Preloader::_instantiateOnlinePerformance(SBIDOnlinePerformanceMgr* opmgr, const 
 }
 
 SBIDPerformerPtr
-Preloader::_instantiatePerformer(SBIDPerformerMgr* pemgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiatePerformer(CachePerformerMgr* pemgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     QSqlRecord r;
     QSqlField f;
@@ -1064,7 +1064,7 @@ Preloader::_instantiatePerformer(SBIDPerformerMgr* pemgr, const QStringList& fie
 }
 
 SBIDSongPtr
-Preloader::_instantiateSong(SBIDSongMgr* smgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateSong(CacheSongMgr* smgr, const QStringList& fields, const QSqlQuery& queryList)
 {
     QSqlRecord r;
     QSqlField f;

@@ -11,7 +11,7 @@
 #include "PlayerController.h"
 #include "PlayManager.h"
 #include "Properties.h"
-#include "SBIDManagerHelper.h"
+#include "CacheManagerHelper.h"
 #include "SBModelQueuedSongs.h"
 
 class BackgroundThread;
@@ -87,7 +87,7 @@ private:
     PlayManager _pm;
     Properties _p;
     SBModelQueuedSongs _mqs;
-    SBIDManagerHelper _mh;
+    CacheManagerHelper _mh;
     SearchItemModel* _sim;
     ScreenStack _st;
 

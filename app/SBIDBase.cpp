@@ -9,7 +9,7 @@
 #include "SBIDChartPerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
-#include "SBIDManagerTemplate.h"
+#include "CacheTemplate.h"
 #include "SBIDOnlinePerformance.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"

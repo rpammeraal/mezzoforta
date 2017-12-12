@@ -162,6 +162,16 @@ Controller::updateStatusBarText(const QString &s)
     statusBarResetTimer.setSingleShot(1);
 }
 
+void
+Controller::refreshPerformerCompleters()
+{
+    CompleterFactory* cf=Context::instance()->completerFactory();
+    MainWindow* mw=Context::instance()->getMainWindow();
+
+    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
+    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
+}
+
 //PROTECTED:
 
 //PRIVATE:
@@ -422,6 +432,25 @@ Controller::setupUI()
 
 
     qDebug() << SB_DEBUG_INFO << "playground start";
+    int max=100;
+    quint64 smallest=max;
+    quint64 biggest=0;
+    int maxBuckets=10;
+    QVector<int> v(maxBuckets);
+    for(int i=0; i<200000;i++)
+    {
+        quint64 x=Common::randomOldestFirst(max);
+        v[x/maxBuckets]++;
+        smallest=x<smallest?x:smallest;
+        biggest=x>biggest?x:biggest;
+    }
+    for(int i=0; i<v.length(); i++)
+    {
+        QString t=QString("*").repeated(v[i]/(max*maxBuckets));
+        qDebug() << SB_DEBUG_INFO << i << v[i] << t;
+    }
+    qDebug() << SB_DEBUG_INFO << smallest << biggest;
+
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }
@@ -531,8 +560,7 @@ Controller::setupModels()
     CompleterFactory* cf=Context::instance()->completerFactory();
 
     mw->ui.songEditTitle->setCompleter(cf->getCompleterSong());
-    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
-    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
+    refreshPerformerCompleters();
 
     n->resetAllFiltersAndSelections();
 

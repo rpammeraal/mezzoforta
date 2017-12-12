@@ -980,6 +980,13 @@ Between 20161215 and 20170604:
 20171207:
 -	Initial dev effort on edit song.
 
+20171211: Booyah! (courtesy of Susan Aiken - Live Below Zero).
+-	Need to restructure caches:
+    -	need to create a cachemanager.
+	-	individual commits needs to be moved to what is now commitAll
+	-	transaction based database update
+-	edit performer now works.
+
 CURRENT:
 *	Need to restructure caches:
     *	each SBIDObject needs to have a pointer to its manager

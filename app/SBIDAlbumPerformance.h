@@ -79,10 +79,10 @@ public:
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
 
-	//	Helper methods for SBIDManagerTemplate
+    //	Helper methods for CacheTemplate
 
 protected:
-    template <class T, class parentT> friend class SBIDManagerTemplate;
+    template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;  //	loads data
 
     SBIDAlbumPerformance();
