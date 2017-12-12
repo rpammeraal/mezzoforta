@@ -46,7 +46,6 @@ public:
     //SBSqlQueryModel* matchAlbum() const;
     inline QString notes() const { return _notes; }
     int numPerformances() const;
-    void processNewSongList(QVector<MusicLibrary::MLentityPtr>& songList);
     QStringList removeAlbum();	//	CWIP: amgr
     QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
     QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr

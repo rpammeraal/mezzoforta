@@ -372,6 +372,10 @@ SBTabSongEdit::_init()
 
         const MainWindow* mw=Context::instance()->getMainWindow();
 
+        //	Completers
+        CompleterFactory* cf=Context::instance()->completerFactory();
+        mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
+
         connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
                 this, SLOT(save()));
         connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),

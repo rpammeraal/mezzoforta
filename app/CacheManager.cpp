@@ -31,24 +31,15 @@ CacheManager::saveChanges()
     QStringList insertSQL;
     QStringList deleteSQL;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
-    bool performerCacheChangedFlag=0;
 
     QMapIterator<sb_cache_type,CachePtr> cIT(_cache);
     while(cIT.hasNext())
     {
         cIT.next();
-        sb_cache_type cache_type=cIT.key();
         CachePtr cPtr=cIT.value();
-        const int prevCount=insertSQL.count()+updateSQL.count()+deleteSQL.count();
         insertSQL.append(cPtr->retrieveChanges(Common::db_insert));
         updateSQL.append(cPtr->retrieveChanges(Common::db_update));
         deleteSQL.append(cPtr->retrieveChanges(Common::db_delete));
-
-        const int currCount=insertSQL.count()+updateSQL.count()+deleteSQL.count();
-        if(prevCount!=currCount)
-        {
-            performerCacheChangedFlag=(cache_type==sb_cache_performer?1:performerCacheChangedFlag);
-        }
     }
 
     QStringList SQL=updateSQL;
@@ -81,12 +72,6 @@ CacheManager::saveChanges()
     else
     {
         qDebug() << SB_DEBUG_INFO << "does NOT contain " << key;
-    }
-
-    if(performerCacheChangedFlag)
-    {
-        Controller* c=Context::instance()->getController();
-        c->refreshPerformerCompleters();
     }
 
     //	CWIP: remove when database is cached

@@ -42,6 +42,7 @@ private:
     virtual QTableView* _determineViewCurrentTab() const { return NULL; }
     void _init();
     virtual ScreenItem _populate(const ScreenItem& id);
+    void _refreshCompleters();
     void _setRelatedPerformerBeingAddedFlag(bool flag);
     void _setRelatedPerformerBeingDeletedFlag(bool flag);
 };

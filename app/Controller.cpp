@@ -162,16 +162,6 @@ Controller::updateStatusBarText(const QString &s)
     statusBarResetTimer.setSingleShot(1);
 }
 
-void
-Controller::refreshPerformerCompleters()
-{
-    CompleterFactory* cf=Context::instance()->completerFactory();
-    MainWindow* mw=Context::instance()->getMainWindow();
-
-    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
-    mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
-}
-
 //PROTECTED:
 
 //PRIVATE:
@@ -555,12 +545,6 @@ Controller::setupModels()
 
     SearchItemModel* sim=new SearchItemModel();
     Context::instance()->setSearchItemModel(sim);
-
-    //	Completers
-    CompleterFactory* cf=Context::instance()->completerFactory();
-
-    mw->ui.songEditTitle->setCompleter(cf->getCompleterSong());
-    refreshPerformerCompleters();
 
     n->resetAllFiltersAndSelections();
 

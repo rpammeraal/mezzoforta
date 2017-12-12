@@ -791,9 +791,9 @@ SBTabAlbumEdit::save() const
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
     bool albumMetaDataChangedFlag=0;
-    bool cancelSave=0;
     bool successFlag=0;
-    bool albumMergedFlag=0;
+    bool mergedFlag=0;
+    bool albumTitleChangedFlag=0;
     QVector<MusicLibrary::MLentityPtr> songList;               //	<position:1,SBIDSong:song>
 
     if(currentScreenItem.editFlag()==0)
@@ -811,6 +811,7 @@ SBTabAlbumEdit::save() const
     if(Common::removeAccents(Common::simplified(editAlbumTitle))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumTitle())))
     {
         albumMetaDataChangedFlag=1;
+        albumTitleChangedFlag=1;
     }
     else
     {
@@ -818,6 +819,7 @@ SBTabAlbumEdit::save() const
         {
             Common::toTitleCase(editAlbumTitle);
         }
+        albumTitleChangedFlag=1;
     }
 
     if(Common::removeAccents(Common::simplified(editAlbumPerformerName))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())))
@@ -838,100 +840,97 @@ SBTabAlbumEdit::save() const
     }
 
     //	B.	Create edited list on the album
-    if(!cancelSave)
+    QTableView* tv=mw->ui.albumEditSongList;
+    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+    songList=QVector<MusicLibrary::MLentityPtr>();
+    for(int i=0;i<aem->rowCount();i++)
     {
-        QTableView* tv=mw->ui.albumEditSongList;
-        AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
-        songList=QVector<MusicLibrary::MLentityPtr>();
-        for(int i=0;i<aem->rowCount();i++)
+        MusicLibrary::MLentity editedSong;
+        QStandardItem* item;
+
+        //	File attributes: none
+        //	Primary meta data attributes
+        item=aem->item(i,AlbumEditModel::sb_column_itemnumber);
+        if(item)
         {
-            MusicLibrary::MLentity editedSong;
-            QStandardItem* item;
-
-            //	File attributes: none
-            //	Primary meta data attributes
-            item=aem->item(i,AlbumEditModel::sb_column_itemnumber);
-            if(item)
-            {
-                editedSong.albumPosition=item->text().toInt();
-            }
-            int orgAlbumPosition=editedSong.albumPosition;
-            item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
-            if(item)
-            {
-                orgAlbumPosition=item->text().toInt();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_performername);
-            if(item)
-            {
-                editedSong.songPerformerName=item->text();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_songtitle);
-            if(item)
-            {
-                editedSong.songTitle=item->text();
-            }
-
-            //	Secondary meta data attributes
-            item=aem->item(i,AlbumEditModel::sb_column_notes);
-            if(item)
-            {
-                editedSong.notes=item->text();
-            }
-            editedSong.year=orgAlbumPtr->year();
-
-            //	Album edit
-            item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
-            if(item)
-            {
-                editedSong.orgAlbumPosition=item->text().toInt();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_deleteflag);
-            if(item)
-            {
-                editedSong.removedFlag=item->text().toInt();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_newflag);
-            if(item)
-            {
-                editedSong.newFlag=item->text().toInt();
-            }
-
-            //	Songbase ids
-            item=aem->item(i,AlbumEditModel::sb_column_orgsongid);
-            if(item)
-            {
-                editedSong.songID=item->text().toInt();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
-            if(item)
-            {
-                editedSong.albumPerformanceID=item->text().toInt();
-            }
-            editedSong.albumID=orgAlbumPtr->albumID();
-
-            //	Helper attributes
-            item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
-            if(item)
-            {
-                editedSong.ID=item->text().toInt();
-            }
-
-            item=aem->item(i,AlbumEditModel::sb_column_newflag);
-            if(item)
-            {
-                editedSong.newFlag=item->text().toInt();
-            }
-
-            editedSong.absoluteParentDirectoryPath="current";
-            MusicLibrary::MLentityPtr entityPtr=std::make_shared<MusicLibrary::MLentity>(editedSong);
-            songList.append(entityPtr);
+            editedSong.albumPosition=item->text().toInt();
         }
+        int orgAlbumPosition=editedSong.albumPosition;
+        item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
+        if(item)
+        {
+            orgAlbumPosition=item->text().toInt();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_performername);
+        if(item)
+        {
+            editedSong.songPerformerName=item->text();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_songtitle);
+        if(item)
+        {
+            editedSong.songTitle=item->text();
+        }
+
+        //	Secondary meta data attributes
+        item=aem->item(i,AlbumEditModel::sb_column_notes);
+        if(item)
+        {
+            editedSong.notes=item->text();
+        }
+        editedSong.year=orgAlbumPtr->year();
+
+        //	Album edit
+        item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
+        if(item)
+        {
+            editedSong.orgAlbumPosition=item->text().toInt();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_deleteflag);
+        if(item)
+        {
+            editedSong.removedFlag=item->text().toInt();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_newflag);
+        if(item)
+        {
+            editedSong.newFlag=item->text().toInt();
+        }
+
+        //	Songbase ids
+        item=aem->item(i,AlbumEditModel::sb_column_orgsongid);
+        if(item)
+        {
+            editedSong.songID=item->text().toInt();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
+        if(item)
+        {
+            editedSong.albumPerformanceID=item->text().toInt();
+        }
+        editedSong.albumID=orgAlbumPtr->albumID();
+
+        //	Helper attributes
+        item=aem->item(i,AlbumEditModel::sb_column_orgalbumperformanceid);
+        if(item)
+        {
+            editedSong.ID=item->text().toInt();
+        }
+
+        item=aem->item(i,AlbumEditModel::sb_column_newflag);
+        if(item)
+        {
+            editedSong.newFlag=item->text().toInt();
+        }
+
+        editedSong.absoluteParentDirectoryPath="current";
+        MusicLibrary::MLentityPtr entityPtr=std::make_shared<MusicLibrary::MLentity>(editedSong);
+        songList.append(entityPtr);
     }
     qDebug() << SB_DEBUG_INFO << songList.count();
 
@@ -985,9 +984,9 @@ SBTabAlbumEdit::save() const
     ProgressDialog::instance()->show("Validating","MusicLibrary::rescanMusicLibrary_scan",1);
     MusicLibrary ml;
     ProgressDialog::instance()->hide();
-    if(!cancelSave && !ml.validateEntityList(songList,directory2AlbumPathMap))
+    if(!ml.validateEntityList(songList,directory2AlbumPathMap))
     {
-        cancelSave=1;
+        return;
     }
 
 
@@ -1044,7 +1043,6 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_ERROR << "NO ALBUM FOUND";
         return;
     }
-
 
     //	Process updates in album performances
 
@@ -1121,32 +1119,43 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO << "MERGÉÉ!";
         SBIDAlbumPtr fromPtr=orgAlbumPtr;
         amgr->merge(fromPtr,newAlbumPtr);
-        albumMergedFlag=1;
+        mergedFlag=1;
     }
 
-    if(!cancelSave)
+    //	E.	Commit changes
+    successFlag=cm->saveChanges();
+
+    if(successFlag)
     {
-        //	E.	Throw to SBIDAlbum for saving to database.
-        qDebug() << SB_DEBUG_INFO;
-        newAlbumPtr->processNewSongList(songList);
+        //	Update screenstack, display notice, etc.
+        QString updateText=QString("Saved album %1%2%3.")
+            .arg(QChar(96))      //	1
+            .arg(newAlbumPtr->albumTitle())	//	2
+            .arg(QChar(180));    //	3
+        Context::instance()->getController()->updateStatusBarText(updateText);
 
-        //	F.	Commit all
-        qDebug() << SB_DEBUG_INFO;
-        cm->saveChanges();
+        //	Update screenstack
+        currentScreenItem.setEditFlag(0);
+        Context::instance()->getScreenStack()->updateSBIDInStack(currentScreenItem);
 
-        //	G.	Tell screenstack to update any entry pointing to
-        if(albumMergedFlag)
+        if(mergedFlag)
         {
-            ScreenStack* st=Context::instance()->getScreenStack();
-            SB_RETURN_VOID_IF_NULL(st);
+            mw->ui.tabAllSongs->preload();
 
+            ScreenStack* st=Context::instance()->getScreenStack();
+
+            newAlbumPtr->refreshDependents(0,1);
             ScreenItem from(orgAlbumPtr);
             ScreenItem to(newAlbumPtr);
             st->replace(from,to);
         }
-    }
 
-    if(cancelSave || !successFlag)
+        if(mergedFlag || albumTitleChangedFlag)
+        {
+            mw->ui.tabAllSongs->preload();
+        }
+    }
+    else
     {
         qDebug() << SB_DEBUG_INFO;
         dal->restore(restorePoint);
@@ -1155,8 +1164,6 @@ SBTabAlbumEdit::save() const
     //	G.	Close screen
     qDebug() << SB_DEBUG_INFO << successFlag;
     Context::instance()->getNavigator()->closeCurrentTab(1);
-
-    return;
 }
 
 
@@ -1252,6 +1259,7 @@ SBTabAlbumEdit::_init()
         connect(mw->ui.pbAlbumEditCancel, SIGNAL(clicked(bool)),
                 Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
 
+        //	Completers
         CompleterFactory* cf=Context::instance()->completerFactory();
         mw->ui.albumEditTitle->setCompleter(cf->getCompleterAlbum());
         mw->ui.albumEditPerformer->setCompleter(cf->getCompleterPerformer());

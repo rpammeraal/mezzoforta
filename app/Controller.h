@@ -58,9 +58,6 @@ public slots:
     //	General UI
     void updateStatusBarText(const QString &s);
 
-    //	Refresh completers
-    void refreshPerformerCompleters();
-
 protected:
 
 private:

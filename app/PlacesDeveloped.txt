@@ -987,6 +987,10 @@ Between 20161215 and 20170604:
 	-	transaction based database update
 -	edit performer now works.
 
+20171212:
+-	edit album works.
+-	restructured edit album/edit performer to look like eachother
+
 CURRENT:
 *	Need to restructure caches:
     *	each SBIDObject needs to have a pointer to its manager
@@ -996,6 +1000,8 @@ CURRENT:
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
+	save method in SBTabAlbumEdit, SBTabPerformerEdit, SBTabSongEdit use different ways to find out if title/name/etc has changed
+*	when schema is changed, search (et al) is not updated
 
 Bugs that need to be fixed:
 *	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
