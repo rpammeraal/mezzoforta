@@ -295,7 +295,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
-    qDebug() << SB_DEBUG_INFO << si.ptr()->itemType();
+    qDebug() << SB_DEBUG_INFO << si.ptr()->itemType() << si.ptr()->itemID();
     if(si.ptr())
     {
         if(si.ptr()->itemType()==SBIDBase::sb_type_song)
@@ -328,6 +328,8 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         qDebug() << SB_DEBUG_ERROR << "Unknown item.";
         return ScreenItem();
     }
+    qDebug() << SB_DEBUG_INFO << songPtr->text();
+    qDebug() << SB_DEBUG_INFO << songPtr->genericDescription();
 
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).

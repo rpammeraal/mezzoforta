@@ -343,6 +343,7 @@ Navigator::removeFromScreenStack(const SBIDPtr& ptr)
     st->removeScreen(ptr);
 
     //	Activate the current screen
+    qDebug() << SB_DEBUG_INFO;
     _activateScreen();
 }
 
@@ -427,6 +428,7 @@ Navigator::closeCurrentTab(bool forcedFlag)
         if(tab->editTabFlag())
         {
             st->removeCurrentScreen();
+    qDebug() << SB_DEBUG_INFO;
             _activateScreen();
         }
         else
@@ -676,11 +678,13 @@ Navigator::_activateScreen()
     {
         if(ptr)
         {
+            qDebug() << SB_DEBUG_INFO << ptr->genericDescription();
             ptr->refreshDependents(1,0);
         }
 
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
+        qDebug() << SB_DEBUG_INFO;
         si=tab->populate(si);
     }
     else
@@ -841,6 +845,7 @@ Navigator::_moveFocusToScreen(int direction)
     {
         si=st->previousScreen();
     }
+    qDebug() << SB_DEBUG_INFO;
     _activateScreen();
 }
 

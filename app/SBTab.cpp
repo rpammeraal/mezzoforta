@@ -52,6 +52,7 @@ SBTab::refreshTabIfCurrent(const SBIDPtr& ptr)
 
     if(si.ptr() && ptr && si.ptr()->key()==ptr->key())
     {
+        qDebug() << SB_DEBUG_INFO;
         populate(si);
     }
 }
@@ -109,6 +110,7 @@ SBTab::populate(const ScreenItem& si)
     _populatePre(si);
     const ScreenItem& onStack=currentScreenItem(); //Context::instance()->getScreenStack()->currentScreen();
 
+    qDebug() << SB_DEBUG_INFO;
     ScreenItem result=_populate(si);
     if(result.screenType()!=ScreenItem::screen_type_invalid)
     {
@@ -427,10 +429,12 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
                 qDebug() << SB_DEBUG_INFO << "######################################################################";
                 qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
                 ptr=m->determineSBID(idy);
+                qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
             }
         }
         if(ptr)
         {
+            qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
             Context::instance()->getNavigator()->openScreen(ptr);
         }
         else

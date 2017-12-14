@@ -30,7 +30,7 @@ SBIDSongPerformance::iconResourceLocation() const
 int
 SBIDSongPerformance::itemID() const
 {
-    return songID();
+    return songPerformanceID();
 }
 
 SBIDBase::sb_type

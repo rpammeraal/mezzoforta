@@ -1000,9 +1000,10 @@ Between 20161215 and 20170604:
 	-	each SBIDObject needs to have a pointer to its manager
 	-	individual commits needs to be moved to what is now commitAll
 -	examine all dynamic_casts
+-	Open any artist, mismatch on opened song.
 
 CURRENT:
-*	Open any artist, mismatch on opened song.
+*	Edit song, different song shows up.
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
@@ -1011,6 +1012,10 @@ CURRENT:
 *	test ability to assign to playlist from all screens
 *	test ability to play from all screens
 *	See if SBIDBase ctors can be made private
+*	Add dialogbox to save operations.
+*	Preload all caches
+    *	AllSongs tab to not use SQL
+	*	SearchItem to not use SQL
 
 Bugs that need to be fixed:
 *	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
@@ -1024,10 +1029,6 @@ Bugs that need to be fixed:
 * 	Show window with songs to be imported.
 *	Weird stuff happens when an item is removed from 'Songs In Queue'.
 *	Rene Froger, Winter In America in songlist shows year as 1978. Should be 1988.
-
-Todo:
-*	Edit.
-*	Import.
 
 Enhancements:
 *	SBIDPlaylist::_getAllItemsByPlaylistRecursive: need to be based on _items instead of querying database.

@@ -70,7 +70,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if(header=="sb_item_key")
             {
+                qDebug() << SB_DEBUG_INFO << v.toString();
                 ptr=SBIDBase::createPtr(v.toString(),1);
+                qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
                 return ptr;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
@@ -99,6 +101,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
             {
+                qDebug() << SB_DEBUG_INFO << itemType,itemID;
                 ptr=SBIDBase::createPtr(itemType,itemID,1);
                 return ptr;
             }
@@ -115,6 +118,7 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if((!ptr) && key.length())
         {
+            qDebug() << SB_DEBUG_INFO << key;
             ptr=SBIDBase::createPtr(key,1);
             return ptr;
         }
@@ -147,10 +151,12 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
         {
+            qDebug() << SB_DEBUG_INFO << itemType << itemID;
             ptr=SBIDBase::createPtr(itemType,itemID,1);
             return ptr;
         }
     }
+    qDebug() << SB_DEBUG_INFO;
     return ptr;
 }
 

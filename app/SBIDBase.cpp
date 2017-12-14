@@ -97,6 +97,10 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
     {
         qDebug() << SB_DEBUG_NPTR;
     }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID() << ptr->genericDescription();
+    }
     return ptr;
 }
 
