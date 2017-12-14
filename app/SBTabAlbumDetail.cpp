@@ -261,7 +261,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     SBIDAlbumPtr aPtr;
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_album)
     {
-        aPtr=std::dynamic_pointer_cast<SBIDAlbum>(si.ptr());
+        aPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
     }
     if(!aPtr)
     {

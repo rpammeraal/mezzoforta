@@ -33,7 +33,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
     SBTabChooser::PlaylistItem selected=_getSelectedItem(mw->ui.playlistDetailSongList->model(),_lastClickedIndex);
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.playlistPosition>=0)
     {
-        SBIDPlaylistPtr playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
+        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
         if(playlistPtr)
         {
             bool successFlag=playlistPtr->removePlaylistItem(selected.playlistPosition);
@@ -84,8 +84,8 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromPtr, int row)
 
     if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
     {
-        SBIDPlaylistPtr pPtr=std::dynamic_pointer_cast<SBIDPlaylist>(ptr);
-        SBIDPlaylistDetailPtr pdPtr=std::dynamic_pointer_cast<SBIDPlaylistDetail>(fromPtr);
+        SBIDPlaylistPtr pPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
+        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(fromPtr->itemID());
         if(pPtr && pdPtr)
         {
             bool successFlag=pPtr->moveItem(pdPtr,row);
@@ -193,7 +193,7 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
     {
-        playlistPtr=std::dynamic_pointer_cast<SBIDPlaylist>(si.ptr());
+        playlistPtr=SBIDPlaylist::retrievePlaylist(si.ptr()->itemID());
     }
 
     if(!playlistPtr)

@@ -81,7 +81,8 @@ HEADERS     = \
     SearchItemModel.h \
     CacheManager.h \
     CacheTemplate.h \
-    CacheManagerHelper.h
+    CacheManagerHelper.h \
+    Cache.h
 
 SOURCES     = \
     main.cpp \
@@ -163,7 +164,8 @@ SOURCES     = \
     SBIDPlaylistDetail.cpp \
     SearchItemModel.cpp \
     CacheManager.cpp \
-    CacheManagerHelper.cpp
+    CacheManagerHelper.cpp \
+    Cache.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

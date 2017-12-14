@@ -94,7 +94,8 @@ Navigator::openScreen(const SBIDPtr &ptr)
 
     if(ptr->itemType()==SBIDBase::sb_type_playlist_detail)
     {
-        p=std::dynamic_pointer_cast<SBIDPlaylistDetail>(ptr)->ptr();
+        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(ptr->itemID());
+        p=pdPtr->ptr();
     }
     else
     {

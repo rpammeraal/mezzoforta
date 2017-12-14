@@ -10,12 +10,14 @@
 #include <QStandardItem>
 
 #include "Common.h"
-#include "SBDuration.h"
 
 class SBSqlQueryModel;
 
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDPtr;
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDBasePtr;
+
+
+class Cache;
 
 class SBIDAlbum;            typedef std::shared_ptr<SBIDAlbum>             SBIDAlbumPtr;
 class SBIDAlbumPerformance; typedef std::shared_ptr<SBIDAlbumPerformance>  SBIDAlbumPerformancePtr;
@@ -120,15 +122,15 @@ protected:
     //	Tertiary identifiers (navigation et al)
     QString     _errorMsg;
 
-    //	Used by SBIDManager
+    //	Used by CacheManager
     bool        _deletedFlag;	//	CWIP: move to private
     int         _mergedWithID;	//	CWIP: move to private
 
-    //	Used by SBIDManager*:: and SBID*:: classes
+    //	Used by CacheManager and SBID*:: classes
     virtual void clearChangedFlag();
     virtual void rollback();
-    inline void setChangedFlag() { _changedFlag=1; }
-    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); qDebug() << SB_DEBUG_INFO << this->key() << this->ID(); }
+    void setChangedFlag();
+    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
     inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;
 
@@ -140,6 +142,7 @@ private:
     int         _sb_model_position;
     QString     _url;	//	any item may have an url
     QString     _wiki;	//	any item may have an wiki page
+    Cache*      _owningCache;
 
     void _init();
 };

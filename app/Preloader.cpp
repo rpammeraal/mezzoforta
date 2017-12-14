@@ -812,7 +812,6 @@ Preloader::playlistItems(int playlistID)
                 //	playlistIndex is 0 based, playlistPosition is 1 based
                 //	Do after increment of playlistIndex
                 pdPtr->setPlaylistPosition(playlistIndex);	//	in case of data inconsistencies :)
-                pdmgr->setChanged(pdPtr);
                 cm->saveChanges();
             }
         }

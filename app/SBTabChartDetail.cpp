@@ -104,7 +104,7 @@ SBTabChartDetail::_populate(const ScreenItem& si)
     //	Get detail
     if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_chart)
     {
-        cPtr=std::dynamic_pointer_cast<SBIDChart>(si.ptr());
+        cPtr=SBIDChart::retrieveChart(si.ptr()->itemID());
     }
 
     if(!cPtr)

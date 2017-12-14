@@ -1093,8 +1093,6 @@ void
 SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
 {
     qDebug() << SB_DEBUG_INFO << ID() << "Removing id " << spPtr->songPerformanceID();
-    CacheManager* cm=Context::instance()->cacheManager();
-    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
 
     if(_songPerformances.contains(spPtr->songPerformerID()))
     {
@@ -1102,7 +1100,6 @@ SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
         _songPerformances.remove(spPtr->songPerformerID());
     }
     spPtr->setDeletedFlag();
-    spMgr->setChanged(spPtr);
 }
 
 ///	Pointers
@@ -1436,7 +1433,6 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
             _songPerformances[performerID]=spPtr;
 
         }
-        spMgr->setChanged(spPtr);
     }
 
     //	Lyrics
@@ -1574,7 +1570,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
                 if(selected)
                 {
                     //	Existing song is choosen
-                    found=std::dynamic_pointer_cast<SBIDSong>(selected);
+                    found=SBIDSong::retrieveSong(selected->itemID());
                     found->refreshDependents();
                     result=Common::result_exists;
                 }

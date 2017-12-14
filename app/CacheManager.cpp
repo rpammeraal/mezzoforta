@@ -20,14 +20,14 @@ CacheManager::clearAllCaches()
     {
         cIT.next();
         CachePtr cPtr=cIT.value();
-        cPtr->clear();
+        cPtr->clearCache();
     }
 }
 
 void
 CacheManager::debugShowChanges(const QString &title)
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << title;
     QMapIterator<sb_cache_type,CachePtr> cIT(_cache); while(cIT.hasNext())
     {
         cIT.next();

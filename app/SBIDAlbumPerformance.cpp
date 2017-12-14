@@ -631,7 +631,6 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
         if(opPtr)
         {
             opPtr->setAlbumPerformanceID(this->albumPerformanceID());
-            opmgr->setChanged(opPtr);
         }
     }
 
@@ -648,7 +647,6 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
         if(spPtr)
         {
             spPtr->setPreferredAlbumPerformanceID(this->albumPerformanceID());
-            smgr->setChanged(spPtr);
         }
     }
 }

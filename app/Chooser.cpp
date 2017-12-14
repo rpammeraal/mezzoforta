@@ -201,7 +201,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
             {
                 //	Check for self assignment
-                fromPtr=std::dynamic_pointer_cast<SBIDPlaylist>(toBeAssignedToPtr);
+                fromPtr=SBIDPlaylist::retrievePlaylist(toBeAssignedToPtr->itemID());
                 if(fromPtr->key()==playlistPtr->key())
                 {
                     QMessageBox mb;
@@ -214,7 +214,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
             {
                 //	Check for multiple performances
-                SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(toBeAssignedToPtr);
+                SBIDSongPtr songPtr=SBIDSong::retrieveSong(toBeAssignedToPtr->itemID());
                 fromPtr=SBTabSongDetail::selectOnlinePerformanceFromSong(songPtr);
             }
             else

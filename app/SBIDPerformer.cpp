@@ -642,7 +642,6 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     refreshDependents(0,0);
 
     CacheManager* cm=Context::instance()->cacheManager();
-    CachePerformerMgr* peMgr=cm->performerMgr();
 
     //	Merge related performers
     QVectorIterator<SBIDPerformerPtr> it(pPtrFrom->relatedPerformers());
@@ -657,7 +656,6 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
         //	Each related performer of the mergee needs to be known
         //	that its related performer (the mergee) is now (*this).
         pPtr->_mergeRelatedPerformer(pPtrFrom->key(),this->key());
-        peMgr->setChanged(pPtr);
     }
 
     //	Remove pPtrFrom from related performers, as to avoid referring
@@ -668,23 +666,19 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     }
 
     //	Merge albums
-    CacheAlbumMgr* aMgr=cm->albumMgr();
     QVectorIterator<SBIDAlbumPtr> albumListIT(pPtrFrom->albumList());
     while(albumListIT.hasNext())
     {
         SBIDAlbumPtr aPtr=albumListIT.next();
         aPtr->setAlbumPerformerID(this->performerID());
-        aMgr->setChanged(aPtr);
     }
 
     //	Merge song performances
-    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     QVectorIterator<SBIDSongPerformancePtr> spIT(pPtrFrom->songPerformances());
     while(spIT.hasNext())
     {
         SBIDSongPerformancePtr spPtr=spIT.next();
         spPtr->setSongPerformerID(this->performerID());
-        spMgr->setChanged(spPtr);
     }
 
     //	Merge playlist items
@@ -700,7 +694,6 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
         if(pdPtr)
         {
             pdPtr->setPerformerID(this->performerID());
-            pdMgr->setChanged(pdPtr);
         }
     }
 }

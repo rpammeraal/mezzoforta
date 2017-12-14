@@ -211,7 +211,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 
                     if(_currentPtr->itemType()==SBIDBase::sb_type_album)
                     {
-                        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+                        SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(_currentPtr->itemID());
                         if(Common::simplified(albumPtr->albumTitle())==Common::simplified(albumTitle) &&
                             Common::simplified(albumPtr->albumPerformerName())==Common::simplified(albumPerformerName))
                         {
@@ -242,7 +242,7 @@ ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
     qDebug() << SB_DEBUG_INFO;
     if(_currentPtr->itemType()==SBIDBase::sb_type_album)
     {
-        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+        SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(_currentPtr->itemID());
         QString matchAlbumName=Common::removeNonAlphanumeric(albumPtr->albumTitle()).toLower();
         QString foundAlbumName;
         _allReviews.clear();
@@ -654,7 +654,7 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
                                 }
                                 else if(e.attribute("type")=="official homepage" && _performerHomepageRetrievedFlag==0)
                                 {
-                                    SBIDPerformerPtr ptr=std::dynamic_pointer_cast<SBIDPerformer>(_currentPtr);
+                                    SBIDPerformerPtr ptr=SBIDPerformer::retrievePerformer(_currentPtr->itemID());
 
                                     ptr->setURL(e.text());
                                     _currentPtr=ptr;
@@ -704,7 +704,7 @@ ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
 {
     if(_currentPtr->itemType()==SBIDBase::sb_type_song)
     {
-        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(_currentPtr);
+        SBIDSongPtr songPtr=SBIDSong::retrieveSong(_currentPtr->itemID());
         QString matchSongName=Common::removeNonAlphanumeric(songPtr->songTitle()).toLower();
         QString foundSongName;
         int index=0;
@@ -945,7 +945,7 @@ ExternalData::_getMBIDAndMore()
         }
         else if(_currentPtr->itemType()==SBIDBase::sb_type_album)
         {
-            SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(_currentPtr);
+            SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(_currentPtr->itemID());
 
             //	1.	Artwork
             if(_artworkRetrievedFlag==0)

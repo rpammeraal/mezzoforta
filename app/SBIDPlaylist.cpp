@@ -242,7 +242,6 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
     }
 
     CacheManager* cm=Context::instance()->cacheManager();
-    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     for(int i=0;i<_items.count();i++)
     {
         SBIDPlaylistDetailPtr pdPtr=_items[i];
@@ -259,7 +258,6 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
                          << "new position=" << i+1
                 ;
                 pdPtr->setPlaylistPosition(i+1);
-                pdmgr->setChanged(pdPtr);
             }
         }
         else
@@ -467,8 +465,6 @@ SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
 bool
 SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
 {
-    CacheManager* cm=Context::instance()->cacheManager();
-    CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
     toPosition=fromPosition<toPosition?toPosition-1:toPosition;
 
     if(fromPosition==toPosition)
@@ -501,7 +497,6 @@ SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
             //	playlistIndex is 0 based, playlistPosition is 1 based
             //	Do after increment of playlistIndex
             pdPtr->setPlaylistPosition(i+1);
-            pdmgr->setChanged(pdPtr);
         }
     }
     return 1;

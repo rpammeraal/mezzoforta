@@ -69,7 +69,7 @@ SBTabSongDetail::selectOnlinePerformanceFromSong(SBIDSongPtr& songPtr)
 
         ssa->exec();
         SBIDPtr ptr=ssa->getSelected();
-        opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(ptr);
+        opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(ptr->itemID());
     }
     return opPtr;
 }
@@ -91,7 +91,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     if(!selectPtr)
     {
         //	Context menu from SBLabel is clicked
-        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(currentScreenItem().ptr());
+        SBIDSongPtr songPtr=SBIDSong::retrieveSong(currentScreenItem().ptr()->itemID());
 
         selectPtr=selectOnlinePerformanceFromSong(songPtr);
     }
@@ -300,21 +300,21 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     {
         if(si.ptr()->itemType()==SBIDBase::sb_type_song)
         {
-            songPtr=std::dynamic_pointer_cast<SBIDSong>(si.ptr());
+            songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
         }
         else if(si.ptr()->itemType()==SBIDBase::sb_type_album_performance)
         {
-            SBIDAlbumPerformancePtr apPtr=std::dynamic_pointer_cast<SBIDAlbumPerformance>(si.ptr());
+            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(si.ptr()->itemID());
             songPtr=apPtr->songPtr();
         }
         else if(si.ptr()->itemType()==SBIDBase::sb_type_online_performance)
         {
-            SBIDOnlinePerformancePtr opPtr=std::dynamic_pointer_cast<SBIDOnlinePerformance>(si.ptr());
+            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(si.ptr()->itemID());
             songPtr=opPtr->songPtr();
         }
         else if(si.ptr()->itemType()==SBIDBase::sb_type_song_performance)
         {
-            SBIDSongPerformancePtr opPtr=std::dynamic_pointer_cast<SBIDSongPerformance>(si.ptr());
+            SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(si.ptr()->itemID());
             songPtr=opPtr->songPtr();
         }
         else

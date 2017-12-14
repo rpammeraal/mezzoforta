@@ -32,12 +32,12 @@ SBIDBase::SBIDBase(const SBIDBase &c)
 
     _changedFlag=c._changedFlag;
     _id=-2;	//	do NOT copy -- identifies copy
-    //_newFlag=c._newFlag;
     _sb_item_type=c._sb_item_type;
     _sb_mbid=c._sb_mbid;
     _sb_model_position=c._sb_model_position;
     _url=c._url;
     _wiki=c._wiki;
+    _owningCache=NULL;	//	do NOT copy -- identifies copy
 }
 
 SBIDBase::~SBIDBase()
@@ -229,6 +229,14 @@ void
 SBIDBase::rollback()
 {
     clearChangedFlag();
+}
+
+void
+SBIDBase::setChangedFlag()
+{
+    _changedFlag=1;
+    SB_RETURN_VOID_IF_NULL(_owningCache);
+    _owningCache->addChangedKey(this->key());
 }
 
 ///	PRIVATE

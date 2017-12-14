@@ -450,7 +450,7 @@ SBTabAlbumEdit::hasEdits() const
 
     if(ptr->itemType()==SBIDBase::sb_type_album)
     {
-        SBIDAlbumPtr albumPtr=std::dynamic_pointer_cast<SBIDAlbum>(ptr);
+        SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(ptr->itemID());
 
         if(_hasChanges ||
             albumPtr->albumTitle()!=mw->ui.albumEditTitle->text() ||
@@ -786,7 +786,6 @@ SBTabAlbumEdit::save() const
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
@@ -1076,7 +1075,6 @@ SBTabAlbumEdit::save() const
                          << "to" << ePtr->songTitle
                 ;
                 apPtr->setAlbumPosition(ePtr->albumPosition);
-                apmgr->setChanged(apPtr);
 
                 qDebug() << SB_DEBUG_INFO
                          << apPtr->albumPerformanceID()
@@ -1086,7 +1084,6 @@ SBTabAlbumEdit::save() const
             if(ePtr->notes!=apPtr->notes())
             {
                 apPtr->setNotes(ePtr->notes);
-                apmgr->setChanged(apPtr);
             }
         }
     }
@@ -1110,7 +1107,6 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO << editAlbumTitle;
         qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
         qDebug() << SB_DEBUG_INFO << newAlbumPtr->changedFlag();
-        amgr->setChanged(newAlbumPtr);
     }
     else
     {

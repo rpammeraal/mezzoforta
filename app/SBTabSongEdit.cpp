@@ -28,7 +28,7 @@ SBTabSongEdit::hasEdits() const
 
     if(ptr->itemType()==SBIDBase::sb_type_song)
     {
-        SBIDSongPtr songPtr=std::dynamic_pointer_cast<SBIDSong>(ptr);
+        SBIDSongPtr songPtr=SBIDSong::retrieveSong(ptr->itemID());
         if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
             songPtr->songOriginalPerformerName()!=mw->ui.songEditPerformerName->text() ||
             songPtr->songOriginalYear()!=mw->ui.songEditYearOfRelease->text().toInt() ||
@@ -137,7 +137,6 @@ SBTabSongEdit::save() const
             qDebug() << SB_DEBUG_INFO << orgSongPtr->songTitle();
             //	Take care of simple case changes
             newSongPtr->setSongTitle(editTitle);
-            sMgr->setChanged(newSongPtr);
             simpleTitleChangedFlag=1;
             songTitleChangedFlag=1;
         }
@@ -146,14 +145,12 @@ SBTabSongEdit::save() const
     if(editYearOfRelease!=orgSpPtr->year())
     {
         orgSpPtr->setYear(editYearOfRelease);
-        spMgr->setChanged(orgSpPtr);
     }
     if(editNotes!=orgSongPtr->notes() ||
         editLyrics!=orgSongPtr->lyrics())
     {
         newSongPtr->setNotes(editNotes);
         newSongPtr->setLyrics(editLyrics);
-        sMgr->setChanged(newSongPtr);
     }
 
     if(simpleTitleChangedFlag==0 && editTitle!=orgSongPtr->songTitle())
@@ -193,7 +190,6 @@ SBTabSongEdit::save() const
             p.year=orgSpPtr->year();
             newSpPtr=spMgr->createInDB(p);
             newSongPtr->addSongPerformance(newSpPtr);
-            sMgr->setChanged(newSongPtr);
         }
         else if(songTitleChangedFlag==0)
         {
@@ -210,14 +206,12 @@ SBTabSongEdit::save() const
                 p.year=orgSpPtr->year();
                 newSpPtr=spMgr->createInDB(p);
                 newSongPtr->addSongPerformance(newSpPtr);
-                sMgr->setChanged(newSongPtr);
             }
         }
 
         if(newSpPtr)
         {
             newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
-            sMgr->setChanged(newSongPtr);
         }
     }
     else
@@ -268,8 +262,6 @@ qDebug() << SB_DEBUG_INFO;
             newSongPtr->setSongTitle(editTitle);
             newSpPtr=orgSpPtr;
             newSpPtr->setSongPerformerID(pPtr->performerID());
-            sMgr->setChanged(newSongPtr);
-            spMgr->setChanged(newSpPtr);
         }
         if(result==Common::result_exists)
         {

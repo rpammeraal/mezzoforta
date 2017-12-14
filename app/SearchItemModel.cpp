@@ -175,7 +175,7 @@ SearchItemModel::update(const SBIDPtr& ptr)
     {
         case SBIDBase::sb_type_song:
         {
-            SBIDSongPtr sPtr=std::dynamic_pointer_cast<SBIDSong>(ptr);
+            SBIDSongPtr sPtr=SBIDSong::retrieveSong(ptr->itemID());
             if(sPtr)
             {
                 songID=sPtr->songID();
@@ -188,7 +188,7 @@ SearchItemModel::update(const SBIDPtr& ptr)
 
         case SBIDBase::sb_type_album:
         {
-            SBIDAlbumPtr aPtr=std::dynamic_pointer_cast<SBIDAlbum>(ptr);
+            SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(ptr->itemID());
             if(aPtr)
             {
                 albumID=aPtr->albumID();
@@ -200,7 +200,7 @@ SearchItemModel::update(const SBIDPtr& ptr)
 
         case SBIDBase::sb_type_performer:
         {
-            SBIDPerformerPtr pPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+            SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
             if(pPtr)
             {
                 performerID=pPtr->performerID();

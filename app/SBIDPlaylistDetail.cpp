@@ -382,7 +382,7 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
 
     case SBIDBase::sb_type_song_performance:
     {
-        const SBIDSongPerformancePtr spPtr=std::dynamic_pointer_cast<SBIDSongPerformance>(ptr);
+        const SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformance(ptr->itemID());
         if(spPtr)
         {
             const SBIDOnlinePerformancePtr opPtr=spPtr->preferredOnlinePerformancePtr();

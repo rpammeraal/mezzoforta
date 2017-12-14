@@ -577,7 +577,6 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
         int albumPerformanceID=qm->record(i).value(0).toInt();
         SBIDAlbumPerformancePtr aPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(albumPerformanceID);
         aPtr->setSongPerformanceID(this->songPerformanceID());
-        apMgr->setChanged(aPtr);
     }
 
     //	chart_performance
@@ -591,7 +590,6 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
         int chartPerformanceID=qm->record(i).value(0).toInt();
         SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::retrieveChartPerformance(chartPerformanceID);
         cpPtr->setSongPerformanceID(this->songPerformanceID());
-        cpMgr->setChanged(cpPtr);
     }
 }
 

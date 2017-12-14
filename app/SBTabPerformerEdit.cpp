@@ -50,7 +50,7 @@ SBTabPerformerEdit::hasEdits() const
 
     if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
     {
-        SBIDPerformerPtr performerPtr=std::dynamic_pointer_cast<SBIDPerformer>(ptr);
+        SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
         if(performerPtr->performerName()!=mw->ui.performerEditName->text() ||
             performerPtr->notes()!=mw->ui.performerEditNotes->text() ||
             performerPtr->url()!=mw->ui.performerEditWebSite->text() ||
@@ -298,8 +298,6 @@ SBTabPerformerEdit::save() const
     {
         peMgr->merge(orgPerformerPtr,selectedPerformerPtr);
     }
-
-    peMgr->setChanged(orgPerformerPtr);
 
     //	Commit changes
     successFlag=cm->saveChanges();

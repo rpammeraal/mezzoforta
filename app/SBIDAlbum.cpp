@@ -223,7 +223,6 @@ SBIDAlbumPerformancePtr
 SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    CacheSongMgr* sMgr=cm->songMgr();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
     CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
@@ -288,17 +287,14 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(sPtr->originalSongPerformanceID()<0)
     {
         sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
-        sMgr->setChanged(sPtr);
     }
     if(spPtr->preferredAlbumPerformanceID()<0)
     {
         spPtr->setPreferredAlbumPerformanceID(apPtr->albumPerformanceID());
-        spMgr->setChanged(spPtr);
     }
     if(apPtr->preferredOnlinePerformanceID()<0)
     {
         apPtr->setPreferredOnlinePerformanceID(opPtr->onlinePerformanceID());
-        apMgr->setChanged(apPtr);
     }
 
     return apPtr;
@@ -1071,7 +1067,6 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
             //	Append
             fromApPtr->setAlbumPosition(nextAlbumPosition+oldAlbumPositions.indexOf(fromApPtr->albumPosition()));
             fromApPtr->setAlbumID(this->albumID());
-            apmgr->setChanged(fromApPtr);
             apmgr->debugShow("apmgr:merge");
             _addedAlbumPerformances.append(fromApPtr);
         }
@@ -1090,7 +1085,6 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         if(pdPtr)
         {
             pdPtr->setAlbumID(this->albumID());
-            pdmgr->setChanged(pdPtr);
         }
     }
 }
@@ -1236,7 +1230,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
                 if(selected)
                 {
                     //	Existing album is choosen
-                    found=std::dynamic_pointer_cast<SBIDAlbum>(selected);
+                    found=SBIDAlbum::retrieveAlbum(selected->itemID());
                     found->refreshDependents();
                     result=Common::result_exists;
                 }
