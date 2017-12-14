@@ -160,6 +160,28 @@ SBIDChartPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDChartPerformance::chartPerformancesBySongPerformance(int songPerformanceID)
+{
+    QString q=QString
+    (
+        "SELECT "
+            "p.chart_performance_id, "
+            "p.chart_id, "
+            "p.performance_id, "
+            "p.chart_position, "
+            "p.notes "
+        "FROM "
+            "___SB_SCHEMA_NAME___chart_performance p "
+        "WHERE "
+            "p.performance_id=%1"
+    )
+        .arg(songPerformanceID)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 SBIDChartPerformancePtr
 SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDependentsFlag)
 {
@@ -291,8 +313,40 @@ SBIDChartPerformance::retrieveSQL(const QString &key)
 QStringList
 SBIDChartPerformance::updateSQL(const Common::db_change db_change) const
 {
-    Q_UNUSED(db_change);
-    return QStringList();
+    QStringList SQL;
+
+    if(deletedFlag() && db_change==Common::db_delete)
+    {
+        SQL.append(QString
+        (
+            "DELETE FROM ___SB_SCHEMA_NAME___chart_performance "
+            "WHERE chart_performance_id=%1"
+        )
+            .arg(this->chartPerformanceID()));
+    }
+    else if(changedFlag() && db_change==Common::db_update)
+    {
+        SQL.append(QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___chart_performance "
+            "SET "
+                "chart_id=%1, "
+                "performance_id=%2, "
+                "chart_position=%3, "
+                "notes='%4' "
+            "WHERE "
+                "chart_performance_id=%5 "
+        )
+            .arg(this->_chartID)
+            .arg(this->_songPerformanceID)
+            .arg(this->_chartPosition)
+            .arg(Common::escapeSingleQuotes(this->_notes))
+            .arg(this->_chartPerformanceID)
+        );
+    }
+
+    qDebug() << SB_DEBUG_INFO << SQL;
+    return SQL;
 }
 
 ///	Helper methods for SBIDManagerTemplate

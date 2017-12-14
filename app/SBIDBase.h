@@ -128,7 +128,7 @@ protected:
     virtual void clearChangedFlag();
     virtual void rollback();
     inline void setChangedFlag() { _changedFlag=1; }
-    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
+    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); qDebug() << SB_DEBUG_INFO << this->key() << this->ID(); }
     inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;
 

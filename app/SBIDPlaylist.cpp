@@ -549,7 +549,7 @@ SBIDPlaylist::updateSQL(const Common::db_change db_change) const
             SQL.append(q);
         }
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         QString q=QString
         (

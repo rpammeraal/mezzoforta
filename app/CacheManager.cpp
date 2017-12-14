@@ -24,6 +24,18 @@ CacheManager::clearAllCaches()
     }
 }
 
+void
+CacheManager::debugShowChanges(const QString &title)
+{
+    qDebug() << SB_DEBUG_INFO;
+    QMapIterator<sb_cache_type,CachePtr> cIT(_cache); while(cIT.hasNext())
+    {
+        cIT.next();
+        CachePtr cPtr=cIT.value();
+        cPtr->debugShowChanges();
+    }
+}
+
 bool
 CacheManager::saveChanges()
 {
@@ -32,8 +44,7 @@ CacheManager::saveChanges()
     QStringList deleteSQL;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
 
-    QMapIterator<sb_cache_type,CachePtr> cIT(_cache);
-    while(cIT.hasNext())
+    QMapIterator<sb_cache_type,CachePtr> cIT(_cache); while(cIT.hasNext())
     {
         cIT.next();
         CachePtr cPtr=cIT.value();
@@ -103,6 +114,6 @@ CacheManager::_init()
     _cache[sb_cache_performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr"));
     _cache[sb_cache_playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr"));
     _cache[sb_cache_playlist_detail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr"));
+    _cache[sb_cache_song_performance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr"));
     _cache[sb_cache_song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr"));
-    _cache[sb_cache_song_performer]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr"));
 }

@@ -991,6 +991,9 @@ Between 20161215 and 20170604:
 -	edit album works.
 -	restructured edit album/edit performer to look like eachother
 
+20171213:
+-	edit song works.
+
 CURRENT:
 *	Need to restructure caches:
     *	each SBIDObject needs to have a pointer to its manager

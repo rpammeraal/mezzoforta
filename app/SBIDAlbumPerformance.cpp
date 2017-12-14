@@ -429,7 +429,34 @@ SBIDAlbumPerformance::performancesBySong(int songID)
 
     qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
+}
 
+SBSqlQueryModel*
+SBIDAlbumPerformance::performancesBySongPerformance(int songPerformanceID)
+{
+    QString q=QString
+    (
+        "SELECT DISTINCT "
+            "rp.record_performance_id, "
+            "rp.performance_id, "
+            "rp.record_id, "
+            "rp.record_position, "
+            "rp.duration, "
+            "rp.notes, "
+            "rp.preferred_online_performance_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___song s "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON " //	Removed LEFT. Want to get existing album performances.
+                    "s.song_id=p.song_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON " //	Removed LEFT. See above.
+                    "p.performance_id=rp.performance_id "
+        "WHERE p.performance_id=%1 "
+    )
+        .arg(songPerformanceID)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
 }
 
 SBIDAlbumPerformancePtr
@@ -489,7 +516,7 @@ SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
         .arg(p.albumID)
         .arg(p.albumPosition)
         .arg(p.duration.toString(SBDuration::sb_full_hhmmss_format))
-        .arg(p.notes)
+        .arg(Common::escapeSingleQuotes(p.notes))
     ;
     dal->customize(q);
     qDebug() << SB_DEBUG_INFO << q;
@@ -670,12 +697,6 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
 QStringList
 SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
 {
-    qDebug() << SB_DEBUG_INFO
-             << this->_albumPerformanceID
-             << this->deletedFlag()
-             << this->mergedFlag()
-             << this->changedFlag()
-    ;
     QStringList SQL;
 
     if(deletedFlag() && db_change==Common::db_delete)
@@ -709,7 +730,7 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_albumPosition)
         );
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (
@@ -729,7 +750,7 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_albumID)
             .arg(this->_albumPosition)
             .arg(this->_duration.toString(SBDuration::sb_full_hhmmss_format))
-            .arg(this->_notes)
+            .arg(Common::escapeSingleQuotes(this->_notes))
             .arg(this->_albumPerformanceID)
         );
     }

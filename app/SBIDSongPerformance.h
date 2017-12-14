@@ -77,6 +77,7 @@ protected:
     static SBIDSongPerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPerformancePtr existingSongPerformancePtr);
     static SBIDSongPerformancePtr instantiate(const QSqlRecord& r);
+    void mergeFrom(SBIDSongPerformancePtr& spPtrFrom);
     static void openKey(const QString& key, int& songPerformanceID);
     void postInstantiate(SBIDSongPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(const QString& key="");

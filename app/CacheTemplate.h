@@ -42,6 +42,8 @@ protected:
     friend class CacheManager;
 
     virtual void clear() { }
+    virtual void debugShow(const QString title="") { Q_UNUSED(title); }
+    virtual void debugShowChanges() { }
     virtual void setChangedAsCommited() { }
     virtual QStringList retrieveChanges(Common::db_change db_change) const { Q_UNUSED(db_change); return QStringList(); }
 };
@@ -76,6 +78,7 @@ public:
 
     //	Misc
     void debugShow(const QString title="");
+    void debugShowChanges();
     void id() const { return _id; }
     int numChanges() const { return _changes.count(); }
     void stats() const;
@@ -463,11 +466,19 @@ CacheTemplate<T,parentT>::debugShow(const QString text)
             qDebug() << SB_DEBUG_INFO << _name << "NOPTR";
         }
     }
+    debugShowChanges();
+}
+
+template <class T, class parentT> void
+CacheTemplate<T,parentT>::debugShowChanges()
+{
     qDebug() << SB_DEBUG_INFO << _name << "changes" << _changes.count();
     for(int i=0;i<_changes.count();i++)
     {
         const QString key=_changes.at(i);
-        qDebug() << SB_DEBUG_INFO << _name << i << _changes.at(i) << key;
+        std::shared_ptr<T> ptr=_leMap[key];
+
+        qDebug() << SB_DEBUG_INFO << _name << i << _changes.at(i) << ptr->itemID() << ptr->ID() << ptr->deletedFlag();
     }
 }
 
@@ -500,7 +511,7 @@ template <class T, class parentT> QStringList
 CacheTemplate<T,parentT>::retrieveChanges(Common::db_change db_change) const
 {
     QStringList SQL;
-    SQL.append(QString("SELECT	'retrieveChanges:%1 %2 '").arg(_name).arg(Common::db_change_to_string(db_change)));
+    SQL.append(QString("SELECT	'retrieveChanges:%1 %2 (%3)'").arg(_name).arg(Common::db_change_to_string(db_change)).arg(_changes.count()));
     if(_changes.count())
     {
         Q_UNUSED(db_change);

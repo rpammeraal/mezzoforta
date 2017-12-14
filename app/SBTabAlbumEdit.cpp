@@ -1140,8 +1140,6 @@ SBTabAlbumEdit::save() const
 
         if(mergedFlag)
         {
-            mw->ui.tabAllSongs->preload();
-
             ScreenStack* st=Context::instance()->getScreenStack();
 
             newAlbumPtr->refreshDependents(0,1);

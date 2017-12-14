@@ -759,125 +759,6 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
              << changedFlag()
     ;
 
-//    //	Merged
-//    if(mergedFlag())
-//    {
-//        qDebug() << SB_DEBUG_INFO;
-
-//        //	1.	artist_rel
-//        q=QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___artist_rel "
-//            "SET     "
-//                "artist1_id=%1 "
-//            "WHERE "
-//                "artist1_id=%2 "
-//        )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        q=QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___artist_rel "
-//            "SET     "
-//                "artist2_id=%1 "
-//            "WHERE "
-//                "artist2_id=%2 "
-//        )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        //	1.	Performance
-//        q=QString
-//        (
-//            "INSERT INTO ___SB_SCHEMA_NAME___performance "
-//            "( "
-//                "song_id,"
-//                "artist_id, "
-//                "preferred_record_performance_id, "
-//                "year, "
-//                "notes "
-//            ") "
-//            "SELECT "
-//                "p.song_id, "
-//                "%1, "
-//                "p.preferred_record_performance_id, "
-//                "p.year, "
-//                "p.notes "
-//            "FROM "
-//                "___SB_SCHEMA_NAME___performance p "
-//            "WHERE "
-//                "p.artist_id=%2 AND "
-//                "NOT EXISTS "
-//                "( "
-//                    "SELECT "
-//                        "NULL "
-//                    "FROM "
-//                        "___SB_SCHEMA_NAME___performance q "
-//                    "WHERE "
-//                        "q.song_id=p.song_id AND "
-//                        "q.artist_id=%1 "
-//                ") "
-//        )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        //	2.	Record
-//        q=QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___record "
-//            "SET     "
-//                "artist_id=%1 "
-//            "WHERE "
-//                "artist_id=%2 "
-//        )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        //	3.	Update performance tables
-//        q=QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___performance "
-//            "SET "
-//                "artist_id=%1 "
-//            "WHERE "
-//                "artist_id=%2 "
-//         )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        //	4.	Update playlist_detail
-//        q=QString
-//        (
-//            "UPDATE "
-//                "___SB_SCHEMA_NAME___playlist_detail "
-//            "SET     "
-//                "artist_id=%1 "
-//            "WHERE "
-//                "artist_id=%2 "
-//         )
-//            .arg(this->mergedWithID())
-//            .arg(this->performerID())
-//        ;
-//        SQL.append(q);
-
-//        deletedFlag=1;
-//    }
-
     //	Deleted
     if(deletedFlag && db_change==Common::db_delete)
     {
@@ -894,7 +775,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
         ;
         SQL.append(q);
     }
-    else if(!mergedFlag() && !deletedFlag && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         //	Update sort_name
         const QString sortName=Common::removeArticles(Common::removeAccents(this->performerName()));

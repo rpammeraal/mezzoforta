@@ -40,14 +40,15 @@ public:
         sb_cache_performer,
         sb_cache_playlist,
         sb_cache_playlist_detail,
-        sb_cache_song,
-        sb_cache_song_performer
+        sb_cache_song_performance,
+        sb_cache_song
     };
 
     CacheManager();
     virtual ~CacheManager() { }
 
     void clearAllCaches();
+    void debugShowChanges(const QString& title);
     bool saveChanges();
 
     inline CacheManagerHelper* managerHelper() { return &_mh; }
@@ -61,7 +62,7 @@ public:
     inline CachePlaylistMgr* playlistMgr() const { return dynamic_cast<CachePlaylistMgr *>(_cache[sb_cache_playlist].get()); }
     inline CachePlaylistDetailMgr* playlistDetailMgr() const { return dynamic_cast<CachePlaylistDetailMgr *>(_cache[sb_cache_playlist_detail].get()); }
     inline CacheSongMgr* songMgr() const { return dynamic_cast<CacheSongMgr *>(_cache[sb_cache_song].get()); }
-    inline CacheSongPerformanceMgr* songPerformanceMgr() const { return dynamic_cast<CacheSongPerformanceMgr *>(_cache[sb_cache_song_performer].get()); }
+    inline CacheSongPerformanceMgr* songPerformanceMgr() const { return dynamic_cast<CacheSongPerformanceMgr *>(_cache[sb_cache_song_performance].get()); }
 
 private:
     QMap<sb_cache_type,CachePtr> _cache;

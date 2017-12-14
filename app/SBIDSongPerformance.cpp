@@ -560,6 +560,41 @@ SBIDSongPerformance::instantiate(const QSqlRecord &r)
     return std::make_shared<SBIDSongPerformance>(sP);
 }
 
+void
+SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
+{
+    SBSqlQueryModel* qm;
+    CacheManager* cm=Context::instance()->cacheManager();
+
+    //	album_performance
+    qm=SBIDAlbumPerformance::performancesBySongPerformance(spPtrFrom->songPerformanceID());
+    CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
+    SB_RETURN_VOID_IF_NULL(qm);
+    SB_RETURN_VOID_IF_NULL(apMgr);
+
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        int albumPerformanceID=qm->record(i).value(0).toInt();
+        SBIDAlbumPerformancePtr aPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(albumPerformanceID);
+        aPtr->setSongPerformanceID(this->songPerformanceID());
+        apMgr->setChanged(aPtr);
+    }
+
+    //	chart_performance
+    qm=SBIDChartPerformance::chartPerformancesBySongPerformance(spPtrFrom->songPerformanceID());
+    CacheChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
+    SB_RETURN_VOID_IF_NULL(qm);
+    SB_RETURN_VOID_IF_NULL(cpMgr);
+
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        int chartPerformanceID=qm->record(i).value(0).toInt();
+        SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::retrieveChartPerformance(chartPerformanceID);
+        cpPtr->setSongPerformanceID(this->songPerformanceID());
+        cpMgr->setChanged(cpPtr);
+    }
+}
+
 SBSqlQueryModel*
 SBIDSongPerformance::retrieveSQL(const QString &key)
 {
@@ -607,7 +642,7 @@ SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_songPerformanceID)
         );
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

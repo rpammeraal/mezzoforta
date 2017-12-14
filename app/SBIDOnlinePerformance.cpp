@@ -637,7 +637,7 @@ SBIDOnlinePerformance::updateSQL(const Common::db_change db_change) const
     {
         //	CWIP
     }
-    else if(!mergedFlag() && !deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

@@ -50,7 +50,6 @@ public:
 
     //	Song specific methods
     SBTableModel* albums() const;
-    SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
     QVector<SBIDAlbumPerformancePtr> allPerformances() const;
     SBTableModel* charts() const;
     void deleteIfOrphanized();
@@ -122,6 +121,12 @@ protected:
     friend class SBIDAlbum;
     friend class SBTabSongEdit;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
+
+    //	Protected setters
+    friend class MusicLibrary;
+    friend class SBTabSongEdit;
+    SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
+    SBIDSongPerformancePtr addSongPerformance(SBIDSongPerformancePtr spPtr);
 
 private:
     int                                _songID;

@@ -77,6 +77,7 @@ public:
     static QString performancesByAlbum_Preloader(int albumID);
     static QString performancesByPerformer_Preloader(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
+    static SBSqlQueryModel* performancesBySongPerformance(int songPerformanceID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
@@ -104,10 +105,12 @@ protected:
     //	Protected setters
     friend class SBIDAlbum;  //	merges album performances
     friend class SBTabAlbumEdit;
+    friend class SBIDSongPerformance;
 
     inline void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
     inline void setNotes(const QString& notes) { if(_notes!=notes) { _notes=notes; setChangedFlag(); } }
     inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { if(_preferredOnlinePerformanceID!=preferredOnlinePerformanceID) _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
+    inline void setSongPerformanceID(int songPerformanceID) { _songPerformanceID=songPerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes

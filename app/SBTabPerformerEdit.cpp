@@ -319,9 +319,6 @@ SBTabPerformerEdit::save() const
 
         if(mergeFlag)
         {
-            //	Refresh models -- since performer got removed.
-            mw->ui.tabAllSongs->preload();
-
             ScreenStack* st=Context::instance()->getScreenStack();
 
             selectedPerformerPtr->refreshDependents(0,1);

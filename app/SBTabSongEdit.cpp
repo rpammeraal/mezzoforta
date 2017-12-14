@@ -48,14 +48,17 @@ void
 SBTabSongEdit::save() const
 {
     //	Test cases:
-    //	A.	[simple rename] Bad - U2: change to Badaa. Should be simple renames.
-    //	B.	[simple rename w/ case] Badaa - U2 to BadaA. Should take into account case change.
-    //	C.	[switch original performer to non-original performer] Dancing Barefoot: change from Patti Smith to U2 and back
-    //	D.	[switch original performer to completely different performer] "C" Moon Cry Like A Baby: Simple Minds -> U2
+    //	A1.	[simple rename] Bad - U2: change to Badaa. Should be simple renames.
+    //	A2.	[simple rename w/ case] Badaa - U2 to BadaA. Should take into account case change.
+    //	A3.	[switch original performer to completely new performer] BadaA - U2: change performer to U22.
+    //	A4.	[merge song (within performer)] Badaa - U22 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
+    //	A5.	[remove performances without album performances] Edit (no changes) and save Acrobat - U2 one more time to remove the U22 entry.
 
-    //	E.	[switch original performer to completely new performer] Bad - U2: change performer to U22.
-    //	F1.	[merge song (within performer)] Badaa - U22 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
-    //	G.	[Assign song to different song and its non-original performer]  Assign <whatever> to Sunday Bloody Sunday by The Royal Philharmonic Orchestra
+    //	B.	[switch original performer to non-original performer] Dancing Barefoot: change from Patti Smith to U2 and back
+
+    //	C.	[switch original performer to different existing performer] "C" Moon Cry Like A Baby: Simple Minds -> U2
+
+    //	D.	[Assign song to different song and its non-original performer]  Assign <whatever> to Sunday Bloody Sunday by The Royal Philharmonic Orchestra
 
     //	Refresh database
     //	F2.	[merge song (within performer)] Bad - U2 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
@@ -77,7 +80,7 @@ SBTabSongEdit::save() const
     CacheSongMgr* sMgr=cm->songMgr();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     CachePerformerMgr* peMgr=cm->performerMgr();
-    bool songMergedFlag=0;
+    bool mergeFlag=0;
     int orgSongPerformanceID=orgSongPtr->originalSongPerformanceID();
 
     qDebug() << SB_DEBUG_INFO << "orgSong" << orgSongPtr->text();
@@ -102,7 +105,7 @@ SBTabSongEdit::save() const
     QString editLyrics=mw->ui.songEditLyrics->toPlainText();
     bool metaDataChangedFlag=0;
     bool simpleTitleChangedFlag=0;
-    bool titleChangedFlag=0;
+    bool songTitleChangedFlag=0;
 
     qDebug() << SB_DEBUG_INFO << editTitle << editPerformerName;
     qDebug() << SB_DEBUG_INFO << orgSongPtr->songTitle() << newSongPtr->songOriginalPerformerName();
@@ -136,7 +139,7 @@ SBTabSongEdit::save() const
             newSongPtr->setSongTitle(editTitle);
             sMgr->setChanged(newSongPtr);
             simpleTitleChangedFlag=1;
-            titleChangedFlag=1;
+            songTitleChangedFlag=1;
         }
     }
 
@@ -157,10 +160,10 @@ SBTabSongEdit::save() const
     {
         Common::toTitleCase(editTitle);
         Common::toTitleCase(editPerformerName);
-        titleChangedFlag=1;
+        songTitleChangedFlag=1;
     }
 
-    qDebug() << SB_DEBUG_INFO << metaDataChangedFlag << simpleTitleChangedFlag << titleChangedFlag;
+    qDebug() << SB_DEBUG_INFO << metaDataChangedFlag << simpleTitleChangedFlag << songTitleChangedFlag;
 
     //	Handle performer name edits
     SBIDPerformerPtr pPtr;
@@ -189,8 +192,10 @@ SBTabSongEdit::save() const
             p.performerID=pPtr->performerID();
             p.year=orgSpPtr->year();
             newSpPtr=spMgr->createInDB(p);
+            newSongPtr->addSongPerformance(newSpPtr);
+            sMgr->setChanged(newSongPtr);
         }
-        else if(titleChangedFlag==0)
+        else if(songTitleChangedFlag==0)
         {
         qDebug() << SB_DEBUG_INFO;
             //	Find out if a songperformance already exists for the unchanged title and changed performer.
@@ -204,7 +209,13 @@ SBTabSongEdit::save() const
                 p.performerID=pPtr->performerID();
                 p.year=orgSpPtr->year();
                 newSpPtr=spMgr->createInDB(p);
+                newSongPtr->addSongPerformance(newSpPtr);
+                sMgr->setChanged(newSongPtr);
             }
+        }
+
+        if(newSpPtr)
+        {
             newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
             sMgr->setChanged(newSongPtr);
         }
@@ -230,9 +241,9 @@ SBTabSongEdit::save() const
 //    qDebug() << SB_DEBUG_INFO << "newSongPtr:songTitle" << newSongPtr.songTitle();
 
     //	Handle song title edits
-qDebug() << SB_DEBUG_INFO << titleChangedFlag;
+qDebug() << SB_DEBUG_INFO << songTitleChangedFlag;
 qDebug() << SB_DEBUG_INFO << simpleTitleChangedFlag;
-    if(titleChangedFlag==1 && simpleTitleChangedFlag==0 && !newSpPtr)
+    if(songTitleChangedFlag==1 && simpleTitleChangedFlag==0 && !newSpPtr)
     {
 qDebug() << SB_DEBUG_INFO;
         Common::sb_parameters p;
@@ -265,7 +276,7 @@ qDebug() << SB_DEBUG_INFO;
 qDebug() << SB_DEBUG_INFO;
             //	Merge to selected
             sMgr->merge(orgSongPtr,newSongPtr);
-            songMergedFlag=1;
+            mergeFlag=1;
         }
     }
 qDebug() << SB_DEBUG_INFO;
@@ -276,13 +287,15 @@ qDebug() << SB_DEBUG_INFO;
     if(dupSpPtr)
     {
         sMgr->merge(orgSongPtr,newSongPtr);
+        mergeFlag=1;
         qDebug() << SB_DEBUG_INFO << "Found exact song for:" << newSongPtr->text();
     }
 
     //	I.	Consolidate song performances with what is on any album.
     //		If a non-original performer does not exist on an album, remove this (there is no other way to remove this).
     qDebug() << SB_DEBUG_INFO << orgSongPerformanceID << newSongPtr->originalSongPerformanceID();
-    if(orgSongPerformanceID!=newSongPtr->originalSongPerformanceID())
+    qDebug() << SB_DEBUG_INFO << editPerformerName << newSongPtr->originalSongPerformancePtr()->songPerformerName();
+    if(!mergeFlag)
     {
         qDebug() << SB_DEBUG_INFO;
         QMapIterator<int,SBIDSongPerformancePtr> it(newSongPtr->songPerformances());
@@ -304,7 +317,7 @@ qDebug() << SB_DEBUG_INFO;
                 }
             }
 
-            if(!foundFlag)
+            if(!foundFlag && editPerformerName!=spPtr->songPerformerName())
             {
                 qDebug() << SB_DEBUG_INFO << "Removing song performance by " << spPtr->songPerformerName() << "id=" << spPtr->songPerformanceID();
                 newSongPtr->removeSongPerformance(spPtr);
@@ -312,13 +325,7 @@ qDebug() << SB_DEBUG_INFO;
         }
     }
 
-
-//
-//	NEW CWIP:
-//	SET ORIGINAL_PERFORMANCE_ID ON NEWSONG TO BE THAT OF NEWSPPTR
-//
-
-
+    cm->debugShowChanges("before save");
     const bool successFlag=cm->saveChanges();
 
     if(successFlag==1)
@@ -327,30 +334,26 @@ qDebug() << SB_DEBUG_INFO;
             .arg(QChar(96))      //	1
             .arg(newSongPtr->songTitle())   //	2
             .arg(QChar(180));    //	3
+
+        //	Update screenstack
+        currentScreenItem.setEditFlag(0);
         Context::instance()->getController()->updateStatusBarText(updateText);
 
-        if(orgSongPtr!=newSongPtr || songMergedFlag)
+        if(mergeFlag)
         {
-            //	Update models!
-            Context::instance()->getController()->refreshModels();
-
-            if(orgSongPtr->songID()!=newSongPtr->songID())
-            {
-                //	Remove old from screenstack
-                ScreenStack* st=Context::instance()->getScreenStack();
-
-                ScreenItem from(orgSongPtr);
-                ScreenItem to(newSongPtr);
-                st->replace(from,to);
-            }
-        }
-        else
-        {
-            //	Update screenstack
-            currentScreenItem.setEditFlag(0);
+            //	Refresh models -- since song got removed.
 
             ScreenStack* st=Context::instance()->getScreenStack();
-            st->updateSBIDInStack(currentScreenItem);
+
+            newSongPtr->refreshDependents(0,1);
+            ScreenItem from(orgSongPtr);
+            ScreenItem to(newSongPtr);
+            st->replace(from,to);
+        }
+
+        if(mergeFlag || songTitleChangedFlag)
+        {
+            mw->ui.tabAllSongs->preload();
         }
     }
     else

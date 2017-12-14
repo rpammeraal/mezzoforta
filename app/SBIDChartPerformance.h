@@ -45,6 +45,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
+    static SBSqlQueryModel* chartPerformancesBySongPerformance(int songPerformanceID);
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
@@ -66,6 +67,10 @@ protected:
     static SBSqlQueryModel* retrieveSQL(const QString& key="");
     virtual void setPrimaryKey(int PK) { _chartPerformanceID=PK;  }
     QStringList updateSQL(const Common::db_change db_change) const;
+
+    //	Protected setters
+    friend class SBIDSongPerformance;
+    inline void setSongPerformanceID(int songPerformanceID) { _songPerformanceID=songPerformanceID; setChangedFlag(); }
 
 private:
     //	Attributes
