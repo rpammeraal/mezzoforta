@@ -19,7 +19,7 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual int itemID() const;
-    virtual SBIDBase::sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
@@ -28,7 +28,7 @@ public:
     virtual QString type() const;
 
     //	SBIDPlaylistDetail specific methods
-    virtual SBIDBase::sb_type consistOfItemType() const;
+    virtual Common::sb_type consistOfItemType() const;
     int playlistPosition() const { return _playlistPosition; }
     void setPlaylistPosition(int i)
     {
@@ -49,19 +49,22 @@ public:
 
     //	Redirectors
     int onlinePerformanceID() const;
-    QString childKey() const;
+    SBKey childKey() const;
     SBIDPtr ptr() const;
 
     //	Methods required by SBIDBase
-    static QString createKey(int playlistDetailID);
-    virtual QString key() const;
+    static SBKey createKey(int playlistDetailID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
     static SBSqlQueryModel* playlistDetailsByAlbum(int albumID);
     static SBSqlQueryModel* playlistDetailsByPerformer(int performerID);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
+    static SBIDPlaylistDetailPtr retrievePlaylistDetail(const SBKey& key,bool noDependentsFlag=1);
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
+
+    //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_playlist_detail; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
@@ -72,9 +75,9 @@ protected:
     //	Methods used by SBIDManager
     static SBIDPlaylistDetailPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistDetailPtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& key, int& playlistDetailID);
+    static void openKey(const QString& getKey, int& playlistDetailID);
     void postInstantiate(SBIDPlaylistDetailPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& key);
+    static SBSqlQueryModel* retrieveSQL(const QString& getKey);
     virtual void setPrimaryKey(int PK) { _playlistDetailID=PK;  }
     QStringList updateSQL(const Common::db_change db_change) const;
 

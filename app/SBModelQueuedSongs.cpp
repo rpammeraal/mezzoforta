@@ -38,7 +38,7 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
-    if(ptr->itemType()==SBIDBase::sb_type_album_performance)
+    if(ptr->itemType()==Common::sb_type_album_performance)
     {
         SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(ptr->itemID());
         QList<QStandardItem *> newRow=createRecord(performancePtr,performancePtr->playPosition());
@@ -72,10 +72,10 @@ SBModelQueuedSongs::mimeData(const QModelIndexList& indexes) const
     {
         if (idx.isValid())
         {
-            SBIDPtr ptr=selectedItem(idx);
+            SBKey key=selectedItem(idx);
 
             QMimeData* mimeData = new QMimeData();
-            QByteArray ba=ptr->encode();
+            QByteArray ba=key.encode();
 
             mimeData->setData("application/vnd.text.list", ba);
             return mimeData;
@@ -138,10 +138,10 @@ SBModelQueuedSongs::formatDisplayPlayID(int playID,bool isCurrent) const
 
 //	Due to the nature of drag/drop, this view differs from others.
 //	idx must a source idx
-SBIDPtr
+SBKey
 SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
 {
-    SBIDPtr ptr;
+    SBKey key;
     QStandardItem* item;
     int itemID=-1;
 
@@ -165,9 +165,7 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
         {
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_online_performance_id);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            SBIDOnlinePerformancePtr onlinePerformancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID);
-
-            ptr=onlinePerformancePtr;
+            key=SBIDOnlinePerformance::createKey(itemID);
         }
         break;
 
@@ -175,10 +173,7 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
         {
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performerid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            ptr=SBIDPerformer::retrievePerformer(itemID);
-
-            //	Fill in text attributes
-            item=this->item(idx.row(),SBModelQueuedSongs::sb_column_performername);
+            key=SBIDPerformer::createKey(itemID);
         }
         break;
 
@@ -186,14 +181,11 @@ SBModelQueuedSongs::selectedItem(const QModelIndex &idx) const
         {
             item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumid);
             itemID=(item!=NULL)?item->text().toInt():-1;
-            ptr=SBIDAlbum::retrieveAlbum(itemID);
-
-            //	Fill in text attributes
-            item=this->item(idx.row(),SBModelQueuedSongs::sb_column_albumtitle);
+            key=SBIDAlbum::createKey(itemID);
         }
         break;
     }
-    return ptr;
+    return key;
 }
 
 void

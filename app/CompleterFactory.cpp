@@ -45,9 +45,9 @@ CompleterFactory::getCompleterAll()
             "FROM "
                 "___SB_SCHEMA_NAME___artist a "
         )
-            .arg(SBIDBase::sb_type_song)
-            .arg(SBIDBase::sb_type_album)
-            .arg(SBIDBase::sb_type_performer)
+            .arg(Common::sb_type_song)
+            .arg(Common::sb_type_album)
+            .arg(Common::sb_type_performer)
         ;
 
     QStringListIterator it(articles);

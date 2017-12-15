@@ -56,10 +56,10 @@ SBIDPerformer::itemID() const
     return performerID();
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDPerformer::itemType() const
 {
-    return SBIDBase::sb_type_performer;
+    return Common::sb_type_performer;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -159,7 +159,7 @@ SBIDPerformer::charts() const
     SBTableModel* tm=new SBTableModel();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
 
-    tm->populateChartsByItemType(SBIDBase::sb_type_performer,list);
+    tm->populateChartsByItemType(Common::sb_type_performer,list);
 
     return tm;
 }
@@ -312,20 +312,10 @@ SBIDPerformer::operator QString() const
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
-SBIDPerformer::createKey(int performerID,int unused)
+SBKey
+SBIDPerformer::createKey(int performerID)
 {
-    Q_UNUSED(unused);
-    return performerID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_performer)
-        .arg(performerID):QString("x:x")	//	Return invalid key if performerID<0
-    ;
-}
-
-QString
-SBIDPerformer::key() const
-{
-    return createKey(performerID());
+    return SBKey(Common::sb_type_performer,performerID);
 }
 
 ///
@@ -413,18 +403,17 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 
 //	Static methods
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
+SBIDPerformer::retrievePerformer(const SBKey& key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
-    SBIDPerformerPtr performerPtr;
-    if(performerID>=0)
-    {
-        performerPtr=pemgr->retrieve(
-            createKey(performerID),
-            (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return performerPtr;
+    return pemgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDPerformerPtr
+SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
+{
+    return retrievePerformer(createKey(performerID),noDependentsFlag);
 }
 
 SBIDPerformerPtr
@@ -747,7 +736,6 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
     qDebug() << SB_DEBUG_INFO
              << this->key()
              << this->ID()
-             << mergedFlag()
              << deletedFlag
              << changedFlag()
     ;
@@ -804,10 +792,10 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
         //	Related performers
 
         //	_relatedPerformerKey is the current user modified list of related performers
-        QVector<QString> currentRelatedPerformerKey=_relatedPerformerKey;
+        QVector<SBKey> currentRelatedPerformerKey=_relatedPerformerKey;
 
         //	Reload this data from the database
-        QVector<QString> relatedPerformerKey=_loadRelatedPerformers();
+        QVector<SBKey> relatedPerformerKey=_loadRelatedPerformers();
 
         //	Now, do a difference between currentrelatedPerformerKey and _relatedPerformerKey
         //	to find what has been:
@@ -838,7 +826,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
 }
 
 QString
-SBIDPerformer::addRelatedPerformerSQL(const QString& key) const
+SBIDPerformer::addRelatedPerformerSQL(const SBKey& key) const
 {
     if(this->key()==key)
     {
@@ -921,7 +909,7 @@ SBIDPerformer::_copy(const SBIDPerformer &c)
 void
 SBIDPerformer::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_performer;
+    _sb_item_type=Common::sb_type_performer;
 
     _performerID=-1;
     _performerName=QString();
@@ -952,7 +940,7 @@ SBIDPerformer::_loadAlbumPerformances()
     _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
-QVector<QString>
+QVector<SBKey>
 SBIDPerformer::_loadRelatedPerformers() const
 {
     QString q=QString
@@ -983,7 +971,7 @@ SBIDPerformer::_loadRelatedPerformers() const
     qDebug() << SB_DEBUG_INFO << q;
 
 
-    QVector<QString> relatedPerformerKey;
+    QVector<SBKey> relatedPerformerKey;
     SBSqlQueryModel qm(q);
     int performerID;
 
@@ -997,7 +985,7 @@ SBIDPerformer::_loadRelatedPerformers() const
         performerID=qm.data(qm.index(i,0)).toInt();
         if(performerID!=this->performerID())
         {
-            const QString key=createKey(performerID);
+            const SBKey key=createKey(performerID);
             if(!relatedPerformerKey.contains(key))
             {
                 relatedPerformerKey.append(key);
@@ -1016,7 +1004,7 @@ SBIDPerformer::_loadSongPerformances()
 }
 
 void
-SBIDPerformer::_mergeRelatedPerformer(const QString &fromKey, const QString &toKey)
+SBIDPerformer::_mergeRelatedPerformer(const SBKey &fromKey, const SBKey &toKey)
 {
     if(_relatedPerformerKey.contains(fromKey))
     {

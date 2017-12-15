@@ -17,7 +17,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual SBIDBase::sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -49,7 +49,7 @@ public:
     SBIDOnlinePerformancePtr preferredOnlinePerformancePtr() const;
 
     //	Redirectors
-    QString albumKey() const;
+    SBKey albumKey() const;
     int albumPerformerID() const;
     QString albumPerformerName() const;
     QString albumTitle() const;
@@ -57,7 +57,7 @@ public:
     int songID() const;
     int songPerformanceID() const;
     int songPerformerID() const;
-    QString songPerformerKey() const;
+    SBKey songPerformerKey() const;
     SBIDSongPtr songPtr() const;
     QString songTitle() const;
     QString songPerformerName() const;
@@ -67,11 +67,10 @@ public:
     virtual operator QString();
 
     //	Methods required by SBIDBase
-    virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static QString createKey(int albumPerformanceID);
+    static SBKey createKey(int albumPerformanceID);
     static SBIDAlbumPerformancePtr findByFK(const Common::sb_parameters& p);
     static SBSqlQueryModel* onlinePerformances(int limit=0);
     static QString performancesByAlbum_Preloader(int albumID);
@@ -79,8 +78,10 @@ public:
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesBySongPerformance(int songPerformanceID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(const SBKey& key, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_album_performance; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;

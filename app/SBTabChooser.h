@@ -27,14 +27,14 @@ protected:
 
         //	Store key instead of itemPtr -- this will make it easier
         //	to purge items from cache later on
-        QString           key;
-        int               playlistPosition;
-        QString           text;
+        SBKey   key;
+        int     playlistPosition;
+        QString text;
 
     private:
         void _init()
         {
-            key="";
+            key=SBKey();
             playlistPosition=-1;
             text="";
         }

@@ -30,13 +30,13 @@ class CacheTemplate : public Cache
 {
 public:
 
-    CacheTemplate<T, parentT>(const QString& name=QString());
+    CacheTemplate<T, parentT>(const QString& name, Common::sb_type itemType);
     ~CacheTemplate<T, parentT>();
 
     //	Retrieve
-    bool contains(const QString& key) const;
+    bool contains(const SBKey& key) const;
     int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches, bool exactMatchOnlyFlag=0);
-    std::shared_ptr<T> retrieve(QString key, open_flag openFlag=Cache::open_flag_default);
+    std::shared_ptr<T> retrieve(const SBKey& key, open_flag openFlag=Cache::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
@@ -66,17 +66,16 @@ protected:
     virtual void setChangedAsCommited();
 
 private:
-    int                              _nextID;
-    QMap<QString,std::shared_ptr<T>> _leMap;
+    int                                    _nextID;
+    QMap<SBKey,std::shared_ptr<T>> _leMap;
 
     void _init();
 };
 
 ///	Ctors
 template <class T, class parentT>
-CacheTemplate<T,parentT>::CacheTemplate(const QString& name):Cache(name)
+CacheTemplate<T,parentT>::CacheTemplate(const QString& name, Common::sb_type itemType):Cache(name,itemType)
 {
-    qDebug() << SB_DEBUG_INFO << Cache::name() << _leMap.count();
 }
 
 template <class T, class parentT>
@@ -86,7 +85,7 @@ CacheTemplate<T,parentT>::~CacheTemplate()
 
 ///	Retrieve
 template <class T, class parentT> bool
-CacheTemplate<T,parentT>::contains(const QString& key) const
+CacheTemplate<T,parentT>::contains(const SBKey& key) const
 {
     return _leMap.contains(key);
 }
@@ -96,7 +95,7 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 {
     int count=0;
     SBSqlQueryModel* qm=T::find(tobeFound,excludePtr);
-    QVector<QString> processedKeys;
+    QVector<SBKey> processedKeys;
     matches.clear();
     std::shared_ptr<T> currentPtr;
 
@@ -115,7 +114,7 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
         {
             r.remove(0);
             currentPtr=T::instantiate(r);	//	instantiate to use key
-            QString key=currentPtr->key();
+            SBKey key=currentPtr->key();
 
             //	Add if not exist, retrieve if exists
             if(!contains(key))
@@ -144,9 +143,14 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 }
 
 template <class T, class parentT> std::shared_ptr<T>
-CacheTemplate<T,parentT>::retrieve(QString key,open_flag openFlag)
+CacheTemplate<T,parentT>::retrieve(const SBKey& key,open_flag openFlag)
 {
     std::shared_ptr<T> ptr;
+
+    if(key.itemType()!=this->itemType() || !key.validFlag())
+    {
+        return ptr;
+    }
     if(contains(key))
     {
         ptr=_leMap[key];
@@ -189,7 +193,7 @@ CacheTemplate<T,parentT>::retrieveAll()
     {
         QSqlRecord r=qm->record(i);
         std::shared_ptr<T> newT=T::instantiate(r);
-        const QString key=newT->key();
+        const SBKey key=newT->key();
         std::shared_ptr<T> oldT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
@@ -212,7 +216,7 @@ CacheTemplate<T,parentT>::retrieveAll()
 
     //	Iterate through the entire map again to get all items
     QVector<std::shared_ptr<T>> list;
-    QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
+    QMapIterator<SBKey,std::shared_ptr<T>> it(_leMap);
     while(it.hasNext())
     {
         it.next();
@@ -259,7 +263,7 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
     {
         QSqlRecord r=qm->record(i);
         std::shared_ptr<T> newT=T::instantiate(r);
-        const QString key=newT->key();
+        const SBKey key=newT->key();
         std::shared_ptr<T> existT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
@@ -307,7 +311,7 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
         QSqlRecord r=qm->record(i);
         int intKey=r.value(0).toInt(); r.remove(0);	//	get key, remove 1st field
         std::shared_ptr<T> newT=T::instantiate(r);
-        const QString key=newT->key();
+        const SBKey key=newT->key();
         std::shared_ptr<T> oldT;
 
         //	Find if pointer exist -- Qt may have allocated slots for these
@@ -402,7 +406,7 @@ CacheTemplate<T,parentT>::debugShow(const QString text)
     qDebug() << SB_DEBUG_INFO << name() << text;
     qDebug() << SB_DEBUG_INFO << name() << "_nextID=" << _nextID;
     qDebug() << SB_DEBUG_INFO << name() << "start #=" << _leMap.count();
-    QMapIterator<QString,std::shared_ptr<T>> it(_leMap);
+    QMapIterator<SBKey,std::shared_ptr<T>> it(_leMap);
     while(it.hasNext())
     {
         it.next();
@@ -425,7 +429,7 @@ CacheTemplate<T,parentT>::debugShowChanges()
     qDebug() << SB_DEBUG_INFO << name() << "changes" << changes().count();
     for(int i=0;i<changes().count();i++)
     {
-        const QString key=changes().at(i);
+        const SBKey key=changes().at(i);
         std::shared_ptr<T> ptr=_leMap[key];
 
         qDebug() << SB_DEBUG_INFO << name() << i << changes().at(i) << ptr->itemID() << ptr->ID() << ptr->deletedFlag();
@@ -468,10 +472,10 @@ CacheTemplate<T,parentT>::retrieveChanges(Common::db_change db_change) const
         Q_UNUSED(db_change);
         std::shared_ptr<T> ptr;
 
-        QListIterator<QString> chIT(changes());
+        QListIterator<SBKey> chIT(changes());
         while(chIT.hasNext())
         {
-            const QString key=chIT.next();
+            const SBKey key=chIT.next();
             ptr=_leMap[key];
             SQL.append(ptr->updateSQL(db_change));
         }
@@ -487,7 +491,6 @@ CacheTemplate<T,parentT>::removeInternally(const std::shared_ptr<T> ptr)
         //	Remove from cache
         _leMap.erase(_leMap.find(ptr->key()));
     }
-    qDebug() << SB_DEBUG_INFO << "Removing " << ptr->key() << ptr->ID();
     ptr.reset();
 }
 
@@ -495,10 +498,10 @@ CacheTemplate<T,parentT>::removeInternally(const std::shared_ptr<T> ptr)
 template <class T, class parentT> void
 CacheTemplate<T,parentT>::setChangedAsCommited()
 {
-    QListIterator<QString> chIT(changes());
+    QListIterator<SBKey> chIT(changes());
     while(chIT.hasNext())
     {
-        const QString key=chIT.next();
+        const SBKey key=chIT.next();
         std::shared_ptr<T> ptr;
         if(contains(key))
         {

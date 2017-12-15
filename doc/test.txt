@@ -1,0 +1,12 @@
+All Songs:
+	For each sort up/down, column:
+	-	open song title
+	-	open original performer
+	-	open album title
+
+Song:
+	-	alt click logo 
+	For each sort up/down, column, tab
+	-	hit field
+
+Performer:

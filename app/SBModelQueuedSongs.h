@@ -50,7 +50,7 @@ public:
     //	Methods unrelated to drag&drop
     QModelIndex addRow();
     QString formatDisplayPlayID(int playID,bool isCurrent=0) const;
-    SBIDPtr selectedItem(const QModelIndex& idx) const;
+    SBKey selectedItem(const QModelIndex& idx) const;
     void paintRow(int i);
     virtual void sort(int column, Qt::SortOrder order);
 

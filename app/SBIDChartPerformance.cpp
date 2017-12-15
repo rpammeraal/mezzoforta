@@ -32,10 +32,10 @@ SBIDChartPerformance::itemID() const
     return chartPerformanceID();
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDChartPerformance::itemType() const
 {
-    return SBIDBase::sb_type_chart_performance;
+    return Common::sb_type_chart_performance;
 }
 
 QString
@@ -137,19 +137,10 @@ SBIDChartPerformance::operator QString()
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
+SBKey
 SBIDChartPerformance::createKey(int chartPerformanceID)
 {
-    return chartPerformanceID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_chart_performance)
-        .arg(chartPerformanceID):QString("x:x")	//	return invalid key if songID<0
-    ;
-}
-
-QString
-SBIDChartPerformance::key() const
-{
-    return createKey(_chartPerformanceID);
+    return SBKey(Common::sb_type_chart_performance,chartPerformanceID);
 }
 
 void
@@ -365,7 +356,7 @@ SBIDChartPerformance::_copy(const SBIDChartPerformance &c)
 void
 SBIDChartPerformance::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_chart_performance;
+    _sb_item_type=Common::sb_type_chart_performance;
 
     _chartPerformanceID=-1;
     _chartID=-1;

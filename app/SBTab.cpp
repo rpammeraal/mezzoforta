@@ -46,16 +46,16 @@ SBTab::getFirstEligibleSubtabID() const
 }
 
 void
-SBTab::refreshTabIfCurrent(const SBIDPtr& ptr)
+SBTab::refreshTabIfCurrent(const SBKey& key)
 {
     ScreenItem si=currentScreenItem();
 
-    if(si.ptr() && ptr && si.ptr()->key()==ptr->key())
+    if(si.key()==key)
     {
-        qDebug() << SB_DEBUG_INFO;
         populate(si);
     }
 }
+
 
 ///	Public virtual methods
 void
@@ -110,7 +110,6 @@ SBTab::populate(const ScreenItem& si)
     _populatePre(si);
     const ScreenItem& onStack=currentScreenItem(); //Context::instance()->getScreenStack()->currentScreen();
 
-    qDebug() << SB_DEBUG_INFO;
     ScreenItem result=_populate(si);
     if(result.screenType()!=ScreenItem::screen_type_invalid)
     {
@@ -192,6 +191,7 @@ SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortC
     tv->setModel(pm);
     tv->setSortingEnabled(1);
     tv->sortByColumn(initialSortColumn,Qt::AscendingOrder);
+    tv->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     hv=tv->horizontalHeader();
     hv->setSortIndicator(initialSortColumn,Qt::AscendingOrder);
@@ -283,11 +283,14 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBIDBase &newID, Q
 */
 
 void
-SBTab::setImage(const QPixmap& p, QLabel* l, const SBIDPtr& ptr) const
+SBTab::setImage(const QPixmap& p, QLabel* l, const SBKey& key) const
 {
     SB_DEBUG_IF_NULL(l);
-    if(p.isNull() && ptr)
+    if(p.isNull() && key.validFlag())
     {
+        SBIDPtr ptr=SBIDBase::createPtr(key);
+        SB_RETURN_VOID_IF_NULL(ptr);
+
         QPixmap q=QPixmap(ptr->iconResourceLocation());
         l->setPixmap(q);
     }
@@ -410,7 +413,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
 
     if(sfpm)
     {
-        SBIDPtr ptr;
+        SBKey key;
         QModelIndex idy=sfpm->mapToSource(idx);
         const SBSqlQueryModel* m=dynamic_cast<const SBSqlQueryModel *>(sfpm->sourceModel());
         if(m)
@@ -418,7 +421,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             qDebug() << ' ';
             qDebug() << SB_DEBUG_INFO << "######################################################################";
             qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
-            ptr=m->determineSBID(idy);
+            key=m->determineKey(idy);
         }
         else
         {
@@ -428,19 +431,11 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
                 qDebug() << ' ';
                 qDebug() << SB_DEBUG_INFO << "######################################################################";
                 qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
-                ptr=m->determineSBID(idy);
-                qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
+                key=m->determineKey(idy);
+                qDebug() << SB_DEBUG_INFO << key;
             }
         }
-        if(ptr)
-        {
-            qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
-            Context::instance()->getNavigator()->openScreen(ptr);
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_ERROR << "ptr not defined";
-        }
+        Context::instance()->getNavigator()->openScreen(key);
     }
 }
 

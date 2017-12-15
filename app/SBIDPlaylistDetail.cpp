@@ -21,14 +21,14 @@ SBIDPlaylistDetail::~SBIDPlaylistDetail()
 int
 SBIDPlaylistDetail::commonPerformerID() const
 {
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     return (p?p->commonPerformerID():-1);
 }
 
 QString
 SBIDPlaylistDetail::commonPerformerName() const
 {
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     return (p?p->commonPerformerName():QString());
 }
 
@@ -38,17 +38,17 @@ SBIDPlaylistDetail::itemID() const
     return _playlistDetailID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDPlaylistDetail::itemType() const
 {
-    return SBIDBase::sb_type_playlist_detail;
+    return Common::sb_type_playlist_detail;
 }
 
 QString
 SBIDPlaylistDetail::genericDescription() const
 {
     QString g;
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     g+=(p?p->genericDescription():QString());
     return g;
 }
@@ -56,7 +56,7 @@ SBIDPlaylistDetail::genericDescription() const
 QString
 SBIDPlaylistDetail::iconResourceLocation() const
 {
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     return (p?p->iconResourceLocation():QString());
 }
 
@@ -65,7 +65,7 @@ SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
 
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     if(p)
     {
         list=p->onlinePerformances(updateProgressDialogFlag);
@@ -76,7 +76,7 @@ SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
 void
 SBIDPlaylistDetail::sendToPlayQueue(bool enqueueFlag)
 {
-    SBIDBasePtr p=ptr();
+    SBIDPtr p=ptr();
     if(p)
     {
         p->sendToPlayQueue(enqueueFlag);
@@ -96,30 +96,30 @@ SBIDPlaylistDetail::type() const
 }
 
 ///	SBIDPlaylistDetail specific methods
-SBIDBase::sb_type
+Common::sb_type
 SBIDPlaylistDetail::consistOfItemType() const
 {
     if(_onlinePerformanceID!=-1)
     {
-        return SBIDBase::sb_type_online_performance;
+        return Common::sb_type_online_performance;
     }
     else if(_childPlaylistID!=-1)
     {
-        return SBIDBase::sb_type_playlist;
+        return Common::sb_type_playlist;
     }
     else if(_chartID!=-1)
     {
-        return SBIDBase::sb_type_chart;
+        return Common::sb_type_chart;
     }
     else if(_albumID!=-1)
     {
-        return SBIDBase::sb_type_album;
+        return Common::sb_type_album;
     }
     else if(_performerID!=-1)
     {
-        return SBIDBase::sb_type_performer;
+        return Common::sb_type_performer;
     }
-    return SBIDBase::sb_type_invalid;
+    return Common::sb_type_invalid;
 }
 
 
@@ -192,59 +192,51 @@ SBIDPlaylistDetail::onlinePerformanceID() const
     return (opPtr?opPtr->onlinePerformanceID():-1);
 }
 
-QString
+SBKey
 SBIDPlaylistDetail::childKey() const
 {
-    SBIDPtr p=ptr();
-    return (p?p->key():QString());
+    SBIDPtr pPtr=ptr();
+    SB_RETURN_IF_NULL(pPtr,SBKey());
+    return pPtr->key();
 }
 
+//	CWIP:SBKey
 SBIDPtr
 SBIDPlaylistDetail::ptr() const
 {
     switch(consistOfItemType())
     {
-    case SBIDBase::sb_type_online_performance:
+    case Common::sb_type_online_performance:
         return onlinePerformancePtr();
 
-    case SBIDBase::sb_type_playlist:
+    case Common::sb_type_playlist:
         return childPlaylistPtr();
 
-    case SBIDBase::sb_type_chart:
+    case Common::sb_type_chart:
         return chartPtr();
 
-    case SBIDBase::sb_type_album:
+    case Common::sb_type_album:
         return albumPtr();
 
-    case SBIDBase::sb_type_performer:
+    case Common::sb_type_performer:
         return performerPtr();
 
-    case SBIDBase::sb_type_album_performance:
-    case SBIDBase::sb_type_chart_performance:
-    case SBIDBase::sb_type_playlist_detail:
-    case SBIDBase::sb_type_song:
-    case SBIDBase::sb_type_song_performance:
-    case SBIDBase::sb_type_invalid:
+    case Common::sb_type_album_performance:
+    case Common::sb_type_chart_performance:
+    case Common::sb_type_playlist_detail:
+    case Common::sb_type_song:
+    case Common::sb_type_song_performance:
+    case Common::sb_type_invalid:
         break;
     }
     return SBIDPtr();
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
+SBKey
 SBIDPlaylistDetail::createKey(int playlistDetailID)
 {
-    const QString key= (playlistDetailID>=0)?QString("%1:%2")
-        .arg(SBIDBase::sb_type_playlist_detail)
-        .arg(playlistDetailID):QString("x:x")	//	Return invalid key if one or both parameters<0
-    ;
-    return key;
-}
-
-QString
-SBIDPlaylistDetail::key() const
-{
-    return createKey(_playlistDetailID);
+    return SBKey(Common::sb_type_playlist_detail,playlistDetailID);
 }
 
 void
@@ -338,16 +330,17 @@ SBIDPlaylistDetail::playlistDetailsByPerformer(int performerID)
 }
 
 SBIDPlaylistDetailPtr
-SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
+SBIDPlaylistDetail::retrievePlaylistDetail(const SBKey& key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
-    SBIDPlaylistDetailPtr pdPtr;
-    if(playlistDetailID>=0)
-    {
-    pdPtr=pdmgr->retrieve(createKey(playlistDetailID),(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return pdPtr;
+    return pdmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDPlaylistDetailPtr
+SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
+{
+    return retrievePlaylistDetail(createKey(playlistDetailID),noDependentsFlag);
 }
 
 SBIDPlaylistDetailPtr
@@ -360,27 +353,27 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
 
     switch(ptr->itemType())
     {
-    case SBIDBase::sb_type_online_performance:
+    case Common::sb_type_online_performance:
         p.onlinePerformanceID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_playlist:
+    case Common::sb_type_playlist:
         p.childPlaylistID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_chart:
+    case Common::sb_type_chart:
         p.chartID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_album:
+    case Common::sb_type_album:
         p.albumID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_performer:
+    case Common::sb_type_performer:
         p.performerID=ptr->itemID();
         break;
 
-    case SBIDBase::sb_type_song_performance:
+    case Common::sb_type_song_performance:
     {
         const SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformance(ptr->itemID());
         if(spPtr)

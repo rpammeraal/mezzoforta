@@ -14,7 +14,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual SBIDBase::sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -40,8 +40,7 @@ public:
     virtual operator QString();
 
     //	Methods required by CacheTemplate
-    static QString createKey(int songPerformanceID);
-    virtual QString key() const;
+    static SBKey createKey(int songPerformanceID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
@@ -49,6 +48,7 @@ public:
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_chart_performance; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;

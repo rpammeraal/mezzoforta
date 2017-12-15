@@ -28,12 +28,13 @@ void
 SBTabPlaylistDetail::deletePlaylistItem()
 {
     _init();
-    SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBTabChooser::PlaylistItem selected=_getSelectedItem(mw->ui.playlistDetailSongList->model(),_lastClickedIndex);
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && selected.playlistPosition>=0)
+    if(selected.playlistPosition>=0)
     {
-        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
+        SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(key);
+
         if(playlistPtr)
         {
             bool successFlag=playlistPtr->removePlaylistItem(selected.playlistPosition);
@@ -55,13 +56,9 @@ SBTabPlaylistDetail::deletePlaylistItem()
                     .arg(QChar(180))           //	3
                     .arg(playlistPtr->text())  //	4
                     .arg(playlistPtr->type()); //	5
-                CacheManager* cm=Context::instance()->cacheManager();
-                CachePlaylistMgr* pmgr=cm->playlistMgr();
-                playlistPtr->refreshDependents(1,1);
-                playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),CachePlaylistMgr::open_flag_refresh);
-                ptr=playlistPtr;
+                playlistPtr->refreshDependents(0,1);
             }
-            refreshTabIfCurrent(ptr);
+            refreshTabIfCurrent(key);
             Context::instance()->getController()->updateStatusBarText(updateText);
 
             //	Repopulate the current screen
@@ -75,27 +72,25 @@ SBTabPlaylistDetail::deletePlaylistItem()
 }
 
 void
-SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromPtr, int row)
+SBTabPlaylistDetail::movePlaylistItem(const SBKey from, int row)
 {
     _init();
 
     //	Determine current playlist
-    SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBKey key=currentScreenItem().key();
+    SBIDPlaylistPtr pPtr=SBIDPlaylist::retrievePlaylist(key);
+    SB_RETURN_VOID_IF_NULL(pPtr);
 
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist)
+    SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(from);
+    if(pPtr && pdPtr)
     {
-        SBIDPlaylistPtr pPtr=SBIDPlaylist::retrievePlaylist(ptr->itemID());
-        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(fromPtr->itemID());
-        if(pPtr && pdPtr)
+        bool successFlag=pPtr->moveItem(pdPtr,row);
+        if(!successFlag)
         {
-            bool successFlag=pPtr->moveItem(pdPtr,row);
-            if(!successFlag)
-            {
-                pPtr->refreshDependents(1,1);
-            }
+            pPtr->refreshDependents(1,1);
         }
     }
-    refreshTabIfCurrent(ptr);
+    refreshTabIfCurrent(key);
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     QTableView* tv=mw->ui.playlistDetailSongList;
@@ -109,24 +104,19 @@ SBTabPlaylistDetail::movePlaylistItem(const SBIDPtr& fromPtr, int row)
 void
 SBTabPlaylistDetail::playNow(bool enqueueFlag)
 {
-    const SBIDPtr currentPtr=this->currentScreenItem().ptr();
+    SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
     PlaylistItem selected=_getSelectedItem(mw->ui.playlistDetailSongList->model(),_lastClickedIndex);
-    SBIDPtr ptr;
 
-    if(selected.key.length()==0)
+    if(selected.key.validFlag())
     {
-        //	Label clicked
-        ptr=SBIDPlaylist::retrievePlaylist(currentPtr->itemID());
+        key=selected.key;
     }
-    else
-    {
-        ptr=SBIDBase::createPtr(selected.key,1);
-    }
-    if(ptr)
+
+    if(key.validFlag())
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(ptr,enqueueFlag):0;
+        pmgr?pmgr->playItemNow(key,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }
 }
@@ -187,24 +177,13 @@ ScreenItem
 SBTabPlaylistDetail::_populate(const ScreenItem& si)
 {
     _init();
-    SBIDPlaylistPtr playlistPtr;
+    SBIDPlaylistPtr playlistPtr=SBIDPlaylist::retrievePlaylist(si.key());
+    SB_RETURN_IF_NULL(playlistPtr,ScreenItem());
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    //	Get detail
-    if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_playlist)
-    {
-        playlistPtr=SBIDPlaylist::retrievePlaylist(si.ptr()->itemID());
-    }
-
-    if(!playlistPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
-
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(playlistPtr);
-    mw->ui.labelPlaylistDetailIcon->setPtr(playlistPtr);
+    currentScreenItem.updateSBIDBase(playlistPtr->key());
+    mw->ui.labelPlaylistDetailIcon->setKey(playlistPtr->key());
 
     mw->ui.labelPlaylistDetailPlaylistName->setText(playlistPtr->playlistName());
     const QString detail=QString("%1 items ").arg(playlistPtr->numItems())+QChar(8226)+QString(" %2").arg(playlistPtr->duration().toString());
@@ -217,8 +196,8 @@ SBTabPlaylistDetail::_populate(const ScreenItem& si)
     dragableColumns << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
     populateTableView(tv,tm,0);
-    connect(tm, SIGNAL(assign(const SBIDPtr&,int)),
-            this, SLOT(movePlaylistItem(const SBIDPtr&, int)));
+    connect(tm, SIGNAL(assign(const SBKey,int)),
+            this, SLOT(movePlaylistItem(const SBKey, int)));
 
     //	Drag & drop mw->ui.playlistDetailSongList->setAcceptDrops(1);
     mw->ui.playlistDetailSongList->setDropIndicatorShown(1);

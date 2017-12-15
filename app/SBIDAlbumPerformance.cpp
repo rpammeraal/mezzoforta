@@ -43,10 +43,10 @@ SBIDAlbumPerformance::itemID() const
     return this->_albumPerformanceID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDAlbumPerformance::itemType() const
 {
-    return SBIDBase::sb_type_album_performance;
+    return Common::sb_type_album_performance;
 }
 
 QString
@@ -143,11 +143,12 @@ SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 }
 
 ///	Redirectors
-QString
+SBKey
 SBIDAlbumPerformance::albumKey() const
 {
     SBIDAlbumPtr aPtr=albumPtr();
-    return (aPtr?aPtr->key():QString());
+    SB_RETURN_IF_NULL(aPtr,SBKey());
+    return aPtr->key();
 }
 
 int
@@ -192,11 +193,12 @@ SBIDAlbumPerformance::songPerformerID() const
     return (spPtr?spPtr->songPerformerID():-1);
 }
 
-QString
+SBKey
 SBIDAlbumPerformance::songPerformerKey() const
 {
     SBIDSongPerformancePtr spPtr=songPerformancePtr();
-    return (spPtr?spPtr->songPerformerKey():QString());
+    SB_RETURN_IF_NULL(spPtr,SBKey());
+    return spPtr->songPerformerKey();
 }
 
 SBIDSongPtr
@@ -240,12 +242,6 @@ SBIDAlbumPerformance::operator QString()
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
-SBIDAlbumPerformance::key() const
-{
-    return createKey(_albumPerformanceID);
-}
-
 void
 SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
@@ -254,14 +250,10 @@ SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 }
 
 //	Static methods
-QString
+SBKey
 SBIDAlbumPerformance::createKey(int albumPerformanceID)
 {
-    const QString key= (albumPerformanceID>=0)?QString("%1:%2")
-        .arg(SBIDBase::sb_type_album_performance)
-        .arg(albumPerformanceID):QString("x:x")	//	Return invalid key if one or both parameters<0
-    ;
-    return key;
+    return SBKey(Common::sb_type_album_performance,albumPerformanceID);
 }
 
 SBIDAlbumPerformancePtr
@@ -278,10 +270,8 @@ SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
         if(matches[0].count()==1)
         {
             spPtr=matches[0][0];
-            qDebug() << SB_DEBUG_INFO << spPtr->text();
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return spPtr;
 }
 
@@ -460,16 +450,17 @@ SBIDAlbumPerformance::performancesBySongPerformance(int songPerformanceID)
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
+SBIDAlbumPerformance::retrieveAlbumPerformance(const SBKey& key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();
-    SBIDAlbumPerformancePtr apPtr;
-    if(albumPerformanceID>=0)
-    {
-        apPtr=pfMgr->retrieve(createKey(albumPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return apPtr;
+    return pfMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDAlbumPerformancePtr
+SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
+{
+    return retrieveAlbumPerformance(createKey(albumPerformanceID), noDependentsFlag);
 }
 
 ///	Protected methods
@@ -553,12 +544,6 @@ SBIDAlbumPerformance::find(const Common::sb_parameters& p,SBIDAlbumPerformancePt
     //	0	-	exact match with specified artist (0 or 1 in data set).
     //	1	-	exact match with any other artist (0 or more in data set).
     //	2	-	soundex match with any other artist (0 or more in data set).
-    qDebug() << SB_DEBUG_INFO
-             << "songPerformanceID=" << p.songPerformanceID
-             << "albumID=" << p.albumID
-             << "albumPosition=" << p.albumPosition
-    ;
-
     QString q=QString
     (
         //	match on foreign keys
@@ -614,7 +599,6 @@ void
 SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
 {
     SB_RETURN_VOID_IF_NULL(fromApPtr);
-    qDebug() << SB_DEBUG_INFO << fromApPtr->itemID() << fromApPtr->text();
     //	Reset albumPerformanceID in online_performance
     SBSqlQueryModel* qm;
 
@@ -775,7 +759,7 @@ SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)
 void
 SBIDAlbumPerformance::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_album_performance;
+    _sb_item_type=Common::sb_type_album_performance;
 
     _albumPerformanceID=-1;
     _songPerformanceID=-1;

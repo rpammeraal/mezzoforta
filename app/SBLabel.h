@@ -20,13 +20,14 @@ public:
 
     //	Inherited methods
     virtual void mousePressEvent(QMouseEvent* me);
-    void setPtr(const SBIDPtr& ptr);
+    void setKey(const SBKey& key);
 
 protected:
     virtual void contextMenuEvent(QContextMenuEvent *ev);
 
 private:
-    SBIDPtr _ptr;
+    SBKey _key;
+
 };
 
 #endif // SBLABEL_H

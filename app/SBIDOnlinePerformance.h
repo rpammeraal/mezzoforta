@@ -13,7 +13,7 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual int itemID() const;
-    virtual SBIDBase::sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
@@ -39,14 +39,14 @@ public:
     //	Redirectors
     int albumID() const;
     int albumPerformerID() const;
-    QString albumKey() const;
+    SBKey albumKey() const;
     QString albumPerformerName() const;
     int albumPosition() const;
     QString albumTitle() const;
     SBDuration duration() const;
     int songID() const;
     int songPerformanceID() const;
-    QString songPerformerKey() const;
+    SBKey songPerformerKey() const;
     int songPerformerID() const;
     QString songPerformerName() const;
     QString songTitle() const;
@@ -55,15 +55,16 @@ public:
     virtual operator QString();
 
     //	Methods required by CacheTemplate
-    virtual QString key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_online_performance; }
 
     //	Static methods
-    static QString createKey(int onlinePerformanceID);
+    static SBKey createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
+    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(const SBKey& key, bool noDependentsFlag=1);
     static SBSqlQueryModel* retrieveOnlinePerformancesByAlbumPerformance(int albumPerformanceID);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);

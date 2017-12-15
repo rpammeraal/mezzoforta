@@ -14,7 +14,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual SBIDBase::sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QString genericDescription() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -41,26 +41,27 @@ public:
 
     //	Redirectors
     QString songPerformerName() const;
-    QString songPerformerKey() const;
-    QString songKey() const;
+    SBKey songPerformerKey() const;
+    SBKey songKey() const;
     QString songTitle() const;
 
     //	Operators
     virtual operator QString();
 
     //	Methods required by CacheTemplate
-    static QString createKey(int songPerformanceID);
-    virtual QString key() const;
+    static SBKey createKey(int songPerformanceID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
     static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
     static QString performancesByPerformer_Preloader(int performerID);
     static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=1);
+    static SBIDSongPerformancePtr retrieveSongPerformance(const SBKey& key, bool noDependentsFlag=1);
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformer(const QString& songTitle, const QString& performerName, int excludeSongPerformanceID=-1, bool noDependentsFlag=1);
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_song_performance; }
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID);
 

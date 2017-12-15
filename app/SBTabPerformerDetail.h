@@ -30,8 +30,8 @@ public slots:
     virtual void playNow(bool enqueueFlag=0);
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
-    void updatePerformerHomePage(const SBIDBasePtr& ptr);
-    void updatePerformerMBID(const SBIDBasePtr& ptr);
+    void updatePerformerHomePage(SBKey key);
+    void updatePerformerMBID(SBKey key);
 
 private slots:
     void refreshPerformerNews();

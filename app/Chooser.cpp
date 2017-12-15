@@ -67,7 +67,7 @@ public:
         QByteArray encodedData = data->data("application/vnd.text.list");
         SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
 
-        if(_c && ptr && ptr->itemType()!=SBIDBase::sb_type_invalid)
+        if(_c && ptr && ptr->itemType()!=Common::sb_type_invalid)
         {
             _c->assignItem(parent,ptr);
             return 1;
@@ -104,9 +104,9 @@ public:
         item1 = new QStandardItem("Your Songs");	//	sb_your_songs
         parentItem->appendRow(item1);
 
-        record=createNode("All Songs",-1,ScreenItem::screen_type_allsongs,SBIDBase::sb_type_invalid);
+        record=createNode("All Songs",-1,ScreenItem::screen_type_allsongs,Common::sb_type_invalid);
         item1->appendRow(record);
-        record=createNode("Songs in Queue",-1,ScreenItem::screen_type_current_playlist,SBIDBase::sb_type_invalid);
+        record=createNode("Songs in Queue",-1,ScreenItem::screen_type_current_playlist,Common::sb_type_invalid);
         item1->appendRow(record);
 
         item1 = new QStandardItem("");              //	sb_empty_1
@@ -123,7 +123,7 @@ public:
         {
             SBIDChartPtr ptr=chartList[i];
 
-            record=createNode(ptr->chartName(),ptr->chartID(),ScreenItem::screen_type_sbidbase,SBIDBase::sb_type_chart);
+            record=createNode(ptr->chartName(),ptr->chartID(),ScreenItem::screen_type_sbidbase,Common::sb_type_chart);
             item1->appendRow(record);
         }
 
@@ -140,7 +140,7 @@ public:
         {
             SBIDPlaylistPtr ptr=l[i];
 
-            record=createNode(ptr->playlistName(),ptr->playlistID(),ScreenItem::screen_type_sbidbase,SBIDBase::sb_type_playlist);
+            record=createNode(ptr->playlistName(),ptr->playlistID(),ScreenItem::screen_type_sbidbase,Common::sb_type_playlist);
             item1->appendRow(record);
         }
     }
@@ -159,7 +159,7 @@ private:
         const QString& itemValue,
         const int itemID,
         ScreenItem::screen_type screenType,
-        SBIDBase::sb_type baseType)
+        Common::sb_type baseType)
     {
         QList<QStandardItem *> record;
         record.append(new QStandardItem(itemValue));
@@ -198,7 +198,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
             SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
             SBIDPtr fromPtr;
 
-            if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_playlist)
+            if(toBeAssignedToPtr->itemType()==Common::sb_type_playlist)
             {
                 //	Check for self assignment
                 fromPtr=SBIDPlaylist::retrievePlaylist(toBeAssignedToPtr->itemID());
@@ -211,7 +211,7 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                     return;
                 }
             }
-            else if(toBeAssignedToPtr->itemType()==SBIDBase::sb_type_song)
+            else if(toBeAssignedToPtr->itemType()==Common::sb_type_song)
             {
                 //	Check for multiple performances
                 SBIDSongPtr songPtr=SBIDSong::retrieveSong(toBeAssignedToPtr->itemID());
@@ -275,11 +275,9 @@ void
 Chooser::chartPlay(bool enqueueFlag)
 {
     SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
-    if(cPtr)
-    {
-        PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(cPtr,enqueueFlag):0;
-    }
+    SB_RETURN_VOID_IF_NULL(cPtr);
+    PlayManager* pmgr=Context::instance()->getPlayManager();
+    pmgr?pmgr->playItemNow(cPtr->key(),enqueueFlag):0;
 }
 
 void
@@ -310,7 +308,7 @@ Chooser::playlistDelete()
             case QMessageBox::Ok:
                 pmgr->remove(playlistPtr);
                 cm->saveChanges();
-                Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr);
+                Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr->key());
                 this->_populate();
 
                 updateText=QString("Removed playlist %1%2%3.")
@@ -378,7 +376,7 @@ Chooser::playlistChanged(int playlistID)
                     if(sia && sib && sic && playlistPtr)
                     {
                         if(sib->text().toInt()==playlistPtr->playlistID() &&
-                            sic->text().toInt()==SBIDBase::sb_type_playlist)
+                            sic->text().toInt()==Common::sb_type_playlist)
                         {
                             QStandardItem* newItem=new QStandardItem(QIcon(":/images/playing.png"),sia->text());
                             si0->setChild(i,0,newItem);
@@ -398,12 +396,11 @@ Chooser::playlistChanged(int playlistID)
 void
 Chooser::playlistPlay(bool enqueueFlag)
 {
-    SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
-    if(playlistPtr)
-    {
-        PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(playlistPtr,enqueueFlag):0;
-    }
+    SBIDPlaylistPtr plPtr=_getPlaylistSelected(_lastClickedIndex);
+    SB_RETURN_VOID_IF_NULL(plPtr);
+
+    PlayManager* pmgr=Context::instance()->getPlayManager();
+    pmgr?pmgr->playItemNow(plPtr->key(),enqueueFlag):0;
 }
 
 void
@@ -514,15 +511,15 @@ Chooser::recalculateDuration()
     }
 
     ScreenItem si=sst->currentScreen();
-    SBIDPtr ptr=si.ptr();
-    if(!ptr)
+    SBKey key=si.key();
+    if(!key.validFlag())
     {
         return;
     }
 
     const MainWindow* mw=Context::instance()->getMainWindow();
     SBTabPlaylistDetail* tabPlaylistDetail=mw->ui.tabPlaylistDetail;
-    tabPlaylistDetail->refreshTabIfCurrent(ptr);
+    tabPlaylistDetail->refreshTabIfCurrent(key);
 
 }
 
@@ -566,7 +563,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
         .arg(QChar(180));         //	3
     Context::instance()->getController()->updateStatusBarText(updateText);
 
-    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(playlistPtr);
+    mw->ui.tabPlaylistDetail->refreshTabIfCurrent(playlistPtr->key());
 }
 
 ///	PRIVATE

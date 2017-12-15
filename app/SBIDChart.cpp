@@ -46,10 +46,10 @@ SBIDChart::itemID() const
     return _chartID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDChart::itemType() const
 {
-    return SBIDBase::sb_type_chart;
+    return Common::sb_type_chart;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -150,12 +150,6 @@ SBIDChart::operator QString() const
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
-SBIDChart::key() const
-{
-    return createKey(this->chartID());
-}
-
 void
 SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
@@ -170,28 +164,24 @@ SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 //	Static methods
-QString
-SBIDChart::createKey(int chartID,int unused)
+SBKey
+SBIDChart::createKey(int chartID)
 {
-    Q_UNUSED(unused);
-    return chartID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_chart)
-        .arg(chartID):QString("x:x");	//	Return invalid key if playlistID<0
+    return SBKey(Common::sb_type_chart,chartID);
+}
+
+SBIDChartPtr
+SBIDChart::retrieveChart(const SBKey& key,bool noDependentsFlag)
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheChartMgr* cmgr=cm->chartMgr();
+    return cmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
 SBIDChartPtr
 SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
 {
-    CacheManager* cm=Context::instance()->cacheManager();
-    CacheChartMgr* cmgr=cm->chartMgr();
-    SBIDChartPtr cPtr;
-    if(chartID>=0)
-    {
-        cPtr=cmgr->retrieve(
-                        createKey(chartID),
-                        (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return cPtr;
+    return retrieveChart(createKey(chartID),noDependentsFlag);
 }
 
 ///	Protected methods
@@ -360,7 +350,7 @@ SBIDChart::_copy(const SBIDChart &c)
 void
 SBIDChart::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_chart;
+    _sb_item_type=Common::sb_type_chart;
 
     _chartID=-1;
     _chartName=QString();

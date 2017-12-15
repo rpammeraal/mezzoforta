@@ -441,6 +441,15 @@ Controller::setupUI()
     }
     qDebug() << SB_DEBUG_INFO << smallest << biggest;
 
+
+    SBKey key;
+    QString k;
+
+    k="2:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
+    k="12:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
+    k="-1:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
+    k="2:-100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
+
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }

@@ -59,10 +59,10 @@ SBIDSong::itemID() const
     return this->_songID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDSong::itemType() const
 {
-    return SBIDBase::sb_type_song;
+    return Common::sb_type_song;
 }
 
 //bool
@@ -267,7 +267,7 @@ SBIDSong::charts() const
 {
     SBTableModel* tm=new SBTableModel();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
-    tm->populateChartsByItemType(SBIDBase::sb_type_song,chartToPerformances);
+    tm->populateChartsByItemType(Common::sb_type_song,chartToPerformances);
     return tm;
 }
 
@@ -1146,19 +1146,10 @@ SBIDSong::operator QString() const
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
+SBKey
 SBIDSong::createKey(int songID)
 {
-    return songID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_song)
-        .arg(songID):QString("x:x")	//	return invalid key if songID<0
-    ;
-}
-
-QString
-SBIDSong::key() const
-{
-    return createKey(this->songID());
+    return SBKey(Common::sb_type_song,songID);
 }
 
 void
@@ -1194,7 +1185,7 @@ SBIDSong::retrieveAllSongs()
         "SELECT "
             "s.title || ' ' || COALESCE(a.name,'') || ' ' || COALESCE(r.title,'')  AS SB_KEYWORDS, "
             "CAST(%1 AS VARCHAR)||':'||CAST(s.song_id AS VARCHAR) AS SB_ITEM_KEY1, "
-            "s.title, "
+            "s.title AS \"song title\", "
             "CAST(%2 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_ITEM_KEY2, "
             "COALESCE(a.name,'n/a') AS \"original performer\", "
             "CAST(%3 AS VARCHAR)||':'||CAST(r.record_id AS VARCHAR) AS SB_ITEM_KEY3, "
@@ -1213,25 +1204,26 @@ SBIDSong::retrieveAllSongs()
             "3,5,7 "
 
     )
-        .arg(SBIDBase::sb_type_song)
-        .arg(SBIDBase::sb_type_performer)
-        .arg(SBIDBase::sb_type_album)
+        .arg(Common::sb_type_song)
+        .arg(Common::sb_type_performer)
+        .arg(Common::sb_type_album)
     ;
 
     return new SBSqlQueryModel(q);
 }
 
 SBIDSongPtr
-SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
+SBIDSong::retrieveSong(const SBKey& key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* smgr=cm->songMgr();
-    SBIDSongPtr songPtr;
-    if(songID>=0)
-    {
-        songPtr=smgr->retrieve(createKey(songID),(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return songPtr;
+    return smgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDSongPtr
+SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
+{
+    return retrieveSong(createKey(songID),noDependentsFlag);
 }
 
 QString
@@ -1403,32 +1395,26 @@ SBIDSong::instantiate(const QSqlRecord &r)
 void
 SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 {
-    qDebug() << SB_DEBUG_INFO << fromPtr->songID() << "->" << this->songID();
     CacheManager* cm=Context::instance()->cacheManager();
 
     //	SongPerformance
     CacheSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
     _loadSongPerformances();	//	make sure list is loaded.
-    qDebug() << SB_DEBUG_INFO;
     QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
-    qDebug() << SB_DEBUG_INFO << fromPtr->songPerformances().count();
     while(it.hasNext())
     {
         it.next();
         int performerID=it.key();
-        qDebug() << SB_DEBUG_INFO << performerID;
         SBIDSongPerformancePtr spPtr=it.value();
 
         if(_songPerformances.contains(performerID))
         {
-            qDebug() << SB_DEBUG_INFO << spPtr->songPerformanceID() << spPtr->ID();
             SBIDSongPerformancePtr toSpPtr=_songPerformances[performerID];
             spMgr->merge(spPtr,toSpPtr);
         }
         else
         {
             //	Assign to current
-            qDebug() << SB_DEBUG_INFO << spPtr->songPerformanceID() << spPtr->ID();
             spPtr->setSongID(this->songID());
             _songPerformances[performerID]=spPtr;
 
@@ -1443,7 +1429,6 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 
     //	set originalPerformanceID on the fromPtr
     fromPtr->setOriginalPerformanceID(-1);
-    qDebug() << SB_DEBUG_INFO << fromPtr->key() << fromPtr->ID() << fromPtr->originalSongPerformanceID();
 }
 
 void
@@ -1492,9 +1477,6 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
-    qDebug() << SB_DEBUG_INFO << this->key() << this->ID() << this->originalSongPerformanceID();
-    qDebug() << SB_DEBUG_INFO << this->key() << this->ID() << this->changedFlag();
-    qDebug() << SB_DEBUG_INFO << this->key() << this->ID() << this->deletedFlag();
     if(deletedFlag() && db_change==Common::db_delete)
     {
         SQL.append(QString
@@ -1534,9 +1516,6 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
             .arg(this->_songID)
         );
     }
-    qDebug() << SB_DEBUG_INFO << this->key() << this->ID() << this->originalSongPerformanceID();
-    qDebug() << SB_DEBUG_INFO << this->key() << this->ID() << SQL;
-
     return SQL;
 }
 
@@ -1641,7 +1620,7 @@ SBIDSong::_copy(const SBIDSong &c)
 void
 SBIDSong::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_song;
+    _sb_item_type=Common::sb_type_song;
 
     _songID=-1;
     _songTitle=QString();

@@ -36,11 +36,11 @@ public:
     ~Navigator();
 
     void clearSearchFilter();
-    void openScreen(const SBIDPtr& ptr);
+    void openScreen(SBKey key);
     void openScreen(const ScreenItem& si);
     void keyPressEvent(QKeyEvent * event);
     void navigateDetailTab(int direction=1);
-    void removeFromScreenStack(const SBIDPtr& ptr);
+    void removeFromScreenStack(const SBKey& key);
     void resetAllFiltersAndSelections();
     void showCurrentPlaylist();
     void showSonglist();

@@ -34,9 +34,10 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
     return true;
 }
 
-SBIDPtr
-SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) const
+SBKey
+SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) const
 {
+    qDebug() << SB_DEBUG_INFO;
     //	Two types of how data can be dragged and dropped.
     //	-	non-positional: each row contains one item (this is the default). Only this item can be dragged
     //	-	positional: a row contains multiple items that can be dragged -- allSongs is one example. In
@@ -45,9 +46,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
     //	See also SBTabChooser::getSBIDSelected()
     QVariant v;
     QString header;
-    SBIDPtr ptr;
+    SBKey key;
     QModelIndex n;
-    SBIDBase::sb_type itemType=SBIDBase::sb_type_invalid;
+    Common::sb_type itemType=Common::sb_type_invalid;
     int itemID=-1;
     bool dragableColumnFlag=0;
 
@@ -70,14 +71,13 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
             if(header=="sb_item_key")
             {
-                qDebug() << SB_DEBUG_INFO << v.toString();
-                ptr=SBIDBase::createPtr(v.toString(),1);
-                qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID();
-                return ptr;
+                key=SBKey(v.toString());
+                qDebug() << SB_DEBUG_INFO << key;
+                return key;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
             {
-                itemType=static_cast<SBIDBase::sb_type>(v.toInt());
+                itemType=static_cast<Common::sb_type>(v.toInt());
             }
             else if(header=="sb_item_id")
             {
@@ -86,9 +86,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
-                if(itemType==SBIDBase::sb_type_invalid)
+                if(itemType==Common::sb_type_invalid)
                 {
-                    itemType=static_cast<SBIDBase::sb_type>(v.toInt());
+                    itemType=static_cast<Common::sb_type>(v.toInt());
                 }
 
                 //	Move 'cursor'
@@ -99,11 +99,11 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
                 itemID=v.toInt();
             }
 
-            if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+            if((!key.validFlag()) && (itemType!=Common::sb_type_invalid && itemID>=0))
             {
-                qDebug() << SB_DEBUG_INFO << itemType,itemID;
-                ptr=SBIDBase::createPtr(itemType,itemID,1);
-                return ptr;
+                key=SBKey(itemType,itemID);
+                qDebug() << SB_DEBUG_INFO << key;
+                return key;
             }
         }
     }
@@ -113,14 +113,22 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
         QModelIndex n;
 
         //	key
-        n=aim->index(idx.row(),idx.column()-1);
-        QString key=aim->data(n, Qt::DisplayRole).toString();
-
-        if((!ptr) && key.length())
         {
-            qDebug() << SB_DEBUG_INFO << key;
-            ptr=SBIDBase::createPtr(key,1);
-            return ptr;
+            for(int i=1;i<idx.column();i++)
+            {
+                n=aim->index(idx.row(),i-1);
+                QString s=aim->data(n, Qt::DisplayRole).toString();
+                qDebug() << SB_DEBUG_INFO << i << s;
+            }
+        }
+        n=aim->index(idx.row(),idx.column()-1);
+        QString stringKey=aim->data(n, Qt::DisplayRole).toString();
+
+        if((!key.validFlag()) && stringKey.length())
+        {
+            key=SBKey(stringKey);
+                qDebug() << SB_DEBUG_INFO << key;
+            return key;
         }
     }
     else if( idx.column()+1 >= _dragableColumnList.count())
@@ -139,9 +147,9 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
 
         if(header=="sb_item_type")
         {
-            if(itemType==SBIDBase::sb_type_invalid)
+            if(itemType==Common::sb_type_invalid)
             {
-                itemType=static_cast<SBIDBase::sb_type>(v.toInt());
+                itemType=static_cast<Common::sb_type>(v.toInt());
             }
         }
         else if(header=="sb_item_id")
@@ -149,15 +157,15 @@ SBModel::_determineSBID(const QAbstractItemModel* aim, const QModelIndex &idx) c
             itemID=v.toInt();
         }
 
-        if((!ptr) && (itemType!=SBIDBase::sb_type_invalid && itemID>=0))
+        if((!key.validFlag()) && (itemType!=Common::sb_type_invalid && itemID>=0))
         {
-            qDebug() << SB_DEBUG_INFO << itemType << itemID;
-            ptr=SBIDBase::createPtr(itemType,itemID,1);
-            return ptr;
+            key=SBKey(itemType,itemID);
+                qDebug() << SB_DEBUG_INFO << key;
+            return key;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
-    return ptr;
+                qDebug() << SB_DEBUG_INFO << key;
+    return key;
 }
 
 Qt::ItemFlags
@@ -203,10 +211,10 @@ SBModel::_mimeData(const QAbstractItemModel* aim, const QModelIndexList & indexe
         if (i.isValid())
         {
             QMimeData* mimeData = new QMimeData();
-            SBIDPtr ptr=_determineSBID(aim, i);
-            if(ptr)
+            SBKey key=_determineKey(aim,i);
+            if(key.validFlag())
             {
-                QByteArray ba=ptr->encode();
+                QByteArray ba=key.encode();
                 mimeData->setData("application/vnd.text.list", ba);
                 return mimeData;
             }

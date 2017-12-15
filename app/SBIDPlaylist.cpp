@@ -54,10 +54,10 @@ SBIDPlaylist::itemID() const
     return _playlistID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDPlaylist::itemType() const
 {
-    return SBIDBase::sb_type_playlist;
+    return Common::sb_type_playlist;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -279,12 +279,6 @@ SBIDPlaylist::tableModelItems() const
 
 
 //	Methods required by SBIDManagerTemplate
-QString
-SBIDPlaylist::key() const
-{
-    return createKey(this->playlistID());
-}
-
 void
 SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
@@ -300,29 +294,24 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 //	Static methods
-QString
-SBIDPlaylist::createKey(int playlistID, int unused)
+SBKey
+SBIDPlaylist::createKey(int playlistID)
 {
-    Q_UNUSED(unused);
-    return playlistID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_playlist)
-        .arg(playlistID):QString("x:x")	//	Return invalid key if playlistID<0
-    ;
+    return SBKey(Common::sb_type_playlist,playlistID);
+}
+
+SBIDPlaylistPtr
+SBIDPlaylist::retrievePlaylist(const SBKey& key, bool noDependentsFlag)
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CachePlaylistMgr* pmgr=cm->playlistMgr();
+    return pmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
 SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
-    CacheManager* cm=Context::instance()->cacheManager();
-    CachePlaylistMgr* pmgr=cm->playlistMgr();
-    SBIDPlaylistPtr playlistPtr;
-    if(playlistID>=0)
-    {
-        playlistPtr=pmgr->retrieve(
-                        createKey(playlistID),
-                        (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return playlistPtr;
+    return retrievePlaylist(createKey(playlistID),noDependentsFlag);
 }
 
 ///	Protected methods
@@ -588,7 +577,7 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
         it.next();
 
         SBIDPlaylistDetailPtr pdPtr=it.value();
-        if(pdPtr->consistOfItemType()==SBIDBase::sb_type_playlist)
+        if(pdPtr->consistOfItemType()==Common::sb_type_playlist)
         {
             SBIDPlaylistPtr childPlPtr=pdPtr->childPlaylistPtr();
             _getOnlineItemsByPlaylist(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr(),0);
@@ -623,7 +612,7 @@ SBIDPlaylist::_copy(const SBIDPlaylist &c)
 void
 SBIDPlaylist::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_playlist;
+    _sb_item_type=Common::sb_type_playlist;
 
     _duration=SBDuration();
     _playlistID=-1;

@@ -50,7 +50,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
         for(int j=0;j<numMatches;j++)
         {
             QString imagePath;
-            QString currentKey;
+            SBKey currentKey;
             QString currentAlbumTitle;
             QString currentAlbumPerformerName;
 
@@ -60,7 +60,8 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 //	Process new performerName
                 SBIDAlbumPtr tmpPtr=SBIDAlbum::retrieveUnknownAlbum();	//	only to get iconResourceLocation
                 imagePath=tmpPtr->iconResourceLocation();
-                currentKey="x:x";
+                imagePath=SBIDBase::iconResourceLocationClass(Common::sb_type_album);
+                currentKey=SBKey();
                 currentAlbumTitle=newAlbum.albumTitle;
                 currentAlbumPerformerName=newAlbum.performerName;
             }
@@ -192,7 +193,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
         for(int j=0;j<numMatches;j++)
         {
             QString imagePath;
-            QString currentKey;
+            SBKey currentKey;
             QString currentPerformerName;
 
             if(i==-1)
@@ -200,7 +201,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                 //	Process new performerName
                 SBIDPerformerPtr tmpPtr=SBIDPerformer::retrieveVariousPerformers();
                 imagePath=tmpPtr->iconResourceLocation();
-                currentKey="x:x";
+                currentKey=SBKey();
                 currentPerformerName=QString("Use as is: %1").arg(newPerformerName);
             }
             else
@@ -278,7 +279,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
         for(int j=0;j<numMatches;j++)
         {
             QString imagePath;
-            QString currentKey;
+            SBKey currentKey;
             QString currentSongTitle;
             QString currentSongPerformerName;
 
@@ -289,7 +290,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
 
             if(i==0)
             {
-                currentKey="x:x";
+                currentKey=SBKey();
                 currentSongPerformerName=newSong.performerName;
 
                 l->setText(QString("<html><head><style type=text/css> "

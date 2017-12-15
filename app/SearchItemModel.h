@@ -31,8 +31,8 @@ public slots:
 
 private:
 
-    void _add(SBIDBase::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
-    void _constructDisplay(SBIDBase::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,QString& key, QString& display, QString& altDisplay);
+    void _add(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
+    void _constructDisplay(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,QString& key, QString& display, QString& altDisplay);
     void _init();
     void _remove(const SBIDPtr& ptr);
 };

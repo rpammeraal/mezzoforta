@@ -1,6 +1,6 @@
 #include "Cache.h"
 
-Cache::Cache(const QString& name):_name(name)
+Cache::Cache(const QString& name, Common::sb_type itemType):_name(name),_itemType(itemType)
 {
     _init();
 }
@@ -11,7 +11,7 @@ Cache::~Cache()
 
 ///	Protected methods
 void
-Cache::addChangedKey(const QString& key)
+Cache::addChangedKey(const SBKey& key)
 {
     if(!_changes.contains(key))
     {
@@ -19,10 +19,8 @@ Cache::addChangedKey(const QString& key)
     }
 }
 
-
 ///	Private methods
 void
 Cache::_init()
 {
-
 }

@@ -16,13 +16,14 @@ public:
     };
 
     ScreenItem();
-    ScreenItem(const SBIDPtr& base);
+    ScreenItem(const SBKey& key);
     ScreenItem(const QString& searchCriteria);
     ScreenItem(ScreenItem::screen_type screenType);
     ~ScreenItem();
 
     bool compare(const ScreenItem& i, bool ignoreEditFlag=0) const;
     inline bool editFlag() const { return _editFlag; }
+    inline SBKey key() const { return _key; }
     inline ScreenItem::screen_type screenType() const { return _screenType; }
     inline QString searchCriteria() const { return _searchCriteria; }
     inline void setEditFlag(bool editFlag) { _editFlag=editFlag; }
@@ -30,8 +31,7 @@ public:
     inline void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    SBIDBasePtr ptr() const;
-    void updateSBIDBase(const SBIDPtr& ptr);	//	CWIP: rename to updateSBIDPtr
+    void updateSBIDBase(const SBKey& key);	//	CWIP: rename to updateSBIDPtr
 
     bool operator==(const ScreenItem& i) const;
     bool operator!=(const ScreenItem& i) const;
@@ -39,12 +39,12 @@ public:
 
 private:
     screen_type _screenType;
-    bool        _editFlag;
-    QString     _key;
-    QString     _searchCriteria;
-    int         _subtabID;
-    int         _sortColumn;
-    QString     _errorMsg;
+    bool    _editFlag;
+    SBKey   _key;
+    QString _searchCriteria;
+    int     _subtabID;
+    int     _sortColumn;
+    QString _errorMsg;
 
     void _init();
 };

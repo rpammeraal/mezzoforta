@@ -106,6 +106,23 @@ public:
         result_missing=2
     };
 
+    enum sb_type
+    {
+        sb_type_invalid=0,
+        sb_type_song=1,
+        sb_type_performer=2,
+        sb_type_album=3,
+        sb_type_chart=4,
+        sb_type_playlist=5,
+        sb_type_song_performance=6,
+        sb_type_album_performance=7,
+        sb_type_online_performance=8,
+        sb_type_chart_performance=9,
+        sb_type_playlist_detail=10
+    };
+
+    static size_t sb_type_count() { return 10; }
+
     class sb_parameters
     {
     public:

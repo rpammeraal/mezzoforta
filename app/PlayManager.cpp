@@ -179,7 +179,7 @@ PlayManager::clearPlaylist()
 }
 
 bool
-PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
+PlayManager::playItemNow(const SBKey& key, const bool enqueueFlag)
 {
     bool isPlayingFlag=0;
     PlayerController* pc=Context::instance()->getPlayerController();
@@ -190,9 +190,13 @@ PlayManager::playItemNow(const SBIDPtr& ptr, const bool enqueueFlag)
     qDebug() << SB_DEBUG_INFO;
         pc->playerStop();
     }
+
+    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SB_RETURN_IF_NULL(ptr,0);
+
     ptr->sendToPlayQueue(enqueueFlag);
     _radioModeFlag=0;
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_playlist && enqueueFlag==0)
+    if(ptr && ptr->itemType()==Common::sb_type_playlist && enqueueFlag==0)
     {
         emit playlistChanged(-1);
     }

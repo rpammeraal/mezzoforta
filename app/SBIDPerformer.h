@@ -30,7 +30,7 @@ public:
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -63,14 +63,17 @@ public:
     virtual operator QString() const;
 
     //	Methods required by CacheTemplate
-    static QString createKey(int performerID,int unused=-1);
-    virtual QString key() const;
+    static SBKey createKey(int performerID);
     static bool match(const QString& editedPerformerName,int skipID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
+    static SBIDPerformerPtr retrievePerformer(const SBKey& key,bool noDependentsFlag=1);
     static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1);
     static SBIDPerformerPtr retrieveVariousPerformers();
+
+    //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_performer; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
@@ -93,7 +96,7 @@ protected:
     static Common::result userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found);
 
     //	Helper methods
-    QString addRelatedPerformerSQL(const QString& key) const;
+    QString addRelatedPerformerSQL(const SBKey& key) const;
     QString deleteRelatedPerformerSQL(const QString& key) const;
 
 private:
@@ -104,7 +107,7 @@ private:
     //	Attributes derived from core attributes
     QVector<SBIDAlbumPtr>             _albumList;	//	replace with string keys
     QVector<SBIDAlbumPerformancePtr>  _albumPerformances;	//	replace with string keys
-    QVector<QString>                  _relatedPerformerKey;
+    QVector<SBKey>                    _relatedPerformerKey;
     QVector<SBIDSongPerformancePtr>   _songPerformances;	//	replace with string keys
 
     //	Methods
@@ -112,9 +115,9 @@ private:
     void _init();
     void _loadAlbums();
     void _loadAlbumPerformances();
-    QVector<QString> _loadRelatedPerformers() const;
+    QVector<SBKey> _loadRelatedPerformers() const;
     void _loadSongPerformances();
-    void _mergeRelatedPerformer(const QString& fromKey, const QString& toKey);
+    void _mergeRelatedPerformer(const SBKey& fromKey, const SBKey& toKey);
 
     QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QVector<SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;

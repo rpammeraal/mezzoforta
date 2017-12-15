@@ -87,21 +87,14 @@ Navigator::clearSearchFilter()
 }
 
 void
-Navigator::openScreen(const SBIDPtr &ptr)
+Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 {
-    SBIDPtr p;
-    SB_RETURN_VOID_IF_NULL(ptr);
-
-    if(ptr->itemType()==SBIDBase::sb_type_playlist_detail)
+    if(key.itemType()==Common::sb_type_playlist_detail)
     {
-        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(ptr->itemID());
-        p=pdPtr->ptr();
+        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(key);
+        key=pdPtr->key();
     }
-    else
-    {
-        p=ptr;
-    }
-    openScreen(ScreenItem(p));
+    openScreen(ScreenItem(key));
 }
 
 void
@@ -115,7 +108,7 @@ Navigator::openScreen(const ScreenItem &si)
 
     ScreenStack* st=Context::instance()->getScreenStack();
     //st->debugShow("openScreen:113");
-    SBIDPtr ptr;
+    SBKey key;
 
     //	Check for valid parameter
     if(si.screenType()==ScreenItem::screen_type_invalid)
@@ -125,16 +118,16 @@ Navigator::openScreen(const ScreenItem &si)
     }
     else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
-        ptr=si.ptr();
-        if(!ptr)
+        key=si.key();
+        if(!key.validFlag())
         {
             qDebug() << SB_DEBUG_NPTR;
             return;
         }
 
-        if(ptr->itemType()==SBIDBase::sb_type_invalid)
+        if(key.itemType()==Common::sb_type_invalid)
         {
-            qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << ptr->itemType();
+            qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << key.itemType();
             return;
         }
     }
@@ -325,14 +318,14 @@ Navigator::navigateDetailTab(int direction)
 }
 
 void
-Navigator::removeFromScreenStack(const SBIDPtr& ptr)
+Navigator::removeFromScreenStack(const SBKey& key)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeForward();
     ScreenItem si=st->currentScreen();
 
     //	Move currentScreen one back, until it is on that is not current
-    while(si.screenType()==ScreenItem::screen_type_sbidbase && ptr && *(si.ptr())==(*ptr))
+    while(si.screenType()==ScreenItem::screen_type_sbidbase && si.key()==key)
     {
         tabBackward();	//	move display one back
         si=st->currentScreen();	//	find out what new current screen is.
@@ -340,7 +333,7 @@ Navigator::removeFromScreenStack(const SBIDPtr& ptr)
     }
 
     //	Now remove all instances of requested to be removed
-    st->removeScreen(ptr);
+    st->removeScreen(key);
 
     //	Activate the current screen
     qDebug() << SB_DEBUG_INFO;
@@ -452,9 +445,8 @@ Navigator::editItem()
 void
 Navigator::openItemFromCompleter(const QModelIndex& i)
 {
-    QString key=i.sibling(i.row(), i.column()+1).data().toString();
-    SBIDPtr ptr=SBIDBase::createPtr(key);
-    openScreen(ptr);
+    SBKey key=SBKey(i.sibling(i.row(), i.column()+1).data().toString());
+    openScreen(key);
     clearSearchFilter();
 }
 
@@ -467,8 +459,8 @@ Navigator::openChooserItem(const QModelIndex &i)
     if(screenType==ScreenItem::screen_type_sbidbase)
     {
         //	OPen without dependents, so we can explicitly force a progress box when loading dependents
-        ptr=SBIDBase::createPtr((SBIDBase::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt(),1);
-        screenItem=ScreenItem(ptr);
+        SBKey key=SBKey((Common::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+        screenItem=ScreenItem(key);
 
     }
     else
@@ -482,8 +474,8 @@ Navigator::openChooserItem(const QModelIndex &i)
 void
 Navigator::openPerformer(const QString &itemID)
 {
-    SBIDPtr ptr=SBIDBase::createPtr(SBIDBase::sb_type_performer,itemID.toInt());
-    openScreen(ptr);
+    SBKey key=SBIDPerformer::createKey(itemID.toInt());
+    openScreen(key);
 }
 
 void
@@ -597,18 +589,18 @@ Navigator::_activateScreen()
     SBTab* tab=NULL;
     bool editFlag=si.editFlag();
     bool canBeEditedFlag=1;
-    SBIDPtr ptr;
+    SBKey key;
 
     switch(si.screenType())
     {
         case ScreenItem::screen_type_sbidbase:
-            ptr=si.ptr();
-            switch(ptr->itemType())
+            key=si.key();
+            switch(key.itemType())
             {
-            case SBIDBase::sb_type_online_performance:
-            case SBIDBase::sb_type_album_performance:
-            case SBIDBase::sb_type_song_performance:
-            case SBIDBase::sb_type_song:
+            case Common::sb_type_online_performance:
+            case Common::sb_type_album_performance:
+            case Common::sb_type_song_performance:
+            case Common::sb_type_song:
                 if(editFlag)
                 {
                     tab=mw->ui.tabSongEdit;
@@ -619,7 +611,7 @@ Navigator::_activateScreen()
                 }
                 break;
 
-            case SBIDBase::sb_type_performer:
+            case Common::sb_type_performer:
                 if(editFlag)
                 {
                     tab=mw->ui.tabPerformerEdit;
@@ -630,7 +622,7 @@ Navigator::_activateScreen()
                 }
                 break;
 
-            case SBIDBase::sb_type_album:
+            case Common::sb_type_album:
                 if(editFlag)
                 {
                     tab=mw->ui.tabAlbumEdit;
@@ -641,19 +633,19 @@ Navigator::_activateScreen()
                 }
                 break;
 
-            case SBIDBase::sb_type_playlist:
+            case Common::sb_type_playlist:
                 tab=mw->ui.tabPlaylistDetail;
                 canBeEditedFlag=0;
                 break;
 
-            case SBIDBase::sb_type_chart:
+            case Common::sb_type_chart:
                 tab=mw->ui.tabChartDetail;
                 canBeEditedFlag=0;
                 break;
 
-            case SBIDBase::sb_type_playlist_detail:
-            case SBIDBase::sb_type_chart_performance:
-            case SBIDBase::sb_type_invalid:
+            case Common::sb_type_playlist_detail:
+            case Common::sb_type_chart_performance:
+            case Common::sb_type_invalid:
                 break;
             }
         break;
@@ -676,12 +668,6 @@ Navigator::_activateScreen()
 
     if(tab)
     {
-        if(ptr)
-        {
-            qDebug() << SB_DEBUG_INFO << ptr->genericDescription();
-            ptr->refreshDependents(1,0);
-        }
-
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
         qDebug() << SB_DEBUG_INFO;
@@ -695,13 +681,13 @@ Navigator::_activateScreen()
 
     ProgressDialog::instance()->hide();
 
-    if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.ptr())
+    if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.key().validFlag())
     {
         //	Go to previous screen first
         this->tabBackward();
 
         //	Remove all from screenStack with requested ID.
-        this->removeFromScreenStack(si.ptr());
+        this->removeFromScreenStack(si.key());
 
         return 1;
     }

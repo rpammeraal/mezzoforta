@@ -10,11 +10,11 @@
 #include <QStandardItem>
 
 #include "Common.h"
+#include "SBKey.h"
 
 class SBSqlQueryModel;
 
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDPtr;
-class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDBasePtr;
 
 
 class Cache;
@@ -32,36 +32,15 @@ class SBIDBase
 {
 
 public:
-    enum sb_type
-    {
-        sb_type_invalid=0,
-        sb_type_song=1,
-        sb_type_performer=2,
-        sb_type_album=3,
-        sb_type_chart=4,
-        sb_type_playlist=5,
-        sb_type_song_performance=6,
-        sb_type_album_performance=7,
-        sb_type_online_performance=8,
-        sb_type_chart_performance=9,
-        sb_type_playlist_detail=10
-    };
 
-    static size_t sb_type_count() { return 10; }
-
-    SBIDBase();
-    SBIDBase(const SBIDBase& c);
     virtual ~SBIDBase();
-    static SBIDPtr createPtr(SBIDBase::sb_type itemType,int ID,bool noDependentsFlag=1);
-    static SBIDPtr createPtr(const QByteArray& encodedData);
-    static SBIDPtr createPtr(const QString& key,bool noDependentsFlag=1);
+
+    static SBIDPtr createPtr(Common::sb_type itemType,int ID,bool noDependentsFlag=1);
+    static SBIDPtr createPtr(const SBKey& key,bool noDependentsFlag=1);
 
     //	Public methods
-    virtual QByteArray encode() const;
     inline bool changedFlag() const { return _changedFlag; }
     inline bool deletedFlag() const { return _deletedFlag; }
-    inline bool mergedFlag() const { return _mergedWithID!=-1; }
-    inline int mergedWithID() const { return _mergedWithID; }
 
     //	Public virtual methods (Methods that only apply to subclasseses)
     virtual int commonPerformerID() const=0;
@@ -69,7 +48,7 @@ public:
     virtual QString genericDescription() const=0;
     virtual QString iconResourceLocation() const=0;
     virtual int itemID() const=0;
-    virtual sb_type itemType() const=0;
+    virtual Common::sb_type itemType() const=0;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
@@ -94,18 +73,24 @@ public:
     void showDebug(const QString& title) const;
 
     //	Operators
-    virtual bool operator==(const SBIDBase& i) const;	//	compares on itemType(),key()
+    virtual bool operator==(const SBIDBase& i) const;	//	compares on key()
     virtual bool operator!=(const SBIDBase& i) const;	//	inverse of operator==()
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
-    virtual QString key() const=0;
+    SBKey key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0)=0;
 
     //	Aux methods
-    static SBIDBase::sb_type convert(Common::sb_field f);
+    static Common::sb_type convert(Common::sb_field f);
+    static QString iconResourceLocationClass(const SBKey& key);
+    static QString iconResourceLocationClass(Common::sb_type itemType);
+
 
 protected:
+    SBIDBase();
+    SBIDBase(const SBIDBase& c);
+
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
     friend class SBIDChart;
@@ -118,40 +103,35 @@ protected:
     friend class SBModel;
     template <class T, class parentT> friend class CacheTemplate;
 
-
     //	Tertiary identifiers (navigation et al)
     QString     _errorMsg;
-
-    //	Used by CacheManager
-    bool        _deletedFlag;	//	CWIP: move to private
-    int         _mergedWithID;	//	CWIP: move to private
 
     //	Used by CacheManager and SBID*:: classes
     virtual void clearChangedFlag();
     virtual void rollback();
     void setChangedFlag();
     inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
-    inline void setMergedWithID(int mergedWithID) { _mergedWithID=mergedWithID; }
     virtual void setPrimaryKey(int PK)=0;
 
 private:
-    bool        _changedFlag;
-    int         _id;
-    sb_type     _sb_item_type;
-    QString     _sb_mbid;
-    int         _sb_model_position;
-    QString     _url;	//	any item may have an url
-    QString     _wiki;	//	any item may have an wiki page
-    Cache*      _owningCache;
+    bool            _changedFlag;
+    bool            _deletedFlag;
+    int             _id;
+    Common::sb_type _sb_item_type;
+    QString         _sb_mbid;
+    int             _sb_model_position;
+    QString         _url;	//	any item may have an url
+    QString         _wiki;	//	any item may have an wiki page
+    Cache*          _owningCache;
 
     void _init();
 };
 
 //Q_DECLARE_METATYPE(SBIDBase);
 
-inline uint qHash(const SBIDBase& k, uint seed)
-{
-    return qHash(k.key(),seed);
-}
+//inline uint qHash(const SBIDBase& k, uint seed)
+//{
+//    return qHash(k.getKey(),seed);
+//}
 
 #endif // SBIDBASE_H

@@ -9,12 +9,10 @@ ScreenItem::ScreenItem()
     _init();
 }
 
-ScreenItem::ScreenItem(const SBIDPtr& ptr)
+ScreenItem::ScreenItem(const SBKey& key):_key(key)
 {
-    Q_ASSERT(ptr);
     _init();
     _screenType=ScreenItem::screen_type_sbidbase;
-    _key=ptr->key();
 }
 
 ScreenItem::ScreenItem(const QString &searchCriteria)
@@ -69,19 +67,12 @@ ScreenItem::compare(const ScreenItem &i, bool ignoreEditFlag) const
 
 }
 
-SBIDBasePtr
-ScreenItem::ptr() const
-{
-    return SBIDBase::createPtr(_key);
-}
-
 void
-ScreenItem::updateSBIDBase(const SBIDPtr &ptr)
+ScreenItem::updateSBIDBase(const SBKey& key)
 {
-    Q_ASSERT(ptr);
     if(this->screenType()==ScreenItem::screen_type_sbidbase)
     {
-        this->_key=ptr->key();
+        this->_key=key;
     }
     else
     {
@@ -103,11 +94,11 @@ ScreenItem::operator !=(const ScreenItem& i) const
 }
 
 QDebug
-operator<<(QDebug dbg, const ScreenItem& screenItem)
+operator<<(QDebug dbg, const ScreenItem& si)
 {
     dbg.nospace() << "ScreenItem:";
 
-    switch(screenItem._screenType)
+    switch(si._screenType)
     {
     case ScreenItem::screen_type_allsongs:
         dbg.nospace() << "AllSongs";
@@ -122,18 +113,18 @@ operator<<(QDebug dbg, const ScreenItem& screenItem)
         break;
 
     case ScreenItem::screen_type_sbidbase:
-        dbg.nospace() << "SBIDBase [" << screenItem.ptr()->operator QString() << "]";
+        dbg.nospace() << "SBIDBase [" << si.key().operator QString() << "]";
         break;
 
     case ScreenItem::screen_type_songsearch:
-        dbg.nospace() << "search [" << screenItem._searchCriteria << "]";
+        dbg.nospace() << "search [" << si._searchCriteria << "]";
         break;
     }
 
     dbg.nospace()
-            << " :subtabID=" << screenItem._subtabID
-            << " :sortColumn=" << screenItem._sortColumn
-            << " :editFlag=" << screenItem._editFlag
+            << " :subtabID=" << si._subtabID
+            << " :sortColumn=" << si._sortColumn
+            << " :editFlag=" << si._editFlag
     ;
 
     return dbg.space();
@@ -146,7 +137,6 @@ ScreenItem::_init()
 {
     _screenType=ScreenItem::screen_type_invalid;
     _editFlag=0;
-    _key=QString();
     _searchCriteria=QString();
     _subtabID=INT_MAX;
     _sortColumn=INT_MAX;

@@ -27,24 +27,24 @@ Preloader::chartItems(const SBIDBase& id)
     QString whereClause;
     switch(id.itemType())
     {
-        case SBIDBase::sb_type_song:
+        case Common::sb_type_song:
             whereClause=QString("p.song_id=%1").arg(id.itemID());
             break;
-        case SBIDBase::sb_type_performer:
+        case Common::sb_type_performer:
             whereClause=QString("a.artist_id=%1").arg(id.itemID());
             break;
-        case SBIDBase::sb_type_chart:
+        case Common::sb_type_chart:
             whereClause=QString("cp.chart_id=%1").arg(id.itemID());
             break;
 
-        case SBIDBase::sb_type_invalid:
-        case SBIDBase::sb_type_album:
-        case SBIDBase::sb_type_playlist:
-        case SBIDBase::sb_type_song_performance:
-        case SBIDBase::sb_type_album_performance:
-        case SBIDBase::sb_type_online_performance:
-        case SBIDBase::sb_type_chart_performance:
-        case SBIDBase::sb_type_playlist_detail:
+        case Common::sb_type_invalid:
+        case Common::sb_type_album:
+        case Common::sb_type_playlist:
+        case Common::sb_type_song_performance:
+        case Common::sb_type_album_performance:
+        case Common::sb_type_online_performance:
+        case Common::sb_type_chart_performance:
+        case Common::sb_type_playlist_detail:
             whereClause="1=0";
             break;
     }
@@ -740,68 +740,68 @@ Preloader::playlistItems(int playlistID)
     items.clear();
     while(queryList.next())
     {
-        QString key;
+        SBKey key;
         SBIDPtr itemPtr;
 
         //	Process performer
-        key=queryList.isNull(7)?QString():SBIDPerformer::createKey(queryList.value(7).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(7)?SBKey():SBIDPerformer::createKey(queryList.value(7).toInt());
+        if(key.validFlag())
         {
             itemPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
         }
 
         //	Process album
-        key=queryList.isNull(6)?QString():SBIDAlbum::createKey(queryList.value(6).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(6)?SBKey():SBIDAlbum::createKey(queryList.value(6).toInt());
+        if(key.validFlag())
         {
             itemPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
         }
 
         //	Process chart
-        key=queryList.isNull(5)?QString():SBIDChart::createKey(queryList.value(5).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(5)?SBKey():SBIDChart::createKey(queryList.value(5).toInt());
+        if(key.validFlag())
         {
             itemPtr=(cmgr->contains(key)? cmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateChart(cmgr,chartFields,queryList));
         }
 
         //	Process playlist
-        key=queryList.isNull(4)?QString():SBIDPlaylist::createKey(queryList.value(2).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(4)?SBKey():SBIDPlaylist::createKey(queryList.value(2).toInt());
+        if(key.validFlag())
         {
             itemPtr=(plmgr->contains(key)? plmgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePlaylist(plmgr,playlistFields,queryList));
         }
 
         //	Process performance
         //	Load song in cache
-        key=queryList.isNull(3)?QString():SBIDSong::createKey(queryList.value(3).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(3)?SBKey():SBIDSong::createKey(queryList.value(3).toInt());
+        if(key.validFlag())
         {
             (smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
         }
 
         //	Load songPerformance in cache
-        key=queryList.isNull(18)?QString():SBIDSongPerformance::createKey(queryList.value(18).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(18)?SBKey():SBIDSongPerformance::createKey(queryList.value(18).toInt());
+        if(key.validFlag())
         {
             (spmgr->contains(key)? spmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
         }
 
         //	Load albumPerformance in cache
-        key=queryList.isNull(21)?QString():SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(21)?SBKey():SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
+        if(key.validFlag())
         {
             (apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
         }
 
         //	Load onlinePerformance in cache
-        key=queryList.isNull(3)?QString():SBIDOnlinePerformance::createKey(queryList.value(3).toInt());
-        if(key.length()>0)
+        key=queryList.isNull(3)?SBKey():SBIDOnlinePerformance::createKey(queryList.value(3).toInt());
+        if(key.validFlag())
         {
             itemPtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
         }
 
         //	Load playlistDetail in cache
-        key=queryList.isNull(0)?QString():SBIDPlaylistDetail::createKey(queryList.value(0).toInt());
+        key=queryList.isNull(0)?SBKey():SBIDPlaylistDetail::createKey(queryList.value(0).toInt());
         SBIDPlaylistDetailPtr pdPtr=(pdmgr->contains(key)? pdmgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePlaylistDetailInstance(pdmgr,playlistDetailFields,queryList));
 
         if(pdPtr)

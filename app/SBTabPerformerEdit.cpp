@@ -45,21 +45,21 @@ SBTabPerformerEdit::handleEscapeKey()
 bool
 SBTabPerformerEdit::hasEdits() const
 {
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
+    SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
+    SB_RETURN_IF_NULL(pPtr,0);
+
+    if(pPtr->performerName()!=mw->ui.performerEditName->text() ||
+        pPtr->notes()!=mw->ui.performerEditNotes->text() ||
+        pPtr->url()!=mw->ui.performerEditWebSite->text() ||
+        _relatedPerformerHasChanged==1
+    )
     {
-        SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
-        if(performerPtr->performerName()!=mw->ui.performerEditName->text() ||
-            performerPtr->notes()!=mw->ui.performerEditNotes->text() ||
-            performerPtr->url()!=mw->ui.performerEditWebSite->text() ||
-            _relatedPerformerHasChanged==1
-        )
-        {
-            return 1;
-        }
+        return 1;
     }
+
     return 0;
 }
 
@@ -173,12 +173,14 @@ SBTabPerformerEdit::save() const
     CachePerformerMgr* peMgr=cm->performerMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.ptr()->itemID());
+    SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.key());
     SBIDPerformerPtr selectedPerformerPtr;
     bool mergeFlag=0;
     bool successFlag=0;
     bool caseChangeFlag=0;
     bool performerNameChangedFlag=0;
+
+    SB_RETURN_VOID_IF_NULL(orgPerformerPtr);
 
     if(currentScreenItem.editFlag()==0)
     {
@@ -320,8 +322,8 @@ SBTabPerformerEdit::save() const
             ScreenStack* st=Context::instance()->getScreenStack();
 
             selectedPerformerPtr->refreshDependents(0,1);
-            ScreenItem from(orgPerformerPtr);
-            ScreenItem to(selectedPerformerPtr);
+            ScreenItem from(orgPerformerPtr->key());
+            ScreenItem to(selectedPerformerPtr->key());
             st->replace(from,to);
         }
 
@@ -473,16 +475,10 @@ SBTabPerformerEdit::_populate(const ScreenItem& si)
     SBIDPerformerPtr performerPtr;
 
     //	Get detail
-    if(si.ptr())
-    {
-        performerPtr=SBIDPerformer::retrievePerformer(si.ptr()->itemID());
-    }
-    if(!performerPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
-    ScreenItem currentScreenItem(performerPtr);
+    performerPtr=SBIDPerformer::retrievePerformer(si.key());
+    SB_RETURN_IF_NULL(performerPtr,ScreenItem());
+
+    ScreenItem currentScreenItem(performerPtr->key());
     currentScreenItem.setEditFlag(1);
 
     _setRelatedPerformerBeingAddedFlag(0);

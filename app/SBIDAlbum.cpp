@@ -53,10 +53,10 @@ SBIDAlbum::itemID() const
     return this->albumID();
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDAlbum::itemType() const
 {
-    return SBIDBase::sb_type_album;
+    return Common::sb_type_album;
 }
 
 ///
@@ -643,20 +643,10 @@ SBIDAlbum::operator QString() const
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
-SBIDAlbum::createKey(int albumID,int unused)
+SBKey
+SBIDAlbum::createKey(int albumID)
 {
-    Q_UNUSED(unused);
-    return albumID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_album)
-        .arg(albumID):QString("x:x")	//	Return invalid key if albumID<0
-    ;
-}
-
-QString
-SBIDAlbum::key() const
-{
-    return createKey(this->albumID());
+    return SBKey(Common::sb_type_album,albumID);
 }
 
 void
@@ -674,16 +664,17 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
+SBIDAlbum::retrieveAlbum(const SBKey& key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    SBIDAlbumPtr albumPtr;
-    if(albumID>=0)
-    {
-        albumPtr=amgr->retrieve(createKey(albumID),(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return albumPtr;
+    return amgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDAlbumPtr
+SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
+{
+    return retrieveAlbum(createKey(albumID),noDependentsFlag);
 }
 
 SBIDAlbumPtr
@@ -1130,7 +1121,6 @@ SBIDAlbum::updateSQL(const Common::db_change db_change) const
     qDebug() << SB_DEBUG_INFO
              << key()
              << deletedFlag()
-             << mergedFlag()
              << changedFlag()
     ;
 
@@ -1286,7 +1276,7 @@ SBIDAlbum::_copy(const SBIDAlbum &t)
 void
 SBIDAlbum::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_album;
+    _sb_item_type=Common::sb_type_album;
 
     _albumID=-1;
     _albumPerformerID=-1;

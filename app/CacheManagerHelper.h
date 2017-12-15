@@ -15,12 +15,12 @@ class CacheManagerHelper : public QObject
 
 public:
     explicit CacheManagerHelper(QObject *parent = 0);
-    void emitUpdatedSBIDPtr(SBIDBasePtr ptr);
-    void emitRemovedSBIDPtr(SBIDBasePtr ptr);
+    void emitUpdatedSBIDPtr(SBIDPtr ptr);
+    void emitRemovedSBIDPtr(SBIDPtr ptr);
     static void emitRemovedSBIDPtrArrayStatic(const QStringList& keyList);
-    static void emitRemovedSBIDPtrStatic(SBIDBasePtr ptr);
+    static void emitRemovedSBIDPtrStatic(SBIDPtr ptr);
     static void emitUpdatedSBIDPtrArrayStatic(const QStringList& keyList);
-    static void emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr);
+    static void emitUpdatedSBIDPtrStatic(SBIDPtr ptr);
 
 signals:
     void updatedSBIDPtr(SBIDPtr);

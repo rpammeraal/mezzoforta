@@ -33,10 +33,10 @@ SBIDSongPerformance::itemID() const
     return songPerformanceID();
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDSongPerformance::itemType() const
 {
-    return SBIDBase::sb_type_song_performance;
+    return Common::sb_type_song_performance;
 }
 
 QString
@@ -134,18 +134,20 @@ SBIDSongPerformance::songPerformerName() const
     return (pPtr?pPtr->performerName():QString());
 }
 
-QString
+SBKey
 SBIDSongPerformance::songPerformerKey() const
 {
     SBIDPerformerPtr pPtr=performerPtr();
-    return (pPtr?pPtr->key():QString());
+    SB_RETURN_IF_NULL(pPtr,SBKey());
+    return pPtr->key();
 }
 
-QString
+SBKey
 SBIDSongPerformance::songKey() const
 {
     SBIDSongPtr sPtr=songPtr();
-    return (sPtr?sPtr->key():QString());
+    SB_RETURN_IF_NULL(sPtr,SBKey());
+    return sPtr->key();
 }
 
 QString
@@ -167,19 +169,10 @@ SBIDSongPerformance::operator QString()
 }
 
 //	Methods required by SBIDManagerTemplate
-QString
+SBKey
 SBIDSongPerformance::createKey(int songPerformanceID)
 {
-    return songPerformanceID>=0?QString("%1:%2")
-        .arg(SBIDBase::sb_type_song_performance)
-        .arg(songPerformanceID):QString("x:x")	//	return invalid key if songID<0
-    ;
-}
-
-QString
-SBIDSongPerformance::key() const
-{
-    return createKey(_songPerformanceID);
+    return SBKey(Common::sb_type_song_performance,songPerformanceID);
 }
 
 void
@@ -272,16 +265,17 @@ SBIDSongPerformance::performancesByPerformer_Preloader(int performerID)
 }
 
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformance(const SBKey& key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    SBIDSongPerformancePtr spPtr;
-    if(songPerformanceID>=0)
-    {
-        spPtr=spMgr->retrieve(createKey(songPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return spPtr;
+    return spMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+}
+
+SBIDSongPerformancePtr
+SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
+{
+    return retrieveSongPerformance(createKey(songPerformanceID),noDependentsFlag);
 }
 
 SBIDSongPerformancePtr
@@ -680,7 +674,7 @@ SBIDSongPerformance::_copy(const SBIDSongPerformance &c)
 void
 SBIDSongPerformance::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_song_performance;
+    _sb_item_type=Common::sb_type_song_performance;
 
     _songPerformanceID=-1;
     _songID=-1;

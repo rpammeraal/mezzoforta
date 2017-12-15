@@ -78,11 +78,6 @@ CacheManager::saveChanges()
     if(pMgr->contains(key))
     {
         SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(performerID);
-        qDebug() << SB_DEBUG_INFO << pPtr->key() << pPtr->ID() << pPtr->deletedFlag() << pPtr->mergedFlag() << pPtr->mergedWithID();
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO << "does NOT contain " << key;
     }
 
     //	CWIP: remove when database is cached
@@ -105,15 +100,14 @@ CacheManager::saveChanges()
 void
 CacheManager::_init()
 {
-    qDebug() << SB_DEBUG_INFO;
-    _cache[sb_cache_album]=std::make_shared<CacheAlbumMgr>(CacheAlbumMgr("a_mgr"));
-    _cache[sb_cache_album_performance]=std::make_shared<CacheAlbumPerformanceMgr>(CacheAlbumPerformanceMgr("ap_mgr"));
-    _cache[sb_cache_chart]=std::make_shared<CacheChartMgr>(CacheChartMgr("c_mgr"));
-    _cache[sb_cache_chart_performance]=std::make_shared<CacheChartPerformanceMgr>(CacheChartPerformanceMgr("cp_mgr"));
-    _cache[sb_cache_online_performance]=std::make_shared<CacheOnlinePerformanceMgr>(CacheOnlinePerformanceMgr("op_mgr"));
-    _cache[sb_cache_performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr"));
-    _cache[sb_cache_playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr"));
-    _cache[sb_cache_playlist_detail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr"));
-    _cache[sb_cache_song_performance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr"));
-    _cache[sb_cache_song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr"));
+    _cache[sb_cache_album]=std::make_shared<CacheAlbumMgr>(CacheAlbumMgr("a_mgr", Common::sb_type_album));
+    _cache[sb_cache_album_performance]=std::make_shared<CacheAlbumPerformanceMgr>(CacheAlbumPerformanceMgr("ap_mgr",Common::sb_type_album_performance));
+    _cache[sb_cache_chart]=std::make_shared<CacheChartMgr>(CacheChartMgr("c_mgr",Common::sb_type_chart));
+    _cache[sb_cache_chart_performance]=std::make_shared<CacheChartPerformanceMgr>(CacheChartPerformanceMgr("cp_mgr",Common::sb_type_chart_performance));
+    _cache[sb_cache_online_performance]=std::make_shared<CacheOnlinePerformanceMgr>(CacheOnlinePerformanceMgr("op_mgr",Common::sb_type_online_performance));
+    _cache[sb_cache_performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr",Common::sb_type_performer));
+    _cache[sb_cache_playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr",Common::sb_type_playlist));
+    _cache[sb_cache_playlist_detail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr",Common::sb_type_playlist_detail));
+    _cache[sb_cache_song_performance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr",Common::sb_type_song_performance));
+    _cache[sb_cache_song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr",Common::sb_type_song));
 }

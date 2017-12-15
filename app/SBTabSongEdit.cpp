@@ -23,21 +23,20 @@ SBTabSongEdit::handleEnterKey()
 bool
 SBTabSongEdit::hasEdits() const
 {
-    const SBIDPtr& ptr=this->currentScreenItem().ptr();
+    const SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr->itemType()==SBIDBase::sb_type_song)
+    SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
+    SB_RETURN_IF_NULL(songPtr,0);
+
+    if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
+        songPtr->songOriginalPerformerName()!=mw->ui.songEditPerformerName->text() ||
+        songPtr->songOriginalYear()!=mw->ui.songEditYearOfRelease->text().toInt() ||
+        songPtr->notes()!=mw->ui.songEditNotes->text() ||
+        songPtr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
+    )
     {
-        SBIDSongPtr songPtr=SBIDSong::retrieveSong(ptr->itemID());
-        if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
-            songPtr->songOriginalPerformerName()!=mw->ui.songEditPerformerName->text() ||
-            songPtr->songOriginalYear()!=mw->ui.songEditYearOfRelease->text().toInt() ||
-            songPtr->notes()!=mw->ui.songEditNotes->text() ||
-            songPtr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
-        )
-        {
-            return 1;
-        }
+        return 1;
     }
 
     return 0;
@@ -72,7 +71,9 @@ SBTabSongEdit::save() const
     QString restorePoint=dal->createRestorePoint();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().ptr()->itemID());
+    SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(orgSongPtr);
+
     SBIDSongPtr newSongPtr=orgSongPtr;
     SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
     SBIDSongPerformancePtr newSpPtr;	//	only populated if a new original spPtr is created.
@@ -338,8 +339,8 @@ qDebug() << SB_DEBUG_INFO;
             ScreenStack* st=Context::instance()->getScreenStack();
 
             newSongPtr->refreshDependents(0,1);
-            ScreenItem from(orgSongPtr);
-            ScreenItem to(newSongPtr);
+            ScreenItem from(orgSongPtr->key());
+            ScreenItem to(newSongPtr->key());
             st->replace(from,to);
         }
 
@@ -383,19 +384,8 @@ SBTabSongEdit::_populate(const ScreenItem& si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBIDSongPtr songPtr;
-
-    //	Get detail
-    if(si.ptr())
-    {
-        qDebug() << SB_DEBUG_INFO;
-        songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
-    }
-
-    if(!songPtr)
-    {
-        return ScreenItem();
-    }
+    SBIDSongPtr songPtr=SBIDSong::retrieveSong(si.key());
+    SB_RETURN_IF_NULL(songPtr,ScreenItem());
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);

@@ -28,7 +28,7 @@ public:
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual bool save();
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -70,12 +70,13 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
-    static QString createKey(int albumID,int unused=-1);
-    virtual QString key() const;
+    static SBKey createKey(int albumID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_album; }
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
+    static SBIDAlbumPtr retrieveAlbum(const SBKey& key,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveUnknownAlbum();
@@ -97,9 +98,9 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDAlbumPtr& from);
-    static void openKey(const QString& key, int& albumID);
+    static void openKey(const QString& getKey, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& key);
+    static SBSqlQueryModel* retrieveSQL(const QString& getKey);
     virtual void setPrimaryKey(int PK) { _albumID=PK;  }
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found);

@@ -29,10 +29,10 @@ public:
     virtual Qt::DropActions supportedDropActions() const;
 
     //	SBTableModel specific methods
-    SBIDPtr determineSBID(const QModelIndex &idx) const;
+    SBKey determineKey(const QModelIndex &idx) const;
     void populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
     void populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances);
-    void populateChartsByItemType(SBIDBase::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances);
+    void populateChartsByItemType(Common::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances);
     void populateChartContent(const QMap<int,SBIDChartPerformancePtr>& items);
     void populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances);
     void populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> list);
@@ -40,8 +40,8 @@ public:
     void populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& performances);
 
 signals:
-    void assign(const SBIDPtr& fromPtr, const SBIDPtr& toIDPtr) const;
-    void assign(const SBIDPtr& fromPtr, int row) const;
+    void assign(const SBKey from, const SBKey to) const;
+    void assign(const SBKey fromPtr, int row) const;
 
 private:
     int _positionColumn;	//	Specifies the column that has a position (eg within playlist)

@@ -61,10 +61,10 @@ SBIDOnlinePerformance::itemID() const
     return _onlinePerformanceID;
 }
 
-SBIDBase::sb_type
+Common::sb_type
 SBIDOnlinePerformance::itemType() const
 {
-    return SBIDBase::sb_type_online_performance;
+    return Common::sb_type_online_performance;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -168,11 +168,12 @@ SBIDOnlinePerformance::albumPerformerID() const
     return (apPtr?apPtr->albumPerformerID():-1);
 }
 
-QString
+SBKey
 SBIDOnlinePerformance::albumKey() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
-    return (apPtr?apPtr->albumKey():QString());
+    SB_RETURN_IF_NULL(apPtr,SBKey());
+    return apPtr->albumKey();
 }
 
 QString
@@ -218,12 +219,12 @@ SBIDOnlinePerformance::songPerformanceID() const
     return (apPtr?apPtr->songPerformanceID():-1);
 }
 
-QString
+SBKey
 SBIDOnlinePerformance::songPerformerKey() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
-    return (apPtr?apPtr->songPerformerKey():QString());
-
+    SB_RETURN_IF_NULL(apPtr,SBKey());
+    return apPtr->songPerformerKey();
 }
 
 int
@@ -257,15 +258,10 @@ SBIDOnlinePerformance::operator QString()
 }
 
 //	Static methods
-QString
+SBKey
 SBIDOnlinePerformance::createKey(int onlinePerformanceID)
 {
-    const QString key= (onlinePerformanceID>=0)?QString("%1:%2")
-        .arg(SBIDBase::sb_type_online_performance)
-        .arg(onlinePerformanceID):QString("x:x")	//	Return invalid key if one or both parameters<0
-    ;
-    return key;
-
+    return SBKey(Common::sb_type_online_performance,onlinePerformanceID);
 }
 
 SBIDOnlinePerformancePtr
@@ -282,25 +278,23 @@ SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
         if(matches[0].count()==1)
         {
             spPtr=matches[0][0];
-            qDebug() << SB_DEBUG_INFO << spPtr->text();
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return spPtr;
+}
+
+SBIDOnlinePerformancePtr
+SBIDOnlinePerformance::retrieveOnlinePerformance(const SBKey& key, bool noDependentsFlag)
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
+    return opMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag)
 {
-    CacheManager* cm=Context::instance()->cacheManager();
-    CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
-    SBIDOnlinePerformancePtr opPtr;
-
-    if(onlinePerformanceID>=0)
-    {
-        opPtr=opMgr->retrieve(createKey(onlinePerformanceID),  (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
-    }
-    return opPtr;
+    return retrieveOnlinePerformance(createKey(onlinePerformanceID),noDependentsFlag);
 }
 
 SBSqlQueryModel*
@@ -416,7 +410,6 @@ SBIDOnlinePerformance::totalNumberOnlinePerformances()
     {
         numSongs=query.value(0).toInt();
     }
-    qDebug() << SB_DEBUG_INFO << numSongs;
     return numSongs;
 }
 
@@ -483,12 +476,6 @@ SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
 }
 
 ///	Protected
-QString
-SBIDOnlinePerformance::key() const
-{
-    return createKey(_onlinePerformanceID);
-}
-
 void
 SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
@@ -672,7 +659,7 @@ SBIDOnlinePerformance::_copy(const SBIDOnlinePerformance &c)
 void
 SBIDOnlinePerformance::_init()
 {
-    _sb_item_type=SBIDBase::sb_type_online_performance;
+    _sb_item_type=Common::sb_type_online_performance;
 
     _onlinePerformanceID=-1;
     _albumPerformanceID=-1;

@@ -31,16 +31,16 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selected=sm->determineSBID(_lastClickedIndex);
+    SBKey key=sm->determineKey(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 ;
-    if(!selected)
+    if(!key.validFlag())
     {
         //	Context menu from SBLabel is clicked
-        selected=this->currentScreenItem().ptr();
+        key=this->currentScreenItem().key();
     }
 
-    pmgr?pmgr->playItemNow(selected,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(key,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -52,7 +52,9 @@ SBTabAlbumDetail::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(ptr);
+
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
@@ -81,24 +83,23 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids);  SB_RETURN_VOID_IF_NULL(selected);
+    SBKey key=sm->determineKey(ids);
+    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SB_RETURN_VOID_IF_NULL(ptr);
 
-    if(selected->itemType()!=SBIDBase::sb_type_invalid)
-    {
-        _lastClickedIndex=ids;
+    _lastClickedIndex=ids;
 
-        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+    QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
-        _menu=new QMenu(NULL);
+    _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selected->text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected->text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
-        _menu->addAction(_playNowAction);
-        _menu->addAction(_enqueueAction);
-        _menu->exec(gp);
-        _recordLastPopup(p);
-    }
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(gp);
+    _recordLastPopup(p);
 }
 
 ///	Private slots
@@ -138,10 +139,7 @@ SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
     qDebug() << SB_DEBUG_INFO << isVisible();
     QWidget* w=QApplication::focusWidget();
-    //if(isVisible())
-    {
-        setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().ptr());
-    }
+    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().key());
     if(w)
     {
         w->setFocus();
@@ -258,24 +256,17 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.tabAlbumDetailLists->setCurrentIndex(0);
 
     //	Get detail
-    SBIDAlbumPtr aPtr;
-    if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_album)
-    {
-        aPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
-    }
-    if(!aPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
+    SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(si.key());
+    SB_RETURN_IF_NULL(aPtr,ScreenItem());
+
     qDebug() << SB_DEBUG_INFO << aPtr->albumTitle() << aPtr->ID() << aPtr->year();
 
     SBIDAlbumPtr aPtr1=SBIDAlbum::retrieveAlbum(aPtr->albumID());
     qDebug() << SB_DEBUG_INFO << aPtr1->albumTitle() << aPtr1->ID() << aPtr1->year();
 
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(aPtr);
-    mw->ui.labelAlbumDetailIcon->setPtr(aPtr);
+    currentScreenItem.updateSBIDBase(aPtr->key());
+    mw->ui.labelAlbumDetailIcon->setKey(aPtr->key());
 
     //	Clear image
     setAlbumImage(QPixmap());

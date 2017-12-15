@@ -1002,12 +1002,17 @@ Between 20161215 and 20170604:
 -	examine all dynamic_casts
 -	Open any artist, mismatch on opened song.
 
+20171215:
+-	createKey in all SBIDClasses
+-	documenting test scenarios
+
 CURRENT:
 *	Edit song, different song shows up.
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
 	save method in SBTabAlbumEdit, SBTabPerformerEdit, SBTabSongEdit use different ways to find out if title/name/etc has changed
+	Use SBCaseInsensitiveString class
 *	when schema is changed, search (et al) is not updated
 *	test ability to assign to playlist from all screens
 *	test ability to play from all screens

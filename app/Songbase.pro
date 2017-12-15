@@ -82,7 +82,8 @@ HEADERS     = \
     CacheManager.h \
     CacheTemplate.h \
     CacheManagerHelper.h \
-    Cache.h
+    Cache.h \
+    SBKey.h
 
 SOURCES     = \
     main.cpp \
@@ -165,7 +166,8 @@ SOURCES     = \
     SearchItemModel.cpp \
     CacheManager.cpp \
     CacheManagerHelper.cpp \
-    Cache.cpp
+    Cache.cpp \
+    SBKey.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm

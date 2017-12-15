@@ -42,7 +42,7 @@ public:
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual int itemID() const;
-    virtual sb_type itemType() const;
+    virtual Common::sb_type itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -85,14 +85,17 @@ public:
     virtual operator QString() const;
 
     //	Methods required by CacheTemplate
-    static QString createKey(int songID);
-    virtual QString key() const;
+    static SBKey createKey(int songID);
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
     static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=1);
+    static SBIDSongPtr retrieveSong(const SBKey& key,bool noDependentsFlag=1);
     static QString iconResourceLocationStatic();
+
+    //	Helper methods for CacheTemplate
+    static Common::sb_type classType() { return Common::sb_type_song; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
@@ -108,9 +111,9 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDSongPtr& to);
-    static void openKey(const QString& key, int& songID);
+    static void openKey(const QString& getKey, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& key="");
+    static SBSqlQueryModel* retrieveSQL(const QString& getKey="");
     virtual void setPrimaryKey(int PK) { _songID=PK;  }
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);

@@ -323,7 +323,7 @@ private:
 //{
 
 //public:
-//    AlbumItemEditDelegate(SBIDBase::sb_type type, QObject *parent = 0) : QItemDelegate(parent)
+//    AlbumItemEditDelegate(Common::sb_type type, QObject *parent = 0) : QItemDelegate(parent)
 //    {
 //        _type=type;
 //    }
@@ -352,12 +352,12 @@ private:
 //        CompleterFactory* cf=Context::instance()->completerFactory();
 //        switch(_type)
 //        {
-//            case SBIDBase::sb_type_performer:
+//            case Common::sb_type_performer:
 //                return NULL;
 //                c=cf->getCompleterPerformer();
 //            break;
 
-//            case SBIDBase::sb_type_song:
+//            case Common::sb_type_song:
 //                return NULL;
 //                c=cf->getCompleterSong();
 //            break;
@@ -402,7 +402,7 @@ private:
 //    }
 
 //private:
-//    SBIDBase::sb_type _type;
+//    Common::sb_type _type;
 //};
 
 ///	Public methods
@@ -436,30 +436,27 @@ SBTabAlbumEdit::handleEnterKey()
 
 
 void
-SBTabAlbumEdit::handleMergeKey()
+SBTabAlbumEdit::handleMergeKey()	//	CWIP: goal of this is...?
 {
     _hasChanges=1;
-    mergeSong();
 }
 
 bool
 SBTabAlbumEdit::hasEdits() const
 {
-    const SBIDPtr& ptr=this->currentScreenItem().ptr();
+    const SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    if(ptr->itemType()==SBIDBase::sb_type_album)
-    {
-        SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(ptr->itemID());
+    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(key);
+    SB_RETURN_IF_NULL(albumPtr,0);
 
-        if(_hasChanges ||
-            albumPtr->albumTitle()!=mw->ui.albumEditTitle->text() ||
-            albumPtr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
-            albumPtr->year()!=mw->ui.albumEditYear->text().toInt()
-        )
-        {
-            return 1;
-        }
+    if(_hasChanges ||
+        albumPtr->albumTitle()!=mw->ui.albumEditTitle->text() ||
+        albumPtr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
+        albumPtr->year()!=mw->ui.albumEditYear->text().toInt()
+    )
+    {
+        return 1;
     }
     return 0;
 }
@@ -580,102 +577,6 @@ SBTabAlbumEdit::clearAll()
 }
 
 void
-SBTabAlbumEdit::mergeSong()
-{
-//	COMMENTED OUT FOR FUTURE USE
-
-//    const MainWindow* mw=Context::instance()->getMainWindow();
-//    QTableView* tv=mw->ui.albumEditSongList;
-//    QItemSelectionModel* ism=tv->selectionModel();
-//    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
-//    bool cannotMergeFlag=0;
-//    bool removedFlag=0;
-//    if(ism)
-//    {
-//        int toBeMergedToIndex=-1;
-//        QString toBeMergedSongTitle;
-
-//        QModelIndexList mil=ism->selectedRows();
-//        for(int i=0;cannotMergeFlag==0 && i<mil.count();i++)
-//        {
-//            QModelIndex idx=mil.at(i);
-//            if(i==0)
-//            {
-//                //	First item selected
-//                toBeMergedToIndex=mil.at(i).row();
-//                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_songtitle)->text();
-//                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
-//                if(removedFlag==1)
-//                {
-//                    cannotMergeFlag=1;
-//                }
-//            }
-//            else
-//            {
-//                //	Second and other items selected
-//                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
-//                if(removedFlag==1)
-//                {
-//                    cannotMergeFlag=1;
-//                }
-//            }
-//        }
-
-//        for(int i=1;cannotMergeFlag==0 && i<mil.count();i++)
-//        {
-//            QModelIndex idx=mil.at(i);
-
-//            for(int j=0;j<aem->columnCount();j++)
-//            {
-//                QStandardItem* it=NULL;
-//                it=aem->item(idx.row(),j);
-
-//                if(it)
-//                {
-//                    it->setBackground(QBrush(QColor("lightgrey")));
-//                    it->setForeground(QBrush(QColor("darkslategrey")));
-//                    QFont f=it->font();
-//                    f.setItalic(1);
-//                    it->setFont(f);
-//                    if(j==aem->columnCount()-1)
-//                    {
-//                        it->setText(QString("Merged with song %1 '%2'")
-//                                    .arg(toBeMergedToIndex+1)
-//                                    .arg(toBeMergedSongTitle));
-//                    }
-
-//                    if(j==AlbumEditModel::sb_column_deleteflag)
-//                    {
-//                        it->setText("1");
-//                    }
-//                    if(j==AlbumEditModel::sb_column_mergedtoindex)
-//                    {
-//                        it->setText(QString("%1").arg(toBeMergedToIndex+1));
-//                    }
-//                }
-//                else
-//                {
-//                    qDebug() << SB_DEBUG_NPTR;
-//                }
-//            }
-//        }
-//        tv->selectionModel()->clear();
-//        tv->setSelectionModel(ism);
-//    }
-//    if(cannotMergeFlag)
-//    {
-//        SBMessageBox::createSBMessageBox("Cannot merge removed songs",
-//                                         "Select songs that are not removed.",
-//                                         QMessageBox::Warning,
-//                                         QMessageBox::Close,
-//                                         QMessageBox::Close,
-//                                         QMessageBox::Close);
-//    }
-//    aem->debugShow("mergeSong:end");
-//    _hasChanges=1;
-}
-
-void
 SBTabAlbumEdit::removeSong()
 {
 //	COMMENTED OUT FOR FUTURE USE
@@ -788,7 +689,9 @@ SBTabAlbumEdit::save() const
     CacheAlbumMgr* amgr=cm->albumMgr();
     const MainWindow* mw=Context::instance()->getMainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
-    const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().ptr()->itemID());
+    const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(orgAlbumPtr);
+
     bool albumMetaDataChangedFlag=0;
     bool successFlag=0;
     bool mergedFlag=0;
@@ -1139,8 +1042,8 @@ SBTabAlbumEdit::save() const
             ScreenStack* st=Context::instance()->getScreenStack();
 
             newAlbumPtr->refreshDependents(0,1);
-            ScreenItem from(orgAlbumPtr);
-            ScreenItem to(newAlbumPtr);
+            ScreenItem from(orgAlbumPtr->key());
+            ScreenItem to(newAlbumPtr->key());
             st->replace(from,to);
         }
 
@@ -1270,33 +1173,22 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
 {
     _init();
     const MainWindow* mw=Context::instance()->getMainWindow();
-    SBIDAlbumPtr albumPtr;
-
-    //	Get detail
-    if(si.ptr())
-    {
-        albumPtr=SBIDAlbum::retrieveAlbum(si.ptr()->itemID());
-    }
-
-    if(!albumPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
+    SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(si.key());
+    SB_RETURN_IF_NULL(aPtr,ScreenItem());
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);
 
     //	Attributes
-    mw->ui.albumEditTitle->setText(albumPtr->albumTitle());
-    mw->ui.albumEditPerformer->setText(albumPtr->albumPerformerName());
-    mw->ui.albumEditYear->setText(QString("%1").arg(albumPtr->year()));
-    qDebug() << SB_DEBUG_INFO << albumPtr->year();
+    mw->ui.albumEditTitle->setText(aPtr->albumTitle());
+    mw->ui.albumEditPerformer->setText(aPtr->albumPerformerName());
+    mw->ui.albumEditYear->setText(QString("%1").arg(aPtr->year()));
+    qDebug() << SB_DEBUG_INFO << aPtr->year();
 
     //	Songs
 
     //	1.	Get all songs for this album
-    AlbumEditModel* aem=new AlbumEditModel(albumPtr);
+    AlbumEditModel* aem=new AlbumEditModel(aPtr);
     aem->populate();
     QTableView* tv=mw->ui.albumEditSongList;
     tv->setModel(aem);
@@ -1332,9 +1224,9 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //	LEFT FOR FUTURE USE
     //	Also see itemFlags() in AlbumEditModel to control what columns can be edited.
     //	AlbumItemEditDelegate* aied;
-    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_song,this);
+    //aied=new AlbumItemEditDelegate(Common::sb_type_song,this);
     //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_songtitle,aied);
-    //aied=new AlbumItemEditDelegate(SBIDBase::sb_type_performer,this);
+    //aied=new AlbumItemEditDelegate(Common::sb_type_performer,this);
     //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
 
     //	Set correct focus

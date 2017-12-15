@@ -27,9 +27,6 @@ SBIDBase::SBIDBase(const SBIDBase &c)
 
     _errorMsg=c._errorMsg;
     _deletedFlag=c._deletedFlag;
-    _mergedWithID=c._mergedWithID;
-
-
     _changedFlag=c._changedFlag;
     _id=-2;	//	do NOT copy -- identifies copy
     _sb_item_type=c._sb_item_type;
@@ -45,52 +42,52 @@ SBIDBase::~SBIDBase()
 }
 
 SBIDPtr
-SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
+SBIDBase::createPtr(Common::sb_type itemType,int itemID,bool noDependentsFlag)
 {
     SBIDPtr ptr;
     switch(itemType)
     {
-    case SBIDBase::sb_type_album:
+    case Common::sb_type_album:
         ptr=SBIDAlbum::retrieveAlbum(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_performer:
+    case Common::sb_type_performer:
         ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_song:
+    case Common::sb_type_song:
         ptr=SBIDSong::retrieveSong(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_playlist:
+    case Common::sb_type_playlist:
         ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_album_performance:
+    case Common::sb_type_album_performance:
         ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_online_performance:
+    case Common::sb_type_online_performance:
         ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_chart:
+    case Common::sb_type_chart:
         ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_chart_performance:
+    case Common::sb_type_chart_performance:
         ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_playlist_detail:
+    case Common::sb_type_playlist_detail:
         ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID,noDependentsFlag);
 		break;
 
-    case SBIDBase::sb_type_song_performance:
+    case Common::sb_type_song_performance:
         ptr=SBIDSongPerformance::retrieveSongPerformance(itemID,noDependentsFlag);
         break;
 
-    case SBIDBase::sb_type_invalid:
+    case Common::sb_type_invalid:
         break;
     }
     if(!ptr)
@@ -105,42 +102,12 @@ SBIDBase::createPtr(SBIDBase::sb_type itemType,int itemID,bool noDependentsFlag)
 }
 
 SBIDPtr
-SBIDBase::createPtr(const QByteArray& encodedData)
+SBIDBase::createPtr(const SBKey &key,bool noDependentsFlag)
 {
-    QString s=QString(encodedData);
-    if(s.length()==0)
-    {
-        qDebug() << SB_DEBUG_ERROR << "NO MIME DATA!";
-        return SBIDPtr();
-    }
-    return SBIDBase::createPtr(s,1);
-}
-
-SBIDPtr
-SBIDBase::createPtr(const QString &key,bool noDependentsFlag)
-{
-    SBIDPtr ptr=SBIDPtr();
-    if(key.length())
-    {
-        const QStringList list=key.split(":");
-        const SBIDBase::sb_type itemType=static_cast<SBIDBase::sb_type>(list[0].toInt());
-        const int itemID=list[1].toInt();
-        ptr=SBIDBase::createPtr(itemType,itemID,noDependentsFlag);
-    }
-    return ptr;
+    return SBIDBase::createPtr(key.itemType(),key.itemID(),noDependentsFlag);
 }
 
 ///	Public methods
-
-QByteArray
-SBIDBase::encode() const
-{
-    QByteArray encodedData;
-    encodedData.append(key());
-
-    return encodedData;
-}
-
 
 ///	Public virtual methods (Methods that only apply to subclasseses)
 void
@@ -153,13 +120,7 @@ SBIDBase::showDebug(const QString& title) const
 bool
 SBIDBase::operator ==(const SBIDBase& i) const
 {
-    if(
-        i.itemType()==this->itemType() &&
-        i.key()==this->key())
-    {
-        return 1;
-    }
-    return 0;
+    return i.key()==this->key();
 }
 
 bool
@@ -173,53 +134,99 @@ SBIDBase::operator QString() const
     return this->key() + ":" + this->genericDescription();
 }
 
+SBKey
+SBIDBase::key() const
+{
+    return SBKey(itemType(),itemID());
+}
+
 ///	Aux
-SBIDBase::sb_type
+Common::sb_type
 SBIDBase::convert(Common::sb_field f)
 {
-    sb_type t;
+    Common::sb_type t;
     switch(f)
     {
     case Common::sb_field_invalid:
-        t=SBIDBase::sb_type_invalid;
+        t=Common::sb_type_invalid;
         break;
 
     case Common::sb_field_song_id:
-        t=SBIDBase::sb_type_song;
+        t=Common::sb_type_song;
         break;
 
     case Common::sb_field_performer_id:
-        t=SBIDBase::sb_type_performer;
+        t=Common::sb_type_performer;
         break;
 
     case Common::sb_field_album_id:
-        t=SBIDBase::sb_type_album;
+        t=Common::sb_type_album;
         break;
 
     case Common::sb_field_chart_id:
-        t=SBIDBase::sb_type_chart;
+        t=Common::sb_type_chart;
         break;
 
     case Common::sb_field_album_performance_id:
-        t=SBIDBase::sb_type_album_performance;
+        t=Common::sb_type_album_performance;
         break;
 
     case Common::sb_field_online_performance_id:
-        t=SBIDBase::sb_type_online_performance;
+        t=Common::sb_type_online_performance;
         break;
 
     case Common::sb_field_playlist_id:
-        t=SBIDBase::sb_type_playlist;
+        t=Common::sb_type_playlist;
         break;
 
 
     case Common::sb_field_key:
     case Common::sb_field_album_position:
-        qDebug() << SB_DEBUG_ERROR << "Not able to translate Common::sb_field_album_position to SBIDBase::sb_type!";
-        t=SBIDBase::sb_type_invalid;
+        qDebug() << SB_DEBUG_ERROR << "Not able to translate Common::sb_field_album_position to Common::sb_type!";
+        t=Common::sb_type_invalid;
         break;
     }
     return t;
+}
+
+QString
+SBIDBase::iconResourceLocationClass(const SBKey &key)
+{
+    return iconResourceLocationClass(key.itemType());
+}
+
+QString
+SBIDBase::iconResourceLocationClass(Common::sb_type itemType)
+{
+    switch(itemType)
+    {
+    case Common::sb_type_performer:
+        return QString(":/images/NoBandPhoto.png");
+
+    case Common::sb_type_album:
+        return ":/images/NoAlbumCover.png";
+
+    case Common::sb_type_chart:
+        return ":/images/ChartIcon.png";
+
+    case Common::sb_type_playlist:
+        return ":/images/PlaylistIcon.png";
+
+    case Common::sb_type_album_performance:
+    case Common::sb_type_chart_performance:
+    case Common::sb_type_playlist_detail:
+    case Common::sb_type_song:
+    case Common::sb_type_song_performance:
+        return QString(":/images/SongIcon.png");
+
+    case Common::sb_type_online_performance:
+        break;
+
+    case Common::sb_type_invalid:
+        break;
+    }
+
+    return QString("n/a");
 }
 
 ///	Protected
@@ -252,8 +259,7 @@ SBIDBase::_init()
     //	Private
     _changedFlag=0;
     _id=Common::nextID();
-    //_newFlag=0;
-    _sb_item_type=sb_type_invalid;
+    _sb_item_type=Common::sb_type_invalid;
     _sb_mbid=e;
     _sb_model_position=-1;
     _url=e;
@@ -262,5 +268,4 @@ SBIDBase::_init()
     //	Protected
     _errorMsg=e;
     _deletedFlag=0;
-    _mergedWithID=-1;
 }

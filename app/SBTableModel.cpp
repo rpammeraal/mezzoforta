@@ -73,19 +73,12 @@ SBTableModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
+    SBKey from=SBKey(encodedData);
 
     //emit assign(fromIDPtr,toIDPtr);
     if(row>=0)
     {
-        //	CWIP: is this always performance?
-        //	If yes: use the performance specific method
-        //	If no: propagate/instantiate playPosition back to SBIDBase
-//        if(fromIDPtr->playPosition()>row)
-//        {
-//            row+=1;
-//        }
-        emit assign(fromIDPtr,row);
+        emit assign(from,row);
     }
     else
     {
@@ -130,10 +123,10 @@ SBTableModel::supportedDropActions() const
 }
 
 ///	SBTableModel specific methods
-SBIDPtr
-SBTableModel::determineSBID(const QModelIndex &idx) const
+SBKey
+SBTableModel::determineKey(const QModelIndex &idx) const
 {
-    return SBModel::_determineSBID(this,idx);
+    return SBModel::_determineKey(this,idx);
 }
 
 void
@@ -228,18 +221,18 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
 }
 
 void
-SBTableModel::populateChartsByItemType(SBIDBase::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances)
+SBTableModel::populateChartsByItemType(Common::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances)
 {
     _init();
 
     //	Populate header
     QStringList header;
-    if(type==SBIDBase::sb_type_performer)
+    if(type==Common::sb_type_performer)
     {
         header.append("SB_ITEM_KEY1");
         header.append("song");
     }
-    else if(type==SBIDBase::sb_type_song)
+    else if(type==Common::sb_type_song)
     {
         header.append("SB_ITEM_KEY1");
         header.append("performer");
@@ -263,12 +256,12 @@ SBTableModel::populateChartsByItemType(SBIDBase::sb_type type, QMap<SBIDChartPer
         if(cPtr && cpPtr && spPtr)
         {
             int i=0;
-            if(type==SBIDBase::sb_type_performer)
+            if(type==Common::sb_type_performer)
             {
                 _setItem(index,i++,spPtr->songKey());
                 _setItem(index,i++,spPtr->songTitle());
             }
-            else if(type==SBIDBase::sb_type_song)
+            else if(type==Common::sb_type_song)
             {
                 _setItem(index,i++,spPtr->songPerformerKey());
                 _setItem(index,i++,spPtr->songPerformerName());
@@ -473,7 +466,7 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& pe
 
         if(spPtr && !songID.contains(spPtr->songID()))
         {
-            _setItem(index, 0,spPtr->key());
+            _setItem(index, 0,spPtr->songKey());
             _setItem(index, 1,spPtr->songTitle());
             _setItem(index, 2,QString("%1").arg(spPtr->year()));
             index++;

@@ -40,19 +40,19 @@ void
 SBTabQueuedSongs::deletePlaylistItem()
 {
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBIDPtr ptr=mqs->selectedItem(_lastClickedIndex);
-    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
-    {
-        mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
+    SBKey key=mqs->selectedItem(_lastClickedIndex);
+    SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(key);
+    SB_RETURN_VOID_IF_NULL(plPtr);
 
-        QString updateText=QString("Removed %4 %1%2%3 from playlist.")
-            .arg(QChar(96))     //	1
-            .arg(ptr->text())   //	2
-            .arg(QChar(180))    //	3
-            .arg(ptr->type())   //	4
-        ;
-        Context::instance()->getController()->updateStatusBarText(updateText);
-    }
+    mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
+
+    QString updateText=QString("Removed %4 %1%2%3 from playlist.")
+        .arg(QChar(96))     //	1
+        .arg(plPtr->text())   //	2
+        .arg(QChar(180))    //	3
+        .arg(plPtr->type())   //	4
+    ;
+    Context::instance()->getController()->updateStatusBarText(updateText);
     _updateDetail();
 }
 
@@ -94,8 +94,8 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
 
     SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBIDPtr ptr=mqs->selectedItem(idx);
-    if(ptr->itemType()!=SBIDBase::sb_type_invalid)
+    SBKey key=mqs->selectedItem(idx);
+    if(key.validFlag())
     {
         _lastClickedIndex=idx;
 
@@ -183,9 +183,9 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
         SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
         QModelIndex sourceIDX=sm->mapToSource(idx);
         SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-        SBIDPtr ptr=mqs->selectedItem(sourceIDX);
-        qDebug() << SB_DEBUG_INFO << ptr->text();
-        Context::instance()->getNavigator()->openScreen(ptr);
+        SBKey key=mqs->selectedItem(sourceIDX);
+        qDebug() << SB_DEBUG_INFO << key;
+        Context::instance()->getNavigator()->openScreen(key);
     }
 }
 

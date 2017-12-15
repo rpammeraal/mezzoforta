@@ -16,7 +16,9 @@ SBTabChooser::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(ptr);
+
     _lastClickedIndex=QModelIndex();
 
     _menu=new QMenu(NULL);
@@ -50,7 +52,7 @@ SBTabChooser::showContextMenuView(const QPoint& p)
     PlaylistItem selected=_getSelectedItem(subtabID2TableView(-1)->model(),idx);
 
     //	title etc not populated
-    if(selected.key.length()>0)
+    if(selected.key.validFlag())
     {
         _lastClickedIndex=idx;
 

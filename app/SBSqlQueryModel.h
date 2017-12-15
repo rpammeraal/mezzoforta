@@ -35,15 +35,15 @@ public:
     virtual Qt::DropActions supportedDropActions() const;
 
     //	Native methods
-    SBIDPtr determineSBID(const QModelIndex &idx) const;
+    SBKey determineKey(const QModelIndex &idx) const;
     inline int getSelectedColumn() const { return _selectedColumn; }
     void handleSQLError() const;
     void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
 
 signals:
-    void assign(const SBIDPtr& fromPtr, const SBIDPtr& toIDPtr) const;
-    void assign(const SBIDPtr& fromPtr, int row) const;
+    void assign(const SBKey& from, const SBKey& to) const;
+    void assign(const SBKey& from, int row) const;
 
 public slots:
     void schemaChanged();

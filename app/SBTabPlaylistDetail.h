@@ -17,7 +17,7 @@ public:
 
 public slots:
     void deletePlaylistItem();
-    void movePlaylistItem(const SBIDPtr& fromIDPtr, int row);
+    void movePlaylistItem(const SBKey from, int row);
     virtual void playNow(bool enqueueFlag=0);
 
 private:

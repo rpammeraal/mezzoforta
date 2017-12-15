@@ -50,21 +50,17 @@ SBTabPerformerDetail::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDBasePtr selectedPtr=sm->determineSBID(_lastClickedIndex);
-    const SBIDBasePtr currentPtr=this->currentScreenItem().ptr();
+    SBKey key=sm->determineKey(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
 
-    if(!selectedPtr)
+    if(!key.validFlag())
     {
         //	Context menu from SBLabel is clicked
-        selectedPtr=currentPtr;
+        key=currentScreenItem().key();
     }
 
-    if(selectedPtr)
-    {
-        pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
-        SBTab::playNow(enqueueFlag);
-    }
+    pmgr?pmgr->playItemNow(key,enqueueFlag):0;
+    SBTab::playNow(enqueueFlag);
 }
 
 void
@@ -75,7 +71,7 @@ SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDBasePtr ptr=this->currentScreenItem().ptr();
+    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
 
     _lastClickedIndex=QModelIndex();
 
@@ -104,73 +100,43 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDBasePtr selected=sm->determineSBID(ids);
+    SBKey key=sm->determineKey(ids);
+    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SB_RETURN_VOID_IF_NULL(ptr);
 
-    if(selected)
-    {
-        _lastClickedIndex=ids;
+    _lastClickedIndex=ids;
+    QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
-        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+    _menu=new QMenu(NULL);
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
-        _menu=new QMenu(NULL);
-
-        _playNowAction->setText(QString("Play '%1' Now").arg(selected->text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected->text()));
-
-        _menu->addAction(_playNowAction);
-        _menu->addAction(_enqueueAction);
-        _menu->exec(gp);
-        _recordLastPopup(p);
-    }
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(gp);
+    _recordLastPopup(p);
 }
 
 void
-SBTabPerformerDetail::updatePerformerHomePage(const SBIDBasePtr &ptr)
+SBTabPerformerDetail::updatePerformerHomePage(SBKey key)
 {
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
-    {
-        //	Check if we're still the current screen. If not, ignore
-        ScreenStack* st=Context::instance()->getScreenStack();
-        ScreenItem si=st->currentScreen();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
+    SB_RETURN_VOID_IF_NULL(pPtr);
 
-        if(si.ptr()==ptr)
-        {
-            CacheManager* cm=Context::instance()->cacheManager();
-            SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
-
-            performerPtr->setURL(performerPtr->url());
-            cm->saveChanges();
-        }
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "Ptr supplied not sb_type_performer";
-    }
+    pPtr->setURL(pPtr->url());
+    cm->saveChanges();
 }
 
 void
-SBTabPerformerDetail::updatePerformerMBID(const SBIDBasePtr &ptr)
+SBTabPerformerDetail::updatePerformerMBID(SBKey key)
 {
-    if(ptr && ptr->itemType()==SBIDBase::sb_type_performer)
-    {
-        //	Check if we're still the current screen. If not, ignore
-        //	ScreenStack* st=Context::instance()->getScreenStack();
-        //	ScreenItem si=st->currentScreen();
+    CacheManager* cm=Context::instance()->cacheManager();
+    SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
+    SB_RETURN_VOID_IF_NULL(pPtr);
 
-        //	No reason to ignore this if the screen is not active.
-        //	if(si.ptr()==ptr)
-        {
-            CacheManager* cm=Context::instance()->cacheManager();
-            SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
-
-            performerPtr->setMBID(performerPtr->MBID());
-            cm->saveChanges();
-        }
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "Ptr supplied not sb_type_performer";
-    }
+    pPtr->setMBID(pPtr->MBID());
+    cm->saveChanges();
 }
 
 
@@ -213,9 +179,11 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
+    qDebug() << SB_DEBUG_INFO;
     if(isVisible())
     {
-        setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().ptr());
+    qDebug() << SB_DEBUG_INFO;
+        setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
     }
 }
 
@@ -358,19 +326,12 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
     //	Get detail
-    SBIDPerformerPtr performerPtr;
-    if(si.ptr())
-    {
-        performerPtr=SBIDPerformer::retrievePerformer(si.ptr()->itemID());
-    }
-    if(!performerPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
+    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(si.key());
+    SB_RETURN_IF_NULL(performerPtr,ScreenItem());
+
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(performerPtr);
-    mw->ui.labelPerformerDetailIcon->setPtr(performerPtr);
+    currentScreenItem.updateSBIDBase(performerPtr->key());
+    mw->ui.labelPerformerDetailIcon->setKey(performerPtr->key());
 
     //	Clear image
     setPerformerImage(QPixmap());
@@ -381,10 +342,10 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerHomePage(QString)));
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(const SBIDBasePtr &)),
-            this, SLOT(updatePerformerMBID(const SBIDBasePtr &)));
-    connect(ed, SIGNAL(updatePerformerHomePage(const SBIDBasePtr &)),
-            this, SLOT(updatePerformerHomePage(const SBIDBasePtr &)));
+    connect(ed, SIGNAL(updatePerformerMBID(SBKey)),
+            this, SLOT(updatePerformerMBID(BIDPtr)));
+    connect(ed, SIGNAL(updatePerformerHomePage(SBKey)),
+            this, SLOT(updatePerformerHomePage(SBKey)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),
             this, SLOT(setPerformerImage(QPixmap)));
     connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),
@@ -473,6 +434,9 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
     tm=performerPtr->songs();
+    dragableColumns.clear();
+    dragableColumns << 0 << 1 << 0;
+    tm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,tm,1);
     mw->ui.tabPerformerDetailLists->setTabEnabled(0,rowCount>0);
 

@@ -81,13 +81,12 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr fromIDPtr=SBIDBase::createPtr(encodedData,1);
+    SBKey from(encodedData);
 
     const QModelIndex n=this->index(parent.row(),0);
+    SBKey to=determineKey(n);
 
-    SBIDPtr toIDPtr=determineSBID(n);
-
-    emit assign(fromIDPtr,toIDPtr);
+    emit assign(from,to);
     if(row>=0)
     {
         //	CWIP: is this always performance?
@@ -98,7 +97,7 @@ SBSqlQueryModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int
 //            row+=1;
 //        }
 //        qDebug() << SB_DEBUG_INFO << *fromIDPtr << fromIDPtr->playPosition() << "to row" << row;
-        emit assign(fromIDPtr,row);
+        emit assign(from,row);
     }
     else
     {
@@ -142,10 +141,10 @@ SBSqlQueryModel::supportedDropActions() const
 }
 
 ///	NATIVE METHODS
-SBIDPtr
-SBSqlQueryModel::determineSBID(const QModelIndex &idx) const
+SBKey
+SBSqlQueryModel::determineKey(const QModelIndex &idx) const
 {
-    return SBModel::_determineSBID(this,idx);
+    return SBModel::_determineKey(this,idx);
 }
 
 void

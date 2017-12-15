@@ -71,15 +71,9 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
-    SBIDPtr selectedPtr=sm->determineSBID(_lastClickedIndex);
+    SBKey key=sm->determineKey(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->getPlayManager();
-
-    if(!selectedPtr)
-    {
-        //	Context menu from SBLabel is clicked
-        return;
-    }
-    pmgr?pmgr->playItemNow(selectedPtr,enqueueFlag):0;
+    pmgr?pmgr->playItemNow(key,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
 
@@ -97,7 +91,8 @@ SBTabSongsAll::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBIDPtr ptr=SBIDBase::createPtr(currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=QModelIndex();
 
@@ -121,23 +116,22 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids);
+    SBKey key=sm->determineKey(ids);
+    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SB_RETURN_VOID_IF_NULL(ptr);
 
-    if(selected->itemType()!=SBIDBase::sb_type_invalid)
-    {
-        _lastClickedIndex=ids;
+    _lastClickedIndex=ids;
 
-        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+    QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
-        _menu=new QMenu(NULL);
+    _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selected->text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected->text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
-        _menu->addAction(_playNowAction);
-        _menu->addAction(_enqueueAction);
-        _menu->exec(gp);
-    }
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(gp);
 }
 
 ///	Private methods

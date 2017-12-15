@@ -19,24 +19,19 @@ SBTabChartDetail::subtabID2TableView(int subtabID) const
 void
 SBTabChartDetail::playNow(bool enqueueFlag)
 {
-    const SBIDPtr currentPtr=this->currentScreenItem().ptr();
+    SBKey key=this->currentScreenItem().key();
     const MainWindow* mw=Context::instance()->getMainWindow();
     PlaylistItem selected=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
     SBIDPtr ptr;
 
-    if(selected.key.length()==0)
+    if(selected.key.validFlag())
     {
-        //	Label clicked
-        ptr=SBIDChart::retrieveChart(currentPtr->itemID());
+        key=selected.key;
     }
-    else
-    {
-        ptr=SBIDBase::createPtr(selected.key,1);
-    }
-    if(ptr)
+    if(key.validFlag())
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(ptr,enqueueFlag):0;
+        pmgr?pmgr->playItemNow(key,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }
 }
@@ -98,24 +93,14 @@ ScreenItem
 SBTabChartDetail::_populate(const ScreenItem& si)
 {
     _init();
-    SBIDChartPtr cPtr;
+    SBIDChartPtr cPtr=SBIDChart::retrieveChart(si.key());
+    SB_RETURN_IF_NULL(cPtr,ScreenItem());
+
     const MainWindow* mw=Context::instance()->getMainWindow();
 
-    //	Get detail
-    if(si.ptr() && si.ptr()->itemType()==SBIDBase::sb_type_chart)
-    {
-        cPtr=SBIDChart::retrieveChart(si.ptr()->itemID());
-    }
-
-    if(!cPtr)
-    {
-        //	Not found
-        return ScreenItem();
-    }
-
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(cPtr);
-    mw->ui.labelChartDetailIcon->setPtr(cPtr);
+    currentScreenItem.updateSBIDBase(cPtr->key());
+    mw->ui.labelChartDetailIcon->setKey(cPtr->key());
 
     mw->ui.labelChartDetailChartName->setText(cPtr->chartName());
     mw->ui.labelChartDetailChartDetail->setText(cPtr->chartReleaseDate().toString());

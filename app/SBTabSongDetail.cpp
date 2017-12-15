@@ -79,26 +79,27 @@ void
 SBTabSongDetail::playNow(bool enqueueFlag)
 {
     QTableView* tv=_determineViewCurrentTab();
-    SBIDPtr selectPtr;
+    SBKey key;
 
     if(tv)
     {
         QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_RETURN_VOID_IF_NULL(pm);
         SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_RETURN_VOID_IF_NULL(sm);
-        selectPtr=sm->determineSBID(_lastClickedIndex);
+        key=sm->determineKey(_lastClickedIndex);
     }
 
-    if(!selectPtr)
+    if(!key.validFlag())
     {
         //	Context menu from SBLabel is clicked
-        SBIDSongPtr songPtr=SBIDSong::retrieveSong(currentScreenItem().ptr()->itemID());
+        SBIDSongPtr songPtr=SBIDSong::retrieveSong(currentScreenItem().key());
 
-        selectPtr=selectOnlinePerformanceFromSong(songPtr);
+        SBIDOnlinePerformancePtr opPtr=selectOnlinePerformanceFromSong(songPtr);
+        key=opPtr->key();
     }
-    if(selectPtr)
+    if(key.validFlag())
     {
         PlayManager* pmgr=Context::instance()->getPlayManager();
-        pmgr?pmgr->playItemNow(selectPtr,enqueueFlag):0;
+        pmgr?pmgr->playItemNow(key,enqueueFlag):0;
     }
     SBTab::playNow(enqueueFlag);
 }
@@ -111,7 +112,8 @@ SBTabSongDetail::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=this->currentScreenItem().ptr();
+    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
+    SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=QModelIndex();
 
@@ -141,24 +143,23 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
-    SBIDPtr selected=sm->determineSBID(ids);
+    SBKey key=sm->determineKey(ids);
+    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SB_RETURN_VOID_IF_NULL(ptr);
 
-    if(selected)
-    {
-        _lastClickedIndex=ids;
+    _lastClickedIndex=ids;
 
-        QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
+    QPoint gp = mw->ui.currentPlaylistDetailSongList->mapToGlobal(p);
 
-        _menu=new QMenu(NULL);
+    _menu=new QMenu(NULL);
 
-        _playNowAction->setText(QString("Play '%1' Now").arg(selected->text()));
-        _enqueueAction->setText(QString("Enqueue '%1'").arg(selected->text()));
+    _playNowAction->setText(QString("Play '%1' Now").arg(ptr->text()));
+    _enqueueAction->setText(QString("Enqueue '%1'").arg(ptr->text()));
 
-        _menu->addAction(_playNowAction);
-        _menu->addAction(_enqueueAction);
-        _menu->exec(gp);
-        _recordLastPopup(p);
-    }
+    _menu->addAction(_playNowAction);
+    _menu->addAction(_enqueueAction);
+    _menu->exec(gp);
+    _recordLastPopup(p);
 }
 
 ///	Private slots
@@ -295,47 +296,42 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
-    qDebug() << SB_DEBUG_INFO << si.ptr()->itemType() << si.ptr()->itemID();
-    if(si.ptr())
     {
-        if(si.ptr()->itemType()==SBIDBase::sb_type_song)
+        const SBKey key=si.key();	//	Keep key out of scope
+        if(key.validFlag())
         {
-            songPtr=SBIDSong::retrieveSong(si.ptr()->itemID());
-        }
-        else if(si.ptr()->itemType()==SBIDBase::sb_type_album_performance)
-        {
-            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(si.ptr()->itemID());
-            songPtr=apPtr->songPtr();
-        }
-        else if(si.ptr()->itemType()==SBIDBase::sb_type_online_performance)
-        {
-            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(si.ptr()->itemID());
-            songPtr=opPtr->songPtr();
-        }
-        else if(si.ptr()->itemType()==SBIDBase::sb_type_song_performance)
-        {
-            SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(si.ptr()->itemID());
-            songPtr=opPtr->songPtr();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_ERROR << "should not come here.";
+            if(key.itemType()==Common::sb_type_song)
+            {
+                songPtr=SBIDSong::retrieveSong(si.key());
+            }
+            else if(key.itemType()==Common::sb_type_album_performance)
+            {
+                SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
+                songPtr=apPtr->songPtr();
+            }
+            else if(key.itemType()==Common::sb_type_online_performance)
+            {
+                SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
+                songPtr=opPtr->songPtr();
+            }
+            else if(key.itemType()==Common::sb_type_song_performance)
+            {
+                SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
+                songPtr=opPtr->songPtr();
+            }
+            else
+            {
+                qDebug() << SB_DEBUG_ERROR << "should not come here.";
+            }
         }
     }
-
-    if(!songPtr)
-    {
-        qDebug() << SB_DEBUG_ERROR << "Unknown item.";
-        return ScreenItem();
-    }
-    qDebug() << SB_DEBUG_INFO << songPtr->text();
-    qDebug() << SB_DEBUG_INFO << songPtr->genericDescription();
+    SB_RETURN_IF_NULL(songPtr,ScreenItem());
 
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(si.ptr());	//	Update with original pointer --
-    mw->ui.labelSongDetailIcon->setPtr(si.ptr());
+    currentScreenItem.updateSBIDBase(songPtr->key());	//	Update with original pointer --
+    mw->ui.labelSongDetailIcon->setKey(songPtr->key());
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),

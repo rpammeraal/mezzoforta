@@ -11,7 +11,7 @@ CacheManagerHelper::CacheManagerHelper(QObject *parent) : QObject(parent)
 }
 
 void
-CacheManagerHelper::emitUpdatedSBIDPtr(SBIDBasePtr ptr)
+CacheManagerHelper::emitUpdatedSBIDPtr(SBIDPtr ptr)
 {
     s_cpd->acquire(1);
     emit updatedSBIDPtr(ptr);
@@ -19,7 +19,7 @@ CacheManagerHelper::emitUpdatedSBIDPtr(SBIDBasePtr ptr)
 }
 
 void
-CacheManagerHelper::emitRemovedSBIDPtr(SBIDBasePtr ptr)
+CacheManagerHelper::emitRemovedSBIDPtr(SBIDPtr ptr)
 {
     s_cpd->acquire(1);
     emit removedSBIDPtr(ptr);
@@ -33,7 +33,7 @@ CacheManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
 }
 
 void
-CacheManagerHelper::emitRemovedSBIDPtrStatic(SBIDBasePtr ptr)
+CacheManagerHelper::emitRemovedSBIDPtrStatic(SBIDPtr ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     cm->managerHelper()->emitRemovedSBIDPtr(ptr);
@@ -46,7 +46,7 @@ CacheManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
 }
 
 void
-CacheManagerHelper::emitUpdatedSBIDPtrStatic(SBIDBasePtr ptr)
+CacheManagerHelper::emitUpdatedSBIDPtrStatic(SBIDPtr ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     cm->managerHelper()->emitUpdatedSBIDPtr(ptr);

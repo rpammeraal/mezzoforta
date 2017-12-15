@@ -3,6 +3,7 @@
 
 #include <QString>
 #include "Common.h"
+#include "SBKey.h"
 
 class Cache
 {
@@ -15,17 +16,18 @@ public:
         open_flag_parentonly=3
     };
 
-    Cache(const QString& name);
+    Cache(const QString& name, Common::sb_type itemType);
     virtual ~Cache();
 
     inline QString name() const { return _name; }
+    inline Common::sb_type itemType() const { return _itemType; }
 
 protected:
     friend class CacheManager;
     friend class SBIDBase;
 
-    void addChangedKey(const QString& key);
-    QList<QString> changes() const { return _changes; }
+    void addChangedKey(const SBKey& key);
+    QList<SBKey> changes() const { return _changes; }
     virtual void clearCache()=0;
     virtual void clearChanges() { _changes.clear(); }
     virtual void debugShow(const QString title="")=0;
@@ -34,8 +36,9 @@ protected:
     virtual QStringList retrieveChanges(Common::db_change db_change) const=0;
 
 private:
-    QString        _name;
-    QList<QString> _changes;	//	Contains keys of objects changed
+    QString               _name;
+    QList<SBKey>          _changes;	//	Contains keys of objects changed
+    const Common::sb_type _itemType;
 
     void _init();
 };

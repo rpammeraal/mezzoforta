@@ -35,7 +35,7 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent);	//	CWIP
 
     //	Native methods
-    SBIDPtr determineSBID(const QModelIndex &idx) const;
+    SBKey determineKey(const QModelIndex &idx) const;
 
 signals:
     void assign(const QModelIndex& idx, const SBIDBase& id);	//	CWIP: move to assign below
