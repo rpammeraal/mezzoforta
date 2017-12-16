@@ -664,7 +664,7 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbum(const SBKey& key,bool noDependentsFlag)
+SBIDAlbum::retrieveAlbum(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();

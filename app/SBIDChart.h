@@ -45,7 +45,7 @@ public:
     //	Static methods
     static SBKey createKey(int chartID);
     static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1);
-    static SBIDChartPtr retrieveChart(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDChartPtr retrieveChart(SBKey key,bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
     static Common::sb_type classType() { return Common::sb_type_chart; }

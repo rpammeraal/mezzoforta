@@ -65,11 +65,11 @@ public:
         }
 
         QByteArray encodedData = data->data("application/vnd.text.list");
-        SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
+        SBKey key=SBKey(encodedData);
 
-        if(_c && ptr && ptr->itemType()!=Common::sb_type_invalid)
+        if(_c && key.validFlag())
         {
-            _c->assignItem(parent,ptr);
+            _c->assignItem(parent,key);
             return 1;
         }
         return 0;
@@ -185,7 +185,7 @@ Chooser::~Chooser()
 ///	SLOTS
 
 void
-Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
+Chooser::assignItem(const QModelIndex& idx, SBKey key)
 {
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
@@ -196,13 +196,14 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
     case Chooser::sb_playlists:
         {
             SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
-            SBIDPtr fromPtr;
+            SB_RETURN_VOID_IF_NULL(playlistPtr);
+            SBIDPtr ptr;
 
-            if(toBeAssignedToPtr->itemType()==Common::sb_type_playlist)
+            if(key.itemType()==Common::sb_type_playlist)
             {
                 //	Check for self assignment
-                fromPtr=SBIDPlaylist::retrievePlaylist(toBeAssignedToPtr->itemID());
-                if(fromPtr->key()==playlistPtr->key())
+                ptr=SBIDPlaylist::retrievePlaylist(key);
+                if(ptr->key()==playlistPtr->key())
                 {
                     QMessageBox mb;
                     mb.setText("Ouroboros Error               ");
@@ -211,58 +212,49 @@ Chooser::assignItem(const QModelIndex& idx, const SBIDPtr& toBeAssignedToPtr)
                     return;
                 }
             }
-            else if(toBeAssignedToPtr->itemType()==Common::sb_type_song)
+            else if(key.itemType()==Common::sb_type_song)
             {
                 //	Check for multiple performances
-                SBIDSongPtr songPtr=SBIDSong::retrieveSong(toBeAssignedToPtr->itemID());
-                fromPtr=SBTabSongDetail::selectOnlinePerformanceFromSong(songPtr);
+                SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
+                ptr=SBTabSongDetail::selectOnlinePerformanceFromSong(songPtr);
             }
             else
             {
-                fromPtr=toBeAssignedToPtr;
+                ptr=SBIDBase::createPtr(key);
             }
+            SB_RETURN_VOID_IF_NULL(ptr);
 
-            if(fromPtr)
+            if(rootType==Chooser::sb_playlists)
             {
-                if(rootType==Chooser::sb_playlists)
+                bool successFlag=playlistPtr->addPlaylistItem(ptr);
+                QString updateText;
+                if(successFlag)
                 {
-                    if(playlistPtr)
-                    {
-                        bool successFlag=playlistPtr->addPlaylistItem(fromPtr);
-                        QString updateText;
-                        if(successFlag)
-                        {
-                            updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
-                                .arg(QChar(96))                 //	1
-                                .arg(toBeAssignedToPtr->text()) //	2
-                                .arg(QChar(180))                //	3
-                                .arg(playlistPtr->text())       //	4
-                                .arg(toBeAssignedToPtr->type()) //	5
-                                .arg(playlistPtr->type())       //	6
-                            ;
-                            this->playlistChanged(playlistPtr->playlistID());
-                        }
-                        else
-                        {
-                            if(toBeAssignedToPtr->text().length()==0)
-                            {
-                                qDebug() << SB_DEBUG_ERROR << "toBeAssignedToPtr.text().length=0! ";
-                            }
-                            updateText=QString("Warning: %1%4%3 already contains %1%2%3.")
-                                .arg(QChar(96))                 //	1
-                                .arg(toBeAssignedToPtr->text()) //	2
-                                .arg(QChar(180))                //	3
-                                .arg(playlistPtr->text())       //	4
-                            ;
-                        }
-                        Context::instance()->getController()->updateStatusBarText(updateText);
-                    }
+                    updateText=QString("Assigned %5 %1%2%3 to %6 %1%4%3.")
+                        .arg(QChar(96))            //	1
+                        .arg(ptr->text())          //	2
+                        .arg(QChar(180))           //	3
+                        .arg(playlistPtr->text())  //	4
+                        .arg(ptr->type())          //	5
+                        .arg(playlistPtr->type())  //	6
+                    ;
+                    this->playlistChanged(playlistPtr->playlistID());
                 }
-                else if(rootType==Chooser::sb_your_songs)
+                else
                 {
-                    PlayManager* pmgr=Context::instance()->getPlayManager();
-                    pmgr->startRadio();
+                    updateText=QString("Warning: %1%4%3 already contains %1%2%3.")
+                        .arg(QChar(96))           //	1
+                        .arg(ptr->text())         //	2
+                        .arg(QChar(180))          //	3
+                        .arg(playlistPtr->text()) //	4
+                    ;
                 }
+                Context::instance()->getController()->updateStatusBarText(updateText);
+            }
+            else if(rootType==Chooser::sb_your_songs)
+            {
+                PlayManager* pmgr=Context::instance()->getPlayManager();
+                pmgr->startRadio();
             }
         }
     case Chooser::sb_empty1:

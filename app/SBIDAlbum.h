@@ -76,7 +76,7 @@ public:
     //	Helper methods for CacheTemplate
     static Common::sb_type classType() { return Common::sb_type_album; }
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
-    static SBIDAlbumPtr retrieveAlbum(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDAlbumPtr retrieveAlbum(SBKey key,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveUnknownAlbum();

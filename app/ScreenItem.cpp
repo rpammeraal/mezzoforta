@@ -9,7 +9,7 @@ ScreenItem::ScreenItem()
     _init();
 }
 
-ScreenItem::ScreenItem(const SBKey& key):_key(key)
+ScreenItem::ScreenItem(SBKey key):_key(key)
 {
     _init();
     _screenType=ScreenItem::screen_type_sbidbase;
@@ -68,7 +68,7 @@ ScreenItem::compare(const ScreenItem &i, bool ignoreEditFlag) const
 }
 
 void
-ScreenItem::updateSBIDBase(const SBKey& key)
+ScreenItem::updateSBIDBase(SBKey key)
 {
     if(this->screenType()==ScreenItem::screen_type_sbidbase)
     {

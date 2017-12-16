@@ -289,7 +289,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->getMainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
-    SBIDSongPtr songPtr;
+    SBIDSongPtr sPtr;
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
@@ -302,22 +302,22 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
             if(key.itemType()==Common::sb_type_song)
             {
-                songPtr=SBIDSong::retrieveSong(si.key());
+                sPtr=SBIDSong::retrieveSong(si.key());
             }
             else if(key.itemType()==Common::sb_type_album_performance)
             {
                 SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
-                songPtr=apPtr->songPtr();
+                sPtr=apPtr->songPtr();
             }
             else if(key.itemType()==Common::sb_type_online_performance)
             {
                 SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
-                songPtr=opPtr->songPtr();
+                sPtr=opPtr->songPtr();
             }
             else if(key.itemType()==Common::sb_type_song_performance)
             {
                 SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
-                songPtr=opPtr->songPtr();
+                sPtr=opPtr->songPtr();
             }
             else
             {
@@ -325,13 +325,13 @@ SBTabSongDetail::_populate(const ScreenItem& si)
             }
         }
     }
-    SB_RETURN_IF_NULL(songPtr,ScreenItem());
+    SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(songPtr->key());	//	Update with original pointer --
-    mw->ui.labelSongDetailIcon->setKey(songPtr->key());
+    currentScreenItem.updateSBIDBase(sPtr->key());	//	Update with original pointer --
+    mw->ui.labelSongDetailIcon->setKey(sPtr->key());
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),
@@ -339,10 +339,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     connect(ed, SIGNAL(songLyricsURLAvailable(QString)),
             this, SLOT(setSongLyricsPage(QString)));
 
-    ed->loadSongData(songPtr);
+    ed->loadSongData(sPtr->key());
 
     //	Populate song detail tab
-    mw->ui.labelSongDetailSongTitle->setText(songPtr->songTitle());
+    mw->ui.labelSongDetailSongTitle->setText(sPtr->songTitle());
     QTextBrowser* frAlsoPerformedBy=mw->ui.frSongDetailSongPerformerName;
 
     //	Clear current
@@ -355,7 +355,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     _alsoPerformedBy.clear();
 
     //	Recreate performer list
-    QVector<int> performerList=songPtr->performerIDList();
+    QVector<int> performerList=sPtr->performerIDList();
     QString cs;
     int toDisplay=performerList.count();
     if(toDisplay>3)
@@ -371,9 +371,9 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
         case -1:
             cs=cs+QString("<A style=\"color: black; text-decoration:none\" HREF=\"%1\"><B><BIG>%2</BIG></B></A>")
-                .arg(songPtr->songOriginalPerformerID())
-                .arg(songPtr->songOriginalPerformerName());
-            processedPerformerIDs.append(songPtr->songOriginalPerformerID());
+                .arg(sPtr->songOriginalPerformerID())
+                .arg(sPtr->songOriginalPerformerName());
+            processedPerformerIDs.append(sPtr->songOriginalPerformerID());
             break;
 
         default:
@@ -402,10 +402,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
 
     //	Populate song details
-    cs=QString("<B>Released:</B> %1").arg(songPtr->songOriginalYear());
-    if(songPtr->notes().length())
+    cs=QString("<B>Released:</B> %1").arg(sPtr->songOriginalYear());
+    if(sPtr->notes().length())
     {
-        cs+=QString(" %1 <B>Notes:</B> %2").arg(QChar(8226)).arg(songPtr->notes());
+        cs+=QString(" %1 <B>Notes:</B> %2").arg(QChar(8226)).arg(sPtr->notes());
     }
     cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
     mw->ui.frSongDetailSongDetail->setText(cs);
@@ -418,7 +418,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //	populate tabSongDetailAlbumList
     tv=mw->ui.songDetailAlbums;
-    tm=songPtr->albums();
+    tm=sPtr->albums();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 0 << 0 << 1 << 0 << 0 << 0;
     tm->setDragableColumns(dragableColumns);
@@ -427,7 +427,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    tm=songPtr->playlists();
+    tm=sPtr->playlists();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
@@ -436,7 +436,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailChartList
     tv=mw->ui.songDetailCharts;
-    tm=songPtr->charts();
+    tm=sPtr->charts();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
@@ -444,13 +444,13 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_charts,rowCount>0);
 
     //	lyrics
-    if(songPtr->lyrics().length()>0)
+    if(sPtr->lyrics().length()>0)
     {
-        QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+songPtr->lyrics();
+        QString html="<FONT face=\"Trebuchet MS\" size=\"2\">"+sPtr->lyrics();
         html.replace("\n","<BR>");
         mw->ui.songDetailLyrics->setHtml(html);
     }
-    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,songPtr->lyrics().length()>0);
+    mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_lyrics,sPtr->lyrics().length()>0);
 
     //	Update current eligible tabID
     currentScreenItem.setSubtabID(mw->ui.tabSongDetailLists->currentIndex());

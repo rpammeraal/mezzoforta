@@ -179,7 +179,7 @@ PlayManager::clearPlaylist()
 }
 
 bool
-PlayManager::playItemNow(const SBKey& key, const bool enqueueFlag)
+PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
 {
     bool isPlayingFlag=0;
     PlayerController* pc=Context::instance()->getPlayerController();

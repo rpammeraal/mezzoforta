@@ -450,7 +450,7 @@ SBIDAlbumPerformance::performancesBySongPerformance(int songPerformanceID)
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::retrieveAlbumPerformance(const SBKey& key,bool noDependentsFlag)
+SBIDAlbumPerformance::retrieveAlbumPerformance(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();

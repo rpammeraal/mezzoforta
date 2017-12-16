@@ -20,7 +20,7 @@ public:
 
     //	Inherited methods
     virtual void mousePressEvent(QMouseEvent* me);
-    void setKey(const SBKey& key);
+    void setKey(SBKey key);
 
 protected:
     virtual void contextMenuEvent(QContextMenuEvent *ev);

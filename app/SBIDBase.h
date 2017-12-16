@@ -36,7 +36,7 @@ public:
     virtual ~SBIDBase();
 
     static SBIDPtr createPtr(Common::sb_type itemType,int ID,bool noDependentsFlag=1);
-    static SBIDPtr createPtr(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDPtr createPtr(SBKey key,bool noDependentsFlag=1);
 
     //	Public methods
     inline bool changedFlag() const { return _changedFlag; }
@@ -83,7 +83,7 @@ public:
 
     //	Aux methods
     static Common::sb_type convert(Common::sb_field f);
-    static QString iconResourceLocationClass(const SBKey& key);
+    static QString iconResourceLocationClass(SBKey key);
     static QString iconResourceLocationClass(Common::sb_type itemType);
 
 

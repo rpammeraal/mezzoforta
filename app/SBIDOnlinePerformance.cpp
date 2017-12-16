@@ -284,7 +284,7 @@ SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
 }
 
 SBIDOnlinePerformancePtr
-SBIDOnlinePerformance::retrieveOnlinePerformance(const SBKey& key, bool noDependentsFlag)
+SBIDOnlinePerformance::retrieveOnlinePerformance(SBKey key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();

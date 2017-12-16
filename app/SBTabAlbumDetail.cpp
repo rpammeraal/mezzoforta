@@ -281,7 +281,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
             this, SLOT(setAlbumReviews(QList<QString>)));
 
     //	Album cover image
-    ed->loadAlbumData(aPtr);
+    ed->loadAlbumData(aPtr->key());
 
     //	Populate record detail tab
     mw->ui.labelAlbumDetailAlbumTitle->setText(aPtr->albumTitle());

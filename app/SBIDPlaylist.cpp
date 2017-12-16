@@ -301,7 +301,7 @@ SBIDPlaylist::createKey(int playlistID)
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::retrievePlaylist(const SBKey& key, bool noDependentsFlag)
+SBIDPlaylist::retrievePlaylist(SBKey key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();

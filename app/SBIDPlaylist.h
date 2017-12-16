@@ -56,7 +56,7 @@ public:
     //	Static methods
     static SBKey createKey(int playlistID);
     static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1);
-    static SBIDPlaylistPtr retrievePlaylist(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDPlaylistPtr retrievePlaylist(SBKey key,bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
     static Common::sb_type classType() { return Common::sb_type_playlist; }

@@ -40,7 +40,7 @@ public:
     void openScreen(const ScreenItem& si);
     void keyPressEvent(QKeyEvent * event);
     void navigateDetailTab(int direction=1);
-    void removeFromScreenStack(const SBKey& key);
+    void removeFromScreenStack(SBKey key);
     void resetAllFiltersAndSelections();
     void showCurrentPlaylist();
     void showSonglist();

@@ -11,45 +11,45 @@ CacheManagerHelper::CacheManagerHelper(QObject *parent) : QObject(parent)
 }
 
 void
-CacheManagerHelper::emitUpdatedSBIDPtr(SBIDPtr ptr)
+CacheManagerHelper::emitUpdatedKey(SBKey ptr)
 {
     s_cpd->acquire(1);
-    emit updatedSBIDPtr(ptr);
+    emit updatedKey(ptr);
     s_cpd->release(1);
 }
 
 void
-CacheManagerHelper::emitRemovedSBIDPtr(SBIDPtr ptr)
+CacheManagerHelper::emitRemovedKey(SBKey ptr)
 {
     s_cpd->acquire(1);
-    emit removedSBIDPtr(ptr);
+    emit removedKey(ptr);
     s_cpd->release(1);
 }
 
 void
-CacheManagerHelper::emitRemovedSBIDPtrArrayStatic(const QStringList &keyList)
+CacheManagerHelper::emitRemovedKeyArrayStatic(const QStringList &keyList)
 {
     Q_UNUSED(keyList);
 }
 
 void
-CacheManagerHelper::emitRemovedSBIDPtrStatic(SBIDPtr ptr)
+CacheManagerHelper::emitRemovedKeyStatic(SBKey ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    cm->managerHelper()->emitRemovedSBIDPtr(ptr);
+    cm->managerHelper()->emitRemovedKey(ptr);
 }
 
 void
-CacheManagerHelper::emitUpdatedSBIDPtrArrayStatic(const QStringList &keyList)
+CacheManagerHelper::emitUpdatedKeyArrayStatic(const QStringList &keyList)
 {
     Q_UNUSED(keyList);
 }
 
 void
-CacheManagerHelper::emitUpdatedSBIDPtrStatic(SBIDPtr ptr)
+CacheManagerHelper::emitUpdatedKeyStatic(SBKey ptr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
-    cm->managerHelper()->emitUpdatedSBIDPtr(ptr);
+    cm->managerHelper()->emitUpdatedKey(ptr);
 }
 
 void

@@ -68,7 +68,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Static methods
-    static SBIDPerformerPtr retrievePerformer(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDPerformerPtr retrievePerformer(SBKey key,bool noDependentsFlag=1);
     static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1);
     static SBIDPerformerPtr retrieveVariousPerformers();
 
@@ -96,7 +96,7 @@ protected:
     static Common::result userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found);
 
     //	Helper methods
-    QString addRelatedPerformerSQL(const SBKey& key) const;
+    QString addRelatedPerformerSQL(SBKey key) const;
     QString deleteRelatedPerformerSQL(const QString& key) const;
 
 private:
@@ -117,7 +117,7 @@ private:
     void _loadAlbumPerformances();
     QVector<SBKey> _loadRelatedPerformers() const;
     void _loadSongPerformances();
-    void _mergeRelatedPerformer(const SBKey& fromKey, const SBKey& toKey);
+    void _mergeRelatedPerformer(SBKey fromKey, SBKey toKey);
 
     QVector<SBIDAlbumPerformancePtr> _loadAlbumPerformancesFromDB() const;
     QVector<SBIDSongPerformancePtr> _loadSongPerformancesFromDB() const;

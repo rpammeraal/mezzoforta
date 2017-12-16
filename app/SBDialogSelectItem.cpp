@@ -74,7 +74,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
             else
             {
                 SBIDAlbumPtr currentAlbumPtr=matches[i][j];
-                imagePath=ExternalData::getCachePath(currentAlbumPtr);
+                imagePath=ExternalData::getCachePath(currentAlbumPtr->key());
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {
@@ -145,7 +145,7 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
 
         l->setWindowFlags(Qt::FramelessWindowHint);
         l->setTextFormat(Qt::RichText);
-        QString imagePath=ExternalData::getCachePath(aPtr);
+        QString imagePath=ExternalData::getCachePath(aPtr->key());
         QFile imageFile(imagePath);
 
         if(imageFile.exists()==0)
@@ -207,7 +207,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
             else
             {
                 SBIDPerformerPtr currentPerformerPtr=matches[i][j];
-                imagePath=ExternalData::getCachePath(currentPerformerPtr);
+                imagePath=ExternalData::getCachePath(currentPerformerPtr->key());
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {
@@ -310,7 +310,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 {
                     pPtr=spPtr->performerPtr();
 
-                    imagePath=ExternalData::getCachePath(pPtr);
+                    imagePath=ExternalData::getCachePath(pPtr->key());
                     QFile imageFile(imagePath);
                     if(imageFile.exists()==0)
                     {
@@ -342,7 +342,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 }
 
                 SBIDSongPtr sPtr=matches[i][j];
-                imagePath=ExternalData::getCachePath(sPtr);
+                imagePath=ExternalData::getCachePath(sPtr->key());
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {

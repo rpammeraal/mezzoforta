@@ -6,6 +6,7 @@
 #include "SBIDAlbum.h"
 #include "SBIDChart.h"
 #include "SBIDChartPerformance.h"
+#include "SBIDPerformer.h"
 #include "SBIDPlaylist.h"
 #include "SBIDOnlinePerformance.h"
 

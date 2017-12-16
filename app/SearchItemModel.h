@@ -26,15 +26,15 @@ public:
 
 public slots:
     void populate();
-    void remove(const SBIDPtr& ptr);
-    void update(const SBIDPtr& ptr);
+    void remove(SBKey key);
+    void update(SBKey key);
 
 private:
 
     void _add(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
-    void _constructDisplay(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,QString& key, QString& display, QString& altDisplay);
+    void _constructDisplay(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,SBKey& key, QString& display, QString& altDisplay);
     void _init();
-    void _remove(const SBIDPtr& ptr);
+    void _remove(SBKey key);
 };
 
 #endif // SEARCHITEMMANAGER_H

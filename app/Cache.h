@@ -26,7 +26,7 @@ protected:
     friend class CacheManager;
     friend class SBIDBase;
 
-    void addChangedKey(const SBKey& key);
+    void addChangedKey(SBKey key);
     QList<SBKey> changes() const { return _changes; }
     virtual void clearCache()=0;
     virtual void clearChanges() { _changes.clear(); }

@@ -34,9 +34,9 @@ public:
     ~CacheTemplate<T, parentT>();
 
     //	Retrieve
-    bool contains(const SBKey& key) const;
+    bool contains(SBKey key) const;
     int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches, bool exactMatchOnlyFlag=0);
-    std::shared_ptr<T> retrieve(const SBKey& key, open_flag openFlag=Cache::open_flag_default);
+    std::shared_ptr<T> retrieve(SBKey key, open_flag openFlag=Cache::open_flag_default);
     QVector<std::shared_ptr<T>> retrieveAll();
     QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
     QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
@@ -85,7 +85,7 @@ CacheTemplate<T,parentT>::~CacheTemplate()
 
 ///	Retrieve
 template <class T, class parentT> bool
-CacheTemplate<T,parentT>::contains(const SBKey& key) const
+CacheTemplate<T,parentT>::contains(SBKey key) const
 {
     return _leMap.contains(key);
 }
@@ -143,7 +143,7 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 }
 
 template <class T, class parentT> std::shared_ptr<T>
-CacheTemplate<T,parentT>::retrieve(const SBKey& key,open_flag openFlag)
+CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
 {
     std::shared_ptr<T> ptr;
 

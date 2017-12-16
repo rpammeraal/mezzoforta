@@ -42,7 +42,7 @@ public slots:
     //	Playlist et al related
     void changeSchema();
     void clearPlaylist();
-    bool playItemNow(const SBKey& key,const bool enqueueFlag=0);
+    bool playItemNow(SBKey key,const bool enqueueFlag=0);
     bool playItemNow(unsigned int playlistIndex);
     void shufflePlaylist();
     void startRadio();

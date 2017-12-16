@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBIDAlbum.h"
+#include "SBIDPerformer.h"
 
 SearchItemModel::SearchItemModel()
 {
@@ -141,11 +142,10 @@ SearchItemModel::populate()
 }
 
 void
-SearchItemModel::remove(const SBIDPtr& ptr)
+SearchItemModel::remove(SBKey key)
 {
-    SB_RETURN_VOID_IF_NULL(ptr);
     beginResetModel();
-    _remove(ptr);
+    _remove(key);
     endResetModel();
     QModelIndex s=this->index(0,0);
     QModelIndex e=this->index(this->rowCount(),this->columnCount());
@@ -153,15 +153,13 @@ SearchItemModel::remove(const SBIDPtr& ptr)
 }
 
 void
-SearchItemModel::update(const SBIDPtr& ptr)
+SearchItemModel::update(SBKey key)
 {
-    SB_RETURN_VOID_IF_NULL(ptr);
     beginResetModel();
 
-    SBKey key=ptr->key();
     debugShow(key);
 
-    _remove(ptr);
+    _remove(key);
 
     debugShow(key);
 
@@ -171,48 +169,45 @@ SearchItemModel::update(const SBIDPtr& ptr)
     QString songTitle;
     QString albumTitle;
     QString performerName;
-    switch(ptr->itemType())
+    switch(key.itemType())
     {
         case Common::sb_type_song:
         {
-            SBIDSongPtr sPtr=SBIDSong::retrieveSong(ptr->itemID());
-            if(sPtr)
-            {
-                songID=sPtr->songID();
-                songTitle=sPtr->songTitle();
-                performerName=sPtr->songOriginalPerformerName();
-            }
+            SBIDSongPtr sPtr=SBIDSong::retrieveSong(key);
+            SB_RETURN_VOID_IF_NULL(sPtr);
 
+            songID=sPtr->songID();
+            songTitle=sPtr->songTitle();
+            performerName=sPtr->songOriginalPerformerName();
             break;
         };
 
         case Common::sb_type_album:
         {
-            SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(ptr->itemID());
-            if(aPtr)
-            {
-                albumID=aPtr->albumID();
-                albumTitle=aPtr->albumTitle();
-                performerName=aPtr->albumPerformerName();
-            }
+            SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(key);
+            SB_RETURN_VOID_IF_NULL(aPtr);
+
+            albumID=aPtr->albumID();
+            albumTitle=aPtr->albumTitle();
+            performerName=aPtr->albumPerformerName();
             break;
         };
 
         case Common::sb_type_performer:
         {
-            SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(ptr->itemID());
-            if(pPtr)
-            {
-                performerID=pPtr->performerID();
-                performerName=pPtr->performerName();
-            }
+            SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
+            SB_RETURN_VOID_IF_NULL(pPtr);
+
+            performerID=pPtr->performerID();
+            performerName=pPtr->performerName();
+            break;
         };
 
         default:
             qDebug() << SB_DEBUG_ERROR << "Should not come here";
     }
 
-    _add(ptr->itemType(),songID,songTitle,performerID,performerName,albumID,albumTitle);
+    _add(key.itemType(),songID,songTitle,performerID,performerName,albumID,albumTitle);
 
     endResetModel();
     QModelIndex s=this->index(0,0);
@@ -227,7 +222,7 @@ SearchItemModel::_add(Common::sb_type itemType, int songID, const QString &songT
     QList<QStandardItem *>column;
     QStandardItem* item;
 
-    QString key;
+    SBKey key;
     QString display;
     QString altDisplay;
     _constructDisplay(itemType,songID,songTitle,performerID,performerName,albumID,albumTitle,key,display,altDisplay);
@@ -255,7 +250,7 @@ SearchItemModel::_add(Common::sb_type itemType, int songID, const QString &songT
 }
 
 void
-SearchItemModel::_constructDisplay(Common::sb_type itemType, int songID, const QString &songTitle, int performerID, const QString &performerName, int albumID, const QString &albumTitle, QString &key, QString& display, QString& altDisplay)
+SearchItemModel::_constructDisplay(Common::sb_type itemType, int songID, const QString &songTitle, int performerID, const QString &performerName, int albumID, const QString &albumTitle, SBKey &key, QString& display, QString& altDisplay)
 {
     QString performerNameAdj=Common::removeAccents(performerName);
     QString songTitleAdj=Common::removeAccents(songTitle);
@@ -297,10 +292,8 @@ SearchItemModel::_init()
 }
 
 void
-SearchItemModel::_remove(const SBIDPtr& ptr)
+SearchItemModel::_remove(SBKey key)
 {
-    SB_RETURN_VOID_IF_NULL(ptr);
-    SBKey ptrKey=ptr->key();
     for(int i=0;i<rowCount();i++)
     {
         SBKey currentKey;
@@ -309,7 +302,7 @@ SearchItemModel::_remove(const SBIDPtr& ptr)
         {
             currentKey=SBKey(item->text());
         }
-        if(ptrKey==currentKey)
+        if(key==currentKey)
         {
             removeRows(i,1);
             i=(i>1?i-1:0);

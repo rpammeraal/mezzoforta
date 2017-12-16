@@ -60,7 +60,7 @@ public:
     static SBSqlQueryModel* playlistDetailsByAlbum(int albumID);
     static SBSqlQueryModel* playlistDetailsByPerformer(int performerID);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
-    static SBIDPlaylistDetailPtr retrievePlaylistDetail(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDPlaylistDetailPtr retrievePlaylistDetail(SBKey key,bool noDependentsFlag=1);
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
 
     //	Helper methods for CacheTemplate

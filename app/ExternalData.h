@@ -4,12 +4,12 @@
 #include <QObject>
 #include <QPixmap>
 
-#include "SBIDPerformer.h"
-
 class QNetworkReply;
 class QNetworkAccessManager;
 
 static const int MUSICBRAINZ_MAXNUM=100;
+
+#include "SBKey.h"
 
 struct NewsItem
 {
@@ -26,12 +26,12 @@ public:
     ~ExternalData();
 
     //	Main interface
-    void loadAlbumData(const SBIDPtr& ptr);
-    void loadPerformerData(const SBIDPtr& ptr);
-    void loadSongData(const SBIDPtr& ptr);
+    void loadAlbumData(SBKey ptr);
+    void loadPerformerData(SBKey ptr);
+    void loadSongData(SBKey ptr);
 
     //	Static methods
-    QString static getCachePath(const SBIDPtr& id);
+    QString static getCachePath(SBKey id);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);
@@ -63,7 +63,7 @@ private:
     bool _wikipediaURLRetrievedFlag;        // 	album performer song
 
     int _currentOffset;
-    SBIDPtr _currentPtr;
+    SBKey _currentKey;
     bool _performerMBIDRetrievedFlag;       //	set if call to retrieve MBID already has been made.
 
     QList<NewsItem> _allNewsItems;
@@ -72,7 +72,7 @@ private:
     void _init();
     //bool _fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const;
     void _loadAlbumCoverAS();
-    static bool _loadImageFromCache(QPixmap& p,const SBIDPtr& ptr);
+    static bool _loadImageFromCache(QPixmap& p,SBKey key);
     void _getMBIDAndMore();
     void _sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString& url);
     void _storeInCache(QByteArray* a) const;

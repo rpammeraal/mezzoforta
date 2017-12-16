@@ -78,7 +78,7 @@ public:
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesBySongPerformance(int songPerformanceID);
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
-    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(const SBKey& key, bool noDependentsFlag=1);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(SBKey key, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
     static Common::sb_type classType() { return Common::sb_type_album_performance; }

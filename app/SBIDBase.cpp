@@ -102,7 +102,7 @@ SBIDBase::createPtr(Common::sb_type itemType,int itemID,bool noDependentsFlag)
 }
 
 SBIDPtr
-SBIDBase::createPtr(const SBKey &key,bool noDependentsFlag)
+SBIDBase::createPtr(SBKey key,bool noDependentsFlag)
 {
     return SBIDBase::createPtr(key.itemType(),key.itemID(),noDependentsFlag);
 }
@@ -190,7 +190,7 @@ SBIDBase::convert(Common::sb_field f)
 }
 
 QString
-SBIDBase::iconResourceLocationClass(const SBKey &key)
+SBIDBase::iconResourceLocationClass(SBKey key)
 {
     return iconResourceLocationClass(key.itemType());
 }

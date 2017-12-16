@@ -171,7 +171,7 @@ SBIDChart::createKey(int chartID)
 }
 
 SBIDChartPtr
-SBIDChart::retrieveChart(const SBKey& key,bool noDependentsFlag)
+SBIDChart::retrieveChart(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartMgr* cmgr=cm->chartMgr();

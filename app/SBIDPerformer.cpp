@@ -403,7 +403,7 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 
 //	Static methods
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(const SBKey& key,bool noDependentsFlag)
+SBIDPerformer::retrievePerformer(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
@@ -826,7 +826,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
 }
 
 QString
-SBIDPerformer::addRelatedPerformerSQL(const SBKey& key) const
+SBIDPerformer::addRelatedPerformerSQL(SBKey key) const
 {
     if(this->key()==key)
     {
@@ -1004,7 +1004,7 @@ SBIDPerformer::_loadSongPerformances()
 }
 
 void
-SBIDPerformer::_mergeRelatedPerformer(const SBKey &fromKey, const SBKey &toKey)
+SBIDPerformer::_mergeRelatedPerformer(SBKey fromKey, SBKey toKey)
 {
     if(_relatedPerformerKey.contains(fromKey))
     {

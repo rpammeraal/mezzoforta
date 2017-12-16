@@ -16,7 +16,7 @@ public:
     };
 
     ScreenItem();
-    ScreenItem(const SBKey& key);
+    ScreenItem(SBKey key);
     ScreenItem(const QString& searchCriteria);
     ScreenItem(ScreenItem::screen_type screenType);
     ~ScreenItem();
@@ -31,7 +31,7 @@ public:
     inline void setSubtabID(int subtabID) { _subtabID=subtabID; }
     inline int sortColumn() const { return _sortColumn; }
     inline int subtabID() const { return _subtabID; }
-    void updateSBIDBase(const SBKey& key);	//	CWIP: rename to updateSBIDPtr
+    void updateSBIDBase(SBKey key);	//	CWIP: rename to updateSBIDPtr
 
     bool operator==(const ScreenItem& i) const;
     bool operator!=(const ScreenItem& i) const;

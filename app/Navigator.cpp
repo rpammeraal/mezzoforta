@@ -318,7 +318,7 @@ Navigator::navigateDetailTab(int direction)
 }
 
 void
-Navigator::removeFromScreenStack(const SBKey& key)
+Navigator::removeFromScreenStack(SBKey key)
 {
     ScreenStack* st=Context::instance()->getScreenStack();
     st->removeForward();

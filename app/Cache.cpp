@@ -11,7 +11,7 @@ Cache::~Cache()
 
 ///	Protected methods
 void
-Cache::addChangedKey(const SBKey& key)
+Cache::addChangedKey(SBKey key)
 {
     if(!_changes.contains(key))
     {

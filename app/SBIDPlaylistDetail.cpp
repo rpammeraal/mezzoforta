@@ -330,7 +330,7 @@ SBIDPlaylistDetail::playlistDetailsByPerformer(int performerID)
 }
 
 SBIDPlaylistDetailPtr
-SBIDPlaylistDetail::retrievePlaylistDetail(const SBKey& key, bool noDependentsFlag)
+SBIDPlaylistDetail::retrievePlaylistDetail(SBKey key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();

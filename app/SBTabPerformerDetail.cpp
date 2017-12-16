@@ -326,12 +326,12 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
     //	Get detail
-    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(si.key());
-    SB_RETURN_IF_NULL(performerPtr,ScreenItem());
+    SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(si.key());
+    SB_RETURN_IF_NULL(pPtr,ScreenItem());
 
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(performerPtr->key());
-    mw->ui.labelPerformerDetailIcon->setKey(performerPtr->key());
+    currentScreenItem.updateSBIDBase(pPtr->key());
+    mw->ui.labelPerformerDetailIcon->setKey(pPtr->key());
 
     //	Clear image
     setPerformerImage(QPixmap());
@@ -352,15 +352,15 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
             this, SLOT(setPerformerNews(QList<NewsItem>)));
 
     //	Performer cover image
-    ed->loadPerformerData(performerPtr);
+    ed->loadPerformerData(pPtr->key());
 
     //	Populate performer detail tab
-    mw->ui.labelPerformerDetailPerformerName->setText(performerPtr->performerName());
+    mw->ui.labelPerformerDetailPerformerName->setText(pPtr->performerName());
 
     QString details=QString("%1 albums %2 %3 songs")
-        .arg(performerPtr->numAlbums())
+        .arg(pPtr->numAlbums())
         .arg(QChar(8226))
-        .arg(performerPtr->numSongs());
+        .arg(pPtr->numSongs());
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers
@@ -376,7 +376,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     _relatedItems.clear();
 
     //	Recreate
-    QVector<SBIDPerformerPtr> related=performerPtr->relatedPerformers();
+    QVector<SBIDPerformerPtr> related=pPtr->relatedPerformers();
 
     QString cs;
 
@@ -387,9 +387,9 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
         switch(i)
         {
         case -2:
-            if(performerPtr->notes().length()>0)
+            if(pPtr->notes().length()>0)
             {
-                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(performerPtr->notes());
+                cs=cs+QString("<B>Notes:</B>&nbsp;%1&nbsp;").arg(pPtr->notes());
             }
             break;
 
@@ -433,7 +433,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate list of songs
     tv=mw->ui.performerDetailPerformances;
-    tm=performerPtr->songs();
+    tm=pPtr->songs();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
@@ -442,7 +442,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate list of albums
     tv=mw->ui.performerDetailAlbums;
-    tm=performerPtr->albums();
+    tm=pPtr->albums();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
@@ -451,14 +451,14 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate charts
     tv=mw->ui.performerDetailCharts;
-    tm=performerPtr->charts();
+    tm=pPtr->charts();
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
     rowCount=populateTableView(tv,tm,4);
     mw->ui.tabPerformerDetailLists->setTabEnabled(2,rowCount>0);
 
-    QUrl url(performerPtr->url());
+    QUrl url(pPtr->url());
     if(url.isValid()==1)
     {
         mw->ui.performerDetailHomepage->load(url);

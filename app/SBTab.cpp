@@ -46,7 +46,7 @@ SBTab::getFirstEligibleSubtabID() const
 }
 
 void
-SBTab::refreshTabIfCurrent(const SBKey& key)
+SBTab::refreshTabIfCurrent(SBKey key)
 {
     ScreenItem si=currentScreenItem();
 
@@ -283,7 +283,7 @@ SBTab::processPerformerEdit(const QString &editPerformerName, SBIDBase &newID, Q
 */
 
 void
-SBTab::setImage(const QPixmap& p, QLabel* l, const SBKey& key) const
+SBTab::setImage(const QPixmap& p, QLabel* l, SBKey key) const
 {
     SB_DEBUG_IF_NULL(l);
     if(p.isNull() && key.validFlag())

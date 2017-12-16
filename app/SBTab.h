@@ -28,7 +28,7 @@ public:
     int getFirstEligibleSubtabID() const;
     inline int currentSubtabID() const { return _currentSubtabID; }
     inline bool editTabFlag() const { return _editTabFlag; }
-    void refreshTabIfCurrent(const SBKey& key);
+    void refreshTabIfCurrent(SBKey key);
 
     //	Virtual UI
     virtual void handleDeleteKey();
@@ -61,7 +61,7 @@ protected:
 
     void init();
     int populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortColumn);
-    void setImage(const QPixmap& p, QLabel* l, const SBKey& key) const;
+    void setImage(const QPixmap& p, QLabel* l, SBKey key) const;
 
     bool _allowPopup(const QPoint& p) const;
     virtual QTableView* _determineViewCurrentTab() const=0;

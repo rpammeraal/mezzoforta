@@ -53,7 +53,7 @@ SBLabel::mousePressEvent(QMouseEvent* me)
 }
 
 void
-SBLabel::setKey(const SBKey& key)
+SBLabel::setKey(SBKey key)
 {
     _key=key;
 }

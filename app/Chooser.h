@@ -34,7 +34,7 @@ public:
     QStandardItemModel* getModel() const;
 
 public slots:
-    void assignItem(const QModelIndex& idx, const SBIDPtr& assignPtr);
+    void assignItem(const QModelIndex& idx, SBKey assignToKey);
 
     void chartEnqueue();
     void chartPlay(bool enqueueFlag=0);

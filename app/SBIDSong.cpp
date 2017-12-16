@@ -1213,7 +1213,7 @@ SBIDSong::retrieveAllSongs()
 }
 
 SBIDSongPtr
-SBIDSong::retrieveSong(const SBKey& key,bool noDependentsFlag)
+SBIDSong::retrieveSong(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* smgr=cm->songMgr();

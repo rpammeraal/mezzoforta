@@ -91,7 +91,7 @@ public:
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
     static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=1);
-    static SBIDSongPtr retrieveSong(const SBKey& key,bool noDependentsFlag=1);
+    static SBIDSongPtr retrieveSong(SBKey key,bool noDependentsFlag=1);
     static QString iconResourceLocationStatic();
 
     //	Helper methods for CacheTemplate
