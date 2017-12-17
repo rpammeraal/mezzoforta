@@ -331,6 +331,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(sPtr->key());	//	Update with original pointer --
+    qDebug() << SB_DEBUG_INFO << sPtr->key();
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
 
     ExternalData* ed=new ExternalData();

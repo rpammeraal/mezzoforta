@@ -179,11 +179,11 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
-    qDebug() << SB_DEBUG_INFO;
-    if(isVisible())
+    QWidget* w=QApplication::focusWidget();
+    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
+    if(w)
     {
-    qDebug() << SB_DEBUG_INFO;
-        setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
+        w->setFocus();
     }
 }
 
@@ -334,6 +334,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.labelPerformerDetailIcon->setKey(pPtr->key());
 
     //	Clear image
+    qDebug() << SB_DEBUG_INFO;
     setPerformerImage(QPixmap());
 
     //	Get external data
@@ -343,7 +344,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
             this, SLOT(setPerformerWikipediaPage(QString)));
     connect(ed, SIGNAL(updatePerformerMBID(SBKey)),
-            this, SLOT(updatePerformerMBID(BIDPtr)));
+            this, SLOT(updatePerformerMBID(SBKey)));
     connect(ed, SIGNAL(updatePerformerHomePage(SBKey)),
             this, SLOT(updatePerformerHomePage(SBKey)));
     connect(ed, SIGNAL(imageDataReady(QPixmap)),

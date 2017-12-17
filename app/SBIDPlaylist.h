@@ -66,13 +66,11 @@ protected:
     friend class Preloader;
 
     SBIDPlaylist();
-    //	SBIDPlaylist(int itemID);
 
     //	Operators
     SBIDPlaylist& operator=(const SBIDPlaylist& t);
 
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
-    bool addDependent(SBIDPtr ptr);
     static SBIDPlaylistPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
     static void openKey(const QString& key, int& albumID);

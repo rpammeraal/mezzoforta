@@ -925,13 +925,6 @@ void
 SBIDPerformer::_loadAlbums()
 {
     _albumList=_loadAlbumsFromDB();
-    QVectorIterator<SBIDAlbumPtr> it(_albumList);
-    qDebug() << SB_DEBUG_INFO;
-    while(it.hasNext())
-    {
-        SBIDAlbumPtr aPtr=it.next();
-        qDebug() << SB_DEBUG_INFO << aPtr->key() << aPtr->ID();
-    }
 }
 
 void

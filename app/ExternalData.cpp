@@ -10,6 +10,8 @@
 #include <QWebEngineView>
 
 #include "Common.h"
+#include "Context.h"
+#include "DataAccessLayer.h"
 #include "ExternalData.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
@@ -37,6 +39,7 @@ ExternalData::loadAlbumData(SBKey key)
     if(_loadImageFromCache(p,_currentKey))
     {
         _artworkRetrievedFlag=1;
+        qDebug() << SB_DEBUG_INFO << "emit imageDataReady";
         emit imageDataReady(p);
     }
 
@@ -55,6 +58,7 @@ ExternalData::loadAlbumData(SBKey key)
 void
 ExternalData::loadPerformerData(SBKey key)
 {
+    qDebug() << SB_DEBUG_INFO;
     _currentKey=key;
     SBIDPtr ptr=SBIDBase::createPtr(key);
     SB_RETURN_VOID_IF_NULL(ptr);
@@ -62,6 +66,7 @@ ExternalData::loadPerformerData(SBKey key)
     //	1.	Performer home page
     if(ptr->url().length()>0)
     {
+    qDebug() << SB_DEBUG_INFO;
         _performerHomepageRetrievedFlag=1;
         emit performerHomePageAvailable(ptr->url());
     }
@@ -69,17 +74,22 @@ ExternalData::loadPerformerData(SBKey key)
     //	2.	Wikipedia page
     if(ptr->wiki().length()>0)
     {
+    qDebug() << SB_DEBUG_INFO;
         _wikipediaURLRetrievedFlag=1;
         emit performerWikipediaPageAvailable(ptr->wiki());
     }
 
+    qDebug() << SB_DEBUG_INFO;
     //	3.	Artwork
     QPixmap p;
     if(_loadImageFromCache(p,key))
     {
+        qDebug() << SB_DEBUG_INFO;
         _artworkRetrievedFlag=1;
+        qDebug() << SB_DEBUG_INFO << "emit imageDataReady";
         emit imageDataReady(p);
     }
+    qDebug() << SB_DEBUG_INFO;
     _getMBIDAndMore();
 }
 
@@ -104,17 +114,26 @@ ExternalData::loadSongData(SBKey key)
 QString
 ExternalData::getCachePath(SBKey key)
 {
+    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    QString prefix;
+
+    prefix=dal->schema();
+    if(!prefix.length())
+    {
+        prefix=dal->databaseName();
+    }
     QString p=QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     p.replace("!","");
     QDir d;
     d.mkpath(p);
 
-    QString f=key.validFlag()?QString("%1/%2.%3")
+    QString f=key.validFlag()?QString("%1/%2.%3.%4")
         .arg(p)
+        .arg(prefix)
         .arg(key.itemType())
         .arg(key.itemID()):QString();
     ;
-    return f;
+    return f.toLower();
 }
 
 ///
@@ -124,7 +143,9 @@ ExternalData::getCachePath(SBKey key)
 bool
 ExternalData::_loadImageFromCache(QPixmap& p,SBKey key)
 {
+    qDebug() << SB_DEBUG_INFO;
     QString fn=getCachePath(key);
+    qDebug() << SB_DEBUG_INFO << key << fn;
     QFile f(fn);
 
     if(f.open(QIODevice::ReadOnly))
@@ -139,10 +160,12 @@ ExternalData::_loadImageFromCache(QPixmap& p,SBKey key)
         {
             QByteArray a=QByteArray(mem,len);
             p.loadFromData(a);
+            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
         free(mem);
     }
+    qDebug() << SB_DEBUG_INFO;
     return 0;
 }
 
@@ -339,8 +362,10 @@ ExternalData::handleImageDataNetwork(QNetworkReply *r)
                 QPixmap image;
 
                 //	Store in cache
+                qDebug() << SB_DEBUG_INFO << "store in cache";
                 image.loadFromData(a);
                 _storeInCache(&a);
+                qDebug() << SB_DEBUG_INFO << "emit imageDataReady";
                 emit imageDataReady(image);
             }
         }
@@ -1048,6 +1073,7 @@ void
 ExternalData::_storeInCache(QByteArray *a) const
 {
     QString fn=getCachePath(_currentKey);
+    qDebug() << SB_DEBUG_INFO << fn;
     QFile f(fn);
     if(f.open(QIODevice::WriteOnly))
     {
@@ -1056,19 +1082,3 @@ ExternalData::_storeInCache(QByteArray *a) const
         f.close();
     }
 }
-
-//bool
-//ExternalData::_fuzzyMatch(const SBIDBase &i, const SBIDBase &j) const
-//{
-//    bool match=1;
-//    if(j.albumTitle().count()!=i.albumTitle().count() || j.albumTitle().toLower()!=i.albumTitle().toLower())
-//    {
-//        match=0;
-//    }
-//    if(j.songPerformerName().count()!=i.songPerformerName().count() || j.songPerformerName().toLower()!=i.songPerformerName().toLower())
-//    {
-//        match=0;
-//    }
-
-//    return match;
-//}

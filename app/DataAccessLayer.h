@@ -48,6 +48,7 @@ public:
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
 
     //	Database type specific
+    QString databaseName() const;
     const QString& schema() const;
     virtual QStringList availableSchemas() const;
     QString customize(QString& sqlString) const;

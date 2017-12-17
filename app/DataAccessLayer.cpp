@@ -327,6 +327,12 @@ operator<<(QDebug dbg, const DataAccessLayer& dal)
     return dbg.space();
 }
 
+QString
+DataAccessLayer::databaseName() const
+{
+    QSqlDatabase db=QSqlDatabase::database();
+    return db.databaseName();
+}
 
 const QString&
 DataAccessLayer::schema() const

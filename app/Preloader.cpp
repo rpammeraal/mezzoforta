@@ -838,7 +838,7 @@ Preloader::songPerformances(QString query)
     QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" <<  "9" << "11";
     QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
     QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
-    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" <<  "4" <<  "5" << "28";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" <<  "0" << "12" <<  "4" <<  "5" << "28";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);

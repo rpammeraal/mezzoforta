@@ -122,7 +122,6 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 
     if(!found)
     {
-        //SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
@@ -327,37 +326,8 @@ SBIDPlaylist::operator=(const SBIDPlaylist& t)
     return *this;
 }
 
-//SBIDPlaylist::SBIDPlaylist(int itemID):SBIDBase()
-//{
-//    _init();
-//    _playlistID=itemID;
-//}
-
 ///	Methods used by SBIDManager
-bool
-SBIDPlaylist::addDependent(SBIDPtr ptr)
-{
-    bool found=0;
-    QMapIterator<int,SBIDPlaylistDetailPtr> it(items());
-    while(ptr && it.hasNext())
-    {
-        it.next();
-        if(it.value()->childKey()==ptr->key())
-        {
-            found=1;
-        }
-    }
 
-    if(!found)
-    {
-        //SBIDPlaylistDetailMgr* pdMgr=Context::instance()->getPlaylistDetailMgr();
-        SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
-        SB_RETURN_IF_NULL(pdPtr,0);
-        _items[_items.count()]=pdPtr;
-        this->recalculatePlaylistDuration();
-    }
-    return !found;
-}
 
 SBIDPlaylistPtr
 SBIDPlaylist::createInDB(Common::sb_parameters& p)
