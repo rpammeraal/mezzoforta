@@ -5,29 +5,25 @@ SBKey::SBKey()
     _init();
 }
 
-SBKey::SBKey(Common::sb_type itemType, int itemID):_itemType(itemType),_itemID(itemID)
+SBKey::SBKey(ItemType itemType, int itemID):_itemType(itemType),_itemID(itemID)
 {
 }
 
-SBKey::SBKey(const QString& key)
+SBKey::SBKey(const QByteArray &ba)
 {
-    QStringList l=key.split(":");
+    QStringList l=QString(ba).split(":");
     _init();
     if(l.count()==2)
     {
-        _itemType=(Common::sb_type)l[0].toInt();
+        _itemType=(ItemType)l[0].toInt();
         _itemID=l[1].toInt();
 
-        if(_itemType<0 || _itemType>Common::sb_type_count() || _itemID<-1)
+        if(_itemType<0 || _itemType>ItemTypeCount() || _itemID<-1)
         {
-            _itemType=Common::sb_type_invalid;
+            _itemType=Invalid;
             _itemID=-1;
         }
     }
-}
-
-SBKey::SBKey(const QByteArray &ba):SBKey(QString(ba))
-{
 }
 
 SBKey::~SBKey()
@@ -38,7 +34,7 @@ QByteArray
 SBKey::encode() const
 {
     QByteArray encodedData;
-    encodedData.append(key());
+    encodedData.append(toString());
 
     return encodedData;
 }
@@ -47,9 +43,9 @@ bool
 SBKey::operator ==(const SBKey& i) const
 {
     if(
-        i.itemType()!=Common::sb_type_invalid &&
+        i.itemType()!=Invalid &&
         i.itemType()==this->itemType() &&
-        i.key()==this->key())
+        i.itemID()==this->itemID())
     {
         return 1;
     }
@@ -64,15 +60,14 @@ SBKey::operator =(const SBKey& t)
     return *this;
 }
 
-
-
-SBKey::operator QString() const
+QDebug operator<< (QDebug d, const SBKey& k)
 {
-    return this->key();
+    d << k.toString();
+    return d;
 }
 
 QString
-SBKey::key() const
+SBKey::toString() const
 {
     return itemID()>=0
            ?QString("%1:%2").arg(itemType()).arg(itemID())
@@ -83,12 +78,12 @@ SBKey::key() const
 bool
 SBKey::validFlag() const
 {
-    return (_itemType!=Common::sb_type_invalid&&_itemID>0)?1:0;
+    return (_itemType!=Invalid&&_itemID>0)?1:0;
 }
 
 void
 SBKey::_init()
 {
-    _itemType=Common::sb_type_invalid;
+    _itemType=Invalid;
     _itemID=-1;
 }

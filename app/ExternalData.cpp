@@ -233,7 +233,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
                         }
                     }
 
-                    if(_currentKey.itemType()==Common::sb_type_album)
+                    if(_currentKey.itemType()==SBKey::Album)
                     {
                         SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(_currentKey);
                         SB_RETURN_VOID_IF_NULL(aPtr);
@@ -265,7 +265,7 @@ ExternalData::handleAlbumImageURLFromAS(QNetworkReply *r)
 void
 ExternalData::handleAlbumURLDataFromMB(QNetworkReply *r)
 {
-    if(_currentKey.itemType()==Common::sb_type_album)
+    if(_currentKey.itemType()==SBKey::Album)
     {
         SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(_currentKey);
         SB_RETURN_VOID_IF_NULL(aPtr);
@@ -732,7 +732,7 @@ ExternalData::handlePerformerURLFromMB(QNetworkReply *r)
 void
 ExternalData::handleSongMetaDataFromMB(QNetworkReply *r)
 {
-    if(_currentKey.itemType()==Common::sb_type_song)
+    if(_currentKey.itemType()==SBKey::Song)
     {
         SBIDSongPtr sPtr=SBIDSong::retrieveSong(_currentKey);
         SB_RETURN_VOID_IF_NULL(sPtr);
@@ -944,7 +944,7 @@ ExternalData::_getMBIDAndMore()
     }
     else
     {
-        if(ptr->itemType()==Common::sb_type_performer)
+        if(ptr->itemType()==SBKey::Performer)
         {
             //	1.	Wikipedia, performer home page
             if(_wikipediaURLRetrievedFlag==0 || _performerHomepageRetrievedFlag==0)
@@ -977,7 +977,7 @@ ExternalData::_getMBIDAndMore()
             ;
             en->get(QNetworkRequest(QUrl(urlString)));
         }
-        else if(_currentKey.itemType()==Common::sb_type_album)
+        else if(_currentKey.itemType()==SBKey::Album)
         {
             SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(_currentKey);
             SB_RETURN_VOID_IF_NULL(aPtr);
@@ -1014,7 +1014,7 @@ ExternalData::_getMBIDAndMore()
                 qDebug() << SB_DEBUG_WARNING << "Looks like we already have wiki for album";
             }
         }
-        else if(_currentKey.itemType()==Common::sb_type_song)
+        else if(_currentKey.itemType()==SBKey::Song)
         {
             //	CWIP:
             //	Songlyrics are only downloaded if wikipedia page is not known.

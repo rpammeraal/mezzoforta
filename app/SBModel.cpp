@@ -48,7 +48,7 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
     QString header;
     SBKey key;
     QModelIndex n;
-    Common::sb_type itemType=Common::sb_type_invalid;
+    SBKey::ItemType itemType=SBKey::Invalid;
     int itemID=-1;
     bool dragableColumnFlag=0;
 
@@ -71,13 +71,13 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
 
             if(header=="sb_item_key")
             {
-                key=SBKey(v.toString());
+                key=SBKey(v.toByteArray());
                 qDebug() << SB_DEBUG_INFO << key;
                 return key;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
             {
-                itemType=static_cast<Common::sb_type>(v.toInt());
+                itemType=static_cast<SBKey::ItemType>(v.toInt());
             }
             else if(header=="sb_item_id")
             {
@@ -86,9 +86,9 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             else if(header=="sb_item_type1" || header=="sb_item_type2" || header=="sb_item_type3")
             {
                 //	Interpret this value
-                if(itemType==Common::sb_type_invalid)
+                if(itemType==SBKey::Invalid)
                 {
-                    itemType=static_cast<Common::sb_type>(v.toInt());
+                    itemType=static_cast<SBKey::ItemType>(v.toInt());
                 }
 
                 //	Move 'cursor'
@@ -99,7 +99,7 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
                 itemID=v.toInt();
             }
 
-            if((!key.validFlag()) && (itemType!=Common::sb_type_invalid && itemID>=0))
+            if((!key.validFlag()) && (itemType!=SBKey::Invalid && itemID>=0))
             {
                 key=SBKey(itemType,itemID);
                 qDebug() << SB_DEBUG_INFO << key;
@@ -122,11 +122,11 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             }
         }
         n=aim->index(idx.row(),idx.column()-1);
-        QString stringKey=aim->data(n, Qt::DisplayRole).toString();
+        QByteArray ba=aim->data(n, Qt::DisplayRole).toByteArray();
 
-        if((!key.validFlag()) && stringKey.length())
+        if((!key.validFlag()) && ba.length())
         {
-            key=SBKey(stringKey);
+            key=SBKey(ba);
                 qDebug() << SB_DEBUG_INFO << key;
             return key;
         }
@@ -147,9 +147,9 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
 
         if(header=="sb_item_type")
         {
-            if(itemType==Common::sb_type_invalid)
+            if(itemType==SBKey::Invalid)
             {
-                itemType=static_cast<Common::sb_type>(v.toInt());
+                itemType=static_cast<SBKey::ItemType>(v.toInt());
             }
         }
         else if(header=="sb_item_id")
@@ -157,7 +157,7 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             itemID=v.toInt();
         }
 
-        if((!key.validFlag()) && (itemType!=Common::sb_type_invalid && itemID>=0))
+        if((!key.validFlag()) && (itemType!=SBKey::Invalid && itemID>=0))
         {
             key=SBKey(itemType,itemID);
                 qDebug() << SB_DEBUG_INFO << key;

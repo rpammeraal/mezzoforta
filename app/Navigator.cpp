@@ -89,7 +89,7 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 {
-    if(key.itemType()==Common::sb_type_playlist_detail)
+    if(key.itemType()==SBKey::PlaylistDetail)
     {
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(key);
         key=pdPtr->key();
@@ -125,7 +125,7 @@ Navigator::openScreen(const ScreenItem &si)
             return;
         }
 
-        if(key.itemType()==Common::sb_type_invalid)
+        if(key.itemType()==SBKey::Invalid)
         {
             qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << key.itemType();
             return;
@@ -445,7 +445,7 @@ Navigator::editItem()
 void
 Navigator::openItemFromCompleter(const QModelIndex& i)
 {
-    SBKey key=SBKey(i.sibling(i.row(), i.column()+1).data().toString());
+    SBKey key(i.sibling(i.row(), i.column()+1).data().toByteArray());
     openScreen(key);
     clearSearchFilter();
 }
@@ -459,7 +459,7 @@ Navigator::openChooserItem(const QModelIndex &i)
     if(screenType==ScreenItem::screen_type_sbidbase)
     {
         //	OPen without dependents, so we can explicitly force a progress box when loading dependents
-        SBKey key=SBKey((Common::sb_type)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
+        SBKey key=SBKey((SBKey::ItemType)i.sibling(i.row(), i.column()+3).data().toInt(),i.sibling(i.row(), i.column()+1).data().toInt());
         screenItem=ScreenItem(key);
 
     }
@@ -591,27 +591,31 @@ Navigator::_activateScreen()
     bool canBeEditedFlag=1;
     SBKey key;
 
+    qDebug() << SB_DEBUG_INFO << si.screenType();
     switch(si.screenType())
     {
         case ScreenItem::screen_type_sbidbase:
             key=si.key();
+            qDebug() << SB_DEBUG_INFO << key;
             switch(key.itemType())
             {
-            case Common::sb_type_online_performance:
-            case Common::sb_type_album_performance:
-            case Common::sb_type_song_performance:
-            case Common::sb_type_song:
+            case SBKey::OnlinePerformance:
+            case SBKey::AlbumPerformance:
+            case SBKey::SongPerformance:
+            case SBKey::Song:
                 if(editFlag)
                 {
                     tab=mw->ui.tabSongEdit;
+                    qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
                     tab=mw->ui.tabSongDetail;
+                    qDebug() << SB_DEBUG_INFO;
                 }
                 break;
 
-            case Common::sb_type_performer:
+            case SBKey::Performer:
                 if(editFlag)
                 {
                     tab=mw->ui.tabPerformerEdit;
@@ -622,7 +626,7 @@ Navigator::_activateScreen()
                 }
                 break;
 
-            case Common::sb_type_album:
+            case SBKey::Album:
                 if(editFlag)
                 {
                     tab=mw->ui.tabAlbumEdit;
@@ -633,19 +637,19 @@ Navigator::_activateScreen()
                 }
                 break;
 
-            case Common::sb_type_playlist:
+            case SBKey::Playlist:
                 tab=mw->ui.tabPlaylistDetail;
                 canBeEditedFlag=0;
                 break;
 
-            case Common::sb_type_chart:
+            case SBKey::Chart:
                 tab=mw->ui.tabChartDetail;
                 canBeEditedFlag=0;
                 break;
 
-            case Common::sb_type_playlist_detail:
-            case Common::sb_type_chart_performance:
-            case Common::sb_type_invalid:
+            case SBKey::PlaylistDetail:
+            case SBKey::ChartPerformance:
+            case SBKey::Invalid:
                 break;
             }
         break;

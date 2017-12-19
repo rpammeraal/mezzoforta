@@ -38,7 +38,7 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
     SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
-    if(ptr->itemType()==Common::sb_type_album_performance)
+    if(ptr->itemType()==SBKey::AlbumPerformance)
     {
         SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(ptr->itemID());
         QList<QStandardItem *> newRow=createRecord(performancePtr,performancePtr->playPosition());

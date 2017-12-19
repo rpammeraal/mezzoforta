@@ -8,7 +8,7 @@ class ScreenItem
 public:
     enum screen_type
     {
-        screen_type_invalid,
+        screen_type_invalid=0,
         screen_type_sbidbase,
         screen_type_allsongs,
         screen_type_songsearch,

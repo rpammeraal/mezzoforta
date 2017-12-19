@@ -3,18 +3,14 @@
 
 #include "SBIDPerformer.h"
 
-#include "CacheManager.h"
 #include "Context.h"
+#include "DataAccessLayer.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
-#include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
-
-#include <SBIDAlbum.h>
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
@@ -50,16 +46,10 @@ SBIDPerformer::iconResourceLocation() const
     return QString(":/images/NoBandPhoto.png");
 }
 
-int
-SBIDPerformer::itemID() const
-{
-    return performerID();
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDPerformer::itemType() const
 {
-    return Common::sb_type_performer;
+    return SBKey::Performer;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -159,7 +149,7 @@ SBIDPerformer::charts() const
     SBTableModel* tm=new SBTableModel();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
 
-    tm->populateChartsByItemType(Common::sb_type_performer,list);
+    tm->populateChartsByItemType(SBKey::Performer,list);
 
     return tm;
 }
@@ -202,9 +192,7 @@ SBIDPerformer::relatedPerformers()
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerKey.count();i++)
     {
-        int relatedPerformerID;
-        openKey(_relatedPerformerKey.at(i),relatedPerformerID);
-        ptr=retrievePerformer(relatedPerformerID);
+        ptr=retrievePerformer(_relatedPerformerKey.at(i));
         if(ptr)
         {
             related.append(ptr);
@@ -283,7 +271,7 @@ SBIDPerformer::updateSoundexFields()
 
 ///	Setters
 void
-SBIDPerformer::addRelatedPerformer(const QString& key)
+SBIDPerformer::addRelatedPerformer(SBKey key)
 {
     if(!_relatedPerformerKey.contains(key))
     {
@@ -293,7 +281,7 @@ SBIDPerformer::addRelatedPerformer(const QString& key)
 }
 
 void
-SBIDPerformer::deleteRelatedPerformer(const QString& key)
+SBIDPerformer::deleteRelatedPerformer(SBKey key)
 {
     if(_relatedPerformerKey.contains(key))
     {
@@ -306,7 +294,7 @@ SBIDPerformer::deleteRelatedPerformer(const QString& key)
 SBIDPerformer::operator QString() const
 {
     return QString("SBIDPerformer:pID=%1:n=%2")
-            .arg(_performerID)
+            .arg(itemID())
             .arg(_performerName)
     ;
 }
@@ -315,7 +303,7 @@ SBIDPerformer::operator QString() const
 SBKey
 SBIDPerformer::createKey(int performerID)
 {
-    return SBKey(Common::sb_type_performer,performerID);
+    return SBKey(SBKey::Performer,performerID);
 }
 
 ///
@@ -435,7 +423,12 @@ SBIDPerformer::retrieveVariousPerformers()
 
 
 ///	Protected methods
-SBIDPerformer::SBIDPerformer():SBIDBase()
+SBIDPerformer::SBIDPerformer():SBIDBase(SBKey::Performer,-1)
+{
+    _init();
+}
+
+SBIDPerformer::SBIDPerformer(int performerID):SBIDBase(SBKey::Performer,performerID)
 {
     _init();
 }
@@ -509,8 +502,7 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDPerformer pe;
-    pe._performerID   = dal->retrieveLastInsertedKey();
+    SBIDPerformer pe(dal->retrieveLastInsertedKey());
     pe._performerName=p.performerName;
     pe._notes        =p.notes;
 
@@ -612,10 +604,9 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
 SBIDPerformerPtr
 SBIDPerformer::instantiate(const QSqlRecord &r)
 {
-    SBIDPerformer performer;
     int i=0;
 
-    performer._performerID  =Common::parseIntFieldDB(&r,i++);
+    SBIDPerformer performer(Common::parseIntFieldDB(&r,i++));
     performer._performerName=r.value(i++).toString();
     performer._url          =r.value(i++).toString();
     performer._notes        =r.value(i++).toString();
@@ -688,23 +679,14 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
 }
 
 void
-SBIDPerformer::openKey(const QString &key, int &performerID)
-{
-    QStringList l=key.split(":");
-    performerID=l.count()==2?l[1].toInt():-1;
-}
-
-void
 SBIDPerformer::postInstantiate(SBIDPerformerPtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDPerformer::retrieveSQL(const QString& key)
+SBIDPerformer::retrieveSQL(SBKey key)
 {
-    int performerID;
-    openKey(key,performerID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -719,7 +701,7 @@ SBIDPerformer::retrieveSQL(const QString& key)
         "ORDER BY "
             "a.name "
     )
-        .arg(key.length()==0?"":QString("WHERE a.artist_id=%1").arg(performerID))
+        .arg(key.validFlag()?QString("WHERE a.artist_id=%1").arg(key.itemID()):QString())
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -734,7 +716,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
     bool deletedFlag=this->deletedFlag();
 
     qDebug() << SB_DEBUG_INFO
-             << this->key()
+             << toString()
              << this->ID()
              << deletedFlag
              << changedFlag()
@@ -784,7 +766,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
                 .arg(Common::escapeSingleQuotes(this->url()))
                 .arg(Common::escapeSingleQuotes(this->MBID()))
                 .arg(Common::soundex(Common::escapeSingleQuotes(this->_performerName)))
-                .arg(this->_performerID)
+                .arg(this->itemID())
             ;
             SQL.append(q);
         }
@@ -803,7 +785,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
         //	A.	Added
         for(int i=0;i<currentRelatedPerformerKey.count();i++)
         {
-            const QString key=currentRelatedPerformerKey.at(i);
+            const SBKey key=currentRelatedPerformerKey.at(i);
             if(!relatedPerformerKey.contains(key))
             {
                 //	New entry
@@ -814,7 +796,7 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
         //	B.	Removed
         for(int i=0;i<relatedPerformerKey.count();i++)
         {
-            const QString key=relatedPerformerKey.at(i);
+            const SBKey key=relatedPerformerKey.at(i);
             if(!currentRelatedPerformerKey.contains(key))
             {
                 //	Removed entry
@@ -832,8 +814,6 @@ SBIDPerformer::addRelatedPerformerSQL(SBKey key) const
     {
         return QString();
     }
-    int relatedPerformerID;
-    openKey(key,relatedPerformerID);
     return QString
     (
         "INSERT INTO ___SB_SCHEMA_NAME___artist_rel "
@@ -868,15 +848,13 @@ SBIDPerformer::addRelatedPerformerSQL(SBKey key) const
             ") "
     )
         .arg(this->performerID())
-        .arg(relatedPerformerID)
+        .arg(key.itemID())
     ;
 }
 
 QString
-SBIDPerformer::deleteRelatedPerformerSQL(const QString& key) const
+SBIDPerformer::deleteRelatedPerformerSQL(SBKey key) const
 {
-    int relatedPerformerID;
-    openKey(key,relatedPerformerID);
     return QString
     (
         "DELETE FROM "
@@ -886,7 +864,7 @@ SBIDPerformer::deleteRelatedPerformerSQL(const QString& key) const
             "(artist1_id=%2 AND artist2_id=%1)  "
     )
         .arg(this->performerID())
-        .arg(relatedPerformerID)
+        .arg(key.itemID())
     ;
 }
 
@@ -896,7 +874,7 @@ SBIDPerformer::deleteRelatedPerformerSQL(const QString& key) const
 void
 SBIDPerformer::_copy(const SBIDPerformer &c)
 {
-    _performerID        =c._performerID;
+    SBIDBase::_copy(c);
     _performerName      =c._performerName;
     _notes              =c._notes;
 
@@ -909,9 +887,6 @@ SBIDPerformer::_copy(const SBIDPerformer &c)
 void
 SBIDPerformer::_init()
 {
-    _sb_item_type=Common::sb_type_performer;
-
-    _performerID=-1;
     _performerName=QString();
     _notes=QString();
 

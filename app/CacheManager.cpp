@@ -7,6 +7,20 @@
 #include "MainWindow.h"
 #include "SearchItemModel.h"
 
+static const SBKey::ItemType _order [] =
+{
+    SBKey::Album,
+    SBKey::AlbumPerformance,
+    SBKey::Chart,
+    SBKey::ChartPerformance,
+    SBKey::OnlinePerformance,
+    SBKey::Performer,
+    SBKey::Playlist,
+    SBKey::PlaylistDetail,
+    SBKey::SongPerformance,
+    SBKey::Song
+};
+
 CacheManager::CacheManager()
 {
     _init();
@@ -15,7 +29,7 @@ CacheManager::CacheManager()
 void
 CacheManager::clearAllCaches()
 {
-    QMapIterator<sb_cache_type,CachePtr> cIT(_cache);
+    QMapIterator<SBKey::ItemType,CachePtr> cIT(_cache);
     while(cIT.hasNext())
     {
         cIT.next();
@@ -28,7 +42,7 @@ void
 CacheManager::debugShowChanges(const QString &title)
 {
     qDebug() << SB_DEBUG_INFO << title;
-    QMapIterator<sb_cache_type,CachePtr> cIT(_cache); while(cIT.hasNext())
+    QMapIterator<SBKey::ItemType,CachePtr> cIT(_cache); while(cIT.hasNext())
     {
         cIT.next();
         CachePtr cPtr=cIT.value();
@@ -43,14 +57,29 @@ CacheManager::saveChanges()
     QStringList insertSQL;
     QStringList deleteSQL;
     DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    bool albumsUpdatedFlag=0;
+    bool performersUpdatedFlag=0;
+    bool songsUpdatedFlag=0;
 
-    QMapIterator<sb_cache_type,CachePtr> cIT(_cache); while(cIT.hasNext())
+    for(size_t i=0;i<SBKey::ItemTypeCount();i++)
     {
-        cIT.next();
-        CachePtr cPtr=cIT.value();
+        SBKey::ItemType itemType=_order[i];
+        CachePtr cPtr=_cache[itemType];
+
+        int numUpdatesBefore=insertSQL.count()+updateSQL.count()+deleteSQL.count();
+
         insertSQL.append(cPtr->retrieveChanges(Common::db_insert));
         updateSQL.append(cPtr->retrieveChanges(Common::db_update));
         deleteSQL.append(cPtr->retrieveChanges(Common::db_delete));
+
+        int numUpdatesAfter=insertSQL.count()+updateSQL.count()+deleteSQL.count();
+        if(numUpdatesAfter-numUpdatesBefore>3)
+        {
+            qDebug() << SB_DEBUG_INFO << itemType << numUpdatesBefore << numUpdatesAfter;
+            albumsUpdatedFlag=(itemType==SBKey::ItemType::Album?1:albumsUpdatedFlag);
+            performersUpdatedFlag=(itemType==SBKey::ItemType::Performer?1:performersUpdatedFlag);
+            songsUpdatedFlag=(itemType==SBKey::ItemType::Song?1:songsUpdatedFlag);
+        }
     }
 
     QStringList SQL=updateSQL;
@@ -64,50 +93,61 @@ CacheManager::saveChanges()
         dal->restore(restorePoint);
     }
 
-    cIT.toFront();
-    while(cIT.hasNext())
+    for(size_t i=0;i<SBKey::ItemTypeCount();i++)
     {
-        cIT.next();
-        CachePtr cPtr=cIT.value();
+        SBKey::ItemType itemType=_order[i];
+        CachePtr cPtr=_cache[itemType];
         cPtr->setChangedAsCommited();
+        cPtr->performReloads();
     }
 
-    CachePerformerMgr* pMgr=performerMgr();
-    int performerID=2078;
-    QString key=SBIDPerformer::createKey(performerID);
-    if(pMgr->contains(key))
+    //	CWIP: remove when database is cached
+    qDebug() << SB_DEBUG_INFO << albumsUpdatedFlag;
+    qDebug() << SB_DEBUG_INFO << performersUpdatedFlag;
+    qDebug() << SB_DEBUG_INFO << songsUpdatedFlag;
+    if(albumsUpdatedFlag || performersUpdatedFlag || songsUpdatedFlag)
     {
-        SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(performerID);
+        SearchItemModel* oldSim=Context::instance()->searchItemModel();
+        SearchItemModel* newSim=new SearchItemModel();
+
+        QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+        QCompleter* completer=lineEdit->completer();
+        completer->setModel(newSim);
+
+        delete(oldSim); oldSim=NULL;
+        Context::instance()->setSearchItemModel(newSim);
+
+        //	CWIP: remove when database is cached
+        Context::instance()->getController()->preloadAllSongs();
     }
-
-    //	CWIP: remove when database is cached
-    SearchItemModel* oldSim=Context::instance()->searchItemModel();
-    SearchItemModel* newSim=new SearchItemModel();
-
-    QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
-    QCompleter* completer=lineEdit->completer();
-    completer->setModel(newSim);
-
-    delete(oldSim); oldSim=NULL;
-    Context::instance()->setSearchItemModel(newSim);
-
-    //	CWIP: remove when database is cached
-    Context::instance()->getController()->preloadAllSongs();
 
     return resultFlag;
 }
 
+///	Protected methods
+void
+CacheManager::notifyPendingRemoval(SBKey key)
+{
+    QMapIterator<SBKey::ItemType,CachePtr> it(_cache);
+    while(it.hasNext())
+    {
+        CachePtr cPtr=it.value();
+        cPtr->notifyPendingRemoval(key);
+    }
+}
+
+///	Private methods
 void
 CacheManager::_init()
 {
-    _cache[sb_cache_album]=std::make_shared<CacheAlbumMgr>(CacheAlbumMgr("a_mgr", Common::sb_type_album));
-    _cache[sb_cache_album_performance]=std::make_shared<CacheAlbumPerformanceMgr>(CacheAlbumPerformanceMgr("ap_mgr",Common::sb_type_album_performance));
-    _cache[sb_cache_chart]=std::make_shared<CacheChartMgr>(CacheChartMgr("c_mgr",Common::sb_type_chart));
-    _cache[sb_cache_chart_performance]=std::make_shared<CacheChartPerformanceMgr>(CacheChartPerformanceMgr("cp_mgr",Common::sb_type_chart_performance));
-    _cache[sb_cache_online_performance]=std::make_shared<CacheOnlinePerformanceMgr>(CacheOnlinePerformanceMgr("op_mgr",Common::sb_type_online_performance));
-    _cache[sb_cache_performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr",Common::sb_type_performer));
-    _cache[sb_cache_playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr",Common::sb_type_playlist));
-    _cache[sb_cache_playlist_detail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr",Common::sb_type_playlist_detail));
-    _cache[sb_cache_song_performance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr",Common::sb_type_song_performance));
-    _cache[sb_cache_song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr",Common::sb_type_song));
+    _cache[SBKey::Album]=std::make_shared<CacheAlbumMgr>(CacheAlbumMgr("a_mgr", SBKey::Album));
+    _cache[SBKey::AlbumPerformance]=std::make_shared<CacheAlbumPerformanceMgr>(CacheAlbumPerformanceMgr("ap_mgr",SBKey::AlbumPerformance));
+    _cache[SBKey::Chart]=std::make_shared<CacheChartMgr>(CacheChartMgr("c_mgr",SBKey::Chart));
+    _cache[SBKey::ChartPerformance]=std::make_shared<CacheChartPerformanceMgr>(CacheChartPerformanceMgr("cp_mgr",SBKey::ChartPerformance));
+    _cache[SBKey::OnlinePerformance]=std::make_shared<CacheOnlinePerformanceMgr>(CacheOnlinePerformanceMgr("op_mgr",SBKey::OnlinePerformance));
+    _cache[SBKey::Performer]=std::make_shared<CachePerformerMgr>(CachePerformerMgr("p_mgr",SBKey::Performer));
+    _cache[SBKey::Playlist]=std::make_shared<CachePlaylistMgr>(CachePlaylistMgr("pl_mgr",SBKey::Playlist));
+    _cache[SBKey::PlaylistDetail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr",SBKey::PlaylistDetail));
+    _cache[SBKey::SongPerformance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr",SBKey::SongPerformance));
+    _cache[SBKey::Song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr",SBKey::Song));
 }

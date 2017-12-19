@@ -2,6 +2,7 @@
 
 #include "Context.h"
 #include "MainWindow.h"
+#include "SBTableModel.h"
 
 SBTabChartDetail::SBTabChartDetail(QWidget* parent) : SBTabChooser(parent)
 {

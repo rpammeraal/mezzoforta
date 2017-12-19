@@ -2,8 +2,8 @@
 #define SBIDCHART_H
 
 #include "SBIDBase.h"
-#include "SBTableModel.h"
-#include "SBIDSongPerformance.h"
+
+class SBTableModel;
 
 class SBIDChart : public SBIDBase
 {
@@ -17,15 +17,14 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
 
     //	Methods specific to SBIDChart
-    inline int chartID() const { return _chartID; }
+    inline int chartID() const { return itemID(); }
     inline QString chartName() const { return _chartName; }
     inline QString chartNotes() const { return _notes; }
     inline QDate chartReleaseDate() const { return _releaseDate; }
@@ -48,13 +47,14 @@ public:
     static SBIDChartPtr retrieveChart(SBKey key,bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_chart; }
+    static ItemType classType() { return Chart; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDChart();
+    SBIDChart(int chartID);
 
     //	Operators
     SBIDChart& operator=(const SBIDChart& t);
@@ -63,16 +63,13 @@ protected:
     //bool addDependent(SBIDPtr tobeAddedPtr);
     static SBIDChartPtr createInDB(Common::sb_parameters& p);
     static SBIDChartPtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDChartPtr& ptr);
     //bool moveDependent(int fromPosition, int toPosition);
     //bool removeDependent(int position);
-    static SBSqlQueryModel* retrieveSQL(const QString& key="");
-    virtual void setPrimaryKey(int PK) { _chartID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
-    int                               _chartID;
     QString                           _chartName;
     QString                           _notes;
     QDate                             _releaseDate;

@@ -31,7 +31,7 @@ private slots:
 
 private:
     QCompleter*    _addNewRelatedPerformerCompleter;
-    QList<QString> _allRelatedPerformers;	//	Key
+    QList<SBKey>   _allRelatedPerformers;	//	Key
     bool           _relatedPerformerBeingAddedFlag;
     bool           _relatedPerformerBeingDeletedFlag;
     bool           _relatedPerformerHasChanged;

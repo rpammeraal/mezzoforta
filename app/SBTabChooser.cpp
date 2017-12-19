@@ -102,7 +102,7 @@ SBTabChooser::_getSelectedItem(QAbstractItemModel* aim, const QModelIndex &idx)
 
         if(header=="sb_item_key")
         {
-            currentPlaylistItem.key=aim->data(idy).toString();
+            currentPlaylistItem.key=aim->data(idy).toByteArray();
         }
         else if(header=="#")
         {

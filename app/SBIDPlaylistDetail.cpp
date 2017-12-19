@@ -1,14 +1,11 @@
 #include "SBIDPlaylistDetail.h"
 
 #include "CacheManager.h"
-#include "Common.h"
 #include "Context.h"
-#include "SBIDOnlinePerformance.h"
-#include "SBMessageBox.h"
-#include "SBSqlQueryModel.h"
+#include "DataAccessLayer.h"
 
 ///	Public
-SBIDPlaylistDetail::SBIDPlaylistDetail(const SBIDPlaylistDetail &p)
+SBIDPlaylistDetail::SBIDPlaylistDetail(const SBIDPlaylistDetail &p):SBIDBase(p)
 {
     _copy(p);
 }
@@ -21,34 +18,28 @@ SBIDPlaylistDetail::~SBIDPlaylistDetail()
 int
 SBIDPlaylistDetail::commonPerformerID() const
 {
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     return (p?p->commonPerformerID():-1);
 }
 
 QString
 SBIDPlaylistDetail::commonPerformerName() const
 {
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     return (p?p->commonPerformerName():QString());
 }
 
-int
-SBIDPlaylistDetail::itemID() const
-{
-    return _playlistDetailID;
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDPlaylistDetail::itemType() const
 {
-    return Common::sb_type_playlist_detail;
+    return SBKey::PlaylistDetail;
 }
 
 QString
 SBIDPlaylistDetail::genericDescription() const
 {
     QString g;
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     g+=(p?p->genericDescription():QString());
     return g;
 }
@@ -56,7 +47,7 @@ SBIDPlaylistDetail::genericDescription() const
 QString
 SBIDPlaylistDetail::iconResourceLocation() const
 {
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     return (p?p->iconResourceLocation():QString());
 }
 
@@ -65,7 +56,7 @@ SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
 
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     if(p)
     {
         list=p->onlinePerformances(updateProgressDialogFlag);
@@ -76,7 +67,7 @@ SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
 void
 SBIDPlaylistDetail::sendToPlayQueue(bool enqueueFlag)
 {
-    SBIDPtr p=ptr();
+    SBIDPtr p=childPtr();
     if(p)
     {
         p->sendToPlayQueue(enqueueFlag);
@@ -96,30 +87,30 @@ SBIDPlaylistDetail::type() const
 }
 
 ///	SBIDPlaylistDetail specific methods
-Common::sb_type
+SBKey::ItemType
 SBIDPlaylistDetail::consistOfItemType() const
 {
     if(_onlinePerformanceID!=-1)
     {
-        return Common::sb_type_online_performance;
+        return SBKey::OnlinePerformance;
     }
     else if(_childPlaylistID!=-1)
     {
-        return Common::sb_type_playlist;
+        return SBKey::Playlist;
     }
     else if(_chartID!=-1)
     {
-        return Common::sb_type_chart;
+        return SBKey::Chart;
     }
     else if(_albumID!=-1)
     {
-        return Common::sb_type_album;
+        return SBKey::Album;
     }
     else if(_performerID!=-1)
     {
-        return Common::sb_type_performer;
+        return SBKey::Performer;
     }
-    return Common::sb_type_invalid;
+    return SBKey::Invalid;
 }
 
 
@@ -195,38 +186,38 @@ SBIDPlaylistDetail::onlinePerformanceID() const
 SBKey
 SBIDPlaylistDetail::childKey() const
 {
-    SBIDPtr pPtr=ptr();
+    SBIDPtr pPtr=childPtr();
     SB_RETURN_IF_NULL(pPtr,SBKey());
     return pPtr->key();
 }
 
 //	CWIP:SBKey
 SBIDPtr
-SBIDPlaylistDetail::ptr() const
+SBIDPlaylistDetail::childPtr() const
 {
     switch(consistOfItemType())
     {
-    case Common::sb_type_online_performance:
+    case SBKey::OnlinePerformance:
         return onlinePerformancePtr();
 
-    case Common::sb_type_playlist:
+    case SBKey::Playlist:
         return childPlaylistPtr();
 
-    case Common::sb_type_chart:
+    case SBKey::Chart:
         return chartPtr();
 
-    case Common::sb_type_album:
+    case SBKey::Album:
         return albumPtr();
 
-    case Common::sb_type_performer:
+    case SBKey::Performer:
         return performerPtr();
 
-    case Common::sb_type_album_performance:
-    case Common::sb_type_chart_performance:
-    case Common::sb_type_playlist_detail:
-    case Common::sb_type_song:
-    case Common::sb_type_song_performance:
-    case Common::sb_type_invalid:
+    case SBKey::AlbumPerformance:
+    case SBKey::ChartPerformance:
+    case SBKey::PlaylistDetail:
+    case SBKey::Song:
+    case SBKey::SongPerformance:
+    case SBKey::Invalid:
         break;
     }
     return SBIDPtr();
@@ -236,7 +227,7 @@ SBIDPlaylistDetail::ptr() const
 SBKey
 SBIDPlaylistDetail::createKey(int playlistDetailID)
 {
-    return SBKey(Common::sb_type_playlist_detail,playlistDetailID);
+    return SBKey(SBKey::PlaylistDetail,playlistDetailID);
 }
 
 void
@@ -244,6 +235,15 @@ SBIDPlaylistDetail::refreshDependents(bool showProgressDialogFlag,bool forcedFla
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
+}
+
+void
+SBIDPlaylistDetail::setDeletedFlag()
+{
+    SBIDBase::setDeletedFlag();
+    SBIDPtr ptr=childPtr();
+    SB_RETURN_VOID_IF_NULL(ptr);
+    ptr->setReloadFlag();
 }
 
 QStringList
@@ -258,7 +258,7 @@ SBIDPlaylistDetail::updateSQL(const Common::db_change db_change) const
         (
             "DELETE FROM ___SB_SCHEMA_NAME___playlist_detail "
             "WHERE playlist_detail_id=%1 "
-        ).arg(this->_playlistDetailID));
+        ).arg(this->itemID()));
     }
     else if(changedFlag() && db_change==Common::db_update)
     {
@@ -284,7 +284,7 @@ SBIDPlaylistDetail::updateSQL(const Common::db_change db_change) const
             .arg(this->_albumID)
             .arg(this->_performerID)
             .arg(Common::escapeSingleQuotes(this->_notes))
-            .arg(this->_playlistDetailID)
+            .arg(this->itemID())
             .arg(dal->getIsNull())
         );
     }
@@ -353,27 +353,27 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
 
     switch(ptr->itemType())
     {
-    case Common::sb_type_online_performance:
+    case SBKey::OnlinePerformance:
         p.onlinePerformanceID=ptr->itemID();
         break;
 
-    case Common::sb_type_playlist:
+    case SBKey::Playlist:
         p.childPlaylistID=ptr->itemID();
         break;
 
-    case Common::sb_type_chart:
+    case SBKey::Chart:
         p.chartID=ptr->itemID();
         break;
 
-    case Common::sb_type_album:
+    case SBKey::Album:
         p.albumID=ptr->itemID();
         break;
 
-    case Common::sb_type_performer:
+    case SBKey::Performer:
         p.performerID=ptr->itemID();
         break;
 
-    case Common::sb_type_song_performance:
+    case SBKey::SongPerformance:
     {
         const SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformance(ptr->itemID());
         if(spPtr)
@@ -399,7 +399,12 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
 }
 
 ///	Protected
-SBIDPlaylistDetail::SBIDPlaylistDetail()
+SBIDPlaylistDetail::SBIDPlaylistDetail():SBIDBase(SBKey::PlaylistDetail,-1)
+{
+    _init();
+}
+
+SBIDPlaylistDetail::SBIDPlaylistDetail(int playlistDetailID):SBIDBase(SBKey::PlaylistDetail,playlistDetailID)
 {
     _init();
 }
@@ -455,8 +460,7 @@ SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDPlaylistDetail pd;
-    pd._playlistDetailID   =dal->retrieveLastInsertedKey();
+    SBIDPlaylistDetail pd(dal->retrieveLastInsertedKey());
     pd._playlistID         =p.playlistID;
     pd._playlistPosition   =p.playlistPosition;
     pd._onlinePerformanceID=p.onlinePerformanceID;
@@ -473,10 +477,9 @@ SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
 SBIDPlaylistDetailPtr
 SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
 {
-    SBIDPlaylistDetail pd;
     int i=0;
 
-    pd._playlistDetailID   =Common::parseIntFieldDB(&r,i++);
+    SBIDPlaylistDetail pd(Common::parseIntFieldDB(&r,i++));
     pd._playlistID         =Common::parseIntFieldDB(&r,i++);
     pd._playlistPosition   =Common::parseIntFieldDB(&r,i++);
     pd._onlinePerformanceID=Common::parseIntFieldDB(&r,i++);
@@ -525,23 +528,14 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDPlaylistDetail::openKey(const QString& key, int& playlistDetailID)
-{
-    QStringList l=key.split(":");
-    playlistDetailID=l.count()==2?l[1].toInt():-1;
-}
-
-void
 SBIDPlaylistDetail::postInstantiate(SBIDPlaylistDetailPtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDPlaylistDetail::retrieveSQL(const QString &key)
+SBIDPlaylistDetail::retrieveSQL(SBKey key)
 {
-    int playlistDetailID=-1;
-    openKey(key,playlistDetailID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -559,7 +553,7 @@ SBIDPlaylistDetail::retrieveSQL(const QString &key)
         "%1 "
         "LIMIT 1 "
     )
-        .arg(key.length()==0?"":QString("WHERE pd.playlist_detail_id=%1").arg(playlistDetailID))
+        .arg(key.validFlag()?QString("WHERE pd.playlist_detail_id=%1").arg(key.itemID()):QString())
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -570,7 +564,8 @@ SBIDPlaylistDetail::retrieveSQL(const QString &key)
 void
 SBIDPlaylistDetail::_copy(const SBIDPlaylistDetail &c)
 {
-    this->_playlistDetailID   =c._playlistDetailID;
+    SBIDBase::_copy(c);
+
     this->_playlistID         =c._playlistID;
     this->_playlistPosition   =c._playlistPosition;
     this->_onlinePerformanceID=c._onlinePerformanceID;
@@ -584,7 +579,6 @@ SBIDPlaylistDetail::_copy(const SBIDPlaylistDetail &c)
 void
 SBIDPlaylistDetail::_init()
 {
-    this->_playlistDetailID   =-1;
     this->_playlistID         =-1;
     this->_playlistPosition   =-1;
     this->_onlinePerformanceID=-1;

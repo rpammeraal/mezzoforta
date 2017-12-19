@@ -1,30 +1,48 @@
 #ifndef SBKEY_H
 #define SBKEY_H
 
-#include "Common.h"
+#include <QDebug>
 
 class SBKey
 {
 public:
+    enum ItemType
+    {
+        Invalid=0,
+        Song,
+        Performer,
+        Album,
+        Chart,
+        Playlist,
+        SongPerformance,
+        AlbumPerformance,
+        OnlinePerformance,
+        ChartPerformance,
+        PlaylistDetail
+    };
+
+    static size_t ItemTypeCount() { return 10; }
+
     SBKey();
-    SBKey(Common::sb_type itemType, int itemID);
-    SBKey(const QString& key);
+    SBKey(ItemType itemType, int itemID);
     SBKey(const QByteArray& ba);
     ~SBKey();
 
     QByteArray encode() const;
-    inline Common::sb_type itemType() const { return _itemType; }
+    inline ItemType itemType() const { return _itemType; }
     inline int itemID() const { return _itemID; }
-    QString key() const;
+    inline SBKey key() const { return *this; }	//	This seems silly, but saves for some unreadable cast
+    QString toString() const;
     bool validFlag() const;
 
     bool operator==(const SBKey& k) const;
     SBKey& operator=(const SBKey& t);
-    operator QString() const;
+    friend QDebug operator<< (QDebug d, const SBKey& key);
+
 
 private:
-    Common::sb_type _itemType;
-    int             _itemID;
+    ItemType _itemType;
+    int      _itemID;
 
     void _init();
 };

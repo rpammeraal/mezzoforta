@@ -8,7 +8,6 @@
 class SBIDPlaylist;
 typedef std::shared_ptr<SBIDPlaylist> SBIDPlaylistPtr;
 
-#include "SBIDSong.h"
 #include "SBIDPlaylistDetail.h"
 
 class SBTableModel;
@@ -26,8 +25,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -38,12 +36,11 @@ public:
     inline SBDuration duration() const { return _duration; }
     QMap<int,SBIDPlaylistDetailPtr> items() const;
     int numItems() const;
-    inline int playlistID() const { return _playlistID; }
+    inline int playlistID() const { return itemID(); }
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
     bool removePlaylistItem(int playlistPosition);
     bool moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toRow);
-    void setPlaylistID(int playlistID) { _playlistID=playlistID; }
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
     SBTableModel* tableModelItems() const;
 
@@ -59,13 +56,14 @@ public:
     static SBIDPlaylistPtr retrievePlaylist(SBKey key,bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_playlist; }
+    static ItemType classType() { return Playlist; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDPlaylist();
+    SBIDPlaylist(int playlistID);
 
     //	Operators
     SBIDPlaylist& operator=(const SBIDPlaylist& t);
@@ -73,15 +71,13 @@ protected:
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPlaylistPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& key, int& albumID);
     void postInstantiate(SBIDPlaylistPtr& ptr);
     bool moveDependent(int fromPosition, int toPosition);
-    static SBSqlQueryModel* retrieveSQL(const QString& key="");
-    virtual void setPrimaryKey(int PK) { _playlistID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
+    virtual void setDeletedFlag();
     QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
-    int               _playlistID;
     QString           _playlistName;
     SBDuration        _duration;
 

@@ -1,10 +1,9 @@
 #include "SBIDOnlinePerformance.h"
 
 #include "CacheManager.h"
-#include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
-#include "SBSqlQueryModel.h"
+#include "SBModelQueuedSongs.h"
 
 ///	Ctors, dtors
 SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBIDBase(p)
@@ -55,16 +54,10 @@ SBIDOnlinePerformance::iconResourceLocation() const
     return QString("n/a");
 }
 
-int
-SBIDOnlinePerformance::itemID() const
-{
-    return _onlinePerformanceID;
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDOnlinePerformance::itemType() const
 {
-    return Common::sb_type_online_performance;
+    return SBKey::OnlinePerformance;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -72,7 +65,7 @@ SBIDOnlinePerformance::onlinePerformances(bool updateProgressDialogFlag) const
 {
     Q_UNUSED(updateProgressDialogFlag);
     QMap<int,SBIDOnlinePerformancePtr> list;
-    const SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(this->_onlinePerformanceID);
+    const SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(this->itemID());
     if(opPtr)
     {
         list[0]=opPtr;
@@ -252,7 +245,7 @@ SBIDOnlinePerformance::songTitle() const
 SBIDOnlinePerformance::operator QString()
 {
     return QString("SBIDOnlinePerformance:opID=%1:apID=%2")
-        .arg(_onlinePerformanceID)
+        .arg(itemID())
         .arg(_albumPerformanceID)
     ;
 }
@@ -261,7 +254,7 @@ SBIDOnlinePerformance::operator QString()
 SBKey
 SBIDOnlinePerformance::createKey(int onlinePerformanceID)
 {
-    return SBKey(Common::sb_type_online_performance,onlinePerformanceID);
+    return SBKey(SBKey::OnlinePerformance,onlinePerformanceID);
 }
 
 SBIDOnlinePerformancePtr
@@ -484,7 +477,12 @@ SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forced
 }
 
 ///	Protected methods
-SBIDOnlinePerformance::SBIDOnlinePerformance()
+SBIDOnlinePerformance::SBIDOnlinePerformance():SBIDBase(SBKey::OnlinePerformance,-1)
+{
+    _init();
+}
+
+SBIDOnlinePerformance::SBIDOnlinePerformance(int onlinePerformanceID):SBIDBase(SBKey::OnlinePerformance,onlinePerformanceID)
 {
     _init();
 }
@@ -527,8 +525,7 @@ SBIDOnlinePerformance::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDOnlinePerformance op;
-    op._onlinePerformanceID=dal->retrieveLastInsertedKey();
+    SBIDOnlinePerformance op(dal->retrieveLastInsertedKey());
     op._albumPerformanceID =p.albumPerformanceID;
     op._path               =p.path;
 
@@ -569,22 +566,14 @@ SBIDOnlinePerformance::find(const Common::sb_parameters& tobeFound,SBIDOnlinePer
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::instantiate(const QSqlRecord& r)
 {
-    SBIDOnlinePerformance op;
     int i=0;
 
-    op._onlinePerformanceID=Common::parseIntFieldDB(&r,i++);
+    SBIDOnlinePerformance op(Common::parseIntFieldDB(&r,i++));
     op._albumPerformanceID =Common::parseIntFieldDB(&r,i++);
 
     op._path               =r.value(i++).toString();
 
     return std::make_shared<SBIDOnlinePerformance>(op);
-}
-
-void
-SBIDOnlinePerformance::openKey(const QString &key, int& onlinePerformanceID)
-{
-    QStringList l=key.split(":");
-    onlinePerformanceID=l.count()==2?l[1].toInt():-1;
 }
 
 void
@@ -594,11 +583,8 @@ SBIDOnlinePerformance::postInstantiate(SBIDOnlinePerformancePtr& ptr)
 }
 
 SBSqlQueryModel*
-SBIDOnlinePerformance::retrieveSQL(const QString &key)
+SBIDOnlinePerformance::retrieveSQL(SBKey key)
 {
-    int opID=-1;
-    openKey(key,opID);
-
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -609,7 +595,7 @@ SBIDOnlinePerformance::retrieveSQL(const QString &key)
             "___SB_SCHEMA_NAME___online_performance op "
         "%1  "
     )
-        .arg(key.length()==0?"":QString("WHERE op.online_performance_id=%1").arg(opID))
+        .arg(key.validFlag()?QString("WHERE op.online_performance_id=%1").arg(key.itemID()):QString())
     ;
 
     return new SBSqlQueryModel(q);
@@ -637,7 +623,7 @@ SBIDOnlinePerformance::updateSQL(const Common::db_change db_change) const
         )
             .arg(this->_albumPerformanceID)
             .arg(this->_path)
-            .arg(this->_onlinePerformanceID)
+            .arg(this->itemID())
         );
     }
 
@@ -649,7 +635,8 @@ SBIDOnlinePerformance::updateSQL(const Common::db_change db_change) const
 void
 SBIDOnlinePerformance::_copy(const SBIDOnlinePerformance &c)
 {
-    _onlinePerformanceID=c._onlinePerformanceID;
+    SBIDBase::_copy(c);
+
     _albumPerformanceID =c._albumPerformanceID;
     _path               =c._path;
 
@@ -659,9 +646,6 @@ SBIDOnlinePerformance::_copy(const SBIDOnlinePerformance &c)
 void
 SBIDOnlinePerformance::_init()
 {
-    _sb_item_type=Common::sb_type_online_performance;
-
-    _onlinePerformanceID=-1;
     _albumPerformanceID=-1;
     _path=QString();
     _playPosition=-1;

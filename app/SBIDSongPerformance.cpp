@@ -1,7 +1,9 @@
+#include "SBIDSongPerformance.h"
+
 #include "CacheManager.h"
 #include "Context.h"
-#include "SBIDSongPerformance.h"
-#include "Context.h"
+#include "DataAccessLayer.h"
+#include "SBIDAlbumPerformance.h"
 
 SBIDSongPerformance::SBIDSongPerformance(const SBIDSongPerformance &p):SBIDBase(p)
 {
@@ -27,16 +29,10 @@ SBIDSongPerformance::iconResourceLocation() const
     return QString(":/images/SongIcon.png");
 }
 
-int
-SBIDSongPerformance::itemID() const
-{
-    return songPerformanceID();
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDSongPerformance::itemType() const
 {
-    return Common::sb_type_song_performance;
+    return SBKey::SongPerformance;
 }
 
 QString
@@ -162,7 +158,7 @@ SBIDSongPerformance::songTitle() const
 SBIDSongPerformance::operator QString()
 {
     return QString("SBIDSongPerformance:spID=%1:sID=%2:pID=%3:opFlag=%4")
-            .arg(_songPerformanceID)
+            .arg(itemID())
             .arg(_songID)
             .arg(_performerID)
     ;
@@ -172,7 +168,7 @@ SBIDSongPerformance::operator QString()
 SBKey
 SBIDSongPerformance::createKey(int songPerformanceID)
 {
-    return SBKey(Common::sb_type_song_performance,songPerformanceID);
+    return SBKey(SBKey::SongPerformance,songPerformanceID);
 }
 
 void
@@ -399,7 +395,12 @@ SBIDSongPerformance::performancesByPreferredAlbumPerformanceID(int preferredAlbu
 }
 
 ///	Protected methods
-SBIDSongPerformance::SBIDSongPerformance()
+SBIDSongPerformance::SBIDSongPerformance():SBIDBase(SBKey::SongPerformance,-1)
+{
+    _init();
+}
+
+SBIDSongPerformance::SBIDSongPerformance(int songPerformanceID):SBIDBase(SBKey::SongPerformance,songPerformanceID)
 {
     _init();
 }
@@ -452,8 +453,7 @@ SBIDSongPerformance::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDSongPerformance sp;
-    sp._songPerformanceID=dal->retrieveLastInsertedKey();
+    SBIDSongPerformance sp(dal->retrieveLastInsertedKey());
     sp._songID           =p.songID;
     sp._performerID      =p.performerID;
     sp._year             =p.year;
@@ -540,10 +540,9 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
 SBIDSongPerformancePtr
 SBIDSongPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDSongPerformance sP;
     int i=0;
 
-    sP._songPerformanceID          =Common::parseIntFieldDB(&r,i++);
+    SBIDSongPerformance sP(Common::parseIntFieldDB(&r,i++));
     sP._songID                     =Common::parseIntFieldDB(&r,i++);
     sP._performerID                =Common::parseIntFieldDB(&r,i++);
     sP._year                       =r.value(i++).toInt();
@@ -588,11 +587,8 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
 }
 
 SBSqlQueryModel*
-SBIDSongPerformance::retrieveSQL(const QString &key)
+SBIDSongPerformance::retrieveSQL(SBKey key)
 {
-    int sID=-1;
-    openKey(key,sID);
-
     QString q=QString
     (
         "SELECT "
@@ -606,8 +602,9 @@ SBIDSongPerformance::retrieveSQL(const QString &key)
             "___SB_SCHEMA_NAME___performance p "
         "%1 "
     )
-        .arg(key.length()==0?"":QString("WHERE p.performance_id=%1").arg(sID))
+        .arg(key.validFlag()?QString("WHERE p.performance_id=%1").arg(key.itemID()):QString())
     ;
+    qDebug() << SB_DEBUG_INFO << q;
 
     return new SBSqlQueryModel(q);
 }
@@ -631,7 +628,7 @@ SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
             "WHERE "
                 "performance_id=%1 "
         )
-            .arg(this->_songPerformanceID)
+            .arg(this->itemID())
         );
     }
     else if(changedFlag() && db_change==Common::db_update)
@@ -653,7 +650,7 @@ SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_preferredAlbumPerformanceID)
             .arg(this->_year)
             .arg(Common::escapeSingleQuotes(this->notes()))
-            .arg(this->_songPerformanceID)
+            .arg(this->itemID())
         );
     }
     return SQL;
@@ -663,7 +660,8 @@ SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
 void
 SBIDSongPerformance::_copy(const SBIDSongPerformance &c)
 {
-    _songPerformanceID          =c._songPerformanceID;
+    SBIDBase::_copy(c);
+
     _songID                     =c._songID;
     _performerID                =c._performerID;
     _year                       =c._year;
@@ -674,21 +672,11 @@ SBIDSongPerformance::_copy(const SBIDSongPerformance &c)
 void
 SBIDSongPerformance::_init()
 {
-    _sb_item_type=Common::sb_type_song_performance;
-
-    _songPerformanceID=-1;
     _songID=-1;
     _performerID=-1;
     _year=-1;
     _notes=QString();
     _preferredAlbumPerformanceID=-1;
-}
-
-void
-SBIDSongPerformance::openKey(const QString &key, int& songPerformanceID)
-{
-    QStringList l=key.split(":");
-    songPerformanceID=l.count()==2?l[1].toInt():-1;
 }
 
 void

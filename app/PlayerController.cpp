@@ -108,7 +108,7 @@ void
 PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
-    SBKey key=SBKey(static_cast<Common::sb_type>(l[0].toInt()),l[1].toInt());
+    SBKey key=SBKey(static_cast<SBKey::ItemType>(l[0].toInt()),l[1].toInt());
     Context::instance()->getNavigator()->openScreen(key);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
@@ -353,15 +353,15 @@ PlayerController::_refreshPlayingNowData() const
             "<A HREF=\"%1_%2\">%3</A> by "
             "<A HREF=\"%4_%5\">%6</A> from the "
             "<A HREF=\"%7_%8\">'%9'</A> album")
-            .arg(Common::sb_type_song)
+            .arg(SBKey::Song)
             .arg(_currentPerformancePlayingPtr->songID())
             .arg(_currentPerformancePlayingPtr->songTitle())
 
-            .arg(Common::sb_type_performer)
+            .arg(SBKey::Performer)
             .arg(_currentPerformancePlayingPtr->songPerformerID())
             .arg(_currentPerformancePlayingPtr->songPerformerName())
 
-            .arg(Common::sb_type_album)
+            .arg(SBKey::Album)
             .arg(_currentPerformancePlayingPtr->albumID())
             .arg(_currentPerformancePlayingPtr->albumTitle())
         ;

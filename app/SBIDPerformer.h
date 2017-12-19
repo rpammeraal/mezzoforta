@@ -29,8 +29,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -44,15 +43,15 @@ public:
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;
-    inline int performerID() const { return _performerID; }
+    inline int performerID() const { return itemID(); }
     inline QString performerName() const { return _performerName; }
     QVector<SBIDPerformerPtr> relatedPerformers();
     QVector<SBIDSongPerformancePtr> songPerformances() const;
     SBTableModel* songs() const;
 
     //	Setters
-    void addRelatedPerformer(const QString& performerKey);
-    void deleteRelatedPerformer(const QString& performerKey);
+    void addRelatedPerformer(SBKey performerKey);
+    void deleteRelatedPerformer(SBKey performerKey);
     void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
     void setPerformerName(const QString& performerName) { _performerName=performerName; setChangedFlag() ;}
 
@@ -73,13 +72,14 @@ public:
     static SBIDPerformerPtr retrieveVariousPerformers();
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_performer; }
+    static ItemType classType() { return Performer; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDPerformer();
+    SBIDPerformer(int performerID);
 
     //	Operators
     SBIDPerformer& operator=(const SBIDPerformer& t);
@@ -88,19 +88,16 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr);
     static SBIDPerformerPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDPerformerPtr& pPtrFrom);
-    static void openKey(const QString& key, int& performerID);
     void postInstantiate(SBIDPerformerPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& key="");
-    virtual void setPrimaryKey(int PK) { _performerID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclude, SBIDPerformerPtr& found);
 
     //	Helper methods
     QString addRelatedPerformerSQL(SBKey key) const;
-    QString deleteRelatedPerformerSQL(const QString& key) const;
+    QString deleteRelatedPerformerSQL(SBKey key) const;
 
 private:
-    int                               _performerID;
     QString                           _performerName;
     QString                           _notes;
 

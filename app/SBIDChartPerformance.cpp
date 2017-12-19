@@ -2,6 +2,7 @@
 
 #include "CacheManager.h"
 #include "Context.h"
+#include "DataAccessLayer.h"
 
 SBIDChartPerformance::SBIDChartPerformance(const SBIDChartPerformance& p):SBIDBase(p)
 {
@@ -26,16 +27,10 @@ SBIDChartPerformance::iconResourceLocation() const
     return QString(":/images/SongIcon.png");
 }
 
-int
-SBIDChartPerformance::itemID() const
-{
-    return chartPerformanceID();
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDChartPerformance::itemType() const
 {
-    return Common::sb_type_chart_performance;
+    return SBKey::ChartPerformance;
 }
 
 QString
@@ -129,7 +124,7 @@ SBIDChartPerformance::songTitle() const
 SBIDChartPerformance::operator QString()
 {
     return QString("SBIDChartPerformance:cpID=%1:cID=%2:spID=%3:pos=%4")
-            .arg(_chartPerformanceID)
+            .arg(itemID())
             .arg(_chartID)
             .arg(_songPerformanceID)
             .arg(_chartPosition)
@@ -140,7 +135,7 @@ SBIDChartPerformance::operator QString()
 SBKey
 SBIDChartPerformance::createKey(int chartPerformanceID)
 {
-    return SBKey(Common::sb_type_chart_performance,chartPerformanceID);
+    return SBKey(SBKey::ChartPerformance,chartPerformanceID);
 }
 
 void
@@ -187,7 +182,12 @@ SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDep
 }
 
 ///	Protected methods
-SBIDChartPerformance::SBIDChartPerformance()
+SBIDChartPerformance::SBIDChartPerformance():SBIDBase(SBKey::ChartPerformance,-1)
+{
+    _init();
+}
+
+SBIDChartPerformance::SBIDChartPerformance(int chartPerformanceID):SBIDBase(SBKey::ChartPerformance,chartPerformanceID)
 {
     _init();
 }
@@ -237,8 +237,7 @@ SBIDChartPerformance::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDChartPerformance cp;
-    cp._chartPerformanceID=dal->retrieveLastInsertedKey();
+    SBIDChartPerformance cp(dal->retrieveLastInsertedKey());
     cp._chartID           =p.chartID;
     cp._songPerformanceID =p.songPerformanceID;
     cp._chartPosition     =p.chartPosition;
@@ -251,23 +250,15 @@ SBIDChartPerformance::createInDB(Common::sb_parameters& p)
 SBIDChartPerformancePtr
 SBIDChartPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDChartPerformance cp;
     int i=0;
 
-    cp._chartPerformanceID=Common::parseIntFieldDB(&r,i++);
+    SBIDChartPerformance cp(Common::parseIntFieldDB(&r,i++));
     cp._chartID           =Common::parseIntFieldDB(&r,i++);
     cp._songPerformanceID =Common::parseIntFieldDB(&r,i++);
     cp._chartPosition     =Common::parseIntFieldDB(&r,i++);
     cp._notes             =r.value(i++).toString();
 
     return std::make_shared<SBIDChartPerformance>(cp);
-}
-
-void
-SBIDChartPerformance::openKey(const QString &key, int& chartPerformanceID)
-{
-    QStringList l=key.split(":");
-    chartPerformanceID=l.count()==2?l[1].toInt():-1;
 }
 
 void
@@ -278,11 +269,8 @@ SBIDChartPerformance::postInstantiate(SBIDChartPerformancePtr &ptr)
 
 
 SBSqlQueryModel*
-SBIDChartPerformance::retrieveSQL(const QString &key)
+SBIDChartPerformance::retrieveSQL(SBKey key)
 {
-    int sID=-1;
-    openKey(key,sID);
-
     QString q=QString
     (
         "SELECT "
@@ -295,7 +283,7 @@ SBIDChartPerformance::retrieveSQL(const QString &key)
             "___SB_SCHEMA_NAME___chart_performance p "
         "%1 "
     )
-        .arg(key.length()==0?"":QString("WHERE p.chart_performance_id=%1").arg(sID))
+        .arg(key.validFlag()?QString("WHERE p.chart_performance_id=%1").arg(key.itemID()):QString())
     ;
 
     return new SBSqlQueryModel(q);
@@ -332,7 +320,7 @@ SBIDChartPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_songPerformanceID)
             .arg(this->_chartPosition)
             .arg(Common::escapeSingleQuotes(this->_notes))
-            .arg(this->_chartPerformanceID)
+            .arg(this->itemID())
         );
     }
 
@@ -346,7 +334,8 @@ SBIDChartPerformance::updateSQL(const Common::db_change db_change) const
 void
 SBIDChartPerformance::_copy(const SBIDChartPerformance &c)
 {
-    _chartPerformanceID=c._chartPerformanceID;
+    SBIDBase::_copy(c);
+
     _chartID           =c._chartID;
     _songPerformanceID =c._songPerformanceID;
     _chartPosition     =c._chartPosition;
@@ -356,9 +345,6 @@ SBIDChartPerformance::_copy(const SBIDChartPerformance &c)
 void
 SBIDChartPerformance::_init()
 {
-    _sb_item_type=Common::sb_type_chart_performance;
-
-    _chartPerformanceID=-1;
     _chartID=-1;
     _songPerformanceID=-1;
     _chartPosition=-1;

@@ -142,6 +142,7 @@ SBTabQueuedSongs::setViewLayout()
     tv->setDragDropMode(QAbstractItemView::InternalMove);
     tv->setDefaultDropAction(Qt::MoveAction);
     tv->setDragDropOverwriteMode(false);
+    tv->setSelectionBehavior(QAbstractItemView::SelectItems);
 
     //	3.	Set visibility
     tv->setColumnHidden(0,1);	//	sb_column_deleteflag

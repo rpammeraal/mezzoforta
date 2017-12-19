@@ -2,11 +2,17 @@
 
 #include "CacheManager.h"
 #include "Context.h"
+#include "DataAccessLayer.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
+#include "SBIDAlbumPerformance.h"
+#include "SBIDChartPerformance.h"
+#include "SBIDOnlinePerformance.h"
+#include "SBModelQueuedSongs.h"
+#include "SBTableModel.h"
 
 //	Ctors, dtors
-SBIDChart::SBIDChart(const SBIDChart& c)
+SBIDChart::SBIDChart(const SBIDChart& c):SBIDBase(c)
 {
     _copy(c);
 }
@@ -40,16 +46,10 @@ SBIDChart::iconResourceLocation() const
     return ":/images/ChartIcon.png";
 }
 
-int
-SBIDChart::itemID() const
-{
-    return _chartID;
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDChart::itemType() const
 {
-    return Common::sb_type_chart;
+    return SBKey::Chart;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -144,7 +144,7 @@ SBIDChart::tableModelItems() const
 SBIDChart::operator QString() const
 {
     return QString("SBIDChart:%1:t=%2")
-            .arg(_chartID)
+            .arg(itemID())
             .arg(_chartName)
     ;
 }
@@ -167,7 +167,7 @@ SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 SBKey
 SBIDChart::createKey(int chartID)
 {
-    return SBKey(Common::sb_type_chart,chartID);
+    return SBKey(SBKey::Chart,chartID);
 }
 
 SBIDChartPtr
@@ -185,7 +185,12 @@ SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
 }
 
 ///	Protected methods
-SBIDChart::SBIDChart():SBIDBase()
+SBIDChart::SBIDChart():SBIDBase(SBKey::Chart,-1)
+{
+    _init();
+}
+
+SBIDChart::SBIDChart(int chartID):SBIDBase(SBKey::Chart,chartID)
 {
     _init();
 }
@@ -254,8 +259,7 @@ SBIDChart::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDChart c;
-    c._chartID    =dal->retrieveLastInsertedKey();
+    SBIDChart c(dal->retrieveLastInsertedKey());
     c._chartName  =p.chartName;
     c._notes      =p.notes;
     c._releaseDate=p.releaseDate;
@@ -267,10 +271,9 @@ SBIDChart::createInDB(Common::sb_parameters& p)
 SBIDChartPtr
 SBIDChart::instantiate(const QSqlRecord &r)
 {
-    SBIDChart chart;
     int i=0;
 
-    chart._chartID    =Common::parseIntFieldDB(&r,i++);
+    SBIDChart chart(Common::parseIntFieldDB(&r,i++));
     chart._chartName  =r.value(i++).toString();
     chart._notes      =r.value(i++).toString();
     chart._releaseDate=r.value(i++).toDate();
@@ -280,23 +283,14 @@ SBIDChart::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDChart::openKey(const QString& key, int& chartID)
-{
-    QStringList l=key.split(":");
-    chartID=l.count()==2?l[1].toInt():-1;
-}
-
-void
 SBIDChart::postInstantiate(SBIDChartPtr &ptr)
 {
     Q_UNUSED(ptr);
 }
 
 SBSqlQueryModel*
-SBIDChart::retrieveSQL(const QString& key)
+SBIDChart::retrieveSQL(SBKey key)
 {
-    int chartID=-1;
-    openKey(key,chartID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -322,7 +316,7 @@ SBIDChart::retrieveSQL(const QString& key)
         "ORDER BY "
             "p.name "
     )
-        .arg(key.length()==0?"":QString("WHERE p.chart_id=%1").arg(chartID))
+        .arg(key.validFlag()?QString("WHERE p.chart_id=%1").arg(key.itemID()):QString())
     ;
     return new SBSqlQueryModel(q);
 }
@@ -338,7 +332,8 @@ SBIDChart::updateSQL(const Common::db_change db_change) const
 void
 SBIDChart::_copy(const SBIDChart &c)
 {
-    _chartID    =c._chartID;
+    SBIDBase::_copy(c);
+
     _chartName  =c._chartName;
     _notes      =c._notes;
     _releaseDate=c._releaseDate;
@@ -350,9 +345,6 @@ SBIDChart::_copy(const SBIDChart &c)
 void
 SBIDChart::_init()
 {
-    _sb_item_type=Common::sb_type_chart;
-
-    _chartID=-1;
     _chartName=QString();
     _notes=QString();
     _releaseDate=QDate();

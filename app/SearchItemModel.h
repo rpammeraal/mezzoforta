@@ -21,7 +21,7 @@ public:
 
     SearchItemModel();
 
-    void debugShow(const QString& key) const;
+    void debugShow(SBKey key) const;
     QString key(const QModelIndex& i) const;
 
 public slots:
@@ -31,8 +31,8 @@ public slots:
 
 private:
 
-    void _add(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
-    void _constructDisplay(Common::sb_type itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,SBKey& key, QString& display, QString& altDisplay);
+    void _add(SBKey::ItemType itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
+    void _constructDisplay(SBKey::ItemType itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,SBKey& key, QString& display, QString& altDisplay);
     void _init();
     void _remove(SBKey key);
 };

@@ -196,7 +196,7 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
 
     ptr->sendToPlayQueue(enqueueFlag);
     _radioModeFlag=0;
-    if(ptr && ptr->itemType()==Common::sb_type_playlist && enqueueFlag==0)
+    if(ptr && ptr->itemType()==SBKey::Playlist && enqueueFlag==0)
     {
         emit playlistChanged(-1);
     }

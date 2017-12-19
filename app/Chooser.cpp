@@ -104,9 +104,9 @@ public:
         item1 = new QStandardItem("Your Songs");	//	sb_your_songs
         parentItem->appendRow(item1);
 
-        record=createNode("All Songs",-1,ScreenItem::screen_type_allsongs,Common::sb_type_invalid);
+        record=createNode("All Songs",-1,ScreenItem::screen_type_allsongs,SBKey::Invalid);
         item1->appendRow(record);
-        record=createNode("Songs in Queue",-1,ScreenItem::screen_type_current_playlist,Common::sb_type_invalid);
+        record=createNode("Songs in Queue",-1,ScreenItem::screen_type_current_playlist,SBKey::Invalid);
         item1->appendRow(record);
 
         item1 = new QStandardItem("");              //	sb_empty_1
@@ -123,7 +123,7 @@ public:
         {
             SBIDChartPtr ptr=chartList[i];
 
-            record=createNode(ptr->chartName(),ptr->chartID(),ScreenItem::screen_type_sbidbase,Common::sb_type_chart);
+            record=createNode(ptr->chartName(),ptr->chartID(),ScreenItem::screen_type_sbidbase,SBKey::Chart);
             item1->appendRow(record);
         }
 
@@ -140,7 +140,7 @@ public:
         {
             SBIDPlaylistPtr ptr=l[i];
 
-            record=createNode(ptr->playlistName(),ptr->playlistID(),ScreenItem::screen_type_sbidbase,Common::sb_type_playlist);
+            record=createNode(ptr->playlistName(),ptr->playlistID(),ScreenItem::screen_type_sbidbase,SBKey::Playlist);
             item1->appendRow(record);
         }
     }
@@ -159,7 +159,7 @@ private:
         const QString& itemValue,
         const int itemID,
         ScreenItem::screen_type screenType,
-        Common::sb_type baseType)
+        SBKey::ItemType baseType)
     {
         QList<QStandardItem *> record;
         record.append(new QStandardItem(itemValue));
@@ -199,7 +199,7 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
             SB_RETURN_VOID_IF_NULL(playlistPtr);
             SBIDPtr ptr;
 
-            if(key.itemType()==Common::sb_type_playlist)
+            if(key.itemType()==SBKey::Playlist)
             {
                 //	Check for self assignment
                 ptr=SBIDPlaylist::retrievePlaylist(key);
@@ -212,7 +212,7 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
                     return;
                 }
             }
-            else if(key.itemType()==Common::sb_type_song)
+            else if(key.itemType()==SBKey::Song)
             {
                 //	Check for multiple performances
                 SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
@@ -368,7 +368,7 @@ Chooser::playlistChanged(int playlistID)
                     if(sia && sib && sic && playlistPtr)
                     {
                         if(sib->text().toInt()==playlistPtr->playlistID() &&
-                            sic->text().toInt()==Common::sb_type_playlist)
+                            sic->text().toInt()==SBKey::Playlist)
                         {
                             QStandardItem* newItem=new QStandardItem(QIcon(":/images/playing.png"),sia->text());
                             si0->setChild(i,0,newItem);

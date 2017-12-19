@@ -28,14 +28,14 @@ class SBIDPerformer;        typedef std::shared_ptr<SBIDPerformer>         SBIDP
 class SBIDSong;             typedef std::shared_ptr<SBIDSong>              SBIDSongPtr;
 class SBIDSongPerformance;  typedef std::shared_ptr<SBIDSongPerformance>   SBIDSongPerformancePtr;
 
-class SBIDBase
+class SBIDBase : public SBKey
 {
 
 public:
 
     virtual ~SBIDBase();
 
-    static SBIDPtr createPtr(Common::sb_type itemType,int ID,bool noDependentsFlag=1);
+    static SBIDPtr createPtr(ItemType itemType,int ID,bool noDependentsFlag=1);
     static SBIDPtr createPtr(SBKey key,bool noDependentsFlag=1);
 
     //	Public methods
@@ -47,8 +47,7 @@ public:
     virtual QString commonPerformerName() const=0;
     virtual QString genericDescription() const=0;
     virtual QString iconResourceLocation() const=0;
-    virtual int itemID() const=0;
-    virtual Common::sb_type itemType() const=0;
+    virtual ItemType itemType() const=0;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
@@ -78,18 +77,17 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
-    SBKey key() const;
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0)=0;
 
     //	Aux methods
-    static Common::sb_type convert(Common::sb_field f);
+    static ItemType convert(Common::sb_field f);
     static QString iconResourceLocationClass(SBKey key);
-    static QString iconResourceLocationClass(Common::sb_type itemType);
-
+    static QString iconResourceLocationClass(ItemType itemType);
+    void setReloadFlag();
 
 protected:
-    SBIDBase();
     SBIDBase(const SBIDBase& c);
+    SBIDBase(ItemType itemType,int itemID);
 
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
@@ -108,22 +106,26 @@ protected:
 
     //	Used by CacheManager and SBID*:: classes
     virtual void clearChangedFlag();
+    virtual void clearReloadFlag();
+    inline bool reloadFlag() const { return _reloadFlag; }
     virtual void rollback();
     void setChangedFlag();
-    inline void setDeletedFlag() { _deletedFlag=1; setChangedFlag(); }
-    virtual void setPrimaryKey(int PK)=0;
+    virtual void setDeletedFlag();
+
+    void _copy(const SBIDBase& c);
 
 private:
     bool            _changedFlag;
     bool            _deletedFlag;
     int             _id;
-    Common::sb_type _sb_item_type;
     QString         _sb_mbid;
     int             _sb_model_position;
+    bool            _reloadFlag; //	set when any of its dependencies has been changed or removed
     QString         _url;	//	any item may have an url
     QString         _wiki;	//	any item may have an wiki page
     Cache*          _owningCache;
 
+    SBIDBase();
     void _init();
 };
 

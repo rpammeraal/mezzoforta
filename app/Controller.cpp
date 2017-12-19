@@ -443,7 +443,7 @@ Controller::setupUI()
 
 
     SBKey key;
-    QString k;
+    QByteArray k;
 
     k="2:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
     k="12:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
@@ -451,6 +451,13 @@ Controller::setupUI()
     k="2:-100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
 
     qDebug() << SB_DEBUG_INFO << "playground end";
+
+    SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(1);
+    qDebug() << SB_DEBUG_INFO << aPtr->genericDescription();
+    key=*(dynamic_cast<SBKey *>(aPtr.get()));
+    qDebug() << SB_DEBUG_INFO << key;
+    key=aPtr->key();
+    qDebug() << SB_DEBUG_INFO << key;
     return;
 }
 

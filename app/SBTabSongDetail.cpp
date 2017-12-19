@@ -296,33 +296,31 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Get detail
+    const SBKey key=si.key();
+    if(key.validFlag())
     {
-        const SBKey key=si.key();	//	Keep key out of scope
-        if(key.validFlag())
+        if(key.itemType()==SBKey::Song)
         {
-            if(key.itemType()==Common::sb_type_song)
-            {
-                sPtr=SBIDSong::retrieveSong(si.key());
-            }
-            else if(key.itemType()==Common::sb_type_album_performance)
-            {
-                SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
-                sPtr=apPtr->songPtr();
-            }
-            else if(key.itemType()==Common::sb_type_online_performance)
-            {
-                SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
-                sPtr=opPtr->songPtr();
-            }
-            else if(key.itemType()==Common::sb_type_song_performance)
-            {
-                SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
-                sPtr=opPtr->songPtr();
-            }
-            else
-            {
-                qDebug() << SB_DEBUG_ERROR << "should not come here.";
-            }
+            sPtr=SBIDSong::retrieveSong(si.key());
+        }
+        else if(key.itemType()==SBKey::AlbumPerformance)
+        {
+            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
+            sPtr=apPtr->songPtr();
+        }
+        else if(key.itemType()==SBKey::OnlinePerformance)
+        {
+            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
+            sPtr=opPtr->songPtr();
+        }
+        else if(key.itemType()==SBKey::SongPerformance)
+        {
+            SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
+            sPtr=opPtr->songPtr();
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "should not come here.";
         }
     }
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
@@ -330,7 +328,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(sPtr->key());	//	Update with original pointer --
+    currentScreenItem.updateSBIDBase(key);
     qDebug() << SB_DEBUG_INFO << sPtr->key();
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
 

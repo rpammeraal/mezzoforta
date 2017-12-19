@@ -18,8 +18,7 @@ public:
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
@@ -28,16 +27,9 @@ public:
     virtual QString type() const;
 
     //	SBIDPlaylistDetail specific methods
-    virtual Common::sb_type consistOfItemType() const;
+    virtual ItemType consistOfItemType() const;
     int playlistPosition() const { return _playlistPosition; }
-    void setPlaylistPosition(int i)
-    {
-        if (i!=_playlistPosition)
-        {
-            _playlistPosition=i;
-            setChangedFlag();
-        }
-    }
+    void setPlaylistPosition(int i) { if (i!=_playlistPosition) { _playlistPosition=i; setChangedFlag(); } }
 
     //	Pointers
     SBIDPlaylistPtr playlistPtr() const;
@@ -50,7 +42,7 @@ public:
     //	Redirectors
     int onlinePerformanceID() const;
     SBKey childKey() const;
-    SBIDPtr ptr() const;
+    SBIDPtr childPtr() const;
 
     //	Methods required by SBIDBase
     static SBKey createKey(int playlistDetailID);
@@ -61,24 +53,25 @@ public:
     static SBSqlQueryModel* playlistDetailsByPerformer(int performerID);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
     static SBIDPlaylistDetailPtr retrievePlaylistDetail(SBKey key,bool noDependentsFlag=1);
-    static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr ptr);
+    static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr childPtr);
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_playlist_detail; }
+    static ItemType classType() { return PlaylistDetail; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
+    friend class SBIDPlaylist;
 
     SBIDPlaylistDetail();
+    SBIDPlaylistDetail(int playlistDetailID);
 
     //	Methods used by SBIDManager
     static SBIDPlaylistDetailPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistDetailPtr instantiate(const QSqlRecord& r);
-    static void openKey(const QString& getKey, int& playlistDetailID);
-    void postInstantiate(SBIDPlaylistDetailPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& getKey);
-    virtual void setPrimaryKey(int PK) { _playlistDetailID=PK;  }
+    void postInstantiate(SBIDPlaylistDetailPtr& childPtr);
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
+    virtual void setDeletedFlag();
     QStringList updateSQL(const Common::db_change db_change) const;
 
     friend class SBIDAlbum;
@@ -88,7 +81,6 @@ protected:
     void setPerformerID(int performerID) { if(_performerID!=performerID) { _performerID=performerID; setChangedFlag(); } }
 
 private:
-    int     _playlistDetailID;
     int     _playlistID;
     int     _playlistPosition;
     int     _onlinePerformanceID;

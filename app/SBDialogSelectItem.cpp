@@ -60,7 +60,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 //	Process new performerName
                 SBIDAlbumPtr tmpPtr=SBIDAlbum::retrieveUnknownAlbum();	//	only to get iconResourceLocation
                 imagePath=tmpPtr->iconResourceLocation();
-                imagePath=SBIDBase::iconResourceLocationClass(Common::sb_type_album);
+                imagePath=SBIDBase::iconResourceLocationClass(SBKey::Album);
                 currentKey=SBKey();
                 currentAlbumTitle=newAlbum.albumTitle;
                 currentAlbumPerformerName=newAlbum.performerName;
@@ -95,7 +95,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
-                           .arg(currentKey)
+                           .arg(currentKey.toString())
                            .arg(currentAlbumTitle)
                            .arg(currentAlbumPerformerName)
                 );
@@ -157,7 +157,7 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
                            "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
                    //	set args correctly
                    .arg(imagePath)
-                   .arg(opPtr->key())
+                   .arg(opPtr->key().toString())
                    .arg(aPtr->albumTitle())
                    .arg(opPtr->songPerformerName())
                    .arg(opPtr->duration().toString(SBDuration::sb_hhmmss_format)));
@@ -225,7 +225,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                                "a:link {color:black; text-decoration:none;} "
                                "</style></head><body><font face=\"Trebuchet\"><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %3</a></font></body></html>")
                        .arg(imagePath)
-                       .arg(currentKey)
+                       .arg(currentKey.toString())
                        .arg(currentPerformerName)
             );
 
@@ -296,7 +296,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <B>%2</B></a></font></body></html>")
-                           .arg(currentKey)
+                           .arg(currentKey.toString())
                            .arg(currentSongPerformerName)
                 );
             }
@@ -322,7 +322,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                     l->setText(QString("<html><head><style type=text/css> "
                                        "a:link {color:black; text-decoration:none;} "
                                        "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <B>%2</B></a></font></body></html>")
-                               .arg(currentKey)
+                               .arg(currentKey.toString())
                                .arg(currentSongPerformerName)
                     );
                 }
@@ -355,7 +355,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 l->setText(QString("<html><head><style type=text/css> "
                                    "a:link {color:black; text-decoration:none;} "
                                    "</style></head><body><font face=\"Trebuchet MS\"><a href='%1'>&#8226;     <I>%2</I> by <B>%3</B></a></font></body></html>")
-                           .arg(currentKey)
+                           .arg(currentKey.toString())
                            .arg(currentSongTitle)
                            .arg(currentSongPerformerName)
                 );
@@ -493,7 +493,7 @@ SBDialogSelectItem::OK(const QString& i)
     _hasSelectedItemFlag=1;
     if(i!="x:x")
     {
-        _currentPtr=SBIDBase::createPtr(i,1);
+        _currentPtr=SBIDBase::createPtr(i.toLocal8Bit(),1);
     }
     this->close();
 }

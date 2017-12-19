@@ -16,8 +16,7 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QString genericDescription() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -26,16 +25,12 @@ public:
 
     //	SBIDAlbumPerformance specific methods
     int albumID() const;
-    inline int albumPerformanceID() const { return _albumPerformanceID; }
+    inline int albumPerformanceID() const { return itemID(); }
     inline int albumPosition() const { return _albumPosition; }
     inline SBDuration duration() const { return _duration; }
     inline QString notes() const { return _notes; }
     inline int preferredOnlinePerformanceID() const { return _preferredOnlinePerformanceID; }
     inline int orgAlbumPosition() const { return _orgAlbumPosition; }
-    //inline int playlistPosition() const { return _playlistPosition; }
-    //inline int playPosition() const { return _sb_play_position; }
-    //void setPlaylistPosition(int playlistPosition) { _playlistPosition=playlistPosition; }
-    //void setPlayPosition(int playPosition) { _sb_play_position=playPosition; }
 
     //	Implemented methods forwarded to lower classes
     QString path();
@@ -81,13 +76,14 @@ public:
     static SBIDAlbumPerformancePtr retrieveAlbumPerformance(SBKey key, bool noDependentsFlag=1);
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_album_performance; }
+    static ItemType classType() { return AlbumPerformance; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;  //	loads data
 
     SBIDAlbumPerformance();
+    SBIDAlbumPerformance(int albumPerformanceID);
 
     //	Operators
     SBIDAlbumPerformance& operator=(const SBIDAlbumPerformance& t);
@@ -97,10 +93,8 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingPtr);
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDAlbumPerformancePtr fromApPtr);
-    static void openKey(const QString& key, int& albumPerformanceID);
     void postInstantiate(SBIDAlbumPerformancePtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& key="");
-    virtual void setPrimaryKey(int PK) { _albumPerformanceID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 
     //	Protected setters
@@ -115,7 +109,6 @@ protected:
 
 private:
     //	Attributes
-    int                               _albumPerformanceID;
     int                               _songPerformanceID;
     int                               _albumID;
     int                               _albumPosition;

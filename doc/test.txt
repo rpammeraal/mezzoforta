@@ -1,3 +1,5 @@
+1.	NAVIGATION:
+
 All Songs:
 	For each sort up/down, column:
 	-	open song title
@@ -10,3 +12,41 @@ Song:
 	-	hit field
 
 Performer:
+	-	alt click logo 
+	-	click 'see also' performer
+	For each sort up/down, column, tab
+	-	hit field
+
+Album:
+	-	alt click logo 
+	-	album performer
+	For each sort up/down, column, tab
+	-	hit field
+
+Charts:
+	-	alt click logo 
+	-	song, performer
+
+Playlists:
+	-	alt click logo
+	-	song, performer
+
+Search box:
+	-	search for:
+		-	performer
+		-	album
+		-	song
+
+DRAG & DROP
+To charts only.
+1.	Create tmp chart, rename to 000TEST
+	Renamed playlist should reorder itself.
+
+2.	Assign items from all fields in:
+	All Songs
+	Songs in Queue
+	Chart
+	-	Item In Chart (song, performer)
+	Playlist
+	-	Item in Chart (song, performer, album, chart, playlist)
+	

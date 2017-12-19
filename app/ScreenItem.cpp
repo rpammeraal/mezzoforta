@@ -113,7 +113,7 @@ operator<<(QDebug dbg, const ScreenItem& si)
         break;
 
     case ScreenItem::screen_type_sbidbase:
-        dbg.nospace() << "SBIDBase [" << si.key().operator QString() << "]";
+        dbg.nospace() << "SBIDBase [" << si.key().toString() << "]";
         break;
 
     case ScreenItem::screen_type_songsearch:

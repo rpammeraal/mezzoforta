@@ -14,25 +14,6 @@ SBTableModel::SBTableModel()
 {
 }
 
-///	Inherited methods
-//QVariant
-//SBTableModel::data(const QModelIndex &item, int role) const
-//{
-//    if(role==Qt::FontRole)
-//    {
-//        return QVariant(QFont("Trebuchet MS",13));
-//    }
-//    QVariant v=QStandardItemModel::data(item,role);
-//    return v;
-//}
-
-//Qt::ItemFlags
-//SBTableModel::flags(const QModelIndex &index) const
-//{
-//    Q_UNUSED(index);
-//    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled;
-//}
-
 void
 SBTableModel::setDragableColumns(const QList<bool> &list)
 {
@@ -153,10 +134,10 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
 
         if(albumPtr && !albumIDs.contains(albumPtr->albumID()))
         {
-            _setItem(index,0,albumPtr->key());
+            _setItem(index,0,albumPtr->key().toString());
             _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
             _setItem(index,2,QString("%1").arg(albumPtr->year()));
-            _setItem(index,3,albumPtr->performerPtr()->key());
+            _setItem(index,3,albumPtr->performerPtr()->key().toString());
             _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
             index++;
@@ -176,10 +157,10 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
 
             if(albumPtr && !albumIDs.contains(albumPtr->albumID()))
             {
-                _setItem(index,0,albumPtr->key());
+                _setItem(index,0,albumPtr->key().toString());
                 _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
                 _setItem(index,2,QString("%1").arg(albumPtr->year()));
-                _setItem(index,3,albumPtr->performerPtr()->key());
+                _setItem(index,3,albumPtr->performerPtr()->key().toString());
                 _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
                 index++;
@@ -211,29 +192,29 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
 
         if(apPtr && apPtr->albumID()>=0)
         {
-            _setItem(i,0,apPtr->albumKey());
+            _setItem(i,0,apPtr->albumKey().toString());
             _setItem(i,1,apPtr->albumTitle());
             _setItem(i,2,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i,3,QString("%1").arg(apPtr->year()));
-            _setItem(i,4,apPtr->songPerformerKey());
+            _setItem(i,4,apPtr->songPerformerKey().toString());
             _setItem(i,5,apPtr->songPerformerName());
         }
     }
 }
 
 void
-SBTableModel::populateChartsByItemType(Common::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances)
+SBTableModel::populateChartsByItemType(SBKey::ItemType type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances)
 {
     _init();
 
     //	Populate header
     QStringList header;
-    if(type==Common::sb_type_performer)
+    if(type==SBKey::Performer)
     {
         header.append("SB_ITEM_KEY1");
         header.append("song");
     }
-    else if(type==Common::sb_type_song)
+    else if(type==SBKey::Song)
     {
         header.append("SB_ITEM_KEY1");
         header.append("performer");
@@ -257,17 +238,22 @@ SBTableModel::populateChartsByItemType(Common::sb_type type, QMap<SBIDChartPerfo
         if(cPtr && cpPtr && spPtr)
         {
             int i=0;
-            if(type==Common::sb_type_performer)
+            if(type==SBKey::Performer)
             {
-                _setItem(index,i++,spPtr->songKey());
+                qDebug() << SB_DEBUG_INFO << spPtr->songKey() << spPtr->songTitle();
+                _setItem(index,i++,spPtr->songKey().toString());
                 _setItem(index,i++,spPtr->songTitle());
             }
-            else if(type==Common::sb_type_song)
+            else if(type==SBKey::Song)
             {
-                _setItem(index,i++,spPtr->songPerformerKey());
+                qDebug() << SB_DEBUG_INFO << spPtr->songPerformerKey() << spPtr->songPerformerName();
+                _setItem(index,i++,spPtr->songPerformerKey().toString());
                 _setItem(index,i++,spPtr->songPerformerName());
             }
-            _setItem(index,i++,cPtr->key());
+
+            qDebug() << SB_DEBUG_INFO << cPtr->key() << cPtr->chartName();
+
+            _setItem(index,i++,cPtr->key().toString());
             _setItem(index,i++,cPtr->chartName());
             _setItem(index,i++,QString("%1").arg(cpPtr->chartPosition()));
 
@@ -306,9 +292,9 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
         if(spPtr)
         {
             _setItem(i,0,QString("%1").arg(it.key()));
-            _setItem(i,1,QString("%1").arg(spPtr->songKey()));
+            _setItem(i,1,QString("%1").arg(spPtr->songKey().toString()));
             _setItem(i,2,QString("%1").arg(spPtr->songTitle()));
-            _setItem(i,3,QString("%1").arg(spPtr->songPerformerKey()));
+            _setItem(i,3,QString("%1").arg(spPtr->songPerformerKey().toString()));
             _setItem(i,4,QString("%1").arg(spPtr->songPerformerName()));
             i++;
         }
@@ -342,11 +328,12 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
 
         if(apPtr)
         {
+            SB_DEBUG_IF_NULL((apPtr->songPtr()));
             _setItem(i, 0,QString("%1").arg(apPtr->albumPosition()));
-            _setItem(i, 1,SBIDOnlinePerformance::createKey(apPtr->preferredOnlinePerformanceID()));
+            _setItem(i, 1,apPtr->songPtr()->key().toString());
             _setItem(i, 2,apPtr->songTitle());
             _setItem(i, 3,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
-            _setItem(i, 4,apPtr->songPerformerKey());
+            _setItem(i, 4,apPtr->songPerformerKey().toString());
             _setItem(i, 5,apPtr->songPerformerName());
             _setItem(i, 6,apPtr->notes());
             i++;
@@ -405,12 +392,12 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
 
         if(plPtr && opPtr)
         {
-            _setItem(i,0,plPtr->key());
+            _setItem(i,0,plPtr->key().toString());
             _setItem(i,1,plPtr->playlistName());
-            _setItem(i,2,opPtr->songPerformerKey());
+            _setItem(i,2,opPtr->songPerformerKey().toString());
             _setItem(i,3,opPtr->songPerformerName());
             _setItem(i,4,opPtr->duration().toString(SBDuration::sb_hhmmss_format));
-            _setItem(i,5,opPtr->albumKey());
+            _setItem(i,5,opPtr->albumKey().toString());
             _setItem(i,6,opPtr->albumTitle());
 
             i++;
@@ -440,7 +427,7 @@ SBTableModel::populatePlaylistContent(const QMap<int, SBIDPlaylistDetailPtr> &it
         if(itemPtr)
         {
             _setItem(i,0,QString("%1").arg(it.key()+1));
-            _setItem(i,1,QString("%1").arg(itemPtr->key()));
+            _setItem(i,1,QString("%1").arg(itemPtr->childKey().toString()));
             _setItem(i,2,QString("%1").arg(itemPtr->genericDescription()));
             i++;
         }
@@ -467,7 +454,7 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& pe
 
         if(spPtr && !songID.contains(spPtr->songID()))
         {
-            _setItem(index, 0,spPtr->songKey());
+            _setItem(index, 0,spPtr->songKey().toString());
             _setItem(index, 1,spPtr->songTitle());
             _setItem(index, 2,QString("%1").arg(spPtr->year()));
             index++;

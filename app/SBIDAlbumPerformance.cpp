@@ -1,11 +1,8 @@
 #include "SBIDAlbumPerformance.h"
 
 #include "CacheManager.h"
-#include "Common.h"
 #include "Context.h"
-#include "SBSqlQueryModel.h"
-
-#include "SBIDPerformer.h"
+#include "DataAccessLayer.h"
 #include "SBIDOnlinePerformance.h"
 
 ///	Ctors, dtors
@@ -37,16 +34,10 @@ SBIDAlbumPerformance::iconResourceLocation() const
     return QString(":/images/SongIcon.png");
 }
 
-int
-SBIDAlbumPerformance::itemID() const
-{
-    return this->_albumPerformanceID;
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDAlbumPerformance::itemType() const
 {
-    return Common::sb_type_album_performance;
+    return SBKey::AlbumPerformance;
 }
 
 QString
@@ -234,7 +225,7 @@ SBIDAlbumPerformance::year() const
 SBIDAlbumPerformance::operator QString()
 {
     return QString("SBIDAlbumPerformance:apID=%1:spID=%2:aID=%3:pos=%4")
-            .arg(_albumPerformanceID)
+            .arg(itemID())
             .arg(_songPerformanceID)
             .arg(_albumID)
             .arg(_albumPosition)
@@ -253,7 +244,7 @@ SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedF
 SBKey
 SBIDAlbumPerformance::createKey(int albumPerformanceID)
 {
-    return SBKey(Common::sb_type_album_performance,albumPerformanceID);
+    return SBKey(SBKey::AlbumPerformance,albumPerformanceID);
 }
 
 SBIDAlbumPerformancePtr
@@ -464,7 +455,12 @@ SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDep
 }
 
 ///	Protected methods
-SBIDAlbumPerformance::SBIDAlbumPerformance()
+SBIDAlbumPerformance::SBIDAlbumPerformance():SBIDBase(SBKey::AlbumPerformance,-1)
+{
+    _init();
+}
+
+SBIDAlbumPerformance::SBIDAlbumPerformance(int albumPerformanceID):SBIDBase(SBKey::AlbumPerformance,albumPerformanceID)
 {
     _init();
 }
@@ -515,8 +511,7 @@ SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDAlbumPerformance ap;
-    ap._albumPerformanceID=dal->retrieveLastInsertedKey();
+    SBIDAlbumPerformance ap(dal->retrieveLastInsertedKey());
     ap._songPerformanceID =p.songPerformanceID;
     ap._albumID           =p.albumID;
     ap._albumPosition     =p.albumPosition;
@@ -574,10 +569,9 @@ SBIDAlbumPerformance::find(const Common::sb_parameters& p,SBIDAlbumPerformancePt
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 {
-    SBIDAlbumPerformance ap;
     int i=0;
 
-    ap._albumPerformanceID          =Common::parseIntFieldDB(&r,i++);
+    SBIDAlbumPerformance ap(Common::parseIntFieldDB(&r,i++));
     ap._songPerformanceID           =Common::parseIntFieldDB(&r,i++);
     ap._albumID                     =Common::parseIntFieldDB(&r,i++);
     ap._albumPosition               =Common::parseIntFieldDB(&r,i++);
@@ -635,26 +629,9 @@ SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
     }
 }
 
-void
-SBIDAlbumPerformance::openKey(const QString& key, int& albumPerformanceID)
-{
-    QStringList l=key.split(":");
-    if(l.count()==2)
-    {
-        albumPerformanceID=l[1].toInt();
-    }
-    else
-    {
-        albumPerformanceID=-1;
-    }
-}
-
 SBSqlQueryModel*
-SBIDAlbumPerformance::retrieveSQL(const QString& key)
+SBIDAlbumPerformance::retrieveSQL(SBKey key)
 {
-    int albumPerformanceID=-1;
-    openKey(key,albumPerformanceID);
-
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -669,7 +646,7 @@ SBIDAlbumPerformance::retrieveSQL(const QString& key)
             "___SB_SCHEMA_NAME___record_performance rp "
         "%1 "
     )
-        .arg(key.length()==0?"":QString("WHERE rp.record_performance_id=%1").arg(albumPerformanceID))
+        .arg(key.validFlag()?QString("WHERE rp.record_performance_id=%1").arg(key.itemID()):QString())
     ;
 
     qDebug() << SB_DEBUG_INFO << q;
@@ -733,7 +710,7 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->_albumPosition)
             .arg(this->_duration.toString(SBDuration::sb_full_hhmmss_format))
             .arg(Common::escapeSingleQuotes(this->_notes))
-            .arg(this->_albumPerformanceID)
+            .arg(this->itemID())
         );
     }
 
@@ -745,7 +722,8 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
 void
 SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)
 {
-    _albumPerformanceID           =c._albumPerformanceID;
+    SBIDBase::_copy(c);
+
     _songPerformanceID            =c._songPerformanceID;
     _albumID                      =c._albumID;
     _albumPosition                =c._albumPosition;
@@ -759,9 +737,6 @@ SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)
 void
 SBIDAlbumPerformance::_init()
 {
-    _sb_item_type=Common::sb_type_album_performance;
-
-    _albumPerformanceID=-1;
     _songPerformanceID=-1;
     _albumID=-1;
     _albumPosition=-1;

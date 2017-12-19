@@ -19,7 +19,7 @@ class QTableView;
 #define SB_DEBUG_ERROR  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__ << "***ERROR***"
 #define SB_DEBUG_WARNING  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__ << "---WARNING---"
 #define SB_DEBUG_INFO  (long)QThread::currentThreadId() << QTime::currentTime().toString() <<  __FILE__ << __FUNCTION__ << __LINE__
-#define SB_DEBUG_NPTR SB_DEBUG_INFO << "NULL PTR"
+#define SB_DEBUG_NPTR SB_DEBUG_ERROR << "NULL PTR"
 #define SB_DEBUG_IF_NULL(x) if(!x) { qDebug() << SB_DEBUG_NPTR; }
 #define SB_RETURN_IF_NULL(x,y) if(!x) { SB_DEBUG_IF_NULL(x); return (y); }
 #define SB_RETURN_NULL_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return NULL; }
@@ -105,23 +105,6 @@ public:
         result_exists=1,
         result_missing=2
     };
-
-    enum sb_type
-    {
-        sb_type_invalid=0,
-        sb_type_song=1,
-        sb_type_performer=2,
-        sb_type_album=3,
-        sb_type_chart=4,
-        sb_type_playlist=5,
-        sb_type_song_performance=6,
-        sb_type_album_performance=7,
-        sb_type_online_performance=8,
-        sb_type_chart_performance=9,
-        sb_type_playlist_detail=10
-    };
-
-    static size_t sb_type_count() { return 10; }
 
     class sb_parameters
     {

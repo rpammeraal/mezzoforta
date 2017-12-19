@@ -4,9 +4,10 @@
 #include <QAbstractTableModel>
 #include <QVector>
 
-#include "Common.h"
+#include "SBKey.h"
 #include "SBIDAlbumPerformance.h"
 #include "SBIDPlaylist.h"
+#include "SBIDSong.h"
 #include "SBModel.h"
 
 class SBTableModel : public QStandardItemModel, public SBModel
@@ -32,7 +33,7 @@ public:
     SBKey determineKey(const QModelIndex &idx) const;
     void populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& albumPerformances, const QVector<SBIDAlbumPtr>& albums);
     void populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances);
-    void populateChartsByItemType(Common::sb_type type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances);
+    void populateChartsByItemType(SBKey::ItemType type, QMap<SBIDChartPerformancePtr,SBIDChartPtr> performances);
     void populateChartContent(const QMap<int,SBIDChartPerformancePtr>& items);
     void populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> performances);
     void populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> list);

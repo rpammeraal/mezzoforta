@@ -10,9 +10,9 @@
 
 #include "Common.h"
 #include "Cache.h"
-#include "DataAccessLayer.h"
 #include "ProgressDialog.h"
 #include "CacheManagerHelper.h"
+#include "SBKey.h"
 #include "SBSqlQueryModel.h"
 
 //	LAX-DUB-AMS-Maastricht-Luik-Sint Truiden-Leuven-Diest-Lommel-Eindhoven
@@ -30,7 +30,7 @@ class CacheTemplate : public Cache
 {
 public:
 
-    CacheTemplate<T, parentT>(const QString& name, Common::sb_type itemType);
+    CacheTemplate<T, parentT>(const QString& name, SBKey::ItemType itemType);
     ~CacheTemplate<T, parentT>();
 
     //	Retrieve
@@ -61,12 +61,13 @@ protected:
 
     std::shared_ptr<T> addItem(const std::shared_ptr<T>& ptr);
     virtual void clearCache();
+    virtual void performReloads();
     void removeInternally(std::shared_ptr<T> ptr);
     virtual QStringList retrieveChanges(Common::db_change db_change) const;
     virtual void setChangedAsCommited();
 
 private:
-    int                                    _nextID;
+    int                            _nextID;
     QMap<SBKey,std::shared_ptr<T>> _leMap;
 
     void _init();
@@ -74,7 +75,7 @@ private:
 
 ///	Ctors
 template <class T, class parentT>
-CacheTemplate<T,parentT>::CacheTemplate(const QString& name, Common::sb_type itemType):Cache(name,itemType)
+CacheTemplate<T,parentT>::CacheTemplate(const QString& name, SBKey::ItemType itemType):Cache(name,itemType)
 {
 }
 
@@ -129,6 +130,8 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 
             if(!processedKeys.contains(key))
             {
+                //	if(!excludePtr || (excludePtr && excludePtr->key()!=key))
+                //if(!excludePtr || (excludePtr && *(dynamic_cast<SBKey *>(excludePtr->key()!=key))))
                 if(!excludePtr || (excludePtr && excludePtr->key()!=key))
                 {
                     //	Retrieve and store
@@ -177,7 +180,7 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
         ptr->postInstantiate(ptr);
         if(openFlag==open_flag_foredit)
         {
-            addChangedKey(ptr->key());
+            addChangedKey(key);
             ptr->setChangedFlag();
         }
     }
@@ -452,6 +455,7 @@ CacheTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
     Q_ASSERT(ptr);
     ptr->_id=++_nextID;
     ptr->_owningCache=(this);
+    //	_leMap[ptr->key()]=ptr;
     _leMap[ptr->key()]=ptr;
     return ptr;
 }
@@ -460,6 +464,29 @@ template <class T, class parentT> void
 CacheTemplate<T,parentT>::clearCache()
 {
     _init();
+}
+
+template <class T, class parentT> void
+CacheTemplate<T,parentT>::performReloads()
+{
+    qDebug() << SB_DEBUG_INFO << name() << reloads().count();
+    QListIterator<SBKey> chIT(reloads());
+    while(chIT.hasNext())
+    {
+        const SBKey key=chIT.next();
+        std::shared_ptr<T> ptr;
+        if(contains(key))
+        {
+            ptr=_leMap[key];
+        }
+        if(ptr)
+        {
+            qDebug() << SB_DEBUG_INFO << name() << ptr->key();
+            ptr->refreshDependents(0,1);
+            ptr->clearChangedFlag();
+        }
+    }
+    clearReloads();
 }
 
 template <class T, class parentT> QStringList

@@ -259,14 +259,14 @@ SBTabPerformerEdit::save() const
 
         //	1.	Find additions
         QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
-        QList<QString> remainingRelatedPerformerKeyList;
+        QList<SBKey> remainingRelatedPerformerKeyList;
 
         for(int i=0;i<rpt->rowCount();i++)
         {
             QTableWidgetItem* it=rpt->item(i,1);
             if(it)
             {
-                const QString key=SBIDPerformer::createKey(it->data(Qt::DisplayRole).toInt());
+                const SBKey key=SBIDPerformer::createKey(it->data(Qt::DisplayRole).toInt());
                 if(_allRelatedPerformers.contains(key)==0)
                 {
                     orgPerformerPtr->addRelatedPerformer(key);
@@ -286,7 +286,7 @@ SBTabPerformerEdit::save() const
         //	2.	Find removals
         for(int i=0;i<_allRelatedPerformers.count();i++)
         {
-            QString key=_allRelatedPerformers.at(i);
+            SBKey key=_allRelatedPerformers.at(i);
             if(remainingRelatedPerformerKeyList.contains(key)==0)
             {
                 orgPerformerPtr->deleteRelatedPerformer(key);

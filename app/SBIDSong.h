@@ -41,8 +41,7 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
+    virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -61,10 +60,9 @@ public:
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
     QVector<int> performerIDList() const;
     SBTableModel* playlists();
-    inline int songID() const { return _songID; }
+    inline int songID() const { return itemID(); }
     QMap<int,SBIDSongPerformancePtr> songPerformances() const;
     inline QString songTitle() const { return _songTitle; }
-    //static bool updateExistingSong(const SBIDBase& orgSongID, SBIDSong& newSongID, const QStringList& extraSQL=QStringList(),bool commitFlag=1); // CWIP: merge with save()
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
     //	Setters, Changers
@@ -95,13 +93,14 @@ public:
     static QString iconResourceLocationStatic();
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_song; }
+    static ItemType classType() { return Song; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
     friend class Preloader;
 
     SBIDSong();
+    SBIDSong(int songID);
 
     //	Operators
     SBIDSong& operator=(const SBIDSong& t);
@@ -111,10 +110,8 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDSongPtr existingSongPtr);
     static SBIDSongPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDSongPtr& to);
-    static void openKey(const QString& getKey, int& songID);
     void postInstantiate(SBIDSongPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& getKey="");
-    virtual void setPrimaryKey(int PK) { _songID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);
 
@@ -132,7 +129,6 @@ protected:
     SBIDSongPerformancePtr addSongPerformance(SBIDSongPerformancePtr spPtr);
 
 private:
-    int                                _songID;
     QString                            _songTitle;
     QString                            _notes;
     QString                            _lyrics;

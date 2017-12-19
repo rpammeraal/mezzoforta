@@ -5,9 +5,7 @@
 #include "QSqlRecord"
 
 #include "Common.h"
-#include "MusicLibrary.h"
 #include "SBIDBase.h"
-#include "SBIDSong.h"
 
 class SBTableModel;
 
@@ -27,30 +25,23 @@ public:
 
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual int itemID() const;
-    virtual Common::sb_type itemType() const;
-    virtual bool save();
+    virtual SBKey::ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
 
     //	Album specific methods
-    inline int albumID() const { return _albumID; }
+    inline int albumID() const { return itemID(); }
     inline int albumPerformerID() const { return _albumPerformerID; }
     inline QString albumTitle() const { return _albumTitle; }
     SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes);
     QMap<int,SBIDAlbumPerformancePtr> albumPerformances() const;
     SBDuration duration() const;
     inline QString genre() const { return _genre; }
-    //SBSqlQueryModel* matchAlbum() const;
     inline QString notes() const { return _notes; }
     int numPerformances() const;
-    QStringList removeAlbum();	//	CWIP: amgr
-    QStringList removeSongFromAlbum(int position);	//	CWIP: amgr
-    QStringList repositionSongOnAlbum(int fromPosition, int toPosition);	//	CWIP: amgr
     SBTableModel* tableModelPerformances() const;
-    static bool updateExistingAlbum(const SBIDBase& orgAlbum, const SBIDBase& newAlbum, const QStringList& SQL,bool commitFlag=1);	//	CWIP: integrate with save()
     inline int year() const { return _year; }
 
     //	Setters
@@ -74,7 +65,7 @@ public:
     virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
-    static Common::sb_type classType() { return Common::sb_type_album; }
+    static SBKey::ItemType classType() { return SBKey::Album; }
     static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbum(SBKey key,bool noDependentsFlag=1);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag=1);
@@ -89,6 +80,7 @@ protected:
     friend class Preloader;
 
     SBIDAlbum();
+    SBIDAlbum(int albumID);
 
     //	Operators
     SBIDAlbum& operator=(const SBIDAlbum& t);	//	CWIP: to be moved to protected
@@ -98,10 +90,8 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDAlbumPtr& from);
-    static void openKey(const QString& getKey, int& albumID);
     void postInstantiate(SBIDAlbumPtr& ptr);
-    static SBSqlQueryModel* retrieveSQL(const QString& getKey);
-    virtual void setPrimaryKey(int PK) { _albumID=PK;  }
+    static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found);
 
@@ -110,7 +100,6 @@ protected:
     virtual void rollback();
 
 private:
-    int                               _albumID;
     int                               _albumPerformerID;
     QString                           _albumTitle;
     QString                           _genre;

@@ -4,13 +4,12 @@
 
 #include "CacheManager.h"
 #include "Context.h"
-#include "Controller.h"
+#include "DataAccessLayer.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBMessageBox.h"
+#include "SBIDPlaylistDetail.h"
 #include "SBModelQueuedSongs.h"
-#include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
 SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
@@ -48,16 +47,10 @@ SBIDPlaylist::iconResourceLocation() const
     return ":/images/PlaylistIcon.png";
 }
 
-int
-SBIDPlaylist::itemID() const
-{
-    return _playlistID;
-}
-
-Common::sb_type
+SBKey::ItemType
 SBIDPlaylist::itemType() const
 {
-    return Common::sb_type_playlist;
+    return SBKey::Playlist;
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -296,7 +289,7 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 SBKey
 SBIDPlaylist::createKey(int playlistID)
 {
-    return SBKey(Common::sb_type_playlist,playlistID);
+    return SBKey(SBKey::Playlist,playlistID);
 }
 
 SBIDPlaylistPtr
@@ -314,7 +307,12 @@ SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 }
 
 ///	Protected methods
-SBIDPlaylist::SBIDPlaylist():SBIDBase()
+SBIDPlaylist::SBIDPlaylist():SBIDBase(SBKey::Playlist,-1)
+{
+    _init();
+}
+
+SBIDPlaylist::SBIDPlaylist(int playlistID):SBIDBase(SBKey::Playlist,playlistID)
 {
     _init();
 }
@@ -384,8 +382,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
     Q_UNUSED(insert);
 
     //	Instantiate
-    SBIDPlaylist pl;
-    pl._playlistID  =dal->retrieveLastInsertedKey();
+    SBIDPlaylist pl(dal->retrieveLastInsertedKey());
     pl._playlistName=p.playlistName;
     pl._duration    =SBDuration();
 
@@ -396,23 +393,15 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
 SBIDPlaylistPtr
 SBIDPlaylist::instantiate(const QSqlRecord &r)
 {
-    SBIDPlaylist playlist;
     int i=0;
 
-    playlist._playlistID    =r.value(i++).toInt();
+    SBIDPlaylist playlist(r.value(i++).toInt());
     playlist._playlistName  =r.value(i++).toString();
     playlist._duration      =r.value(i++).toString();
 
     playlist._reorderPlaylistPositions();
 
     return std::make_shared<SBIDPlaylist>(playlist);
-}
-
-void
-SBIDPlaylist::openKey(const QString& key, int& playlistID)
-{
-    QStringList l=key.split(":");
-    playlistID=l.count()==2?l[1].toInt():-1;
 }
 
 void
@@ -462,10 +451,8 @@ SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
 }
 
 SBSqlQueryModel*
-SBIDPlaylist::retrieveSQL(const QString& key)
+SBIDPlaylist::retrieveSQL(SBKey key)
 {
-    int playlistID=-1;
-    openKey(key,playlistID);
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -478,10 +465,25 @@ SBIDPlaylist::retrieveSQL(const QString& key)
         "ORDER BY "
             "p.name "
     )
-        .arg(key.length()==0?"":QString("WHERE p.playlist_id=%1").arg(playlistID))
+        .arg(key.validFlag()?QString("WHERE p.playlist_id=%1").arg(key.itemID()):QString())
     ;
     qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
+}
+
+void
+SBIDPlaylist::setDeletedFlag()
+{
+    //	Playlist about to be removed. Go through each playlist detail and set the deletedFlag
+
+    qDebug() << SB_DEBUG_INFO << _items.count();
+    QMapIterator<int,SBIDPlaylistDetailPtr> it(_items);
+    while(it.hasNext())
+    {
+        SBIDPlaylistDetailPtr pldPtr=it.value();
+        qDebug() << SB_DEBUG_INFO << pldPtr->key();
+        pldPtr->setDeletedFlag();
+    }
 }
 
 QStringList
@@ -491,6 +493,7 @@ SBIDPlaylist::updateSQL(const Common::db_change db_change) const
     QString q;
     if(deletedFlag() && db_change==Common::db_delete)
     {
+        SQL.append(QString("DELETE FROM ___SB_SCHEMA_NAME___playlist_detail WHERE child_playlist_id=%2").arg(this->playlistID()));
         QString qTemplate=QString("DELETE FROM ___SB_SCHEMA_NAME___%1 WHERE playlist_id=%2");
 
         QStringList l;
@@ -515,7 +518,7 @@ SBIDPlaylist::updateSQL(const Common::db_change db_change) const
                 "playlist_id=%2 "
         )
             .arg(Common::escapeSingleQuotes(this->_playlistName))
-            .arg(this->_playlistID)
+            .arg(this->itemID())
         ;
         SQL.append(q);
     }
@@ -526,7 +529,7 @@ SBIDPlaylist::updateSQL(const Common::db_change db_change) const
 SBIDPlaylist::operator QString() const
 {
     return QString("SBIDPlaylist:plID=%1:n=%2")
-            .arg(_playlistID)
+            .arg(itemID())
             .arg(_playlistName)
     ;
 }
@@ -547,14 +550,14 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
         it.next();
 
         SBIDPlaylistDetailPtr pdPtr=it.value();
-        if(pdPtr->consistOfItemType()==Common::sb_type_playlist)
+        if(pdPtr->consistOfItemType()==SBKey::Playlist)
         {
             SBIDPlaylistPtr childPlPtr=pdPtr->childPlaylistPtr();
             _getOnlineItemsByPlaylist(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr(),0);
         }
         else
         {
-            QMap<int,SBIDOnlinePerformancePtr> m=pdPtr->ptr()->onlinePerformances();
+            QMap<int,SBIDOnlinePerformancePtr> m=pdPtr->childPtr()->onlinePerformances();
             allOpPtr+=m.values();
         }
         if(updateProgressDialogFlag)
@@ -571,8 +574,8 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
 void
 SBIDPlaylist::_copy(const SBIDPlaylist &c)
 {
+    SBIDBase::_copy(c);
     _duration      =c._duration;
-    _playlistID    =c._playlistID;
     _playlistName  =c._playlistName;
     _numItems      =c._numItems;
 
@@ -582,10 +585,7 @@ SBIDPlaylist::_copy(const SBIDPlaylist &c)
 void
 SBIDPlaylist::_init()
 {
-    _sb_item_type=Common::sb_type_playlist;
-
     _duration=SBDuration();
-    _playlistID=-1;
     _playlistName=QString();
     _numItems=0;
 
