@@ -28,72 +28,6 @@ SBIDBase::~SBIDBase()
 {
 }
 
-SBIDPtr
-SBIDBase::createPtr(ItemType itemType,int itemID,bool noDependentsFlag)
-{
-    SBIDPtr ptr;
-    switch(itemType)
-    {
-    case Album:
-        ptr=SBIDAlbum::retrieveAlbum(itemID,noDependentsFlag);
-        break;
-
-    case Performer:
-        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
-        break;
-
-    case Song:
-        ptr=SBIDSong::retrieveSong(itemID,noDependentsFlag);
-        break;
-
-    case Playlist:
-        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
-        break;
-
-    case AlbumPerformance:
-        ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID,noDependentsFlag);
-        break;
-
-    case OnlinePerformance:
-        ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
-        break;
-
-    case Chart:
-        ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
-        break;
-
-    case ChartPerformance:
-        ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
-        break;
-
-    case PlaylistDetail:
-        ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID,noDependentsFlag);
-		break;
-
-    case SongPerformance:
-        ptr=SBIDSongPerformance::retrieveSongPerformance(itemID,noDependentsFlag);
-        break;
-
-    case Invalid:
-        break;
-    }
-    if(!ptr)
-    {
-        qDebug() << SB_DEBUG_NPTR;
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID() << ptr->genericDescription();
-    }
-    return ptr;
-}
-
-SBIDPtr
-SBIDBase::createPtr(SBKey key,bool noDependentsFlag)
-{
-    return SBIDBase::createPtr(key.itemType(),key.itemID(),noDependentsFlag);
-}
-
 ///	Public methods
 
 ///	Public virtual methods (Methods that only apply to subclasseses)
@@ -215,7 +149,7 @@ SBIDBase::setReloadFlag()
 {
     _reloadFlag=1;
     SB_RETURN_VOID_IF_NULL(_owningCache);
-    _owningCache->addReloadKey(this->key());
+    qDebug() << SB_DEBUG_INFO << this->ID() << this->key();
 }
 
 
@@ -251,9 +185,6 @@ SBIDBase::setDeletedFlag()
 {
     _deletedFlag=1;
     setChangedFlag();
-    CacheManager* cm=Context::instance()->cacheManager();
-    SB_RETURN_VOID_IF_NULL(cm);
-    cm->notifyPendingRemoval(this->key());
 }
 
 void
@@ -265,6 +196,7 @@ SBIDBase::_copy(const SBIDBase &c)
     _id=-2;	//	do NOT copy -- identifies copy
     _sb_mbid=c._sb_mbid;
     _sb_model_position=c._sb_model_position;
+    _reloadFlag=c._reloadFlag;
     _url=c._url;
     _wiki=c._wiki;
     _owningCache=NULL;	//	do NOT copy -- identifies copy
@@ -283,13 +215,14 @@ SBIDBase::_init()
 
     //	Private
     _changedFlag=0;
+    _deletedFlag=0;
     _id=Common::nextID();
     _sb_mbid=e;
     _sb_model_position=-1;
+    _reloadFlag=0;
     _url=e;
     _wiki=e;
 
     //	Protected
     _errorMsg=e;
-    _deletedFlag=0;
 }

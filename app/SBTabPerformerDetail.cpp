@@ -71,7 +71,7 @@ SBTabPerformerDetail::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
+    const SBIDPtr ptr=CacheManager::get(this->currentScreenItem().key());
 
     _lastClickedIndex=QModelIndex();
 
@@ -101,7 +101,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
     SBKey key=sm->determineKey(ids);
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=ids;

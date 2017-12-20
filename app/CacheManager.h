@@ -34,6 +34,8 @@ public:
 
     void clearAllCaches();
     void debugShowChanges(const QString& title);
+    static SBIDPtr get(SBKey::ItemType itemType,int ID,bool noDependentsFlag=1);
+    static SBIDPtr get(SBKey key,bool noDependentsFlag=1);
     bool saveChanges();
 
     inline CacheManagerHelper* managerHelper() { return &_mh; }
@@ -51,8 +53,6 @@ public:
 
 protected:
     friend class SBIDBase;
-
-    void notifyPendingRemoval(SBKey key);
 
 private:
     QMap<SBKey::ItemType,CachePtr> _cache;

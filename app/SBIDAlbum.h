@@ -90,13 +90,11 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr);
     static SBIDAlbumPtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDAlbumPtr& from);
-    void postInstantiate(SBIDAlbumPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found);
 
     //	Inherited protected from SBIDBase
-    virtual void clearChangedFlag();
     virtual void rollback();
 
 private:

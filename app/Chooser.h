@@ -43,7 +43,7 @@ public slots:
     void playlistEnqueue();
     void playlistNew();
     void playlistPlay(bool enqueueFlag=0);
-    void playlistRename();
+    void playlistRename(SBKey key=SBKey());
 
     void schemaChanged();
     void showContextMenu(const QPoint& p);
@@ -72,6 +72,7 @@ private:
     //SBStandardItemModel* model;
     QModelIndex _lastClickedIndex;
     ChooserModel* _cm;
+    bool _openPlaylistTab;
 
     QModelIndex _findItem(const QString& toFind);
     QModelIndex _findItem(const SBIDPtr playlistPtr);

@@ -2,6 +2,7 @@
 
 #include <QDebug>
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "SBSqlQueryModel.h"
 
@@ -68,7 +69,7 @@ SBStandardItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
     }
 
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr ptr=SBIDBase::createPtr(encodedData);
+    SBIDPtr ptr=CacheManager::get(encodedData);
 
     this->beginRemoveRows(parent,ptr->modelPosition(),ptr->modelPosition());
     this->removeRow(ptr->modelPosition());

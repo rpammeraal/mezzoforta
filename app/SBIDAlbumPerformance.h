@@ -93,7 +93,6 @@ protected:
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDAlbumPerformancePtr existingPtr);
     static SBIDAlbumPerformancePtr instantiate(const QSqlRecord& r);
     void mergeFrom(SBIDAlbumPerformancePtr fromApPtr);
-    void postInstantiate(SBIDAlbumPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 

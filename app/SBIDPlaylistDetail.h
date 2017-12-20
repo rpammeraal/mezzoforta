@@ -69,7 +69,6 @@ protected:
     //	Methods used by SBIDManager
     static SBIDPlaylistDetailPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistDetailPtr instantiate(const QSqlRecord& r);
-    void postInstantiate(SBIDPlaylistDetailPtr& childPtr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     virtual void setDeletedFlag();
     QStringList updateSQL(const Common::db_change db_change) const;

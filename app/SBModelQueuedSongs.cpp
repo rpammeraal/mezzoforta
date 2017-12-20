@@ -3,6 +3,7 @@
 #include <QMimeData>
 #include <QSqlRecord>
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "SBIDBase.h"
@@ -37,7 +38,7 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
     //	Populate record
     QByteArray encodedData = data->data("application/vnd.text.list");
-    SBIDPtr ptr=SBIDBase::createPtr(encodedData,1);
+    SBIDPtr ptr=CacheManager::get(encodedData,1);
     if(ptr->itemType()==SBKey::AlbumPerformance)
     {
         SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(ptr->itemID());

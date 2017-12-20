@@ -527,12 +527,6 @@ SBIDPlaylistDetail::instantiate(const QSqlRecord &r)
     return std::make_shared<SBIDPlaylistDetail>(pd);
 }
 
-void
-SBIDPlaylistDetail::postInstantiate(SBIDPlaylistDetailPtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 SBSqlQueryModel*
 SBIDPlaylistDetail::retrieveSQL(SBKey key)
 {

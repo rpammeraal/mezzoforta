@@ -1,5 +1,6 @@
 #include "SBTabChooser.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "MainWindow.h"
 
@@ -16,7 +17,7 @@ SBTabChooser::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=SBIDBase::createPtr(this->currentScreenItem().key());
+    const SBIDPtr ptr=CacheManager::get(this->currentScreenItem().key());
     SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=QModelIndex();

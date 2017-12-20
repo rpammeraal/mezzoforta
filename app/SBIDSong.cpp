@@ -822,18 +822,6 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
     return result;
 }
 
-void
-SBIDSong::clearChangedFlag()
-{
-    //	CWIP: find a more generic method -- maybe doing a full load from mgr
-    SBIDBase::clearChangedFlag();
-    foreach(SBIDSongPerformancePtr performancePtr,_songPerformances)
-    {
-        performancePtr->clearChangedFlag();
-    }
-    //	AlbumPerformances are owned by SBIDAlbum -- don't clear these
-}
-
 SBIDSongPerformancePtr
 SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
 {

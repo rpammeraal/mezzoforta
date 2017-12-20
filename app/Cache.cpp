@@ -20,22 +20,6 @@ Cache::addChangedKey(SBKey key)
     }
 }
 
-void
-Cache::addReloadKey(SBKey key)
-{
-    qDebug() << SB_DEBUG_INFO << _name << key;
-    if(!_reloads.contains(key))
-    {
-        _reloads.append(key);
-    }
-}
-
-void
-Cache::notifyPendingRemoval(SBKey key)
-{
-    Q_UNUSED(key);
-}
-
 ///	Private methods
 void
 Cache::_init()

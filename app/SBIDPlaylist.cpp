@@ -279,9 +279,12 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
         ProgressDialog::instance()->show("Retrieving Playlist","SBIDPlaylist::refreshDependents",2);
     }
 
+    qDebug() << SB_DEBUG_INFO << forcedFlag;
     if(forcedFlag==1 || _items.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO << _items.count();
         _loadPlaylistItems();
+        qDebug() << SB_DEBUG_INFO << _items.count();
     }
 }
 
@@ -304,6 +307,60 @@ SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
 {
     return retrievePlaylist(createKey(playlistID),noDependentsFlag);
+}
+
+void
+SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
+{
+    //	Figure out what playlist need to be refreshed and what
+    //	playlist details needs to be removed due to a change/delete or `key'.
+    //	This method may be split up in the future.
+    QString q;
+
+    q=QString
+    (
+        "SELECT DISTINCT "
+            "playlist_id, "
+            "playlist_detail_id "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist_detail "
+        "WHERE "
+            "online_performance_id=%1 OR "
+            "child_playlist_id=%2 OR "
+            "chart_id=%3 OR "
+            "record_id=%4 OR "
+            "artist_id=%5 "
+    )
+        .arg(key.itemType()==SBKey::OnlinePerformance?key.itemID():-1)
+        .arg(key.itemType()==SBKey::Playlist?key.itemID():-1)
+        .arg(key.itemType()==SBKey::Chart?key.itemID():-1)
+        .arg(key.itemType()==SBKey::Album?key.itemID():-1)
+        .arg(key.itemType()==SBKey::Performer?key.itemID():-1)
+    ;
+
+    qDebug() << SB_DEBUG_INFO << q;
+
+    SBSqlQueryModel* qm=new SBSqlQueryModel(q);
+    SB_RETURN_VOID_IF_NULL(qm);
+    for(int i=0;i<qm->rowCount();i++)
+    {
+        int playlistID=qm->data(qm->index(i,0)).toInt();
+        int playlistDetailID=qm->data(qm->index(i,1)).toInt();
+        qDebug() << SB_DEBUG_INFO << playlistID << playlistDetailID;
+        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(playlistID);
+        if(plPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << plPtr->key() << plPtr->itemID() << plPtr->itemType() << plPtr->genericDescription();
+            plPtr->setReloadFlag();
+        }
+        SBIDPlaylistDetailPtr pldPtr=SBIDPlaylistDetail::retrievePlaylistDetail(playlistDetailID);
+        if(pldPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << plPtr->key() << plPtr->itemID() << plPtr->itemType() << plPtr->genericDescription();
+            pldPtr->setDeletedFlag();
+        }
+    }
+    delete qm;
 }
 
 ///	Protected methods
@@ -404,12 +461,6 @@ SBIDPlaylist::instantiate(const QSqlRecord &r)
     return std::make_shared<SBIDPlaylist>(playlist);
 }
 
-void
-SBIDPlaylist::postInstantiate(SBIDPlaylistPtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 bool
 SBIDPlaylist::moveDependent(int fromPosition, int toPosition)
 {
@@ -475,6 +526,7 @@ void
 SBIDPlaylist::setDeletedFlag()
 {
     //	Playlist about to be removed. Go through each playlist detail and set the deletedFlag
+    SBIDBase::setDeletedFlag();
 
     qDebug() << SB_DEBUG_INFO << _items.count();
     QMapIterator<int,SBIDPlaylistDetailPtr> it(_items);
@@ -484,6 +536,8 @@ SBIDPlaylist::setDeletedFlag()
         qDebug() << SB_DEBUG_INFO << pldPtr->key();
         pldPtr->setDeletedFlag();
     }
+    qDebug() << SB_DEBUG_INFO << this->key();
+    removePlaylistItemFromAllPlaylistsByKey(this->key());
 }
 
 QStringList

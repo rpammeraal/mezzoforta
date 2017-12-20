@@ -9,10 +9,10 @@
 
 static const SBKey::ItemType _order [] =
 {
+    SBKey::ChartPerformance,
+    SBKey::Chart,
     SBKey::Album,
     SBKey::AlbumPerformance,
-    SBKey::Chart,
-    SBKey::ChartPerformance,
     SBKey::OnlinePerformance,
     SBKey::Performer,
     SBKey::Playlist,
@@ -48,6 +48,72 @@ CacheManager::debugShowChanges(const QString &title)
         CachePtr cPtr=cIT.value();
         cPtr->debugShowChanges();
     }
+}
+
+SBIDPtr
+CacheManager::get(SBKey::ItemType itemType,int itemID,bool noDependentsFlag)
+{
+    SBIDPtr ptr;
+    switch(itemType)
+    {
+    case SBKey::Album:
+        ptr=SBIDAlbum::retrieveAlbum(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::Performer:
+        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::Song:
+        ptr=SBIDSong::retrieveSong(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::Playlist:
+        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::AlbumPerformance:
+        ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::OnlinePerformance:
+        ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::Chart:
+        ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::ChartPerformance:
+        ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::PlaylistDetail:
+        ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::SongPerformance:
+        ptr=SBIDSongPerformance::retrieveSongPerformance(itemID,noDependentsFlag);
+        break;
+
+    case SBKey::Invalid:
+        break;
+    }
+    if(!ptr)
+    {
+        qDebug() << SB_DEBUG_NPTR;
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID() << ptr->genericDescription();
+    }
+    return ptr;
+}
+
+SBIDPtr
+CacheManager::get(SBKey key,bool noDependentsFlag)
+{
+    return CacheManager::get(key.itemType(),key.itemID(),noDependentsFlag);
 }
 
 bool
@@ -98,7 +164,6 @@ CacheManager::saveChanges()
         SBKey::ItemType itemType=_order[i];
         CachePtr cPtr=_cache[itemType];
         cPtr->setChangedAsCommited();
-        cPtr->performReloads();
     }
 
     //	CWIP: remove when database is cached
@@ -125,16 +190,6 @@ CacheManager::saveChanges()
 }
 
 ///	Protected methods
-void
-CacheManager::notifyPendingRemoval(SBKey key)
-{
-    QMapIterator<SBKey::ItemType,CachePtr> it(_cache);
-    while(it.hasNext())
-    {
-        CachePtr cPtr=it.value();
-        cPtr->notifyPendingRemoval(key);
-    }
-}
 
 ///	Private methods
 void

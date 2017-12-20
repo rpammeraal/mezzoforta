@@ -115,9 +115,6 @@ protected:
     QStringList updateSQL(const Common::db_change db_change) const;
     static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);
 
-    //	Inherited protected from SBIDBase
-    virtual void clearChangedFlag();
-
     friend class SBIDAlbum;
     friend class SBTabSongEdit;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }

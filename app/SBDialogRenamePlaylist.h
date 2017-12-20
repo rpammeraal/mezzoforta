@@ -15,7 +15,7 @@ class SBDialogRenamePlaylist : public QDialog
     Q_OBJECT
 
 public:
-    explicit SBDialogRenamePlaylist(const SBIDPlaylistPtr& playlistPtr, QWidget *parent = 0);
+    explicit SBDialogRenamePlaylist(const SBIDPlaylistPtr& playlistPtr, bool newPlaylistFlag, QWidget *parent = 0);
     ~SBDialogRenamePlaylist();
 
 signals:

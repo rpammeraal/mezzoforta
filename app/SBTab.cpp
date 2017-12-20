@@ -8,6 +8,7 @@
 #include "SBTab.h"
 
 #include "Context.h"
+#include "CacheManager.h"
 #include "SBMessageBox.h"
 #include "SBSqlQueryModel.h"
 #include "SBSortFilterProxyTableModel.h"
@@ -288,7 +289,7 @@ SBTab::setImage(const QPixmap& p, QLabel* l, SBKey key) const
     SB_DEBUG_IF_NULL(l);
     if(p.isNull() && key.validFlag())
     {
-        SBIDPtr ptr=SBIDBase::createPtr(key);
+        SBIDPtr ptr=CacheManager::get(key);
         SB_RETURN_VOID_IF_NULL(ptr);
 
         QPixmap q=QPixmap(ptr->iconResourceLocation());

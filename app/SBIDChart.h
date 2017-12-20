@@ -63,7 +63,6 @@ protected:
     //bool addDependent(SBIDPtr tobeAddedPtr);
     static SBIDChartPtr createInDB(Common::sb_parameters& p);
     static SBIDChartPtr instantiate(const QSqlRecord& r);
-    void postInstantiate(SBIDChartPtr& ptr);
     //bool moveDependent(int fromPosition, int toPosition);
     //bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());

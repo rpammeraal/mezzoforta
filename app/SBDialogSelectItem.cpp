@@ -5,6 +5,7 @@
 #include <QRadioButton>
 #include <QSqlQueryModel>
 
+#include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
 #include "ExternalData.h"
@@ -493,7 +494,7 @@ SBDialogSelectItem::OK(const QString& i)
     _hasSelectedItemFlag=1;
     if(i!="x:x")
     {
-        _currentPtr=SBIDBase::createPtr(i.toLocal8Bit(),1);
+        _currentPtr=CacheManager::get(i.toLocal8Bit(),1);
     }
     this->close();
 }

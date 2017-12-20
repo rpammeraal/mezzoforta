@@ -11,7 +11,6 @@
 #include "Controller.h"
 #include "DBManager.h"
 #include "ProgressDialog.h"
-#include "SBSqlQueryModel.h"
 
 //	Singleton
 int dalCOUNT;

@@ -2,6 +2,7 @@
 
 #include "PlayManager.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -191,7 +192,7 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
         pc->playerStop();
     }
 
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_IF_NULL(ptr,0);
 
     ptr->sendToPlayQueue(enqueueFlag);

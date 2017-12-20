@@ -1,5 +1,6 @@
 #include "SBTabSongsAll.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
@@ -91,7 +92,7 @@ SBTabSongsAll::showContextMenuLabel(const QPoint &p)
         return;
     }
 
-    const SBIDPtr ptr=SBIDBase::createPtr(currentScreenItem().key());
+    const SBIDPtr ptr=CacheManager::get(currentScreenItem().key());
     SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=QModelIndex();
@@ -117,7 +118,7 @@ SBTabSongsAll::showContextMenuView(const QPoint &p)
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     QModelIndex ids=pm->mapToSource(idx);
     SBKey key=sm->determineKey(ids);
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     _lastClickedIndex=ids;

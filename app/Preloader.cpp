@@ -486,14 +486,10 @@ Preloader::performanceMap(QString query)
     while(queryList.next())
     {
         SBKey key;
-        QSqlRecord r;
-        QSqlField f;
         SBIDAlbumPtr albumPtr;
         SBIDSongPerformancePtr songPerformancePtr;
         SBIDAlbumPerformancePtr albumPerformancePtr;
-        SBIDOnlinePerformancePtr onlinePerformancePtr;
         SBIDPerformerPtr performerPtr;
-        SBIDPlaylistPtr playlistPtr;
         SBIDSongPtr songPtr;
 
         //	Process song

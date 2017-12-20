@@ -227,12 +227,6 @@ SBIDAlbum::duration() const
     return duration;
 }
 
-void
-SBIDAlbum::postInstantiate(SBIDAlbumPtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 int
 SBIDAlbum::numPerformances() const
 {
@@ -364,10 +358,8 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
     {
         albumID=qID.value(0).toInt();
         int count=qID.value(1).toInt();
-        qDebug() << SB_DEBUG_INFO << albumID << count;
         if(count!=1)
         {
-            qDebug() << SB_DEBUG_INFO;
             albumID=-1;
         }
     }
@@ -703,12 +695,10 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         SBIDAlbumPerformancePtr toApPtr=_findAlbumPerformanceBySongPerformanceID(fromApPtr->songPerformanceID());
         if(toApPtr)
         {
-            qDebug() << SB_DEBUG_INFO << fromApPtr->albumPerformanceID() << toApPtr->albumPerformanceID();
             apmgr->merge(fromApPtr,toApPtr);
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << fromApPtr->albumPosition() << nextAlbumPosition;
             //	Append
             fromApPtr->setAlbumPosition(nextAlbumPosition+oldAlbumPositions.indexOf(fromApPtr->albumPosition()));
             fromApPtr->setAlbumID(this->albumID());
@@ -754,7 +744,7 @@ SBIDAlbum::retrieveSQL(SBKey key)
         .arg(key.validFlag()?QString("WHERE r.record_id=%1").arg(key.itemID()):QString())
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
+    qDebug() << SB_DEBUG_INFO << key << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -811,7 +801,6 @@ SBIDAlbum::updateSQL(const Common::db_change db_change) const
 Common::result
 SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDAlbumPtr& found)
 {
-    qDebug() << SB_DEBUG_INFO;
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     Common::result result=Common::result_canceled;
@@ -826,25 +815,21 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
             itTMP.next();
             int i=itTMP.key();
             totalMatches+=matches[i].count();
-            qDebug()<< SB_DEBUG_INFO << i << matches[i].count();
         }
 
         if(matches[0].count()==1)
         {
-            qDebug()<< SB_DEBUG_INFO;
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
             result=Common::result_exists;
         }
         else if(totalMatches==1 && matches[2].count()==1)
         {
-            qDebug()<< SB_DEBUG_INFO;
             //	Catch collection album as the one and only choice.
             SBIDAlbumPtr aPtr=matches[2][0];
             SBIDPerformerPtr vpPtr=SBIDPerformer::retrieveVariousPerformers();
             if(aPtr->albumPerformerID()==vpPtr->performerID())
             {
-            qDebug()<< SB_DEBUG_INFO;
                 found=aPtr;
                 result=Common::result_exists;
             }
@@ -852,7 +837,6 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
 
         if(!found)
         {
-            qDebug()<< SB_DEBUG_INFO;
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
             SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
@@ -878,22 +862,9 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     }
     else
     {
-            qDebug()<< SB_DEBUG_INFO;
         result=Common::result_missing;
     }
     return result;
-}
-
-void
-SBIDAlbum::clearChangedFlag()
-{
-    //	CWIP: unsure how to handle this (restructuring @ SBIDOnlinePerformance 5/15)
-    SBIDBase::clearChangedFlag();
-//    foreach(SBIDAlbumPerformancePtr performancePtr,_albumPerformances)
-//    {
-//        performancePtr->clearChangedFlag();
-//    }
-    //	AlbumPerformances are owned by SBIDAlbum -- don't clear these
 }
 
 void

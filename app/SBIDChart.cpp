@@ -282,12 +282,6 @@ SBIDChart::instantiate(const QSqlRecord &r)
     return std::make_shared<SBIDChart>(chart);
 }
 
-void
-SBIDChart::postInstantiate(SBIDChartPtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 SBSqlQueryModel*
 SBIDChart::retrieveSQL(SBKey key)
 {

@@ -54,6 +54,7 @@ public:
     static SBKey createKey(int playlistID);
     static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1);
     static SBIDPlaylistPtr retrievePlaylist(SBKey key,bool noDependentsFlag=1);
+    static void removePlaylistItemFromAllPlaylistsByKey(SBKey key);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return Playlist; }
@@ -71,7 +72,6 @@ protected:
     //	Methods used by SBIDManager (these should all become pure virtual if not static)
     static SBIDPlaylistPtr createInDB(Common::sb_parameters& p);
     static SBIDPlaylistPtr instantiate(const QSqlRecord& r);
-    void postInstantiate(SBIDPlaylistPtr& ptr);
     bool moveDependent(int fromPosition, int toPosition);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     virtual void setDeletedFlag();

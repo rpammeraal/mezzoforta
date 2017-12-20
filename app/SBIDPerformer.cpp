@@ -678,12 +678,6 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     }
 }
 
-void
-SBIDPerformer::postInstantiate(SBIDPerformerPtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 SBSqlQueryModel*
 SBIDPerformer::retrieveSQL(SBKey key)
 {
@@ -998,7 +992,9 @@ SBIDPerformer::_loadAlbumsFromDB() const
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
+    qDebug() << SB_DEBUG_INFO;
     QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm,Cache::open_flag_parentonly);
+    qDebug() << SB_DEBUG_INFO;
     QVectorIterator<SBIDAlbumPtr> it(albums);
     while(it.hasNext())
     {

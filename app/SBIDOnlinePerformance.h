@@ -84,7 +84,6 @@ protected:
     static SBIDOnlinePerformancePtr createInDB(Common::sb_parameters& p);
     static SBSqlQueryModel* find(const Common::sb_parameters& tobeFound,SBIDOnlinePerformancePtr existingPtr);
     static SBIDOnlinePerformancePtr instantiate(const QSqlRecord& r);
-    void postInstantiate(SBIDOnlinePerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 

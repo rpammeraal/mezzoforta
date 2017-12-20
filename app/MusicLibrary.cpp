@@ -438,7 +438,7 @@ MusicLibrary::rescanMusicLibrary()
             if(!ePtr->errorFlag())
             {
                 qDebug() << SB_DEBUG_INFO;
-                SBIDAlbumPtr albumPtr=aMgr->retrieve(SBIDAlbum::createKey(ePtr->albumID),CacheAlbumMgr::open_flag_foredit);
+                SBIDAlbumPtr albumPtr=aMgr->retrieve(SBIDAlbum::createKey(ePtr->albumID));
                 albumPtr->addAlbumPerformance(
                             ePtr->songID,
                             ePtr->songPerformerID,

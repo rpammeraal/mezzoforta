@@ -28,7 +28,6 @@
 #include "SBIDOnlinePerformance.h"
 #include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
-#include "SBSqlQueryModel.h"
 #include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
 #include "ScreenStack.h"
@@ -454,10 +453,6 @@ Controller::setupUI()
 
     SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(1);
     qDebug() << SB_DEBUG_INFO << aPtr->genericDescription();
-    key=*(dynamic_cast<SBKey *>(aPtr.get()));
-    qDebug() << SB_DEBUG_INFO << key;
-    key=aPtr->key();
-    qDebug() << SB_DEBUG_INFO << key;
     return;
 }
 

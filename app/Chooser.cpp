@@ -15,7 +15,6 @@
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBSqlQueryModel.h"
 #include "SBTabQueuedSongs.h"
 #include "SBTabSongDetail.h"
 
@@ -220,7 +219,7 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
             }
             else
             {
-                ptr=SBIDBase::createPtr(key);
+                ptr=CacheManager::get(key);
             }
             SB_RETURN_VOID_IF_NULL(ptr);
 
@@ -346,6 +345,8 @@ Chooser::playlistNew()
             .arg(QChar(180));    //	3
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
+    playlistRename(ptr->key());
+    _openPlaylistTab=1;	//	Open playlist
 }
 
 void
@@ -396,12 +397,21 @@ Chooser::playlistPlay(bool enqueueFlag)
 }
 
 void
-Chooser::playlistRename()
+Chooser::playlistRename(SBKey key)
 {
-    SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
-    if(playlistPtr)
+    SBIDPlaylistPtr plPtr=_getPlaylistSelected(_lastClickedIndex);
+    if(key.validFlag())
     {
-        SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(playlistPtr);
+        plPtr=SBIDPlaylist::retrievePlaylist(key);
+    }
+    else
+    {
+        plPtr=_getPlaylistSelected(_lastClickedIndex);
+    }
+    if(plPtr)
+    {
+        //	When `key' is valid, the playlist is perceived to be a new one.
+        SBDialogRenamePlaylist* pl=new SBDialogRenamePlaylist(plPtr, key.validFlag());
         connect(pl, SIGNAL(playlistNameChanged(const SBIDPlaylistPtr&)),
                 this, SLOT(_renamePlaylist(const SBIDPlaylistPtr&)));
         pl->exec();
@@ -537,7 +547,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
     CachePlaylistMgr* pmgr=cm->playlistMgr();
 
     //	Re-open object for editing
-    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()),Cache::open_flag_foredit);
+    playlistPtr=pmgr->retrieve(SBIDPlaylist::createKey(playlistPtr->playlistID()));
 
     //	Store changes and commit
     playlistPtr->setPlaylistName(playlistPtr->playlistName());
@@ -555,6 +565,11 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
         .arg(QChar(180));         //	3
     Context::instance()->getController()->updateStatusBarText(updateText);
 
+    if(_openPlaylistTab)
+    {
+        _openPlaylistTab=0;
+        Context::instance()->getNavigator()->openScreen(playlistPtr->key());
+    }
     mw->ui.tabPlaylistDetail->refreshTabIfCurrent(playlistPtr->key());
 }
 
@@ -695,6 +710,7 @@ void
 Chooser::_init()
 {
     _cm=NULL;
+    _openPlaylistTab=0;
     const MainWindow* mw=Context::instance()->getMainWindow();
 
     this->_populate();

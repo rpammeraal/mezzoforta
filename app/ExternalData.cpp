@@ -10,6 +10,7 @@
 #include <QWebEngineView>
 
 #include "Common.h"
+#include "CacheManager.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "ExternalData.h"
@@ -44,7 +45,7 @@ ExternalData::loadAlbumData(SBKey key)
     }
 
     //	2.	Wikipedia page
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     if(ptr->wiki().length()>0)
@@ -60,7 +61,7 @@ ExternalData::loadPerformerData(SBKey key)
 {
     qDebug() << SB_DEBUG_INFO;
     _currentKey=key;
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     //	1.	Performer home page
@@ -98,7 +99,7 @@ ExternalData::loadSongData(SBKey key)
 {
     _currentKey=key;
 
-    SBIDPtr ptr=SBIDBase::createPtr(key);
+    SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     //	1.	Wikipedia page
@@ -383,7 +384,7 @@ void
 ExternalData::handleMBIDNetwork(QNetworkReply *r)
 {
     bool matchFound=0;
-    SBIDPtr ptr=SBIDBase::createPtr(_currentKey);
+    SBIDPtr ptr=CacheManager::get(_currentKey);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     QString title=Common::removeNonAlphanumeric(ptr->commonPerformerName().toLower());
@@ -920,7 +921,7 @@ ExternalData::_getMBIDAndMore()
     QString urlString;
     QNetworkAccessManager* mb;
 
-    SBIDPtr ptr=SBIDBase::createPtr(_currentKey);
+    SBIDPtr ptr=CacheManager::get(_currentKey);
     SB_RETURN_VOID_IF_NULL(ptr);
 
     if(ptr->MBID().length()==0)

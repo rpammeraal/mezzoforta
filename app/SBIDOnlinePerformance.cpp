@@ -576,12 +576,6 @@ SBIDOnlinePerformance::instantiate(const QSqlRecord& r)
     return std::make_shared<SBIDOnlinePerformance>(op);
 }
 
-void
-SBIDOnlinePerformance::postInstantiate(SBIDOnlinePerformancePtr& ptr)
-{
-    Q_UNUSED(ptr);
-}
-
 SBSqlQueryModel*
 SBIDOnlinePerformance::retrieveSQL(SBKey key)
 {

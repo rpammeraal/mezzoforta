@@ -584,12 +584,6 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
 }
 
 void
-SBIDAlbumPerformance::postInstantiate(SBIDAlbumPerformancePtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
-void
 SBIDAlbumPerformance::mergeFrom(SBIDAlbumPerformancePtr fromApPtr)
 {
     SB_RETURN_VOID_IF_NULL(fromApPtr);

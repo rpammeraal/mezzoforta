@@ -62,7 +62,6 @@ protected:
     //	Methods used by SBIDManager
     static SBIDChartPerformancePtr createInDB(Common::sb_parameters& p);
     static SBIDChartPerformancePtr instantiate(const QSqlRecord& r);
-    void postInstantiate(SBIDChartPerformancePtr& ptr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 

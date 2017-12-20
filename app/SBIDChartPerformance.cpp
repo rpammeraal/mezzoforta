@@ -261,13 +261,6 @@ SBIDChartPerformance::instantiate(const QSqlRecord &r)
     return std::make_shared<SBIDChartPerformance>(cp);
 }
 
-void
-SBIDChartPerformance::postInstantiate(SBIDChartPerformancePtr &ptr)
-{
-    Q_UNUSED(ptr);
-}
-
-
 SBSqlQueryModel*
 SBIDChartPerformance::retrieveSQL(SBKey key)
 {

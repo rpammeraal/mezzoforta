@@ -35,9 +35,6 @@ public:
 
     virtual ~SBIDBase();
 
-    static SBIDPtr createPtr(ItemType itemType,int ID,bool noDependentsFlag=1);
-    static SBIDPtr createPtr(SBKey key,bool noDependentsFlag=1);
-
     //	Public methods
     inline bool changedFlag() const { return _changedFlag; }
     inline bool deletedFlag() const { return _deletedFlag; }
