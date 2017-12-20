@@ -172,7 +172,6 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
 
     if(ptr)
     {
-        qDebug() << SB_DEBUG_INFO << name() << ptr->ID() << ptr->key() << ptr->reloadFlag() << openFlag;
         if(ptr->reloadFlag() || openFlag==Cache::open_flag_default)
         {
             ptr->refreshDependents(0,1);
@@ -481,7 +480,7 @@ CacheTemplate<T,parentT>::retrieveChanges(Common::db_change db_change) const
     return SQL;
 }
 template <class T, class parentT> void
-CacheTemplate<T,parentT>::removeInternally(const std::shared_ptr<T> ptr)
+CacheTemplate<T,parentT>::removeInternally(std::shared_ptr<T> ptr)
 {
     //	Find item in _leMap
     if(_leMap.find(ptr->key())!=_leMap.end())

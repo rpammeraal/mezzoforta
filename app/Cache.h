@@ -1,6 +1,7 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include <memory>
 #include <QString>
 
 #include "Common.h"

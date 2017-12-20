@@ -240,18 +240,14 @@ SBTableModel::populateChartsByItemType(SBKey::ItemType type, QMap<SBIDChartPerfo
             int i=0;
             if(type==SBKey::Performer)
             {
-                qDebug() << SB_DEBUG_INFO << spPtr->songKey() << spPtr->songTitle();
                 _setItem(index,i++,spPtr->songKey().toString());
                 _setItem(index,i++,spPtr->songTitle());
             }
             else if(type==SBKey::Song)
             {
-                qDebug() << SB_DEBUG_INFO << spPtr->songPerformerKey() << spPtr->songPerformerName();
                 _setItem(index,i++,spPtr->songPerformerKey().toString());
                 _setItem(index,i++,spPtr->songPerformerName());
             }
-
-            qDebug() << SB_DEBUG_INFO << cPtr->key() << cPtr->chartName();
 
             _setItem(index,i++,cPtr->key().toString());
             _setItem(index,i++,cPtr->chartName());

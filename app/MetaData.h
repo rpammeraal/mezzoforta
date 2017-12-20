@@ -24,7 +24,7 @@ public:
     inline SBDuration duration() const { return _duration; }
 
 private:
-    TagLib::FileRef _f;
+    //	TagLib::FileRef _f;
 
     QString         _albumTitle;
     int             _albumPosition;
