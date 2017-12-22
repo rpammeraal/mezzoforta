@@ -140,7 +140,7 @@ QCompleter*
 CompleterFactory::_createCompleter(QString& query)
 {
     //	Prep query
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;
 

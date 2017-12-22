@@ -27,7 +27,6 @@
 #include "SBIDPlaylistDetail.h"
 #include "SBIDOnlinePerformance.h"
 #include "SBDialogSelectItem.h"
-#include "SBSqlQueryModel.h"
 #include "SBTab.h"
 #include "ScreenStack.h"
 
@@ -51,7 +50,7 @@ Navigator::~Navigator()
 void
 Navigator::clearSearchFilter()
 {
-    QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+    QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
     QCompleter* completer=lineEdit->completer();
     if(completer==NULL && lineEdit!=NULL)
     {
@@ -68,7 +67,7 @@ Navigator::clearSearchFilter()
         lineEdit->setText("");
     }
 
-    Navigator* navigator=Context::instance()->getNavigator();
+    Navigator* navigator=Context::instance()->navigator();
 
     connect(
         completer, SIGNAL(activated(const QModelIndex&)),
@@ -89,7 +88,6 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 {
-    qDebug() << SB_DEBUG_INFO;
     if(key.itemType()==SBKey::PlaylistDetail)
     {
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(key);
@@ -101,14 +99,13 @@ Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 void
 Navigator::openScreen(const ScreenItem &si)
 {
-    qDebug() << SB_DEBUG_INFO << si.key();
     if(!_threadPrioritySetFlag)
     {
         QThread::currentThread()->setPriority(QThread::LowestPriority);
         _threadPrioritySetFlag=1;
     }
 
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
     //st->debugShow("openScreen:113");
     SBKey key;
 
@@ -120,9 +117,7 @@ Navigator::openScreen(const ScreenItem &si)
     }
     else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
-    qDebug() << SB_DEBUG_INFO << si.key() << si.key().validFlag();
         key=si.key();
-    qDebug() << SB_DEBUG_INFO << key << key.validFlag();
         if(!key.validFlag())
         {
             qDebug() << SB_DEBUG_NPTR;
@@ -163,15 +158,15 @@ Navigator::openScreen(const ScreenItem &si)
 void
 Navigator::keyPressEvent(QKeyEvent *event)
 {
-    SBTab* tab=Context::instance()->getTab();
-    ScreenStack* st=Context::instance()->getScreenStack();
+    SBTab* tab=Context::instance()->tab();
+    ScreenStack* st=Context::instance()->screenStack();
 
     if(event==NULL)
     {
         SB_DEBUG_IF_NULL(event);
         return;
     }
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     const int eventKey=event->key();
 
     //	Sometimes we get too many escape key press events. Trying to suppress these
@@ -225,19 +220,15 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     else if(eventKey==0x1000000)
     {
-        qDebug() << SB_DEBUG_INFO;
         //	Escape key: move 1 screen back
         if(st->count()==0)
         {
-        qDebug() << SB_DEBUG_INFO;
             showSonglist();
         }
         else
         {
-        qDebug() << SB_DEBUG_INFO;
             if(tab)
             {
-        qDebug() << SB_DEBUG_INFO;
                 closeCurrentTab();
                 return;
             }
@@ -264,15 +255,15 @@ Navigator::keyPressEvent(QKeyEvent *event)
     }
     else if(eventKey==16777350)
     {
-        Context::instance()->getPlayManager()->playerPlay();
+        Context::instance()->playManager()->playerPlay();
     }
     else if(eventKey==16777347)
     {
-        Context::instance()->getPlayManager()->playerNext();
+        Context::instance()->playManager()->playerNext();
     }
     else if(eventKey==16777346)
     {
-        Context::instance()->getPlayManager()->playerPrevious();
+        Context::instance()->playManager()->playerPrevious();
     }
 }
 
@@ -284,7 +275,7 @@ Navigator::navigateDetailTab(int direction)
         return;
     }
 
-    const SBTab* currentTab=Context::instance()->getTab();
+    const SBTab* currentTab=Context::instance()->tab();
     if(currentTab==NULL)
     {
         return;
@@ -324,7 +315,7 @@ Navigator::navigateDetailTab(int direction)
 void
 Navigator::removeFromScreenStack(SBKey key)
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
     st->removeForward();
     ScreenItem si=st->currentScreen();
 
@@ -340,7 +331,6 @@ Navigator::removeFromScreenStack(SBKey key)
     st->removeScreen(key);
 
     //	Activate the current screen
-    qDebug() << SB_DEBUG_INFO;
     _activateScreen();
 }
 
@@ -366,7 +356,7 @@ Navigator::showSonglist()
 void
 Navigator::applySonglistFilter()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QString filter=mw->ui.searchEdit->text();
 
     //	Ignore requests without search content
@@ -374,8 +364,6 @@ Navigator::applySonglistFilter()
     {
         return;
     }
-
-    qDebug() << SB_DEBUG_INFO << filter;
 
     //	Sometimes QT emits a returnPressed before an activated on QCompleter.
     //	This is ugly as hell, but if this happens we need to filter out
@@ -418,14 +406,13 @@ Navigator::applySonglistFilter()
 void
 Navigator::closeCurrentTab(bool forcedFlag)
 {
-    ScreenStack* st=Context::instance()->getScreenStack(); SB_RETURN_VOID_IF_NULL(st);
-    SBTab* tab=Context::instance()->getTab(); SB_RETURN_VOID_IF_NULL(tab);
+    ScreenStack* st=Context::instance()->screenStack(); SB_RETURN_VOID_IF_NULL(st);
+    SBTab* tab=Context::instance()->tab(); SB_RETURN_VOID_IF_NULL(tab);
     if(forcedFlag || tab->handleEscapeKey())
     {
         if(tab->editTabFlag())
         {
             st->removeCurrentScreen();
-    qDebug() << SB_DEBUG_INFO;
             _activateScreen();
         }
         else
@@ -440,7 +427,7 @@ Navigator::editItem()
 {
     //	Nothing to do here. To add new edit screen, go to _activateScreen.
     //	All steps prior to this are not relevant.
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
     ScreenItem si=st->currentScreen();
     si.setEditFlag(1);
     openScreen(si);
@@ -491,7 +478,7 @@ Navigator::openPerformer(const QUrl &id)
 void
 Navigator::openOpener()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTabWidget* tw=mw->ui.mainTab;
     QWidget* tab=mw->ui.tabOpener;
     mw->ui.mainTab->insertTab(0,tab,QString(""));
@@ -534,7 +521,7 @@ Navigator::tabForward()
 void
 Navigator::textChanged(const QString &textChanged)
 {
-    QLineEdit* searchEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+    QLineEdit* searchEdit=Context::instance()->mainWindow()->ui.searchEdit;
     QFont font=searchEdit->font();
     if(textChanged.length()==0)
     {
@@ -563,8 +550,8 @@ Navigator::doInit()
 bool
 Navigator::_activateScreen()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    ScreenStack* st=Context::instance()->getScreenStack();
+    const MainWindow* mw=Context::instance()->mainWindow();
+    ScreenStack* st=Context::instance()->screenStack();
     ScreenItem si=st->currentScreen();
 
     //	Check parameters
@@ -595,12 +582,10 @@ Navigator::_activateScreen()
     bool canBeEditedFlag=1;
     SBKey key;
 
-    qDebug() << SB_DEBUG_INFO << si.screenType();
     switch(si.screenType())
     {
         case ScreenItem::screen_type_sbidbase:
             key=si.key();
-            qDebug() << SB_DEBUG_INFO << key;
             switch(key.itemType())
             {
             case SBKey::OnlinePerformance:
@@ -610,12 +595,10 @@ Navigator::_activateScreen()
                 if(editFlag)
                 {
                     tab=mw->ui.tabSongEdit;
-                    qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
                     tab=mw->ui.tabSongDetail;
-                    qDebug() << SB_DEBUG_INFO;
                 }
                 break;
 
@@ -678,7 +661,6 @@ Navigator::_activateScreen()
     {
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
-        qDebug() << SB_DEBUG_INFO << si.key();
         si=tab->populate(si);
     }
     else
@@ -760,7 +742,7 @@ Navigator::_checkOutstandingEdits() const
 {
     bool hasOutstandingEdits=0;
 
-    SBTab* currentTab=Context::instance()->getTab();
+    SBTab* currentTab=Context::instance()->tab();
     if(currentTab!=NULL)
     {
         if(currentTab->handleEscapeKey()==0)
@@ -779,7 +761,7 @@ Navigator::_filterSongs(const ScreenItem& si)
 
     //	Apply filter here
     QRegExp re;
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
     if(m!=NULL)
     {
@@ -812,14 +794,14 @@ Navigator::_filterSongs(const ScreenItem& si)
 void
 Navigator::_init()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     //	Set up menus
     connect(mw->ui.menuEditEditID, SIGNAL(triggered(bool)),
              this, SLOT(editItem()));
 
     //	Notify when schema is changed
-    connect(Context::instance()->getDataAccessLayer(), SIGNAL(schemaChanged()),
+    connect(Context::instance()->dataAccessLayer(), SIGNAL(schemaChanged()),
             this, SLOT(schemaChanged()));
 
     _lastKeypressEventTime=QTime::currentTime();
@@ -829,7 +811,7 @@ Navigator::_init()
 void
 Navigator::_moveFocusToScreen(int direction)
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
     ScreenItem si;
     if(direction>0)
     {
@@ -839,7 +821,6 @@ Navigator::_moveFocusToScreen(int direction)
     {
         si=st->previousScreen();
     }
-    qDebug() << SB_DEBUG_INFO;
     _activateScreen();
 }
 

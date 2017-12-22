@@ -326,7 +326,7 @@ SBTableModel::populatePerformancesByAlbum(QMap<int,SBIDAlbumPerformancePtr> perf
         {
             SB_DEBUG_IF_NULL((apPtr->songPtr()));
             _setItem(i, 0,QString("%1").arg(apPtr->albumPosition()));
-            _setItem(i, 1,apPtr->songPtr()->key().toString());
+            _setItem(i, 1,apPtr->key().toString());
             _setItem(i, 2,apPtr->songTitle());
             _setItem(i, 3,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
             _setItem(i, 4,apPtr->songPerformerKey().toString());

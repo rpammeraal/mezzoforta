@@ -249,7 +249,7 @@ SBIDPlaylistDetail::setDeletedFlag()
 QStringList
 SBIDPlaylistDetail::updateSQL(const Common::db_change db_change) const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QStringList SQL;
 
     if(deletedFlag() && db_change==Common::db_delete)
@@ -412,7 +412,7 @@ SBIDPlaylistDetail::SBIDPlaylistDetail(int playlistDetailID):SBIDBase(SBKey::Pla
 SBIDPlaylistDetailPtr
 SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

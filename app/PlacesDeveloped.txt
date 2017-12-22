@@ -1010,9 +1010,12 @@ Between 20161215 and 20170604:
 -	test::navigation done.
 
 CURRENT:
-*	Context: remove 'get'
-*	Convert to using smart pointers:
-    *	SBSqlQueryModel
+-	Context: remove 'get'
+-	Convert to using smart pointers:
+    -	SBSqlQueryModel: QT base class does not allow for smart pointers
+*	Enqueue chart, then click on 'play'. Nothing happens.
+
+TODO:
 *	Edit song, different song shows up.
 *	find a common way to match strings:
     SBIDSong uses Common::simplified

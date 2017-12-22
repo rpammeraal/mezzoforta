@@ -92,7 +92,7 @@ SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
     ProgressDialog::instance()->show("Loading songs","SBIDPerformer::sendToPlayQueue",2);
 
     QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
     ProgressDialog::instance()->hide();
@@ -138,7 +138,6 @@ SBIDPerformer::albumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDPerformer *>(this)->_loadAlbumPerformances();
     }
     return _albumPerformances;
@@ -193,7 +192,6 @@ SBIDPerformer::relatedPerformers()
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerKey.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO;
         ptr=retrievePerformer(_relatedPerformerKey.at(i));
         if(ptr)
         {
@@ -227,7 +225,7 @@ SBIDPerformer::songs() const
 void
 SBIDPerformer::updateSoundexFields()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString
@@ -329,14 +327,12 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-        qDebug() << SB_DEBUG_INFO;
             found=SBIDPerformer::retrievePerformer(matches[0][0]->itemID());
             result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
             //	If there is *exactly* one match without articles, take it.
-        qDebug() << SB_DEBUG_INFO;
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists;
         }
@@ -354,7 +350,6 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                 if(selected)
                 {
                     //	Existing performer is choosen
-        qDebug() << SB_DEBUG_INFO;
                     found=SBIDPerformer::retrievePerformer(selected->itemID());
                     found->refreshDependents();
                     result=Common::result_exists;
@@ -376,14 +371,12 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
 void
 SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 {
-    qDebug() << SB_DEBUG_INFO << key() << ID() << forcedFlag;
     if(showProgressDialogFlag)
     {
         ProgressDialog::instance()->show("Retrieving Performer","SBIDPerformer::refreshDependents",4);
     }
     if(forcedFlag || _albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         _loadAlbumPerformances();
     }
     if(forcedFlag || _relatedPerformerKey.count()==0)
@@ -402,14 +395,12 @@ SBIDPerformer::retrievePerformer(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
-    qDebug() << SB_DEBUG_INFO << key << noDependentsFlag;
     return pemgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
-        qDebug() << SB_DEBUG_INFO;
     return retrievePerformer(createKey(performerID),noDependentsFlag);
 }
 
@@ -418,7 +409,7 @@ SBIDPerformer::retrieveVariousPerformers()
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
-    Properties* properties=Context::instance()->getProperties();
+    Properties* properties=Context::instance()->properties();
     int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
     SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID);
     if(!performerPtr)
@@ -454,7 +445,7 @@ SBIDPerformer::operator=(const SBIDPerformer& t)
 SBIDPerformerPtr
 SBIDPerformer::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
@@ -718,13 +709,6 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
     QString q;
     bool deletedFlag=this->deletedFlag();
 
-    qDebug() << SB_DEBUG_INFO
-             << toString()
-             << this->ID()
-             << deletedFlag
-             << changedFlag()
-    ;
-
     //	Deleted
     if(deletedFlag && db_change==Common::db_delete)
     {
@@ -908,7 +892,6 @@ SBIDPerformer::_loadAlbums()
 void
 SBIDPerformer::_loadAlbumPerformances()
 {
-    qDebug() << SB_DEBUG_INFO;
     _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
@@ -993,7 +976,6 @@ SBIDPerformer::_mergeRelatedPerformer(SBKey fromKey, SBKey toKey)
 QVector<SBIDAlbumPerformancePtr>
 SBIDPerformer::_loadAlbumPerformancesFromDB() const
 {
-    qDebug() << SB_DEBUG_INFO << key() << ID();
     return Preloader::albumPerformances(this->key(),SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
 }
 
@@ -1003,9 +985,7 @@ SBIDPerformer::_loadAlbumsFromDB() const
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    qDebug() << SB_DEBUG_INFO;
     QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm,Cache::open_flag_parentonly);
-    qDebug() << SB_DEBUG_INFO;
     QVectorIterator<SBIDAlbumPtr> it(albums);
     while(it.hasNext())
     {

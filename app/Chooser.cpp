@@ -186,7 +186,6 @@ Chooser::~Chooser()
 void
 Chooser::assignItem(const QModelIndex& idx, SBKey key)
 {
-    qDebug() << SB_DEBUG_INFO;
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
     switch(rootType)
@@ -250,11 +249,11 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
                         .arg(playlistPtr->text()) //	4
                     ;
                 }
-                Context::instance()->getController()->updateStatusBarText(updateText);
+                Context::instance()->controller()->updateStatusBarText(updateText);
             }
             else if(rootType==Chooser::sb_your_songs)
             {
-                PlayManager* pmgr=Context::instance()->getPlayManager();
+                PlayManager* pmgr=Context::instance()->playManager();
                 pmgr->startRadio();
             }
         }
@@ -269,7 +268,7 @@ Chooser::chartPlay(bool enqueueFlag)
 {
     SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
     SB_RETURN_VOID_IF_NULL(cPtr);
-    PlayManager* pmgr=Context::instance()->getPlayManager();
+    PlayManager* pmgr=Context::instance()->playManager();
     pmgr?pmgr->playItemNow(cPtr->key(),enqueueFlag):0;
 }
 
@@ -287,7 +286,7 @@ Chooser::playlistDelete()
 
     {
         //	DEBUG:
-        ScreenStack* st=Context::instance()->getScreenStack();
+        ScreenStack* st=Context::instance()->screenStack();
         st->debugShow("before playlist delete");
     }
 
@@ -307,7 +306,7 @@ Chooser::playlistDelete()
             case QMessageBox::Ok:
                 pmgr->remove(playlistPtr);
                 cm->saveChanges();
-                Context::instance()->getNavigator()->removeFromScreenStack(playlistPtr->key());
+                Context::instance()->navigator()->removeFromScreenStack(playlistPtr->key());
                 this->_populate();
 
                 updateText=QString("Removed playlist %1%2%3.")
@@ -315,7 +314,7 @@ Chooser::playlistDelete()
                     .arg(playlistPtr->text())
                     .arg(QChar(180))
                 ;
-                Context::instance()->getController()->updateStatusBarText(updateText);
+                Context::instance()->controller()->updateStatusBarText(updateText);
                 break;
 
             case QMessageBox::Cancel:
@@ -324,7 +323,7 @@ Chooser::playlistDelete()
     }
     {
         //	DEBUG:
-        ScreenStack* st=Context::instance()->getScreenStack();
+        ScreenStack* st=Context::instance()->screenStack();
         st->debugShow("after playlist delete");
     }
 }
@@ -343,7 +342,6 @@ Chooser::playlistNew()
     CachePlaylistMgr* pmgr=cm->playlistMgr();
     Common::sb_parameters p;
 
-    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr ptr=pmgr->createInDB(p);
 
     //	Refresh our tree structure
@@ -358,10 +356,9 @@ Chooser::playlistNew()
             .arg(QChar(96))      //	1
             .arg(ptr->text())    //	2
             .arg(QChar(180));    //	3
-        Context::instance()->getController()->updateStatusBarText(updateText);
+        Context::instance()->controller()->updateStatusBarText(updateText);
     }
     playlistRename(ptr->key());
-    qDebug() << SB_DEBUG_INFO << _openPlaylistTab;
 }
 
 void
@@ -407,7 +404,7 @@ Chooser::playlistPlay(bool enqueueFlag)
     SBIDPlaylistPtr plPtr=_getPlaylistSelected(_lastClickedIndex);
     SB_RETURN_VOID_IF_NULL(plPtr);
 
-    PlayManager* pmgr=Context::instance()->getPlayManager();
+    PlayManager* pmgr=Context::instance()->playManager();
     pmgr?pmgr->playItemNow(plPtr->key(),enqueueFlag):0;
 }
 
@@ -443,7 +440,7 @@ Chooser::schemaChanged()
 void
 Chooser::showContextMenu(const QPoint &p)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QModelIndex idx=mw->ui.leftColumnChooser->indexAt(p);
 
     QModelIndex pIdx=idx.parent();
@@ -453,41 +450,35 @@ Chooser::showContextMenu(const QPoint &p)
     {
     case Chooser::sb_playlists:
         {
-            SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(idx);
+            SBIDPlaylistPtr plPtr=_getPlaylistSelected(idx);
+            SB_RETURN_VOID_IF_NULL(plPtr);
 
-            if(playlistPtr)
-            {
-                //	Only show in the right context :)
-                _lastClickedIndex=idx;
-                QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
+            _lastClickedIndex=idx;
+            QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
 
-                QMenu menu(NULL);
-                menu.addAction(_playlistPlayAction);
-                menu.addAction(_playlistEnqueueAction);
-                menu.addAction(_playlistNewAction);
-                menu.addAction(_playlistDeleteAction);
-                menu.addAction(_playlistRenameAction);
-                menu.addAction(_playlistRecalculateDurationAction);
-                menu.exec(gp);
-            }
+            QMenu menu(NULL);
+            menu.addAction(_playlistPlayAction);
+            menu.addAction(_playlistEnqueueAction);
+            menu.addAction(_playlistNewAction);
+            menu.addAction(_playlistDeleteAction);
+            menu.addAction(_playlistRenameAction);
+            menu.addAction(_playlistRecalculateDurationAction);
+            menu.exec(gp);
         }
         break;
 
     case Chooser::sb_charts:
         {
             SBIDChartPtr cPtr=_getChartSelected(idx);
+            SB_RETURN_VOID_IF_NULL(cPtr);
 
-            if(cPtr)
-            {
-                //	Only show in the right context :)
-                _lastClickedIndex=idx;
-                QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
+            _lastClickedIndex=idx;
+            QPoint gp = mw->ui.leftColumnChooser->mapToGlobal(p);
 
-                QMenu menu(NULL);
-                menu.addAction(_chartPlayAction);
-                menu.addAction(_chartEnqueueAction);
-                menu.exec(gp);
-            }
+            QMenu menu(NULL);
+            menu.addAction(_chartPlayAction);
+            menu.addAction(_chartEnqueueAction);
+            menu.exec(gp);
         }
         break;
 
@@ -521,7 +512,7 @@ Chooser::recalculateDuration()
     playlistPtr->recalculatePlaylistDuration();
 
     //	Now get the playlist detail screen to refresh (if it is current).
-    ScreenStack* sst=Context::instance()->getScreenStack();
+    ScreenStack* sst=Context::instance()->screenStack();
     if(!sst)
     {
         return;
@@ -534,7 +525,7 @@ Chooser::recalculateDuration()
         return;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     SBTabPlaylistDetail* tabPlaylistDetail=mw->ui.tabPlaylistDetail;
     tabPlaylistDetail->refreshTabIfCurrent(key);
 
@@ -558,7 +549,7 @@ Chooser::_clicked(const QModelIndex &idx)
 void
 Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
 
@@ -579,13 +570,12 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
         .arg(QChar(96))           //	1
         .arg(playlistPtr->text()) //	2
         .arg(QChar(180));         //	3
-    Context::instance()->getController()->updateStatusBarText(updateText);
+    Context::instance()->controller()->updateStatusBarText(updateText);
 
-    qDebug() << SB_DEBUG_INFO << _openPlaylistTab;
     if(_openPlaylistTab)
     {
         _openPlaylistTab=0;
-        Context::instance()->getNavigator()->openScreen(playlistPtr->key());
+        Context::instance()->navigator()->openScreen(playlistPtr->key());
     }
     mw->ui.tabPlaylistDetail->refreshTabIfCurrent(playlistPtr->key());
 }
@@ -728,7 +718,7 @@ Chooser::_init()
 {
     _cm=NULL;
     _openPlaylistTab=0;
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     this->_populate();
 
@@ -788,18 +778,18 @@ Chooser::_init()
     connect(mw->ui.leftColumnChooser, SIGNAL(clicked(const QModelIndex &)),
             this, SLOT(_clicked(const QModelIndex &)));
 
-    PlayManager* pm=Context::instance()->getPlayManager();
+    PlayManager* pm=Context::instance()->playManager();
     connect(pm,SIGNAL(playlistChanged(int)),
             this, SLOT(playlistChanged(int)));
 
-    connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+    connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
             this, SLOT(schemaChanged()));
 }
 
 void
 Chooser::_populate()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTreeView* tv=mw->ui.leftColumnChooser;
     if(_cm==NULL)
     {
@@ -831,7 +821,7 @@ Chooser::_populate()
 void
 Chooser::_setCurrentIndex(const QModelIndex &i)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     if(mw->ui.leftColumnChooser!=NULL)
     {
         mw->ui.leftColumnChooser->setCurrentIndex(i);

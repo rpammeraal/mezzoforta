@@ -79,7 +79,7 @@ SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
     ProgressDialog::instance()->show("Loading songs","SDIDPlaylist::sendToPlayQueue",2);
 
     QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
     ProgressDialog::instance()->hide();
@@ -158,7 +158,7 @@ SBIDPlaylist::recalculatePlaylistDuration()
     }
 
     //	Store calculation
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString
@@ -212,8 +212,11 @@ SBIDPlaylist::removePlaylistItem(int position)
 }
 
 bool
-SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
+SBIDPlaylist::moveItem(SBKey from, int toPosition)
 {
+    SBIDPlaylistDetailPtr pdPtr=_findItemByKey(from);
+    SB_RETURN_IF_NULL(pdPtr,0);
+
     //	fromPosition, toPosition: 0-based
     int fromPosition=pdPtr->playlistPosition()-1;
     toPosition=fromPosition<toPosition?toPosition-1:toPosition;
@@ -236,10 +239,8 @@ SBIDPlaylist::moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toPosition)
     {
         for(int i=fromPosition;i>toPosition;i--)
         {
-            qDebug() << SB_DEBUG_INFO << i-1 << "->" << i;
             _items[i]=_items[i-1];
         }
-        qDebug() << SB_DEBUG_INFO << toPosition << "=" << pdPtr->text();
         _items[toPosition]=tmpPtr;
     }
 
@@ -289,12 +290,9 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
         ProgressDialog::instance()->show("Retrieving Playlist","SBIDPlaylist::refreshDependents",2);
     }
 
-    qDebug() << SB_DEBUG_INFO << ID() << key() << forcedFlag;
     if(forcedFlag==1 || _items.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO << _items.count();
         _loadPlaylistItems();
-        qDebug() << SB_DEBUG_INFO << _items.count();
     }
 }
 
@@ -310,7 +308,6 @@ SBIDPlaylist::retrievePlaylist(SBKey key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
-    qDebug() << SB_DEBUG_INFO << key << noDependentsFlag;
     return pmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
@@ -357,17 +354,14 @@ SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
     {
         int playlistID=qm->data(qm->index(i,0)).toInt();
         int playlistDetailID=qm->data(qm->index(i,1)).toInt();
-        qDebug() << SB_DEBUG_INFO << playlistID << playlistDetailID;
         SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(playlistID);
         if(plPtr)
         {
-            qDebug() << SB_DEBUG_INFO << plPtr->key() << plPtr->itemID() << plPtr->itemType() << plPtr->genericDescription();
             plPtr->setReloadFlag();
         }
         SBIDPlaylistDetailPtr pldPtr=SBIDPlaylistDetail::retrievePlaylistDetail(playlistDetailID);
         if(pldPtr)
         {
-            qDebug() << SB_DEBUG_INFO << plPtr->key() << plPtr->itemID() << plPtr->itemType() << plPtr->genericDescription();
             pldPtr->setDeletedFlag();
         }
     }
@@ -398,7 +392,7 @@ SBIDPlaylist::operator=(const SBIDPlaylist& t)
 SBIDPlaylistPtr
 SBIDPlaylist::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
@@ -539,20 +533,16 @@ SBIDPlaylist::setDeletedFlag()
     //	Playlist about to be removed. Go through each playlist detail and set the deletedFlag
     SBIDBase::setDeletedFlag();
 
-    qDebug() << SB_DEBUG_INFO << _items.count();
     QMapIterator<int,SBIDPlaylistDetailPtr> it(_items);
     while(it.hasNext())
     {
         it.next();
         SBIDPlaylistDetailPtr pldPtr=it.value();
-        qDebug() << SB_DEBUG_INFO << pldPtr.use_count();
         if(pldPtr)
         {
-            qDebug() << SB_DEBUG_INFO << pldPtr->key();
             pldPtr->setDeletedFlag();
         }
     }
-    qDebug() << SB_DEBUG_INFO << this->key();
     removePlaylistItemFromAllPlaylistsByKey(this->key());
 }
 
@@ -652,6 +642,23 @@ SBIDPlaylist::_copy(const SBIDPlaylist &c)
     _items         =c._items;
 }
 
+SBIDPlaylistDetailPtr
+SBIDPlaylist::_findItemByKey(SBKey key)
+{
+    QMapIterator<int,SBIDPlaylistDetailPtr> it(items());
+    while(it.hasNext())
+    {
+        it.next();
+
+        SBIDPlaylistDetailPtr pldPtr=it.value();
+        if(pldPtr->childKey()==key)
+        {
+            return pldPtr;
+        }
+    }
+    return SBIDPlaylistDetailPtr();
+}
+
 void
 SBIDPlaylist::_init()
 {
@@ -677,7 +684,7 @@ SBIDPlaylist::_loadPlaylistItemsFromDB() const
 void
 SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString

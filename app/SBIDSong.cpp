@@ -155,7 +155,7 @@ SBIDSong::charts() const
 void
 SBIDSong::deleteIfOrphanized()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     int usageCount=0;
 
@@ -298,7 +298,7 @@ SBIDSong::performerIDList() const
 void
 SBIDSong::updateSoundexFields()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString
@@ -442,11 +442,11 @@ SBIDSong::retrieveAllSongs()
         "SELECT "
             "s.title || ' ' || COALESCE(a.name,'') || ' ' || COALESCE(r.title,'')  AS SB_KEYWORDS, "
             "CAST(%1 AS VARCHAR)||':'||CAST(s.song_id AS VARCHAR) AS SB_ITEM_KEY1, "
-            "s.title AS \"song title\", "
+            "s.title AS \"song\", "
             "CAST(%2 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_ITEM_KEY2, "
             "COALESCE(a.name,'n/a') AS \"original performer\", "
             "CAST(%3 AS VARCHAR)||':'||CAST(r.record_id AS VARCHAR) AS SB_ITEM_KEY3, "
-            "COALESCE(r.title,'n/a') AS \"album title\" "
+            "COALESCE(r.title,'n/a') AS \"album\" "
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
@@ -510,7 +510,7 @@ SBIDSong::operator=(const SBIDSong& t)
 SBIDSongPtr
 SBIDSong::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
@@ -907,7 +907,7 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
 {
     QVector<SBIDSong::PlaylistOnlinePerformance> playlistOnlinePerformanceList;
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q=QString
     (

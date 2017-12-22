@@ -32,7 +32,7 @@ void
 MainWindow::keyPressEvent(QKeyEvent * event)
 {
     qDebug() << SB_DEBUG_INFO;
-    Context::instance()->getNavigator()->keyPressEvent(event);
+    Context::instance()->navigator()->keyPressEvent(event);
     QMainWindow::keyPressEvent(event);
 }
 

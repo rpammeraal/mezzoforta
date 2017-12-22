@@ -36,24 +36,24 @@ public:
         return &_instance;
     }
 
-    inline BackgroundThread* getBackgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
+    inline BackgroundThread* backgroundThread() const { SB_DEBUG_IF_NULL(_bgt); return _bgt; }
     inline CacheManager* cacheManager() { return _cm; }
     inline CompleterFactory* completerFactory() { return &_cf; }
-    inline Chooser* getChooser() { return &_lcc; }
-    inline Controller* getController() const { SB_DEBUG_IF_NULL(_c); return _c; }
-    inline DataAccessLayer* getDataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
-    inline DBManager* getDBManager() { return &_dbm; }
+    inline Chooser* chooser() { return &_lcc; }
+    inline Controller* controller() const { SB_DEBUG_IF_NULL(_c); return _c; }
+    inline DataAccessLayer* dataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
+    inline DBManager* dbManager() { return &_dbm; }
     inline KeyboardEventCatcher* keyboardEventCatcher() { return &_kec; }
-    inline MainWindow* getMainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
-    inline Navigator* getNavigator() { return &_nav; }
-    inline PlayerController* getPlayerController() { return &_pc; }
+    inline MainWindow* mainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
+    inline Navigator* navigator() { return &_nav; }
+    inline PlayerController* playerController() { return &_pc; }
     inline SearchItemModel* searchItemModel() { return _sim; }
-    inline PlayManager* getPlayManager() { return &_pm; }
-    inline Properties* getProperties() { return &_p; }
-    inline ScreenStack* getScreenStack() { return &_st; }
-    inline SBModelQueuedSongs* getSBModelQueuedSongs() { return &_mqs; }
-    inline SBTab* getTab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
-    inline SBTabQueuedSongs* getTabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
+    inline PlayManager* playManager() { return &_pm; }
+    inline Properties* properties() { return &_p; }
+    inline ScreenStack* screenStack() { return &_st; }
+    inline SBModelQueuedSongs* sbModelQueuedSongs() { return &_mqs; }
+    inline SBTab* tab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
+    inline SBTabQueuedSongs* tabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
 
     void setBackgroundThread(BackgroundThread* bgt);
     void setCacheManager(CacheManager* cm);

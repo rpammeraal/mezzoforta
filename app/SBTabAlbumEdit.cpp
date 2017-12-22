@@ -21,7 +21,6 @@
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
 #include "SBMessageBox.h"
-#include "SBSqlQueryModel.h"
 
 
 class AlbumEditModel : public QStandardItemModel
@@ -445,7 +444,7 @@ bool
 SBTabAlbumEdit::hasEdits() const
 {
     const SBKey key=this->currentScreenItem().key();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(key);
     SB_RETURN_IF_NULL(albumPtr,0);
@@ -465,7 +464,7 @@ SBTabAlbumEdit::hasEdits() const
 void
 SBTabAlbumEdit::showContextMenu(const QPoint &p)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     QPoint gp = mw->ui.albumEditSongList->mapToGlobal(p);
 
@@ -501,7 +500,7 @@ SBTabAlbumEdit::showContextMenu(const QPoint &p)
 void
 SBTabAlbumEdit::addSong()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
     AlbumEditModel* si=dynamic_cast<AlbumEditModel *>(tv->model());
     QModelIndex idx=si->addRow();
@@ -512,7 +511,7 @@ SBTabAlbumEdit::addSong()
 void
 SBTabAlbumEdit::clearAll()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
     QItemSelectionModel* ism=tv->selectionModel();
     AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
@@ -683,11 +682,11 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 void
 SBTabAlbumEdit::save() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().key());
     SB_RETURN_VOID_IF_NULL(orgAlbumPtr);
@@ -1031,15 +1030,15 @@ SBTabAlbumEdit::save() const
             .arg(QChar(96))      //	1
             .arg(newAlbumPtr->albumTitle())	//	2
             .arg(QChar(180));    //	3
-        Context::instance()->getController()->updateStatusBarText(updateText);
+        Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
         currentScreenItem.setEditFlag(0);
-        Context::instance()->getScreenStack()->updateSBIDInStack(currentScreenItem);
+        Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
         if(mergedFlag)
         {
-            ScreenStack* st=Context::instance()->getScreenStack();
+            ScreenStack* st=Context::instance()->screenStack();
 
             newAlbumPtr->refreshDependents(0,1);
             ScreenItem from(orgAlbumPtr->key());
@@ -1060,7 +1059,7 @@ SBTabAlbumEdit::save() const
 
     //	G.	Close screen
     qDebug() << SB_DEBUG_INFO << successFlag;
-    Context::instance()->getNavigator()->closeCurrentTab(1);
+    Context::instance()->navigator()->closeCurrentTab(1);
 }
 
 
@@ -1075,7 +1074,7 @@ SBTabAlbumEdit::setEditFlag()
 int
 SBTabAlbumEdit::_count() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
     AlbumEditModel* si=dynamic_cast<AlbumEditModel *>(tv->model());
     return si->rowCount();
@@ -1084,7 +1083,7 @@ SBTabAlbumEdit::_count() const
 void
 SBTabAlbumEdit::_getSelectionStatus(int& numRowsSelected, int& numRowsRemoved, int& numRowsMarkedAsMerged)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
     QItemSelectionModel* ism=tv->selectionModel();
     AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
@@ -1148,13 +1147,13 @@ SBTabAlbumEdit::_init()
         connect(_mergeSongAction, SIGNAL(triggered(bool)),
                 this, SLOT(mergeSong()));
 
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         QTableView* tv=mw->ui.albumEditSongList;
 
         connect(mw->ui.pbAlbumEditSave, SIGNAL(clicked(bool)),
                 this, SLOT(save()));
         connect(mw->ui.pbAlbumEditCancel, SIGNAL(clicked(bool)),
-                Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+                Context::instance()->navigator(), SLOT(closeCurrentTab()));
 
         //	Completers
         CompleterFactory* cf=Context::instance()->completerFactory();
@@ -1172,7 +1171,7 @@ ScreenItem
 SBTabAlbumEdit::_populate(const ScreenItem &si)
 {
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(si.key());
     SB_RETURN_IF_NULL(aPtr,ScreenItem());
 
@@ -1246,7 +1245,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
 void
 SBTabAlbumEdit::_setFocusOnRow(QModelIndex idx) const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
 
     //	Set index to a column that is visible.

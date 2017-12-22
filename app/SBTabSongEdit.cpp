@@ -8,7 +8,6 @@
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDPerformer.h"
-#include "SBSqlQueryModel.h"
 
 SBTabSongEdit::SBTabSongEdit(QWidget* parent) : SBTab(parent,1)
 {
@@ -24,7 +23,7 @@ bool
 SBTabSongEdit::hasEdits() const
 {
     const SBKey key=this->currentScreenItem().key();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
     SB_RETURN_IF_NULL(songPtr,0);
@@ -67,9 +66,9 @@ SBTabSongEdit::save() const
     //	H.	[merge song with existing song by renaming original performer] Get Lucky - Daft Poonk => Get Lucky - Daft Poonk & Squirrel W.
     //	I.	[simple edits]: 'Elusive Dreams ' -> 'Elusive Dreams': should just save the new title.
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().key());
     SB_RETURN_VOID_IF_NULL(orgSongPtr);
@@ -330,13 +329,13 @@ qDebug() << SB_DEBUG_INFO;
 
         //	Update screenstack
         currentScreenItem.setEditFlag(0);
-        Context::instance()->getController()->updateStatusBarText(updateText);
+        Context::instance()->controller()->updateStatusBarText(updateText);
 
         if(mergeFlag)
         {
             //	Refresh models -- since song got removed.
 
-            ScreenStack* st=Context::instance()->getScreenStack();
+            ScreenStack* st=Context::instance()->screenStack();
 
             newSongPtr->refreshDependents(0,1);
             ScreenItem from(orgSongPtr->key());
@@ -356,7 +355,7 @@ qDebug() << SB_DEBUG_INFO;
     }
 
     //	Close screen
-    Context::instance()->getNavigator()->closeCurrentTab(1);
+    Context::instance()->navigator()->closeCurrentTab(1);
 }
 
 void
@@ -366,7 +365,7 @@ SBTabSongEdit::_init()
     {
         _initDoneFlag=1;
 
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
 
         //	Completers
         CompleterFactory* cf=Context::instance()->completerFactory();
@@ -375,7 +374,7 @@ SBTabSongEdit::_init()
         connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
                 this, SLOT(save()));
         connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),
-                Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+                Context::instance()->navigator(), SLOT(closeCurrentTab()));
     }
 }
 
@@ -383,7 +382,7 @@ ScreenItem
 SBTabSongEdit::_populate(const ScreenItem& si)
 {
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     SBIDSongPtr songPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(songPtr,ScreenItem());
 

@@ -39,7 +39,7 @@ OSXSleepCallback(void* refCon,io_service_t service,natural_t messageType,void * 
     Q_UNUSED(refCon);
     Q_UNUSED(service);
 
-    PlayManager* pm=Context::instance()->getPlayManager();
+    PlayManager* pm=Context::instance()->playManager();
 
     bool songPlayingFlag=(pm?pm->songPlayingFlag():0);
 

@@ -4,7 +4,6 @@
 
 #include "CacheManager.h"
 #include "Common.h"
-#include "SBSqlQueryModel.h"
 
 SBStandardItemModel::SBStandardItemModel(QSqlQueryModel *sqm) : QStandardItemModel()
 {

@@ -21,7 +21,7 @@ PlayManager::PlayManager(QObject *parent) : QObject(parent)
 bool
 PlayManager::songPlayingFlag() const
 {
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
     PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
     return currentPlayState==PlayerController::sb_player_state_play?1:0;
 }
@@ -30,7 +30,6 @@ PlayManager::songPlayingFlag() const
 void
 PlayManager::playerPrevious()
 {
-    qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
     playerNext(1);
 }
 
@@ -44,14 +43,14 @@ PlayManager::playerPrevious()
 bool
 PlayManager::playerPlay()
 {
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
     PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
 
     switch(currentPlayState)
     {
     case PlayerController::sb_player_state_stopped:
         {
-            SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+            SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
             int numSongs=mqs?mqs->numSongs():0;
             if(numSongs==0)
             {
@@ -75,9 +74,8 @@ PlayManager::playerPlay()
 bool
 PlayManager::playerNext(bool previousFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
-    PlayerController* pc=Context::instance()->getPlayerController();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    PlayerController* pc=Context::instance()->playerController();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     int numSongs=mqs?mqs->numSongs():0;
     int numTries=numSongs;
     bool isPlayingFlag=0;
@@ -105,7 +103,6 @@ PlayManager::playerNext(bool previousFlag)
     }
     lastSongPlayedFlag=(numSongs-currentPlayID()-1)==0;
 
-    qDebug() << SB_DEBUG_INFO;
     pc->playerStop();
     while((numTries>0 && isPlayingFlag==0 && exitLoopFlag==0) || (lastSongPlayedFlag==1 && radioModeFlag()))
     {
@@ -159,8 +156,7 @@ PlayManager::playerNext(bool previousFlag)
 void
 PlayManager::playerStop()
 {
-    qDebug() << SB_DEBUG_INFO;
-    Context::instance()->getPlayerController()->playerStop();
+    Context::instance()->playerController()->playerStop();
 }
 
 void
@@ -172,7 +168,7 @@ PlayManager::changeSchema()
 void
 PlayManager::clearPlaylist()
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->clear();
     _resetCurrentPlayID();
 
@@ -183,12 +179,11 @@ bool
 PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
 {
     bool isPlayingFlag=0;
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
 
     if(enqueueFlag==0)
     {
         this->clearPlaylist();
-    qDebug() << SB_DEBUG_INFO;
         pc->playerStop();
     }
 
@@ -208,7 +203,6 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
 
     if(enqueueFlag==0)
     {
-qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
         isPlayingFlag=this->playerNext();
     }
     return isPlayingFlag;
@@ -225,9 +219,9 @@ bool
 PlayManager::playItemNow(unsigned int playlistIndex)
 {
     //	Check if music library directory is set up prior to playing.
-    Context::instance()->getProperties()->musicLibraryDirectory();
+    Context::instance()->properties()->musicLibraryDirectory();
 
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
     bool isPlayingFlag=0;
     _setCurrentPlayID(playlistIndex);
 
@@ -235,7 +229,6 @@ PlayManager::playItemNow(unsigned int playlistIndex)
 
     if(!performancePtr)
     {
-        qDebug() << SB_DEBUG_INFO << "returning 0";
         return 0;
     }
     else
@@ -245,7 +238,6 @@ PlayManager::playItemNow(unsigned int playlistIndex)
         isPlayingFlag=pc->playSong(performancePtr);
         if(isPlayingFlag==0)
         {
-            qDebug() << SB_DEBUG_INFO << "returning 0";
             return 0;
         }
         else if(_radioModeFlag)
@@ -254,14 +246,13 @@ PlayManager::playItemNow(unsigned int playlistIndex)
 
         }
     }
-    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
     return isPlayingFlag;
 }
 
 void
 PlayManager::shufflePlaylist()
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     const int newPlayID=mqs->shuffle(1);	//	always leave played songs untouched.
     _setCurrentPlayID(newPlayID);
     emit setRowVisible(newPlayID+1);
@@ -273,10 +264,9 @@ PlayManager::startRadio()
     _resetCurrentPlayID();
     _radioModeFlag=1;
 
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
 
     //	stop player
-    qDebug() << SB_DEBUG_INFO;
     pc->playerStop();
 
     //	load queue
@@ -284,7 +274,7 @@ PlayManager::startRadio()
     emit playlistChanged(-1);
 
     //	show Songs in Queue tab
-    Context::instance()->getNavigator()->showCurrentPlaylist();
+    Context::instance()->navigator()->showCurrentPlaylist();
 }
 
 ///	Protected methods
@@ -301,9 +291,9 @@ PlayManager::_init()
     _currentPlayID=-1;
     _radioModeFlag=0;
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
     connect(pc, SIGNAL(playNextSong()),
             this, SLOT(playerNext()));
 
@@ -332,15 +322,15 @@ PlayManager::_init()
             this, SLOT(playerNext()));
 
     //	Schema changed
-    connect(Context::instance()->getController(), SIGNAL(schemaChanged()),
+    connect(Context::instance()->controller(), SIGNAL(schemaChanged()),
             this, SLOT(changeSchema()));
 }
 
 void
 PlayManager::_loadRadio()
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
-    SBTabQueuedSongs* tqs=Context::instance()->getTabQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
+    SBTabQueuedSongs* tqs=Context::instance()->tabQueuedSongs();
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
     const int numberSongsToDisplay=100;
@@ -389,7 +379,6 @@ PlayManager::_loadRadio()
     while(qm->record(nextPlayedSongID++).value(1).toDate()==QDate(1900,1,1))
     {
     }
-    qDebug() << SB_DEBUG_INFO << maxNumberToRandomize << nextPlayedSongID;
 
     while(index<numPerformances)
     {
@@ -405,7 +394,6 @@ PlayManager::_loadRadio()
             for(int j=maxNumberAttempts;j && !found;j--)
             {
                 idx=Common::randomOldestFirst(maxNumberToRandomize);
-                qDebug() << SB_DEBUG_INFO << idx;
                 if(indexCovered.contains(idx)==0)
                 {
                     found=1;
@@ -449,7 +437,6 @@ PlayManager::_loadRadio()
                 mqs->populate(playList);
                 tqs->setViewLayout();
 
-qDebug() << SB_DEBUG_INFO << "Calling playerNext()";
                 this->playerNext();
                 emit playlistChanged(-1);
 
@@ -486,14 +473,14 @@ PlayManager::_resetCurrentPlayID()
 SBIDOnlinePerformancePtr
 PlayManager::_performanceAt(int index) const
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     return mqs?mqs->performanceAt(index):SBIDOnlinePerformancePtr();
 }
 
 void
 PlayManager::_setCurrentPlayID(int currentPlayID)
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->setCurrentPlayID(currentPlayID);
     _currentPlayID=currentPlayID;
     return;

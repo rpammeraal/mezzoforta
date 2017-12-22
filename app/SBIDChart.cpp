@@ -98,7 +98,7 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
     ProgressDialog::instance()->show("Loading songs","SBIDChart::sendToPlayQueue",4);
 
     QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
     ProgressDialog::instance()->hide();
@@ -207,7 +207,7 @@ SBIDChart::operator=(const SBIDChart& t)
 SBIDChartPtr
 SBIDChart::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

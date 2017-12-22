@@ -315,7 +315,7 @@ ScreenStack::_init()
 
     if(_initDoneFlag==0)
     {
-        connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+        connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
                 this, SLOT(schemaChanged()));
         _initDoneFlag=1;
     }

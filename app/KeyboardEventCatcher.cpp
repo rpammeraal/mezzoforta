@@ -64,9 +64,9 @@ KeyboardEventCatcher::_init()
 {
     //	Connect signals to PlayManager
     connect(this, SIGNAL(songNext()),
-            Context::instance()->getPlayManager(), SLOT(playerNext()));
+            Context::instance()->playManager(), SLOT(playerNext()));
     connect(this, SIGNAL(songPlayPauseToggle()),
-            Context::instance()->getPlayManager(), SLOT(playerPlay()));
+            Context::instance()->playManager(), SLOT(playerPlay()));
     connect(this, SIGNAL(songPrevious()),
-            Context::instance()->getPlayManager(), SLOT(playerPrevious()));
+            Context::instance()->playManager(), SLOT(playerPrevious()));
 }

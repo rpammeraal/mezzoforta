@@ -69,7 +69,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     //	Collect onlinePerformancePtrs and their album position
     QMapIterator<int,SBIDAlbumPerformancePtr> pIT(albumPerformances);
     QMap<int, SBIDOnlinePerformancePtr> position2OnlinePerformancePtr;
-    int i=0;
+    qDebug() << SB_DEBUG_INFO << albumPerformances.count();
     while(pIT.hasNext())
     {
         pIT.next();
@@ -77,21 +77,25 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
         if(opPtr && opPtr->path().length()>0)
         {
-            position2OnlinePerformancePtr[i++]=opPtr;
+            position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
+            qDebug() << SB_DEBUG_INFO << apPtr->albumPosition() << opPtr->key() << opPtr->genericDescription();
         }
         if(updateProgressDialogFlag)
         {
             ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
+    qDebug() << SB_DEBUG_INFO << albumPerformances.count() << position2OnlinePerformancePtr.count();
 
     //	Now put everything in order. Note that some albumPositions may be missing.
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMapIterator<int,SBIDOnlinePerformancePtr> po2olIT(position2OnlinePerformancePtr);
     int index=0;
+    qDebug() << SB_DEBUG_INFO << position2OnlinePerformancePtr.count();
     while(po2olIT.hasNext())
     {
         po2olIT.next();
+        qDebug() << SB_DEBUG_INFO << index << po2olIT.value()->genericDescription();
         list[index++]=po2olIT.value();
         if(updateProgressDialogFlag)
         {
@@ -103,6 +107,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         ProgressDialog::instance()->finishStep("SBIDAlbum::onlinePerformances");
     }
 
+    qDebug() << SB_DEBUG_INFO << "done";
     return list;
 }
 
@@ -112,7 +117,7 @@ SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
     ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",1);
 
     QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
     ProgressDialog::instance()->hide();
@@ -238,7 +243,6 @@ SBIDAlbum::albumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_loadAlbumPerformances();
     }
     return _albumPerformances;
@@ -304,7 +308,6 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
-        qDebug() << SB_DEBUG_INFO << key() << ID() << forcedFlag;
         _loadAlbumPerformances();
     }
 }
@@ -327,7 +330,7 @@ SBIDAlbumPtr
 SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
 {
     //	CWIP: need to store mapping in memory for faster retrieval. Maybe store path
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     SBIDAlbumPtr aPtr;
 
@@ -376,7 +379,7 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
 SBIDAlbumPtr
 SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QString &performerName, bool noDependentsFlag)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     SBIDAlbumPtr aPtr;
 
@@ -417,7 +420,7 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
 SBIDAlbumPtr
 SBIDAlbum::retrieveUnknownAlbum()
 {
-    Properties* properties=Context::instance()->getProperties();
+    Properties* properties=Context::instance()->properties();
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();
@@ -483,7 +486,7 @@ SBIDAlbum::operator=(const SBIDAlbum& t)
 SBIDAlbumPtr
 SBIDAlbum::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
@@ -675,8 +678,6 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         nextAlbumPosition=apPtr->albumPosition()>nextAlbumPosition?apPtr->albumPosition():nextAlbumPosition;
     }
     nextAlbumPosition++;
-
-    qDebug() << SB_DEBUG_INFO << aPtrFrom->albumID() << this->albumID() << nextAlbumPosition;
 
     //	Go thu each albumPerformance in from and merge
     QList<int> oldAlbumPositions;

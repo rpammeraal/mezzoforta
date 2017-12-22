@@ -2,6 +2,7 @@
 #define SBIDONLINEPERFORMANCE_H
 
 #include "SBIDAlbumPerformance.h"
+#include "SBSqlQueryModel.h"
 
 class SBIDOnlinePerformance : public SBIDBase
 {

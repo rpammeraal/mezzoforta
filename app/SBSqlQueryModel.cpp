@@ -22,7 +22,7 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
 
     QString q=query;
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO

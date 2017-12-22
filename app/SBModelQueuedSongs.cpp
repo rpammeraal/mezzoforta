@@ -12,7 +12,6 @@
 #include "ProgressDialog.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
-#include "SBSqlQueryModel.h"
 
 SBModelQueuedSongs::SBModelQueuedSongs(QObject* parent):QStandardItemModel(parent)
 {

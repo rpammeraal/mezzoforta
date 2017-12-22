@@ -60,7 +60,7 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
 
     do
     {
-        DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+        DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
         QString q=QString
         (
@@ -113,9 +113,9 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
 QString
 Properties::musicLibraryDirectorySchema()
 {
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     return QString("%1/%2")
-                .arg(Context::instance()->getProperties()->musicLibraryDirectory())
+                .arg(Context::instance()->properties()->musicLibraryDirectory())
                 .arg(dal->schema());
 }
 
@@ -133,7 +133,7 @@ Properties::setConfigValue(sb_configurable keyword, const QString& value)
 void
 Properties::setMusicLibraryDirectory(const QString musicLibraryDirectory)
 {
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
     if(_getHostID()>=0)
@@ -254,7 +254,7 @@ Properties::doInit()
         isConfigured[etkIT.value()]=0;
     }
 
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     //	Load configuration from table
@@ -291,7 +291,7 @@ int
 Properties::_getHostID() const
 {
     int hostID=-1;
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q=QString
     (
@@ -318,7 +318,7 @@ Properties::_getHostID() const
 void
 Properties::_setConfigValue(sb_configurable keyword, const QString& value)
 {
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

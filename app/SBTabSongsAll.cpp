@@ -20,7 +20,7 @@ SBTabSongsAll::preload()
 {
     _init();
     //	Allows some data models to be refreshed
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     QSortFilterProxyModel* slP;
 
     //	Songlist
@@ -67,13 +67,13 @@ SBTabSongsAll::preload()
 void
 SBTabSongsAll::playNow(bool enqueueFlag)
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.allSongsList;
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBSqlQueryModel *sm=dynamic_cast<SBSqlQueryModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBKey key=sm->determineKey(_lastClickedIndex);
-    PlayManager* pmgr=Context::instance()->getPlayManager();
+    PlayManager* pmgr=Context::instance()->playManager();
     pmgr?pmgr->playItemNow(key,enqueueFlag):0;
     SBTab::playNow(enqueueFlag);
 }
@@ -110,7 +110,7 @@ SBTabSongsAll::showContextMenuLabel(const QPoint &p)
 void
 SBTabSongsAll::showContextMenuView(const QPoint &p)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.allSongsList;
 
     QModelIndex idx=tv->indexAt(p);
@@ -141,7 +141,7 @@ SBTabSongsAll::_init()
 {
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
         _initDoneFlag=1;
 
 
@@ -172,7 +172,7 @@ SBTabSongsAll::_init()
                 this, SLOT(showContextMenuView(QPoint)));
 
         //	Schema changes
-        connect(Context::instance()->getDataAccessLayer(),SIGNAL(schemaChanged()),
+        connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
                 this, SLOT(schemaChanged()));
     }
 }

@@ -42,9 +42,18 @@ To charts only.
 1.	Create tmp chart, rename to 000TEST
 	Renamed playlist should reorder itself.
 
+	Add tmp playlist to another playlist.
+	Remove tmp playlist, other playlist should not have tmp playlist
+
+	Add song to playlist, song should include newly added playlist.
+	Remove playlist entry for this song, should be reflected in song
+
+	Add song to playlist, song should include newly added playlist.
+	Remove playlist entirely, should be reflected in song.
+
 2.	Assign items from all fields in:
-	All Songs
-	Songs in Queue
+	All Songs:
+	Songs in Queue, also after reorder
 	Chart
 	-	Item In Chart (song, performer)
 	Playlist
@@ -56,3 +65,18 @@ To charts only.
 	Album
 	-	song tab
 	
+3.	Reorder content in playlist
+
+OTHER EDITS:
+	-	Songs in queue: remove song.
+
+PLAY MUSIC:
+	-	All songs: song, performer, album
+	-	Chart: song has to be from performer on chart, not original performer
+	-	Playlist: playlist, online song, album
+	-	Songs in queue:
+	-	Songs: album tab, playlist tab
+	-	Performer:
+		-	songs tab, charts tab: need to play song from the `current performer' not original performer, if available.
+	-	Album:
+		-	song: make sure it is actually playing the song from that album (e.g. pick song from non-original album).

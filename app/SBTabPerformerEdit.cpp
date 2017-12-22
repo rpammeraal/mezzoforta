@@ -9,7 +9,6 @@
 #include "CompleterFactory.h"
 #include "MainWindow.h"
 #include "SBIDPerformer.h"
-#include "SBSqlQueryModel.h"
 
 ///	Public methods
 SBTabPerformerEdit::SBTabPerformerEdit(QWidget* parent) : SBTab(parent,1)
@@ -46,7 +45,7 @@ bool
 SBTabPerformerEdit::hasEdits() const
 {
     const SBKey key=this->currentScreenItem().key();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
     SB_RETURN_IF_NULL(pPtr,0);
@@ -73,7 +72,7 @@ SBTabPerformerEdit::addNewRelatedPerformer()
     }
     _setRelatedPerformerBeingAddedFlag(1);
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
     CompleterFactory* cf=Context::instance()->completerFactory();
 
@@ -111,7 +110,7 @@ SBTabPerformerEdit::deleteRelatedPerformer()
         return;
     }
     _setRelatedPerformerBeingDeletedFlag(1);
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
 
     //	Collect ID's of performers to be removed.
@@ -153,7 +152,7 @@ SBTabPerformerEdit::enableRelatedPerformerDeleteButton()
 {
     if(_relatedPerformerBeingAddedFlag==0)
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         mw->ui.pbPerformerEditRemoveRelatedPerformer->setEnabled(1);
         _removeRelatedPerformerButtonMaybeEnabledFlag=0;
     }
@@ -167,11 +166,11 @@ SBTabPerformerEdit::save() const
     //	2.	Simple Minds -> U2 (U2 should appear as complete new performer).
     //	3.	Rename U2 -> Dire Straitz
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* peMgr=cm->performerMgr();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     ScreenItem currentScreenItem=this->currentScreenItem();
     SBIDPerformerPtr orgPerformerPtr=SBIDPerformer::retrievePerformer(currentScreenItem.key());
     SBIDPerformerPtr selectedPerformerPtr;
@@ -311,15 +310,15 @@ SBTabPerformerEdit::save() const
             .arg(QChar(96))      //	1
             .arg(selectedPerformerPtr->performerName())	//	2
             .arg(QChar(180));    //	3
-        Context::instance()->getController()->updateStatusBarText(updateText);
+        Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
         currentScreenItem.setEditFlag(0);
-        Context::instance()->getScreenStack()->updateSBIDInStack(currentScreenItem);
+        Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
         if(mergeFlag)
         {
-            ScreenStack* st=Context::instance()->getScreenStack();
+            ScreenStack* st=Context::instance()->screenStack();
 
             selectedPerformerPtr->refreshDependents(0,1);
             ScreenItem from(orgPerformerPtr->key());
@@ -338,7 +337,7 @@ SBTabPerformerEdit::save() const
     }
 
     //	Close screen
-    Context::instance()->getNavigator()->closeCurrentTab(1);
+    Context::instance()->navigator()->closeCurrentTab(1);
 }
 
 ///	Private slots
@@ -351,7 +350,7 @@ SBTabPerformerEdit::closeRelatedPerformerComboBox()
     }
     _setRelatedPerformerBeingAddedFlag(0);
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
 
     mw->ui.performerEditName->setFocus();
@@ -402,7 +401,7 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
 void
 SBTabPerformerEdit::_addItemToRelatedPerformerList(const SBIDPerformerPtr& pptr) const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
     int currentRowCount=rpt->rowCount();
 
@@ -439,14 +438,14 @@ SBTabPerformerEdit::_init()
 
     if(_initDoneFlag==0)
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         QTableWidget* rpt=mw->ui.performerEditRelatedPerformersList;
 
         //	Save/Cancel button
         connect(mw->ui.pbPerformerEditSave, SIGNAL(clicked(bool)),
                 this, SLOT(save()));
         connect(mw->ui.pbPerformerEditCancel, SIGNAL(clicked(bool)),
-                Context::instance()->getNavigator(), SLOT(closeCurrentTab()));
+                Context::instance()->navigator(), SLOT(closeCurrentTab()));
 
 
         //	Related performers
@@ -471,7 +470,7 @@ ScreenItem
 SBTabPerformerEdit::_populate(const ScreenItem& si)
 {
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     SBIDPerformerPtr performerPtr;
 
     //	Get detail
@@ -534,7 +533,7 @@ void
 SBTabPerformerEdit::_refreshCompleters()
 {
     //	Completers
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     CompleterFactory* cf=Context::instance()->completerFactory();
     mw->ui.performerEditName->setCompleter(cf->getCompleterPerformer());
 }
@@ -542,7 +541,7 @@ SBTabPerformerEdit::_refreshCompleters()
 void
 SBTabPerformerEdit::_setRelatedPerformerBeingAddedFlag(bool flag)
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     if(flag)
     {

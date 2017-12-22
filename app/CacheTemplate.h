@@ -149,7 +149,6 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 template <class T, class parentT> std::shared_ptr<T>
 CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
 {
-    qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
 
     if(key.itemType()!=this->itemType() || !key.validFlag())

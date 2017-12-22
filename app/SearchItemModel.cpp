@@ -100,7 +100,7 @@ SearchItemModel::populate()
         .arg(SBKey::Performer)
     ;
 
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;
@@ -138,7 +138,6 @@ SearchItemModel::populate()
     endResetModel();
     emit dataChanged(s,e);
     this->sort(0);
-    qDebug() << SB_DEBUG_INFO;
 }
 
 void

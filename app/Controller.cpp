@@ -58,7 +58,7 @@ Controller::initSuccessFull() const
 void
 Controller::preloadAllSongs() const
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     SBTabSongsAll* tsa=mw->ui.tabAllSongs;
     tsa->preload();
 }
@@ -76,7 +76,7 @@ Controller::refreshModels()
 //	connect(Context::instance()->managerHelper(), SIGNAL(updatedSBIDPtr(SBIDPtr)),
 //		sim, SLOT(update(SBIDPtr)));
 
-    Navigator* n=Context::instance()->getNavigator();
+    Navigator* n=Context::instance()->navigator();
     n->resetAllFiltersAndSelections();
 
     //	Clear caches
@@ -96,7 +96,7 @@ void
 Controller::openDatabase()
 {
     //	If song is playing, stop player and proceed.
-    PlayerController* pc=Context::instance()->getPlayerController();
+    PlayerController* pc=Context::instance()->playerController();
     PlayerController::sb_player_state state=pc->playState();
 
     if(state==PlayerController::sb_player_state_play || state==PlayerController::sb_player_state_pause)
@@ -115,7 +115,7 @@ Controller::openDatabase()
         }
         else
         {
-            PlayManager* pm=Context::instance()->getPlayManager();
+            PlayManager* pm=Context::instance()->playManager();
             pm->playerStop();
             pm->clearPlaylist();
         }
@@ -126,7 +126,7 @@ Controller::openDatabase()
 void
 Controller::setMusicLibraryDirectory()
 {
-    Context::instance()->getProperties()->userSetMusicLibraryDirectory();
+    Context::instance()->properties()->userSetMusicLibraryDirectory();
 }
 
 void
@@ -139,7 +139,7 @@ Controller::rescanMusicLibrary()
 void
 Controller::changeSchema(const QString& newSchema)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
 
     if(dal->schema()!=newSchema)
     {
@@ -156,7 +156,7 @@ Controller::changeSchema(const QString& newSchema)
 void
 Controller::updateStatusBarText(const QString &s)
 {
-    Context::instance()->getMainWindow()->ui.statusBar->setText(s);
+    Context::instance()->mainWindow()->ui.statusBar->setText(s);
     statusBarResetTimer.start(10000);
     statusBarResetTimer.setSingleShot(1);
 }
@@ -186,7 +186,7 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     //	Instantiate DatabaseSelector, check if database could be opened.
     qDebug() << SB_DEBUG_INFO << "Opening database";
-    DBManager* dbm=Context::instance()->getDBManager();
+    DBManager* dbm=Context::instance()->dbManager();
     if(appStartUpFlag)
     {
         bool openedFlag=dbm->openDefaultDatabase();
@@ -225,7 +225,7 @@ Controller::openMainWindow(bool appStartUpFlag)
         _app->processEvents();
     }
 
-    MainWindow* oldMW=Context::instance()->getMainWindow();
+    MainWindow* oldMW=Context::instance()->mainWindow();
     if(oldMW)
     {
         Context::instance()->setMainWindow(NULL);
@@ -252,7 +252,7 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     configureMenus();
 
-    mw->setWindowTitle(mw->windowTitle() + " - " + dbm->databaseName() + " ("+Context::instance()->getDataAccessLayer()->getDriverName()+")");
+    mw->setWindowTitle(mw->windowTitle() + " - " + dbm->databaseName() + " ("+Context::instance()->dataAccessLayer()->getDriverName()+")");
 
     SBIDSong::updateSoundexFields();
     SBIDPerformer::updateSoundexFields();
@@ -265,10 +265,10 @@ Controller::openMainWindow(bool appStartUpFlag)
     }
 
     mw->show();
-    Context::instance()->getNavigator()->openOpener();
+    Context::instance()->navigator()->openOpener();
 
     //	Kick off import
-    Properties* properties=Context::instance()->getProperties();
+    Properties* properties=Context::instance()->properties();
     if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
     {
         MusicLibrary ml;
@@ -283,7 +283,7 @@ void
 Controller::setupUI()
 {
     //	Frequently used pointers
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
 
 
     ///	Statusbar
@@ -292,7 +292,7 @@ Controller::setupUI()
     ///	BUTTONS
     this->_disableScreenNavigationButtons();
 
-    Navigator* ssh=Context::instance()->getNavigator();
+    Navigator* ssh=Context::instance()->navigator();
     connect(mw->ui.buttonBackward, SIGNAL(clicked()),
             ssh, SLOT(tabBackward()));
     connect(mw->ui.buttonForward, SIGNAL(clicked()),
@@ -305,11 +305,11 @@ Controller::setupUI()
     tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tv->expandAll();
     connect(tv, SIGNAL(clicked(QModelIndex)),
-            Context::instance()->getNavigator(), SLOT(openChooserItem(QModelIndex)));
+            Context::instance()->navigator(), SLOT(openChooserItem(QModelIndex)));
     tv->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
-            Context::instance()->getChooser(), SLOT(showContextMenu(QPoint)));
+            Context::instance()->chooser(), SLOT(showContextMenu(QPoint)));
 
 
     ///	MISC
@@ -322,7 +322,7 @@ Controller::setupUI()
     this->preloadAllSongs();
 
     //	Set up schema dropdown box
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
 
     if(dal->supportSchemas())
     {
@@ -354,72 +354,6 @@ Controller::setupUI()
 
     Preloader::loadAll();
 
-//    SBIDSongMgr* smgr=Context::instance()->getSongMgr();
-
-//    QMap<int,QList<SBIDSongPtr>> matches;
-//    QList<SBIDSongPtr> l;
-
-//    matches[0]=QList<SBIDSongPtr>();
-
-//    l.clear();
-//    l.append(SBIDSong::retrieveSong(31404));
-//    l.append(SBIDSong::retrieveSong(31396));
-//    l.append(SBIDSong::retrieveSong(31385));
-//    matches[1]=l;
-
-//    l.clear();
-//    l.append(SBIDSong::retrieveSong(31404));
-//    l.append(SBIDSong::retrieveSong(31396));
-//    l.append(SBIDSong::retrieveSong(31385));
-//    matches[2]=l;
-
-//    QMapIterator<int,QList<SBIDSongPtr>> mIT(matches);
-//    while(mIT.hasNext())
-//    {
-//        mIT.next();
-//        QList<SBIDSongPtr> a=mIT.value();
-//        QListIterator<SBIDSongPtr> aIT(a);
-//        while(aIT.hasNext())
-//        {
-//            qDebug() << SB_DEBUG_INFO << mIT.key() << *(aIT.next());
-//        }
-//    }
-//    qDebug() << SB_DEBUG_INFO << matches[1].count();
-//    qDebug() << SB_DEBUG_INFO << matches[2].count();
-
-//    Common::sb_parameters parameters;
-//    parameters.songTitle="I suck";
-//    parameters.performerName="The Suckers";
-
-//    SBDialogSelectItem* i=SBDialogSelectItem::selectSong(parameters,SBIDSongPtr(),matches);
-//    i->exec();
-
-//    if(i->hasSelectedItem())
-//    {
-//        SBIDPtr ptr=i->getSelected();
-//        if(ptr)
-//        {
-//            qDebug() << SB_DEBUG_INFO << "SELECTED=" << *ptr;
-//        }
-//        else
-//        {
-//            qDebug() << SB_DEBUG_INFO << "SELECTED NEW";
-//        }
-
-//    }
-//    else
-//    {
-//        qDebug() << SB_DEBUG_INFO << "NONE SELECTED";
-//    }
-
-//    SBIDPerformerPtr u2ptr1=SBIDPerformer::retrievePerformer(2078,1);
-//    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
-//    u2ptr1->refreshDependents();
-//    qDebug() << SB_DEBUG_INFO << u2ptr1->genericDescription();
-//    SBIDPerformerPtr u2ptr2=SBIDPerformer::retrievePerformer(2078);
-//    qDebug() << SB_DEBUG_INFO << u2ptr2->genericDescription();
-
-
     qDebug() << SB_DEBUG_INFO << "playground start";
     int max=100;
     quint64 smallest=max;
@@ -450,16 +384,13 @@ Controller::setupUI()
     k="2:-100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
 
     qDebug() << SB_DEBUG_INFO << "playground end";
-
-    SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(1);
-    qDebug() << SB_DEBUG_INFO << aPtr->genericDescription();
     return;
 }
 
 void
 Controller::configureMenus()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     configureMenuItems(mw->ui.menuFile->actions());
     configureMenuItems(mw->ui.menuPlaylist->actions());
@@ -489,22 +420,22 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         else if(itemName=="menuNewPlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(playlistNew()));
+                    Context::instance()->chooser(), SLOT(playlistNew()));
         }
         else if(itemName=="menuDeletePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(playlistDelete()));
+                    Context::instance()->chooser(), SLOT(playlistDelete()));
         }
         else if(itemName=="menuRenamePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(playlistRename()));
+                    Context::instance()->chooser(), SLOT(playlistRename()));
         }
         else if(itemName=="menuRecalculatePlaylist")
         {
             connect(i,SIGNAL(triggered()),
-                    Context::instance()->getChooser(), SLOT(recalculateDuration()));
+                    Context::instance()->chooser(), SLOT(recalculateDuration()));
         }
         else if(itemName=="menuSetMusicLibrary")
         {
@@ -551,8 +482,8 @@ Controller::setFontSizes() const
 void
 Controller::setupModels()
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
-    Navigator* n=Context::instance()->getNavigator();
+    MainWindow* mw=Context::instance()->mainWindow();
+    Navigator* n=Context::instance()->navigator();
 
     SearchItemModel* sim=new SearchItemModel();
     Context::instance()->setSearchItemModel(sim);
@@ -563,10 +494,10 @@ Controller::setupModels()
     QCompleter* c=mw->ui.searchEdit->completer();
     connect(
         c, SIGNAL(activated(const QModelIndex&)),
-        Context::instance()->getNavigator(), SLOT(openItemFromCompleter(const QModelIndex&)));
+        Context::instance()->navigator(), SLOT(openItemFromCompleter(const QModelIndex&)));
     connect(
         mw->ui.searchEdit,SIGNAL(returnPressed()),
-        Context::instance()->getNavigator(),SLOT(applySonglistFilter()));
+        Context::instance()->navigator(),SLOT(applySonglistFilter()));
     connect(
         c, SIGNAL(activated(QString)),
         mw->ui.searchEdit, SLOT(clear()),
@@ -601,7 +532,7 @@ Controller::init()
 void
 Controller::_disableScreenNavigationButtons()
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     mw->ui.buttonBackward->setEnabled(0);
     mw->ui.buttonForward->setEnabled(0);
 }
@@ -609,7 +540,7 @@ Controller::_disableScreenNavigationButtons()
 void
 Controller::_resetStatusBar()
 {
-    Context::instance()->getMainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
+    Context::instance()->mainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
 }
 
 //	NOT USED ANYMORE -- CODE LEFT AS EXAMPLE

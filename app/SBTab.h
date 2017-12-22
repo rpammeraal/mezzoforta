@@ -48,7 +48,6 @@ public slots:
 public slots:
 
 protected:
-    //	ScreenItem _currentScreenItem;	CWIP: superseded by getting current screen from screenstack
     bool _initDoneFlag;
     QModelIndex _lastClickedIndex;
 
@@ -69,7 +68,6 @@ protected:
     virtual ScreenItem _populate(const ScreenItem& si)=0;
     virtual void _populatePost(const ScreenItem& id);
     void _recordLastPopup(const QPoint& p);
-    //void _setCurrentScreenItem(const ScreenItem& currentScreenItem);
 
 protected slots:
     virtual void sortOrderChanged(int column);

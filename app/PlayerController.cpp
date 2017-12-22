@@ -11,7 +11,6 @@
 #include "Properties.h"
 #include "SBMediaPlayer.h"
 #include "SBModelQueuedSongs.h"
-#include "SBSqlQueryModel.h"
 #include "SBIDOnlinePerformance.h"
 
 
@@ -109,7 +108,7 @@ PlayerController::playerDataClicked(const QUrl &url)
 {
     QStringList l=url.toString().split('_');
     SBKey key=SBKey(static_cast<SBKey::ItemType>(l[0].toInt()),l[1].toInt());
-    Context::instance()->getNavigator()->openScreen(key);
+    Context::instance()->navigator()->openScreen(key);
     _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
 }
 
@@ -183,8 +182,8 @@ PlayerController::playerStop()
 bool
 PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 {
-    Properties* p=Context::instance()->getProperties();
-    Controller* c=Context::instance()->getController();
+    Properties* p=Context::instance()->properties();
+    Controller* c=Context::instance()->controller();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
     qDebug() << SB_DEBUG_INFO << opPtr->path();
@@ -223,7 +222,7 @@ PlayerController::_init()
     _currentPerformancePlayingPtr=SBIDOnlinePerformancePtr();
     _state=PlayerController::sb_player_state_stopped;
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     //	Left player
     connect(mw->ui.pbMusicPlayerControlLeftREW, SIGNAL(clicked(bool)),

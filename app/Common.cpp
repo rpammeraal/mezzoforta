@@ -27,7 +27,7 @@ Common::articles()
     static QStringList _articles;
     if(_articles.count()==0)
     {
-        DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+        DataAccessLayer* dal=Context::instance()->dataAccessLayer();
         const QString q=
             "SELECT "
                 "word "

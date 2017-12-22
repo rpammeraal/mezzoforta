@@ -7,7 +7,6 @@
 #include "MainWindow.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
 SBTabSongDetail::SBTabSongDetail(QWidget* parent) : SBTab(parent,0)
@@ -17,7 +16,7 @@ SBTabSongDetail::SBTabSongDetail(QWidget* parent) : SBTab(parent,0)
 QTableView*
 SBTabSongDetail::subtabID2TableView(int subtabID) const
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     switch(subtabID)
     {
     default:
@@ -39,7 +38,7 @@ SBTabSongDetail::subtabID2TableView(int subtabID) const
 QTabWidget*
 SBTabSongDetail::tabWidget() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.tabSongDetailLists;
 }
 
@@ -99,7 +98,7 @@ SBTabSongDetail::playNow(bool enqueueFlag)
     }
     if(key.validFlag())
     {
-        PlayManager* pmgr=Context::instance()->getPlayManager();
+        PlayManager* pmgr=Context::instance()->playManager();
         pmgr?pmgr->playItemNow(key,enqueueFlag):0;
     }
     SBTab::playNow(enqueueFlag);
@@ -137,7 +136,7 @@ SBTabSongDetail::showContextMenuView(const QPoint &p)
         return;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=_determineViewCurrentTab();
 
     QModelIndex idx=tv->indexAt(p);
@@ -169,7 +168,7 @@ SBTabSongDetail::setSongLyricsPage(const QString& url)
 {
     if(isVisible())
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         if(mw->ui.tabSongDetailLists->isTabEnabled(SBTabSongDetail::sb_tab_lyrics)==0)
         {
             mw->ui.songDetailLyrics->setUrl(url);
@@ -183,7 +182,7 @@ SBTabSongDetail::setSongWikipediaPage(const QString &url)
 {
     if(isVisible())
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         mw->ui.songDetailWikipediaPage->setUrl(url);
         mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,1);
     }
@@ -193,7 +192,7 @@ SBTabSongDetail::setSongWikipediaPage(const QString &url)
 QTableView*
 SBTabSongDetail::_determineViewCurrentTab() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=NULL;
     switch((sb_tab)currentSubtabID())
     {
@@ -224,7 +223,7 @@ SBTabSongDetail::_init()
     SBTab::init();
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
         _initDoneFlag=1;
 
         connect(mw->ui.tabSongDetailLists,SIGNAL(tabBarClicked(int)),
@@ -287,7 +286,7 @@ ScreenItem
 SBTabSongDetail::_populate(const ScreenItem& si)
 {
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
     SBIDSongPtr sPtr;
@@ -302,7 +301,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     {
         if(key.itemType()==SBKey::Song)
         {
-            qDebug() << SB_DEBUG_INFO << key;
             sPtr=SBIDSong::retrieveSong(si.key());
         }
         else if(key.itemType()==SBKey::AlbumPerformance)
@@ -319,7 +317,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
             SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
             sPtr=opPtr->songPtr();
-            qDebug() << SB_DEBUG_INFO << key;
         }
         else
         {
@@ -328,12 +325,10 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     }
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
-    qDebug() << SB_DEBUG_INFO << sPtr->key() << sPtr->ID() << sPtr->reloadFlag();
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(key);
-    qDebug() << SB_DEBUG_INFO << sPtr->key();
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
 
     ExternalData* ed=new ExternalData();
@@ -402,7 +397,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
     frAlsoPerformedBy->setText(cs);
     connect(frAlsoPerformedBy, SIGNAL(anchorClicked(QUrl)),
-        Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
+        Context::instance()->navigator(), SLOT(openPerformer(QUrl)));
 
     //	Populate song details
     cs=QString("<B>Released:</B> %1").arg(sPtr->songOriginalYear());

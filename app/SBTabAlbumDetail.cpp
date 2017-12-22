@@ -3,7 +3,6 @@
 #include "CacheManager.h"
 #include "Context.h"
 #include "MainWindow.h"
-#include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
 ///	Public methods
@@ -15,13 +14,13 @@ QTableView*
 SBTabAlbumDetail::subtabID2TableView(int subtabID) const
 {
     Q_UNUSED(subtabID);
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.albumDetailAlbumContents;
 }
 QTabWidget*
 SBTabAlbumDetail::tabWidget() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.tabAlbumDetailLists;
 }
 
@@ -34,8 +33,9 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBKey key=sm->determineKey(_lastClickedIndex);
-    PlayManager* pmgr=Context::instance()->getPlayManager();
-;
+    PlayManager* pmgr=Context::instance()->playManager();
+
+    qDebug() << SB_DEBUG_INFO << key;
     if(!key.validFlag())
     {
         //	Context menu from SBLabel is clicked
@@ -78,7 +78,7 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
         return;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    const MainWindow* mw=Context::instance()->mainWindow(); SB_DEBUG_IF_NULL(mw);
     QTableView* tv=_determineViewCurrentTab();
 
     QModelIndex idx=tv->indexAt(p);
@@ -109,7 +109,7 @@ void
 SBTabAlbumDetail::refreshAlbumReviews()
 {
     qDebug() << SB_DEBUG_INFO;
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QString html;
 
     html="<html><table style=\"width:100%\">";
@@ -140,7 +140,7 @@ void
 SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
 {
     QWidget* w=QApplication::focusWidget();
-    setImage(p,Context::instance()->getMainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().key());
+    setImage(p,Context::instance()->mainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().key());
     if(w)
     {
         w->setFocus();
@@ -162,7 +162,7 @@ SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
 {
     if(isVisible())
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         mw->ui.albumDetailsWikipediaPage->setUrl(url);
         mw->ui.tabAlbumDetailLists->setTabEnabled(2,1);
         mw->ui.searchEdit->setFocus();
@@ -173,7 +173,7 @@ SBTabAlbumDetail::setAlbumWikipediaPage(const QString &url)
 QTableView*
 SBTabAlbumDetail::_determineViewCurrentTab() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=NULL;
     switch((sb_tab)currentSubtabID())
     {
@@ -199,7 +199,7 @@ SBTabAlbumDetail::_init()
 
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
         _initDoneFlag=1;
 
         connect(mw->ui.albumDetailReviewsHome, SIGNAL(clicked()),
@@ -245,7 +245,7 @@ ScreenItem
 SBTabAlbumDetail::_populate(const ScreenItem &si)
 {
     _init();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
 
@@ -294,7 +294,7 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.labelAlbumDetailAlbumPerformerName->setText(t);
     mw->ui.labelAlbumDetailAlbumPerformerName->setTextFormat(Qt::RichText);
     connect(mw->ui.labelAlbumDetailAlbumPerformerName,SIGNAL(linkActivated(QString)),
-            Context::instance()->getNavigator(), SLOT(openPerformer(QString)));
+            Context::instance()->navigator(), SLOT(openPerformer(QString)));
 
     //	Reused vars
     QTableView* tv=NULL;

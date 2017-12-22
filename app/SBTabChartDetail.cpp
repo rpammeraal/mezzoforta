@@ -12,7 +12,7 @@ QTableView*
 SBTabChartDetail::subtabID2TableView(int subtabID) const
 {
     Q_UNUSED(subtabID);
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.chartDetailSongList;
 }
 
@@ -21,17 +21,31 @@ void
 SBTabChartDetail::playNow(bool enqueueFlag)
 {
     SBKey key=this->currentScreenItem().key();
-    const MainWindow* mw=Context::instance()->getMainWindow();
-    PlaylistItem selected=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
-    SBIDPtr ptr;
+    qDebug() << SB_DEBUG_INFO << key;
+    const MainWindow* mw=Context::instance()->mainWindow();
+    PlaylistItem selectedPrimary=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
 
-    if(selected.key.validFlag())
+    const QAbstractItemModel* aim=_lastClickedIndex.model();
+    QModelIndex secondaryIdx=aim->index(_lastClickedIndex.row(), _lastClickedIndex.column()+2);
+    PlaylistItem selectedSecondary=_getSelectedItem(mw->ui.chartDetailSongList->model(),secondaryIdx);
+    qDebug() << SB_DEBUG_INFO << selectedPrimary.key << selectedSecondary.key;
+
+    if(selectedSecondary.key.validFlag())
     {
-        key=selected.key;
+        //	Find song performance with the selected performer, otherwise we fall back on just song.
+        SBIDSongPerformancePtr sPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(selectedPrimary.key.itemID(),selectedSecondary.key.itemID());
+        if(sPtr)
+        {
+            selectedPrimary.key=sPtr->key();
+        }
+    }
+    if(selectedPrimary.key.validFlag())
+    {
+        key=selectedPrimary.key;
     }
     if(key.validFlag())
     {
-        PlayManager* pmgr=Context::instance()->getPlayManager();
+        PlayManager* pmgr=Context::instance()->playManager();
         pmgr?pmgr->playItemNow(key,enqueueFlag):0;
         SBTab::playNow(enqueueFlag);
     }
@@ -45,7 +59,7 @@ SBTabChartDetail::_init()
     SBTab::init();
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
 
         _initDoneFlag=1;
 
@@ -97,7 +111,7 @@ SBTabChartDetail::_populate(const ScreenItem& si)
     SBIDChartPtr cPtr=SBIDChart::retrieveChart(si.key());
     SB_RETURN_IF_NULL(cPtr,ScreenItem());
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(cPtr->key());

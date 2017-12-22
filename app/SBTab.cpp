@@ -25,7 +25,7 @@ SBTab::SBTab(QWidget *parent, bool isEditTabFlag) : QWidget(parent)
 ScreenItem
 SBTab::currentScreenItem() const
 {
-    return Context::instance()->getScreenStack()->currentScreen();
+    return Context::instance()->screenStack()->currentScreen();
 }
 
 int
@@ -116,7 +116,7 @@ SBTab::populate(const ScreenItem& si)
     {
         result.setSortColumn(onStack.sortColumn());
         result.setSubtabID(onStack.subtabID());
-        Context::instance()->getScreenStack()->updateCurrentScreen(result);
+        Context::instance()->screenStack()->updateCurrentScreen(result);
         _populatePost(result);
     }
 
@@ -211,78 +211,6 @@ SBTab::populateTableView(QTableView* tv, QAbstractItemModel* qm,int initialSortC
     return qm->rowCount();
 }
 
-//	Return true if selected. Automatically saves new performer.
-//	CWIP: see if SBIDPerformer::selectSavePerformer() can be used.
-/*
-bool
-SBTab::processPerformerEdit(const QString &editPerformerName, SBIDBase &newID, QLineEdit* field, bool saveNewPerformer) const
-{
-    bool resultCode=1;
-    SBIDPerformer selected=SBIDPerformer::selectSavePerformer(editPerformerName,newID,field,saveNewPerformer);
-    newID=selected;
-    if(saveNewPerformer && selected.sb_performer_id==-1)
-    {
-        resultCode=0;
-    }
-    return resultCode;
-
-    SBIDBase selectedPerformerID=newID;
-    selectedPerformerID.assign(SBID::sb_type_performer,-1);
-    selectedPerformerID.performerName=editPerformerName;
-
-    DataEntityPerformer* p=new DataEntityPerformer();
-    SBSqlQueryModel* performerMatches=p->matchPerformer(newID, editPerformerName);
-
-    if(performerMatches->rowCount()>1)
-    {
-        if(performerMatches->rowCount()>=2 &&
-            performerMatches->record(1).value(0).toInt()==1)
-        {
-            //	Dataset indicates an exact match if the 2nd record identifies an exact match.
-            selectedPerformerID.sb_performer_id=performerMatches->record(1).value(1).toInt();
-            selectedPerformerID.performerName=performerMatches->record(1).value(2).toString();
-            resultCode=1;
-        }
-        else
-        {
-            //	Dataset has at least two records, of which the 2nd one is an soundex match,
-            //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectPerformer(newID,performerMatches);
-            pu->exec();
-
-            //	Go back to screen if no item has been selected
-            if(pu->hasSelectedItem()==0)
-            {
-                return false;
-            }
-            else
-            {
-                selectedPerformerID=pu->getSBID();
-            }
-        }
-
-        //	Update field
-        if(field)
-        {
-            field->setText(selectedPerformerID.performerName);
-        }
-    }
-
-    if(selectedPerformerID.sb_performer_id==-1 && saveNewPerformer==1)
-    {
-        //	Save new performer if new
-        resultCode=p->saveNewPerformer(selectedPerformerID);
-
-    }
-    if(resultCode==1)
-    {
-        newID.sb_performer_id=selectedPerformerID.sb_performer_id;
-        newID.performerName=selectedPerformerID.performerName;
-    }
-    return resultCode;
-}
-*/
-
 void
 SBTab::setImage(const QPixmap& p, QLabel* l, SBKey key) const
 {
@@ -346,7 +274,7 @@ SBTab::_recordLastPopup(const QPoint &p)
 void
 SBTab::sortOrderChanged(int column)
 {
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
     if(st && st->getScreenCount())
     {
         ScreenItem id=currentScreenItem();
@@ -372,7 +300,7 @@ void
 SBTab::tabBarClicked(int index)
 {
     _currentSubtabID=index;
-    ScreenStack* st=Context::instance()->getScreenStack();
+    ScreenStack* st=Context::instance()->screenStack();
 
     //	get sort order for clicked tab
     int prevSortColumn=INT_MAX;
@@ -436,7 +364,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
                 qDebug() << SB_DEBUG_INFO << key;
             }
         }
-        Context::instance()->getNavigator()->openScreen(key);
+        Context::instance()->navigator()->openScreen(key);
     }
 }
 

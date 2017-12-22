@@ -55,6 +55,7 @@ SBTabChooser::showContextMenuView(const QPoint& p)
     //	title etc not populated
     if(selected.key.validFlag())
     {
+        qDebug() << SB_DEBUG_INFO << selected.key;
         _lastClickedIndex=idx;
 
         QPoint gp = subtabID2TableView(-1)->mapToGlobal(p);
@@ -83,11 +84,11 @@ SBTabChooser::showContextMenuView(const QPoint& p)
 //	There is a SBSqlQueryModel::determineSBID -- that is geared for AllSongs
 //	This one is geared more for the lists that appears for each item (song, artist, etc).
 //	NOTE:
-//	A resultSet is assumed to contain the following columns (in random order):
-//	-	'#'	position (optional)
-//	-	SB_ITEM_TYPE
-//	-	SB_ITEM_ID
-//	The next field after this is assumed to contain the main item (e.g.: song title, album name, etc).
+//	A resultSet is assumed to contain the following columns (in this order):
+//	-	'#'	position as the 0th column
+//	-	key on uneven position
+//	-	some text on even position
+//	-	...
 SBTabChooser::PlaylistItem
 SBTabChooser::_getSelectedItem(QAbstractItemModel* aim, const QModelIndex &idx)
 {
@@ -95,26 +96,20 @@ SBTabChooser::_getSelectedItem(QAbstractItemModel* aim, const QModelIndex &idx)
 
     _init();
 
-    for(int i=0; i<aim->columnCount();i++)
+    if(idx.column()<aim->columnCount())
     {
-        QString header=aim->headerData(i, Qt::Horizontal).toString();
-        header=header.toLower();
-        QModelIndex idy=idx.sibling(idx.row(),i);
+        //	get position
+        QModelIndex posIdx=idx.sibling(idx.row(),0);
+        currentPlaylistItem.playlistPosition=aim->data(posIdx).toInt();
 
-        if(header=="sb_item_key")
-        {
-            currentPlaylistItem.key=aim->data(idy).toByteArray();
-        }
-        else if(header=="#")
-        {
-            currentPlaylistItem.playlistPosition=aim->data(idy).toInt();
-        }
-        else if(currentPlaylistItem.text.length()==0)
-        {
-            currentPlaylistItem.text=aim->data(idy).toString();
-        }
+        //	get key
+        QModelIndex keyIdx=idx.sibling(idx.row(),idx.column()-1);
+        currentPlaylistItem.key=aim->data(keyIdx).toByteArray();
+
+        //	get test
+        QModelIndex txtIdx=idx.sibling(idx.row(),idx.column());
+        currentPlaylistItem.text=aim->data(txtIdx).toString();
     }
-
     return currentPlaylistItem;
 }
 

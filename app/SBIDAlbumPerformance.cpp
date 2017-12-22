@@ -475,7 +475,7 @@ SBIDAlbumPerformance::operator=(const SBIDAlbumPerformance& t)
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

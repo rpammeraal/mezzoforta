@@ -115,7 +115,7 @@ ExternalData::loadSongData(SBKey key)
 QString
 ExternalData::getCachePath(SBKey key)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString prefix;
 
     prefix=dal->schema();

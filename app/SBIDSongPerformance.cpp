@@ -278,7 +278,7 @@ SBIDSongPerformancePtr
 SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle, const QString &performerName, int excludeSongPerformanceID, bool noDependentsFlag)
 {
     SBIDSongPerformancePtr spPtr;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     //	Find out songPerformanceID
@@ -320,7 +320,7 @@ SBIDSongPerformancePtr
 SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag)
 {
     SBIDSongPerformancePtr spPtr;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     //	Find out songPerformanceID
@@ -416,7 +416,7 @@ SBIDSongPerformance::operator=(const SBIDSongPerformance& t)
 SBIDSongPerformancePtr
 SBIDSongPerformance::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

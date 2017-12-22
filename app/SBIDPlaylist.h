@@ -40,7 +40,7 @@ public:
     inline QString playlistName() const { return _playlistName; }
     void recalculatePlaylistDuration();
     bool removePlaylistItem(int playlistPosition);
-    bool moveItem(const SBIDPlaylistDetailPtr& pdPtr, int toRow);
+    bool moveItem(SBKey from, int toRow);
     void setPlaylistName(const QString& playlistName) { _playlistName=playlistName; setChangedFlag(); }
     SBTableModel* tableModelItems() const;
 
@@ -89,6 +89,7 @@ private:
     //	Methods
     static void _getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag=0);
     void _copy(const SBIDPlaylist& c);
+    SBIDPlaylistDetailPtr _findItemByKey(SBKey key);
     void _init();
     void _loadPlaylistItems();
     QMap<int,SBIDPlaylistDetailPtr> _loadPlaylistItemsFromDB() const;

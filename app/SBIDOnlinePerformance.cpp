@@ -77,7 +77,7 @@ void
 SBIDOnlinePerformance::sendToPlayQueue(bool enqueueFlag)
 {
     QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 }
 
@@ -97,7 +97,7 @@ SBIDOnlinePerformance::type() const
 bool
 SBIDOnlinePerformance::updateLastPlayDate()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     QString q=QString
@@ -311,7 +311,7 @@ SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(int albumPer
 SBSqlQueryModel*
 SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
 
     QString limitClause;
 
@@ -383,7 +383,7 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
 int
 SBIDOnlinePerformance::totalNumberOnlinePerformances()
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
     int numSongs=0;
@@ -506,7 +506,7 @@ SBIDOnlinePerformance::operator=(const SBIDOnlinePerformance& t)
 SBIDOnlinePerformancePtr
 SBIDOnlinePerformance::createInDB(Common::sb_parameters& p)
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 

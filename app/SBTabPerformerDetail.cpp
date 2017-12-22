@@ -5,7 +5,6 @@
 #include "MainWindow.h"
 #include "SBIDAlbum.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBSqlQueryModel.h"
 #include "SBTableModel.h"
 
 SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
@@ -15,7 +14,7 @@ SBTabPerformerDetail::SBTabPerformerDetail(QWidget* parent) : SBTab(parent,0)
 QTableView*
 SBTabPerformerDetail::subtabID2TableView(int subtabID) const
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     switch(subtabID)
     {
     case 0:
@@ -38,7 +37,7 @@ SBTabPerformerDetail::subtabID2TableView(int subtabID) const
 QTabWidget*
 SBTabPerformerDetail::tabWidget() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.tabPerformerDetailLists;
 }
 
@@ -46,12 +45,23 @@ SBTabPerformerDetail::tabWidget() const
 void
 SBTabPerformerDetail::playNow(bool enqueueFlag)
 {
+    SBKey performerKey=this->currentScreenItem().key();
     QTableView* tv=_determineViewCurrentTab();
 
     QSortFilterProxyModel* pm=dynamic_cast<QSortFilterProxyModel *>(tv->model()); SB_DEBUG_IF_NULL(pm);
     SBTableModel *sm=dynamic_cast<SBTableModel* >(pm->sourceModel()); SB_DEBUG_IF_NULL(sm);
     SBKey key=sm->determineKey(_lastClickedIndex);
-    PlayManager* pmgr=Context::instance()->getPlayManager();
+    PlayManager* pmgr=Context::instance()->playManager();
+
+    if(performerKey.validFlag() && key.validFlag() && key.itemType()==SBKey::Song)
+    {
+        SBIDSongPerformancePtr sPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(key.itemID(),performerKey.itemID());
+        if(sPtr)
+        {
+            key=sPtr->key();
+        }
+
+    }
 
     if(!key.validFlag())
     {
@@ -93,7 +103,7 @@ SBTabPerformerDetail::showContextMenuView(const QPoint &p)
         return;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow(); SB_DEBUG_IF_NULL(mw);
+    const MainWindow* mw=Context::instance()->mainWindow(); SB_DEBUG_IF_NULL(mw);
     QTableView* tv=_determineViewCurrentTab();
 
     QModelIndex idx=tv->indexAt(p);
@@ -146,7 +156,7 @@ SBTabPerformerDetail::updatePerformerMBID(SBKey key)
 void
 SBTabPerformerDetail::refreshPerformerNews()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QString html;
 
     html="<html><table style=\"width:100%\">";
@@ -172,7 +182,7 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 {
     if(isVisible())
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         mw->ui.performerDetailHomepage->setUrl(url);
         mw->ui.tabPerformerDetailLists->setTabEnabled(5,1);
     }
@@ -182,7 +192,7 @@ void
 SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
 {
     QWidget* w=QApplication::focusWidget();
-    setImage(p,Context::instance()->getMainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
+    setImage(p,Context::instance()->mainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
     if(w)
     {
         w->setFocus();
@@ -204,7 +214,7 @@ SBTabPerformerDetail::setPerformerWikipediaPage(const QString &url)
 {
     if(isVisible())
     {
-        const MainWindow* mw=Context::instance()->getMainWindow();
+        const MainWindow* mw=Context::instance()->mainWindow();
         mw->ui.performerDetailWikipediaPage->setUrl(url);
         mw->ui.tabPerformerDetailLists->setTabEnabled(4,1);
     }
@@ -214,7 +224,7 @@ SBTabPerformerDetail::setPerformerWikipediaPage(const QString &url)
 QTableView*
 SBTabPerformerDetail::_determineViewCurrentTab() const
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=NULL;
     switch((sb_tab)currentSubtabID())
     {
@@ -246,7 +256,7 @@ SBTabPerformerDetail::_init()
     SBTab::init();
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
         _initDoneFlag=1;
 
         //	Multimedia
@@ -316,7 +326,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     _init();
     _currentNews.clear();
     _relatedItems.clear();
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
 
 
@@ -420,7 +430,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     {
         cs="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+cs+"</BODY>";
         connect(frRelated, SIGNAL(anchorClicked(QUrl)),
-            Context::instance()->getNavigator(), SLOT(openPerformer(QUrl)));
+            Context::instance()->navigator(), SLOT(openPerformer(QUrl)));
     }
     else
     {

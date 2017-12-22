@@ -9,16 +9,16 @@ public:
     enum ItemType
     {
         Invalid=0,
-        Song,
-        Performer,
-        Album,
-        Chart,
-        Playlist,
-        SongPerformance,
-        AlbumPerformance,
-        OnlinePerformance,
-        ChartPerformance,
-        PlaylistDetail
+        Song,               //	1
+        Performer,          //	2
+        Album,              //	3
+        Chart,              //	4
+        Playlist,           //	5
+        SongPerformance,    //	6
+        AlbumPerformance,   //	7
+        OnlinePerformance,  //	8
+        ChartPerformance,   //	9
+        PlaylistDetail      //	10
     };
 
     static size_t ItemTypeCount() { return 10; }

@@ -123,7 +123,7 @@ CacheManager::saveChanges()
     QStringList updateSQL;
     QStringList insertSQL;
     QStringList deleteSQL;
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     bool albumsUpdatedFlag=0;
     bool performersUpdatedFlag=0;
     bool songsUpdatedFlag=0;
@@ -176,7 +176,7 @@ CacheManager::saveChanges()
         SearchItemModel* oldSim=Context::instance()->searchItemModel();
         SearchItemModel* newSim=new SearchItemModel();
 
-        QLineEdit* lineEdit=Context::instance()->getMainWindow()->ui.searchEdit;
+        QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
         QCompleter* completer=lineEdit->completer();
         completer->setModel(newSim);
 
@@ -184,7 +184,7 @@ CacheManager::saveChanges()
         Context::instance()->setSearchItemModel(newSim);
 
         //	CWIP: remove when database is cached
-        Context::instance()->getController()->preloadAllSongs();
+        Context::instance()->controller()->preloadAllSongs();
     }
 
     return resultFlag;

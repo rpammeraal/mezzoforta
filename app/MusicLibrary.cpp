@@ -27,8 +27,8 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 void
 MusicLibrary::rescanMusicLibrary()
 {
-    Properties* properties=Context::instance()->getProperties();
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    Properties* properties=Context::instance()->properties();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
 
     const QString schema=dal->schema();
@@ -52,7 +52,7 @@ MusicLibrary::rescanMusicLibrary()
     ProgressDialog::instance()->update("MusicLibrary::rescanMusicLibrary_scan",progressCurrentValue,progressMaxValue);
 
     const QString schemaRoot=
-        Context::instance()->getProperties()->musicLibraryDirectory()
+        Context::instance()->properties()->musicLibraryDirectory()
         +"/"
         +schema
         +(schema.length()?"/":"");
@@ -201,6 +201,7 @@ MusicLibrary::rescanMusicLibrary()
         }
         progressCurrentValue++;
     }
+    delete sqm;
     ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_retrieve");
     qDebug() << SB_DEBUG_INFO;
 
@@ -488,8 +489,8 @@ MusicLibrary::rescanMusicLibrary()
     }
 
     //	Refresh caches
-    Context::instance()->getController()->refreshModels();
-    Context::instance()->getController()->preloadAllSongs();
+    Context::instance()->controller()->refreshModels();
+    Context::instance()->controller()->preloadAllSongs();
 
     ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary");
     ProgressDialog::instance()->hide();
@@ -506,7 +507,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     CachePerformerMgr* pemgr=cm->performerMgr();
     CacheSongMgr* smgr=cm->songMgr();
     SBIDPerformerPtr variousPerformerPtr=SBIDPerformer::retrieveVariousPerformers();
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     int progressCurrentValue=0;
     int progressMaxValue=0;
     QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
@@ -749,7 +750,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 
     //		a.	Go thru each albumPtr and find out if album can be found based on path name
     //			This can only be done if directories are structured.
-    Properties* properties=Context::instance()->getProperties();
+    Properties* properties=Context::instance()->properties();
     if(properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1")
     {
         albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);
@@ -1111,7 +1112,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 QStringList
 MusicLibrary::_greatestHitsAlbums() const
 {
-    DataAccessLayer* dal=Context::instance()->getDataAccessLayer();
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QStringList greatestHitsAlbums;
     QString q="SELECT title FROM greatest_hits_record";

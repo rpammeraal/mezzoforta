@@ -1,5 +1,6 @@
 #include "SBTabQueuedSongs.h"
 
+#include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
@@ -14,14 +15,14 @@ SBTabQueuedSongs::SBTabQueuedSongs(QWidget* parent) : SBTab(parent,0)
 int
 SBTabQueuedSongs::numSongsInPlaylist() const
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     return mqs?mqs->rowCount():0;
 }
 
 SBSortFilterProxyQueuedSongsModel*
 SBTabQueuedSongs::_proxyModel() const
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
     SBSortFilterProxyQueuedSongsModel* sm=dynamic_cast<SBSortFilterProxyQueuedSongsModel *>(tv->model());
     return sm;
@@ -31,7 +32,7 @@ QTableView*
 SBTabQueuedSongs::subtabID2TableView(int subtabID) const
 {
     Q_UNUSED(subtabID);
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     return mw->ui.currentPlaylistDetailSongList;
 }
 
@@ -39,20 +40,22 @@ SBTabQueuedSongs::subtabID2TableView(int subtabID) const
 void
 SBTabQueuedSongs::deletePlaylistItem()
 {
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     SBKey key=mqs->selectedItem(_lastClickedIndex);
-    SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(key);
-    SB_RETURN_VOID_IF_NULL(plPtr);
+
+    qDebug() << SB_DEBUG_INFO << key;
+    SBIDPtr ptr=CacheManager::get(key);
+    SB_RETURN_VOID_IF_NULL(ptr);
 
     mqs->removeRows(_lastClickedIndex.row(),1,QModelIndex());
 
     QString updateText=QString("Removed %4 %1%2%3 from playlist.")
         .arg(QChar(96))     //	1
-        .arg(plPtr->text())   //	2
+        .arg(ptr->text())   //	2
         .arg(QChar(180))    //	3
-        .arg(plPtr->type())   //	4
+        .arg(ptr->type())   //	4
     ;
-    Context::instance()->getController()->updateStatusBarText(updateText);
+    Context::instance()->controller()->updateStatusBarText(updateText);
     _updateDetail();
 }
 
@@ -75,7 +78,7 @@ SBTabQueuedSongs::playNow(bool enqueueFlag)
 {
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     int viewPosition1=sm->mapFromSource(_lastClickedIndex).row();
-    PlayManager* pm=Context::instance()->getPlayManager();
+    PlayManager* pm=Context::instance()->playManager();
     pm->playItemNow(viewPosition1);
     SBTab::playNow(enqueueFlag);
     return;
@@ -89,11 +92,11 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
         return;
     }
 
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     QModelIndex idx=sm->mapToSource(mw->ui.currentPlaylistDetailSongList->indexAt(p));
 
-    SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     SBKey key=mqs->selectedItem(idx);
     if(key.validFlag())
     {
@@ -112,7 +115,7 @@ SBTabQueuedSongs::showContextMenuPlaylist(const QPoint &p)
 void
 SBTabQueuedSongs::setRowVisible(int index)
 {
-    MainWindow* mw=Context::instance()->getMainWindow();
+    MainWindow* mw=Context::instance()->mainWindow();
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     if(index>1 && index<_rowIndexVisible)
     {
@@ -130,7 +133,7 @@ SBTabQueuedSongs::setRowVisible(int index)
 void
 SBTabQueuedSongs::setViewLayout()
 {
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.currentPlaylistDetailSongList;
 
     //	2.	Set up view
@@ -183,10 +186,9 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
     {
         SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
         QModelIndex sourceIDX=sm->mapToSource(idx);
-        SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+        SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
         SBKey key=mqs->selectedItem(sourceIDX);
-        qDebug() << SB_DEBUG_INFO << key;
-        Context::instance()->getNavigator()->openScreen(key);
+        Context::instance()->navigator()->openScreen(key);
     }
 }
 
@@ -205,11 +207,11 @@ SBTabQueuedSongs::_init()
     _rowIndexVisible=0;
     if(_initDoneFlag==0)
     {
-        MainWindow* mw=Context::instance()->getMainWindow();
+        MainWindow* mw=Context::instance()->mainWindow();
         QTableView* tv=mw->ui.currentPlaylistDetailSongList;
 
         //	SBModelQueuedSongs
-        SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+        SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
         connect(mqs, SIGNAL(listChanged()),
                 this, SLOT(setViewLayout()));
 
@@ -220,13 +222,13 @@ SBTabQueuedSongs::_init()
                 this, SLOT(tableViewCellDoubleClicked(QModelIndex)));
 
         //	If playerController changes song, we want to update our view.
-        connect(Context::instance()->getPlayerController(),SIGNAL(setRowVisible(int)),
+        connect(Context::instance()->playerController(),SIGNAL(setRowVisible(int)),
                 this, SLOT(setRowVisible(int)));
-        connect(Context::instance()->getPlayManager(),SIGNAL(setRowVisible(int)),
+        connect(Context::instance()->playManager(),SIGNAL(setRowVisible(int)),
                 this,SLOT(setRowVisible(int)));
 
         //	If playManager changes playlist, we need to update the details.
-        connect(Context::instance()->getPlayManager(),SIGNAL(playlistChanged(int)),
+        connect(Context::instance()->playManager(),SIGNAL(playlistChanged(int)),
                 this, SLOT(playlistChanged(int)));
 
         //	Context menu
@@ -250,7 +252,7 @@ SBTabQueuedSongs::_init()
         QAbstractItemModel* m=tv->model();
         if(m==NULL)
         {
-            SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+            SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
             SBSortFilterProxyQueuedSongsModel* sm=new SBSortFilterProxyQueuedSongsModel();
 
             sm->setSourceModel(mqs);
@@ -294,7 +296,7 @@ SBTabQueuedSongs::_updateDetail()
 {
     QString detail;
 
-    PlayManager* pm=Context::instance()->getPlayManager();
+    PlayManager* pm=Context::instance()->playManager();
     if(pm->radioModeFlag())
     {
         //	Don't update if radio is playing
@@ -302,7 +304,7 @@ SBTabQueuedSongs::_updateDetail()
     }
     else
     {
-        SBModelQueuedSongs* mqs=Context::instance()->getSBModelQueuedSongs();
+        SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
         if(mqs)
         {
             const int numSongs=mqs->numSongs();
@@ -320,6 +322,6 @@ SBTabQueuedSongs::_updateDetail()
         }
     }
     detail="<BODY BGCOLOR=\""+QString(SB_BG_COLOR)+"\">"+detail+"</BODY>";
-    const MainWindow* mw=Context::instance()->getMainWindow();
+    const MainWindow* mw=Context::instance()->mainWindow();
     mw->ui.frCurrentPlaylistDetails->setText(detail);
 }

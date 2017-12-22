@@ -364,7 +364,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
         if(!errorFlag)
         {
             //	Open the database system wide
-            DBManager* dbm=Context::instance()->getDBManager();
+            DBManager* dbm=Context::instance()->dbManager();
             dbm->openDatabase(credentials);
             qDebug() << SB_DEBUG_INFO << dbm->databaseOpened();
         }
