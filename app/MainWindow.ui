@@ -1768,7 +1768,7 @@
               </property>
               <widget class="QWidget" name="tabAlbumDetailContents">
                <attribute name="title">
-                <string>Contents</string>
+                <string>Songs</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_09">
                 <property name="leftMargin">

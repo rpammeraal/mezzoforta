@@ -226,7 +226,10 @@ ScreenStack::updateCurrentScreen(const ScreenItem &id)
         }
         else
         {
+            this->debugShow("error:");
             qDebug() << SB_DEBUG_ERROR << "Parameter ID <> current screenstack ID!";
+            qDebug() << SB_DEBUG_ERROR << id ;
+            qDebug() << SB_DEBUG_ERROR << currentScreen();
             QMessageBox msgBox;
             msgBox.setText("ScreenStack::updateCurrentScreen: Parameter ID <> current screenstack ID!");
             msgBox.exec();

@@ -109,35 +109,37 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
         QSqlRecord r=qm->record(i);
 
         int bucket=r.value(0).toInt();
-
-        if( (exactMatchOnlyFlag && bucket==0) || (!exactMatchOnlyFlag))
+        if(!r.isEmpty() && !r.isNull(0))
         {
-            r.remove(0);
-            currentPtr=T::instantiate(r);	//	instantiate to use key
-            SBKey key=currentPtr->key();
-
-            //	Add if not exist, retrieve if exists
-            if(!contains(key))
+            if( (exactMatchOnlyFlag && bucket==0) || (!exactMatchOnlyFlag))
             {
-                currentPtr=addItem(currentPtr);
-            }
-            else
-            {
-                currentPtr=_leMap[key];
-            }
+                r.remove(0);
+                currentPtr=T::instantiate(r);	//	instantiate to use key
+                SBKey key=currentPtr->key();
 
-
-            if(!processedKeys.contains(key))
-            {
-                //	if(!excludePtr || (excludePtr && excludePtr->key()!=key))
-                //if(!excludePtr || (excludePtr && *(dynamic_cast<SBKey *>(excludePtr->key()!=key))))
-                if(!excludePtr || (excludePtr && excludePtr->key()!=key))
+                //	Add if not exist, retrieve if exists
+                if(!contains(key))
                 {
-                    //	Retrieve and store
-                    matches[bucket].append(currentPtr);
-                    count++;
+                    currentPtr=addItem(currentPtr);
                 }
-                processedKeys.append(key);
+                else
+                {
+                    currentPtr=_leMap[key];
+                }
+
+
+                if(!processedKeys.contains(key))
+                {
+                    //	if(!excludePtr || (excludePtr && excludePtr->key()!=key))
+                    //if(!excludePtr || (excludePtr && *(dynamic_cast<SBKey *>(excludePtr->key()!=key))))
+                    if(!excludePtr || (excludePtr && excludePtr->key()!=key))
+                    {
+                        //	Retrieve and store
+                        matches[bucket].append(currentPtr);
+                        count++;
+                    }
+                    processedKeys.append(key);
+                }
             }
         }
     }
@@ -147,6 +149,7 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 template <class T, class parentT> std::shared_ptr<T>
 CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
 {
+    qDebug() << SB_DEBUG_INFO << key << openFlag;
     std::shared_ptr<T> ptr;
 
     if(key.itemType()!=this->itemType() || !key.validFlag())
@@ -163,7 +166,7 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
         SBSqlQueryModel* qm=T::retrieveSQL(key);	//	Call static class method from template
         QSqlRecord r=qm->record(0);
 
-        if(!r.isEmpty())
+        if(!r.isEmpty() && !r.isNull(0))
         {
             ptr=T::instantiate(r);
             addItem(ptr);
@@ -174,8 +177,9 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
     {
         if(ptr->reloadFlag() || openFlag==Cache::open_flag_default)
         {
-            ptr->refreshDependents(0,1);
+            qDebug() << SB_DEBUG_INFO << key << openFlag << ptr->reloadFlag();
             ptr->clearReloadFlag();
+            ptr->refreshDependents(0,1);
         }
     }
     return ptr;
@@ -188,10 +192,15 @@ CacheTemplate<T,parentT>::retrieveAll()
 
     for(int i=0;i<qm->rowCount();i++)
     {
-        QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newPtr=T::instantiate(r);
-        const SBKey key=newPtr->key();
+        std::shared_ptr<T> newPtr;
+        SBKey key;
         std::shared_ptr<T> ptr;
+        QSqlRecord r=qm->record(i);
+        if(!r.isEmpty() && !r.isNull(0))
+        {
+            newPtr=T::instantiate(r);
+            key=newPtr->key();
+        }
 
         //	Find if pointer exist -- Qt may have allocated slots for these
         if(contains(key))
@@ -255,10 +264,15 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
     QVector<std::shared_ptr<T>> list;
     for(int i=0;i<rowCount;i++)
     {
-        QSqlRecord r=qm->record(i);
-        std::shared_ptr<T> newPtr=T::instantiate(r);
-        const SBKey key=newPtr->key();
+        std::shared_ptr<T> newPtr;
+        SBKey key;
         std::shared_ptr<T> ptr;
+        QSqlRecord r=qm->record(i);
+        if(!r.isEmpty() && !r.isNull(0))
+        {
+            newPtr=T::instantiate(r);
+            key=newPtr->key();
+        }
 
         //	Find if key exist
         if(contains(key))
@@ -277,8 +291,8 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
         {
             if(ptr->reloadFlag() || openFlag==Cache::open_flag_default)
             {
-                ptr->refreshDependents(0,1);
                 ptr->clearReloadFlag();
+                ptr->refreshDependents(0,1);
             }
         }
         list.append(ptr);
@@ -304,33 +318,37 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
     for(int i=0;i<rowCount;i++)
     {
         QSqlRecord r=qm->record(i);
-        int intKey=r.value(0).toInt(); r.remove(0);	//	get key, remove 1st field
-        std::shared_ptr<T> newPtr=T::instantiate(r);
-        const SBKey key=newPtr->key();
-        std::shared_ptr<T> ptr;
-
-        //	Find if pointer exist -- Qt may have allocated slots for these
-        if(contains(key))
+        if(!r.isEmpty() && !r.isNull(0))
         {
-            ptr=_leMap[key];
-        }
+            int intKey=r.value(0).toInt(); r.remove(0);	//	get key, remove 1st field
+            std::shared_ptr<T> newPtr=T::instantiate(r);
+            const SBKey key=newPtr->key();
+            std::shared_ptr<T> ptr;
 
-        //	If pointer is not empty, assign new object to existing object,
-        //	otherwise, set pointer
-        if(!ptr)
-        {
-            ptr=newPtr;
-            addItem(ptr);
-        }
-
-        if(ptr)
-        {
-            if(ptr->reloadFlag() || openFlag!=Cache::open_flag_parentonly)
+            //	Find if pointer exist -- Qt may have allocated slots for these
+            if(contains(key))
             {
-                newPtr->refreshDependents(0,1);
+                ptr=_leMap[key];
             }
+
+            //	If pointer is not empty, assign new object to existing object,
+            //	otherwise, set pointer
+            if(!ptr)
+            {
+                ptr=newPtr;
+                addItem(ptr);
+            }
+
+            if(ptr)
+            {
+                if(ptr->reloadFlag() || openFlag!=Cache::open_flag_parentonly)
+                {
+                    ptr->clearReloadFlag();
+                    newPtr->refreshDependents(0,1);
+                }
+            }
+            map[intKey]=newPtr;
         }
-        map[intKey]=newPtr;
         ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
     }
     ProgressDialog::instance()->finishStep(typeName);

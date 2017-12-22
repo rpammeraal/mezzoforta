@@ -78,7 +78,7 @@ SBKey::toString() const
 bool
 SBKey::validFlag() const
 {
-    return (_itemType!=Invalid&&_itemID>0)?1:0;
+    return (_itemType!=Invalid&&_itemID>=0)?1:0;
 }
 
 void

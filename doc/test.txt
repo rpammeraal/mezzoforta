@@ -49,4 +49,10 @@ To charts only.
 	-	Item In Chart (song, performer)
 	Playlist
 	-	Item in Chart (song, performer, album, chart, playlist)
+	Song
+	-	album tab, playlist tab
+	Performer
+	-	song tab, album tab, chart tab
+	Album
+	-	song tab
 	

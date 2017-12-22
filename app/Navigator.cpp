@@ -89,6 +89,7 @@ Navigator::clearSearchFilter()
 void
 Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 {
+    qDebug() << SB_DEBUG_INFO;
     if(key.itemType()==SBKey::PlaylistDetail)
     {
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::retrievePlaylistDetail(key);
@@ -100,6 +101,7 @@ Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
 void
 Navigator::openScreen(const ScreenItem &si)
 {
+    qDebug() << SB_DEBUG_INFO << si.key();
     if(!_threadPrioritySetFlag)
     {
         QThread::currentThread()->setPriority(QThread::LowestPriority);
@@ -118,7 +120,9 @@ Navigator::openScreen(const ScreenItem &si)
     }
     else if(si.screenType()==ScreenItem::screen_type_sbidbase)
     {
+    qDebug() << SB_DEBUG_INFO << si.key() << si.key().validFlag();
         key=si.key();
+    qDebug() << SB_DEBUG_INFO << key << key.validFlag();
         if(!key.validFlag())
         {
             qDebug() << SB_DEBUG_NPTR;
@@ -674,7 +678,7 @@ Navigator::_activateScreen()
     {
         //	Populate() will retrieve details from the database, populate the widget and returns
         //	the detailed result.
-        qDebug() << SB_DEBUG_INFO;
+        qDebug() << SB_DEBUG_INFO << si.key();
         si=tab->populate(si);
     }
     else

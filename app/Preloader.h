@@ -12,7 +12,7 @@ class Preloader
 public:
     //	CWIP: this should be templatized
     static QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartItems(const SBIDBase& id);
-    static QVector<SBIDAlbumPerformancePtr> albumPerformances(QString query);
+    static QVector<SBIDAlbumPerformancePtr> albumPerformances(SBKey key,QString query);
     static QVector<SBIDOnlinePerformancePtr> onlinePerformances(QString query);
     static QMap<int,SBIDAlbumPerformancePtr> performanceMap(QString query);
     static QMap<int,SBIDPlaylistDetailPtr> playlistItems(int playlistID);

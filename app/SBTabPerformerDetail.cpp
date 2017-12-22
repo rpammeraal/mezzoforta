@@ -121,6 +121,7 @@ void
 SBTabPerformerDetail::updatePerformerHomePage(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
+    qDebug() << SB_DEBUG_INFO;
     SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
     SB_RETURN_VOID_IF_NULL(pPtr);
 
@@ -132,6 +133,7 @@ void
 SBTabPerformerDetail::updatePerformerMBID(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
+    qDebug() << SB_DEBUG_INFO;
     SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
     SB_RETURN_VOID_IF_NULL(pPtr);
 
@@ -326,6 +328,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.tabPerformerDetailLists->setTabEnabled(5,0);
 
     //	Get detail
+    qDebug() << SB_DEBUG_INFO;
     SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(si.key());
     SB_RETURN_IF_NULL(pPtr,ScreenItem());
 

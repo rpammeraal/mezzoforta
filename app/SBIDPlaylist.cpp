@@ -119,6 +119,10 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
         this->recalculatePlaylistDuration();
+
+        SBIDPtr childPtr=pdPtr->childPtr();
+        SB_RETURN_IF_NULL(childPtr,0);
+        childPtr->setReloadFlag();
     }
     return !found;
 }
@@ -187,10 +191,16 @@ SBIDPlaylist::removePlaylistItem(int position)
     }
 
     SBIDPlaylistDetailPtr pdPtr=_items[position];
+    SB_RETURN_IF_NULL(pdPtr,0);
     moveDependent(position,_items.count());
 
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+
+    SBIDPtr childPtr=pdPtr->childPtr();
+    SB_RETURN_IF_NULL(childPtr,0);
+    childPtr->setReloadFlag();
+
     pdPtr->setDeletedFlag();
     pdmgr->remove(pdPtr);
 
@@ -279,7 +289,7 @@ SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
         ProgressDialog::instance()->show("Retrieving Playlist","SBIDPlaylist::refreshDependents",2);
     }
 
-    qDebug() << SB_DEBUG_INFO << forcedFlag;
+    qDebug() << SB_DEBUG_INFO << ID() << key() << forcedFlag;
     if(forcedFlag==1 || _items.count()==0)
     {
         qDebug() << SB_DEBUG_INFO << _items.count();
@@ -300,6 +310,7 @@ SBIDPlaylist::retrievePlaylist(SBKey key, bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
+    qDebug() << SB_DEBUG_INFO << key << noDependentsFlag;
     return pmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
@@ -532,9 +543,14 @@ SBIDPlaylist::setDeletedFlag()
     QMapIterator<int,SBIDPlaylistDetailPtr> it(_items);
     while(it.hasNext())
     {
+        it.next();
         SBIDPlaylistDetailPtr pldPtr=it.value();
-        qDebug() << SB_DEBUG_INFO << pldPtr->key();
-        pldPtr->setDeletedFlag();
+        qDebug() << SB_DEBUG_INFO << pldPtr.use_count();
+        if(pldPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << pldPtr->key();
+            pldPtr->setDeletedFlag();
+        }
     }
     qDebug() << SB_DEBUG_INFO << this->key();
     removePlaylistItemFromAllPlaylistsByKey(this->key());

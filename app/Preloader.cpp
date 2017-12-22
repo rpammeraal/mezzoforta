@@ -200,8 +200,9 @@ Preloader::chartItems(const SBIDBase& id)
 }
 
 QVector<SBIDAlbumPerformancePtr>
-Preloader::albumPerformances(QString query)
+Preloader::albumPerformances(SBKey key, QString query)
 {
+    qDebug() << SB_DEBUG_INFO << key;
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     CachePerformerMgr* pemgr=cm->performerMgr();
@@ -220,7 +221,7 @@ Preloader::albumPerformances(QString query)
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
+    qDebug() << SB_DEBUG_INFO << key << query;
 
     QSqlQuery queryList(query,db);
 
@@ -242,7 +243,7 @@ Preloader::albumPerformances(QString query)
     queryList.previous();
     while(queryList.next())
     {
-        SBKey key;
+        SBKey currentKey;
         SBIDAlbumPtr albumPtr;
         SBIDSongPerformancePtr spPtr;
         SBIDAlbumPerformancePtr albumPerformancePtr;
@@ -250,68 +251,87 @@ Preloader::albumPerformances(QString query)
         SBIDPerformerPtr performerPtr;
         SBIDSongPtr songPtr;
 
+    qDebug() << SB_DEBUG_INFO << currentKey ;
         //	Process song
         if(!queryList.isNull(0))
         {
-            key=SBIDSong::createKey(queryList.value(0).toInt());
-            if(key.validFlag())
+            currentKey=SBIDSong::createKey(queryList.value(0).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
+    qDebug() << SB_DEBUG_INFO << currentKey;
+                songPtr=(smgr->contains(currentKey)? smgr->retrieve(currentKey,Cache::open_flag_parentonly): _instantiateSong(smgr,songFields,queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         //	Process album
         if(!queryList.isNull(6))
         {
-            key=SBIDAlbum::createKey(queryList.value(6).toInt());
-            if(key.validFlag())
+            currentKey=SBIDAlbum::createKey(queryList.value(6).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
-                albumPtr=(amgr->contains(key)? amgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
+    qDebug() << SB_DEBUG_INFO << currentKey;
+                albumPtr=(amgr->contains(currentKey)? amgr->retrieve(currentKey,Cache::open_flag_parentonly): _instantiateAlbum(amgr,albumFields,queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         //	Process performer
         if(!queryList.isNull(12))
         {
-            key=SBIDPerformer::createKey(queryList.value(12).toInt());
-            if(key.validFlag())
+            currentKey=SBIDPerformer::createKey(queryList.value(12).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
+    qDebug() << SB_DEBUG_INFO << currentKey;
+                performerPtr=(pemgr->contains(currentKey)? pemgr->retrieve(currentKey,Cache::open_flag_parentonly): _instantiatePerformer(pemgr,performerFields,queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         //	Process song performance
         if(!queryList.isNull(25))
         {
-            key=SBIDSongPerformance::createKey(queryList.value(25).toInt());
-            if(key.validFlag())
+            currentKey=SBIDSongPerformance::createKey(queryList.value(25).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
-                spPtr=(spmgr->contains(key)?spmgr->retrieve(key, Cache::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
+    qDebug() << SB_DEBUG_INFO << currentKey;
+                spPtr=(spmgr->contains(currentKey)?spmgr->retrieve(currentKey, Cache::open_flag_parentonly):_instantiateSongPerformance(spmgr, songPerformanceFields, queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         //	Process album performance
         if(!queryList.isNull(21))
         {
-            key=SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
-            if(key.validFlag())
+            currentKey=SBIDAlbumPerformance::createKey(queryList.value(21).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
+    qDebug() << SB_DEBUG_INFO << currentKey;
                 //	checked on albumPerformanceID
-                albumPerformancePtr=(apmgr->contains(key)? apmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
+                albumPerformancePtr=(apmgr->contains(currentKey)? apmgr->retrieve(currentKey,Cache::open_flag_parentonly): _instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         //	Process online performance
         if(!queryList.isNull(21))
         {
-            key=SBIDOnlinePerformance::createKey(queryList.value(21).toInt());
-            if(key.validFlag())
+            currentKey=SBIDOnlinePerformance::createKey(queryList.value(21).toInt());
+    qDebug() << SB_DEBUG_INFO << currentKey;
+            if(currentKey.validFlag())
             {
+    qDebug() << SB_DEBUG_INFO << currentKey;
                 //	checked on albumPerformanceID
-                onlinePerformancePtr=(opmgr->contains(key)? opmgr->retrieve(key,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
+                onlinePerformancePtr=(opmgr->contains(currentKey)? opmgr->retrieve(currentKey,Cache::open_flag_parentonly): _instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList));
             }
         }
 
+    qDebug() << SB_DEBUG_INFO ;
         if(albumPerformancePtr)
         {
             items.append(albumPerformancePtr);

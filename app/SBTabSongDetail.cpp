@@ -302,6 +302,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     {
         if(key.itemType()==SBKey::Song)
         {
+            qDebug() << SB_DEBUG_INFO << key;
             sPtr=SBIDSong::retrieveSong(si.key());
         }
         else if(key.itemType()==SBKey::AlbumPerformance)
@@ -318,6 +319,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         {
             SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
             sPtr=opPtr->songPtr();
+            qDebug() << SB_DEBUG_INFO << key;
         }
         else
         {
@@ -326,6 +328,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     }
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
+    qDebug() << SB_DEBUG_INFO << sPtr->key() << sPtr->ID() << sPtr->reloadFlag();
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;

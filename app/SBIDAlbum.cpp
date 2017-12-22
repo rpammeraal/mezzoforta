@@ -238,6 +238,7 @@ SBIDAlbum::albumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDAlbum *>(this)->_loadAlbumPerformances();
     }
     return _albumPerformances;
@@ -303,6 +304,7 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO << key() << ID() << forcedFlag;
         _loadAlbumPerformances();
     }
 }
@@ -922,12 +924,14 @@ SBIDAlbum::_findAlbumPerformanceBySongPerformanceID(int songPerformanceID) const
 void
 SBIDAlbum::_loadAlbumPerformances()
 {
+    qDebug() << SB_DEBUG_INFO;
     _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
 QMap<int,SBIDAlbumPerformancePtr>
 SBIDAlbum::_loadAlbumPerformancesFromDB() const
 {
+    qDebug() << SB_DEBUG_INFO;
     return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()));
 }
 

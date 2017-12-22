@@ -186,6 +186,7 @@ Chooser::~Chooser()
 void
 Chooser::assignItem(const QModelIndex& idx, SBKey key)
 {
+    qDebug() << SB_DEBUG_INFO;
     QModelIndex p=idx.parent();
     Chooser::sb_root rootType=(Chooser::sb_root)p.row();
     switch(rootType)
@@ -216,6 +217,7 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
                 //	Check for multiple performances
                 SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
                 ptr=SBTabSongDetail::selectOnlinePerformanceFromSong(songPtr);
+
             }
             else
             {
@@ -283,6 +285,12 @@ Chooser::playlistDelete()
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
 
+    {
+        //	DEBUG:
+        ScreenStack* st=Context::instance()->getScreenStack();
+        st->debugShow("before playlist delete");
+    }
+
     _setCurrentIndex(_lastClickedIndex);
     SBIDPlaylistPtr playlistPtr=_getPlaylistSelected(_lastClickedIndex);
     if(playlistPtr)
@@ -314,6 +322,11 @@ Chooser::playlistDelete()
                 break;
         }
     }
+    {
+        //	DEBUG:
+        ScreenStack* st=Context::instance()->getScreenStack();
+        st->debugShow("after playlist delete");
+    }
 }
 
 void
@@ -325,10 +338,12 @@ Chooser::playlistEnqueue()
 void
 Chooser::playlistNew()
 {
+    _openPlaylistTab=1;	//	Open playlist
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
     Common::sb_parameters p;
 
+    qDebug() << SB_DEBUG_INFO;
     SBIDPlaylistPtr ptr=pmgr->createInDB(p);
 
     //	Refresh our tree structure
@@ -346,7 +361,7 @@ Chooser::playlistNew()
         Context::instance()->getController()->updateStatusBarText(updateText);
     }
     playlistRename(ptr->key());
-    _openPlaylistTab=1;	//	Open playlist
+    qDebug() << SB_DEBUG_INFO << _openPlaylistTab;
 }
 
 void
@@ -536,6 +551,7 @@ Chooser::doInit()
 void
 Chooser::_clicked(const QModelIndex &idx)
 {
+    qDebug() << SB_DEBUG_INFO;
     _lastClickedIndex=idx;
 }
 
@@ -565,6 +581,7 @@ Chooser::_renamePlaylist(SBIDPlaylistPtr playlistPtr)
         .arg(QChar(180));         //	3
     Context::instance()->getController()->updateStatusBarText(updateText);
 
+    qDebug() << SB_DEBUG_INFO << _openPlaylistTab;
     if(_openPlaylistTab)
     {
         _openPlaylistTab=0;

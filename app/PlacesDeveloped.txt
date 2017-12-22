@@ -1010,6 +1010,9 @@ Between 20161215 and 20170604:
 -	test::navigation done.
 
 CURRENT:
+*	Context: remove 'get'
+*	Convert to using smart pointers:
+    *	SBSqlQueryModel
 *	Edit song, different song shows up.
 *	find a common way to match strings:
     SBIDSong uses Common::simplified

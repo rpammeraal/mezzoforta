@@ -59,6 +59,9 @@ public:
     //	Helper methods for CacheTemplate
     static ItemType classType() { return OnlinePerformance; }
 
+    //	Aux
+    virtual void setReloadFlag();
+
     //	Static methods
     static SBKey createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);

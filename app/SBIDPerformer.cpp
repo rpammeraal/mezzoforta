@@ -138,6 +138,7 @@ SBIDPerformer::albumPerformances() const
 {
     if(_albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         const_cast<SBIDPerformer *>(this)->_loadAlbumPerformances();
     }
     return _albumPerformances;
@@ -192,6 +193,7 @@ SBIDPerformer::relatedPerformers()
     SBIDPerformerPtr ptr;
     for(int i=0;i<_relatedPerformerKey.count();i++)
     {
+        qDebug() << SB_DEBUG_INFO;
         ptr=retrievePerformer(_relatedPerformerKey.at(i));
         if(ptr)
         {
@@ -327,12 +329,14 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
+        qDebug() << SB_DEBUG_INFO;
             found=SBIDPerformer::retrievePerformer(matches[0][0]->itemID());
             result=Common::result_exists;
         }
         else if(matches[1].count()==1)
         {
             //	If there is *exactly* one match without articles, take it.
+        qDebug() << SB_DEBUG_INFO;
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists;
         }
@@ -350,6 +354,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                 if(selected)
                 {
                     //	Existing performer is choosen
+        qDebug() << SB_DEBUG_INFO;
                     found=SBIDPerformer::retrievePerformer(selected->itemID());
                     found->refreshDependents();
                     result=Common::result_exists;
@@ -371,12 +376,14 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
 void
 SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 {
+    qDebug() << SB_DEBUG_INFO << key() << ID() << forcedFlag;
     if(showProgressDialogFlag)
     {
         ProgressDialog::instance()->show("Retrieving Performer","SBIDPerformer::refreshDependents",4);
     }
     if(forcedFlag || _albumPerformances.count()==0)
     {
+        qDebug() << SB_DEBUG_INFO;
         _loadAlbumPerformances();
     }
     if(forcedFlag || _relatedPerformerKey.count()==0)
@@ -395,12 +402,14 @@ SBIDPerformer::retrievePerformer(SBKey key,bool noDependentsFlag)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
+    qDebug() << SB_DEBUG_INFO << key << noDependentsFlag;
     return pemgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
 }
 
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
 {
+        qDebug() << SB_DEBUG_INFO;
     return retrievePerformer(createKey(performerID),noDependentsFlag);
 }
 
@@ -411,7 +420,7 @@ SBIDPerformer::retrieveVariousPerformers()
     CachePerformerMgr* pemgr=cm->performerMgr();
     Properties* properties=Context::instance()->getProperties();
     int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
-    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID,1);
+    SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID);
     if(!performerPtr)
     {
         Common::sb_parameters p;
@@ -899,6 +908,7 @@ SBIDPerformer::_loadAlbums()
 void
 SBIDPerformer::_loadAlbumPerformances()
 {
+    qDebug() << SB_DEBUG_INFO;
     _albumPerformances=_loadAlbumPerformancesFromDB();
 }
 
@@ -983,7 +993,8 @@ SBIDPerformer::_mergeRelatedPerformer(SBKey fromKey, SBKey toKey)
 QVector<SBIDAlbumPerformancePtr>
 SBIDPerformer::_loadAlbumPerformancesFromDB() const
 {
-    return Preloader::albumPerformances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
+    qDebug() << SB_DEBUG_INFO << key() << ID();
+    return Preloader::albumPerformances(this->key(),SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
 }
 
 QVector<SBIDAlbumPtr>

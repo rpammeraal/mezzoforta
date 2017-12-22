@@ -59,6 +59,7 @@ public:
     QString ID() const { return QString("ID=%1").arg(_id); }
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
+    inline bool reloadFlag() const { return _reloadFlag; }
 
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
@@ -80,7 +81,7 @@ public:
     static ItemType convert(Common::sb_field f);
     static QString iconResourceLocationClass(SBKey key);
     static QString iconResourceLocationClass(ItemType itemType);
-    void setReloadFlag();
+    virtual void setReloadFlag();
 
 protected:
     SBIDBase(const SBIDBase& c);
@@ -104,7 +105,6 @@ protected:
     //	Used by CacheManager and SBID*:: classes
     virtual void clearChangedFlag();
     virtual void clearReloadFlag();
-    inline bool reloadFlag() const { return _reloadFlag; }
     virtual void rollback();
     void setChangedFlag();
     virtual void setDeletedFlag();

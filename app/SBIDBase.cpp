@@ -148,7 +148,6 @@ void
 SBIDBase::setReloadFlag()
 {
     _reloadFlag=1;
-    SB_RETURN_VOID_IF_NULL(_owningCache);
     qDebug() << SB_DEBUG_INFO << this->ID() << this->key();
 }
 

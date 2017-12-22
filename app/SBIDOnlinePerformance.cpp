@@ -468,12 +468,20 @@ SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
     ;
 }
 
-///	Protected
 void
 SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
     Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
+}
+
+void
+SBIDOnlinePerformance::setReloadFlag()
+{
+    SBIDBase::setReloadFlag();
+    SBIDSongPtr sPtr=this->songPtr();
+    SB_RETURN_VOID_IF_NULL(sPtr);
+    sPtr->setReloadFlag();
 }
 
 ///	Protected methods

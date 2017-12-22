@@ -15,8 +15,8 @@ static const SBKey::ItemType _order [] =
     SBKey::AlbumPerformance,
     SBKey::OnlinePerformance,
     SBKey::Performer,
-    SBKey::Playlist,
     SBKey::PlaylistDetail,
+    SBKey::Playlist,
     SBKey::SongPerformance,
     SBKey::Song
 };
@@ -61,6 +61,7 @@ CacheManager::get(SBKey::ItemType itemType,int itemID,bool noDependentsFlag)
         break;
 
     case SBKey::Performer:
+        qDebug() << SB_DEBUG_INFO << noDependentsFlag;
         ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
