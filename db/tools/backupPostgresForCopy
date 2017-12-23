@@ -9,7 +9,7 @@ if [ $# -eq 0 ]
 fi
 
 echo dumping database $1
-pg_dump -h mars --clean --no-owner --no-privileges --if-exists -d $1 -p 22500 > /tmp/$1.dump
+pg_dump -h mars --no-owner --no-privileges -d $1 -p 22500 > /tmp/$1.dump
 
 ls -las /tmp/$1.dump
 
