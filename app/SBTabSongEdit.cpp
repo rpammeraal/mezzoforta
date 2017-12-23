@@ -49,7 +49,7 @@ SBTabSongEdit::save() const
     //	A1.	[simple rename] Bad - U2: change to Badaa. Should be simple renames.
     //	A2.	[simple rename w/ case] Badaa - U2 to BadaA. Should take into account case change.
     //	A3.	[switch original performer to completely new performer] BadaA - U2: change performer to U22.
-    //	A4.	[merge song (within performer)] Badaa - U22 to Acrobat. Note that album listing for Acrobat should include 'Bad' albums.
+    //	A4.	[merge song (within performer)] Badaa - U22 to Acrobat - U2. Note that album listing for Acrobat should include 'Bad' albums.
     //	A5.	[remove performances without album performances] Edit (no changes) and save Acrobat - U2 one more time to remove the U22 entry.
 
     //	B.	[switch original performer to non-original performer] Dancing Barefoot: change from Patti Smith to U2 and back

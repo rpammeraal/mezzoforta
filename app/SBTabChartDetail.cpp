@@ -36,7 +36,7 @@ SBTabChartDetail::playNow(bool enqueueFlag)
         SBIDSongPerformancePtr sPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(selectedPrimary.key.itemID(),selectedSecondary.key.itemID());
         if(sPtr)
         {
-            selectedPrimary.key=sPtr->key();
+
         }
     }
     if(selectedPrimary.key.validFlag())

@@ -1013,24 +1013,25 @@ CURRENT:
 -	Context: remove 'get'
 -	Convert to using smart pointers:
     -	SBSqlQueryModel: QT base class does not allow for smart pointers
+-	Edit song, different song shows up.
+-	test ability to assign to playlist from all screens
+-	test ability to play from all screens
+-	Play album, does not honor album positions.
 *	Enqueue chart, then click on 'play'. Nothing happens.
+*	Drag from Performer/Song tab should not ask for performer (e.g. Platters/Only You).
 
 TODO:
-*	Edit song, different song shows up.
+*	See if SBIDBase ctors can be made private
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
 	save method in SBTabAlbumEdit, SBTabPerformerEdit, SBTabSongEdit use different ways to find out if title/name/etc has changed
 	Use SBCaseInsensitiveString class
 *	when schema is changed, search (et al) is not updated
-*	test ability to assign to playlist from all screens
-*	test ability to play from all screens
-*	See if SBIDBase ctors can be made private
 *	Add dialogbox to save operations.
 *	Preload all caches
     *	AllSongs tab to not use SQL
 	*	SearchItem to not use SQL
-*	Play album, does not honor album positions.
 
 Bugs that need to be fixed:
 *	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
