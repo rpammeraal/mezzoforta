@@ -158,6 +158,7 @@ public:
     };
 
     static QStringList articles();
+    static QString comparable(const QString& );
     static QString correctArticle(const QString& );
     static QString db_change_to_string(Common::db_change db_change);
     static QString escapeSingleQuotes(const QString &);

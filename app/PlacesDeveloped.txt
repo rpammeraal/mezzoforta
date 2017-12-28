@@ -1020,6 +1020,9 @@ CURRENT:
 *	Enqueue chart, then click on 'play'. Nothing happens.
 *	Drag from Performer/Song tab should not ask for performer (e.g. Platters/Only You).
 
+-	lowercase
+-	remove non alpha numeric
+
 TODO:
 *	See if SBIDBase ctors can be made private
 *	find a common way to match strings:

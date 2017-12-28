@@ -45,6 +45,15 @@ Common::articles()
     return _articles;
 }
 
+//	Comparable needs to be used to find items in the database:
+//	-	remove spaces (simplified, replace)
+//	-	lower case
+QString
+Common::comparable(const QString &s)
+{
+    return s.toLower().simplified().replace(" ","");
+}
+
 QString
 Common::correctArticle(const QString &s)
 {

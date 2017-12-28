@@ -336,7 +336,13 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists;
         }
-        else
+        else if(matches[2].count()==1)
+        {
+            found=SBIDPerformer::retrievePerformer(matches[2][0]->itemID());
+            result=Common::result_exists;
+
+        }
+        else if(matches[2].count()>1)
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
@@ -359,6 +365,10 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                     result=Common::result_missing;
                 }
             }
+        }
+        else
+        {
+            result=Common::result_missing;
         }
     }
     else
@@ -571,11 +581,13 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         "ranked AS "
         "( "
             "SELECT "
-                "match_rank, "
-                "artist_id, "
-                "ROW_NUMBER() OVER(PARTITION BY artist_id ORDER BY match_rank) AS rank "
+                "a.match_rank, "
+                "a.artist_id, "
+                //	SQLITE does not support window functions.
+                //"ROW_NUMBER() OVER(PARTITION BY artist_id ORDER BY match_rank) AS rank "
+                " (SELECT COUNT(*) FROM allr b WHERE a.artist_id=b.artist_id AND b.match_rank<a.match_rank) as rank "
             "FROM "
-                "allr "
+                "allr a "
         ") "
         "SELECT "
             "r.match_rank, "
@@ -588,7 +600,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                 "JOIN ___SB_SCHEMA_NAME___artist s ON "
                     "r.artist_id=s.artist_id "
         "WHERE "
-            "r.rank=1 "
+            "r.rank=0 "
         "ORDER BY "
             "1, 3"
     )

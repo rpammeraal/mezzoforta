@@ -293,13 +293,13 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
-            "p.performance_id!=%1 AND"
-            "s.title='%2' AND "
-            "a.name='%3' "
+            "p.performance_id!=%1 AND "
+            "REPLACE(LOWER(s.title),' ','')='%2' AND "
+            "REPLACE(LOWER(a.name),' ','')='%3' "
     )
         .arg(excludeSongPerformanceID)
-        .arg(songTitle)
-        .arg(performerName)
+        .arg(Common::escapeSingleQuotes(Common::comparable(songTitle)))
+        .arg(Common::escapeSingleQuotes(Common::comparable(performerName)))
     ;
 
     dal->customize(q);
@@ -503,7 +503,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
                     "p.song_id=s.song_id "
                     "%4 "
         "WHERE "
-            "REPLACE(LOWER(s.title),' ','') = REPLACE(LOWER('%1'),' ','') "
+            "REPLACE(LOWER(s.title),' ','') = '%1' "
         "UNION "
         //	soundex match, only if length of soundex > 0
         "SELECT "
@@ -527,7 +527,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         "ORDER BY "
             "1,3 "
     )
-        .arg(Common::escapeSingleQuotes(Common::simplified(tobeFound.songTitle)))
+        .arg(Common::escapeSingleQuotes(Common::comparable(tobeFound.songTitle)))
         .arg(tobeFound.performerID)
         .arg(newSoundex)
         .arg(excludeID==-1?"":QString(" AND s.song_id!=(%1)").arg(excludeID))

@@ -630,7 +630,7 @@ Preloader::playlistItems(int playlistID)
             "pl.name, "
 
             "pl.duration, "                             //	35
-            "NULL::VARCHAR "
+            "NULL AS VARCHAR "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pd "

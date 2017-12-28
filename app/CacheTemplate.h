@@ -346,7 +346,7 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
                     newPtr->refreshDependents(0,1);
                 }
             }
-            map[intKey]=newPtr;
+            map[intKey]=ptr;
         }
         ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
     }
@@ -371,11 +371,18 @@ CacheTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 template <class T, class parentT> void
 CacheTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>& toPtr)
 {
-	toPtr->mergeFrom(fromPtr);
-    fromPtr->setDeletedFlag();
-    toPtr->setChangedFlag();
-    addChangedKey(fromPtr->key());
-    addChangedKey(toPtr->key());
+    if(fromPtr->key()!=toPtr->key())
+    {
+        toPtr->mergeFrom(fromPtr);
+        fromPtr->setDeletedFlag();
+        toPtr->setChangedFlag();
+        addChangedKey(fromPtr->key());
+        addChangedKey(toPtr->key());
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "Merge skipped (equal key " << fromPtr->key() << ")";
+    }
 }
 
 template <class T, class parentT> void

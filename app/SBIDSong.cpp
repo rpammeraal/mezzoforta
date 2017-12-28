@@ -660,24 +660,27 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
     //	SongPerformance
     CacheSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
     _loadSongPerformances();	//	make sure list is loaded.
+    //QMapIterator<int,SBIDSongPerformancePtr> it(_songPerformances);
     QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
     while(it.hasNext())
     {
         it.next();
         int performerID=it.key();
-        SBIDSongPerformancePtr spPtr=it.value();
+        SBIDSongPerformancePtr fromSpPtr=it.value();
 
+        qDebug() << SB_DEBUG_INFO << fromSpPtr->key() << fromSpPtr->ID();
         if(_songPerformances.contains(performerID))
         {
             SBIDSongPerformancePtr toSpPtr=_songPerformances[performerID];
-            spMgr->merge(spPtr,toSpPtr);
+            qDebug() << SB_DEBUG_INFO << toSpPtr->key();
+            spMgr->merge(fromSpPtr,toSpPtr);
         }
         else
         {
+            qDebug() << SB_DEBUG_INFO;
             //	Assign to current
-            spPtr->setSongID(this->songID());
-            _songPerformances[performerID]=spPtr;
-
+            fromSpPtr->setSongID(this->songID());
+            _songPerformances[performerID]=fromSpPtr;
         }
     }
 

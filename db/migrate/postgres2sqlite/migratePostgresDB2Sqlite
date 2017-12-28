@@ -119,6 +119,11 @@ echo build sqlite database
 cat /tmp/$TEMPDB.out | sqlite3 /tmp/$SCHEMA.sqlite
 dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
 
+echo adding root tables
+cat rootTables.sql | sqlit3 /tmp/$SCHEMA.sqlite
+
+echo sqlite database available at /tmp/$SCHEMA.sqlite
+
+#	cleanup
 rm -f /tmp/$DB.dump
 rm -f /tmp/$TEMPDB.out
-echo sqlite database available at /tmp/$SCHEMA.sqlite
