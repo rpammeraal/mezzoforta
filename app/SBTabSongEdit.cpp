@@ -162,139 +162,142 @@ SBTabSongEdit::save() const
     }
 
     //	4.	if performer has changed
-    if(!mergedFlag && editPerformerName!=orgSpPtr->songPerformerName())
+    if(!mergedFlag)
     {
-        SBIDPerformerPtr newPPtr;
-
-        //		4.1	lookup changed performer (userMatch)
-        Common::sb_parameters p;
-        p.performerName=editPerformerName;
-        p.performerID=-1;
-        Common::result result=peMgr->userMatch(p,SBIDPerformerPtr(),newPPtr);
-
-        if(result==Common::result_canceled)
+        if(editPerformerName!=orgSpPtr->songPerformerName())
         {
-            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
-            return;
-        }
-        else if(result==Common::result_missing)
-        {
-            newSongPtr=orgSongPtr;
+            SBIDPerformerPtr newPPtr;
 
-        qDebug() << SB_DEBUG_INFO;
-            //	4.1.1	if not found:
-            //	Create performer
-            Common::sb_parameters performer;
-            performer.performerName=p.performerName;
-            newPPtr=peMgr->createInDB(performer);
+            //		4.1	lookup changed performer (userMatch)
+            Common::sb_parameters p;
+            p.performerName=editPerformerName;
+            p.performerID=-1;
+            Common::result result=peMgr->userMatch(p,SBIDPerformerPtr(),newPPtr);
 
-            //	Create new song performance
-            p.songID=newSongPtr->songID();
-            p.performerID=newPPtr->performerID();
-            p.year=orgSpPtr->year();
-            SBIDSongPerformancePtr newSpPtr=spMgr->createInDB(p);
-            newSongPtr->addSongPerformance(newSpPtr);
-
-            //	set originalPerformanceID of song
-            newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
-
-            //	set other attributes, save song -- completely new performer means no other matches can be found.
-            setMetaDataFlag=1;
-        }
-        else if(result==Common::result_exists)
-        {
-            //	4.1.2	if found:
-            //		find if song performance exist with edited song title & changed performer.
-            SBIDSongPerformancePtr altSpPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformer(
-                        editTitle,
-                        newPPtr->performerName(),
-                        orgSpPtr->songPerformanceID());
-
-            if(altSpPtr)
+            if(result==Common::result_canceled)
             {
-                //		If found, merge -> save.
-                newSongPtr=altSpPtr->songPtr();
-                SB_RETURN_VOID_IF_NULL(newSongPtr);
-                qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
-                qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
-                sMgr->merge(orgSongPtr,newSongPtr);
-                mergedFlag=1;
+                qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+                return;
             }
-            else
+            else if(result==Common::result_missing)
             {
-                //		If not found, find song with matching edit song title.
-                Common::sb_parameters p;
-                p.songTitle=editTitle;
-                p.performerID=newPPtr->performerID();
-                p.performerName=newPPtr->performerName();
-                p.year=orgSpPtr->year();
-                p.notes=orgSpPtr->notes();
+                newSongPtr=orgSongPtr;
 
-                qDebug() << SB_DEBUG_INFO << p.songID;
-                Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
-                if(result==Common::result_canceled)
+            qDebug() << SB_DEBUG_INFO;
+                //	4.1.1	if not found:
+                //	Create performer
+                Common::sb_parameters performer;
+                performer.performerName=p.performerName;
+                newPPtr=peMgr->createInDB(performer);
+
+                //	Create new song performance
+                p.songID=newSongPtr->songID();
+                p.performerID=newPPtr->performerID();
+                p.year=orgSpPtr->year();
+                SBIDSongPerformancePtr newSpPtr=spMgr->createInDB(p);
+                newSongPtr->addSongPerformance(newSpPtr);
+
+                //	set originalPerformanceID of song
+                newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
+
+                //	set other attributes, save song -- completely new performer means no other matches can be found.
+                setMetaDataFlag=1;
+            }
+            else if(result==Common::result_exists)
+            {
+                //	4.1.2	if found:
+                //		find if song performance exist with edited song title & changed performer.
+                SBIDSongPerformancePtr altSpPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformer(
+                            editTitle,
+                            newPPtr->performerName(),
+                            orgSpPtr->songPerformanceID());
+
+                if(altSpPtr)
                 {
-                    qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
-                    return;
-                }
-                if(result==Common::result_exists)
-                {
-                    //		if found: merge
+                    //		If found, merge -> save.
+                    newSongPtr=altSpPtr->songPtr();
                     SB_RETURN_VOID_IF_NULL(newSongPtr);
                     qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
                     qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
                     sMgr->merge(orgSongPtr,newSongPtr);
                     mergedFlag=1;
                 }
-                if(result==Common::result_missing)
+                else
                 {
-                    //		if not found:
-                    //	Create new song performance
-                    p.songID=orgSongPtr->songID();
+                    //		If not found, find song with matching edit song title.
+                    Common::sb_parameters p;
+                    p.songTitle=editTitle;
                     p.performerID=newPPtr->performerID();
-                    p.year=editYearOfRelease;
-                    SBIDSongPerformancePtr newSpPtr=spMgr->createInDB(p);
-                    newSongPtr->addSongPerformance(newSpPtr);
+                    p.performerName=newPPtr->performerName();
+                    p.year=orgSpPtr->year();
+                    p.notes=orgSpPtr->notes();
 
-                    //	set originalPerformanceID of song
-                    newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
+                    qDebug() << SB_DEBUG_INFO << p.songID;
+                    Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
+                    if(result==Common::result_canceled)
+                    {
+                        qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+                        return;
+                    }
+                    if(result==Common::result_exists)
+                    {
+                        //		if found: merge
+                        SB_RETURN_VOID_IF_NULL(newSongPtr);
+                        qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
+                        qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
+                        sMgr->merge(orgSongPtr,newSongPtr);
+                        mergedFlag=1;
+                    }
+                    if(result==Common::result_missing)
+                    {
+                        //		if not found:
+                        //	Create new song performance
+                        p.songID=orgSongPtr->songID();
+                        p.performerID=newPPtr->performerID();
+                        p.year=editYearOfRelease;
+                        SBIDSongPerformancePtr newSpPtr=spMgr->createInDB(p);
+                        newSongPtr->addSongPerformance(newSpPtr);
 
-                    //	set other attributes, save song -- completely new performer means no other matches can be found.
-                    setMetaDataFlag=1;
+                        //	set originalPerformanceID of song
+                        newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
+
+                        //	set other attributes, save song -- completely new performer means no other matches can be found.
+                        setMetaDataFlag=1;
+                    }
                 }
             }
         }
-    }
-    else
-    {
-        //	4.2	(else) if performer has not changed, title has changed:
-        Common::sb_parameters p;
-        p.songTitle=editTitle;
-        p.performerID=orgSpPtr->songPerformerID();
-        p.performerName=orgSpPtr->songPerformerName();
-        p.year=orgSpPtr->year();
-        p.notes=orgSpPtr->notes();
+        else
+        {
+            //	4.2	(else) if performer has not changed, title has changed:
+            Common::sb_parameters p;
+            p.songTitle=editTitle;
+            p.performerID=orgSpPtr->songPerformerID();
+            p.performerName=orgSpPtr->songPerformerName();
+            p.year=orgSpPtr->year();
+            p.notes=orgSpPtr->notes();
 
-        qDebug() << SB_DEBUG_INFO << p.songID;
-        Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
-        if(result==Common::result_canceled)
-        {
-            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
-            return;
-        }
-        else if(result==Common::result_exists)
-        {
-            SB_RETURN_VOID_IF_NULL(newSongPtr);
-            qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
-            qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
-            sMgr->merge(orgSongPtr,newSongPtr);
-            mergedFlag=1;
-        }
-        else if(result==Common::result_missing)
-        {
-            newSongPtr=orgSongPtr;
-            newSongPtr->setSongTitle(editTitle);
-            setMetaDataFlag=1;
+            qDebug() << SB_DEBUG_INFO << p.songID;
+            Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
+            if(result==Common::result_canceled)
+            {
+                qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+                return;
+            }
+            else if(result==Common::result_exists)
+            {
+                SB_RETURN_VOID_IF_NULL(newSongPtr);
+                qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
+                qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
+                sMgr->merge(orgSongPtr,newSongPtr);
+                mergedFlag=1;
+            }
+            else if(result==Common::result_missing)
+            {
+                newSongPtr=orgSongPtr;
+                newSongPtr->setSongTitle(editTitle);
+                setMetaDataFlag=1;
+            }
         }
     }
 
