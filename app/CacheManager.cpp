@@ -61,7 +61,6 @@ CacheManager::get(SBKey::ItemType itemType,int itemID,bool noDependentsFlag)
         break;
 
     case SBKey::Performer:
-        qDebug() << SB_DEBUG_INFO << noDependentsFlag;
         ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
         break;
 
@@ -139,7 +138,6 @@ CacheManager::saveChanges()
         int numUpdatesAfter=insertSQL.count()+updateSQL.count()+deleteSQL.count();
         if(numUpdatesAfter-numUpdatesBefore>3)
         {
-            qDebug() << SB_DEBUG_INFO << itemType << numUpdatesBefore << numUpdatesAfter;
             _albumsUpdatedFlag=(itemType==SBKey::ItemType::Album?1:albumsUpdatedFlag());
             _performersUpdatedFlag=(itemType==SBKey::ItemType::Performer?1:performersUpdatedFlag());
             _songsUpdatedFlag=(itemType==SBKey::ItemType::Song?1:songsUpdatedFlag());
@@ -179,20 +177,10 @@ CacheManager::saveChanges()
     }
 
     //	CWIP: remove when database is cached
-    qDebug() << SB_DEBUG_INFO << _albumsUpdatedFlag;
-    qDebug() << SB_DEBUG_INFO << _performersUpdatedFlag;
-    qDebug() << SB_DEBUG_INFO << _songsUpdatedFlag;
     if(albumsUpdatedFlag() || performersUpdatedFlag() || songsUpdatedFlag())
     {
-        SearchItemModel* oldSim=Context::instance()->searchItemModel();
-        SearchItemModel* newSim=new SearchItemModel();
-
-        QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
-        QCompleter* completer=lineEdit->completer();
-        completer->setModel(newSim);
-
-        delete(oldSim); oldSim=NULL;
-        Context::instance()->setSearchItemModel(newSim);
+        Navigator* n=Context::instance()->navigator();
+        n->refreshSearchCompleter();
 
         //	CWIP: remove when database is cached
         Context::instance()->controller()->preloadAllSongs();

@@ -1008,30 +1008,27 @@ Between 20161215 and 20170604:
 
 20171219:
 -	test::navigation done.
+-	Context: remove 'get' (checked in earlier).
+-	Convert to using smart pointers:
+    -	SBSqlQueryModel: QT base class does not allow for smart pointers -- can't do this, QT uses these pointers.
+-	Set up signals when performers are created so completers et al can be reloaded.
+-	Enqueue chart, then click on 'play'. Nothing happens.
+-	when schema is changed, search (et al) is not updated. All items are properly refreshed when schema changes.
+-	Edit song, different song shows up.
+-	test ability to assign to playlist from all screens -> test document
+-	test ability to play from all screens -> test document
+-	Play album, does not honor album positions.
 
 CURRENT:
--	Context: remove 'get'
--	Convert to using smart pointers:
-    -	SBSqlQueryModel: QT base class does not allow for smart pointers
--	Edit song, different song shows up.
--	test ability to assign to playlist from all screens
--	test ability to play from all screens
--	Play album, does not honor album positions.
-*	Enqueue chart, then click on 'play'. Nothing happens.
 *	Drag from Performer/Song tab should not ask for performer (e.g. Platters/Only You).
 
--	lowercase
--	remove non alpha numeric
-
 TODO:
-*	Set up signals when performers are created so completers et al can be reloaded.
 *	See if SBIDBase ctors can be made private
 *	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
 	save method in SBTabAlbumEdit, SBTabPerformerEdit, SBTabSongEdit use different ways to find out if title/name/etc has changed
 	Use SBCaseInsensitiveString class
-*	when schema is changed, search (et al) is not updated
 *	Add dialogbox to save operations.
 *	Preload all caches
     *	AllSongs tab to not use SQL

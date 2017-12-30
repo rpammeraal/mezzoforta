@@ -65,10 +65,10 @@ SearchItemModel::populate()
             "NULL, "
             "NULL "
         "FROM "
-            "rock.song s  "
-                "JOIN rock.performance p ON "
+            "___SB_SCHEMA_NAME___song s  "
+                "JOIN ___SB_SCHEMA_NAME___performance p ON "
                     "s.original_performance_id=p.performance_id "
-                "JOIN rock.artist a ON "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "UNION "
         "SELECT "
@@ -80,8 +80,8 @@ SearchItemModel::populate()
             "r.record_id, "
             "r.title "
         "FROM "
-            "rock.record r "
-                "JOIN rock.artist a ON "
+            "___SB_SCHEMA_NAME___record r "
+                "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "r.artist_id=a.artist_id "
         "UNION "
         "SELECT "
@@ -93,7 +93,7 @@ SearchItemModel::populate()
             "NULL, "
             "NULL "
         "FROM "
-            "rock.artist a "
+            "___SB_SCHEMA_NAME___artist a "
     )
         .arg(SBKey::Song)
         .arg(SBKey::Album)
@@ -110,7 +110,6 @@ SearchItemModel::populate()
     this->clear();
 
     QSqlQuery queryList(query,db);
-    qDebug() << SB_DEBUG_INFO << queryList.size();
     QTime time; time.start();
     while(queryList.next())
     {

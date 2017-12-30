@@ -91,7 +91,6 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     if(_state==PlayerController::sb_player_state_play)
     {
         //	Continue with next song
-qDebug() << SB_DEBUG_INFO << "emit playNextSong";
         emit playNextSong();
     }
 }
@@ -180,13 +179,13 @@ PlayerController::playerStop()
 ///
 /// Returns 1 on success, 0 otherwise.
 bool
-PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
+PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr, bool setReadyFlag)
 {
     PropertiesPtr p=Context::instance()->properties();
     Controller* c=Context::instance()->controller();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-    qDebug() << SB_DEBUG_INFO << opPtr->path();
+    qDebug() << SB_DEBUG_INFO << setReadyFlag << opPtr->path();
 
     QString path=QString("%1/%2")
                 .arg(p->musicLibraryDirectorySchema())
@@ -207,8 +206,15 @@ PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 
     //	Instruct player to play
     _currentPerformancePlayingPtr=opPtr;
-    _playerInstance[_currentPlayerID].play();
-    _updatePlayState(PlayerController::sb_player_state_play);
+    if(setReadyFlag==0)
+    {
+        _playerInstance[_currentPlayerID].play();
+        _updatePlayState(PlayerController::sb_player_state_play);
+    }
+    else
+    {
+        _updatePlayState(PlayerController::sb_player_state_stopped);
+    }
 
     qDebug() << SB_DEBUG_INFO << "returning success";
     return 1;

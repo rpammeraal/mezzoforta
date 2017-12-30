@@ -30,7 +30,7 @@ PlayManager::songPlayingFlag() const
 void
 PlayManager::playerPrevious()
 {
-    playerNext(1);
+    playerNext(PlayMode::Previous);
 }
 
 ///
@@ -72,7 +72,7 @@ PlayManager::playerPlay()
 }
 
 bool
-PlayManager::playerNext(bool previousFlag)
+PlayManager::playerNext(PlayMode playMode)
 {
     PlayerController* pc=Context::instance()->playerController();
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
@@ -82,14 +82,14 @@ PlayManager::playerNext(bool previousFlag)
     bool exitLoopFlag=0;	//	meta indicator to avoid infinite loops
     bool lastSongPlayedFlag=0;
 
-    if(previousFlag && currentPlayID()==0)
+    if(playMode==PlayMode::Previous && currentPlayID()==0)
     {
         //	Skip to start of song if first song is active
         pc->playerSeek(0);
         return 0;
     }
 
-    if(previousFlag)
+    if(playMode==PlayMode::Previous)
     {
         numTries=currentPlayID();
     }
@@ -106,7 +106,7 @@ PlayManager::playerNext(bool previousFlag)
     pc->playerStop();
     while((numTries>0 && isPlayingFlag==0 && exitLoopFlag==0) || (lastSongPlayedFlag==1 && radioModeFlag()))
     {
-        int nextCurrentPlayID=previousFlag?currentPlayID()-1:currentPlayID()+1;
+        int nextCurrentPlayID=(playMode==PlayMode::Previous)?currentPlayID()-1:currentPlayID()+1;
 
         //	Handle end of the list
         if(nextCurrentPlayID>=numSongs)
@@ -121,17 +121,17 @@ PlayManager::playerNext(bool previousFlag)
                 return 0;
             }
         }
-        isPlayingFlag=playItemNow(nextCurrentPlayID);
+        isPlayingFlag=playItem(nextCurrentPlayID,playMode);
 
         //	If previous and first song is not playing reverse directions
         if(isPlayingFlag==0)
         {
-            if(previousFlag==1 && nextCurrentPlayID==0)
+            if(playMode==PlayMode::Previous && nextCurrentPlayID==0)
             {
-                previousFlag=0;
+                playMode=PlayMode::Default;
                 numTries=numSongs;
             }
-            if(previousFlag==0 && nextCurrentPlayID==numSongs-1)
+            if(playMode==PlayMode::Default && nextCurrentPlayID==numSongs-1)
             {
                 //	We may not have any songs at all, exit loop
                 exitLoopFlag=1;
@@ -205,46 +205,9 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
     {
         isPlayingFlag=this->playerNext();
     }
-    return isPlayingFlag;
-}
-
-///
-/// \brief PlayManager::playItemNow
-/// \param playlistIndex
-/// \return
-///
-/// ::playItemNow(unsigned int) is the lowest level function that will call PlayerController
-/// to play a song.
-bool
-PlayManager::playItemNow(unsigned int playlistIndex)
-{
-    //	Check if music library directory is set up prior to playing.
-    Context::instance()->properties()->musicLibraryDirectory();
-
-    PlayerController* pc=Context::instance()->playerController();
-    bool isPlayingFlag=0;
-    _setCurrentPlayID(playlistIndex);
-
-    SBIDOnlinePerformancePtr performancePtr=_performanceAt(currentPlayID());
-
-    if(!performancePtr)
-    {
-        return 0;
-    }
     else
     {
-        //	Song is valid, go and play
-        performancePtr->setPlayPosition(this->currentPlayID());
-        isPlayingFlag=pc->playSong(performancePtr);
-        if(isPlayingFlag==0)
-        {
-            return 0;
-        }
-        else if(_radioModeFlag)
-        {
-            performancePtr->updateLastPlayDate();
-
-        }
+        this->playerNext(PlayMode::SetReady);
     }
     return isPlayingFlag;
 }
@@ -282,6 +245,42 @@ void
 PlayManager::doInit()
 {
     _init();
+}
+
+///
+/// \brief PlayManager::playItemNow
+/// \param playlistIndex
+/// \return
+///
+/// ::playItemNow(unsigned int) is the lowest level function that will call PlayerController
+/// to play a song.
+bool
+PlayManager::playItem(unsigned int playlistIndex,PlayMode playMode)
+{
+    //	Check if music library directory is set up prior to playing.
+    Context::instance()->properties()->musicLibraryDirectory();
+
+    PlayerController* pc=Context::instance()->playerController();
+    bool isPlayingFlag=0;
+    _setCurrentPlayID(playlistIndex);
+
+    SBIDOnlinePerformancePtr performancePtr=_performanceAt(currentPlayID());
+
+    if(!performancePtr)
+    {
+        return 0;
+    }
+    else
+    {
+        //	Song is valid, go and play
+        performancePtr->setPlayPosition(this->currentPlayID());
+        isPlayingFlag=pc->playSong(performancePtr,playMode==PlayMode::SetReady);
+        if(_radioModeFlag)
+        {
+            performancePtr->updateLastPlayDate();
+        }
+    }
+    return isPlayingFlag;
 }
 
 ///	Private methods

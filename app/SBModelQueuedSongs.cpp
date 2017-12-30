@@ -315,7 +315,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
             //	If queue gets cleared (user presses clear button) and items are enqueued,
             //	player will start with the 2nd song. Therefore, _currentPlayID needs to be
             //	reset.
-            _currentPlayID=-1;
+            _currentPlayID=0;
         }
     }
     ProgressDialog::instance()->finishStep("SBModelQueuedSongs::populate");

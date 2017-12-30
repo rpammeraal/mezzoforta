@@ -22,6 +22,13 @@ class PlayManager : public QObject
 {
     Q_OBJECT
 
+    enum PlayMode
+    {
+        Default=0,
+        Previous,
+        SetReady,
+    };
+
 public:
     PlayManager(QObject *parent = 0);
     inline int currentPlayID() const { return _currentPlayID; }
@@ -36,20 +43,22 @@ public slots:
     //	Player related
     void playerPrevious();
     bool playerPlay();
-    bool playerNext(bool previousFlag=0);
+    bool playerNext(PlayMode playMode=PlayMode::Default);
     void playerStop();
 
     //	Playlist et al related
     void changeCurrentDatabaseSchema();
     void clearPlaylist();
     bool playItemNow(SBKey key,const bool enqueueFlag=0);
-    bool playItemNow(unsigned int playlistIndex);
     void shufflePlaylist();
     void startRadio();
 
 protected:
     friend class Context;
     void doInit();	//	Init done by Context::
+
+    friend class SBTabQueuedSongs;
+    bool playItem(unsigned int playlistIndex,PlayMode playMode=PlayMode::Default);
 
 private:
     int  _currentPlayID;    //	0-based, -1: no song active

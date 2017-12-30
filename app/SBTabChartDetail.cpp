@@ -21,14 +21,12 @@ void
 SBTabChartDetail::playNow(bool enqueueFlag)
 {
     SBKey key=this->currentScreenItem().key();
-    qDebug() << SB_DEBUG_INFO << key;
     const MainWindow* mw=Context::instance()->mainWindow();
     PlaylistItem selectedPrimary=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
 
     const QAbstractItemModel* aim=_lastClickedIndex.model();
     QModelIndex secondaryIdx=aim->index(_lastClickedIndex.row(), _lastClickedIndex.column()+2);
     PlaylistItem selectedSecondary=_getSelectedItem(mw->ui.chartDetailSongList->model(),secondaryIdx);
-    qDebug() << SB_DEBUG_INFO << selectedPrimary.key << selectedSecondary.key;
 
     if(selectedSecondary.key.validFlag())
     {

@@ -42,6 +42,7 @@ public:
     void keyPressEvent(QKeyEvent * event);
     void navigateDetailTab(int direction=1);
     void removeFromScreenStack(SBKey key);
+    void refreshSearchCompleter();
     void resetAllFiltersAndSelections();
     void showCurrentPlaylist();
     void showSonglist();
@@ -79,6 +80,7 @@ private:
     void _init();
     void _filterSongs(const ScreenItem& si);
     void _moveFocusToScreen(int direction);
+    void _setupSearchCompleter();
 
 private slots:
     void _showSongListAfterTimer();

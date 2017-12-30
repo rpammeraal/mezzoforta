@@ -1,13 +1,5 @@
-#include <QAbstractScrollArea>
-#include <QAction>
-#include <QCompleter>
-#include <QDebug>
-#include <QFont>
 #include <QKeyEvent>
-#include <QListWidgetItem>
-#include <QMessageBox>
-#include <QSqlQueryModel>
-#include <QSortFilterProxyModel>
+#include <QCompleter>
 
 #include "Navigator.h"
 
@@ -15,20 +7,9 @@
 #include "CompleterFactory.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataAccessLayer.h"
-#include "ExternalData.h"
-#include "Chooser.h"
 #include "MainWindow.h"
-#include "PlayerController.h"
 #include "ProgressDialog.h"
-#include "SBIDBase.h"
-#include "CacheTemplate.h"
-#include "SBIDPlaylist.h"
-#include "SBIDPlaylistDetail.h"
-#include "SBIDOnlinePerformance.h"
-#include "SBDialogSelectItem.h"
-#include "SBTab.h"
-#include "ScreenStack.h"
+#include "SearchItemModel.h"
 
 //	Enroute AUS-LAX 20150718-1927CST, AA-MD80-MAN
 //	zeg me dat t niet zo is - frank boeijen groep
@@ -61,27 +42,7 @@ Navigator::clearSearchFilter()
         completer=cf->getCompleterAll();
         lineEdit->setCompleter(completer);
     }
-    completer->setCurrentRow(0);
-    lineEdit->clear();
-    lineEdit->setPlaceholderText("Search:");
-    lineEdit->setText("");
-
-    Navigator* navigator=Context::instance()->navigator();
-
-    connect(
-        completer, SIGNAL(activated(const QModelIndex&)),
-        navigator, SLOT(openItemFromCompleter(const QModelIndex&)));
-    connect(
-        lineEdit, SIGNAL(returnPressed()),
-        navigator, SLOT(applySonglistFilter()));
-    connect(
-        completer, SIGNAL(activated(QString)),
-        lineEdit, SLOT(clear()),
-        Qt::QueuedConnection);	//	this will clear the search box
-    connect(
-        lineEdit, SIGNAL(textChanged(QString)),
-        navigator, SLOT(textChanged(QString)));
-    navigator->textChanged(QString());	//	set to italics
+    _setupSearchCompleter();
 }
 
 void
@@ -334,6 +295,25 @@ Navigator::removeFromScreenStack(SBKey key)
 }
 
 void
+Navigator::refreshSearchCompleter()
+{
+    SearchItemModel* oldSim=Context::instance()->searchItemModel();
+    SearchItemModel* newSim=new SearchItemModel();
+
+    QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
+    QCompleter* completer=lineEdit->completer();
+    completer->setModel(newSim);
+
+    if(oldSim)
+    {
+        delete(oldSim); oldSim=NULL;
+    }
+    Context::instance()->setSearchItemModel(newSim);
+
+    _setupSearchCompleter();
+}
+
+void
 Navigator::resetAllFiltersAndSelections()
 {
     clearSearchFilter();
@@ -497,7 +477,7 @@ Navigator::openOpener()
 void
 Navigator::databaseSchemaChanged()
 {
-    this->resetAllFiltersAndSelections();
+    this->refreshSearchCompleter();
     this->openOpener();
 }
 
@@ -826,6 +806,37 @@ Navigator::_moveFocusToScreen(int direction)
         si=st->previousScreen();
     }
     _activateScreen();
+}
+
+void
+Navigator::_setupSearchCompleter()
+{
+    QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
+    SB_RETURN_VOID_IF_NULL(lineEdit);
+    QCompleter* completer=lineEdit->completer();
+    SB_RETURN_VOID_IF_NULL(completer);
+
+    completer->setCurrentRow(0);
+    lineEdit->clear();
+    lineEdit->setPlaceholderText("Search:");
+    lineEdit->setText("");
+
+    Navigator* navigator=Context::instance()->navigator();
+
+    connect(
+        completer, SIGNAL(activated(const QModelIndex&)),
+        navigator, SLOT(openItemFromCompleter(const QModelIndex&)));
+    connect(
+        lineEdit, SIGNAL(returnPressed()),
+        navigator, SLOT(applySonglistFilter()));
+    connect(
+        completer, SIGNAL(activated(QString)),
+        lineEdit, SLOT(clear()),
+        Qt::QueuedConnection);	//	this will clear the search box
+    connect(
+        lineEdit, SIGNAL(textChanged(QString)),
+        navigator, SLOT(textChanged(QString)));
+    navigator->textChanged(QString());	//	set to italics
 }
 
 ///	PRIVATE SLOTS

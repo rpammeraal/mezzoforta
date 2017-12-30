@@ -79,7 +79,6 @@ SBTabPlaylistDetail::movePlaylistItem(const SBKey from, int row)
     const SBKey key=currentScreenItem().key();
     SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(key);
     SB_RETURN_VOID_IF_NULL(plPtr);
-    qDebug() << SB_DEBUG_INFO << plPtr->key() << plPtr->genericDescription();
 
     bool successFlag=plPtr->moveItem(from,row);
     if(!successFlag)

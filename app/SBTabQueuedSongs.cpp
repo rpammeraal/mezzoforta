@@ -43,7 +43,6 @@ SBTabQueuedSongs::deletePlaylistItem()
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     SBKey key=mqs->selectedItem(_lastClickedIndex);
 
-    qDebug() << SB_DEBUG_INFO << key;
     SBIDPtr ptr=CacheManager::get(key);
     SB_RETURN_VOID_IF_NULL(ptr);
 
@@ -77,9 +76,9 @@ void
 SBTabQueuedSongs::playNow(bool enqueueFlag)
 {
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
-    int viewPosition1=sm->mapFromSource(_lastClickedIndex).row();
+    int viewPosition=sm->mapFromSource(_lastClickedIndex).row();
     PlayManager* pm=Context::instance()->playManager();
-    pm->playItemNow(viewPosition1);
+    pm->playItem(viewPosition);
     SBTab::playNow(enqueueFlag);
     return;
 }

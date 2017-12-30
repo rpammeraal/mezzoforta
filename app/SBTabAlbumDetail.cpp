@@ -35,7 +35,6 @@ SBTabAlbumDetail::playNow(bool enqueueFlag)
     SBKey key=sm->determineKey(_lastClickedIndex);
     PlayManager* pmgr=Context::instance()->playManager();
 
-    qDebug() << SB_DEBUG_INFO << key;
     if(!key.validFlag())
     {
         //	Context menu from SBLabel is clicked
@@ -108,7 +107,6 @@ SBTabAlbumDetail::showContextMenuView(const QPoint &p)
 void
 SBTabAlbumDetail::refreshAlbumReviews()
 {
-    qDebug() << SB_DEBUG_INFO;
     const MainWindow* mw=Context::instance()->mainWindow();
     QString html;
 
@@ -259,11 +257,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     //	Get detail
     SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(si.key());
     SB_RETURN_IF_NULL(aPtr,ScreenItem());
-
-    qDebug() << SB_DEBUG_INFO << aPtr->albumTitle() << aPtr->ID() << aPtr->year();
-
-    SBIDAlbumPtr aPtr1=SBIDAlbum::retrieveAlbum(aPtr->albumID());
-    qDebug() << SB_DEBUG_INFO << aPtr1->albumTitle() << aPtr1->ID() << aPtr1->year();
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(aPtr->key());
