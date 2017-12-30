@@ -81,7 +81,6 @@ HEADERS     = \
     SearchItemModel.h \
     CacheManager.h \
     CacheTemplate.h \
-    CacheManagerHelper.h \
     Cache.h \
     SBKey.h
 
@@ -165,7 +164,6 @@ SOURCES     = \
     SBIDPlaylistDetail.cpp \
     SearchItemModel.cpp \
     CacheManager.cpp \
-    CacheManagerHelper.cpp \
     Cache.cpp \
     SBKey.cpp
 

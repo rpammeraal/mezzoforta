@@ -11,7 +11,6 @@
 #include "Common.h"
 #include "Cache.h"
 #include "ProgressDialog.h"
-#include "CacheManagerHelper.h"
 #include "SBKey.h"
 #include "SBSqlQueryModel.h"
 
@@ -189,6 +188,7 @@ CacheTemplate<T,parentT>::retrieveAll()
 {
     SBSqlQueryModel* qm=T::retrieveSQL();
 
+    qDebug() << SB_DEBUG_INFO << qm->rowCount();
     for(int i=0;i<qm->rowCount();i++)
     {
         std::shared_ptr<T> newPtr;
@@ -365,7 +365,9 @@ template <class T, class parentT> std::shared_ptr<T>
 CacheTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 {
     std::shared_ptr<T> ptr=T::createInDB(p);
-    return addItem(ptr);
+    ptr=addItem(ptr);
+    addRemovedKey(ptr->key());
+    return ptr;
 }
 
 template <class T, class parentT> void
@@ -378,6 +380,7 @@ CacheTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>&
         toPtr->setChangedFlag();
         addChangedKey(fromPtr->key());
         addChangedKey(toPtr->key());
+        toPtr->setReloadFlag();
     }
     else
     {
@@ -541,6 +544,7 @@ CacheTemplate<T,parentT>::setChangedAsCommited()
         }
     }
     clearChanges();
+    clearRemovals();
 }
 
 

@@ -27,11 +27,11 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 void
 MusicLibrary::rescanMusicLibrary()
 {
-    Properties* properties=Context::instance()->properties();
+    PropertiesPtr properties=Context::instance()->properties();
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
 
-    const QString schema=dal->schema();
+    const QString schema=properties->currentDatabaseSchema();
 
     //	Important lists: all have `path' as key (in lowercase)
     QVector<MLentityPtr> foundEntities;
@@ -750,7 +750,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 
     //		a.	Go thru each albumPtr and find out if album can be found based on path name
     //			This can only be done if directories are structured.
-    Properties* properties=Context::instance()->properties();
+    PropertiesPtr properties=Context::instance()->properties();
     if(properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1")
     {
         albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);

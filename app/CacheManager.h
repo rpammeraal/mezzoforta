@@ -32,13 +32,18 @@ public:
     CacheManager();
     virtual ~CacheManager() { }
 
+    inline bool albumsUpdatedFlag() const { return _albumsUpdatedFlag; }
     void clearAllCaches();
     void debugShowChanges(const QString& title);
     static SBIDPtr get(SBKey::ItemType itemType,int ID,bool noDependentsFlag=1);
     static SBIDPtr get(SBKey key,bool noDependentsFlag=1);
+    inline bool performersUpdatedFlag() const { return _performersUpdatedFlag; }
     bool saveChanges();
+    inline bool songsUpdatedFlag() const { return _songsUpdatedFlag; }
+    inline void setAlbumsUpdatedFlag() { _albumsUpdatedFlag=1; }
+    inline void setPerformersUpdatedFlag() { _performersUpdatedFlag=1; }
+    inline void setSongsUpdatedFlag() { _songsUpdatedFlag=1; }
 
-    inline CacheManagerHelper* managerHelper() { return &_mh; }
 
     inline CacheAlbumMgr* albumMgr() const { return dynamic_cast<CacheAlbumMgr *>(_cache[SBKey::Album].get()); }
     inline CacheAlbumPerformanceMgr* albumPerformanceMgr() const { return dynamic_cast<CacheAlbumPerformanceMgr *>(_cache[SBKey::AlbumPerformance].get()); }
@@ -56,8 +61,14 @@ protected:
 
 private:
     QMap<SBKey::ItemType,CachePtr> _cache;
-    CacheManagerHelper _mh;
 
+    bool _albumsUpdatedFlag;
+    bool _performersUpdatedFlag;
+    bool _songsUpdatedFlag;
+
+    void _clearAlbumsUpdatedFlag() { _albumsUpdatedFlag=0; }
+    void _clearPerformersUpdatedFlag() { _performersUpdatedFlag=0; }
+    void _clearSongsUpdatedFlag() { _songsUpdatedFlag=0; }
     void _init();
 };
 

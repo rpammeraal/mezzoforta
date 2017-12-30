@@ -7,7 +7,6 @@
 #ifndef DATAACCESSLAYER_H
 #define DATAACCESSLAYER_H
 
-#include <QObject>
 #include <QtSql>
 #include <QSqlDatabase>
 #include <QStandardItemModel>
@@ -25,9 +24,8 @@ class QSqlTableModel;
 
 class DataAccessLayer;
 
-class DataAccessLayer : public QObject
+class DataAccessLayer
 {
-    Q_OBJECT
 
 public:
     friend class SBModel;
@@ -38,7 +36,7 @@ public:
     DataAccessLayer();
     DataAccessLayer(const QString& connectionName);
     DataAccessLayer(const DataAccessLayer& c);
-    ~DataAccessLayer();
+    virtual ~DataAccessLayer();
 
     bool executeBatch(const QStringList& allQueries,bool commitFlag=1,bool ignoreErrorsFlag=0) const;
     QString createRestorePoint() const;
@@ -49,7 +47,6 @@ public:
 
     //	Database type specific
     QString databaseName() const;
-    const QString& schema() const;
     virtual QStringList availableSchemas() const;
     QString customize(QString& sqlString) const;
     const QString& getConnectionName() const;
@@ -61,11 +58,8 @@ public:
     const QString& getIsNull() const;
     virtual int retrieveLastInsertedKey() const;
     virtual QString retrieveLastInsertedKeySQL() const;
-    virtual bool setSchema(const QString& schema);
+    virtual bool schemaExists(const QString& schema);
     virtual bool supportSchemas() const;
-
-signals:
-    void schemaChanged();
 
 protected:
     int dalID;
@@ -78,10 +72,7 @@ protected:
     void setIsNull(const QString& n);
     void setConvertToSecondsFromTime(const QString& n);
 
-    void _setSchema(const QString& n);
-
 private:
-    QString _schema; //	in use for postgres
     QString _connectionName;
     QString _convertToSecondsFromTime;
     QString _ilike;          //	returns the case insensitive version of SQL like

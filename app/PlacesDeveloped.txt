@@ -1024,6 +1024,7 @@ CURRENT:
 -	remove non alpha numeric
 
 TODO:
+*	Set up signals when performers are created so completers et al can be reloaded.
 *	See if SBIDBase ctors can be made private
 *	find a common way to match strings:
     SBIDSong uses Common::simplified

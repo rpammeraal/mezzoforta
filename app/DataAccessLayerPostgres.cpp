@@ -47,30 +47,6 @@ DataAccessLayerPostgres::retrieveLastInsertedKeySQL() const
 }
 
 bool
-DataAccessLayerPostgres::setSchema(const QString &schema)
-{
-    if(DataAccessLayer::setSchema(schema))
-    {
-        QString q=QString(
-            "UPDATE "
-                "configuration "
-            "SET "
-                "value=E'%1' "
-            "WHERE "
-                "keyword=E'default_schema' "
-        )
-            .arg(schema)
-        ;
-
-        QSqlQuery query(q,QSqlDatabase::database(this->getConnectionName()));
-        query.exec();
-
-        return 1;
-    }
-    return 0;
-}
-
-bool
 DataAccessLayerPostgres::supportSchemas() const
 {
     return 1;
@@ -90,19 +66,12 @@ DataAccessLayerPostgres::_initAvailableSchemas()
                         "keyword='default_schema'";
     QSqlQuery qAllSchemas(q,QSqlDatabase::database(this->getConnectionName()));
 
-    QString currentSchema;
     while(qAllSchemas.next())
     {
         QString schema=qAllSchemas.value(0).toString().toLower();
-        bool isDefaultSchema=qAllSchemas.value(1).toBool();
         Common::toTitleCase(schema);
-        if(currentSchema.length()==0 || isDefaultSchema)
-        {
-            //	Pick the first schema (if not populated) so that there is a schema selected.
-            currentSchema=schema;
-        }
+
         _availableSchemas << schema;
         addMissingDatabaseItems();
     }
-    _setSchema(currentSchema);
 }

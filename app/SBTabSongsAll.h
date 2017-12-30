@@ -18,7 +18,7 @@ public:
 
 public slots:
     virtual void playNow(bool enqueueFlag=0);
-    void schemaChanged();
+    void databaseSchemaChanged();
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
 

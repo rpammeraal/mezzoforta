@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Context.h"
+#include "Controller.h"
 #include "DataAccessLayer.h"
 #include "ScreenStack.h"
 
@@ -295,7 +296,7 @@ ScreenStack::debugShow(const QString& c)
 
 ///	PUBLIC SLOTS
 void
-ScreenStack::schemaChanged()
+ScreenStack::databaseSchemaChanged()
 {
     this->clear();
 }
@@ -315,8 +316,8 @@ ScreenStack::_init()
 
     if(_initDoneFlag==0)
     {
-        connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
-                this, SLOT(schemaChanged()));
+        connect(Context::instance()->controller(),SIGNAL(databaseSchemaChanged()),
+                this, SLOT(databaseSchemaChanged()));
         _initDoneFlag=1;
     }
 }

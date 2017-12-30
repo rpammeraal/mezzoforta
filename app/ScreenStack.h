@@ -41,7 +41,7 @@ public:
     void debugShow(const QString& c);
 
 public slots:
-    void schemaChanged();
+    void databaseSchemaChanged();
 
 protected:
     friend class Context;

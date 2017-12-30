@@ -124,9 +124,6 @@ CacheManager::saveChanges()
     QStringList insertSQL;
     QStringList deleteSQL;
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
-    bool albumsUpdatedFlag=0;
-    bool performersUpdatedFlag=0;
-    bool songsUpdatedFlag=0;
 
     for(size_t i=0;i<SBKey::ItemTypeCount();i++)
     {
@@ -143,9 +140,23 @@ CacheManager::saveChanges()
         if(numUpdatesAfter-numUpdatesBefore>3)
         {
             qDebug() << SB_DEBUG_INFO << itemType << numUpdatesBefore << numUpdatesAfter;
-            albumsUpdatedFlag=(itemType==SBKey::ItemType::Album?1:albumsUpdatedFlag);
-            performersUpdatedFlag=(itemType==SBKey::ItemType::Performer?1:performersUpdatedFlag);
-            songsUpdatedFlag=(itemType==SBKey::ItemType::Song?1:songsUpdatedFlag);
+            _albumsUpdatedFlag=(itemType==SBKey::ItemType::Album?1:albumsUpdatedFlag());
+            _performersUpdatedFlag=(itemType==SBKey::ItemType::Performer?1:performersUpdatedFlag());
+            _songsUpdatedFlag=(itemType==SBKey::ItemType::Song?1:songsUpdatedFlag());
+        }
+
+        //	Not quite using the detailed data contained in Cache::_changes,_removals yet.
+        if(itemType==SBKey::Album && cPtr->removals().count()>0)
+        {
+            setAlbumsUpdatedFlag();
+        }
+        if(itemType==SBKey::Performer && cPtr->removals().count()>0)
+        {
+            setPerformersUpdatedFlag();
+        }
+        if(itemType==SBKey::Song && cPtr->removals().count()>0)
+        {
+            setSongsUpdatedFlag();
         }
     }
 
@@ -168,10 +179,10 @@ CacheManager::saveChanges()
     }
 
     //	CWIP: remove when database is cached
-    qDebug() << SB_DEBUG_INFO << albumsUpdatedFlag;
-    qDebug() << SB_DEBUG_INFO << performersUpdatedFlag;
-    qDebug() << SB_DEBUG_INFO << songsUpdatedFlag;
-    if(albumsUpdatedFlag || performersUpdatedFlag || songsUpdatedFlag)
+    qDebug() << SB_DEBUG_INFO << _albumsUpdatedFlag;
+    qDebug() << SB_DEBUG_INFO << _performersUpdatedFlag;
+    qDebug() << SB_DEBUG_INFO << _songsUpdatedFlag;
+    if(albumsUpdatedFlag() || performersUpdatedFlag() || songsUpdatedFlag())
     {
         SearchItemModel* oldSim=Context::instance()->searchItemModel();
         SearchItemModel* newSim=new SearchItemModel();
@@ -191,7 +202,6 @@ CacheManager::saveChanges()
 }
 
 ///	Protected methods
-
 ///	Private methods
 void
 CacheManager::_init()
@@ -206,4 +216,8 @@ CacheManager::_init()
     _cache[SBKey::PlaylistDetail]=std::make_shared<CachePlaylistDetailMgr>(CachePlaylistDetailMgr("pld_mgr",SBKey::PlaylistDetail));
     _cache[SBKey::SongPerformance]=std::make_shared<CacheSongPerformanceMgr>(CacheSongPerformanceMgr("sp_mgr",SBKey::SongPerformance));
     _cache[SBKey::Song]=std::make_shared<CacheSongMgr>(CacheSongMgr("s_mgr",SBKey::Song));
+
+    _clearAlbumsUpdatedFlag();
+    _clearPerformersUpdatedFlag();
+    _clearSongsUpdatedFlag();
 }

@@ -51,8 +51,10 @@ void
 Navigator::clearSearchFilter()
 {
     QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
+    SB_RETURN_VOID_IF_NULL(lineEdit);
+
     QCompleter* completer=lineEdit->completer();
-    if(completer==NULL && lineEdit!=NULL)
+    if(completer==NULL)
     {
         //	Only set up if not done yet.
         CompleterFactory* cf=Context::instance()->completerFactory();
@@ -60,12 +62,9 @@ Navigator::clearSearchFilter()
         lineEdit->setCompleter(completer);
     }
     completer->setCurrentRow(0);
-    if(lineEdit!=NULL)
-    {
-        lineEdit->clear();
-        lineEdit->setPlaceholderText("Search:");
-        lineEdit->setText("");
-    }
+    lineEdit->clear();
+    lineEdit->setPlaceholderText("Search:");
+    lineEdit->setText("");
 
     Navigator* navigator=Context::instance()->navigator();
 
@@ -86,7 +85,7 @@ Navigator::clearSearchFilter()
 }
 
 void
-Navigator::openScreen(SBKey key)	//	no pass by reference,reusing key
+Navigator::openScreen(SBKey key)
 {
     if(key.itemType()==SBKey::PlaylistDetail)
     {
@@ -491,10 +490,12 @@ Navigator::openOpener()
         openerTabPosition=(t==NULL)?i:openerTabPosition;
     }
     tw->setCurrentIndex(openerTabPosition);
+    _openerResetTimer.start(5000);
+    _openerResetTimer.setSingleShot(1);
 }
 
 void
-Navigator::schemaChanged()
+Navigator::databaseSchemaChanged()
 {
     this->resetAllFiltersAndSelections();
     this->openOpener();
@@ -796,13 +797,16 @@ Navigator::_init()
 {
     const MainWindow* mw=Context::instance()->mainWindow();
 
+    connect(&_openerResetTimer, SIGNAL(timeout()),
+            this, SLOT(_showSongListAfterTimer()));
+
     //	Set up menus
     connect(mw->ui.menuEditEditID, SIGNAL(triggered(bool)),
              this, SLOT(editItem()));
 
     //	Notify when schema is changed
-    connect(Context::instance()->dataAccessLayer(), SIGNAL(schemaChanged()),
-            this, SLOT(schemaChanged()));
+    connect(Context::instance()->controller(), SIGNAL(databaseSchemaChanged()),
+            this, SLOT(databaseSchemaChanged()));
 
     _lastKeypressEventTime=QTime::currentTime();
     _lastKeypressed=0;
@@ -825,3 +829,13 @@ Navigator::_moveFocusToScreen(int direction)
 }
 
 ///	PRIVATE SLOTS
+void
+Navigator::_showSongListAfterTimer()
+{
+    //	Only show songList if no activity.
+    ScreenStack* st=Context::instance()->screenStack();
+    if(st->count()==0)
+    {
+        showSonglist();
+    }
+}

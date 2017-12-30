@@ -12,12 +12,16 @@
 #include "Network.h"
 #include "SBMessageBox.h"
 
-///	Ctors
-Properties::Properties(DataAccessLayer* dal):_dal(dal)
-{
-}
 
 ///	Public methods
+PropertiesPtr
+Properties::createProperties(DataAccessLayer *dal)
+{
+    Properties p=Properties(dal);
+
+    return std::make_shared<Properties>(p);
+}
+
 QString
 Properties::configValue(sb_configurable keyword) const
 {
@@ -113,10 +117,15 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
 QString
 Properties::musicLibraryDirectorySchema()
 {
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     return QString("%1/%2")
                 .arg(Context::instance()->properties()->musicLibraryDirectory())
-                .arg(dal->schema());
+                .arg(this->currentDatabaseSchema());
+}
+
+QString
+Properties::currentDatabaseSchema() const
+{
+    return this->configValue(sb_configurable::sb_current_database_schema);
 }
 
 void
@@ -231,7 +240,7 @@ Properties::doInit()
 {
     QMap<QString,bool> isConfigured;
 
-    _enumToKeyword[sb_default_schema]=QString("default_schema");
+    _enumToKeyword[sb_current_database_schema]=QString("default_schema");
     _enumToKeyword[sb_performer_album_directory_structure_flag]=QString("performer_album_directory_structure_flag");
     _enumToKeyword[sb_run_import_on_startup_flag]=QString("run_import_on_startup_flag");
     _enumToKeyword[sb_unknown_album_id]=QString("unknown_album_id");
@@ -239,7 +248,7 @@ Properties::doInit()
     _enumToKeyword[sb_version]=QString("version");
 
     _default[sb_version]=QString("20170101");
-    _default[sb_default_schema]=QString("rock");
+    _default[sb_current_database_schema]=QString("rock");
     _default[sb_various_performer_id]=QString("1");
     _default[sb_unknown_album_id]=QString("0");
     _default[sb_performer_album_directory_structure_flag]=QString("1");
@@ -265,6 +274,7 @@ Properties::doInit()
         QString keyword=qID.value(0).toString();
         QString value=qID.value(1).toString();
 
+        qDebug() << SB_DEBUG_INFO << keyword << value;
         if(_keywordToEnum.contains(keyword))
         {
             sb_configurable key=_keywordToEnum[keyword];
@@ -286,7 +296,27 @@ Properties::doInit()
     }
 }
 
+//	Controller class manages switching of schemas
+bool
+Properties::setCurrentDatabaseSchema(const QString& schema)
+{
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    SB_RETURN_IF_NULL(dal,0);
+    if(dal->schemaExists(schema))
+    {
+        setConfigValue(Properties::sb_current_database_schema,schema);
+        return 1;
+    }
+    return 0;
+}
+
+
 ///	Private methods
+///	Ctors
+Properties::Properties(DataAccessLayer* dal):_dal(dal)
+{
+}
+
 int
 Properties::_getHostID() const
 {

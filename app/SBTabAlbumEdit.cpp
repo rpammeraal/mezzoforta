@@ -1155,11 +1155,6 @@ SBTabAlbumEdit::_init()
         connect(mw->ui.pbAlbumEditCancel, SIGNAL(clicked(bool)),
                 Context::instance()->navigator(), SLOT(closeCurrentTab()));
 
-        //	Completers
-        CompleterFactory* cf=Context::instance()->completerFactory();
-        mw->ui.albumEditTitle->setCompleter(cf->getCompleterAlbum());
-        mw->ui.albumEditPerformer->setCompleter(cf->getCompleterPerformer());
-
         //	Context menu
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -1174,6 +1169,11 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     const MainWindow* mw=Context::instance()->mainWindow();
     SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(si.key());
     SB_RETURN_IF_NULL(aPtr,ScreenItem());
+
+    //	Refresh completers
+    CompleterFactory* cf=Context::instance()->completerFactory();
+    mw->ui.albumEditTitle->setCompleter(cf->getCompleterAlbum());
+    mw->ui.albumEditPerformer->setCompleter(cf->getCompleterPerformer());
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);

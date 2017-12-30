@@ -349,13 +349,13 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             }
             ProgressDialog::instance()->hide();
 
-            Properties properties(&dal);
-            properties.debugShow("createDatabase");
-            properties.setConfigValue(Properties::sb_version,"20170101");
-            properties.setConfigValue(Properties::sb_various_performer_id,"0");
-            properties.setConfigValue(Properties::sb_unknown_album_id,"0");
-            properties.setConfigValue(Properties::sb_performer_album_directory_structure_flag,"1");
-            properties.setMusicLibraryDirectory(musicLibraryPath);
+            PropertiesPtr properties=Properties::createProperties(&dal);
+            properties->debugShow("createDatabase");
+            properties->setConfigValue(Properties::sb_version,"20170101");
+            properties->setConfigValue(Properties::sb_various_performer_id,"0");
+            properties->setConfigValue(Properties::sb_unknown_album_id,"0");
+            properties->setConfigValue(Properties::sb_performer_album_directory_structure_flag,"1");
+            properties->setMusicLibraryDirectory(musicLibraryPath);
         }
 
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);

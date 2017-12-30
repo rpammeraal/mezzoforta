@@ -420,7 +420,7 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
 SBIDAlbumPtr
 SBIDAlbum::retrieveUnknownAlbum()
 {
-    Properties* properties=Context::instance()->properties();
+    PropertiesPtr properties=Context::instance()->properties();
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();

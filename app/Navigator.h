@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPixmap>
+#include <QTimer>
 
 #include "ScreenStack.h"
 #include "ExternalData.h"
@@ -54,7 +55,7 @@ public slots:
     void openPerformer(const QString& id);
     void openPerformer(const QUrl& id);
     void openOpener();
-    void schemaChanged();
+    void databaseSchemaChanged();
     void setFocus();
     void tabBackward();
     void tabForward();
@@ -69,6 +70,7 @@ private:
     bool _threadPrioritySetFlag;
     QTime _lastKeypressEventTime;
     int   _lastKeypressed;
+    QTimer _openerResetTimer;
 
 
     //	Private methods
@@ -77,6 +79,9 @@ private:
     void _init();
     void _filterSongs(const ScreenItem& si);
     void _moveFocusToScreen(int direction);
+
+private slots:
+    void _showSongListAfterTimer();
 };
 
 #endif // SONGLISTSCREENHANDLER_H

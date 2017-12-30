@@ -69,7 +69,6 @@ Context::doInit(MainWindow* mw)
     _mqs.doInit();  //	no dep
     _st.doInit();   //	no dep
     _nav.doInit();  //	no dep
-    _p.doInit();    //	no dep
     _dbm.doInit();	//	no dep
     _kec.doInit();	//	no dep
 }

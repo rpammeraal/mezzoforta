@@ -34,7 +34,7 @@ DataAccessLayer::DataAccessLayer(const QString& connectionName)
     setGetDateTime("DATETIME('now')");
 }
 
-DataAccessLayer::DataAccessLayer(const DataAccessLayer &c) : QObject()
+DataAccessLayer::DataAccessLayer(const DataAccessLayer &c)
 {
     _init();
     _init(c);
@@ -318,7 +318,6 @@ operator<<(QDebug dbg, const DataAccessLayer& dal)
     dbg.nospace() << "DAL"
         << ":dalID=" << dal.dalID
         << ":connectionName=" << dal._connectionName
-        << ":schema=" << dal._schema
         << ":ilike=" << dal._ilike
         << ":driver=" << dal.getDriverName()
         << ":db open=" << db.open()
@@ -333,17 +332,10 @@ DataAccessLayer::databaseName() const
     return db.databaseName();
 }
 
-const QString&
-DataAccessLayer::schema() const
-{
-    return _schema;
-}
-
 QStringList
 DataAccessLayer::availableSchemas() const
 {
     QStringList sl;
-    sl.append(_schema);
     return sl;
 }
 
@@ -418,16 +410,9 @@ DataAccessLayer::retrieveLastInsertedKeySQL() const
 }
 
 bool
-DataAccessLayer::setSchema(const QString &schema)
+DataAccessLayer::schemaExists(const QString &schema)
 {
-    bool rc=0;
-    if(availableSchemas().contains(schema))
-    {
-        _schema=schema;
-        emit schemaChanged();
-        rc=1;
-    }
-    return rc;
+    return availableSchemas().contains(schema);
 }
 
 bool
@@ -486,24 +471,19 @@ DataAccessLayer::setIsNull(const QString& n)
 }
 
 //	To be called during initialization only (cwip)
-void
-DataAccessLayer::_setSchema(const QString &n)
-{
-    _schema=n;
-}
-
 ///	Private
 QString
 DataAccessLayer::_getSchemaName() const
 {
-    return (_schema.length()>0) ? _schema+'.' : "";
+    PropertiesPtr ptr=Context::instance()->properties();
+    QString schema=ptr->currentDatabaseSchema();
+    return (schema.length()>0) ? schema+'.' : "";
 }
 
 void
 DataAccessLayer::_init()
 {
     dalID=++dalCOUNT;
-    _schema="";
     _connectionName="";
     _convertToSecondsFromTime="";
     _ilike="";
@@ -515,7 +495,6 @@ DataAccessLayer::_init()
 void
 DataAccessLayer::_init(const DataAccessLayer& copy)
 {
-    _schema=copy._schema;
     _connectionName=copy._connectionName;
     _convertToSecondsFromTime=copy._convertToSecondsFromTime;
     _ilike=copy._ilike;

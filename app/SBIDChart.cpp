@@ -312,6 +312,7 @@ SBIDChart::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE p.chart_id=%1").arg(key.itemID()):QString())
     ;
+    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

@@ -431,7 +431,7 @@ Chooser::playlistRename(SBKey key)
 }
 
 void
-Chooser::schemaChanged()
+Chooser::databaseSchemaChanged()
 {
     //	Reload playlists
     this->_populate();
@@ -782,8 +782,8 @@ Chooser::_init()
     connect(pm,SIGNAL(playlistChanged(int)),
             this, SLOT(playlistChanged(int)));
 
-    connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
-            this, SLOT(schemaChanged()));
+    connect(Context::instance()->controller(),SIGNAL(databaseSchemaChanged()),
+            this, SLOT(databaseSchemaChanged()));
 }
 
 void

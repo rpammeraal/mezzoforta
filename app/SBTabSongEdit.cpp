@@ -637,10 +637,6 @@ SBTabSongEdit::_init()
 
         const MainWindow* mw=Context::instance()->mainWindow();
 
-        //	Completers
-        CompleterFactory* cf=Context::instance()->completerFactory();
-        mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
-
         connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
                 this, SLOT(save()));
         connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),
@@ -655,6 +651,10 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->mainWindow();
     SBIDSongPtr songPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(songPtr,ScreenItem());
+
+    //	Refresh completers
+    CompleterFactory* cf=Context::instance()->completerFactory();
+    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);

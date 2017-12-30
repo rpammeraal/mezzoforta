@@ -160,7 +160,7 @@ PlayManager::playerStop()
 }
 
 void
-PlayManager::changeSchema()
+PlayManager::changeCurrentDatabaseSchema()
 {
     this->clearPlaylist();
 }
@@ -322,8 +322,8 @@ PlayManager::_init()
             this, SLOT(playerNext()));
 
     //	Schema changed
-    connect(Context::instance()->controller(), SIGNAL(schemaChanged()),
-            this, SLOT(changeSchema()));
+    connect(Context::instance()->controller(), SIGNAL(databaseSchemaChanged()),
+            this, SLOT(changeCurrentDatabaseSchema()));
 }
 
 void

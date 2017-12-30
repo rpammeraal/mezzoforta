@@ -40,7 +40,7 @@ public:
     void refreshModels();
 
 signals:
-    void schemaChanged();
+    void databaseSchemaChanged();
     void populateSearchItems();
 
 public slots:
@@ -53,10 +53,11 @@ public slots:
     void rescanMusicLibrary();
 
     //	Apply filters and selections
-    void changeSchema(const QString& newSchema);
+    void changeCurrentDatabaseSchema(const QString& newSchema);
 
     //	General UI
     void updateStatusBarText(const QString &s);
+
 
 protected:
 

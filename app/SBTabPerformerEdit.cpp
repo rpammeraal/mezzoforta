@@ -367,22 +367,10 @@ SBTabPerformerEdit::relatedPerformerSelected(const QModelIndex &idx)
     //closeRelatedPerformerComboBox();
 
     SBIDPerformerPtr pptr;
-    if(_addNewRelatedPerformerCompleter!=NULL)
-    {
-        QSqlQueryModel* m=dynamic_cast<QSqlQueryModel *>(_addNewRelatedPerformerCompleter->model());
-        if(m!=NULL)
-        {
-            pptr=SBIDPerformer::retrievePerformer(idx.sibling(idx.row(),idx.column()+1).data().toInt());
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_NPTR << "m";
-        }
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_NPTR << "_addNewRelatedPerformerCompleter";
-    }
+    SB_RETURN_VOID_IF_NULL(_addNewRelatedPerformerCompleter);
+    QSqlQueryModel* m=dynamic_cast<QSqlQueryModel *>(_addNewRelatedPerformerCompleter->model());
+    SB_RETURN_VOID_IF_NULL(m);
+    pptr=SBIDPerformer::retrievePerformer(idx.sibling(idx.row(),idx.column()+1).data().toInt());
 
     if(!pptr)
     {

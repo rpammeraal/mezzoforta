@@ -131,7 +131,7 @@ SetupWizard::start(bool firstRunFlag)
                 musicFormatChoice.setDefaultButton(QMessageBox::Yes);
                 int keyPressed=musicFormatChoice.exec();
 
-                Properties* properties=Context::instance()->properties();
+                PropertiesPtr properties=Context::instance()->properties();
                 properties->setConfigValue(
                     Properties::sb_performer_album_directory_structure_flag,
                     keyPressed==QMessageBox::Yes?"1":"0");

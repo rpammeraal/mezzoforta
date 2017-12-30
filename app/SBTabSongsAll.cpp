@@ -2,6 +2,7 @@
 
 #include "CacheManager.h"
 #include "Context.h"
+#include "Controller.h"
 #include "MainWindow.h"
 #include "SBSqlQueryModel.h"
 
@@ -79,7 +80,7 @@ SBTabSongsAll::playNow(bool enqueueFlag)
 }
 
 void
-SBTabSongsAll::schemaChanged()
+SBTabSongsAll::databaseSchemaChanged()
 {
     this->preload();
 }
@@ -172,8 +173,8 @@ SBTabSongsAll::_init()
                 this, SLOT(showContextMenuView(QPoint)));
 
         //	Schema changes
-        connect(Context::instance()->dataAccessLayer(),SIGNAL(schemaChanged()),
-                this, SLOT(schemaChanged()));
+        connect(Context::instance()->controller(),SIGNAL(databaseSchemaChanged()),
+                this, SLOT(databaseSchemaChanged()));
     }
 }
 

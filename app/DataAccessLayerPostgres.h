@@ -6,8 +6,6 @@
 
 class DataAccessLayerPostgres : public DataAccessLayer
 {
-    Q_OBJECT
-
 public:
     DataAccessLayerPostgres();
     DataAccessLayerPostgres(const QString& connectionName);
@@ -18,7 +16,6 @@ public:
     //	Database type specific
     virtual QStringList availableSchemas() const;
     virtual QString retrieveLastInsertedKeySQL() const;
-    virtual bool setSchema(const QString& schema);
     virtual bool supportSchemas() const;
 
 protected:

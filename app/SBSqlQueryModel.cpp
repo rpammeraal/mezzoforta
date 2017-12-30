@@ -23,6 +23,8 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
     QString q=query;
 
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    PropertiesPtr properties=Context::instance()->properties();
+    qDebug() << SB_DEBUG_INFO << dal->getConnectionName() << properties->currentDatabaseSchema();
     dal->customize(q);
 
     qDebug() << SB_DEBUG_INFO
@@ -30,9 +32,12 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
              << "query=" << q;
     QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
+    qDebug() << SB_DEBUG_INFO << QSqlQueryModel::query().executedQuery();
+    qDebug() << SB_DEBUG_INFO << QSqlQueryModel::rowCount();
 
     while(QSqlQueryModel::canFetchMore())
     {
+        qDebug() << SB_DEBUG_INFO;
         QSqlQueryModel::fetchMore();
     }
     handleSQLError();
@@ -174,9 +179,10 @@ SBSqlQueryModel::setDragableColumns(const QList<bool>& list)
 
 ///	SLOTS
 void
-SBSqlQueryModel::schemaChanged()
+SBSqlQueryModel::databaseSchemaChanged()
 {
     qDebug() << SB_DEBUG_INFO;
+    QSqlQueryModel::clear();
 }
 
 

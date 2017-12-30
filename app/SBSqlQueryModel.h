@@ -46,7 +46,7 @@ signals:
     void assign(SBKey from, int row) const;
 
 public slots:
-    void schemaChanged();
+    void databaseSchemaChanged();
 
 protected:
 

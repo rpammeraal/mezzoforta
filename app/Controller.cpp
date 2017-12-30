@@ -66,22 +66,9 @@ Controller::preloadAllSongs() const
 void
 Controller::refreshModels()
 {
-    //	Allows some data models to be refreshed
-
-    //	Now that we have a database connection, create a searchItem model.
-
-//	Disabled for now. If the database is cached in memory, this will be useful.
-//	connect(Context::instance()->managerHelper(), SIGNAL(removedSBIDPtr(SBIDPtr)),
-//		sim, SLOT(remove(SBIDPtr)));
-//	connect(Context::instance()->managerHelper(), SIGNAL(updatedSBIDPtr(SBIDPtr)),
-//		sim, SLOT(update(SBIDPtr)));
-
     Navigator* n=Context::instance()->navigator();
     n->resetAllFiltersAndSelections();
 
-    //	Clear caches
-    CacheManager* cm=Context::instance()->cacheManager();
-    cm->clearAllCaches();
 }
 
 ///	Public slots:
@@ -137,17 +124,21 @@ Controller::rescanMusicLibrary()
 }
 
 void
-Controller::changeSchema(const QString& newSchema)
+Controller::changeCurrentDatabaseSchema(const QString& newSchema)
 {
-    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    PropertiesPtr properties=Context::instance()->properties();
 
-    if(dal->schema()!=newSchema)
+    if(properties->currentDatabaseSchema()!=newSchema)
     {
-        if(dal->setSchema(newSchema))
+        if(properties->setCurrentDatabaseSchema(newSchema))
         {
+            //	Clear caches
+            CacheManager* cm=Context::instance()->cacheManager();
+            cm->clearAllCaches();
+
             //	refresh all views
             refreshModels();
-            emit schemaChanged();
+            emit databaseSchemaChanged();
         }
     }
     this->_disableScreenNavigationButtons();
@@ -205,12 +196,12 @@ Controller::openMainWindow(bool appStartUpFlag)
         dbm->userOpenDatabase();
     }
 
-
     if(appStartUpFlag==0 && dbm->databaseChanged()==0)
     {
         //	no database opened upon appStartUpFlag.
         return 0;
     }
+
     if(dbm->databaseOpened()==0)
     {
         return 0;
@@ -268,7 +259,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     Context::instance()->navigator()->openOpener();
 
     //	Kick off import
-    Properties* properties=Context::instance()->properties();
+    PropertiesPtr properties=Context::instance()->properties();
     if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
     {
         MusicLibrary ml;
@@ -333,10 +324,12 @@ Controller::setupUI()
         mw->ui.frSchema->setVisible(1);
 
         connect(mw->ui.cbSchema,SIGNAL(currentIndexChanged(QString)),
-                this,SLOT(changeSchema(QString)));
+                this,SLOT(changeCurrentDatabaseSchema(QString)));
+
+        PropertiesPtr properties=Context::instance()->properties();
 
         //	Set current schema properly in schema drop down box
-        QString currentSchema=dal->schema();
+        QString currentSchema=properties->currentDatabaseSchema();
         for(int i=0;i<mw->ui.cbSchema->count();i++)
         {
             if(mw->ui.cbSchema->itemText(i)==currentSchema)

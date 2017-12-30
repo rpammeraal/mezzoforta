@@ -11,7 +11,6 @@
 #include "PlayerController.h"
 #include "PlayManager.h"
 #include "Properties.h"
-#include "CacheManagerHelper.h"
 #include "SBModelQueuedSongs.h"
 
 class BackgroundThread;
@@ -49,7 +48,7 @@ public:
     inline PlayerController* playerController() { return &_pc; }
     inline SearchItemModel* searchItemModel() { return _sim; }
     inline PlayManager* playManager() { return &_pm; }
-    inline Properties* properties() { return &_p; }
+    inline PropertiesPtr properties() { return _pPtr; }
     inline ScreenStack* screenStack() { return &_st; }
     inline SBModelQueuedSongs* sbModelQueuedSongs() { return &_mqs; }
     inline SBTab* tab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
@@ -59,6 +58,7 @@ public:
     void setCacheManager(CacheManager* cm);
     void setController(Controller* c);
     void setMainWindow(MainWindow* mw);
+    void setProperties(PropertiesPtr pPtr) { _pPtr=pPtr; }
     void setSearchItemModel(SearchItemModel* sim);
     void setTab(SBTab* tab);
     void setTabQueuedSongs(SBTabQueuedSongs* tabQS);
@@ -85,9 +85,8 @@ private:
     Navigator _nav;
     PlayerController _pc;
     PlayManager _pm;
-    Properties _p;
+    PropertiesPtr _pPtr;
     SBModelQueuedSongs _mqs;
-    CacheManagerHelper _mh;
     SearchItemModel* _sim;
     ScreenStack _st;
 

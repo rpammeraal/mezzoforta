@@ -45,7 +45,7 @@ public slots:
     void playlistPlay(bool enqueueFlag=0);
     void playlistRename(SBKey key=SBKey());
 
-    void schemaChanged();
+    void databaseSchemaChanged();
     void showContextMenu(const QPoint& p);
 
     void recalculateDuration();

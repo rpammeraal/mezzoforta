@@ -105,7 +105,12 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         //	Clear caches
         CacheManager* cm=Context::instance()->cacheManager();
         cm->clearAllCaches();
+
+        //	Read properties
+        PropertiesPtr properties=Properties::createProperties(this->dataAccessLayer());
+        Context::instance()->setProperties(properties);
     }
+
     return rc;
 }
 

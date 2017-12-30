@@ -40,7 +40,7 @@ public slots:
     void playerStop();
 
     //	Playlist et al related
-    void changeSchema();
+    void changeCurrentDatabaseSchema();
     void clearPlaylist();
     bool playItemNow(SBKey key,const bool enqueueFlag=0);
     bool playItemNow(unsigned int playlistIndex);

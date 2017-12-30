@@ -182,7 +182,7 @@ PlayerController::playerStop()
 bool
 PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 {
-    Properties* p=Context::instance()->properties();
+    PropertiesPtr p=Context::instance()->properties();
     Controller* c=Context::instance()->controller();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";

@@ -419,7 +419,7 @@ SBIDPerformer::retrieveVariousPerformers()
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
-    Properties* properties=Context::instance()->properties();
+    PropertiesPtr properties=Context::instance()->properties();
     int performerID=properties->configValue(Properties::sb_various_performer_id).toInt();
     SBIDPerformerPtr performerPtr=SBIDPerformer::retrievePerformer(performerID);
     if(!performerPtr)
