@@ -397,6 +397,10 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
     {
         _loadAlbums();
     }
+    if(forcedFlag || _songPerformances.count()==0)
+    {
+        _loadSongPerformances();
+    }
 }
 
 //	Static methods

@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QByteArray>
+#include <QSemaphore>
 
 #include <QDataStream>
 #include <QStandardItem>
@@ -15,9 +16,11 @@
 class SBSqlQueryModel;
 
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDPtr;
+typedef QSharedPointer<QSemaphore> QSemaphorePtr;
 
 
 class Cache;
+class QSemaphore;
 
 class SBIDAlbum;            typedef std::shared_ptr<SBIDAlbum>             SBIDAlbumPtr;
 class SBIDAlbumPerformance; typedef std::shared_ptr<SBIDAlbumPerformance>  SBIDAlbumPerformancePtr;
@@ -111,6 +114,10 @@ protected:
 
     void _copy(const SBIDBase& c);
 
+    //	Semaphore ops
+    void getSemaphore();
+    void releaseSemaphore();
+
 private:
     bool            _changedFlag;
     bool            _deletedFlag;
@@ -121,6 +128,7 @@ private:
     QString         _url;	//	any item may have an url
     QString         _wiki;	//	any item may have an wiki page
     Cache*          _owningCache;
+    QSemaphorePtr   _semaphore;
 
     SBIDBase();
     void _init();

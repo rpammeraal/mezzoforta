@@ -78,6 +78,23 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
     //	CWIP: if !spPtr, find other songPerformance that can be played
 }
 
+void
+SBIDSong::setReloadFlag()
+{
+    SBIDBase::setReloadFlag();
+    QMapIterator<int,SBIDSongPerformancePtr> it(songPerformances());
+    while(it.hasNext())
+    {
+        it.next();
+        int performerID=it.key();
+        SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(performerID);
+        if(pPtr)
+        {
+            pPtr->setReloadFlag();
+        }
+    }
+}
+
 QString
 SBIDSong::text() const
 {
@@ -450,7 +467,8 @@ SBIDSong::retrieveAllSongs()
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "s.song_id = p.song_id "
+                    //	"s.song_id = p.song_id "
+                    "s.original_performance_id = p.performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -472,9 +490,37 @@ SBIDSong::retrieveAllSongs()
 SBIDSongPtr
 SBIDSong::retrieveSong(SBKey key,bool noDependentsFlag)
 {
-    CacheManager* cm=Context::instance()->cacheManager();
-    CacheSongMgr* smgr=cm->songMgr();
-    return smgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    SBIDSongPtr sPtr;
+
+    if(key.validFlag())
+    {
+        if(key.itemType()==SBKey::Song)
+        {
+            CacheManager* cm=Context::instance()->cacheManager();
+            CacheSongMgr* smgr=cm->songMgr();
+            sPtr=smgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+        }
+        else if(key.itemType()==SBKey::AlbumPerformance)
+        {
+            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
+            sPtr=apPtr->songPtr();
+        }
+        else if(key.itemType()==SBKey::OnlinePerformance)
+        {
+            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
+            sPtr=opPtr->songPtr();
+        }
+        else if(key.itemType()==SBKey::SongPerformance)
+        {
+            SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
+            sPtr=opPtr->songPtr();
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_ERROR << "cannot determine song from" << key;
+        }
+    }
+    return sPtr;
 }
 
 SBIDSongPtr

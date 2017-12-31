@@ -289,46 +289,17 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
-    SBIDSongPtr sPtr;
+    SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
+    SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
-    //	Get detail
-    const SBKey key=si.key();
-    if(key.validFlag())
-    {
-        if(key.itemType()==SBKey::Song)
-        {
-            sPtr=SBIDSong::retrieveSong(si.key());
-        }
-        else if(key.itemType()==SBKey::AlbumPerformance)
-        {
-            SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
-            sPtr=apPtr->songPtr();
-        }
-        else if(key.itemType()==SBKey::OnlinePerformance)
-        {
-            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
-            sPtr=opPtr->songPtr();
-        }
-        else if(key.itemType()==SBKey::SongPerformance)
-        {
-            SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
-            sPtr=opPtr->songPtr();
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_ERROR << "should not come here.";
-        }
-    }
-    SB_RETURN_IF_NULL(sPtr,ScreenItem());
-
     //	Update the currentScreenItem with the original pointer as provided.
     //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(key);
+    currentScreenItem.updateSBIDBase(si.key());
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
 
     ExternalData* ed=new ExternalData();

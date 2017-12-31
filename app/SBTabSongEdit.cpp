@@ -648,6 +648,7 @@ ScreenItem
 SBTabSongEdit::_populate(const ScreenItem& si)
 {
     _init();
+    qDebug() << SB_DEBUG_INFO << si.key();
     const MainWindow* mw=Context::instance()->mainWindow();
     SBIDSongPtr songPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(songPtr,ScreenItem());
