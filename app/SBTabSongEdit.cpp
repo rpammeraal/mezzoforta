@@ -69,7 +69,10 @@ SBTabSongEdit::save() const
     //	Algorithm:
     //	1.	determine current original performance (orgOpPtr).
     //	2.	detect year, notes change -> metaDataChangeFlag
-    //	3.	find same song performance based on edit data 'as is' (altOpPtr). If found, merge -> save. [merge duplicate]
+    //	3.	find same song performance based on edit data 'as is' (altSpPtr).
+    //		If found:
+    //			-	if songID is same, set original performance ID
+    //			-	otherwise: merge -> save. [merge duplicate]
     //	4.	if performer has changed:
     //		4.1	lookup changed performer (userMatch)
     //			4.1.1	if not found:
@@ -79,7 +82,9 @@ SBTabSongEdit::save() const
     //				-	set other attributes, save song -- completely new performer means no other matches can be found.
     //			4.1.2	if found:
     //				-	find if song performance exist with edited song title & changed performer.
-    //					-	If found, merge -> save.
+    //					-	If found:
+    //						-	if song title has not changed, set new original performance
+    //						-	otherwise: merge -> save.
     //					-	If not found, find song with matching edit song title.
     //						-	if found: merge
     //						-	if not found:
@@ -152,12 +157,22 @@ SBTabSongEdit::save() const
 
         if(altSpPtr)
         {
-            newSongPtr=altSpPtr->songPtr();
-            SB_RETURN_VOID_IF_NULL(newSongPtr);
-            qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
-            qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
-            sMgr->merge(orgSongPtr,newSongPtr);
-            mergedFlag=1;
+            qDebug() << SB_DEBUG_INFO;
+            if(altSpPtr->songID()==orgSongPtr->songID())
+            {
+            qDebug() << SB_DEBUG_INFO;
+                newSongPtr=orgSongPtr;
+                newSongPtr->setOriginalPerformanceID(altSpPtr->songPerformanceID());
+            }
+            else
+            {
+                newSongPtr=altSpPtr->songPtr();
+                SB_RETURN_VOID_IF_NULL(newSongPtr);
+                qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
+                qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
+                sMgr->merge(orgSongPtr,newSongPtr);
+                mergedFlag=1;
+            }
         }
     }
 
@@ -214,13 +229,25 @@ SBTabSongEdit::save() const
 
                 if(altSpPtr)
                 {
-                    //		If found, merge -> save.
-                    newSongPtr=altSpPtr->songPtr();
-                    SB_RETURN_VOID_IF_NULL(newSongPtr);
-                    qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
-                    qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
-                    sMgr->merge(orgSongPtr,newSongPtr);
-                    mergedFlag=1;
+                    qDebug() << SB_DEBUG_INFO << altSpPtr->songID();
+                    qDebug() << SB_DEBUG_INFO << orgSongPtr->songID();
+                    if(altSpPtr->songID()==orgSongPtr->songID())
+                    {
+                        qDebug() << SB_DEBUG_INFO << orgSongPtr->originalSongPerformanceID();
+                        newSongPtr=orgSongPtr;
+                        newSongPtr->setOriginalPerformanceID(altSpPtr->songPerformanceID());
+                        qDebug() << SB_DEBUG_INFO << orgSongPtr->originalSongPerformanceID();
+                    }
+                    else
+                    {
+                        //		If found, merge -> save.
+                        newSongPtr=altSpPtr->songPtr();
+                        SB_RETURN_VOID_IF_NULL(newSongPtr);
+                        qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
+                        qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
+                        sMgr->merge(orgSongPtr,newSongPtr);
+                        mergedFlag=1;
+                    }
                 }
                 else
                 {
@@ -234,11 +261,13 @@ SBTabSongEdit::save() const
 
                     qDebug() << SB_DEBUG_INFO << p.songID;
                     Common::result result=sMgr->userMatch(p,SBIDSongPtr(),newSongPtr);
+                    qDebug() << SB_DEBUG_INFO << p.songID;
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                         return;
                     }
+                    qDebug() << SB_DEBUG_INFO;
                     if(result==Common::result_exists)
                     {
                         //		if found: merge
@@ -248,22 +277,41 @@ SBTabSongEdit::save() const
                         sMgr->merge(orgSongPtr,newSongPtr);
                         mergedFlag=1;
                     }
+                    qDebug() << SB_DEBUG_INFO;
                     if(result==Common::result_missing)
                     {
                         //		if not found:
+                        if(!newSongPtr)
+                        {
+                            newSongPtr=orgSongPtr;
+                        }
                         //	Create new song performance
                         p.songID=orgSongPtr->songID();
                         p.performerID=newPPtr->performerID();
                         p.year=editYearOfRelease;
                         SBIDSongPerformancePtr newSpPtr=spMgr->createInDB(p);
+                    qDebug() << SB_DEBUG_INFO;
+                        if(!newSpPtr)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                        }
+                        if(!newSongPtr)
+                        {
+                            qDebug() << SB_DEBUG_INFO;
+                        }
+                    qDebug() << SB_DEBUG_INFO << newSpPtr->key() << newSpPtr->ID();
                         newSongPtr->addSongPerformance(newSpPtr);
+                    qDebug() << SB_DEBUG_INFO;
 
                         //	set originalPerformanceID of song
+                    qDebug() << SB_DEBUG_INFO << newSongPtr->originalSongPerformanceID();
                         newSongPtr->setOriginalPerformanceID(newSpPtr->songPerformanceID());
+                    qDebug() << SB_DEBUG_INFO;
 
                         //	set other attributes, save song -- completely new performer means no other matches can be found.
                         setMetaDataFlag=1;
                     }
+                    qDebug() << SB_DEBUG_INFO;
                 }
             }
         }

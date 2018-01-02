@@ -33,7 +33,7 @@ public:
     };
 
     //	Ctors, dtors
-    SBIDSong(const SBIDSong& c);
+    SBIDSong(SBIDSong& c);
     ~SBIDSong();
 
     //	Inherited methods
@@ -49,20 +49,20 @@ public:
     virtual QString type() const;
 
     //	Song specific methods
-    SBTableModel* albums() const;
-    QVector<SBIDAlbumPerformancePtr> allPerformances() const;
+    SBTableModel* albums();
+    QVector<SBIDAlbumPerformancePtr> allPerformances();
     SBTableModel* charts() const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
-    int numAlbumPerformances() const;
+    int numAlbumPerformances();
     QVector<SBIDOnlinePerformancePtr> onlinePerformancesPreloader() const;
     inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
-    SBIDAlbumPerformancePtr performance(int albumID, int albumPosition) const;
-    QVector<int> performerIDList() const;
+    SBIDAlbumPerformancePtr performance(int albumID, int albumPosition);
+    QVector<int> performerIDList();
     SBTableModel* playlists();
     inline int songID() const { return itemID(); }
-    QMap<int,SBIDSongPerformancePtr> songPerformances() const;
+    QMap<int,SBIDSongPerformancePtr> songPerformances();
     inline QString songTitle() const { return _songTitle; }
     static void updateSoundexFields();	//	CWIP: may be removed if database generation and updates are implemented
 
@@ -104,7 +104,7 @@ protected:
     SBIDSong(int songID);
 
     //	Operators
-    SBIDSong& operator=(const SBIDSong& t);
+    SBIDSong& operator=(SBIDSong& t);
 
     //	Methods used by SBIDManager
     static SBIDSongPtr createInDB(Common::sb_parameters& p);
@@ -118,6 +118,7 @@ protected:
 
     friend class SBIDAlbum;
     friend class SBTabSongEdit;
+    friend class SBIDSongPerformance;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
     //	Protected setters
@@ -137,7 +138,7 @@ private:
     QVector<PlaylistOnlinePerformance> _playlistOnlinePerformances;
     QMap<int,SBIDSongPerformancePtr>   _songPerformances; //	key:performerID
 
-    void _copy(const SBIDSong& c);
+    void _copy(SBIDSong& c);
     void _init();
     void _loadAlbumPerformances();
     void _loadPlaylists();

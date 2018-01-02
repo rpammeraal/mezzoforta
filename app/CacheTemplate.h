@@ -366,7 +366,6 @@ CacheTemplate<T,parentT>::createInDB(Common::sb_parameters& p)
 {
     std::shared_ptr<T> ptr=T::createInDB(p);
     ptr=addItem(ptr);
-    addRemovedKey(ptr->key());
     return ptr;
 }
 
@@ -475,7 +474,6 @@ CacheTemplate<T,parentT>::addItem(const std::shared_ptr<T>& ptr)
     Q_ASSERT(ptr);
     ptr->_id=++_nextID;
     ptr->_owningCache=(this);
-    //	_leMap[ptr->key()]=ptr;
     _leMap[ptr->key()]=ptr;
     return ptr;
 }

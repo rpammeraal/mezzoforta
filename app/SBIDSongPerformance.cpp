@@ -372,6 +372,7 @@ SBIDSongPerformance::performancesBySong(int songID)
     )
         .arg(songID)
     ;
+    qDebug() << SB_DEBUG_INFO << q;
 
     return new SBSqlQueryModel(q);
 }
@@ -583,6 +584,16 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
         int chartPerformanceID=qm->record(i).value(0).toInt();
         SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::retrieveChartPerformance(chartPerformanceID);
         cpPtr->setSongPerformanceID(this->songPerformanceID());
+    }
+
+    //	Check on original performance id on spPtrFrom, reset to this->performanceID
+    SBIDSongPtr sPtr=spPtrFrom->songPtr();
+    if(sPtr)
+    {
+       if(sPtr->originalSongPerformanceID()==spPtrFrom->songPerformanceID())
+       {
+           sPtr->setOriginalPerformanceID(this->songPerformanceID());
+       }
     }
 }
 

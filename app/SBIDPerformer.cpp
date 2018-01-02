@@ -670,11 +670,34 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
     }
 
     //	Merge song performances
+    CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
     QVectorIterator<SBIDSongPerformancePtr> spIT(pPtrFrom->songPerformances());
     while(spIT.hasNext())
     {
-        SBIDSongPerformancePtr spPtr=spIT.next();
-        spPtr->setSongPerformerID(this->performerID());
+        SBIDSongPerformancePtr fromSpPtr=spIT.next();
+        SBIDSongPerformancePtr toSpPtr;
+        QVectorIterator<SBIDSongPerformancePtr> it(songPerformances());
+
+        //	Determine if we have this songPerformance.
+        while(it.hasNext() && !toSpPtr)
+        {
+            SBIDSongPerformancePtr spPtr=it.next();
+            if(spPtr->songID()==fromSpPtr->songID())
+            {
+                toSpPtr=spPtr;
+            }
+        }
+
+        if(toSpPtr)
+        {
+            //	If yes, merge
+            spMgr->merge(fromSpPtr,toSpPtr);
+        }
+        else
+        {
+            //	If no, set performerID
+            fromSpPtr->setSongPerformerID(this->performerID());
+        }
     }
 
     //	Merge playlist items
@@ -940,7 +963,6 @@ SBIDPerformer::_loadRelatedPerformers() const
         arg(this->performerID())
     ;
     qDebug() << SB_DEBUG_INFO << q;
-
 
     QVector<SBKey> relatedPerformerKey;
     SBSqlQueryModel qm(q);

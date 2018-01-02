@@ -10,7 +10,7 @@
 #include "SBTableModel.h"
 
 ///	Ctors
-SBIDSong::SBIDSong(const SBIDSong &c):SBIDBase(c)
+SBIDSong::SBIDSong(SBIDSong &c):SBIDBase(c)
 {
     _copy(c);
 }
@@ -110,14 +110,16 @@ SBIDSong::type() const
 
 ///	Song specific methods
 SBTableModel*
-SBIDSong::albums() const
+SBIDSong::albums()
 {
     SBTableModel* tm=new SBTableModel();
+    getSemaphore();
     if(_albumPerformances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->refreshDependents();
+        const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
     }
     tm->populateAlbumsBySong(_albumPerformances);
+    releaseSemaphore();
     return tm;
 }
 
@@ -131,6 +133,7 @@ SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
     Q_UNUSED(year);
     Q_UNUSED(notes);
 
+    getSemaphore();
     if(_songPerformances.count()==0)
     {
         this->_loadSongPerformances();
@@ -147,16 +150,19 @@ SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 
         spPtr=spMgr->createInDB(p);
     }
+    releaseSemaphore();
     return addSongPerformance(spPtr);
 }
 
 QVector<SBIDAlbumPerformancePtr>
-SBIDSong::allPerformances() const
+SBIDSong::allPerformances()
 {
+    getSemaphore();
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
+    releaseSemaphore();
     return _albumPerformances;
 }
 
@@ -196,7 +202,6 @@ SBIDSong::deleteIfOrphanized()
     q="SELECT "+q;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery query(q,db);
 
@@ -226,18 +231,21 @@ SBIDSong::deleteIfOrphanized()
 }
 
 int
-SBIDSong::numAlbumPerformances() const
+SBIDSong::numAlbumPerformances()
 {
+    getSemaphore();
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
     }
+    releaseSemaphore();
     return _albumPerformances.count();
 }
 
 SBTableModel*
 SBIDSong::playlists()
 {
+    getSemaphore();
     if(!_playlistOnlinePerformances.count())
     {
         //	Playlists may not be loaded -- retrieve again
@@ -245,16 +253,19 @@ SBIDSong::playlists()
     }
     SBTableModel* tm=new SBTableModel();
     tm->populatePlaylists(_playlistOnlinePerformances);
+    releaseSemaphore();
     return tm;
 }
 
 QMap<int,SBIDSongPerformancePtr>
-SBIDSong::songPerformances() const
+SBIDSong::songPerformances()
 {
+    getSemaphore();
     if(_songPerformances.count()==0)
     {
         const_cast<SBIDSong *>(this)->_loadSongPerformances();
     }
+    releaseSemaphore();
     return _songPerformances;
 }
 
@@ -265,34 +276,37 @@ SBIDSong::onlinePerformancesPreloader() const
 }
 
 SBIDAlbumPerformancePtr
-SBIDSong::performance(int albumID, int albumPosition) const
+SBIDSong::performance(int albumID, int albumPosition)
 {
-    SBIDAlbumPerformancePtr null;
+    SBIDAlbumPerformancePtr apPtr;
 
+    getSemaphore();
     if(_albumPerformances.count()==0)
     {
-        const_cast<SBIDSong *>(this)->refreshDependents();
+        const_cast<SBIDSong *>(this)->_loadAlbumPerformances();
     }
 
-    for(int i=0;i<_albumPerformances.size();i++)
+    for(int i=0;i<_albumPerformances.size() && !apPtr;i++)
     {
         int currentAlbumID=_albumPerformances.at(i)->albumID();
         int currentAlbumPosition=_albumPerformances.at(i)->albumPosition();
 
         if(currentAlbumID==albumID && currentAlbumPosition==albumPosition)
         {
-            return _albumPerformances.at(i);
+            apPtr=_albumPerformances.at(i);
         }
     }
+    releaseSemaphore();
 
-    return null;
+    return apPtr;
 }
 
 QVector<int>
-SBIDSong::performerIDList() const
+SBIDSong::performerIDList()
 {
     QVector<int> list;
 
+    getSemaphore();
     if(_songPerformances.count()==0)
     {
         const_cast<SBIDSong *>(this)->_loadSongPerformances();
@@ -303,12 +317,12 @@ SBIDSong::performerIDList() const
     {
         _spIT.next();
         const int performerID=_spIT.key();
-        const SBIDSongPerformancePtr spPtr=_spIT.value();
         if(!list.contains(performerID))
         {
             list.append(performerID);
         }
     }
+    releaseSemaphore();
     return list;
 }
 
@@ -332,7 +346,6 @@ SBIDSong::updateSoundexFields()
 
     QSqlQuery q1(db);
     q1.exec(dal->customize(q));
-    qDebug() << SB_DEBUG_INFO << q;
 
     QString title;
     QString soundex;
@@ -354,7 +367,6 @@ SBIDSong::updateSoundexFields()
             .arg(Common::escapeSingleQuotes(title))
         ;
         dal->customize(q);
-
         qDebug() << SB_DEBUG_INFO << q;
 
         QSqlQuery q2(q,db);
@@ -366,14 +378,13 @@ SBIDSong::updateSoundexFields()
 void
 SBIDSong::removeSongPerformance(SBIDSongPerformancePtr spPtr)
 {
-    qDebug() << SB_DEBUG_INFO << ID() << "Removing id " << spPtr->songPerformanceID();
-
+    getSemaphore();
     if(_songPerformances.contains(spPtr->songPerformerID()))
     {
-        qDebug() << SB_DEBUG_INFO << ID() << "Removing performance for performerID=" << spPtr->songPerformerID();
         _songPerformances.remove(spPtr->songPerformerID());
     }
     spPtr->setDeletedFlag();
+    releaseSemaphore();
 }
 
 ///	Pointers
@@ -429,6 +440,7 @@ SBIDSong::createKey(int songID)
 void
 SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 {
+    getSemaphore();
     if(showProgressDialogFlag)
     {
         ProgressDialog::instance()->show("Retrieving Data","SBIDSong::refreshDependents",4);
@@ -446,6 +458,7 @@ SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
     {
         _loadSongPerformances();
     }
+    releaseSemaphore();
 }
 
 
@@ -547,7 +560,7 @@ SBIDSong::SBIDSong(int songID):SBIDBase(SBKey::Song,songID)
 }
 
 SBIDSong&
-SBIDSong::operator=(const SBIDSong& t)
+SBIDSong::operator=(SBIDSong& t)
 {
     _copy(t);
     return *this;
@@ -706,24 +719,22 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
     //	SongPerformance
     CacheSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
     _loadSongPerformances();	//	make sure list is loaded.
-    //QMapIterator<int,SBIDSongPerformancePtr> it(_songPerformances);
-    QMapIterator<int,SBIDSongPerformancePtr> it(fromPtr->songPerformances());
-    while(it.hasNext())
-    {
-        it.next();
-        int performerID=it.key();
-        SBIDSongPerformancePtr fromSpPtr=it.value();
+    QMapIterator<int,SBIDSongPerformancePtr> fromIt(fromPtr->songPerformances());
 
-        qDebug() << SB_DEBUG_INFO << fromSpPtr->key() << fromSpPtr->ID();
+    getSemaphore();
+    while(fromIt.hasNext())
+    {
+        fromIt.next();
+        int performerID=fromIt.key();
+        SBIDSongPerformancePtr fromSpPtr=fromIt.value();
+
         if(_songPerformances.contains(performerID))
         {
             SBIDSongPerformancePtr toSpPtr=_songPerformances[performerID];
-            qDebug() << SB_DEBUG_INFO << toSpPtr->key();
             spMgr->merge(fromSpPtr,toSpPtr);
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO;
             //	Assign to current
             fromSpPtr->setSongID(this->songID());
             _songPerformances[performerID]=fromSpPtr;
@@ -738,6 +749,7 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 
     //	set originalPerformanceID on the fromPtr
     fromPtr->setOriginalPerformanceID(-1);
+    releaseSemaphore();
 }
 
 void
@@ -874,6 +886,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 SBIDSongPerformancePtr
 SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
 {
+    getSemaphore();
     if(_songPerformances.count()==0)
     {
         this->_loadSongPerformances();
@@ -887,13 +900,15 @@ SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
     {
         spPtr=_songPerformances[spPtr->songPerformerID()];
     }
+    releaseSemaphore();
     return spPtr;
 }
 
 ///	Private methods
 void
-SBIDSong::_copy(const SBIDSong &c)
+SBIDSong::_copy(SBIDSong &c)
 {
+    getSemaphore(); c.getSemaphore();
     SBIDBase::_copy(c);
     _songTitle                 =c._songTitle;
     _notes                     =c._notes;
@@ -903,6 +918,7 @@ SBIDSong::_copy(const SBIDSong &c)
     _playlistOnlinePerformances=c._playlistOnlinePerformances;
     _albumPerformances         =c._albumPerformances;
     _songPerformances          =c._songPerformances;
+    c.releaseSemaphore();releaseSemaphore();
 }
 
 void
@@ -912,10 +928,6 @@ SBIDSong::_init()
     _notes=QString();
     _lyrics=QString();
     _originalSongPerformanceID=-1;
-
-    _albumPerformances.clear();
-    _playlistOnlinePerformances.clear();
-    _songPerformances.clear();
 }
 
 void

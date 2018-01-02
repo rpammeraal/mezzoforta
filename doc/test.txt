@@ -73,7 +73,7 @@ OTHER EDITS:
 PLAY MUSIC:
 	-	All songs: song, performer, album
 	-	Chart: song has to be from performer on chart, not original performer
-	-	Playlist: playlist, online song, album
+	-	Playlist: playlist, online song, album, performer, 
 	-	Songs in queue:
 	-	Songs: album tab, playlist tab
 	-	Performer:

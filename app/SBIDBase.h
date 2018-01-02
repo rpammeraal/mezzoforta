@@ -16,7 +16,6 @@
 class SBSqlQueryModel;
 
 class SBIDBase;             typedef std::shared_ptr<SBIDBase>              SBIDPtr;
-typedef QSharedPointer<QSemaphore> QSemaphorePtr;
 
 
 class Cache;
@@ -118,6 +117,8 @@ protected:
     void getSemaphore();
     void releaseSemaphore();
 
+    QMutex          _mutex;
+
 private:
     bool            _changedFlag;
     bool            _deletedFlag;
@@ -128,7 +129,6 @@ private:
     QString         _url;	//	any item may have an url
     QString         _wiki;	//	any item may have an wiki page
     Cache*          _owningCache;
-    QSemaphorePtr   _semaphore;
 
     SBIDBase();
     void _init();

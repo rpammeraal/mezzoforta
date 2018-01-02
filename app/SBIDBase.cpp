@@ -199,33 +199,18 @@ SBIDBase::_copy(const SBIDBase &c)
     _url=c._url;
     _wiki=c._wiki;
     _owningCache=NULL;	//	do NOT copy -- identifies copy
-    _semaphore=c._semaphore;
 }
 
 void
 SBIDBase::getSemaphore()
 {
-    if(_semaphore)
-    {
-        _semaphore->acquire(1);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "no semaphore";
-    }
+    _mutex.lock();
 }
 
 void
 SBIDBase::releaseSemaphore()
 {
-    if(_semaphore)
-    {
-        _semaphore->release(1);
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "no semaphore";
-    }
+    _mutex.unlock();
 }
 
 ///	PRIVATE
@@ -251,6 +236,4 @@ SBIDBase::_init()
 
     //	Protected
     _errorMsg=e;
-
-    QSharedPointer<QSemaphore> obj=QSharedPointer<QSemaphore>(new QSemaphore(1));
 }

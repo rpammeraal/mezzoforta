@@ -690,7 +690,7 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
             "UPDATE ___SB_SCHEMA_NAME___record_performance "
             "SET "
                 "performance_id=%1, "
-                "preferred_online_performance_id=%2, "
+                "preferred_online_performance_id=NULLIF(%2,-1), "
                 "record_id=%3, "
                 "record_position=%4, "
                 "duration='%5', "

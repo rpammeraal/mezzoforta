@@ -206,6 +206,7 @@ WHERE
 	
 DROP TABLE conversion;
 
+CREATE UNIQUE INDEX ---SQL_SCHEMA_NAME---_ui_performance_song_artist ON ---SQL_SCHEMA_NAME___performance(song_id,artist_id);
 CREATE TABLE ---SQL_SCHEMA_NAME---artist_match (artist_alternative_name VARCHAR NOT NULL, artist_correct_name VARCHAR NOT NULL);
 CREATE UNIQUE INDEX ui_artist_match ON ---SQL_SCHEMA_NAME---artist_match (artist_alternative_name,artist_correct_name);
 
