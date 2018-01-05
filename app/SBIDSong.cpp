@@ -79,9 +79,10 @@ SBIDSong::sendToPlayQueue(bool enqueueFlag)
 }
 
 void
-SBIDSong::setReloadFlag()
+SBIDSong::setToReloadFlag()
 {
-    SBIDBase::setReloadFlag();
+    SBIDBase::setToReloadFlag();
+    qDebug() << SB_DEBUG_INFO << key() << ID() << reloadFlag();
     QMapIterator<int,SBIDSongPerformancePtr> it(songPerformances());
     while(it.hasNext())
     {
@@ -90,7 +91,7 @@ SBIDSong::setReloadFlag()
         SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(performerID);
         if(pPtr)
         {
-            pPtr->setReloadFlag();
+            pPtr->setToReloadFlag();
         }
     }
 }
@@ -393,9 +394,7 @@ SBIDSong::originalSongPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    return spMgr->retrieve(
-                SBIDSongPerformance::createKey(_originalSongPerformanceID),
-                Cache::open_flag_parentonly);
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_originalSongPerformanceID));
 }
 
 ///	Redirectors
@@ -438,14 +437,9 @@ SBIDSong::createKey(int songID)
 }
 
 void
-SBIDSong::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDSong::refreshDependents(bool forcedFlag)
 {
     getSemaphore();
-    if(showProgressDialogFlag)
-    {
-        ProgressDialog::instance()->show("Retrieving Data","SBIDSong::refreshDependents",4);
-    }
-
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
@@ -501,7 +495,7 @@ SBIDSong::retrieveAllSongs()
 }
 
 SBIDSongPtr
-SBIDSong::retrieveSong(SBKey key,bool noDependentsFlag)
+SBIDSong::retrieveSong(SBKey key)
 {
     SBIDSongPtr sPtr;
 
@@ -511,7 +505,7 @@ SBIDSong::retrieveSong(SBKey key,bool noDependentsFlag)
         {
             CacheManager* cm=Context::instance()->cacheManager();
             CacheSongMgr* smgr=cm->songMgr();
-            sPtr=smgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+            sPtr=smgr->retrieve(key);
         }
         else if(key.itemType()==SBKey::AlbumPerformance)
         {
@@ -537,9 +531,9 @@ SBIDSong::retrieveSong(SBKey key,bool noDependentsFlag)
 }
 
 SBIDSongPtr
-SBIDSong::retrieveSong(int songID,bool noDependentsFlag)
+SBIDSong::retrieveSong(int songID)
 {
-    return retrieveSong(createKey(songID),noDependentsFlag);
+    return retrieveSong(createKey(songID));
 }
 
 QString
@@ -938,7 +932,7 @@ SBIDSong::_loadAlbumPerformances()
     CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    _albumPerformances=apmgr->retrieveSet(qm,Cache::open_flag_default);
+    _albumPerformances=apmgr->retrieveSet(qm);
 
     delete qm;
 }
@@ -1011,8 +1005,8 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
     query.previous();
     while(query.next())
     {
-        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(query.value(0).toInt(),1);
-        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(query.value(1).toInt(),1);
+        SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(query.value(0).toInt());	//	Note: used to include loading of dependents
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(query.value(1).toInt());	//	Note: used to include loading of dependents
 
         SBIDSong::PlaylistOnlinePerformance r;
         r.plPtr=plPtr;
@@ -1033,7 +1027,7 @@ SBIDSong::_loadSongPerformancesFromDB() const
     CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
 
     //	Load performances including dependents, this will set its internal pointers
-    QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm,Cache::open_flag_default);
+    QMap<int,SBIDSongPerformancePtr> songPerformances=spmgr->retrieveMap(qm);
     delete qm;
     return songPerformances;
 }

@@ -145,10 +145,10 @@ SBIDBase::iconResourceLocationClass(ItemType itemType)
 }
 
 void
-SBIDBase::setReloadFlag()
+SBIDBase::setToReloadFlag()
 {
-    _reloadFlag=1;
-    qDebug() << SB_DEBUG_INFO << this->ID() << this->key();
+    SB_RETURN_VOID_IF_NULL(_owningCache);
+    _owningCache->addToReloadList(this->key());
 }
 
 
@@ -211,6 +211,12 @@ void
 SBIDBase::releaseSemaphore()
 {
     _mutex.unlock();
+}
+
+void
+SBIDBase::setReloadFlag()
+{
+    _reloadFlag=1;
 }
 
 ///	PRIVATE

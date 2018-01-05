@@ -379,12 +379,8 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
 }
 
 void
-SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
+SBIDPerformer::refreshDependents(bool forcedFlag)
 {
-    if(showProgressDialogFlag)
-    {
-        ProgressDialog::instance()->show("Retrieving Performer","SBIDPerformer::refreshDependents",4);
-    }
     if(forcedFlag || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
@@ -405,17 +401,17 @@ SBIDPerformer::refreshDependents(bool showProgressDialogFlag, bool forcedFlag)
 
 //	Static methods
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(SBKey key,bool noDependentsFlag)
+SBIDPerformer::retrievePerformer(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pemgr=cm->performerMgr();
-    return pemgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return pemgr->retrieve(key);
 }
 
 SBIDPerformerPtr
-SBIDPerformer::retrievePerformer(int performerID,bool noDependentsFlag)
+SBIDPerformer::retrievePerformer(int performerID)
 {
-    return retrievePerformer(createKey(performerID),noDependentsFlag);
+    return retrievePerformer(createKey(performerID));
 }
 
 SBIDPerformerPtr
@@ -635,7 +631,7 @@ void
 SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
 {
     SB_RETURN_VOID_IF_NULL(pPtrFrom);
-    refreshDependents(0,0);
+    refreshDependents(0);
 
     CacheManager* cm=Context::instance()->cacheManager();
 
@@ -1023,7 +1019,7 @@ SBIDPerformer::_loadAlbumsFromDB() const
     SBSqlQueryModel* qm=SBIDAlbum::albumsByPerformer(this->performerID());
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm,Cache::open_flag_parentonly);
+    QVector<SBIDAlbumPtr> albums=amgr->retrieveSet(qm);
     QVectorIterator<SBIDAlbumPtr> it(albums);
     while(it.hasNext())
     {

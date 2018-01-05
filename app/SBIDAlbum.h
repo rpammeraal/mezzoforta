@@ -62,14 +62,14 @@ public:
 
     //	Methods required by SBIDManagerTemplate
     static SBKey createKey(int albumID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
     static SBKey::ItemType classType() { return SBKey::Album; }
-    static SBIDAlbumPtr retrieveAlbum(int albumID,bool noDependentsFlag=1);
-    static SBIDAlbumPtr retrieveAlbum(SBKey key,bool noDependentsFlag=1);
-    static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag=1);
-    static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName,bool noDependentsFlag=1);
+    static SBIDAlbumPtr retrieveAlbum(int albumID);
+    static SBIDAlbumPtr retrieveAlbum(SBKey key);
+    static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath);
+    static SBIDAlbumPtr retrieveAlbumByTitlePerformer(const QString& albumTitle, const QString& performerName);
     static SBIDAlbumPtr retrieveUnknownAlbum();
 
     //	Static methods

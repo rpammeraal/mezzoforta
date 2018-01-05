@@ -134,9 +134,7 @@ SBIDOnlinePerformance::albumPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
-    return apMgr->retrieve(
-                SBIDAlbumPerformance::createKey(_albumPerformanceID),
-                Cache::open_flag_parentonly);
+    return apMgr->retrieve(SBIDAlbumPerformance::createKey(_albumPerformanceID));
 }
 
 SBIDSongPtr
@@ -277,17 +275,17 @@ SBIDOnlinePerformance::findByFK(const Common::sb_parameters &p)
 }
 
 SBIDOnlinePerformancePtr
-SBIDOnlinePerformance::retrieveOnlinePerformance(SBKey key, bool noDependentsFlag)
+SBIDOnlinePerformance::retrieveOnlinePerformance(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
-    return opMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return opMgr->retrieve(key);
 }
 
 SBIDOnlinePerformancePtr
-SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag)
+SBIDOnlinePerformance::retrieveOnlinePerformance(int onlinePerformanceID)
 {
-    return retrieveOnlinePerformance(createKey(onlinePerformanceID),noDependentsFlag);
+    return retrieveOnlinePerformance(createKey(onlinePerformanceID));
 }
 
 SBSqlQueryModel*
@@ -469,19 +467,18 @@ SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
 }
 
 void
-SBIDOnlinePerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDOnlinePerformance::refreshDependents(bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 }
 
 void
-SBIDOnlinePerformance::setReloadFlag()
+SBIDOnlinePerformance::setToReloadFlag()
 {
-    SBIDBase::setReloadFlag();
+    SBIDBase::setToReloadFlag();
     SBIDSongPtr sPtr=this->songPtr();
     SB_RETURN_VOID_IF_NULL(sPtr);
-    sPtr->setReloadFlag();
+    sPtr->setToReloadFlag();
 }
 
 ///	Protected methods

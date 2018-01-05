@@ -320,7 +320,7 @@ SBTabPerformerEdit::save() const
         {
             ScreenStack* st=Context::instance()->screenStack();
 
-            selectedPerformerPtr->refreshDependents(0,1);
+            selectedPerformerPtr->refreshDependents(1);
             ScreenItem from(orgPerformerPtr->key());
             ScreenItem to(selectedPerformerPtr->key());
             st->replace(from,to);

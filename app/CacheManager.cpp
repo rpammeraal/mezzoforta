@@ -51,49 +51,49 @@ CacheManager::debugShowChanges(const QString &title)
 }
 
 SBIDPtr
-CacheManager::get(SBKey::ItemType itemType,int itemID,bool noDependentsFlag)
+CacheManager::get(SBKey::ItemType itemType,int itemID)
 {
     SBIDPtr ptr;
     switch(itemType)
     {
     case SBKey::Album:
-        ptr=SBIDAlbum::retrieveAlbum(itemID,noDependentsFlag);
+        ptr=SBIDAlbum::retrieveAlbum(itemID);
         break;
 
     case SBKey::Performer:
-        ptr=SBIDPerformer::retrievePerformer(itemID,noDependentsFlag);
+        ptr=SBIDPerformer::retrievePerformer(itemID);
         break;
 
     case SBKey::Song:
-        ptr=SBIDSong::retrieveSong(itemID,noDependentsFlag);
+        ptr=SBIDSong::retrieveSong(itemID);
         break;
 
     case SBKey::Playlist:
-        ptr=SBIDPlaylist::retrievePlaylist(itemID,noDependentsFlag);
+        ptr=SBIDPlaylist::retrievePlaylist(itemID);
         break;
 
     case SBKey::AlbumPerformance:
-        ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID,noDependentsFlag);
+        ptr=SBIDAlbumPerformance::retrieveAlbumPerformance(itemID);
         break;
 
     case SBKey::OnlinePerformance:
-        ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID,noDependentsFlag);
+        ptr=SBIDOnlinePerformance::retrieveOnlinePerformance(itemID);
         break;
 
     case SBKey::Chart:
-        ptr=SBIDChart::retrieveChart(itemID,noDependentsFlag);
+        ptr=SBIDChart::retrieveChart(itemID);
         break;
 
     case SBKey::ChartPerformance:
-        ptr=SBIDChartPerformance::retrieveChartPerformance(itemID,noDependentsFlag);
+        ptr=SBIDChartPerformance::retrieveChartPerformance(itemID);
         break;
 
     case SBKey::PlaylistDetail:
-        ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID,noDependentsFlag);
+        ptr=SBIDPlaylistDetail::retrievePlaylistDetail(itemID);
         break;
 
     case SBKey::SongPerformance:
-        ptr=SBIDSongPerformance::retrieveSongPerformance(itemID,noDependentsFlag);
+        ptr=SBIDSongPerformance::retrieveSongPerformance(itemID);
         break;
 
     case SBKey::Invalid:
@@ -111,9 +111,9 @@ CacheManager::get(SBKey::ItemType itemType,int itemID,bool noDependentsFlag)
 }
 
 SBIDPtr
-CacheManager::get(SBKey key,bool noDependentsFlag)
+CacheManager::get(SBKey key)
 {
-    return CacheManager::get(key.itemType(),key.itemID(),noDependentsFlag);
+    return CacheManager::get(key.itemType(),key.itemID());
 }
 
 bool
@@ -174,6 +174,7 @@ CacheManager::saveChanges()
         SBKey::ItemType itemType=_order[i];
         CachePtr cPtr=_cache[itemType];
         cPtr->setChangedAsCommited();
+        cPtr->distributeReloadList();
     }
 
     //	CWIP: remove when database is cached

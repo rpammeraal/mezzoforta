@@ -55,7 +55,7 @@ SBTabPlaylistDetail::deletePlaylistItem()
                     .arg(QChar(180))           //	3
                     .arg(playlistPtr->text())  //	4
                     .arg(playlistPtr->type()); //	5
-                playlistPtr->refreshDependents(0,1);
+                playlistPtr->refreshDependents(1);
             }
             refreshTabIfCurrent(key);
             Context::instance()->controller()->updateStatusBarText(updateText);
@@ -83,7 +83,7 @@ SBTabPlaylistDetail::movePlaylistItem(const SBKey from, int row)
     bool successFlag=plPtr->moveItem(from,row);
     if(!successFlag)
     {
-        plPtr->refreshDependents(0,1);
+        plPtr->refreshDependents(1);
     }
     refreshTabIfCurrent(key);
 

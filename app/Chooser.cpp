@@ -673,7 +673,7 @@ Chooser::_getChartSelected(const QModelIndex& i)
 
             if(chartNameItem && chartIDItem)
             {
-                cPtr=SBIDChart::retrieveChart(chartIDItem->text().toInt(),1);
+                cPtr=SBIDChart::retrieveChart(chartIDItem->text().toInt());
             }
         }
         else
@@ -702,7 +702,7 @@ Chooser::_getPlaylistSelected(const QModelIndex& i)
 
             if(playlistNameItem && playlistIDItem)
             {
-                playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt(),1);
+                playlistPtr=SBIDPlaylist::retrievePlaylist(playlistIDItem->text().toInt());
             }
         }
         else

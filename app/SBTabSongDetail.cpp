@@ -348,7 +348,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
         default:
             if(!processedPerformerIDs.contains(performerList.at(i)))
             {
-                performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i),1);
+                performerPtr=SBIDPerformer::retrievePerformer(performerList.at(i));
                 if(performerPtr)
                 {
                     cs=cs+QString(",&nbsp;<A style=\"color: black; text-decoration:none\" HREF=\"%1\">%2</A>")

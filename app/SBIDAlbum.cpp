@@ -262,9 +262,7 @@ SBIDAlbum::performerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pMgr=cm->performerMgr();
-    return pMgr->retrieve(
-                SBIDPerformer::createKey(_albumPerformerID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDPerformer::createKey(_albumPerformerID));
 }
 
 ///	Redirectors
@@ -299,13 +297,8 @@ SBIDAlbum::createKey(int albumID)
 }
 
 void
-SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDAlbum::refreshDependents(bool forcedFlag)
 {
-    if(showProgressDialogFlag)
-    {
-        ProgressDialog::instance()->show("Retrieving Album","SBIDChart::refreshDependents",1);
-    }
-
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
@@ -313,21 +306,21 @@ SBIDAlbum::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbum(SBKey key,bool noDependentsFlag)
+SBIDAlbum::retrieveAlbum(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    return amgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return amgr->retrieve(key);
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbum(int albumID,bool noDependentsFlag)
+SBIDAlbum::retrieveAlbum(int albumID)
 {
-    return retrieveAlbum(createKey(albumID),noDependentsFlag);
+    return retrieveAlbum(createKey(albumID));
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
+SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
 {
     //	CWIP: need to store mapping in memory for faster retrieval. Maybe store path
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
@@ -371,13 +364,13 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath, bool noDependentsFlag)
 
     if(albumID!=-1)
     {
-        aPtr=SBIDAlbum::retrieveAlbum(albumID,noDependentsFlag);
+        aPtr=SBIDAlbum::retrieveAlbum(albumID);
     }
     return aPtr;
 }
 
 SBIDAlbumPtr
-SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QString &performerName, bool noDependentsFlag)
+SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QString &performerName)
 {
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -411,7 +404,7 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
 
     if(albumID!=-1)
     {
-        aPtr=SBIDAlbum::retrieveAlbum(albumID,noDependentsFlag);
+        aPtr=SBIDAlbum::retrieveAlbum(albumID);
     }
 
     return aPtr;
@@ -424,7 +417,7 @@ SBIDAlbum::retrieveUnknownAlbum()
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();
-    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(albumID,1);
+    SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(albumID);
 
     if(!albumPtr)
     {

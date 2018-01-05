@@ -86,9 +86,7 @@ SBIDSongPerformance::performerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pMgr=cm->performerMgr();
-    return pMgr->retrieve(
-                SBIDPerformer::createKey(_performerID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDPerformer::createKey(_performerID));
 }
 
 SBIDAlbumPerformancePtr
@@ -96,9 +94,7 @@ SBIDSongPerformance::preferredAlbumPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
-    return apMgr->retrieve(
-                SBIDAlbumPerformance::createKey(_preferredAlbumPerformanceID),
-                Cache::open_flag_parentonly);
+    return apMgr->retrieve(SBIDAlbumPerformance::createKey(_preferredAlbumPerformanceID));
 }
 
 SBIDOnlinePerformancePtr
@@ -117,9 +113,7 @@ SBIDSongPerformance::songPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* sMgr=cm->songMgr();
-    return sMgr->retrieve(
-                SBIDSong::createKey(_songID),
-                Cache::open_flag_parentonly);
+    return sMgr->retrieve(SBIDSong::createKey(_songID));
 }
 
 ///	Redirectors
@@ -172,9 +166,8 @@ SBIDSongPerformance::createKey(int songPerformanceID)
 }
 
 void
-SBIDSongPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDSongPerformance::refreshDependents(bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 }
 
@@ -261,21 +254,21 @@ SBIDSongPerformance::performancesByPerformer_Preloader(int performerID)
 }
 
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformance(const SBKey& key,bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformance(const SBKey& key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    return spMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return spMgr->retrieve(key);
 }
 
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID,bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformance(int songPerformanceID)
 {
-    return retrieveSongPerformance(createKey(songPerformanceID),noDependentsFlag);
+    return retrieveSongPerformance(createKey(songPerformanceID));
 }
 
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle, const QString &performerName, int excludeSongPerformanceID, bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle, const QString &performerName, int excludeSongPerformanceID)
 {
     SBIDSongPerformancePtr spPtr;
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
@@ -311,13 +304,13 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle
     if(!select.isNull(0))
     {
         int songPerformanceID=select.value(0).toInt();
-        spPtr=retrieveSongPerformance(songPerformanceID,noDependentsFlag);
+        spPtr=retrieveSongPerformance(songPerformanceID);
     }
     return spPtr;
 }
 
 SBIDSongPerformancePtr
-SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag)
+SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int performerID)
 {
     SBIDSongPerformancePtr spPtr;
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
@@ -347,7 +340,7 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int perfor
     if(!select.isNull(0))
     {
         int songPerformanceID=select.value(0).toInt();
-        spPtr=retrieveSongPerformance(songPerformanceID,noDependentsFlag);
+        spPtr=retrieveSongPerformance(songPerformanceID);
     }
     return spPtr;
 }

@@ -120,9 +120,7 @@ SBIDPlaylistDetail::playlistPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pMgr=cm->playlistMgr();
-    return pMgr->retrieve(
-                SBIDPlaylist::createKey(_playlistID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDPlaylist::createKey(_playlistID));
 }
 
 SBIDOnlinePerformancePtr
@@ -130,9 +128,7 @@ SBIDPlaylistDetail::onlinePerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheOnlinePerformanceMgr* pMgr=cm->onlinePerformanceMgr();
-    return pMgr->retrieve(
-                SBIDOnlinePerformance::createKey(_onlinePerformanceID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDOnlinePerformance::createKey(_onlinePerformanceID));
 }
 
 SBIDPlaylistPtr
@@ -140,9 +136,7 @@ SBIDPlaylistDetail::childPlaylistPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pMgr=cm->playlistMgr();
-    return pMgr->retrieve(
-                SBIDPlaylist::createKey(_childPlaylistID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDPlaylist::createKey(_childPlaylistID));
 }
 
 SBIDChartPtr
@@ -150,9 +144,7 @@ SBIDPlaylistDetail::chartPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartMgr* pMgr=cm->chartMgr();
-    return pMgr->retrieve(
-                SBIDChart::createKey(_chartID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDChart::createKey(_chartID));
 }
 
 SBIDAlbumPtr
@@ -160,9 +152,7 @@ SBIDPlaylistDetail::albumPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* pMgr=cm->albumMgr();
-    return pMgr->retrieve(
-                SBIDAlbum::createKey(_albumID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDAlbum::createKey(_albumID));
 }
 
 SBIDPerformerPtr
@@ -170,9 +160,7 @@ SBIDPlaylistDetail::performerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pMgr=cm->performerMgr();
-    return pMgr->retrieve(
-                SBIDPerformer::createKey(_performerID),
-                Cache::open_flag_parentonly);
+    return pMgr->retrieve(SBIDPerformer::createKey(_performerID));
 }
 
 //	Redirectors
@@ -231,9 +219,8 @@ SBIDPlaylistDetail::createKey(int playlistDetailID)
 }
 
 void
-SBIDPlaylistDetail::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDPlaylistDetail::refreshDependents(bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 }
 
@@ -243,7 +230,7 @@ SBIDPlaylistDetail::setDeletedFlag()
     SBIDBase::setDeletedFlag();
     SBIDPtr ptr=childPtr();
     SB_RETURN_VOID_IF_NULL(ptr);
-    ptr->setReloadFlag();
+    ptr->setToReloadFlag();
 }
 
 QStringList
@@ -330,17 +317,17 @@ SBIDPlaylistDetail::playlistDetailsByPerformer(int performerID)
 }
 
 SBIDPlaylistDetailPtr
-SBIDPlaylistDetail::retrievePlaylistDetail(SBKey key, bool noDependentsFlag)
+SBIDPlaylistDetail::retrievePlaylistDetail(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
-    return pdmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return pdmgr->retrieve(key);
 }
 
 SBIDPlaylistDetailPtr
-SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID, bool noDependentsFlag)
+SBIDPlaylistDetail::retrievePlaylistDetail(int playlistDetailID)
 {
-    return retrievePlaylistDetail(createKey(playlistDetailID),noDependentsFlag);
+    return retrievePlaylistDetail(createKey(playlistDetailID));
 }
 
 SBIDPlaylistDetailPtr

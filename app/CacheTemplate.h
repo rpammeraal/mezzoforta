@@ -35,10 +35,10 @@ public:
     //	Retrieve
     bool contains(SBKey key) const;
     int find(const Common::sb_parameters& tobeFound, std::shared_ptr<T> excludePtr, QMap<int,QList<std::shared_ptr<T>>>& matches, bool exactMatchOnlyFlag=0);
-    std::shared_ptr<T> retrieve(SBKey key, open_flag openFlag=Cache::open_flag_default);
+    std::shared_ptr<T> retrieve(SBKey key, bool includeDependentsFlag=0);
     QVector<std::shared_ptr<T>> retrieveAll();
-    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
-    QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,open_flag openFlag=Cache::open_flag_default);
+    QVector<std::shared_ptr<T>> retrieveSet(SBSqlQueryModel* qm,bool includeDependentsFlag=0);
+    QMap<int,std::shared_ptr<T>> retrieveMap(SBSqlQueryModel* qm,bool includeDependentsFlag=0);
 
     //	Update
     std::shared_ptr<T> add(const std::shared_ptr<T>& ptr);
@@ -60,6 +60,7 @@ protected:
 
     std::shared_ptr<T> addItem(const std::shared_ptr<T>& ptr);
     virtual void clearCache();
+    virtual void distributeReloadList();
     void removeInternally(std::shared_ptr<T> ptr);
     virtual QStringList retrieveChanges(Common::db_change db_change) const;
     virtual void setChangedAsCommited();
@@ -146,7 +147,7 @@ CacheTemplate<T,parentT>::find(const Common::sb_parameters& tobeFound, std::shar
 }
 
 template <class T, class parentT> std::shared_ptr<T>
-CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
+CacheTemplate<T,parentT>::retrieve(SBKey key,bool includeDependentsFlag)
 {
     std::shared_ptr<T> ptr;
 
@@ -173,11 +174,11 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,open_flag openFlag)
 
     if(ptr)
     {
-        if(ptr->reloadFlag() || openFlag==Cache::open_flag_default)
+        if(ptr->reloadFlag() || includeDependentsFlag)
         {
-            qDebug() << SB_DEBUG_INFO << key << openFlag << ptr->reloadFlag();
+            qDebug() << SB_DEBUG_INFO << key << includeDependentsFlag << ptr->reloadFlag();
             ptr->clearReloadFlag();
-            ptr->refreshDependents(0,1);
+            ptr->refreshDependents(1);
         }
     }
     return ptr;
@@ -250,7 +251,7 @@ CacheTemplate<T,parentT>::retrieveAll()
 }
 
 template <class T, class parentT> QVector<std::shared_ptr<T>>
-CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
+CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, bool includeDependentsFlag)
 {
     const int rowCount=qm->rowCount();
 
@@ -288,10 +289,10 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
 
         if(ptr)
         {
-            if(ptr->reloadFlag() || openFlag==Cache::open_flag_default)
+            if(ptr->reloadFlag() || includeDependentsFlag)
             {
                 ptr->clearReloadFlag();
-                ptr->refreshDependents(0,1);
+                ptr->refreshDependents(1);
             }
         }
         list.append(ptr);
@@ -303,7 +304,7 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, open_flag openFlag)
 
 //	First field of qm contains int to be used for key in QMap<int,std::shared_ptr<T>>
 template <class T, class parentT> QMap<int,std::shared_ptr<T>>
-CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
+CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, bool includeDependentsFlag)
 {
     const int rowCount=qm->rowCount();
 
@@ -340,10 +341,10 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, open_flag openFlag)
 
             if(ptr)
             {
-                if(ptr->reloadFlag() || openFlag!=Cache::open_flag_parentonly)
+                if(ptr->reloadFlag() || includeDependentsFlag)
                 {
                     ptr->clearReloadFlag();
-                    newPtr->refreshDependents(0,1);
+                    newPtr->refreshDependents(1);
                 }
             }
             map[intKey]=ptr;
@@ -379,7 +380,7 @@ CacheTemplate<T,parentT>::merge(std::shared_ptr<T>& fromPtr, std::shared_ptr<T>&
         toPtr->setChangedFlag();
         addChangedKey(fromPtr->key());
         addChangedKey(toPtr->key());
-        toPtr->setReloadFlag();
+        toPtr->setToReloadFlag();
     }
     else
     {
@@ -483,6 +484,27 @@ CacheTemplate<T,parentT>::clearCache()
 {
     _init();
 }
+
+template <class T, class parentT> void
+CacheTemplate<T,parentT>::distributeReloadList()
+{
+    QListIterator<SBKey> chIT(reloads());
+    while(chIT.hasNext())
+    {
+        const SBKey key=chIT.next();
+        std::shared_ptr<T> ptr;
+        if(contains(key))
+        {
+            ptr=_leMap[key];
+        }
+        if(ptr)
+        {
+            ptr->setReloadFlag();
+        }
+    }
+    clearReloads();
+}
+
 
 template <class T, class parentT> QStringList
 CacheTemplate<T,parentT>::retrieveChanges(Common::db_change db_change) const

@@ -40,11 +40,11 @@ public:
 
     //	Methods required by CacheTemplate
     static SBKey createKey(int songPerformanceID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBSqlQueryModel* chartPerformancesBySongPerformance(int songPerformanceID);
-    static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID, bool noDependentsFlag=1);
+    static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return ChartPerformance; }

@@ -49,15 +49,15 @@ public:
 
     //	Methods required by CacheTemplate
     static SBKey createKey(int songPerformanceID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBIDSongPerformancePtr findByFK(const Common::sb_parameters& p);
     static QString performancesByPerformer_Preloader(int performerID);
-    static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID, bool noDependentsFlag=1);
-    static SBIDSongPerformancePtr retrieveSongPerformance(const SBKey& key, bool noDependentsFlag=1);
-    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformer(const QString& songTitle, const QString& performerName, int excludeSongPerformanceID=-1, bool noDependentsFlag=1);
-    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID, bool noDependentsFlag=1);
+    static SBIDSongPerformancePtr retrieveSongPerformance(int songPerformanceID);
+    static SBIDSongPerformancePtr retrieveSongPerformance(const SBKey& key);
+    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformer(const QString& songTitle, const QString& performerName, int excludeSongPerformanceID=-1);
+    static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID);
 
     //	Helper methods for CacheTemplate
     static SBKey::ItemType classType() { return SBKey::SongPerformance; }

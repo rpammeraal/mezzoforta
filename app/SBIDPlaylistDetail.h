@@ -46,13 +46,13 @@ public:
 
     //	Methods required by SBIDBase
     static SBKey createKey(int playlistDetailID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBSqlQueryModel* playlistDetailsByAlbum(int albumID);
     static SBSqlQueryModel* playlistDetailsByPerformer(int performerID);
-    static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID,bool noDependentsFlag=1);
-    static SBIDPlaylistDetailPtr retrievePlaylistDetail(SBKey key,bool noDependentsFlag=1);
+    static SBIDPlaylistDetailPtr retrievePlaylistDetail(int playlistDetailID);
+    static SBIDPlaylistDetailPtr retrievePlaylistDetail(SBKey key);
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr childPtr);
 
     //	Helper methods for CacheTemplate

@@ -55,19 +55,19 @@ public:
     virtual operator QString();
 
     //	Methods required by CacheTemplate
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return OnlinePerformance; }
 
     //	Aux
-    virtual void setReloadFlag();
+    virtual void setToReloadFlag();
 
     //	Static methods
     static SBKey createKey(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr findByFK(const Common::sb_parameters& p);
-    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID, bool noDependentsFlag=1);
-    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(SBKey key, bool noDependentsFlag=1);
+    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID);
+    static SBIDOnlinePerformancePtr retrieveOnlinePerformance(SBKey key);
     static SBSqlQueryModel* retrieveOnlinePerformancesByAlbumPerformance(int albumPerformanceID);
     static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
     static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);

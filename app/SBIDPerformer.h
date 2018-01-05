@@ -64,11 +64,11 @@ public:
     //	Methods required by CacheTemplate
     static SBKey createKey(int performerID);
     static bool match(const QString& editedPerformerName,int skipID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
-    static SBIDPerformerPtr retrievePerformer(SBKey key,bool noDependentsFlag=1);
-    static SBIDPerformerPtr retrievePerformer(int performerID,bool noDependentsFlag=1);
+    static SBIDPerformerPtr retrievePerformer(SBKey key);
+    static SBIDPerformerPtr retrievePerformer(int performerID);
     static SBIDPerformerPtr retrieveVariousPerformers();
 
     //	Helper methods for CacheTemplate

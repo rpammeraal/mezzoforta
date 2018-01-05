@@ -77,13 +77,13 @@ public:
     virtual operator QString() const;
 
     //	Methods required by SBIDManagerTemplate
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0)=0;
+    virtual void refreshDependents(bool forcedFlag=0)=0;
 
     //	Aux methods
     static ItemType convert(Common::sb_field f);
     static QString iconResourceLocationClass(SBKey key);
     static QString iconResourceLocationClass(ItemType itemType);
-    virtual void setReloadFlag();
+    virtual void setToReloadFlag();
 
 protected:
     SBIDBase(const SBIDBase& c);
@@ -118,6 +118,9 @@ protected:
     void releaseSemaphore();
 
     QMutex          _mutex;
+
+    friend class Cache;
+    void setReloadFlag();
 
 private:
     bool            _changedFlag;

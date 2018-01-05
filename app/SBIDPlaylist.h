@@ -48,12 +48,12 @@ public:
     virtual operator QString() const;
 
     //	Methods required by CacheTemplate
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBKey createKey(int playlistID);
-    static SBIDPlaylistPtr retrievePlaylist(int playlistID,bool noDependentsFlag=1);
-    static SBIDPlaylistPtr retrievePlaylist(SBKey key,bool noDependentsFlag=1);
+    static SBIDPlaylistPtr retrievePlaylist(int playlistID);
+    static SBIDPlaylistPtr retrievePlaylist(SBKey key);
     static void removePlaylistItemFromAllPlaylistsByKey(SBKey key);
 
     //	Helper methods for CacheTemplate

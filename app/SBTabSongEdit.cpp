@@ -649,7 +649,7 @@ qDebug() << SB_DEBUG_INFO;
 
             ScreenStack* st=Context::instance()->screenStack();
 
-            newSongPtr->refreshDependents(0,1);
+            newSongPtr->refreshDependents(1);
             ScreenItem from(orgSongPtr->key());
             ScreenItem to(newSongPtr->key());
             qDebug() << SB_DEBUG_INFO << orgSongPtr->key() << newSongPtr->key();

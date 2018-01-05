@@ -44,7 +44,7 @@ public:
     virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
-    virtual void setReloadFlag();
+    virtual void setToReloadFlag();
     virtual QString text() const;
     virtual QString type() const;
 
@@ -85,12 +85,12 @@ public:
 
     //	Methods required by CacheTemplate
     static SBKey createKey(int songID);
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBSqlQueryModel* retrieveAllSongs();
-    static SBIDSongPtr retrieveSong(int songID,bool noDependentsFlag=1);
-    static SBIDSongPtr retrieveSong(SBKey key,bool noDependentsFlag=1);
+    static SBIDSongPtr retrieveSong(int songID);
+    static SBIDSongPtr retrieveSong(SBKey key);
     static QString iconResourceLocationStatic();
 
     //	Helper methods for CacheTemplate

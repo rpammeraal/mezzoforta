@@ -122,7 +122,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 
         SBIDPtr childPtr=pdPtr->childPtr();
         SB_RETURN_IF_NULL(childPtr,0);
-        childPtr->setReloadFlag();
+        childPtr->setToReloadFlag();
     }
     return !found;
 }
@@ -184,6 +184,7 @@ SBIDPlaylist::recalculatePlaylistDuration()
 bool
 SBIDPlaylist::removePlaylistItem(int position)
 {
+    qDebug() << SB_DEBUG_INFO;
     position--;	//	Position as parameter is 1-based, we need 0-based
     if(position>=items().count())
     {
@@ -192,21 +193,30 @@ SBIDPlaylist::removePlaylistItem(int position)
 
     SBIDPlaylistDetailPtr pdPtr=_items[position];
     SB_RETURN_IF_NULL(pdPtr,0);
+    qDebug() << SB_DEBUG_INFO;
     moveDependent(position,_items.count());
+    qDebug() << SB_DEBUG_INFO;
 
     CacheManager* cm=Context::instance()->cacheManager();
+    qDebug() << SB_DEBUG_INFO;
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
+    qDebug() << SB_DEBUG_INFO;
 
     SBIDPtr childPtr=pdPtr->childPtr();
     SB_RETURN_IF_NULL(childPtr,0);
-    childPtr->setReloadFlag();
+    childPtr->setToReloadFlag();
+    qDebug() << SB_DEBUG_INFO << pdPtr->key();
 
     pdPtr->setDeletedFlag();
+    qDebug() << SB_DEBUG_INFO;
     pdmgr->remove(pdPtr);
+    qDebug() << SB_DEBUG_INFO;
 
     cm->saveChanges();
+    qDebug() << SB_DEBUG_INFO;
 
-    refreshDependents(0,1);
+    refreshDependents(1);
+    qDebug() << SB_DEBUG_INFO;
     recalculatePlaylistDuration();
     return 1;
 }
@@ -283,13 +293,8 @@ SBIDPlaylist::tableModelItems() const
 
 //	Methods required by SBIDManagerTemplate
 void
-SBIDPlaylist::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDPlaylist::refreshDependents(bool forcedFlag)
 {
-    if(showProgressDialogFlag)
-    {
-        ProgressDialog::instance()->show("Retrieving Playlist","SBIDPlaylist::refreshDependents",2);
-    }
-
     if(forcedFlag==1 || _items.count()==0)
     {
         _loadPlaylistItems();
@@ -304,17 +309,17 @@ SBIDPlaylist::createKey(int playlistID)
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::retrievePlaylist(SBKey key, bool noDependentsFlag)
+SBIDPlaylist::retrievePlaylist(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePlaylistMgr* pmgr=cm->playlistMgr();
-    return pmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return pmgr->retrieve(key);
 }
 
 SBIDPlaylistPtr
-SBIDPlaylist::retrievePlaylist(int playlistID,bool noDependentsFlag)
+SBIDPlaylist::retrievePlaylist(int playlistID)
 {
-    return retrievePlaylist(createKey(playlistID),noDependentsFlag);
+    return retrievePlaylist(createKey(playlistID));
 }
 
 void
@@ -357,7 +362,7 @@ SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
         SBIDPlaylistPtr plPtr=SBIDPlaylist::retrievePlaylist(playlistID);
         if(plPtr)
         {
-            plPtr->setReloadFlag();
+            plPtr->setToReloadFlag();
         }
         SBIDPlaylistDetailPtr pldPtr=SBIDPlaylistDetail::retrievePlaylistDetail(playlistDetailID);
         if(pldPtr)

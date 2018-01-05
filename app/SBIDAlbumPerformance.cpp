@@ -108,9 +108,7 @@ SBIDAlbumPerformance::albumPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* aMgr=cm->albumMgr();
-    return aMgr->retrieve(
-                SBIDAlbum::createKey(_albumID),
-                Cache::open_flag_parentonly);
+    return aMgr->retrieve(SBIDAlbum::createKey(_albumID));
 }
 
 SBIDSongPerformancePtr
@@ -118,9 +116,7 @@ SBIDAlbumPerformance::songPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    return spMgr->retrieve(
-                SBIDSongPerformance::createKey(_songPerformanceID),
-                Cache::open_flag_parentonly);
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
 }
 
 SBIDOnlinePerformancePtr
@@ -128,9 +124,7 @@ SBIDAlbumPerformance::preferredOnlinePerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheOnlinePerformanceMgr* opMgr=cm->onlinePerformanceMgr();
-    return opMgr->retrieve(
-                SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID),
-                Cache::open_flag_parentonly);
+    return opMgr->retrieve(SBIDOnlinePerformance::createKey(_preferredOnlinePerformanceID));
 }
 
 ///	Redirectors
@@ -234,9 +228,8 @@ SBIDAlbumPerformance::operator QString()
 
 //	Methods required by SBIDManagerTemplate
 void
-SBIDAlbumPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDAlbumPerformance::refreshDependents(bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 }
 
@@ -441,17 +434,17 @@ SBIDAlbumPerformance::performancesBySongPerformance(int songPerformanceID)
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::retrieveAlbumPerformance(SBKey key,bool noDependentsFlag)
+SBIDAlbumPerformance::retrieveAlbumPerformance(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* pfMgr=cm->albumPerformanceMgr();
-    return pfMgr->retrieve(key, (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return pfMgr->retrieve(key);
 }
 
 SBIDAlbumPerformancePtr
-SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID,bool noDependentsFlag)
+SBIDAlbumPerformance::retrieveAlbumPerformance(int albumPerformanceID)
 {
-    return retrieveAlbumPerformance(createKey(albumPerformanceID), noDependentsFlag);
+    return retrieveAlbumPerformance(createKey(albumPerformanceID));
 }
 
 ///	Protected methods

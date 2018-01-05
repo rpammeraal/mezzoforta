@@ -39,12 +39,12 @@ public:
     virtual operator QString() const;
 
     //	Methods required by CacheTemplate
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBKey createKey(int chartID);
-    static SBIDChartPtr retrieveChart(int chartID,bool noDependentsFlag=1);
-    static SBIDChartPtr retrieveChart(SBKey key,bool noDependentsFlag=1);
+    static SBIDChartPtr retrieveChart(int chartID);
+    static SBIDChartPtr retrieveChart(SBKey key);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return Chart; }

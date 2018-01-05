@@ -151,12 +151,8 @@ SBIDChart::operator QString() const
 
 //	Methods required by SBIDManagerTemplate
 void
-SBIDChart::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDChart::refreshDependents(bool forcedFlag)
 {
-    if(showProgressDialogFlag)
-    {
-        ProgressDialog::instance()->show("Retrieving Chart","SBIDChart::refreshDependents",3);
-    }
     if(forcedFlag==1 || _items.count()==0)
     {
         _loadPerformances();
@@ -171,17 +167,17 @@ SBIDChart::createKey(int chartID)
 }
 
 SBIDChartPtr
-SBIDChart::retrieveChart(SBKey key,bool noDependentsFlag)
+SBIDChart::retrieveChart(SBKey key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartMgr* cmgr=cm->chartMgr();
-    return cmgr->retrieve(key,(noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+    return cmgr->retrieve(key);
 }
 
 SBIDChartPtr
-SBIDChart::retrieveChart(int chartID,bool noDependentsFlag)
+SBIDChart::retrieveChart(int chartID)
 {
-    return retrieveChart(createKey(chartID),noDependentsFlag);
+    return retrieveChart(createKey(chartID));
 }
 
 ///	Protected methods

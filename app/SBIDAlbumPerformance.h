@@ -62,7 +62,7 @@ public:
     virtual operator QString();
 
     //	Methods required by SBIDBase
-    virtual void refreshDependents(bool showProgressDialogFlag=0,bool forcedFlag=0);
+    virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
     static SBKey createKey(int albumPerformanceID);
@@ -72,8 +72,8 @@ public:
     static QString performancesByPerformer_Preloader(int performerID);
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesBySongPerformance(int songPerformanceID);
-    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID, bool noDependentsFlag=1);
-    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(SBKey key, bool noDependentsFlag=1);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(int albumPerformanceID);
+    static SBIDAlbumPerformancePtr retrieveAlbumPerformance(SBKey key);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return AlbumPerformance; }

@@ -30,6 +30,15 @@ Cache::addRemovedKey(SBKey key)
     }
 }
 
+void
+Cache::addToReloadList(SBKey key)
+{
+    if(!_reloads.contains(key))
+    {
+        _reloads.append(key);
+    }
+}
+
 ///	Private methods
 void
 Cache::_init()

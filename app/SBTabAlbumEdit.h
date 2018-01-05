@@ -28,6 +28,7 @@ public slots:
 private slots:
     void addSong();
     void clearAll();
+    void mergeSong();
     void removeSong();
     void rowSelected(const QItemSelection& i, const QItemSelection& j);
     virtual void save() const;

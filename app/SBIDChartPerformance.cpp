@@ -86,9 +86,7 @@ SBIDChartPerformance::songPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    return spMgr->retrieve(
-                SBIDSongPerformance::createKey(_songPerformanceID),
-                Cache::open_flag_parentonly);
+    return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
 }
 
 ///	Redirectors
@@ -139,9 +137,8 @@ SBIDChartPerformance::createKey(int chartPerformanceID)
 }
 
 void
-SBIDChartPerformance::refreshDependents(bool showProgressDialogFlag,bool forcedFlag)
+SBIDChartPerformance::refreshDependents(bool forcedFlag)
 {
-    Q_UNUSED(showProgressDialogFlag);
     Q_UNUSED(forcedFlag);
 }
 
@@ -169,14 +166,14 @@ SBIDChartPerformance::chartPerformancesBySongPerformance(int songPerformanceID)
 }
 
 SBIDChartPerformancePtr
-SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID,bool noDependentsFlag)
+SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
     SBIDChartPerformancePtr cpPtr;
     if(chartPerformanceID>=0)
     {
-        cpPtr=cpMgr->retrieve(createKey(chartPerformanceID), (noDependentsFlag==1?Cache::open_flag_parentonly:Cache::open_flag_default));
+        cpPtr=cpMgr->retrieve(createKey(chartPerformanceID));
     }
     return cpPtr;
 }

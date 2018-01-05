@@ -438,6 +438,7 @@ void
 SBTabAlbumEdit::handleMergeKey()	//	CWIP: goal of this is...?
 {
     _hasChanges=1;
+    mergeSong();
 }
 
 bool
@@ -477,18 +478,18 @@ SBTabAlbumEdit::showContextMenu(const QPoint &p)
 
     if(numRowsSelected>1 && numRowsRemoved==0 && numRowsMarkedAsMerged==0)
     {
-        menu.addAction(_mergeSongAction);
-        showMenu=1;
+        //	menu.addAction(_mergeSongAction);
+        //	showMenu=1;
     }
     if(numRowsSelected>=0 && numRowsRemoved==0)
     {
-        menu.addAction(_deleteSongAction);
-        showMenu=1;
+        //	menu.addAction(_deleteSongAction);
+        //	showMenu=1;
     }
     if(numRowsSelected>=1 && numRowsRemoved>=1)
     {
-        menu.addAction(_clearAllAction);
-        showMenu=1;
+        //	menu.addAction(_clearAllAction);
+        //	showMenu=1;
     }
     if(showMenu)
     {
@@ -573,6 +574,101 @@ SBTabAlbumEdit::clearAll()
         tv->selectionModel()->clear();
         tv->setSelectionModel(ism);
     }
+}
+
+//	merge,deletion of individual album performances commented out for now (20170102).
+void
+SBTabAlbumEdit::mergeSong()
+{
+    const MainWindow* mw=Context::instance()->mainWindow();
+    QTableView* tv=mw->ui.albumEditSongList;
+    QItemSelectionModel* ism=tv->selectionModel();
+    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+    bool cannotMergeFlag=0;
+    bool removedFlag=0;
+    if(ism)
+    {
+        int toBeMergedToIndex=-1;
+        QString toBeMergedSongTitle;
+
+        QModelIndexList mil=ism->selectedRows();
+        for(int i=0;cannotMergeFlag==0 && i<mil.count();i++)
+        {
+            QModelIndex idx=mil.at(i);
+            if(i==0)
+            {
+                //	First item selected
+                toBeMergedToIndex=mil.at(i).row();
+                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_songtitle)->text();
+                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
+                if(removedFlag==1)
+                {
+                    cannotMergeFlag=1;
+                }
+            }
+            else
+            {
+                //	Second and other items selected
+                removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
+                if(removedFlag==1)
+                {
+                    cannotMergeFlag=1;
+                }
+            }
+        }
+
+        for(int i=1;cannotMergeFlag==0 && i<mil.count();i++)
+        {
+            QModelIndex idx=mil.at(i);
+
+            for(int j=0;j<aem->columnCount();j++)
+            {
+                QStandardItem* it=NULL;
+                it=aem->item(idx.row(),j);
+
+                if(it)
+                {
+                    it->setBackground(QBrush(QColor("lightgrey")));
+                    it->setForeground(QBrush(QColor("darkslategrey")));
+                    QFont f=it->font();
+                    f.setItalic(1);
+                    it->setFont(f);
+                    if(j==aem->columnCount()-1)
+                    {
+                        it->setText(QString("Merged with song %1 '%2'")
+                                    .arg(toBeMergedToIndex+1)
+                                    .arg(toBeMergedSongTitle));
+                    }
+
+                    if(j==AlbumEditModel::sb_column_deleteflag)
+                    {
+                        it->setText("1");
+                    }
+                    if(j==AlbumEditModel::sb_column_mergedtoindex)
+                    {
+                        it->setText(QString("%1").arg(toBeMergedToIndex+1));
+                    }
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_NPTR;
+                }
+            }
+        }
+        tv->selectionModel()->clear();
+        tv->setSelectionModel(ism);
+    }
+    if(cannotMergeFlag)
+    {
+        SBMessageBox::createSBMessageBox("Cannot merge removed songs",
+                                         "Select songs that are not removed.",
+                                         QMessageBox::Warning,
+                                         QMessageBox::Close,
+                                         QMessageBox::Close,
+                                         QMessageBox::Close);
+    }
+    aem->debugShow("mergeSong:end");
+    _hasChanges=1;
 }
 
 void
@@ -1040,7 +1136,7 @@ SBTabAlbumEdit::save() const
         {
             ScreenStack* st=Context::instance()->screenStack();
 
-            newAlbumPtr->refreshDependents(0,1);
+            newAlbumPtr->refreshDependents(1);
             ScreenItem from(orgAlbumPtr->key());
             ScreenItem to(newAlbumPtr->key());
             st->replace(from,to);
