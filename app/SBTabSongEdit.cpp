@@ -698,8 +698,16 @@ SBTabSongEdit::_populate(const ScreenItem& si)
     _init();
     qDebug() << SB_DEBUG_INFO << si.key();
     const MainWindow* mw=Context::instance()->mainWindow();
-    SBIDSongPtr songPtr=SBIDSong::retrieveSong(si.key());
-    SB_RETURN_IF_NULL(songPtr,ScreenItem());
+    SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
+    SB_RETURN_IF_NULL(sPtr,ScreenItem());
+
+    if(si.key()!=sPtr->key())
+    {
+        //	Update screenstack with correct song key
+        ScreenStack* st=Context::instance()->screenStack();
+
+        st->replace(ScreenItem(si.key()),ScreenItem(sPtr->key()));
+    }
 
     //	Refresh completers
     CompleterFactory* cf=Context::instance()->completerFactory();
@@ -707,13 +715,14 @@ SBTabSongEdit::_populate(const ScreenItem& si)
 
     ScreenItem currentScreenItem=si;
     currentScreenItem.setEditFlag(1);
+    currentScreenItem.updateSBIDBase(sPtr->key());
     //SBTab::_setCurrentScreenItem(currentScreenItem);
 
-    mw->ui.songEditTitle->setText(songPtr->songTitle());
-    mw->ui.songEditPerformerName->setText(songPtr->songOriginalPerformerName());
-    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(songPtr->songOriginalYear()));
-    mw->ui.songEditNotes->setText(songPtr->notes());
-    mw->ui.songEditLyrics->setText(songPtr->lyrics());
+    mw->ui.songEditTitle->setText(sPtr->songTitle());
+    mw->ui.songEditPerformerName->setText(sPtr->songOriginalPerformerName());
+    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(sPtr->songOriginalYear()));
+    mw->ui.songEditNotes->setText(sPtr->notes());
+    mw->ui.songEditLyrics->setText(sPtr->lyrics());
 
     //	Disable tmpButtons
     mw->ui.pbNA2->hide();

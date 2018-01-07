@@ -1019,36 +1019,69 @@ Between 20161215 and 20170604:
 -	test ability to play from all screens -> test document
 -	Play album, does not honor album positions.
 
-CURRENT:
-*	Drag from Performer/Song tab should not ask for performer (e.g. Platters/Only You).
-
-TODO:
-*	See if SBIDBase ctors can be made private
-*	find a common way to match strings:
+20180106: Went through all outstanding issues and put them here if (already) solved.
+-	Notes should be displayed in album tab of song
+-	Drag from Performer/Song tab should not ask for performer (e.g. Platters/Only You).
+-	See if SBIDBase ctors can be made private: are made protected.
+-	find a common way to match strings:
     SBIDSong uses Common::simplified
 	MusicLibrary uses removeNonAlphaNumericIncludingSpaces -- combine both strategies and put in simplified
 	save method in SBTabAlbumEdit, SBTabPerformerEdit, SBTabSongEdit use different ways to find out if title/name/etc has changed
-	Use SBCaseInsensitiveString class
-*	Add dialogbox to save operations.
+	Use Common::comparable. Fix in editing of
+	-	song
+	-	album
+	-	performer
+	-	import
+-	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
+-	Assignment of songs from another playlist does not work:  Assign If God Will Send His Angeles/Heverlee Lommel to Herinneringen aan Holland.
+-	Search for Limburg/Rowwen Heze: Does not play
+-	Search for Hear That Sound/INXS Heze: Does not play
+-	New Gold Dream/Simple Minds: click to play, does not play album songs: data problem (solved for someone somewhere in summertime).
+-	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
+-	SBIDPlaylist::_getAllItemsByPlaylistRecursive: need to be based on _items instead of querying database.
+-	After songs get assigned to playlist, need to refreshDependents() on the item assigned to the playlist.
+-	Weird stuff happens when an item is removed from 'Songs In Queue': could not reproduce.
+-	Open 'all songs' tab after 10s after showing opening screen.
+-	adding/removing from playlist: duration does not get updated
+-	Radio mode: sometimes song appears in list twice: unable to reproduce
+-	remove SBID*::save() methods
+-	Context: all classes to be instantiated here? Nope.
+-	 radio mode: at end of 100th song, refill radio list (whether running to the end or skip to next song)
+-	when edit song, call SBIDSong::deleteIfOrphanized() for every performer performing that song. Done.
+-	Album: edit notes
+    -	enable editing of notes in album (duplicate)
+-	When changing performer on a song, ask if 1) if this is the only performer on the song (if this is the case,
+    change *_performance to reflect this) or 2) if other performers perform this song. Only ask if there is only
+	one performer on this song. 20180104: not sure what was smoking, for the most part taken care of.
+-	DataEntity::getDetail(): initialization of parameter to result should NOT happen. 20170105: class and method *long* gone.
+-	SBID* classes: check on all executed database queries need to exists. SBAlbum::save() is example (calling SBMessageBox::databaseErrorMessageBox). Done.
+-	SBIDManagerTemplate<T,parentT>::commitAll(): see if either multipe transactions can be nested or tell dal that we keep track of the transaction. Done.
+-	If SBID.compareSimple() really needed? Removed.
+-	charts. Yep. Done.
+-	Updates to playlist, genres. For a long time.
+-	redo dropdown for schemas when connected to songbase database
+-	Change year on album, crashes.
+-	Rene Froger, Winter In America in songlist shows year as 1978. Should be 1988. Data problem.
+-	Any link between digital_format and formats maintained by songbase? Nope, remove table everywhere.
+-	Repeated search gets slower and slower -- multiple signals gets emitted.
+
+TODO:
+*	Dialogbox to save operations after import is flashing w/ multiple albums imported.
+*	Charts/Playlists to be minimized at start up.
+*	Set original performer to righteous brothers on you've lost that lovin feeling from the firm. Then merge:w
+
+
+NEAR FUTURE
 *	Preload all caches
     *	AllSongs tab to not use SQL
 	*	SearchItem to not use SQL
 
 Bugs that need to be fixed:
-*	Assign: song The Wind Cries Mary: does not ask for version -- should ask for version/performer from song page
-*	Assignment of songs from another playlist does not work:  Assign If God Will Send His Angeles/Heverlee Lommel to Herinneringen aan Holland.
-*	Search for Limburg/Rowwen Heze: Does not play
-*	Search for Hear That Sound/INXS Heze: Does not play
-*	New Gold Dream/Simple Minds: click to play, does not play album songs.
-*	Drag song from 'songs in queue' after shuffle -- incorrect song dragged
 * 	After import, show in status bar (bottom) how many songs where imported.
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 * 	Show window with songs to be imported.
-*	Weird stuff happens when an item is removed from 'Songs In Queue'.
-*	Rene Froger, Winter In America in songlist shows year as 1978. Should be 1988.
 
 Enhancements:
-*	SBIDPlaylist::_getAllItemsByPlaylistRecursive: need to be based on _items instead of querying database.
 
 Near future:
 *1	Create
@@ -1074,23 +1107,20 @@ Near future:
 	*	repeat at all levels (SBIDSongPerformance, SBIDAlbumPerformance, SBIDOnlinePerformance)
 *	Playlist should be able to contain songs, performances, record performances, online performances.
 *	Find out where we need to offer a choice of what online performance to play if a song is to be played/queud.
-*	After songs get assigned to playlist, need to refreshDependents() on the item assigned to the playlist.
 *	search screen:
     -	need progress dialog
-*	Open 'all songs' tab after 10s after showing opening screen.
-*	Charts/Playlists to be minimized.
 
 Import bugs/features/missing:
 *	Look up record_performance by title, performer & title in addition to album position
 *	Dialogbox needed at additional places during import
 *	Validate album positions
-*	Import songbase directory:
+-	Import songbase directory:
     *	Asks for N.w.a: too many choices offered
 	*	The War On Drugs: one option is War On Drugs, The. This should be automatically accepted.
 	*	Doobie Brothers: The Doobie Brothers
 	*	It should not mix: The Specials and De Specials
 	*	Album select: Greatest Hits by Boney M is a distinct different album than Greatest Hits by Elton John. Should be accepted automatically.
-*	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.
+-	Create a table (and populate it) with most common Greatest Hits albums. MusicLibrary should just create a new album for this and not have the user select.
 *	MusicLibrary:
     -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
 	-	if existing performance is selected, rock.performance gets inserted with role_id=0. Should be 1.
@@ -1103,7 +1133,7 @@ Import bugs/features/missing:
 
 <SBIDAlbum edit>
 *	may need to think about
-	*	allowing multiple songs with the same positionID
+    *	allowing multiple songs with the same positionID: need to be able to merge
 	*	forget drag/drop of songs in album edit. With songs missing, it is impossible to determine new position:
 		*	Use UI to assign new position IDs.
 		*	Generate warnig if multiple songs with same position exist, allow to override
@@ -1114,20 +1144,15 @@ Import bugs/features/missing:
 *	added online_performance_id to song table. This needs to be properly populated when online_performances for that song become available.
 
 <bugs>
-*	Any link between digital_format and formats maintained by songbase?
 *	Postgres credentials are lost when creating new database
 *	Creating new database does not make songbase switch to this database.
-*	adding/removing from playlist: duration does not get updated
 *	if it is not possible to connect to Postgres, need to see dialog box
 *	if it is not possible to connect to Postgres, all credentials get wiped
-*	Radio mode: sometimes song appears in list twice
 *	Songs in Queue -- when at end of playlist, next song should start with 1st song.
-*	remove SBID*::save() methods
 *	support 24kb/s flac. See AudioDecoderFlac, search for _sampleFormat=paInt24;
 
 <near future>
 *	Redesign/larger font 'now playing' in player section.
-*	Context: all classes to be instantiated here?
 *	when done, each SBTab* class:
 	*	review from where _init() should be called
 *	if item is queued on empty playlist, auto start play
@@ -1136,29 +1161,18 @@ Import bugs/features/missing:
 *	if new database is selected:
 	*	stop music player
 	*	context menu disappear from chooser (and possibly other places).
-*	 radio mode: at end of 100th song, refill radio list (whether running to the end or skip to next song)
 *	clear out 'shuffle' when less than 3 songs in queue.
-*	when edit song, call SBIDSong::deleteIfOrphanized() for every performer performing that song.
-*	Album: edit notes
 *	Playlist: set sort order
 
 *	addMissingDatabase objects: need a cleaner way (database dependent) to do this.
 	*	DataAccessLayer::addMissingDatabaseItems() does not work on postgres.
 	*	Progress box not be shown during this method.
 *	(dis)appearing playbutton in front of any item in songlist
-*	(dis)appearing playbutton in front of any item in playlist
 *	Superclass SBTabAlbumEdit.AlbumEditModel and SBTabCurrentPlaylist.CurrentPlaylistModel
-*	When changing performer on a song, ask if 1) if this is the only performer on the song (if this is the case,
-	change *_performance to reflect this) or 2) if other performers perform this song. Only ask if there is only
-	one performer on this song.
-*	enable editing of notes in album
 *	wil suggestion: create getID() and compareAttributes() in SBID* classes to explicitly force the use of these instead of compare operators.
 	*	compare operators should be defined private
-*	DataEntity::getDetail(): initialization of parameter to result should NOT happen.
 *	Add option to playlist to always play in order or randomly.
-*	SBID* classes: check on all executed database queries need to exists. SBAlbum::save() is example (calling SBMessageBox::databaseErrorMessageBox)
 *	Open De Havenzangers -- www starts playing. Need to disable www tab as soon as we leave
-*	SBIDManagerTemplate<T,parentT>::commitAll(): see if either multipe transactions can be nested or tell dal that we keep track of the transaction.
 
 <future>
 *	Support aac format (look at libav.org)
@@ -1173,7 +1187,6 @@ Import bugs/features/missing:
 * 	performer, song tags
 *	add wikipedia page for albums, songs in database
 *	If artist is renamed from Simple Mind to Dire Straitz, URL should be blanked out.
-*	If SBID.compareSimple() really needed?
 *	Currently playing: disable scrollTo if user is navigating in current playlist (disable for x seconds)
 *	Convert duration:timestamp to duration:duration: later if songbase(wwww) is withdrawn. Works fine with sqlite
 *	only update last_played_date once after song has been listened to for 5s.
@@ -1181,9 +1194,6 @@ Import bugs/features/missing:
 *	playlists to consists of SBIDSong, SBIDPerformance, SBIDAlbumPerformance in addition to SBIDONlinePerformance
 
 -	check when reordering playlist item on drag on itself.
--	charts
--	Updates to playlist, genres
--	redo dropdown for schemas when connected to songbase database
 -	if no results in search, don't store in screenstack
 -	tags on any item
 -	about box

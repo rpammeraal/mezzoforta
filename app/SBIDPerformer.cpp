@@ -540,7 +540,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
             "FROM "
                 "___SB_SCHEMA_NAME___artist s "
             "WHERE "
-                "REPLACE(LOWER(s.name),' ','') = REPLACE(LOWER('%1'),' ','') "
+                "REPLACE(LOWER(s.name),' ','') = '%1' "
             "UNION "
             "SELECT DISTINCT "
                 "1 AS match_rank, "
@@ -584,7 +584,6 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                 "a.match_rank, "
                 "a.artist_id, "
                 //	SQLITE does not support window functions.
-                //"ROW_NUMBER() OVER(PARTITION BY artist_id ORDER BY match_rank) AS rank "
                 " (SELECT COUNT(*) FROM allr b WHERE a.artist_id=b.artist_id AND b.match_rank<a.match_rank) as rank "
             "FROM "
                 "allr a "
@@ -604,7 +603,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         "ORDER BY "
             "1, 3"
     )
-        .arg(Common::escapeSingleQuotes(tobeFound.performerName))
+        .arg(Common::escapeSingleQuotes(Common::comparable(tobeFound.performerName)))
         .arg(excludeID)
         .arg(newSoundex)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.performerName)))

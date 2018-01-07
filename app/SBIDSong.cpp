@@ -124,7 +124,7 @@ SBIDSong::albums()
     return tm;
 }
 
-SBIDSongPerformancePtr
+void
 SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
 {
     CacheManager* cm=Context::instance()->cacheManager();
@@ -152,7 +152,33 @@ SBIDSong::addSongPerformance(int performerID,int year,const QString& notes)
         spPtr=spMgr->createInDB(p);
     }
     releaseSemaphore();
-    return addSongPerformance(spPtr);
+
+    if(spPtr)
+    {
+        addSongPerformance(spPtr);
+    }
+}
+
+SBIDSongPerformancePtr
+SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
+{
+    getSemaphore();
+    if(_songPerformances.count()==0)
+    {
+        this->_loadSongPerformances();
+    }
+
+    SB_RETURN_IF_NULL(spPtr,SBIDSongPerformancePtr());
+    if(!_songPerformances.contains(spPtr->songPerformanceID()))
+    {
+        _songPerformances[spPtr->songPerformerID()]=spPtr;
+    }
+    else
+    {
+        spPtr=_songPerformances[spPtr->songPerformerID()];
+    }
+    releaseSemaphore();
+    return spPtr;
 }
 
 QVector<SBIDAlbumPerformancePtr>
@@ -474,8 +500,7 @@ SBIDSong::retrieveAllSongs()
         "FROM "
             "___SB_SCHEMA_NAME___song s "
                 "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    //	"s.song_id = p.song_id "
-                    "s.original_performance_id = p.performance_id "
+                    "s.song_id = p.song_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -510,16 +535,20 @@ SBIDSong::retrieveSong(SBKey key)
         else if(key.itemType()==SBKey::AlbumPerformance)
         {
             SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(key);
+            SB_RETURN_IF_NULL(apPtr,SBIDSongPtr());
             sPtr=apPtr->songPtr();
         }
         else if(key.itemType()==SBKey::OnlinePerformance)
         {
             SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(key);
+            SB_RETURN_IF_NULL(opPtr,SBIDSongPtr());
             sPtr=opPtr->songPtr();
         }
         else if(key.itemType()==SBKey::SongPerformance)
         {
             SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
+            qDebug() << SB_DEBUG_INFO << key;
+            SB_RETURN_IF_NULL(opPtr,SBIDSongPtr());
             sPtr=opPtr->songPtr();
         }
         else
@@ -652,8 +681,7 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
         "WHERE "
             "s.original_performance_id IS NOT NULL AND "
             "( "
-                //"REPLACE(LOWER(s.title),' ','') = (LOWER('%1'),' ','') OR "
-                "REGEXP_REPLACE(LOWER(title),'[^A-Za-z]','','g') = '%1' OR "
+                "REPLACE(LOWER(title),' ','') = '%1' OR "
                 "s.song_id=%5 "
             ") "
             "%4 "
@@ -676,13 +704,12 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
                 //"SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
             ") AND "
             "length(s.soundex)<= 2*length('%3') AND "
-            //	"REPLACE(LOWER(s.title),' ','') != REPLACE(LOWER('%1'),' ','') "
-            "REGEXP_REPLACE(LOWER(title),'[^A-Za-z]','','g') = '%1'  "
+            "REPLACE(LOWER(s.title),' ','') != '%1' "
             "%4 "
         "ORDER BY "
             "1,3 "
     )
-        .arg(Common::removeNonAlphanumericIncludingSpaces(p.songTitle.toLower()))
+        .arg(Common::escapeSingleQuotes(Common::comparable(p.songTitle)))
         .arg(p.performerID)
         .arg(newSoundex)
         .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
@@ -875,27 +902,6 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
         result=Common::result_missing;
     }
     return result;
-}
-
-SBIDSongPerformancePtr
-SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
-{
-    getSemaphore();
-    if(_songPerformances.count()==0)
-    {
-        this->_loadSongPerformances();
-    }
-
-    if(!_songPerformances.contains(spPtr->songPerformanceID()))
-    {
-        _songPerformances[spPtr->songPerformerID()]=spPtr;
-    }
-    else
-    {
-        spPtr=_songPerformances[spPtr->songPerformerID()];
-    }
-    releaseSemaphore();
-    return spPtr;
 }
 
 ///	Private methods

@@ -158,6 +158,13 @@ SBIDAlbumPerformance::albumTitle() const
 }
 
 int
+SBIDAlbumPerformance::albumYear() const
+{
+    SBIDAlbumPtr aPtr=albumPtr();
+    return (aPtr?aPtr->albumYear():0);
+}
+
+int
 SBIDAlbumPerformance::songID() const
 {
     SBIDSongPerformancePtr spPtr=songPerformancePtr();

@@ -292,15 +292,29 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
+    if(si.key()!=sPtr->key())
+    {
+        //	Update screenstack with correct song key
+        ScreenStack* st=Context::instance()->screenStack();
+
+        st->replace(ScreenItem(si.key()),ScreenItem(sPtr->key()));
+    }
+
     //	Disable QWebview tabs and have them open up when data comes available
     mw->ui.tabSongDetailLists->setCurrentIndex(0);
     mw->ui.tabSongDetailLists->setTabEnabled(SBTabSongDetail::sb_tab_wikipedia,0);
 
     //	Update the currentScreenItem with the original pointer as provided.
-    //	This can be AlbumPerformance, or OnlinePerformance (when called from playlist detail).
+    //	This needs to be a songKey.
     ScreenItem currentScreenItem=si;
-    currentScreenItem.updateSBIDBase(si.key());
+    currentScreenItem.updateSBIDBase(sPtr->key());
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
+
+    {
+        //	Update screenstack with correct song key
+        ScreenStack* st=Context::instance()->screenStack();
+        st->debugShow("after");
+    }
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),

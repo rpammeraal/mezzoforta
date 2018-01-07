@@ -453,7 +453,7 @@ SBTabAlbumEdit::hasEdits() const
     if(_hasChanges ||
         albumPtr->albumTitle()!=mw->ui.albumEditTitle->text() ||
         albumPtr->albumPerformerName()!=mw->ui.albumEditPerformer->text() ||
-        albumPtr->year()!=mw->ui.albumEditYear->text().toInt()
+        albumPtr->albumYear()!=mw->ui.albumEditYear->text().toInt()
     )
     {
         return 1;
@@ -772,9 +772,10 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 }
 
 //	Use cases:
-//	Change performer specific album to collection album
-//	Change collection specific album to performer specific album
-//	Merge from performer specific album to performer specific album
+//	-	Change performer specific album to collection album
+//	-	Change collection specific album to performer specific album
+//	-	Merge from performer specific album to performer specific album
+//	-	Edit notes
 void
 SBTabAlbumEdit::save() const
 {
@@ -831,7 +832,7 @@ SBTabAlbumEdit::save() const
         }
     }
 
-    if(editAlbumYear!=orgAlbumPtr->year())
+    if(editAlbumYear!=orgAlbumPtr->albumYear())
     {
         albumMetaDataChangedFlag=1;
     }
@@ -877,7 +878,7 @@ SBTabAlbumEdit::save() const
         {
             editedSong.notes=item->text();
         }
-        editedSong.year=orgAlbumPtr->year();
+        editedSong.year=orgAlbumPtr->albumYear();
 
         //	Album edit
         item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
@@ -967,6 +968,7 @@ SBTabAlbumEdit::save() const
                      << ePtr->songTitle
                      << ePtr->songPerformerName
                      << ePtr->removedFlag
+                     << ePtr->notes
                 ;
             }
             else
@@ -1003,6 +1005,7 @@ SBTabAlbumEdit::save() const
                      << ePtr->songTitle
                      << ePtr->songPerformerName
                      << ePtr->removedFlag
+                     << ePtr->notes
                 ;
             }
         }
@@ -1079,6 +1082,7 @@ SBTabAlbumEdit::save() const
                          << apPtr->albumPosition()
                 ;
             }
+            qDebug() << SB_DEBUG_INFO << ePtr->notes << apPtr->notes();
             if(ePtr->notes!=apPtr->notes())
             {
                 apPtr->setNotes(ePtr->notes);
@@ -1277,8 +1281,8 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //	Attributes
     mw->ui.albumEditTitle->setText(aPtr->albumTitle());
     mw->ui.albumEditPerformer->setText(aPtr->albumPerformerName());
-    mw->ui.albumEditYear->setText(QString("%1").arg(aPtr->year()));
-    qDebug() << SB_DEBUG_INFO << aPtr->year();
+    mw->ui.albumEditYear->setText(QString("%1").arg(aPtr->albumYear()));
+    qDebug() << SB_DEBUG_INFO << aPtr->albumYear();
 
     //	Songs
 

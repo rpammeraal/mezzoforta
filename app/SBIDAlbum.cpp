@@ -390,8 +390,8 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
             "r.title=%1 AND "
             "a.name=%2 "
     )
-        .arg(albumTitle)
-        .arg(performerName)
+        .arg(Common::escapeSingleQuotes(albumTitle))
+        .arg(Common::escapeSingleQuotes(performerName))
     ;
 
     dal->customize(q);
@@ -580,7 +580,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
     QString q=QString
     (
         "SELECT "
-            "CASE WHEN a.artist_id=%2 OR REPLACE(LOWER(a.name),' ','')=REPLACE(LOWER('%6'),' ','') THEN 0 ELSE 2 END AS matchRank, "
+            "CASE WHEN a.artist_id=%2 OR REPLACE(LOWER(a.name),' ','')='%6' THEN 0 ELSE 2 END AS matchRank, "
             "p.record_id, "
             "a.artist_id, "
             "p.title, "
@@ -592,7 +592,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
-            "REPLACE(LOWER(p.title),' ','') = REPLACE(LOWER('%1'),' ','') AND "
+            "REPLACE(LOWER(p.title),' ','') = '%1' AND "
             "p.record_id!=(%3) "
         "UNION "
         "SELECT "
@@ -628,7 +628,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
         "ORDER BY "
             "1 "
     )
-        .arg(Common::escapeSingleQuotes(Common::removeAccents(tobeFound.albumTitle)))
+        .arg(Common::escapeSingleQuotes(Common::comparable(tobeFound.albumTitle)))
         .arg(tobeFound.performerID)
         .arg(excludeID)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.albumTitle)))

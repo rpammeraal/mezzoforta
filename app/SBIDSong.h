@@ -124,7 +124,7 @@ protected:
     //	Protected setters
     friend class MusicLibrary;
     friend class SBTabSongEdit;
-    SBIDSongPerformancePtr addSongPerformance(int performerID,int year,const QString& notes);
+    void addSongPerformance(int performerID,int year,const QString& notes);
     SBIDSongPerformancePtr addSongPerformance(SBIDSongPerformancePtr spPtr);
 
 private:

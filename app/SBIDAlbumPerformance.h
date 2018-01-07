@@ -48,6 +48,7 @@ public:
     int albumPerformerID() const;
     QString albumPerformerName() const;
     QString albumTitle() const;
+    int albumYear() const;
     QString path() const;
     int songID() const;
     int songPerformanceID() const;

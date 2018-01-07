@@ -607,7 +607,7 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
     int progressMaxValue=rootPlPtr->items().count();
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->update("SBIDPlaylist::_getAllItemsByPlaylistRecursive",0,progressMaxValue);
+        ProgressDialog::instance()->update("SBIDPlaylist::_getOnlineItemsByPlaylist",0,progressMaxValue);
     }
     QMapIterator<int,SBIDPlaylistDetailPtr> it(rootPlPtr->items());
     while(it.hasNext())
@@ -627,12 +627,12 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
         }
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDPlaylist::_getAllItemsByPlaylistRecursive",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update("SBIDPlaylist::_getOnlineItemsByPlaylist",progressCurrentValue++,progressMaxValue);
         }
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("SBIDPlaylist::_getAllItemsByPlaylistRecursive");
+        ProgressDialog::instance()->finishStep("SBIDPlaylist::_getOnlineItemsByPlaylist");
     }
 }
 

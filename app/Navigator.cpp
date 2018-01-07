@@ -59,17 +59,23 @@ Navigator::openScreen(SBKey key)
 void
 Navigator::openScreen(const ScreenItem &si)
 {
+    ScreenStack* st=Context::instance()->screenStack();
+
+    //	Check for duplicate calls
+    if(st->getScreenCount() && st->currentScreen()==si)
+    {
+        //	qDebug() << SB_DEBUG_WARNING << "dup call to current screen" << si;
+        return;
+    }
+
     if(!_threadPrioritySetFlag)
     {
         QThread::currentThread()->setPriority(QThread::LowestPriority);
         _threadPrioritySetFlag=1;
     }
 
-    ScreenStack* st=Context::instance()->screenStack();
-    //st->debugShow("openScreen:113");
-    SBKey key;
-
     //	Check for valid parameter
+    SBKey key;
     if(si.screenType()==ScreenItem::screen_type_invalid)
     {
         qDebug() << SB_DEBUG_ERROR << "UNHANDLED SCREENITEM TYPE: " << si.screenType();
@@ -89,13 +95,6 @@ Navigator::openScreen(const ScreenItem &si)
             qDebug() << SB_DEBUG_ERROR << "UNHANDLED SBIDBASE TYPE: " << key.itemType();
             return;
         }
-    }
-
-    //	Check for duplicate calls
-    if(st->getScreenCount() && st->currentScreen()==si)
-    {
-        qDebug() << SB_DEBUG_WARNING << "dup call to current screen" << si;
-        return;
     }
 
     if(_checkOutstandingEdits()==1)

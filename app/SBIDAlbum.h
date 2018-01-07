@@ -35,14 +35,14 @@ public:
     inline int albumID() const { return itemID(); }
     inline int albumPerformerID() const { return _albumPerformerID; }
     inline QString albumTitle() const { return _albumTitle; }
-    SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int year, const QString& path, const SBDuration& duration, const QString& notes);
+    SBIDAlbumPerformancePtr addAlbumPerformance(int songID, int performerID, int albumPosition, int albumYear, const QString& path, const SBDuration& duration, const QString& notes);
     QMap<int,SBIDAlbumPerformancePtr> albumPerformances() const;
     SBDuration duration() const;
     inline QString genre() const { return _genre; }
     inline QString notes() const { return _notes; }
     int numPerformances() const;
     SBTableModel* tableModelPerformances() const;
-    inline int year() const { return _year; }
+    inline int albumYear() const { return _year; }
 
     //	Setters
     void setAlbumTitle(const QString& albumTitle) { qDebug() << SB_DEBUG_INFO; if(albumTitle!=_albumTitle) { _albumTitle=albumTitle; setChangedFlag(); } }

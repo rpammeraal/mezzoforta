@@ -299,20 +299,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___record (record_id,artist_id,title,media) VALUES(0,0,'UNKNOWN ALBUM','UNKNOWN ALBUM')");
 
             SQL.append(Common::escapeSingleQuotes(
-                "CREATE TABLE digital_format \n"
-                "( \n"
-                    "digital_format_id INTEGER PRIMARY KEY NOT NULL, \n"
-                    "name              VARCHAR NOT NULL, \n"
-                    "extension         VARCHAR NOT NULL \n"
-                "); \n"
-            ));
-
-            SQL.append("INSERT INTO digital_format VALUES (0,'MP3 format','mp3')");
-            SQL.append("INSERT INTO digital_format VALUES (1,'Wave format','wav')");
-            SQL.append("INSERT INTO digital_format VALUES (2,'Ogg/Vorbis','ogg')");
-            SQL.append("INSERT INTO digital_format VALUES (4,'Flac','flac')");
-
-            SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE greatest_hits_record \n"
                 "( \n"
                     "greatest_hits_record_id INTEGER PRIMARY KEY NOT NULL, \n"

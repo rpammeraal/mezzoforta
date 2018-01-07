@@ -136,7 +136,7 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
         {
             _setItem(index,0,albumPtr->key().toString());
             _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
-            _setItem(index,2,QString("%1").arg(albumPtr->year()));
+            _setItem(index,2,QString("%1").arg(albumPtr->albumYear()));
             _setItem(index,3,albumPtr->performerPtr()->key().toString());
             _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
@@ -159,7 +159,7 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
             {
                 _setItem(index,0,albumPtr->key().toString());
                 _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
-                _setItem(index,2,QString("%1").arg(albumPtr->year()));
+                _setItem(index,2,QString("%1").arg(albumPtr->albumYear()));
                 _setItem(index,3,albumPtr->performerPtr()->key().toString());
                 _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
@@ -183,6 +183,7 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
     header.append("year released");
     header.append("SB_ITEM_KEY2");
     header.append("performer");
+    header.append("notes");
     setHorizontalHeaderLabels(header);
 
     //	Populate data
@@ -195,9 +196,10 @@ SBTableModel::populateAlbumsBySong(QVector<SBIDAlbumPerformancePtr> performances
             _setItem(i,0,apPtr->albumKey().toString());
             _setItem(i,1,apPtr->albumTitle());
             _setItem(i,2,apPtr->duration().toString(SBDuration::sb_hhmmss_format));
-            _setItem(i,3,QString("%1").arg(apPtr->year()));
+            _setItem(i,3,QString("%1").arg(apPtr->albumYear()));
             _setItem(i,4,apPtr->songPerformerKey().toString());
             _setItem(i,5,apPtr->songPerformerName());
+            _setItem(i,6,apPtr->notes());
         }
     }
 }
@@ -450,7 +452,8 @@ SBTableModel::populateSongsByPerformer(const QVector<SBIDSongPerformancePtr>& pe
 
         if(spPtr && !songID.contains(spPtr->songID()))
         {
-            _setItem(index, 0,spPtr->songKey().toString());
+            //_setItem(index, 0,spPtr->songKey().toString());
+            _setItem(index, 0,spPtr->key().toString());	//	This gotta be song performance key, so we get the right value when dragging/dropping
             _setItem(index, 1,spPtr->songTitle());
             _setItem(index, 2,QString("%1").arg(spPtr->year()));
             index++;

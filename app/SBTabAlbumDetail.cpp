@@ -306,9 +306,9 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     QString details;
 
     //	Details 1: release year
-    if(aPtr->year()>0)
+    if(aPtr->albumYear()>0)
     {
-        details=QString("Released: %1").arg(aPtr->year());
+        details=QString("Released: %1").arg(aPtr->albumYear());
     }
 
     //	Details 2: duration

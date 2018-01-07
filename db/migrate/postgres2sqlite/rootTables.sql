@@ -37,16 +37,6 @@ INSERT INTO "article" VALUES('la');
 INSERT INTO "article" VALUES('der');
 INSERT INTO "article" VALUES('die');
 INSERT INTO "article" VALUES('das');
-CREATE TABLE digital_format 
-( 
-digital_format_id INTEGER PRIMARY KEY NOT NULL, 
-name              VARCHAR NOT NULL, 
-extension         VARCHAR NOT NULL 
-);
-INSERT INTO "digital_format" VALUES(0,'MP3 format','mp3');
-INSERT INTO "digital_format" VALUES(1,'Wave format','wav');
-INSERT INTO "digital_format" VALUES(2,'Ogg/Vorbis','ogg');
-INSERT INTO "digital_format" VALUES(4,'Flac','flac');
 CREATE TABLE greatest_hits_record 
 ( 
 greatest_hits_record_id INTEGER PRIMARY KEY NOT NULL, 

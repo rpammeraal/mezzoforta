@@ -216,7 +216,6 @@ PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr, bool setReadyFlag)
         _updatePlayState(PlayerController::sb_player_state_stopped);
     }
 
-    qDebug() << SB_DEBUG_INFO << "returning success";
     return 1;
 }
 

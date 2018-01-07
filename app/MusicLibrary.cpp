@@ -1081,6 +1081,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                 //	Add performance
                 if(entityPtr->songPerformerID!=selectedSongPtr->songOriginalPerformerID())
                 {
+                    qDebug() << SB_DEBUG_INFO << entityPtr->songPerformerID;
+                    qDebug() << SB_DEBUG_INFO << selectedSongPtr->songOriginalPerformerID();
                     selectedSongPtr->addSongPerformance(entityPtr->songPerformerID,entityPtr->year,entityPtr->notes);
                 }
             }

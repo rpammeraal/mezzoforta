@@ -34,7 +34,6 @@ public:
     static SBDialogSelectItem* selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, QVector<SBIDOnlinePerformancePtr> alOPPtr, QWidget *parent = 0);
     static SBDialogSelectItem* selectPerformer(const QString& newPerformerName,const SBIDPtr& existingPerformerPtr, const QMap<int,QList<SBIDPerformerPtr>>& matches, QWidget *parent = 0);
     static SBDialogSelectItem* selectSong(const Common::sb_parameters& newSong,const SBIDPtr& existingSongPtr, const QMap<int,QList<SBIDSongPtr>>& matches, QWidget *parent = 0);
-//    static SBDialogSelectItem* selectSongByPerformer(const SBIDSongPtr& songPtr, const QString& newPerformerName, QWidget *parent = 0);
 
 
 private:
