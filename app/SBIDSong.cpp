@@ -82,7 +82,6 @@ void
 SBIDSong::setToReloadFlag()
 {
     SBIDBase::setToReloadFlag();
-    qDebug() << SB_DEBUG_INFO << key() << ID() << reloadFlag();
     QMapIterator<int,SBIDSongPerformancePtr> it(songPerformances());
     while(it.hasNext())
     {
@@ -547,7 +546,6 @@ SBIDSong::retrieveSong(SBKey key)
         else if(key.itemType()==SBKey::SongPerformance)
         {
             SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
-            qDebug() << SB_DEBUG_INFO << key;
             SB_RETURN_IF_NULL(opPtr,SBIDSongPtr());
             sPtr=opPtr->songPtr();
         }

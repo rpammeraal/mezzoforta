@@ -1053,7 +1053,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     p.notes=entityPtr->notes;
                     p.songID=entityPtr->songID;
 
-                    qDebug() << SB_DEBUG_INFO << p.songID;
+                    qDebug() << SB_DEBUG_INFO << p.songID << p.performerName;
 
                     Common::result result=smgr->userMatch(p,SBIDSongPtr(),selectedSongPtr);
                     if(result==Common::result_canceled)

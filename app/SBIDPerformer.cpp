@@ -336,13 +336,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists;
         }
-        else if(matches[2].count()==1)
-        {
-            found=SBIDPerformer::retrievePerformer(matches[2][0]->itemID());
-            result=Common::result_exists;
-
-        }
-        else if(matches[2].count()>1)
+        else //	if(matches[2].count()>1): do NOT do this.
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
@@ -365,10 +359,10 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                     result=Common::result_missing;
                 }
             }
-        }
-        else
-        {
-            result=Common::result_missing;
+            else
+            {
+                result=Common::result_missing;
+            }
         }
     }
     else

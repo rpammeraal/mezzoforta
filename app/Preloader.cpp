@@ -53,7 +53,7 @@ Preloader::chartItems(const SBIDBase& id)
     QStringList chartPerformanceFields; chartPerformanceFields << "4"  << "0"  << "5"  << "6"  << "7";
     QStringList performerFields; performerFields               << "9"  << "18" << "19" << "20" << "21";
     QStringList songFields; songFields                         << "8"  << "14" << "15" << "16" << "17";
-    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "11" << "12"  << "13";
+    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "11" << "12" << "13";
     QString q;
 
     q=QString
@@ -216,7 +216,7 @@ Preloader::albumPerformances(SBKey key, QString query)
     QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" <<  "9" << "11";
     QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
     QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
-    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "4"  <<  "5" << "28";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" <<  "4" <<  "5" << "28";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
@@ -339,7 +339,7 @@ Preloader::onlinePerformances(QString query)
     QStringList albumFields; albumFields                         << "6"  << "8"  << "7"  << "10" << "11" << "9";
     QStringList performerFields; performerFields                 << "12" << "13" << "14" << "15" << "16";
     QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "25" << "6"  << "17" << "18" << "26" << "24";
-    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "29" << "4"  << "5"  << "28";
+    QStringList songPerformanceFields; songPerformanceFields     << "25" << "0"  << "12" << "4"  << "5"  << "28";
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
@@ -457,11 +457,11 @@ Preloader::performanceMap(QString query)
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QMap<int,SBIDAlbumPerformancePtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-    QStringList songFields; songFields                         << "0"  << "1"  << "2"  << "21" << "24";
-    QStringList albumFields; albumFields                       << "6"  << "8"  << "7"  << "10" << "11" << "9";
+    QStringList songFields; songFields                         <<  "0" <<  "1" <<  "2" << "21" << "24";
+    QStringList albumFields; albumFields                       <<  "6" <<  "8" <<  "7" << "10" << "11" <<  "9";
     QStringList performerFields; performerFields               << "12" << "13" << "14" << "15" << "16";
-    QStringList songPerformanceFields; songPerformanceFields   << "22" << "0"  << "3"  << "23" << "4"  << "5"  << "25";
-    QStringList albumPerformanceFields; albumPerformanceFields << "20" << "22" << "6"  << "17" << "18" << "19" << "26";
+    QStringList songPerformanceFields; songPerformanceFields   << "22" <<  "0" <<  "3" <<  "4" <<  "5" << "25";
+    QStringList albumPerformanceFields; albumPerformanceFields << "20" << "22" <<  "6" << "17" << "18" << "19" << "26";
 
     dal->customize(query);
     qDebug() << SB_DEBUG_INFO << query;

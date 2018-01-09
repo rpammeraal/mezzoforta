@@ -83,12 +83,6 @@ protected:
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
 
-    //	Setters to accomodate SBIDAlbumPerformance
-    //void setSongID(int sb_song_id) { _sb_song_id=sb_song_id; setChangedFlag(); }
-    //void setPerformerID(int sb_performer_id) { _sb_performer_id=sb_performer_id; setChangedFlag(); }
-    //void setYear(int year) { _year=year; setChangedFlag(); }
-    //void setNotes(const QString& notes) { _notes=notes; setChangedFlag(); }
-
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
     friend class SBIDSong;

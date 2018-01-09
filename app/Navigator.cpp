@@ -296,17 +296,12 @@ Navigator::removeFromScreenStack(SBKey key)
 void
 Navigator::refreshSearchCompleter()
 {
-    SearchItemModel* oldSim=Context::instance()->searchItemModel();
     SearchItemModel* newSim=new SearchItemModel();
 
     QLineEdit* lineEdit=Context::instance()->mainWindow()->ui.searchEdit;
     QCompleter* completer=lineEdit->completer();
-    completer->setModel(newSim);
+    completer->setModel(newSim);	//	QCompleter will remove the previous model.
 
-    if(oldSim)
-    {
-        delete(oldSim); oldSim=NULL;
-    }
     Context::instance()->setSearchItemModel(newSim);
 
     _setupSearchCompleter();

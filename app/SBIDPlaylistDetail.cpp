@@ -374,6 +374,20 @@ SBIDPlaylistDetail::createPlaylistDetail(int playlistID, int playlistPosition, S
         break;
     }
 
+    case SBKey::AlbumPerformance:
+    {
+        const SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(ptr->itemID());
+        if(apPtr)
+        {
+            const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
+            if(opPtr)
+            {
+                p.onlinePerformanceID=opPtr->onlinePerformanceID();
+            }
+        }
+        break;
+    }
+
     default:
         qDebug() << SB_DEBUG_ERROR << "Case not handled:" << ptr->itemType();
         return SBIDPlaylistDetailPtr();

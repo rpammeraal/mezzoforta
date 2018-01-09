@@ -588,6 +588,7 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
            sPtr->setOriginalPerformanceID(this->songPerformanceID());
        }
     }
+    spPtrFrom->setPreferredAlbumPerformanceID(this->preferredAlbumPerformanceID());
 }
 
 SBSqlQueryModel*
