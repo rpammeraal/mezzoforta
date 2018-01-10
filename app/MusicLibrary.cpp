@@ -118,7 +118,6 @@ MusicLibrary::rescanMusicLibrary()
             progressCurrentValue++;
         }
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_scan");
 
     if(0)
     {	//	DEBUG
@@ -202,7 +201,6 @@ MusicLibrary::rescanMusicLibrary()
         progressCurrentValue++;
     }
     delete sqm;
-    ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_retrieve");
     qDebug() << SB_DEBUG_INFO;
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -328,7 +326,6 @@ MusicLibrary::rescanMusicLibrary()
         }
         progressCurrentValue++;
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_metadata");
 
     if(1)
     {	//	DEBUG
@@ -467,7 +464,6 @@ MusicLibrary::rescanMusicLibrary()
             dal->restore(databaseRestorePoint);
         }
         qDebug() << SB_DEBUG_INFO;
-        ProgressDialog::instance()->finishStep("MusicLibrary::rescanMusicLibrary_savedata");
 
         //	Collect all errors
         QMap<QString,QString> errors;

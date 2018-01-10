@@ -7,6 +7,7 @@
 void
 ProgressDialog::show(const QString &title,const QString& initiatingFunction, int numSteps)
 {
+    qDebug() << numSteps;
     _initiatingFunction=initiatingFunction;
     _pd.setValue(0);
     _pd.setLabelText(title);
@@ -26,6 +27,7 @@ ProgressDialog::show(const QString &title,const QString& initiatingFunction, int
 void
 ProgressDialog::setLabelText(const QString &title)
 {
+    qDebug() << SB_DEBUG_INFO << title;
     _pd.setLabelText(title);
     QCoreApplication::processEvents();
 }
@@ -33,6 +35,7 @@ ProgressDialog::setLabelText(const QString &title)
 void
 ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 {
+    qDebug() << SB_DEBUG_INFO << step << currentValue << maxValue;
     if(!_visible)
     {
         return;
@@ -95,6 +98,7 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
 void
 ProgressDialog::finishStep(const QString &step)
 {
+    qDebug() << SB_DEBUG_INFO;
     update(step,100,100);
 }
 

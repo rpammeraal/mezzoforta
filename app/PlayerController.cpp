@@ -331,7 +331,7 @@ PlayerController::_refreshPlayingNowData() const
     {
     case PlayerController::sb_player_state_stopped:
         _playerPlayButton[_currentPlayerID]->setText(">");
-        playState="Stopped: ";
+        playState="Stopped";
         break;
 
     case PlayerController::sb_player_state_play:
