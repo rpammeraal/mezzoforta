@@ -327,13 +327,13 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
             SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
 
-            ProgressDialog::instance()->show("Creating Database","DataAccessLayerSQLite::createDatabase",1);
+            ProgressDialog::instance()->startDialog("DataAccessLayerSQLite","Creating Database","createDatabase",1);
             if(dal.executeBatch(SQL,1,0)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";
             }
-            ProgressDialog::instance()->hide();
+            ProgressDialog::instance()->finishDialog("DataAccessLayerSQLite","createDatabase");
 
             PropertiesPtr properties=Properties::createProperties(&dal);
             properties->debugShow("createDatabase");

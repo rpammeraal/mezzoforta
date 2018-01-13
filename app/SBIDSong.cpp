@@ -1003,7 +1003,7 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue,progressMaxValue);
 
     query.first();
     query.previous();
@@ -1017,9 +1017,9 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
         r.opPtr=opPtr;
 
         playlistOnlinePerformanceList.append(r);
-        ProgressDialog::instance()->update("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("SBIDSong::_loadPlaylistOnlinePerformanceListFromDB");
+    ProgressDialog::instance()->finishStep("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB");
     return playlistOnlinePerformanceList;
 }
 

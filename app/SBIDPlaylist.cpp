@@ -76,13 +76,13 @@ SBIDPlaylist::onlinePerformances(bool updateProgressDialogFlag) const
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
-    ProgressDialog::instance()->show("Loading songs","SDIDPlaylist::sendToPlayQueue",2);
+    ProgressDialog::instance()->startDialog("SBIDPlaylist","Loading songs","sendToPlayQueue",2);
 
     QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
-    ProgressDialog::instance()->hide();
+    ProgressDialog::instance()->finishDialog("SBIDPlaylist","sendToPlayQueue");
 }
 
 QString
@@ -607,7 +607,7 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
     int progressMaxValue=rootPlPtr->items().count();
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->update("SBIDPlaylist::_getOnlineItemsByPlaylist",0,progressMaxValue);
+        ProgressDialog::instance()->update("SBIDPlaylist","_getOnlineItemsByPlaylist",0,progressMaxValue);
     }
     QMapIterator<int,SBIDPlaylistDetailPtr> it(rootPlPtr->items());
     while(it.hasNext())
@@ -627,12 +627,12 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
         }
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDPlaylist::_getOnlineItemsByPlaylist",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update("SBIDPlaylist","_getOnlineItemsByPlaylist",progressCurrentValue++,progressMaxValue);
         }
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("SBIDPlaylist::_getOnlineItemsByPlaylist");
+        ProgressDialog::instance()->finishStep("SBIDPlaylist","_getOnlineItemsByPlaylist");
     }
 }
 

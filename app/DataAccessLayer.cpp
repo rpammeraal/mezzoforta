@@ -57,7 +57,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=allQueries.count()+1;
-    ProgressDialog::instance()->update("DataAccessLayer::executeBatch",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("DataAccessLayer","DataAccessLayer::executeBatch",progressCurrentValue,progressMaxValue);
 
     successFlag=db.transaction();
     qDebug() << "BEGIN;";
@@ -79,7 +79,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
                 successFlag=0;
                 qDebug() << SB_DEBUG_ERROR << errorMsg;
             }
-            ProgressDialog::instance()->update("DataAccessLayer::executeBatch",progressCurrentValue++,progressMaxValue);
+            qDebug() << SB_DEBUG_INFO << progressCurrentValue << progressMaxValue;
+            ProgressDialog::instance()->update("DataAccessLayer","DataAccessLayer::executeBatch",progressCurrentValue++,progressMaxValue);
         }
 
         if(successFlag==1 && commitFlag==1)
@@ -96,7 +97,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             db.rollback();
         }
     }
-    ProgressDialog::instance()->finishStep("DataAccessLayer::executeBatch");
+    ProgressDialog::instance()->finishStep("DataAccessLayer","DataAccessLayer::executeBatch");
     qDebug() << "--	END OF BATCH;";
 
     if(successFlag==0 && ignoreErrorsFlag==0)

@@ -21,16 +21,23 @@ public:
         return &_instance;
     }
 
-    void show(const QString& title,const QString& initiatingFunction, int numSteps);
-    void setLabelText(const QString& title);
-    void update(const QString& step, int currentValue, int maxValue);
-    void finishStep(const QString& step);
+    void startDialog(const QString& initiatingClass, const QString& title,const QString& initiatingFunction, int numSteps, const QStringList ignoreClassList=QStringList());
+    void setLabelText(const QString& className, const QString& title);
+    void update(const QString& className, const QString& step, int currentValue, int maxValue);
+    void finishStep(const QString& className, const QString& step);
+    void finishDialog(const QString& className, const QString& intiatingFunction);
+
+protected:
+    friend class Navigator;	//	Provide for navigator a way to hide any outstanding ProgressDialogs
     void hide();
 
 private:
     ProgressDialog();
     ~ProgressDialog();
 
+    QStringList     _foundClassList;
+    QStringList     _ignoreClassList;
+    QString         _initiatingClass;
     QString         _initiatingFunction;
     int             _numSteps;
     QProgressDialog _pd;
@@ -38,6 +45,7 @@ private:
     bool            _visible;
     int             _prevOffset;
 
+    QString _extractClassName(const QString& prettyFunction) const;
     void _init();
 };
 

@@ -980,9 +980,9 @@ SBTabAlbumEdit::save() const
     }
 
     //	D.	Validate
-    ProgressDialog::instance()->show("Validating","MusicLibrary::rescanMusicLibrary_scan",1);
+    ProgressDialog::instance()->startDialog("SBTabAlbumEdit","Validating","rescanMusicLibrary_scan",1);
     MusicLibrary ml;
-    ProgressDialog::instance()->hide();
+    ProgressDialog::instance()->finishDialog("SBTabAlbumEdit","rescanMusicLibrary_scan");
     if(!ml.validateEntityList(songList,directory2AlbumPathMap))
     {
         return;

@@ -258,8 +258,8 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, bool includeDependent
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=rowCount;
-    const QString typeName=QString("SBIDManagerTemplate_retrieveSet:%1").arg(typeid(T).name());
-    ProgressDialog::instance()->update(typeName,progressCurrentValue,progressMaxValue);
+    const QString typeName=QString("retrieveSet:%1").arg(typeid(T).name());
+    ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue,progressMaxValue);
 
     QVector<std::shared_ptr<T>> list;
     for(int i=0;i<rowCount;i++)
@@ -296,9 +296,9 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, bool includeDependent
             }
         }
         list.append(ptr);
-        ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep(typeName);
+    ProgressDialog::instance()->finishStep("CacheTemplate",typeName);
     return list;
 }
 
@@ -311,8 +311,8 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, bool includeDependent
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=rowCount;
-    const QString typeName=QString("SBIDManagerTemplate_retrieveMap:%1").arg(typeid(T).name());
-    ProgressDialog::instance()->update(typeName,progressCurrentValue,progressMaxValue);
+    const QString typeName=QString("retrieveMap:%1").arg(typeid(T).name());
+    ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue,progressMaxValue);
 
     QMap<int,std::shared_ptr<T>> map;
     for(int i=0;i<rowCount;i++)
@@ -349,9 +349,9 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, bool includeDependent
             }
             map[intKey]=ptr;
         }
-        ProgressDialog::instance()->update(typeName,progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep(typeName);
+    ProgressDialog::instance()->finishStep("CacheTemplate",typeName);
     return map;
 }
 

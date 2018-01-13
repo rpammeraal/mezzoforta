@@ -5,44 +5,76 @@
 
 ///	Public methods
 void
-ProgressDialog::show(const QString &title,const QString& initiatingFunction, int numSteps)
+ProgressDialog::startDialog(const QString& initiatingClass, const QString& title,const QString& initiatingFunction, int numSteps, const QStringList ignoreClassList)
 {
-    qDebug() << numSteps;
-    _initiatingFunction=initiatingFunction;
-    _pd.setValue(0);
-    _pd.setLabelText(title);
-    _pd.setWindowModality(Qt::WindowModal);
-    _pd.show();
-    _pd.raise();
-    _pd.activateWindow();
-    QCoreApplication::processEvents();
 
-    _numSteps=numSteps;
-    _visible=1;
-    _prevOffset=-1;
-
-    _stepList.clear();
-}
-
-void
-ProgressDialog::setLabelText(const QString &title)
-{
-    qDebug() << SB_DEBUG_INFO << title;
-    _pd.setLabelText(title);
-    QCoreApplication::processEvents();
-}
-
-void
-ProgressDialog::update(const QString& step, int currentValue, int maxValue)
-{
-    qDebug() << SB_DEBUG_INFO << step << currentValue << maxValue;
-    if(!_visible)
+    if(_initiatingClass.length()==0 || (initiatingClass==_initiatingClass && initiatingFunction==_initiatingFunction))
     {
+        qDebug() << SB_DEBUG_INFO << initiatingClass << initiatingFunction << title << numSteps;
+        _foundClassList.clear();
+        _ignoreClassList=ignoreClassList;
+        _initiatingClass=initiatingClass;
+        _initiatingFunction=initiatingFunction;
+        _pd.setValue(0);
+        _pd.setLabelText(title);
+        _pd.setWindowModality(Qt::WindowModal);
+        _pd.show();
+        _pd.raise();
+        _pd.activateWindow();
+        QCoreApplication::processEvents();
+        qDebug() << SB_DEBUG_INFO << _ignoreClassList;
+
+        _numSteps=numSteps;
+        _visible=1;
+        _prevOffset=-1;
+
+        _stepList.clear();
+    }
+    else
+    {
+        qDebug() << initiatingClass << initiatingFunction << title << numSteps << "ignore";
+        qDebug() << SB_DEBUG_WARNING << "Class" << initiatingClass << "::" << initiatingFunction << "attempt to restart DialogBox";
+        qDebug() << SB_DEBUG_WARNING << "Current" << _initiatingClass << "::" << _initiatingFunction;
+        //	Ignore
+        if(_ignoreClassList.contains(initiatingClass))
+        {
+            _ignoreClassList.append(initiatingClass);
+        }
+    }
+}
+
+void
+ProgressDialog::setLabelText(const QString& className, const QString &title)
+{
+    if(!_ignoreClassList.contains(className))
+    {
+        qDebug() << SB_DEBUG_INFO << className << title;
+        _pd.setLabelText(title);
+        QCoreApplication::processEvents();
+    }
+}
+
+void
+ProgressDialog::update(const QString& className, const QString& step, int currentValue, int maxValue)
+{
+    if(!_visible || _ignoreClassList.contains(className))
+    {
+        qDebug() << SB_DEBUG_INFO << className << step << currentValue << maxValue << "ignore";
         return;
     }
+    qDebug() << SB_DEBUG_INFO << _ignoreClassList;
+    qDebug() << SB_DEBUG_INFO << className << step << currentValue << maxValue;
     if(!_stepList.contains(step))
     {
         _stepList.append(step);
+
+        qDebug() << SB_DEBUG_INFO << className << _foundClassList.count();
+        if(!_foundClassList.contains(className))
+        {
+            qDebug() << SB_DEBUG_INFO ;
+            _foundClassList.append(className);
+        }
+        qDebug() << SB_DEBUG_INFO << className << _foundClassList.count();
 
         //	Check for steps that are not accounted for.
         if(_stepList.count()>_numSteps)
@@ -63,7 +95,6 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
             }
         }
     }
-
     if(maxValue==0)
     {
         currentValue=100;
@@ -84,24 +115,48 @@ ProgressDialog::update(const QString& step, int currentValue, int maxValue)
     const int base=range * (_stepList.count()-1);
     const int offset=base + (perc/_numSteps);
 
+    qDebug() << SB_DEBUG_INFO << currentValue << maxValue << offset << _prevOffset;
     if(offset!=_prevOffset)
     {
         //	if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
+        qDebug() << SB_DEBUG_INFO << _pd.minimum() << _pd.maximum() << _pd.value();
         {
             _pd.setValue(offset);
             _prevOffset=offset;
         }
+        qDebug() << SB_DEBUG_INFO << _pd.minimum() << _pd.maximum() << _pd.value();
     }
     QCoreApplication::processEvents();
 }
 
 void
-ProgressDialog::finishStep(const QString &step)
+ProgressDialog::finishStep(const QString& className, const QString &step)
 {
-    qDebug() << SB_DEBUG_INFO;
-    update(step,100,100);
+    if(!_ignoreClassList.contains(className))
+    {
+        qDebug() << SB_DEBUG_INFO << className << step;
+        update(className,step,100,100);
+        qDebug() << SB_DEBUG_INFO << _foundClassList;
+    }
 }
 
+void
+ProgressDialog::finishDialog(const QString& className, const QString& initiatingFunction)
+{
+    if(_initiatingClass==className && _initiatingFunction==initiatingFunction)
+    {
+        qDebug() << SB_DEBUG_INFO << className ;
+        hide();
+        _initiatingClass=QString();
+        _initiatingFunction=QString();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << className << "ignore";
+    }
+}
+
+///	Protected methods
 void
 ProgressDialog::hide()
 {
@@ -109,6 +164,12 @@ ProgressDialog::hide()
     _pd.hide();
     _visible=0;
     _prevOffset=0;
+
+    qDebug() << SB_DEBUG_INFO << _foundClassList;
+
+    _ignoreClassList.clear();
+    _foundClassList.clear();
+
 }
 
 ///	Private methods
@@ -119,6 +180,20 @@ ProgressDialog::ProgressDialog()
 
 ProgressDialog::~ProgressDialog()
 {
+}
+
+QString
+ProgressDialog::_extractClassName(const QString &prettyFunction) const
+{
+    size_t colons = prettyFunction.indexOf("::");
+    if (colons == 0)
+    {
+        return QString("none");
+    }
+    size_t begin = prettyFunction.mid(0,colons).lastIndexOf(" ") + 1;
+    size_t end = colons - begin;
+
+    return prettyFunction.mid(begin,end);
 }
 
 void

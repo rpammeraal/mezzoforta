@@ -644,8 +644,6 @@ Navigator::_activateScreen()
         return 0;
     }
 
-    ProgressDialog::instance()->hide();
-
     if(si.screenType()==ScreenItem::screen_type_sbidbase && !si.key().validFlag())
     {
         //	Go to previous screen first

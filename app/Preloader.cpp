@@ -119,7 +119,7 @@ Preloader::chartItems(const SBIDBase& id)
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("Preloader::chartItems",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","chartItems",progressCurrentValue,progressMaxValue);
 
     items.clear();
     queryList.first();
@@ -193,9 +193,9 @@ Preloader::chartItems(const SBIDBase& id)
         {
             items[chartPerformancePtr]=chartPtr;
         }
-        ProgressDialog::instance()->update("Preloader::chartItems",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","chartItems",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::chartItems");
+    ProgressDialog::instance()->finishStep("Preloader","chartItems");
     return items;
 }
 
@@ -235,7 +235,7 @@ Preloader::albumPerformances(SBKey key, QString query)
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("Preloader::performances",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","performances",progressCurrentValue,progressMaxValue);
 
     items.clear();
     queryList.first();
@@ -316,9 +316,9 @@ Preloader::albumPerformances(SBKey key, QString query)
         {
             items.append(albumPerformancePtr);
         }
-        ProgressDialog::instance()->update("Preloader::performances",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","performances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::performances");
+    ProgressDialog::instance()->finishStep("Preloader","performances");
     return items;
 }
 
@@ -358,7 +358,7 @@ Preloader::onlinePerformances(QString query)
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue,progressMaxValue);
 
     items.clear();
     queryList.first();
@@ -439,9 +439,9 @@ Preloader::onlinePerformances(QString query)
         {
             items.append(onlinePerformancePtr);
         }
-        ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::onlinePerformances");
+    ProgressDialog::instance()->finishStep("Preloader","onlinePerformances");
     return items;
 }
 
@@ -478,7 +478,7 @@ Preloader::performanceMap(QString query)
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("Preloader::performanceMap",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","performanceMap",progressCurrentValue,progressMaxValue);
 
     items.clear();
     queryList.first();
@@ -549,9 +549,9 @@ Preloader::performanceMap(QString query)
             items[albumPerformancePtr->albumPerformanceID()]=albumPerformancePtr;
         }
 
-        ProgressDialog::instance()->update("Preloader::performanceMap",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","performanceMap",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::performanceMap");
+    ProgressDialog::instance()->finishStep("Preloader","performanceMap");
     return items;
 }
 
@@ -725,7 +725,7 @@ Preloader::playlistItems(int playlistID)
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=queryList.size();
-    ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","playlistItems",progressCurrentValue,progressMaxValue);
 
     int playlistIndex=0;
     items.clear();
@@ -806,9 +806,9 @@ Preloader::playlistItems(int playlistID)
                 cm->saveChanges();
             }
         }
-        ProgressDialog::instance()->update("Preloader::playlistItems",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","playlistItems",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::playlistItems");
+    ProgressDialog::instance()->finishStep("Preloader","playlistItems");
     return items;
 }
 
@@ -848,7 +848,7 @@ Preloader::songPerformances(QString query)
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue,progressMaxValue);
 
     items.clear();
     queryList.first();
@@ -929,9 +929,9 @@ Preloader::songPerformances(QString query)
         {
             items.append(spPtr);
         }
-        ProgressDialog::instance()->update("Preloader::onlinePerformances",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader::onlinePerformances");
+    ProgressDialog::instance()->finishStep("Preloader","onlinePerformances");
     return items;
 }
 

@@ -63,7 +63,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     int progressMaxValue=albumPerformances.count()*2;
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",0,progressMaxValue);
+        ProgressDialog::instance()->update("SBIDAlbum","onlinePerformances",0,progressMaxValue);
     }
 
     //	Collect onlinePerformancePtrs and their album position
@@ -82,7 +82,7 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         }
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update("SBIDAlbum","onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
     qDebug() << SB_DEBUG_INFO << albumPerformances.count() << position2OnlinePerformancePtr.count();
@@ -99,12 +99,12 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         list[index++]=po2olIT.value();
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDAlbum::onlinePerformances",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update("SBIDAlbum","onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("SBIDAlbum::onlinePerformances");
+        ProgressDialog::instance()->finishStep("SBIDAlbum","onlinePerformances");
     }
 
     qDebug() << SB_DEBUG_INFO << "done";
@@ -114,13 +114,13 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
-    ProgressDialog::instance()->show("Loading songs","SBIDAlbum::sendToPlayQueue",1);
+    ProgressDialog::instance()->startDialog("SBIDAlbum","Loading songs","sendToPlayQueue",1);
 
     QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 
-    ProgressDialog::instance()->hide();
+    ProgressDialog::instance()->finishDialog("SBIDAlbum","sendToPlayQueue");
 }
 
 QString
