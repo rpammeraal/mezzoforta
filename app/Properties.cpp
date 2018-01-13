@@ -125,7 +125,12 @@ Properties::musicLibraryDirectorySchema()
 QString
 Properties::currentDatabaseSchema() const
 {
-    return this->configValue(sb_configurable::sb_current_database_schema);
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    if(dal->supportSchemas())
+    {
+        return this->configValue(sb_configurable::sb_current_database_schema);
+    }
+    return QString();
 }
 
 void
