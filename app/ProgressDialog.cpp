@@ -115,7 +115,7 @@ ProgressDialog::update(const QString& className, const QString& step, int curren
     const int base=range * (_stepList.count()-1);
     const int offset=base + (perc/_numSteps);
 
-    qDebug() << SB_DEBUG_INFO << currentValue << maxValue << offset << _prevOffset;
+    qDebug() << SB_DEBUG_INFO << step << currentValue << maxValue << offset << _prevOffset;
     if(offset!=_prevOffset)
     {
         //	if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
@@ -141,12 +141,15 @@ ProgressDialog::finishStep(const QString& className, const QString &step)
 }
 
 void
-ProgressDialog::finishDialog(const QString& className, const QString& initiatingFunction)
+ProgressDialog::finishDialog(const QString& className, const QString& initiatingFunction, bool hideFlag)
 {
     if(_initiatingClass==className && _initiatingFunction==initiatingFunction)
     {
         qDebug() << SB_DEBUG_INFO << className ;
-        hide();
+        if(hideFlag)
+        {
+            hide();
+        }
         _initiatingClass=QString();
         _initiatingFunction=QString();
     }
@@ -165,6 +168,7 @@ ProgressDialog::hide()
     _visible=0;
     _prevOffset=0;
 
+    qDebug() << SB_DEBUG_INFO << _initiatingClass << _initiatingFunction;
     qDebug() << SB_DEBUG_INFO << _foundClassList;
 
     _ignoreClassList.clear();

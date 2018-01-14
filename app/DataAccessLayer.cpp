@@ -45,7 +45,7 @@ DataAccessLayer::~DataAccessLayer()
 }
 
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bool ignoreErrorsFlag) const
+DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& progressDialogTitle, bool commitFlag, bool ignoreErrorsFlag) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -57,7 +57,14 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=allQueries.count()+1;
-    ProgressDialog::instance()->update("DataAccessLayer","DataAccessLayer::executeBatch",progressCurrentValue,progressMaxValue);
+    bool updateProgressDialogFlag=0;
+    if(progressDialogTitle.length())
+    {
+        ProgressDialog::instance()->startDialog("DataAccessLayer","executeBatch","rescanMusicLibrary",1);
+        ProgressDialog::instance()->update("DataAccessLayer","executeBatch",progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->setLabelText("DataAccessLayer",progressDialogTitle);
+        updateProgressDialogFlag=1;
+    }
 
     successFlag=db.transaction();
     qDebug() << "BEGIN;";
@@ -79,8 +86,11 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
                 successFlag=0;
                 qDebug() << SB_DEBUG_ERROR << errorMsg;
             }
-            qDebug() << SB_DEBUG_INFO << progressCurrentValue << progressMaxValue;
-            ProgressDialog::instance()->update("DataAccessLayer","DataAccessLayer::executeBatch",progressCurrentValue++,progressMaxValue);
+            if(updateProgressDialogFlag)
+            {
+                ProgressDialog::instance()->update("DataAccessLayer","executeBatch",progressCurrentValue++,progressMaxValue);
+                qDebug() << SB_DEBUG_INFO << progressCurrentValue << progressMaxValue;
+            }
         }
 
         if(successFlag==1 && commitFlag==1)
@@ -97,7 +107,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, bool commitFlag, bo
             db.rollback();
         }
     }
-    ProgressDialog::instance()->finishStep("DataAccessLayer","DataAccessLayer::executeBatch");
+    ProgressDialog::instance()->finishStep("DataAccessLayer","executeBatch");
     qDebug() << "--	END OF BATCH;";
 
     if(successFlag==0 && ignoreErrorsFlag==0)
@@ -443,7 +453,7 @@ DataAccessLayer::addMissingDatabaseItems()
         QStringList SQL;
 
         SQL.append(allSQL[i]);
-        executeBatch(SQL,1,1);
+        executeBatch(SQL,"Updating Database",1,1);
     }
 }
 

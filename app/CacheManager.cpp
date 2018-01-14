@@ -117,7 +117,7 @@ CacheManager::get(SBKey key)
 }
 
 bool
-CacheManager::saveChanges()
+CacheManager::saveChanges(const QString& progressDialogTitle)
 {
     QStringList updateSQL;
     QStringList insertSQL;
@@ -163,7 +163,7 @@ CacheManager::saveChanges()
     SQL.append(deleteSQL);
 
     QString restorePoint=dal->createRestorePoint();
-    bool resultFlag=dal->executeBatch(SQL);
+    bool resultFlag=dal->executeBatch(SQL,progressDialogTitle);
     if(!resultFlag)
     {
         dal->restore(restorePoint);

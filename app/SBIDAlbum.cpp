@@ -749,12 +749,6 @@ SBIDAlbum::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
 
-    qDebug() << SB_DEBUG_INFO
-             << key()
-             << deletedFlag()
-             << changedFlag()
-    ;
-
     if(deletedFlag() && db_change==Common::db_delete)
     {
         //	Do not remove descendants, this needs to be taken care of by SBIDMgrs.

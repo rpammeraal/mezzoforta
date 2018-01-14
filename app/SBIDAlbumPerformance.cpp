@@ -708,7 +708,10 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
         );
     }
 
-    qDebug() << SB_DEBUG_INFO << SQL;
+    if(SQL.count())
+    {
+        qDebug() << SB_DEBUG_INFO << SQL;
+    }
     return SQL;
 }
 

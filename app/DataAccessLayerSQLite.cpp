@@ -328,7 +328,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
 
             ProgressDialog::instance()->startDialog("DataAccessLayerSQLite","Creating Database","createDatabase",1);
-            if(dal.executeBatch(SQL,1,0)==0)
+            if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";

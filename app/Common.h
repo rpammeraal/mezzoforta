@@ -175,6 +175,7 @@ public:
     static QString removeNonAlphanumericIncludingSpaces(const QString& s);
     static QString sanitize(const QString& s);
     static QString simplified(const QString& s);
+    static void sleep(int seconds);
     static QString soundex(const QString& s);
     static void toTitleCase(QString &);
     static char ParseChar(QChar c);

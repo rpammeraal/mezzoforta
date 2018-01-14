@@ -1071,6 +1071,9 @@ TODO:
 *	Set original performer to righteous brothers on you've lost that lovin feeling from the firm. Then merge:w
 *	Correct The Way Of The Fist album songs -> many duplicate records on screenstack: testdb/thewayofthefirst.dump
 *	No dialog box when saving song/album
+*	Sqlite:
+    *	Try create 1st and 2nd playlist (check with xmas.sqlite).
+	*	error out when top-level tables (config et al) are missing.
 
 NEAR FUTURE
 *	Preload all caches

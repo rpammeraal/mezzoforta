@@ -299,6 +299,16 @@ Common::simplified(const QString &s)
     return removeAccents(removeNonAlphanumeric(sanitize(s.toLower().simplified().replace(" ",""))));
 }
 
+void
+Common::sleep(int seconds)
+{
+    QTime dieTime=QTime::currentTime().addSecs(seconds);
+    while(QTime::currentTime()<dieTime)
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
+}
+
 QString
 Common::soundex(const QString& input)
 {
