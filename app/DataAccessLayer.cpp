@@ -60,9 +60,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     bool updateProgressDialogFlag=0;
     if(progressDialogTitle.length())
     {
-        ProgressDialog::instance()->startDialog("DataAccessLayer","executeBatch","rescanMusicLibrary",1);
+        ProgressDialog::instance()->startDialog("DataAccessLayer",progressDialogTitle,"executeBatch",1);
         ProgressDialog::instance()->update("DataAccessLayer","executeBatch",progressCurrentValue,progressMaxValue);
-        ProgressDialog::instance()->setLabelText("DataAccessLayer",progressDialogTitle);
         updateProgressDialogFlag=1;
     }
 
@@ -107,7 +106,12 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
             db.rollback();
         }
     }
-    ProgressDialog::instance()->finishStep("DataAccessLayer","executeBatch");
+    if(updateProgressDialogFlag)
+    {
+        ProgressDialog::instance()->finishStep("DataAccessLayer","executeBatch");
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->finishDialog("DataAccessLayer","executeBatch");
+    }
     qDebug() << "--	END OF BATCH;";
 
     if(successFlag==0 && ignoreErrorsFlag==0)

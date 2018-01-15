@@ -18,7 +18,7 @@ public:
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual ItemType itemType() const;
-    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;

@@ -495,7 +495,7 @@ MusicLibrary::rescanMusicLibrary()
     Context::instance()->controller()->refreshModels();
     Context::instance()->controller()->preloadAllSongs();
 
-    ProgressDialog::instance()->finishDialog("MusicLibrary","rescanMusicLibrary");
+    ProgressDialog::instance()->stats();
 
     qDebug() << SB_DEBUG_INFO << "Finished";
     return;

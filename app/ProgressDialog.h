@@ -26,6 +26,7 @@ public:
     void update(const QString& className, const QString& step, int currentValue, int maxValue);
     void finishStep(const QString& className, const QString& step);
     void finishDialog(const QString& className, const QString& intiatingFunction, bool hideBoxFlag=1);
+    void stats() const;
 
 protected:
     friend class Navigator;	//	Provide for navigator a way to hide any outstanding ProgressDialogs

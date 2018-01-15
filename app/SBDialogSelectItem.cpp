@@ -185,7 +185,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
     d->ui->setupUi(d);
 
     //	Populate choices
-    QString title=QString("Select Correct Name for: %1").arg(newPerformerName);
+    QString title=QString("Select Correct Name for: <B>'%1'</B>").arg(newPerformerName);
     d->setTitle(title);
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
@@ -206,7 +206,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                 SBIDPerformerPtr tmpPtr=SBIDPerformer::retrieveVariousPerformers();
                 imagePath=tmpPtr->iconResourceLocation();
                 currentKey=SBKey();
-                currentPerformerName=QString("Use as is: %1").arg(newPerformerName);
+                currentPerformerName=QString("Use as is: <B>%1</B>").arg(newPerformerName);
             }
             else
             {
@@ -218,7 +218,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                     imagePath=currentPerformerPtr->iconResourceLocation();
                 }
                 currentKey=currentPerformerPtr->key();
-                currentPerformerName=QString("Existing Performer: %1").arg(currentPerformerPtr->performerName());
+                currentPerformerName=QString("Existing Performer: <B>%1</B>").arg(currentPerformerPtr->performerName());
             }
 
             QLabel* l=new QLabel;

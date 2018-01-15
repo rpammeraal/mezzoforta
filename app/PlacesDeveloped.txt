@@ -1065,15 +1065,17 @@ Between 20161215 and 20170604:
 -	Any link between digital_format and formats maintained by songbase? Nope, remove table everywhere.
 -	Repeated search gets slower and slower -- multiple signals gets emitted.
 
+20180113
+-	Dialogbox to save operations after import is flashing w/ multiple albums imported.
+
 TODO:
-*	Dialogbox to save operations after import is flashing w/ multiple albums imported.
-*	Charts/Playlists to be minimized at start up.
 *	Set original performer to righteous brothers on you've lost that lovin feeling from the firm. Then merge:w
 *	Correct The Way Of The Fist album songs -> many duplicate records on screenstack: testdb/thewayofthefirst.dump
 *	No dialog box when saving song/album
 *	Sqlite:
     *	Try create 1st and 2nd playlist (check with xmas.sqlite).
 	*	error out when top-level tables (config et al) are missing.
+*	Charts/Playlists to be minimized at start up.
 
 NEAR FUTURE
 *	Preload all caches

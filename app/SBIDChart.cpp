@@ -53,7 +53,7 @@ SBIDChart::itemType() const
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
-SBIDChart::onlinePerformances(bool updateProgressDialogFlag) const
+SBIDChart::onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag) const
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMap<int,SBIDChartPerformancePtr> items=this->items();
@@ -97,7 +97,7 @@ SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
     ProgressDialog::instance()->startDialog("SBIDChart","Loading songs","sendToPlayQueue",4);
 
-    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances();
+    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances(4);
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
 

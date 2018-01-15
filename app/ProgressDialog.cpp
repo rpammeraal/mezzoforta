@@ -64,6 +64,7 @@ ProgressDialog::update(const QString& className, const QString& step, int curren
     }
     qDebug() << SB_DEBUG_INFO << _ignoreClassList;
     qDebug() << SB_DEBUG_INFO << className << step << currentValue << maxValue;
+    qDebug() << SB_DEBUG_INFO << _initiatingClass << _initiatingFunction;
     if(!_stepList.contains(step))
     {
         _stepList.append(step);
@@ -143,20 +144,32 @@ ProgressDialog::finishStep(const QString& className, const QString &step)
 void
 ProgressDialog::finishDialog(const QString& className, const QString& initiatingFunction, bool hideFlag)
 {
+    qDebug() << SB_DEBUG_INFO << className << _initiatingClass;
+    qDebug() << SB_DEBUG_INFO << initiatingFunction << _initiatingFunction;
     if(_initiatingClass==className && _initiatingFunction==initiatingFunction)
     {
-        qDebug() << SB_DEBUG_INFO << className ;
+        qDebug() << SB_DEBUG_INFO << className << hideFlag;
         if(hideFlag)
         {
             hide();
         }
-        _initiatingClass=QString();
-        _initiatingFunction=QString();
     }
     else
     {
         qDebug() << SB_DEBUG_INFO << className << "ignore";
     }
+}
+
+void
+ProgressDialog::stats() const
+{
+    qDebug() << SB_DEBUG_INFO << _foundClassList;
+    qDebug() << SB_DEBUG_INFO << _ignoreClassList;
+    qDebug() << SB_DEBUG_INFO << _initiatingClass;
+    qDebug() << SB_DEBUG_INFO << _initiatingFunction;
+    qDebug() << SB_DEBUG_INFO << _stepList;
+    qDebug() << SB_DEBUG_INFO << _visible;
+
 }
 
 ///	Protected methods
@@ -171,9 +184,12 @@ ProgressDialog::hide()
     qDebug() << SB_DEBUG_INFO << _initiatingClass << _initiatingFunction;
     qDebug() << SB_DEBUG_INFO << _foundClassList;
 
-    _ignoreClassList.clear();
     _foundClassList.clear();
-
+    _ignoreClassList.clear();
+    _initiatingClass=QString();
+    _initiatingFunction=QString();
+    _numSteps=0;
+    _stepList.clear();
 }
 
 ///	Private methods
