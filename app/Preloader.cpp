@@ -4,7 +4,6 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
-#include "ProgressDialog.h"
 #include "SBIDAlbumPerformance.h"
 
 //	Retrieve map between chart and chart performance based on an SBID object, which is either:
@@ -20,6 +19,9 @@ Preloader::chartItems(const SBIDBase& id)
     CacheChartPerformanceMgr* cpmgr=cm->chartPerformanceMgr();
     CacheSongPerformanceMgr* spmgr=cm->songPerformanceMgr();
     CacheSongMgr* smgr=cm->songMgr();
+    CacheAlbumPerformanceMgr* apmgr=cm->albumPerformanceMgr();
+    CacheOnlinePerformanceMgr* opmgr=cm->onlinePerformanceMgr();
+    CacheAlbumMgr* amgr=cm->albumMgr();
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> items;
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
@@ -49,11 +51,15 @@ Preloader::chartItems(const SBIDBase& id)
             break;
     }
 
-    QStringList chartFields; chartFields                       << "0"  << "1"  << "3"  << "2"  << "22";
-    QStringList chartPerformanceFields; chartPerformanceFields << "4"  << "0"  << "5"  << "6"  << "7";
-    QStringList performerFields; performerFields               << "9"  << "18" << "19" << "20" << "21";
-    QStringList songFields; songFields                         << "8"  << "14" << "15" << "16" << "17";
-    QStringList songPerformanceFields; songPerformanceFields   << "5"  << "8"  << "9"  << "11" << "12" << "13";
+    QStringList chartFields; chartFields                         <<  "0" <<  "1" <<  "3" <<  "2" << "22";
+    QStringList chartPerformanceFields; chartPerformanceFields   <<  "4" <<  "0" <<  "5" <<  "6" <<  "7";
+    QStringList performerFields; performerFields                 <<  "9" << "18" << "19" << "20" << "21";
+    QStringList songFields; songFields                           <<  "8" << "14" << "15" << "16" << "17";
+    QStringList songPerformanceFields; songPerformanceFields     <<  "5" <<  "8" <<  "9" << "11" << "12" << "13";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "23" <<  "5" << "24" << "25" << "26" << "27" << "28" ;
+    QStringList onlinePerformanceFields; onlinePerformanceFields << "28" << "23" << "29";
+    QStringList albumFields; albumFields                         << "30" << "31" << "32" << "33" << "34" << "35";
+
     QString q;
 
     q=QString
@@ -69,7 +75,7 @@ Preloader::chartItems(const SBIDBase& id)
             "cp.notes, "
             "p.song_id, "
             "p.artist_id, "
-            "NULL AS rsole_id, "                     //	10
+            "NULL AS rsole_id, "              //	10
             "p.year, "
             "p.notes, "
             "p.preferred_record_performance_id , "
@@ -81,7 +87,20 @@ Preloader::chartItems(const SBIDBase& id)
             "a.www, "
             "a.notes, "                       //	20
             "a.mbid, "
-            "0 AS num_items "
+            "0 AS num_items, "
+            "rp.record_performance_id, "
+            "rp.record_id, "
+            "rp.record_position, "            //	25
+            "rp.duration, "
+            "rp.notes, "
+            "op.online_performance_id, "
+            "op.path, "
+            "r.record_id, "                   //	30
+            "r.artist_id, "
+            "r.title, "
+            "r.genre, "
+            "r.year, "
+            "r.notes "
         "FROM "
             "___SB_SCHEMA_NAME___chart_performance cp "
                 "JOIN ___SB_SCHEMA_NAME___chart c ON "
@@ -94,6 +113,12 @@ Preloader::chartItems(const SBIDBase& id)
                     "s.song_id=l.song_id "
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
+                "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
+                    "p.preferred_record_performance_id=rp.record_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___online_performance op ON "
+                    "rp.preferred_online_performance_id=op.online_performance_id "
+                "JOIN ___SB_SCHEMA_NAME___record r ON "
+                    "rp.record_id=r.record_id "
         "WHERE "
             "%1 "
         "ORDER BY "
@@ -109,17 +134,16 @@ Preloader::chartItems(const SBIDBase& id)
     QSqlQuery queryList(q,db);
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    if(progressMaxValue<0)
-    {
-        //	Count items
-        while(queryList.next())
-        {
-            progressMaxValue++;
-        }
-    }
-    ProgressDialog::instance()->update("Preloader","chartItems",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
+//    if(progressMaxValue<0)
+//    {
+//        //	Count items
+//        while(queryList.next())
+//        {
+//            progressMaxValue++;
+//        }
+//    }
 
     items.clear();
     queryList.first();
@@ -127,14 +151,9 @@ Preloader::chartItems(const SBIDBase& id)
     int chartPosition=0;
     while(queryList.next())
     {
-        SBKey key;
-        QSqlRecord r;
-        QSqlField f;
+        SBKey currentKey;
         SBIDChartPtr chartPtr;
-        SBIDSongPerformancePtr songPerformancePtr;
         SBIDChartPerformancePtr chartPerformancePtr;
-        SBIDPerformerPtr performerPtr;
-        SBIDSongPtr songPtr;
 
         //	Chart position
         chartPosition++;
@@ -142,50 +161,79 @@ Preloader::chartItems(const SBIDBase& id)
         //	Process chart
         if(!queryList.isNull(0))
         {
-            key=SBIDChart::createKey(queryList.value(0).toInt());
-            if(key.validFlag())
+            currentKey=SBIDChart::createKey(queryList.value(0).toInt());
+            if(currentKey.validFlag())
             {
-                chartPtr=(cmgr->contains(key)? cmgr->retrieve(key): _instantiateChart(cmgr,chartFields,queryList));
+                chartPtr=(cmgr->contains(currentKey)? cmgr->retrieve(currentKey): _instantiateChart(cmgr,chartFields,queryList));
             }
         }
 
         //	Process chart performance
         if(!queryList.isNull(4))
         {
-            key=SBIDChartPerformance::createKey(queryList.value(4).toInt());
-            if(key.validFlag())
+            currentKey=SBIDChartPerformance::createKey(queryList.value(4).toInt());
+            if(currentKey.validFlag())
             {
-                chartPerformancePtr=(cpmgr->contains(key)? cpmgr->retrieve(key): _instantiateChartPerformance(cpmgr,chartPerformanceFields,queryList));
+                chartPerformancePtr=(cpmgr->contains(currentKey)? cpmgr->retrieve(currentKey): _instantiateChartPerformance(cpmgr,chartPerformanceFields,queryList));
             }
         }
 
         //	Process performer
         if(!queryList.isNull(9))
         {
-            key=SBIDPerformer::createKey(queryList.value(9).toInt());
-            if(key.validFlag())
+            currentKey=SBIDPerformer::createKey(queryList.value(9).toInt());
+            if(currentKey.validFlag())
             {
-                performerPtr=(pemgr->contains(key)? pemgr->retrieve(key): _instantiatePerformer(pemgr,performerFields,queryList));
+                !pemgr->contains(currentKey)?_instantiatePerformer(pemgr,performerFields,queryList):0;
             }
         }
 
         //	Process song
         if(!queryList.isNull(8))
         {
-            key=SBIDSong::createKey(queryList.value(8).toInt());
-            if(key.validFlag())
+            currentKey=SBIDSong::createKey(queryList.value(8).toInt());
+            if(currentKey.validFlag())
             {
-                songPtr=(smgr->contains(key)? smgr->retrieve(key): _instantiateSong(smgr,songFields,queryList));
+                !smgr->contains(currentKey)?_instantiateSong(smgr,songFields,queryList):0;
             }
         }
 
         //	Process song performance
         if(!queryList.isNull(5))
         {
-            key=SBIDSongPerformance::createKey(queryList.value(5).toInt());
-            if(key.validFlag())
+            currentKey=SBIDSongPerformance::createKey(queryList.value(5).toInt());
+            if(currentKey.validFlag())
             {
-                songPerformancePtr=(spmgr->contains(key)? spmgr->retrieve(key): _instantiateSongPerformance(spmgr,songPerformanceFields,queryList));
+                !spmgr->contains(currentKey)? _instantiateSongPerformance(spmgr,songPerformanceFields,queryList):0;
+            }
+        }
+
+        //	Process album performance
+        if(!queryList.isNull(23))
+        {
+            currentKey=SBIDAlbumPerformance::createKey(queryList.value(23).toInt());
+            if(currentKey.validFlag())
+            {
+                !apmgr->contains(currentKey)?_instantiateAlbumPerformance(apmgr,albumPerformanceFields,queryList):0;
+            }
+        }
+
+        //	Process online performance
+        if(!queryList.isNull(28))
+        {
+            currentKey=SBIDOnlinePerformance::createKey(queryList.value(28).toInt());
+            if(currentKey.validFlag())
+            {
+                !opmgr->contains(currentKey)?_instantiateOnlinePerformance(opmgr,onlinePerformanceFields,queryList):0;
+            }
+        }
+
+        if(!queryList.isNull(30))
+        {
+            currentKey=SBIDAlbum::createKey(queryList.value(30).toInt());
+            if(currentKey.validFlag())
+            {
+                !amgr->contains(currentKey)?_instantiateAlbum(amgr,albumFields,queryList):0;
             }
         }
 
@@ -193,9 +241,8 @@ Preloader::chartItems(const SBIDBase& id)
         {
             items[chartPerformancePtr]=chartPtr;
         }
-        ProgressDialog::instance()->update("Preloader","chartItems",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","chartItems");
+    qDebug() << SB_DEBUG_INFO;
     return items;
 }
 
@@ -225,17 +272,16 @@ Preloader::albumPerformances(SBKey key, QString query)
     QSqlQuery queryList(query,db);
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    if(progressMaxValue<0)
-    {
-        //	Count items
-        while(queryList.next())
-        {
-            progressMaxValue++;
-        }
-    }
-    ProgressDialog::instance()->update("Preloader","performances",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
+//    if(progressMaxValue<0)
+//    {
+//        //	Count items
+//        while(queryList.next())
+//        {
+//            progressMaxValue++;
+//        }
+//    }
 
     items.clear();
     queryList.first();
@@ -316,9 +362,7 @@ Preloader::albumPerformances(SBKey key, QString query)
         {
             items.append(albumPerformancePtr);
         }
-        ProgressDialog::instance()->update("Preloader","performances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","performances");
     return items;
 }
 
@@ -348,17 +392,16 @@ Preloader::onlinePerformances(QString query)
     QSqlQuery queryList(query,db);
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    if(progressMaxValue<0)
-    {
-        //	Count items
-        while(queryList.next())
-        {
-            progressMaxValue++;
-        }
-    }
-    ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
+//    if(progressMaxValue<0)
+//    {
+//        //	Count items
+//        while(queryList.next())
+//        {
+//            progressMaxValue++;
+//        }
+//    }
 
     items.clear();
     queryList.first();
@@ -439,9 +482,7 @@ Preloader::onlinePerformances(QString query)
         {
             items.append(onlinePerformancePtr);
         }
-        ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","onlinePerformances");
     return items;
 }
 
@@ -468,17 +509,16 @@ Preloader::performanceMap(QString query)
     QSqlQuery queryList(query,db);
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    if(progressMaxValue<0)
-    {
-        //	Count items
-        while(queryList.next())
-        {
-            progressMaxValue++;
-        }
-    }
-    ProgressDialog::instance()->update("Preloader","performanceMap",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
+//    if(progressMaxValue<0)
+//    {
+//        //	Count items
+//        while(queryList.next())
+//        {
+//            progressMaxValue++;
+//        }
+//    }
 
     items.clear();
     queryList.first();
@@ -548,10 +588,7 @@ Preloader::performanceMap(QString query)
         {
             items[albumPerformancePtr->albumPerformanceID()]=albumPerformancePtr;
         }
-
-        ProgressDialog::instance()->update("Preloader","performanceMap",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","performanceMap");
     return items;
 }
 
@@ -723,9 +760,8 @@ Preloader::playlistItems(int playlistID)
     qDebug() << SB_DEBUG_INFO << q;
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    ProgressDialog::instance()->update("Preloader","playlistItems",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
 
     int playlistIndex=0;
     items.clear();
@@ -806,9 +842,8 @@ Preloader::playlistItems(int playlistID)
                 cm->saveChanges();
             }
         }
-        ProgressDialog::instance()->update("Preloader","playlistItems",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","playlistItems");
+    qDebug() << SB_DEBUG_INFO;
     return items;
 }
 
@@ -838,17 +873,16 @@ Preloader::songPerformances(QString query)
     QSqlQuery queryList(query,db);
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=queryList.size();
-    if(progressMaxValue<0)
-    {
-        //	Count items
-        while(queryList.next())
-        {
-            progressMaxValue++;
-        }
-    }
-    ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=queryList.size();
+//    if(progressMaxValue<0)
+//    {
+//        //	Count items
+//        while(queryList.next())
+//        {
+//            progressMaxValue++;
+//        }
+//    }
 
     items.clear();
     queryList.first();
@@ -929,9 +963,7 @@ Preloader::songPerformances(QString query)
         {
             items.append(spPtr);
         }
-        ProgressDialog::instance()->update("Preloader","onlinePerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("Preloader","onlinePerformances");
     return items;
 }
 

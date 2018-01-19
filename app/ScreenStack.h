@@ -35,6 +35,7 @@ public:
     void removeCurrentScreen();
     void removeForward();
     void removeScreen(const ScreenItem& id,bool editOnlyFlag=0);
+    ScreenItem topScreen() const;
     void updateCurrentScreen(const ScreenItem& id);
     void updateSBIDInStack(const ScreenItem& id);
 
@@ -53,6 +54,7 @@ private:
     bool _initDoneFlag;
 
     void _init();
+    void _dedupe();
 };
 
 #endif // SCREENSTACK_H

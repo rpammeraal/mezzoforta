@@ -44,14 +44,12 @@ MusicLibrary::rescanMusicLibrary()
     CacheAlbumPerformanceMgr* apMgr=cm->albumPerformanceMgr();
 
     //	Init
-    QStringList ignoreClasses;
-    ignoreClasses << "CacheTemplate" << "Preloader";
-    ProgressDialog::instance()->startDialog("MusicLibrary","Starting","rescanMusicLibrary",1,ignoreClasses);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Starting",1);
 
     const int numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
     int progressCurrentValue=0;
     int progressMaxValue=numOnlinePerformances;
-    ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles",progressCurrentValue,progressMaxValue);
 
     const QString schemaRoot=
         Context::instance()->properties()->musicLibraryDirectory()
@@ -108,19 +106,19 @@ MusicLibrary::rescanMusicLibrary()
                     label=label.left(30)+"...";
                 }
                 label="Scanning album "+label;
-                ProgressDialog::instance()->setLabelText("MusicLibrary",label);
+                ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
                 if(progressCurrentValue+1>progressMaxValue)
                 {
                     progressMaxValue=progressCurrentValue+1;
                 }
-                ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue,progressMaxValue);
+                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles",progressCurrentValue,progressMaxValue);
                 time.restart();
                 qDebug() << SB_DEBUG_INFO << progressCurrentValue;
             }
             progressCurrentValue++;
         }
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary","rescanMusicLibrary");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles");
 
     if(0)
     {	//	DEBUG
@@ -167,8 +165,8 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=sqm->rowCount();
-    ProgressDialog::instance()->startDialog("MusicLibrary","Retrieving existing songs...","rescanMusicLibrary",1,ignoreClasses);
-    ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary_retrieve",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving existing songs...",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
     time.restart();
 
     QHash<QString,bool> existingPath;
@@ -197,15 +195,15 @@ MusicLibrary::rescanMusicLibrary()
                 label="..."+label.right(30);
             }
             label="Scanning song "+label;
-            ProgressDialog::instance()->setLabelText("MusicLibrary",label);
-            ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary_retrieve",progressCurrentValue,progressMaxValue);
+            ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
             time.restart();
         }
         progressCurrentValue++;
     }
     delete sqm;
     qDebug() << SB_DEBUG_INFO;
-    ProgressDialog::instance()->finishStep("MusicLibrary","rescanMusicLibrary");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section C:	Determine new songs and retrieve meta data for these
@@ -215,8 +213,8 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=foundEntities.count();
-    ProgressDialog::instance()->startDialog("MusicLibrary","Getting meta data...","rescanMusicLibrary",1,ignoreClasses);
-    ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Getting meta data...",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData",progressCurrentValue,progressMaxValue);
     time.restart();
 
     qDebug() << SB_DEBUG_INFO;
@@ -323,13 +321,13 @@ MusicLibrary::rescanMusicLibrary()
 
         if(time.elapsed()>700)
         {
-            ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue,progressMaxValue);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData",progressCurrentValue,progressMaxValue);
             time.restart();
         }
         progressCurrentValue++;
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary","rescanMusicLibrary");
-    ProgressDialog::instance()->finishDialog("MusicLibrary","rescanMusicLibrary",1);	//	Not done yet
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData");
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);	//	Not done yet
 
     if(1)
     {	//	DEBUG
@@ -384,8 +382,8 @@ MusicLibrary::rescanMusicLibrary()
     if(validateEntityList(foundEntities,directory2AlbumPathMap)==0)
     {
         cancelFlag=1;
-        ProgressDialog::instance()->startDialog("MusicLibrary","Canceling","rescanMusicLibrary",1,ignoreClasses);
-        ProgressDialog::instance()->finishStep("MusicLibrary","rescanMusicLibrary");
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Canceling",1);
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"stepX:cancel");
         Common::sleep(1);
         dal->restore(databaseRestorePoint);
         //	Dialogbox is closed at and of method
@@ -434,16 +432,16 @@ MusicLibrary::rescanMusicLibrary()
 
         progressCurrentValue=0;
         progressMaxValue=foundEntities.count();
-        ProgressDialog::instance()->startDialog("MusicLibrary","Saving album data...","rescanMusicLibrary",1,ignoreClasses);
-        ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Saving album data...",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step4:save",progressCurrentValue,progressMaxValue);
         feIT.toFront();
         while(feIT.hasNext())
         {
             MLentityPtr ePtr=feIT.next();
 
             const QString title=QString("Compiling album '%1'").arg(ePtr->albumTitle);
-            ProgressDialog::instance()->setLabelText("MusicLibrary",title);
-            ProgressDialog::instance()->update("MusicLibrary","rescanMusicLibrary",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,title);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step4:save",progressCurrentValue++,progressMaxValue);
 
             if(!ePtr->errorFlag())
             {
@@ -460,8 +458,8 @@ MusicLibrary::rescanMusicLibrary()
                 //	CWIP: do progressbox
             }
         }
-        ProgressDialog::instance()->finishStep("MusicLibrary","rescanMusicLibrary");
-        ProgressDialog::instance()->finishDialog("MusicLibrary","rescanMusicLibrary",1);
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step4:save");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
 
         bool resultFlag=cm->saveChanges("Saving Changes");
 
@@ -595,8 +593,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     ignoreClasses << "CacheTemplate" << "Preloader";
     progressCurrentValue=0;
     progressMaxValue=allPerformers.count();
-    ProgressDialog::instance()->startDialog("MusicLibrary","Validating Performers","validateEntityList",1,ignoreClasses);
-    ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Validating Performers",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validatePerformers",progressCurrentValue,progressMaxValue);
 
     //		b.	Go through all collected performer names and validate these.
     listIT=QMutableVectorIterator<MLentityPtr>(list);
@@ -629,9 +627,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             performerID2CorrectNameMap[performerID]=selectedPerformerPtr->performerName();
             qDebug() << SB_DEBUG_INFO << performerID << selectedPerformerPtr->performerName();
         }
-        ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validatePerformers",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary","validateEntityList");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:validatePerformers");
 
     //		c.	Go through list and set performerID's accordingly.
     listIT=QMutableVectorIterator<MLentityPtr>(list);
@@ -934,8 +932,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     //		c.	Assign album data to entity pointers
     progressCurrentValue=0;
     progressMaxValue=list.count();
-    ProgressDialog::instance()->startDialog("MusicLibrary","Validating Albums","validateEntityList",1,ignoreClasses);
-    ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Validating Albums",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validateAlbums",progressCurrentValue,progressMaxValue);
     qDebug() << SB_DEBUG_INFO << progressMaxValue;
 
     listIT=QMutableVectorIterator<MLentityPtr>(list);
@@ -993,9 +991,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             qDebug() << SB_DEBUG_ERROR << "ePtr NULL pointer. Aborting.";
             return 0;
         }
-        ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validateAlbums",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary","validateEntityList");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:validateAlbums");
     qDebug() << SB_DEBUG_INFO;
 
     {	//	DEBUG
@@ -1036,8 +1034,8 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     //	3.	Validate songs
     progressCurrentValue=0;
     progressMaxValue=list.count();
-    ProgressDialog::instance()->startDialog("MusicLibrary","Validating Songs","validateEntityList",1,ignoreClasses);
-    ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Validating Songs",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validateSongs",progressCurrentValue,progressMaxValue);
     listIT=QMutableVectorIterator<MLentityPtr>(list);
 
     QHash<QString,int> songTitle2songIDMap;	//	key: <song title>:<song performer id>
@@ -1097,10 +1095,12 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                 }
             }
         }
-        ProgressDialog::instance()->update("MusicLibrary","validateEntityList",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:validateSongs",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("MusicLibrary","validateEntityList");
-    ProgressDialog::instance()->finishDialog("MusicLibrary","validateEntityList");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:validateSongs");
+    qDebug() << SB_DEBUG_INFO;
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,0);
+    ProgressDialog::instance()->stats();
 
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);

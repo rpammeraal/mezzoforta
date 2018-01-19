@@ -60,8 +60,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     bool updateProgressDialogFlag=0;
     if(progressDialogTitle.length())
     {
-        ProgressDialog::instance()->startDialog("DataAccessLayer",progressDialogTitle,"executeBatch",1);
-        ProgressDialog::instance()->update("DataAccessLayer","executeBatch",progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,progressDialogTitle,1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"save",progressCurrentValue,progressMaxValue);
         updateProgressDialogFlag=1;
     }
 
@@ -87,7 +87,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
             }
             if(updateProgressDialogFlag)
             {
-                ProgressDialog::instance()->update("DataAccessLayer","executeBatch",progressCurrentValue++,progressMaxValue);
+                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"save",progressCurrentValue++,progressMaxValue);
                 qDebug() << SB_DEBUG_INFO << progressCurrentValue << progressMaxValue;
             }
         }
@@ -108,9 +108,9 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("DataAccessLayer","executeBatch");
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"save");
         qDebug() << SB_DEBUG_INFO;
-        ProgressDialog::instance()->finishDialog("DataAccessLayer","executeBatch");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,0);
     }
     qDebug() << "--	END OF BATCH;";
 

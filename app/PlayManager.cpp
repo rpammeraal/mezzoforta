@@ -1,5 +1,3 @@
-#include "QProgressDialog"
-
 #include "PlayManager.h"
 
 #include "CacheManager.h"
@@ -339,18 +337,11 @@ PlayManager::_loadRadio()
     QList<int> indexCovered;
 
     int progressStep=0;
-    QProgressDialog pd("Starting Auto DJ",QString(),0,11);
-    pd.setWindowModality(Qt::WindowModal);
-    pd.show();
-    pd.raise();
-    pd.activateWindow();
-    QCoreApplication::processEvents();
-    pd.setValue(0);
-    QCoreApplication::processEvents();
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Starting Auto DJ",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",progressStep,11);
 
     SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0);
-    pd.setValue(++progressStep);
-    QCoreApplication::processEvents();
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
 
     int numPerformances=qm->rowCount();
     if(numPerformances>numberSongsToDisplay)
@@ -424,8 +415,7 @@ PlayManager::_loadRadio()
         if(index%songInterval==0 || index+1==numPerformances)
         {
             //	Update progress
-            pd.setValue(++progressStep);
-            QCoreApplication::processEvents();
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
         }
 
         //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
@@ -461,6 +451,8 @@ PlayManager::_loadRadio()
             allIDX+=QString("%1 ").arg(i);
         }
     }
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadRadio");
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
 }
 
 void

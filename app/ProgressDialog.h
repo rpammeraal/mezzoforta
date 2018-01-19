@@ -12,6 +12,17 @@
 //		After each loop:
 //		ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressMaxValue,progressMaxValue);
 
+#define __SB_PRETTY_FUNCTION_NOT_DEFINED__ "SBPFBD"
+#ifdef __GNUC__
+    #define __SB_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+#endif
+#ifdef __FUNCDNAME__
+    #define __SB_PRETTY_FUNCTION__ __FUNCDNAME__
+#endif
+#ifndef __SB_PRETTY_FUNCTION__
+    #define __SB_PRETTY_FUNCTION__ __SB_PRETTY_FUNCTION_NOT_DEFINED__
+#endif
+
 class ProgressDialog
 {
 public:
@@ -21,11 +32,11 @@ public:
         return &_instance;
     }
 
-    void startDialog(const QString& initiatingClass, const QString& title,const QString& initiatingFunction, int numSteps, const QStringList ignoreClassList=QStringList());
-    void setLabelText(const QString& className, const QString& title);
-    void update(const QString& className, const QString& step, int currentValue, int maxValue);
-    void finishStep(const QString& className, const QString& step);
-    void finishDialog(const QString& className, const QString& intiatingFunction, bool hideBoxFlag=1);
+    void startDialog(const QString& methodName, const QString& label, int numSteps);
+    void setLabelText(const QString& methodName, const QString& label);
+    void update(const QString& methodName, const QString& step, int currentValue, int maxValue);
+    void finishStep(const QString& methodName, const QString& step);
+    void finishDialog(const QString& methodName, bool hideBoxFlag=1);
     void stats() const;
 
 protected:
@@ -36,18 +47,16 @@ private:
     ProgressDialog();
     ~ProgressDialog();
 
-    QStringList     _foundClassList;
-    QStringList     _ignoreClassList;
-    QString         _initiatingClass;
-    QString         _initiatingFunction;
+    bool            _autoResetFlag;
+    QString         _prettyFunction;
     int             _numSteps;
     QProgressDialog _pd;
     QStringList     _stepList;
     bool            _visible;
     int             _prevOffset;
 
-    QString _extractClassName(const QString& prettyFunction) const;
     void _init();
+    void _reset();
 };
 
 #endif // PROGRESSDIALOG_H

@@ -53,7 +53,7 @@ SBIDChart::itemType() const
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
-SBIDChart::onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag) const
+SBIDChart::onlinePerformances(bool updateProgressDialogFlag) const
 {
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMap<int,SBIDChartPerformancePtr> items=this->items();
@@ -65,7 +65,8 @@ SBIDChart::onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag)
     int progressMaxValue=items.count();
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->update("SBIDChart","onlinePerformances",progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieve songs",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"onlinePerformances",progressCurrentValue,progressMaxValue);
     }
 
     while(it.hasNext())
@@ -82,12 +83,13 @@ SBIDChart::onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag)
         }
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDChart","onlinePerformances",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("SBIDChart","onlinePerformances");
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"onlinePerformances");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     return list;
 }
@@ -95,13 +97,9 @@ SBIDChart::onlinePerformances(int throwthingsoff, bool updateProgressDialogFlag)
 void
 SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
-    ProgressDialog::instance()->startDialog("SBIDChart","Loading songs","sendToPlayQueue",4);
-
-    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances(4);
+    QMap<int,SBIDOnlinePerformancePtr> list=onlinePerformances(1);
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
-
-    ProgressDialog::instance()->finishDialog("SBIDChart","sendToPlayQueue");
 }
 
 QString
@@ -353,7 +351,7 @@ SBIDChart::_loadPerformances()
     QMapIterator<SBIDChartPerformancePtr,SBIDChartPtr> it(list);
     const int progressMaxValue=list.count();
     int progressCurrentValue=0;
-    ProgressDialog::instance()->update("SBIDChart","_loadPerformances",0,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadPerformances",0,progressMaxValue);
     while(it.hasNext())
     {
         it.next();
@@ -367,9 +365,9 @@ SBIDChart::_loadPerformances()
         }
         _items[position]=ptr;
 
-        ProgressDialog::instance()->update("SBIDChart","_loadPerformances",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadPerformances",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("SBIDChart","_loadPerformances");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadPerformances");
 }
 
 QMap<SBIDChartPerformancePtr,SBIDChartPtr>

@@ -63,7 +63,8 @@ SBIDPerformer::onlinePerformances(bool updateProgressDialogFlag) const
     int progressMaxValue=albumPerformances.count();
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->update("SBIDPerformer","onlinePerformances",progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving Songs",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"onlinePerformances",progressCurrentValue,progressMaxValue);
     }
 
     int index=0;
@@ -76,12 +77,13 @@ SBIDPerformer::onlinePerformances(bool updateProgressDialogFlag) const
         }
         if(updateProgressDialogFlag)
         {
-            ProgressDialog::instance()->update("SBIDPerformer","onlinePerformances",progressCurrentValue++,progressMaxValue);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
     if(updateProgressDialogFlag)
     {
-        ProgressDialog::instance()->finishStep("SBIDPerformer","onlinePerformances");
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"onlinePerformances");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     return list;
 }
@@ -89,13 +91,9 @@ SBIDPerformer::onlinePerformances(bool updateProgressDialogFlag) const
 void
 SBIDPerformer::sendToPlayQueue(bool enqueueFlag)
 {
-    ProgressDialog::instance()->startDialog("SBIDPerformer","Loading songs","sendToPlayQueue",2);
-
     QMap<int,SBIDOnlinePerformancePtr> list=this->onlinePerformances(1);
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     mqs->populate(list,enqueueFlag);
-
-    ProgressDialog::instance()->finishDialog("SBIDPerformer","sendToPlayQueue");
 }
 
 QString
@@ -147,6 +145,7 @@ SBTableModel*
 SBIDPerformer::charts() const
 {
     SBTableModel* tm=new SBTableModel();
+    qDebug() << SB_DEBUG_INFO;
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
 
     tm->populateChartsByItemType(SBKey::Performer,list);
@@ -960,7 +959,7 @@ SBIDPerformer::_loadRelatedPerformers() const
     //	Set up progress dialog
     int progressCurrentValue=0;
     int progressMaxValue=qm.rowCount();
-    ProgressDialog::instance()->update("SBIDPerformer","_loadRelatedPerformers",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRelatedPerformers",progressCurrentValue,progressMaxValue);
 
     for(int i=0;i<qm.rowCount();i++)
     {
@@ -973,9 +972,9 @@ SBIDPerformer::_loadRelatedPerformers() const
                 relatedPerformerKey.append(key);
             }
         }
-        ProgressDialog::instance()->update("SBIDPerformer","_loadRelatedPerformers",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRelatedPerformers",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("SBIDPerformer","_loadRelatedPerformers");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadRelatedPerformers");
     return relatedPerformerKey;
 }
 

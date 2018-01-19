@@ -629,20 +629,29 @@ qDebug() << SB_DEBUG_INFO;
     */
 
     cm->debugShowChanges("before save");
-    const bool successFlag=cm->saveChanges();
+    const bool successFlag=cm->saveChanges("Saving Song");
 
     qDebug() << SB_DEBUG_INFO << mergedFlag;
-    if(successFlag==1)
+    if(successFlag)
     {
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
+
+        //	Update screenstack, display notice, etc.
         QString updateText=QString("Saved song %1%2%3.")
             .arg(QChar(96))      //	1
             .arg(newSongPtr->songTitle())   //	2
             .arg(QChar(180));    //	3
 
         //	Update screenstack
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->controller()->updateStatusBarText(updateText);
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergedFlag)
         {
             //	Refresh models -- since song got removed.
@@ -656,10 +665,16 @@ qDebug() << SB_DEBUG_INFO;
             st->replace(from,to);
         }
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergedFlag || songTitleChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
+
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     else
     {

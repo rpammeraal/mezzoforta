@@ -196,6 +196,7 @@ SBTableModel*
 SBIDSong::charts() const
 {
     SBTableModel* tm=new SBTableModel();
+    qDebug() << SB_DEBUG_INFO;
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
@@ -1003,7 +1004,7 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
             progressMaxValue++;
         }
     }
-    ProgressDialog::instance()->update("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1",progressCurrentValue,progressMaxValue);
 
     query.first();
     query.previous();
@@ -1017,9 +1018,9 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
         r.opPtr=opPtr;
 
         playlistOnlinePerformanceList.append(r);
-        ProgressDialog::instance()->update("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB",progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1",progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("SBIDSong","_loadPlaylistOnlinePerformanceListFromDB");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step1");
     return playlistOnlinePerformanceList;
 }
 

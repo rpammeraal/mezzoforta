@@ -301,10 +301,14 @@ SBTabPerformerEdit::save() const
     }
 
     //	Commit changes
-    successFlag=cm->saveChanges();
+    successFlag=cm->saveChanges("Saving Performer");
 
     if(successFlag)
     {
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
+
         //	Update screenstack, display notice, etc.
         QString updateText=QString("Saved performer %1%2%3.")
             .arg(QChar(96))      //	1
@@ -313,9 +317,13 @@ SBTabPerformerEdit::save() const
         Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergeFlag)
         {
             ScreenStack* st=Context::instance()->screenStack();
@@ -326,10 +334,15 @@ SBTabPerformerEdit::save() const
             st->replace(from,to);
         }
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergeFlag || performerNameChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     else
     {

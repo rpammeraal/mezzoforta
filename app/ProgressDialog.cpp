@@ -2,27 +2,28 @@
 
 #include "Common.h"
 #include "ProgressDialog.h"
+#include "SBMessageBox.h"
 
 ///	Public methods
 void
-ProgressDialog::startDialog(const QString& initiatingClass, const QString& title,const QString& initiatingFunction, int numSteps, const QStringList ignoreClassList)
+ProgressDialog::startDialog(const QString& prettyFunction,const QString& label, int numSteps)
 {
-
-    if(_initiatingClass.length()==0 || (initiatingClass==_initiatingClass && initiatingFunction==_initiatingFunction))
+    if(prettyFunction==__SB_PRETTY_FUNCTION_NOT_DEFINED__ || prettyFunction.length()==0)
     {
-        qDebug() << SB_DEBUG_INFO << initiatingClass << initiatingFunction << title << numSteps;
-        _foundClassList.clear();
-        _ignoreClassList=ignoreClassList;
-        _initiatingClass=initiatingClass;
-        _initiatingFunction=initiatingFunction;
+        qDebug() << SB_DEBUG_ERROR << "__SB_PRETTY_FUNCTION not defined";
+        SBMessageBox::standardWarningBox("__SB_PRETTY_FUNCTION__ not defined (prp9)");
+        QCoreApplication::exit(-1);
+    }
+    if(_prettyFunction.length()==0 || prettyFunction==_prettyFunction)
+    {
+        _prettyFunction=prettyFunction;
         _pd.setValue(0);
-        _pd.setLabelText(title);
+        _pd.setLabelText(label);
         _pd.setWindowModality(Qt::WindowModal);
         _pd.show();
         _pd.raise();
         _pd.activateWindow();
         QCoreApplication::processEvents();
-        qDebug() << SB_DEBUG_INFO << _ignoreClassList;
 
         _numSteps=numSteps;
         _visible=1;
@@ -32,141 +33,118 @@ ProgressDialog::startDialog(const QString& initiatingClass, const QString& title
     }
     else
     {
-        qDebug() << initiatingClass << initiatingFunction << title << numSteps << "ignore";
-        qDebug() << SB_DEBUG_WARNING << "Class" << initiatingClass << "::" << initiatingFunction << "attempt to restart DialogBox";
-        qDebug() << SB_DEBUG_WARNING << "Current" << _initiatingClass << "::" << _initiatingFunction;
-        //	Ignore
-        if(_ignoreClassList.contains(initiatingClass))
-        {
-            _ignoreClassList.append(initiatingClass);
-        }
+        qDebug() << SB_DEBUG_WARNING << "ignore:" << prettyFunction << label << numSteps;
+        qDebug() << SB_DEBUG_WARNING << "owned by:" << _prettyFunction;
     }
 }
 
 void
-ProgressDialog::setLabelText(const QString& className, const QString &title)
+ProgressDialog::setLabelText(const QString& prettyFunction, const QString& label)
 {
-    if(!_ignoreClassList.contains(className))
+    if(prettyFunction==_prettyFunction)
     {
-        qDebug() << SB_DEBUG_INFO << className << title;
-        _pd.setLabelText(title);
+        _pd.setLabelText(label);
+        QCoreApplication::processEvents();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "ignore:" << prettyFunction << label;
+        qDebug() << SB_DEBUG_WARNING << "owned by:" << _prettyFunction;
+        //	Ignore
+    }
+}
+
+void
+ProgressDialog::update(const QString& prettyFunction, const QString& step, int currentValue, int maxValue)
+{
+    if(_visible && prettyFunction==_prettyFunction)
+    {
+        if(!_stepList.contains(step))
+        {
+            _stepList.append(step);
+
+            //	Check for steps that are not accounted for.
+            if(_stepList.count()>_numSteps)
+            {
+                qDebug() << SB_DEBUG_WARNING
+                         << "initiator" << _prettyFunction
+                         << "extra step "  << step
+                         << "current steps" << _stepList.count()
+                         << "expected steps" << _numSteps
+                ;
+
+                QStringListIterator it(_stepList);
+                qDebug() << SB_DEBUG_WARNING << "List of current steps:";
+                while(it.hasNext())
+                {
+                    QString step=it.next();
+                    qDebug() << SB_DEBUG_WARNING << step;
+                }
+            }
+        }
+        if(maxValue==0)
+        {
+            currentValue=100;
+            maxValue=100;
+        }
+
+        if(_numSteps==0)
+        {
+            qDebug() << SB_DEBUG_ERROR
+                     << "call with _numSteps set 0"
+                     << "initiator" << _prettyFunction
+                     << "current step" << step
+            ;
+        }
+        int perc=currentValue*100/maxValue;
+
+        const int range=(100/_numSteps);
+        const int base=range * (_stepList.count()-1);
+        const int offset=base + (perc/_numSteps);
+
+        if(offset!=_prevOffset)
+        {
+            //	if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
+            {
+                _pd.setValue(offset);
+                _prevOffset=offset;
+            }
+        }
         QCoreApplication::processEvents();
     }
 }
 
 void
-ProgressDialog::update(const QString& className, const QString& step, int currentValue, int maxValue)
+ProgressDialog::finishStep(const QString& prettyFunction, const QString& step)
 {
-    if(!_visible || _ignoreClassList.contains(className))
+    if(prettyFunction==_prettyFunction)
     {
-        qDebug() << SB_DEBUG_INFO << className << step << currentValue << maxValue << "ignore";
-        return;
-    }
-    qDebug() << SB_DEBUG_INFO << _ignoreClassList;
-    qDebug() << SB_DEBUG_INFO << className << step << currentValue << maxValue;
-    qDebug() << SB_DEBUG_INFO << _initiatingClass << _initiatingFunction;
-    if(!_stepList.contains(step))
-    {
-        _stepList.append(step);
-
-        qDebug() << SB_DEBUG_INFO << className << _foundClassList.count();
-        if(!_foundClassList.contains(className))
-        {
-            qDebug() << SB_DEBUG_INFO ;
-            _foundClassList.append(className);
-        }
-        qDebug() << SB_DEBUG_INFO << className << _foundClassList.count();
-
-        //	Check for steps that are not accounted for.
-        if(_stepList.count()>_numSteps)
-        {
-            qDebug() << SB_DEBUG_WARNING
-                     << "initiator" << _initiatingFunction
-                     << "extra step "  << step
-                     << "current steps" << _stepList.count()
-                     << "expected steps" << _numSteps
-            ;
-
-            QStringListIterator it(_stepList);
-            qDebug() << SB_DEBUG_WARNING << "List of current steps:";
-            while(it.hasNext())
-            {
-                QString step=it.next();
-                qDebug() << SB_DEBUG_WARNING << step;
-            }
-        }
-    }
-    if(maxValue==0)
-    {
-        currentValue=100;
-        maxValue=100;
-    }
-
-    if(_numSteps==0)
-    {
-        qDebug() << SB_DEBUG_ERROR
-                 << "call with _numSteps set 0"
-                 << "initiator" << _initiatingFunction
-                 << "current step" << step
-        ;
-    }
-    int perc=currentValue*100/maxValue;
-
-    const int range=(100/_numSteps);
-    const int base=range * (_stepList.count()-1);
-    const int offset=base + (perc/_numSteps);
-
-    qDebug() << SB_DEBUG_INFO << step << currentValue << maxValue << offset << _prevOffset;
-    if(offset!=_prevOffset)
-    {
-        //	if((offset - _prevOffset >10 ) || (offset % 10==0) || (offset==(base+range)))
-        qDebug() << SB_DEBUG_INFO << _pd.minimum() << _pd.maximum() << _pd.value();
-        {
-            _pd.setValue(offset);
-            _prevOffset=offset;
-        }
-        qDebug() << SB_DEBUG_INFO << _pd.minimum() << _pd.maximum() << _pd.value();
-    }
-    QCoreApplication::processEvents();
-}
-
-void
-ProgressDialog::finishStep(const QString& className, const QString &step)
-{
-    if(!_ignoreClassList.contains(className))
-    {
-        qDebug() << SB_DEBUG_INFO << className << step;
-        update(className,step,100,100);
-        qDebug() << SB_DEBUG_INFO << _foundClassList;
+        update(prettyFunction,step,100,100);
     }
 }
 
 void
-ProgressDialog::finishDialog(const QString& className, const QString& initiatingFunction, bool hideFlag)
+ProgressDialog::finishDialog(const QString& prettyFunction, bool hideFlag)
 {
-    qDebug() << SB_DEBUG_INFO << className << _initiatingClass;
-    qDebug() << SB_DEBUG_INFO << initiatingFunction << _initiatingFunction;
-    if(_initiatingClass==className && _initiatingFunction==initiatingFunction)
+    if(prettyFunction==_prettyFunction)
     {
-        qDebug() << SB_DEBUG_INFO << className << hideFlag;
         if(hideFlag)
         {
             hide();
         }
+        _reset();
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << className << "ignore";
+        qDebug() << SB_DEBUG_WARNING << "ignore:" << prettyFunction << hideFlag;
+        qDebug() << SB_DEBUG_WARNING << "owned by:" << _prettyFunction;
     }
 }
 
 void
 ProgressDialog::stats() const
 {
-    qDebug() << SB_DEBUG_INFO << _foundClassList;
-    qDebug() << SB_DEBUG_INFO << _ignoreClassList;
-    qDebug() << SB_DEBUG_INFO << _initiatingClass;
-    qDebug() << SB_DEBUG_INFO << _initiatingFunction;
+    qDebug() << SB_DEBUG_INFO << _prettyFunction;
     qDebug() << SB_DEBUG_INFO << _stepList;
     qDebug() << SB_DEBUG_INFO << _visible;
 
@@ -178,18 +156,6 @@ ProgressDialog::hide()
 {
     _pd.close();
     _pd.hide();
-    _visible=0;
-    _prevOffset=0;
-
-    qDebug() << SB_DEBUG_INFO << _initiatingClass << _initiatingFunction;
-    qDebug() << SB_DEBUG_INFO << _foundClassList;
-
-    _foundClassList.clear();
-    _ignoreClassList.clear();
-    _initiatingClass=QString();
-    _initiatingFunction=QString();
-    _numSteps=0;
-    _stepList.clear();
 }
 
 ///	Private methods
@@ -202,26 +168,22 @@ ProgressDialog::~ProgressDialog()
 {
 }
 
-QString
-ProgressDialog::_extractClassName(const QString &prettyFunction) const
-{
-    size_t colons = prettyFunction.indexOf("::");
-    if (colons == 0)
-    {
-        return QString("none");
-    }
-    size_t begin = prettyFunction.mid(0,colons).lastIndexOf(" ") + 1;
-    size_t end = colons - begin;
-
-    return prettyFunction.mid(begin,end);
-}
-
 void
 ProgressDialog::_init()
 {
-    _pd.setAutoClose(1);
-    _pd.setAutoReset(1);
+    _pd.setAutoClose(0);
+    _pd.setAutoReset(0);
     _pd.setCancelButton(NULL);
-    _visible=0;
     hide();
+    _reset();
+}
+
+void
+ProgressDialog::_reset()
+{
+    _visible=0;
+    _prevOffset=0;
+    _prettyFunction=QString();
+    _numSteps=0;
+    _stepList.clear();
 }

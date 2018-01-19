@@ -87,7 +87,7 @@ private:
     QMap<int,SBIDPlaylistDetailPtr> _items;
 
     //	Methods
-    static void _getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr,bool updateProgressDialogFlag=0);
+    static void _getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed, QList<SBIDOnlinePerformancePtr>& allPerformances, const SBIDPlaylistPtr& rootPlPtr, const QString& progressDialogTitle=QString());
     void _copy(const SBIDPlaylist& c);
     SBIDPlaylistDetailPtr _findItemByKey(SBKey key);
     void _init();

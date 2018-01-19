@@ -259,7 +259,7 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, bool includeDependent
     int progressCurrentValue=0;
     int progressMaxValue=rowCount;
     const QString typeName=QString("retrieveSet:%1").arg(typeid(T).name());
-    ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,typeName,progressCurrentValue,progressMaxValue);
 
     QVector<std::shared_ptr<T>> list;
     for(int i=0;i<rowCount;i++)
@@ -296,9 +296,9 @@ CacheTemplate<T,parentT>::retrieveSet(SBSqlQueryModel* qm, bool includeDependent
             }
         }
         list.append(ptr);
-        ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,typeName,progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("CacheTemplate",typeName);
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,typeName);
     return list;
 }
 
@@ -312,7 +312,7 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, bool includeDependent
     int progressCurrentValue=0;
     int progressMaxValue=rowCount;
     const QString typeName=QString("retrieveMap:%1").arg(typeid(T).name());
-    ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue,progressMaxValue);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,typeName,progressCurrentValue,progressMaxValue);
 
     QMap<int,std::shared_ptr<T>> map;
     for(int i=0;i<rowCount;i++)
@@ -349,9 +349,9 @@ CacheTemplate<T,parentT>::retrieveMap(SBSqlQueryModel* qm, bool includeDependent
             }
             map[intKey]=ptr;
         }
-        ProgressDialog::instance()->update("CacheTemplate",typeName,progressCurrentValue++,progressMaxValue);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,typeName,progressCurrentValue++,progressMaxValue);
     }
-    ProgressDialog::instance()->finishStep("CacheTemplate",typeName);
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,typeName);
     return map;
 }
 

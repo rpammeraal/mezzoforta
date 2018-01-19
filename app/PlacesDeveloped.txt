@@ -1068,14 +1068,19 @@ Between 20161215 and 20170604:
 20180113
 -	Dialogbox to save operations after import is flashing w/ multiple albums imported.
 
+20180118
+-	Set original performer to righteous brothers on you've lost that lovin feeling from the firm. Then merge:w
+-	Correct The Way Of The Fist album songs -> many duplicate records on screenstack: testdb/thewayofthefirst.dump
+    -	ScreenStack does not work -- unable to move back.
+-	No dialog box when saving song/album
+
 TODO:
-*	Set original performer to righteous brothers on you've lost that lovin feeling from the firm. Then merge:w
-*	Correct The Way Of The Fist album songs -> many duplicate records on screenstack: testdb/thewayofthefirst.dump
-*	No dialog box when saving song/album
 *	Sqlite:
     *	Try create 1st and 2nd playlist (check with xmas.sqlite).
 	*	error out when top-level tables (config et al) are missing.
 *	Charts/Playlists to be minimized at start up.
+*	Queue Top2000. Song in queue: amazing amount of minutes.
+*	Find out why it takes a long time after playing Jaarlijst XXXX and actual playing songs.
 
 NEAR FUTURE
 *	Preload all caches

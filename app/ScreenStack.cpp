@@ -59,12 +59,19 @@ ScreenStack::pushScreen(const ScreenItem& id)
     qDebug() << SB_DEBUG_INFO << id << _currentScreenID;
     bool doPush=0;
 
+    debugShow("pushScreen:before");
+
     if(_stack.count()==0)
     {
         doPush=1;
     }
     else
     {
+        if(id==topScreen())
+        {
+            qDebug() << SB_DEBUG_WARNING << "Screen already added";
+            return;
+        }
         ScreenItem current=currentScreen();
         if(current!=id)
         {
@@ -81,6 +88,7 @@ ScreenStack::pushScreen(const ScreenItem& id)
         _stack.append(id);
         _currentScreenID++;
     }
+    debugShow("pushScreen:after");
     qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
@@ -153,6 +161,7 @@ ScreenStack::replace(const ScreenItem &from, const ScreenItem &to)
             _stack.replace(i,to);
         }
     }
+    _dedupe();
 }
 
 //	Remove the current screen from stack.
@@ -208,6 +217,16 @@ ScreenStack::removeScreen(const ScreenItem &id, bool editOnlyFlag)
         }
     }
     qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
+}
+
+ScreenItem
+ScreenStack::topScreen() const
+{
+    if(!_stack.isEmpty())
+    {
+        return _stack.last();
+    }
+    return ScreenItem();
 }
 
 //	Only update if ID's are equal.
@@ -319,5 +338,43 @@ ScreenStack::_init()
         connect(Context::instance()->controller(),SIGNAL(databaseSchemaChanged()),
                 this, SLOT(databaseSchemaChanged()));
         _initDoneFlag=1;
+    }
+}
+
+void
+ScreenStack::_dedupe()
+{
+    qDebug() << SB_DEBUG_INFO << _stack.length() << _currentScreenID;
+    if(_stack.length()>2)
+    {
+        debugShow("before:dedupe");
+        for(int i=0;i<_stack.length()-1;i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i << _stack.length() << _currentScreenID;
+            ScreenItem current=_stack.at(i);
+            ScreenItem next=_stack.at(i+1);
+            qDebug() << SB_DEBUG_INFO << current << next;
+            while(current==next)
+            {
+                qDebug() << SB_DEBUG_INFO;
+                _stack.removeAt(i+1);
+                if(_currentScreenID>i)
+                {
+                    _currentScreenID--;
+                    qDebug() << SB_DEBUG_INFO << _currentScreenID;
+                }
+                if(i<_stack.length()-1)
+                {
+                    next=_stack.at(i+1);
+                    qDebug() << SB_DEBUG_INFO;
+                }
+                else
+                {
+                    next=ScreenItem();
+                    qDebug() << SB_DEBUG_INFO;
+                }
+            }
+        }
+        debugShow("after:dedupe");
     }
 }

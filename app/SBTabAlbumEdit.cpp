@@ -980,14 +980,11 @@ SBTabAlbumEdit::save() const
     }
 
     //	D.	Validate
-    ProgressDialog::instance()->startDialog("SBTabAlbumEdit","Validating","rescanMusicLibrary_scan",1);
     MusicLibrary ml;
-    ProgressDialog::instance()->finishDialog("SBTabAlbumEdit","rescanMusicLibrary_scan");
     if(!ml.validateEntityList(songList,directory2AlbumPathMap))
     {
         return;
     }
-
 
     if(1)
     {	//	DEBUG
@@ -1104,11 +1101,6 @@ SBTabAlbumEdit::save() const
         {
             newAlbumPtr->setAlbumPerformerID(apPtr->albumPerformerID);
         }
-
-        //	No matching being done eg Dire Straitz
-        qDebug() << SB_DEBUG_INFO << editAlbumTitle;
-        qDebug() << SB_DEBUG_INFO << newAlbumPtr->albumTitle();
-        qDebug() << SB_DEBUG_INFO << newAlbumPtr->changedFlag();
     }
     else
     {
@@ -1121,10 +1113,14 @@ SBTabAlbumEdit::save() const
     }
 
     //	E.	Commit changes
-    successFlag=cm->saveChanges();
+    successFlag=cm->saveChanges("Saving Album");
 
     if(successFlag)
     {
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
+
         //	Update screenstack, display notice, etc.
         QString updateText=QString("Saved album %1%2%3.")
             .arg(QChar(96))      //	1
@@ -1133,9 +1129,13 @@ SBTabAlbumEdit::save() const
         Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergedFlag)
         {
             ScreenStack* st=Context::instance()->screenStack();
@@ -1146,10 +1146,16 @@ SBTabAlbumEdit::save() const
             st->replace(from,to);
         }
 
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergedFlag || albumTitleChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
+
+        qDebug() << SB_DEBUG_INFO;
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     else
     {

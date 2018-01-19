@@ -8,7 +8,6 @@
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
-#include "ProgressDialog.h"
 #include "SearchItemModel.h"
 
 //	Enroute AUS-LAX 20150718-1927CST, AA-MD80-MAN

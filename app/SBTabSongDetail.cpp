@@ -341,6 +341,8 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     QVector<int> performerList=sPtr->performerIDList();
     QString cs;
     int toDisplay=performerList.count();
+    qDebug() << SB_DEBUG_INFO << toDisplay;
+    qDebug() << SB_DEBUG_INFO << sPtr->songOriginalPerformerName() << sPtr->songOriginalPerformerID();
     if(toDisplay>3)
     {
         toDisplay=3;

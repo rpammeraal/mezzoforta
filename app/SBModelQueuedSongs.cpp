@@ -9,7 +9,6 @@
 #include "SBIDBase.h"
 #include "SBIDOnlinePerformance.h"
 #include "MainWindow.h"
-#include "ProgressDialog.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 
@@ -273,9 +272,8 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     }
     QList<QStandardItem *>record;
 
-    int progressCurrentValue=0;
-    int progressMaxValue=newPlaylist.count();
-    ProgressDialog::instance()->update("SBModelQueuedSongs","populate",0,progressMaxValue);
+//    int progressCurrentValue=0;
+//    int progressMaxValue=newPlaylist.count();
     int currentIndex=offset+1;
 
     for(int i=0;i<newPlaylist.count();i++)
@@ -299,7 +297,6 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
             QCoreApplication::processEvents();
         }
-        ProgressDialog::instance()->update("SBModelQueuedSongs","populate",progressCurrentValue++,progressMaxValue);
     }
 
     _populateHeader();
@@ -318,7 +315,6 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
             _currentPlayID=0;
         }
     }
-    ProgressDialog::instance()->finishStep("SBModelQueuedSongs","populate");
     emit listChanged();
 }
 
