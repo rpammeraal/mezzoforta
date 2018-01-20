@@ -36,11 +36,11 @@ public:
 
     bool setHMS(int h, int m, int s, int ms=0);
 
-    inline int day() const { return _ms/msDay; }
-    inline int hour() const{ return (_ms-(day()*msDay))/msHr; }
-    inline int minute() const { return (_ms-(day()*msDay)-(hour()*msHr))/msMin; }
-    inline int second() const { return (_ms-(day()*msDay)-(hour()*msHr)-(minute()*msMin))/msSec; }
-    inline int ms() const { return (_ms-(day()*msDay)-(hour()*msHr)-(minute()*msMin)) % msSec; }
+    inline int day() const { return (_ms / msDay ); }
+    inline int hour() const{ return (_ms / msHr ) % 24; }
+    inline int minute() const { return (_ms / msMin) % 60; }
+    inline int second() const { return (_ms / msSec) % 60; }
+    inline int ms() const { return _ms % msSec ; }
     inline int MS() const { return _ms; }
     inline QTime toTime() const { return QTime(hour(),minute(),second(),ms()); }
 

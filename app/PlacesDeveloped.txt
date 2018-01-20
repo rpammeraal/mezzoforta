@@ -1074,13 +1074,30 @@ Between 20161215 and 20170604:
     -	ScreenStack does not work -- unable to move back.
 -	No dialog box when saving song/album
 
+20180119:
+-	Fix more bugs with screenstack
+-	Queue Top2000. Song in queue: amazing amount of minutes.
+-	Added Progressbox when queueing songs.
+    -	Find out why it takes a long time after playing Jaarlijst XXXX and actual playing songs.
+(cleanup):
+-	Collect ID's of new songs and new performers saved so we can do proper rollback when user exits out
+-	progress indicator should start before actual saving.
+-	Convert duration:timestamp to duration:duration: later if songbase(wwww) is withdrawn. Works fine with sqlite
+-	many places where toplay, online_performance records are deleted. Need to be merged to one place
+-	need to trim down list of alternatives shown for song
+-	albumtitle from metadata not taken into account
+-   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
+x	added online_performance_id to song table. This needs to be properly populated when online_performances for that song become available.
+-	Redesign/larger font 'now playing' in player section.
+x	if item is queued on empty playlist, auto start play: nope.
+
 TODO:
 *	Sqlite:
     *	Try create 1st and 2nd playlist (check with xmas.sqlite).
 	*	error out when top-level tables (config et al) are missing.
 *	Charts/Playlists to be minimized at start up.
-*	Queue Top2000. Song in queue: amazing amount of minutes.
-*	Find out why it takes a long time after playing Jaarlijst XXXX and actual playing songs.
+* 	After import, show in status bar (bottom) how many songs where imported.
+    - 	Show window with songs to be imported.
 
 NEAR FUTURE
 *	Preload all caches
@@ -1088,9 +1105,7 @@ NEAR FUTURE
 	*	SearchItem to not use SQL
 
 Bugs that need to be fixed:
-* 	After import, show in status bar (bottom) how many songs where imported.
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
-* 	Show window with songs to be imported.
 
 Enhancements:
 
@@ -1136,10 +1151,7 @@ Import bugs/features/missing:
     -	if an existing performer is selected, this performer needs to be shown when performances are chosen.
 	-	if existing performance is selected, rock.performance gets inserted with role_id=0. Should be 1.
 *	matchSongs: if matching on 'Down The Road (live)', should match on 'Down The Road'.
-*	need to trim down list of alternatives shown for song
-*	albumtitle from metadata not taken into account
 *	Include feature to stop asking for user input during file import.
-*   static SBIDPerformancePtr SBIDSong::selectPerformanceFromSong(SBIDSongPtr& songOnUnknownAlbumPtr, bool playableOnlyFlag);	//	CWIP: move to SBDIalogSelectItem
 *	remove dots at start of any item (song, album, performer) when creating path
 
 <SBIDAlbum edit>
@@ -1152,7 +1164,6 @@ Import bugs/features/missing:
 *	if aP gets removed, need to set isDeletedFlag
 *	if aP gets reordered, need to set isChangedFLag
 *	need to somehow update SBIDManager when aP's are removed/inserted/changed. Maybe a simple reload will suffice (this reload will go to screenstack and handle screenItems that references removed items properly).
-*	added online_performance_id to song table. This needs to be properly populated when online_performances for that song become available.
 
 <bugs>
 *	Postgres credentials are lost when creating new database
@@ -1163,10 +1174,8 @@ Import bugs/features/missing:
 *	support 24kb/s flac. See AudioDecoderFlac, search for _sampleFormat=paInt24;
 
 <near future>
-*	Redesign/larger font 'now playing' in player section.
 *	when done, each SBTab* class:
 	*	review from where _init() should be called
-*	if item is queued on empty playlist, auto start play
 *	lot of garbage when queued gets populated. See if setting up view (hiding columns ed) can go to init (for all SBTab* classes)
 	*	call postpopulate after loading 1 row as to avoid showing seemlingly random numbers
 *	if new database is selected:
@@ -1192,16 +1201,12 @@ Import bugs/features/missing:
 	*	reordering in Songs In Queue does not work: disabled for now (20160612)
 	*	drag/drop only allowed to Chooser (other playlists).
 *	Duration to be stored in seconds (or milliseconds) -> easier parsing.
-*	Collect ID's of new songs and new performers saved so we can do proper rollback when user exits out
 *	are song.notes, performance.notes used?
-*	progress indicator should start before actual saving.
 * 	performer, song tags
 *	add wikipedia page for albums, songs in database
 *	If artist is renamed from Simple Mind to Dire Straitz, URL should be blanked out.
 *	Currently playing: disable scrollTo if user is navigating in current playlist (disable for x seconds)
-*	Convert duration:timestamp to duration:duration: later if songbase(wwww) is withdrawn. Works fine with sqlite
 *	only update last_played_date once after song has been listened to for 5s.
-*	many places where toplay, online_performance records are deleted. Need to be merged to one place
 *	playlists to consists of SBIDSong, SBIDPerformance, SBIDAlbumPerformance in addition to SBIDONlinePerformance
 
 -	check when reordering playlist item on drag on itself.

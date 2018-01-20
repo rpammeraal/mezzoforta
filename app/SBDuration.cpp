@@ -126,7 +126,7 @@ SBDuration::setHMS(int hours, int minutes, int seconds, int ms)
 QDebug
 operator<<(QDebug dbg, const SBDuration& t)
 {
-    dbg.nospace() << t.toString(SBDuration::sb_hhmmss_format);
+    dbg.nospace() << t.toString(SBDuration::sb_hhmmss_format) << " [ms=" << t._ms << "]";
     return dbg.space();
 }
 

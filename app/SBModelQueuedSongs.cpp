@@ -272,8 +272,11 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     }
     QList<QStandardItem *>record;
 
-//    int progressCurrentValue=0;
-//    int progressMaxValue=newPlaylist.count();
+    int progressCurrentValue=0;
+    int progressMaxValue=newPlaylist.count();
+    qDebug() << SB_DEBUG_INFO << progressMaxValue;
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Updating queue",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"populating",progressCurrentValue,progressMaxValue);
     int currentIndex=offset+1;
 
     for(int i=0;i<newPlaylist.count();i++)
@@ -295,9 +298,11 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
                 currentIndex++;
             }
 
-            QCoreApplication::processEvents();
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"populating",progressCurrentValue++,progressMaxValue);
         }
     }
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"populating");
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
 
     _populateHeader();
     if(!firstBatchHasLoadedFlag)
@@ -403,7 +408,9 @@ SBModelQueuedSongs::reorderItems()
             QTime t1; t1.toString(item->text());
             QTime t2; t2=item->data().toTime();
             SBDuration t=SBDuration(item->text());
+            qDebug() << SB_DEBUG_INFO << _totalDuration << t;
             _totalDuration+=t;
+            qDebug() << SB_DEBUG_INFO << _totalDuration;
         }
 
     }

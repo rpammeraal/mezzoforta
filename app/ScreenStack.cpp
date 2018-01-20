@@ -67,9 +67,17 @@ ScreenStack::pushScreen(const ScreenItem& id)
     }
     else
     {
+        //	Remove all items from stack after _currentScreenID;
+        while(_stack.length()-1>_currentScreenID)
+        {
+            _stack.removeLast();
+        }
+
+        //	Check for possible duplicates
         if(id==topScreen())
         {
             qDebug() << SB_DEBUG_WARNING << "Screen already added";
+            debugShow("pushScreen:screen already added");
             return;
         }
         ScreenItem current=currentScreen();

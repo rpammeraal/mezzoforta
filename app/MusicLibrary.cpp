@@ -103,7 +103,7 @@ MusicLibrary::rescanMusicLibrary()
                 QString label=e.parentDirectoryName;
                 if(label.length()>40)
                 {
-                    label=label.left(30)+"...";
+                    label=label.left(30);
                 }
                 label="Scanning album "+label;
                 ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
@@ -165,7 +165,7 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=sqm->rowCount();
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving existing songs...",1);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving existing songs",1);
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
     time.restart();
 
@@ -213,7 +213,7 @@ MusicLibrary::rescanMusicLibrary()
 
     progressCurrentValue=0;
     progressMaxValue=foundEntities.count();
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Getting meta data...",1);
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Getting meta data",1);
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData",progressCurrentValue,progressMaxValue);
     time.restart();
 
@@ -432,7 +432,7 @@ MusicLibrary::rescanMusicLibrary()
 
         progressCurrentValue=0;
         progressMaxValue=foundEntities.count();
-        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Saving album data...",1);
+        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Saving album data",1);
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step4:save",progressCurrentValue,progressMaxValue);
         feIT.toFront();
         while(feIT.hasNext())
