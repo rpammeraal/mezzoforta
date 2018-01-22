@@ -599,6 +599,8 @@ SBIDPlaylist::operator QString() const
 void
 SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QList<SBIDOnlinePerformancePtr>& allOpPtr, const SBIDPlaylistPtr& rootPlPtr,const QString& progressDialogTitle)
 {
+    SB_RETURN_VOID_IF_NULL(rootPlPtr);
+
     qDebug() << SB_DEBUG_INFO << rootPlPtr->genericDescription();
     int progressCurrentValue=0;
     int progressMaxValue=rootPlPtr->items().count();
@@ -614,14 +616,20 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
         it.next();
 
         SBIDPlaylistDetailPtr pdPtr=it.value();
-        if(pdPtr->consistOfItemType()==SBKey::Playlist)
+        if(pdPtr)
         {
-            _getOnlineItemsByPlaylist(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr());
-        }
-        else
-        {
-            QMap<int,SBIDOnlinePerformancePtr> m=pdPtr->childPtr()->onlinePerformances();
-            allOpPtr+=m.values();
+            if(pdPtr->consistOfItemType()==SBKey::Playlist)
+            {
+                _getOnlineItemsByPlaylist(compositesTraversed,allOpPtr,pdPtr->childPlaylistPtr());
+            }
+            else
+            {
+                if(pdPtr->childPtr())
+                {
+                    QMap<int,SBIDOnlinePerformancePtr> m=pdPtr->childPtr()->onlinePerformances();
+                    allOpPtr+=m.values();
+                }
+            }
         }
         if(progressDialogTitle.length())
         {

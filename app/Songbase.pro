@@ -186,12 +186,12 @@ RESOURCES += \
     resource.qrc
 
 
-ICON = resources/moose.icns
-RC_ICONS = resources/moose.ico
+ICON = resources/logo.icns
+RC_ICONS = resources/logo.ico
 
 DISTFILES += \
     PlacesDeveloped.txt \
-    resources/moose7.2.bmp
+    resources/squarelogo.bmp
 
 unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
 macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation

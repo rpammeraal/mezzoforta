@@ -1091,13 +1091,18 @@ x	added online_performance_id to song table. This needs to be properly populated
 -	Redesign/larger font 'now playing' in player section.
 x	if item is queued on empty playlist, auto start play: nope.
 
+20180121:
+- 	After import, show in status bar (bottom) how many songs where imported.
+    - 	Show window with songs to be imported.
+-	renamed to MezzoForta!
+
 TODO:
 *	Sqlite:
     *	Try create 1st and 2nd playlist (check with xmas.sqlite).
 	*	error out when top-level tables (config et al) are missing.
 *	Charts/Playlists to be minimized at start up.
-* 	After import, show in status bar (bottom) how many songs where imported.
-    - 	Show window with songs to be imported.
+*	Play Rai Rebels. Only 3 songs show up:
+    *	test case: start, play Rai Rebels from a song clicked within the Rai playlist.
 
 NEAR FUTURE
 *	Preload all caches

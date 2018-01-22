@@ -207,7 +207,7 @@ Controller::openMainWindow(bool appStartUpFlag)
         return 0;
     }
 
-    QPixmap pm(":/images/moose7.2.png");
+    QPixmap pm(":/images/splash.png");
     QSplashScreen splash(pm);
 
     if(appStartUpFlag)

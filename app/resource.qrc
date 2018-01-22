@@ -1,12 +1,12 @@
 <RCC>
     <qresource prefix="/images">
-        <file alias="logo">resources/moose7.2.bmp</file>
+        <file alias="squarelogo">resources/squarelogo.png</file>
         <file alias="NoAlbumCover.png">resources/NoAlbumCover.png</file>
         <file alias="NoBandPhoto.png">resources/NoBandPhoto.png</file>
         <file alias="PlaylistIcon.png">resources/PlaylistIcon.png</file>
         <file alias="SongIcon.png">resources/SongIcon.png</file>
         <file alias="AllSongs.png">resources/AllSongs.png</file>
-        <file alias="moose7.2.png">resources/moose7.2.png</file>
+        <file alias="splash.png">resources/splash.png</file>
         <file alias="playing.png">resources/playing.png</file>
         <file alias="ChartIcon.png">resources/ChartIcon.png</file>
     </qresource>

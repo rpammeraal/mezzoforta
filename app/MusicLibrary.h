@@ -124,6 +124,10 @@ signals:
 public slots:
 
 private:
+    int _numNewSongs;
+    int _numNewPerformers;
+    int _numNewAlbums;
+
     QStringList _greatestHitsAlbums() const;
     QMap<QString,QString> _alternativePerformerName2CorrectPerformerName;
 

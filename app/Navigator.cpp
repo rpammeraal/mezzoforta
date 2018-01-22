@@ -463,7 +463,7 @@ Navigator::openOpener()
         openerTabPosition=(t==NULL)?i:openerTabPosition;
     }
     tw->setCurrentIndex(openerTabPosition);
-    _openerResetTimer.start(5000);
+    _openerResetTimer.start(20000);
     _openerResetTimer.setSingleShot(1);
 }
 

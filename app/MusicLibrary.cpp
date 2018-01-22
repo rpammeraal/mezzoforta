@@ -458,8 +458,11 @@ MusicLibrary::rescanMusicLibrary()
                 //	CWIP: do progressbox
             }
         }
+        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step4:save");
+        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
+        qDebug() << SB_DEBUG_INFO;
 
         bool resultFlag=cm->saveChanges("Saving Changes");
 
@@ -493,7 +496,14 @@ MusicLibrary::rescanMusicLibrary()
     Context::instance()->controller()->refreshModels();
     Context::instance()->controller()->preloadAllSongs();
 
+    ProgressDialog::instance()->hide();
     ProgressDialog::instance()->stats();
+
+    qDebug() << SB_DEBUG_INFO;
+    Common::sleep(5);
+    qDebug() << SB_DEBUG_INFO;
+    QString resultTxt=QString("<P>%4 %1 songs<BR>%4 %2 performers<BR>%4 %3 albums").arg(_numNewSongs).arg(_numNewPerformers).arg(_numNewAlbums).arg(QChar(8226));
+    SBMessageBox::createSBMessageBox(QString("<center>Added:</center>"),resultTxt,QMessageBox::Information,QMessageBox::Ok,QMessageBox::Ok,QMessageBox::Ok,1);
 
     qDebug() << SB_DEBUG_INFO << "Finished";
     return;
@@ -511,6 +521,10 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     int progressCurrentValue=0;
     int progressMaxValue=0;
     QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
+
+    _numNewSongs=0;
+    _numNewPerformers=0;
+    _numNewAlbums=0;
 
     qDebug() << SB_DEBUG_INFO;
     {	//	DEBUG
@@ -620,6 +634,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             if(result==Common::result_missing)
             {
                 selectedPerformerPtr=pemgr->createInDB(p);
+                _numNewPerformers++;
             }
             performerID=selectedPerformerPtr->performerID();
             name2PerformerIDMap[performerName]=performerID;
@@ -827,6 +842,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                 p.year=apPtr->year;
                 p.genre=apPtr->genre;
                 selectedAlbumPtr=amgr->createInDB(p);
+                _numNewAlbums++;
 
                 qDebug() << SB_DEBUG_INFO << "Create collection album"
                          << selectedAlbumPtr->albumTitle()
@@ -891,6 +907,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 
                         //	albumPerformerID not set
                         selectedAlbumPtr=amgr->createInDB(p);
+                        _numNewAlbums++;
                         apPtr->albumID=selectedAlbumPtr->albumID();
                         apPtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
                     }
@@ -1074,6 +1091,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     if(result==Common::result_missing)
                     {
                         selectedSongPtr=smgr->createInDB(p);
+                        _numNewSongs++;
                     }
 
                     songTitle2songIDMap[key]=selectedSongPtr->songID();

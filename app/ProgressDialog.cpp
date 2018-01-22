@@ -6,6 +6,16 @@
 
 ///	Public methods
 void
+ProgressDialog::hide()
+{
+        qDebug() << SB_DEBUG_INFO;
+    _pd.close();
+    _pd.hide();
+        qDebug() << SB_DEBUG_INFO;
+    QCoreApplication::processEvents();
+}
+
+void
 ProgressDialog::startDialog(const QString& prettyFunction,const QString& label, int numSteps)
 {
     if(prettyFunction==__SB_PRETTY_FUNCTION_NOT_DEFINED__ || prettyFunction.length()==0)
@@ -121,6 +131,11 @@ ProgressDialog::finishStep(const QString& prettyFunction, const QString& step)
     {
         update(prettyFunction,step,100,100);
     }
+    else
+    {
+        qDebug() << SB_DEBUG_WARNING << "ignore:" << prettyFunction << step;
+        qDebug() << SB_DEBUG_WARNING << "owned by:" << _prettyFunction;
+    }
 }
 
 void
@@ -128,8 +143,10 @@ ProgressDialog::finishDialog(const QString& prettyFunction, bool hideFlag)
 {
     if(prettyFunction==_prettyFunction)
     {
+        qDebug() << SB_DEBUG_INFO;
         if(hideFlag)
         {
+        qDebug() << SB_DEBUG_INFO;
             hide();
         }
         _reset();
@@ -151,13 +168,6 @@ ProgressDialog::stats() const
 }
 
 ///	Protected methods
-void
-ProgressDialog::hide()
-{
-    _pd.close();
-    _pd.hide();
-}
-
 ///	Private methods
 ProgressDialog::ProgressDialog()
 {

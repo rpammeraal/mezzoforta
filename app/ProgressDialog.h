@@ -32,6 +32,7 @@ public:
         return &_instance;
     }
 
+    void hide();
     void startDialog(const QString& methodName, const QString& label, int numSteps);
     void setLabelText(const QString& methodName, const QString& label);
     void update(const QString& methodName, const QString& step, int currentValue, int maxValue);
@@ -41,7 +42,6 @@ public:
 
 protected:
     friend class Navigator;	//	Provide for navigator a way to hide any outstanding ProgressDialogs
-    void hide();
 
 private:
     ProgressDialog();

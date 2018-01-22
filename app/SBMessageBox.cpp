@@ -20,6 +20,7 @@ SBMessageBox::createSBMessageBox(const QString& text,
     {
         mb->setInformativeText(informativeText);
     }
+    mb->setTextFormat(Qt::RichText);
     mb->setIcon(icon);
     mb->setStandardButtons(standardButtons);
     mb->setDefaultButton(defaultButton);
