@@ -144,8 +144,6 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     SBIDSongPerformancePtr spPtr;
     SBIDAlbumPerformancePtr apPtr;
     Common::sb_parameters p;
-    bool newSongPerformanceFlag=0;
-    bool newAlbumPerformanceFlag=0;
 
     albumPerformances();	//	load albumPerformances if not already loaded
 
@@ -164,7 +162,6 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     spPtr=SBIDSongPerformance::findByFK(p);
     if(!spPtr)
     {
-        newSongPerformanceFlag=1;
         spPtr=spMgr->createInDB(p);
         ;
     }
@@ -178,9 +175,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     apPtr=SBIDAlbumPerformance::findByFK(p);
     if(!apPtr)
     {
-        newAlbumPerformanceFlag=1;
         apPtr=apMgr->createInDB(p);
-        ;
     }
     if(!albumPerformances().contains(apPtr->albumPerformanceID()))
     {

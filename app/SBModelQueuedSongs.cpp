@@ -339,7 +339,6 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
 //    int songID=-1;
 //    int albumID=-1;
 //    int albumPosition=-1;
-    int playlistPosition=-1;
     int onlinePerformanceID=-1;
     for(int internalPlaylistIndex=0;internalPlaylistIndex<this->rowCount();internalPlaylistIndex++)
     {
@@ -354,9 +353,6 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
                 {
                     onlinePerformanceID=item->text().toInt();
                 }
-
-                //	playlistPosition
-                playlistPosition=currentPlayID();
             }
         }
     }
@@ -364,7 +360,6 @@ SBModelQueuedSongs::performanceAt(int playlistIndex) const
     if(onlinePerformanceID!=-1)
     {
         performancePtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
-        //	performancePtr->setPlaylistPosition(playlistPosition);	CWIP: not sure in which context opPtr should have playlist position -- examine this method
     }
     return performancePtr;
 }

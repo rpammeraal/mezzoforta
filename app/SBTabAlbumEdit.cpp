@@ -754,21 +754,10 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
     Q_UNUSED(i);
     Q_UNUSED(j);
 
-    bool canRemoveFlag=0;
-    bool canMergeFlag=0;
     int numRowsSelected=0;
     int numRowsRemoved=0;
     int numRowsMarkedAsMerged=0;
     _getSelectionStatus(numRowsSelected,numRowsRemoved,numRowsMarkedAsMerged);
-
-    if(numRowsSelected>1 && numRowsRemoved==0 && numRowsMarkedAsMerged==0)
-    {
-        canMergeFlag=1;
-    }
-    if(numRowsSelected>=0 && numRowsRemoved==0)
-    {
-        canRemoveFlag=1;
-    }
 }
 
 //	Use cases:
@@ -788,7 +777,6 @@ SBTabAlbumEdit::save() const
     const SBIDAlbumPtr orgAlbumPtr=SBIDAlbum::retrieveAlbum(this->currentScreenItem().key());
     SB_RETURN_VOID_IF_NULL(orgAlbumPtr);
 
-    bool albumMetaDataChangedFlag=0;
     bool successFlag=0;
     bool mergedFlag=0;
     bool albumTitleChangedFlag=0;
@@ -808,7 +796,6 @@ SBTabAlbumEdit::save() const
     qDebug() << SB_DEBUG_INFO << editAlbumTitle;
     if(Common::removeAccents(Common::simplified(editAlbumTitle))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumTitle())))
     {
-        albumMetaDataChangedFlag=1;
         albumTitleChangedFlag=1;
     }
     else
@@ -820,21 +807,12 @@ SBTabAlbumEdit::save() const
         albumTitleChangedFlag=1;
     }
 
-    if(Common::removeAccents(Common::simplified(editAlbumPerformerName))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())))
-    {
-        albumMetaDataChangedFlag=1;
-    }
-    else
+    if(Common::removeAccents(Common::simplified(editAlbumPerformerName))==Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())))
     {
         if(Common::removeAccents(Common::simplified(editAlbumPerformerName)).toLower()!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumPerformerName())).toLower())
         {
             Common::toTitleCase(editAlbumPerformerName);
         }
-    }
-
-    if(editAlbumYear!=orgAlbumPtr->albumYear())
-    {
-        albumMetaDataChangedFlag=1;
     }
 
     //	B.	Create edited list on the album
@@ -853,12 +831,13 @@ SBTabAlbumEdit::save() const
         {
             editedSong.albumPosition=item->text().toInt();
         }
-        int orgAlbumPosition=editedSong.albumPosition;
-        item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
-        if(item)
-        {
-            orgAlbumPosition=item->text().toInt();
-        }
+        //	Not sure if this used.
+        //	int orgAlbumPosition=editedSong.albumPosition;
+        //	item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
+        //	if(item)
+        //	{
+        //		orgAlbumPosition=item->text().toInt();
+        //}
 
         item=aem->item(i,AlbumEditModel::sb_column_performername);
         if(item)

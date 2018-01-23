@@ -6,6 +6,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QSemaphore>
+#include <QMutex>
 
 #include <QDataStream>
 #include <QStandardItem>

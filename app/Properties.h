@@ -1,6 +1,8 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
+#include <memory>
+
 #include <QMap>
 #include <QString>
 
