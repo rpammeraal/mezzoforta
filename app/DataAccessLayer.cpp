@@ -491,6 +491,7 @@ QString
 DataAccessLayer::_getSchemaName() const
 {
     PropertiesPtr ptr=Context::instance()->properties();
+    SB_RETURN_IF_NULL(ptr,QString());
     QString schema=ptr->currentDatabaseSchema();
     return (schema.length()>0) ? schema+'.' : "";
 }

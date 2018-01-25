@@ -2,7 +2,7 @@
 
 if [ $# -eq 0 ]
   then
-	echo Usage 'backupPostgresForMigration <dbname> <schema>'
+	echo Usage 'backupPostgresForMigration <dbname> <schema> <dst sqlite db>'
 	exit;
 fi
 
@@ -47,7 +47,6 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 	--column-inserts \
 	--inserts \
 	--no-security-labels \
-	--section=pre-data \
 	--section=data \
 	-C \
 	-T article                     \
@@ -80,6 +79,7 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 	-t $SCHEMA.chart               \
 	-t $SCHEMA.chart_performance   \
 | grep -v '^SET'  \
+| grep -v "VALUES (0, 1, 'UNKNOWN ALBUM'," \
 | sed "s/DEFAULT now()//" \
 | sed "s/::text//g" \
 | sed "s/, false/, 'f'/g" \
@@ -104,7 +104,6 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 	--column-inserts \
 	--inserts \
 	--no-security-labels \
-	--section=pre-data \
 	--section=data \
 	-t $SCHEMA.lyrics     \
 | grep -v '^SET'  \
@@ -113,17 +112,12 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 >> /tmp/$TEMPDB.out
 echo "COMMIT;" >> /tmp/$TEMPDB.out
 
-rm -f /tmp/$SCHEMA.sqlite
-
-echo build sqlite database
-cat /tmp/$TEMPDB.out | sqlite3 /tmp/$SCHEMA.sqlite
+#rm -f /tmp/$SCHEMA.sqlite
+#
+echo build sqlite database $SQLITEDB
+cat /tmp/$TEMPDB.out | sqlite3 $SQLITEDB
 dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
 
-echo adding root tables
-cat rootTables.sql | sqlit3 /tmp/$SCHEMA.sqlite
-
-echo sqlite database available at /tmp/$SCHEMA.sqlite
-
 #	cleanup
-rm -f /tmp/$DB.dump
-rm -f /tmp/$TEMPDB.out
+#rm -f /tmp/$DB.dump
+#rm -f /tmp/$TEMPDB.out
