@@ -612,7 +612,7 @@ Preloader::playlistItems(int playlistID)
     QStringList albumFields; albumFields                         <<  "6" << "22" << "23" << "24" << "25" << "26";
     QStringList performerFields; performerFields                 <<  "7" << "10" << "11" << "12" << "13";
     QStringList songPerformanceFields; songPerformanceFields     << "18" << "14" <<  "7" << "19" << "20" << "21";
-    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "18" <<  "6" << "27" << "28" << "29" <<  "4";
+    QStringList albumPerformanceFields; albumPerformanceFields   << "21" << "18" <<  "6" << "27" << "28" << "29" <<  "37";
     QStringList onlinePerformanceFields; onlinePerformanceFields <<  "3" << "21" << "36";
     QStringList chartFields; chartFields                         <<  "5" << "30" << "31" << "32" << "33";
     QStringList playlistFields; playlistFields                   <<  "4" << "34" << "35";
@@ -667,7 +667,8 @@ Preloader::playlistItems(int playlistID)
             "pl.name, "
 
             "pl.duration, "                             //	35
-            "NULL AS VARCHAR "
+            "NULL AS VARCHAR, "
+            "NULL AS preferred_online_performance_id "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pd "
@@ -727,7 +728,8 @@ Preloader::playlistItems(int playlistID)
             "NULL AS pl_name, "
 
             "NULL AS pl_duration, "                      //	35
-            "op.path "
+            "op.path, "
+            "rp.preferred_online_performance_id "
 
         "FROM "
             "___SB_SCHEMA_NAME___playlist_detail pd  "

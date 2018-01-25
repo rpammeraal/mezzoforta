@@ -1099,14 +1099,15 @@ x	if item is queued on empty playlist, auto start play: nope.
 20180124:
 -	Sqlite:
     -	Try create 1st and 2nd playlist (check with xmas.sqlite): bug in migrate postgres->sqlite script.
+-	Play Rai Rebels. Only 3 songs show up: test case: start, play Rai Rebels from a song clicked within the Rai playlist. Fixed.
+-	Notes are no longer imported from metadata.
 
 TODO:
 *	Charts/Playlists to be minimized at start up.
-*	Play Rai Rebels. Only 3 songs show up:
-    *	test case: start, play Rai Rebels from a song clicked within the Rai playlist.
 *	Unable to save lyrics (San Francisco/Foxygen)
 *	Sqlite:
     *	error out when top-level tables (config et al) are missing.
+*	Initial import: avoid prompting
 
 NEAR FUTURE
 *	Preload all caches

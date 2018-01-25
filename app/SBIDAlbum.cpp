@@ -57,7 +57,9 @@ SBIDAlbum::itemType() const
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
 {
+    qDebug() << SB_DEBUG_INFO ;
     QMap<int,SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
+    qDebug() << SB_DEBUG_INFO << _albumPerformances.count();
 
     int progressCurrentValue=0;
     int progressMaxValue=albumPerformances.count()*2;
@@ -75,7 +77,16 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     {
         pIT.next();
         const SBIDAlbumPerformancePtr apPtr=pIT.value();
+        qDebug() << SB_DEBUG_INFO << apPtr->key() << apPtr->genericDescription();
         const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
+        if(!opPtr)
+        {
+            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined";
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_INFO << opPtr->path();
+        }
         if(opPtr && opPtr->path().length()>0)
         {
             position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
@@ -907,6 +918,7 @@ SBIDAlbum::_loadAlbumPerformances()
 {
     qDebug() << SB_DEBUG_INFO;
     _albumPerformances=_loadAlbumPerformancesFromDB();
+    qDebug() << SB_DEBUG_INFO << _albumPerformances.count();
 }
 
 QMap<int,SBIDAlbumPerformancePtr>

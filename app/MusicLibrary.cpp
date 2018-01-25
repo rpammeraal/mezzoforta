@@ -246,7 +246,7 @@ MusicLibrary::rescanMusicLibrary()
             ePtr->albumPerformerName=ePtr->songPerformerName; // for now, default to <>
             ePtr->duration=md.duration();
             ePtr->genre=md.genre();
-            ePtr->notes=md.notes();
+            ePtr->notes=QString();	//	Don't import notes
             ePtr->year=md.year();
 
             //	Misc. data

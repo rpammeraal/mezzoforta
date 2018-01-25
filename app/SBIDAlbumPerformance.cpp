@@ -580,6 +580,7 @@ SBIDAlbumPerformance::instantiate(const QSqlRecord &r)
     ap._preferredOnlinePerformanceID=Common::parseIntFieldDB(&r,i++);
     ap._orgAlbumPosition=ap._albumPosition;
 
+    qDebug() << SB_DEBUG_INFO << ap.key() << ap._preferredOnlinePerformanceID;
     return std::make_shared<SBIDAlbumPerformance>(ap);
 }
 
