@@ -263,7 +263,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
     {
         MusicLibrary ml;
-        ml.rescanMusicLibrary();
+        ml.rescanMusicLibrary(1);
     }
     properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"0");
 

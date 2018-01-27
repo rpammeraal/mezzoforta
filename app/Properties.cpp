@@ -134,6 +134,12 @@ Properties::currentDatabaseSchema() const
 }
 
 void
+Properties::reset()
+{
+    _configuration=_default;
+}
+
+void
 Properties::setConfigValue(sb_configurable keyword, const QString& value)
 {
     if(_configuration.count()==0)
@@ -252,8 +258,8 @@ Properties::doInit()
     _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
     _enumToKeyword[sb_version]=QString("version");
 
-    _default[sb_version]=QString("20170101");
-    _default[sb_current_database_schema]=QString("rock");
+    _default[sb_version]=QString("20180101");
+    _default[sb_current_database_schema]=QString("");
     _default[sb_various_performer_id]=QString("1");
     _default[sb_unknown_album_id]=QString("0");
     _default[sb_performer_album_directory_structure_flag]=QString("1");

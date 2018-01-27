@@ -116,8 +116,8 @@ public:
 
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
-    void rescanMusicLibrary();
-    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap);
+    void rescanMusicLibrary(bool suppressDialogsFlag=false);
+    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, bool suppressDialogsFlag=false);
 
 signals:
 

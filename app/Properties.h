@@ -32,6 +32,7 @@ public:
     QString musicLibraryDirectory(bool interactiveFlag=1);
     QString musicLibraryDirectorySchema();
     QString currentDatabaseSchema() const;
+    void reset();
     void setConfigValue(sb_configurable keyword, const QString& value);
     void setMusicLibraryDirectory(const QString musicLibraryDirectory);
     void userSetMusicLibraryDirectory();

@@ -1102,12 +1102,17 @@ x	if item is queued on empty playlist, auto start play: nope.
 -	Play Rai Rebels. Only 3 songs show up: test case: start, play Rai Rebels from a song clicked within the Rai playlist. Fixed.
 -	Notes are no longer imported from metadata.
 
+20180126:
+-	Initial import: avoid prompting
+-	Reset properties when a new database is created
+-	Sqlite:
+    -	error out when top-level tables (config et al) are missing: not quite error out. To be modified later when database versions are
+	    becoming more important.
+-	Unable to save lyrics (San Francisco/Foxygen): fixed
+-	bin/exportSongs modified to export charts. To be rewritten in python.
+
 TODO:
 *	Charts/Playlists to be minimized at start up.
-*	Unable to save lyrics (San Francisco/Foxygen)
-*	Sqlite:
-    *	error out when top-level tables (config et al) are missing.
-*	Initial import: avoid prompting
 
 NEAR FUTURE
 *	Preload all caches

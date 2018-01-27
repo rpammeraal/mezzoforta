@@ -86,6 +86,7 @@ private:
     void _init();
     bool _openPostgresql(struct DatabaseCredentials& dc);
     bool _openSqliteDB(struct DatabaseCredentials& dc);
+    void _destroyDAL();
     void _updateDatabaseCredentials(const struct DatabaseCredentials& dc) ;
 };
 

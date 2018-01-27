@@ -88,7 +88,6 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
             if(updateProgressDialogFlag)
             {
                 ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"save",progressCurrentValue++,progressMaxValue);
-                qDebug() << SB_DEBUG_INFO << progressCurrentValue << progressMaxValue;
             }
         }
 

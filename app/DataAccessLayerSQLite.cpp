@@ -326,19 +326,25 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
             SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
 
+            //	Reset properties
+            PropertiesPtr properties=Context::instance()->properties();
+            properties.reset();
+
             if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";
             }
 
-            PropertiesPtr properties=Properties::createProperties(&dal);
+            properties=Properties::createProperties(&dal);
             properties->debugShow("createDatabase");
             properties->setConfigValue(Properties::sb_version,"20170101");
             properties->setConfigValue(Properties::sb_various_performer_id,"0");
             properties->setConfigValue(Properties::sb_unknown_album_id,"0");
             properties->setConfigValue(Properties::sb_performer_album_directory_structure_flag,"1");
             properties->setMusicLibraryDirectory(musicLibraryPath);
+
+            Context::instance()->setProperties(properties);
         }
 
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);

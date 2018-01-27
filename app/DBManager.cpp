@@ -93,11 +93,12 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
             break;
     }
 
+    qDebug() << SB_DEBUG_INFO << rc;
     if(rc==1)
     {
+         _databaseOpenFlag=1;
         //	Persist
         _updateDatabaseCredentials(credentials);
-        _databaseOpenFlag=1;
 
         //	Create new DataAccessLayer
         _createDAL();
@@ -109,6 +110,21 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         //	Read properties
         PropertiesPtr properties=Properties::createProperties(this->dataAccessLayer());
         Context::instance()->setProperties(properties);
+
+        qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_version);
+        if(properties->configValue(Properties::sb_version)!=QString("20180101"))
+        {
+            qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_version);
+            rc=0;
+            _databaseOpenFlag=0;
+            _destroyDAL();
+            properties->reset();
+            _errorString=QString("Unknown Database");
+        }
+        else
+        {
+            _databaseOpenFlag=1;
+        }
     }
 
     return rc;
@@ -197,13 +213,10 @@ DBManager::doInit()
 void
 DBManager::_createDAL()
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << _databaseOpenFlag;
     if(_databaseOpenFlag)
     {
-        if(_dal)
-        {
-            delete(_dal);_dal=NULL;
-        }
+        _destroyDAL();
         switch(_dc.databaseType)
         {
             case Sqlite:
@@ -218,6 +231,15 @@ DBManager::_createDAL()
                 _errorFlag=1;
                 _errorString=QString("Unknown type at %1, %2, %3").arg(__FILE__).arg(__FUNCTION__).arg(__LINE__);
         }
+    }
+}
+
+void
+DBManager::_destroyDAL()
+{
+    if(_dal)
+    {
+        delete(_dal);_dal=NULL;
     }
 }
 

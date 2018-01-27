@@ -847,6 +847,18 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
             .arg(Common::escapeSingleQuotes(this->_notes))
             .arg(this->itemID())
         );
+
+        SQL.append(QString
+        (
+            "UPDATE ___SB_SCHEMA_NAME___lyrics "
+            "SET "
+                "lyrics='%2' "
+            "WHERE "
+                "song_id=%1 "
+        )
+            .arg(this->itemID())
+            .arg(Common::escapeSingleQuotes(this->_lyrics))
+        );
     }
     return SQL;
 }

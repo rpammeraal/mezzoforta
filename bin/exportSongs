@@ -1,0 +1,271 @@
+#!/usr/bin/perl
+########################################################################
+#
+#	exportSongs
+#
+#	Author: Roy P. Ammeraal
+#
+#	This source falls under the GNU license policy. In short, this
+#	source:
+#	- may not be sold. 
+#	- This source may be freely distributed. A charge for distributing, 
+#	  such as the media costs, may be applied.
+#	- modifications and enhancements to this source are allowed with
+#	  mentioning the original author
+#	- this source is 'as is'. Use at your own risk. The author is not
+#	  reliable for any damage caused by using this source in any way.
+#
+#	$Log:  $
+#	
+#
+########################################################################
+
+use strict;
+use diagnostics;
+use File::Basename;
+use File::Copy;
+
+my $host=`hostname`; chomp($host);
+
+sub usage()
+{
+	print STDERR basename($0).": usage: ".basename($0).' '.
+		"-s <schema> ".
+		"-t <chart|list> ".
+		"[-p] ".
+		"<id> ".
+		"[desc]\n";
+	print STDERR "Where:\n-p: playlist only (optional)\n";
+	exit;
+}
+
+sub getOptionsAndArguments
+{
+    my
+    (
+        $options,    # hash with options
+        $arg         # array with arguments
+    ) = @_;
+
+    my $value=0;         # value of element in ARGV
+    my $index=0;         # index in ARGV
+    my $amount=0;        # number of items in ARGV
+    my $argumentIndex=0; # index in arg
+    my $tmp='';
+
+    %$options=();
+    $amount=$#ARGV + 1;
+
+    for($index=0;
+		$index<$amount;
+		$index++)
+    {
+        $value=$ARGV[$index];
+        if($value =~ /^-/)
+        {
+            if($index < $amount)
+            {
+                $tmp = $ARGV[$index+1];
+
+				if(!defined($tmp))
+				{
+					$tmp='';
+				}
+                if(($tmp ne '') && ($tmp =~ /^-/))
+                {
+                    $tmp='-';
+                }
+                else
+                {
+                    $index++;
+                }
+            }
+
+            $$options{$value}=$tmp;
+        }
+        else
+        {
+            $$arg[$argumentIndex]=$value;
+            $argumentIndex++;
+        }
+    }
+    return $index;
+}
+
+sub executeCMD($$)
+{
+	my
+	(
+		$cmd,
+		$logRef
+	) = @_;
+
+	my $resultCode=0;
+	my $followProcess=undef;
+	my $toExec='';
+	my $line='';
+	my $lastLine='';
+	my $DONE='DONE';
+	my @t=();
+
+	$|=1;
+
+	$toExec="($cmd;echo $DONE:\$\?:$DONE:) 2>&1";
+	open(PROCESS,"$toExec |") or die ("Can't open $toExec");
+	while(defined($line=<PROCESS>))
+	{
+		chomp($line);
+		$lastLine=$line;
+		if(defined($logRef))
+		{
+			push(@$logRef,$line);
+		}
+	}
+	@t=split(':',$lastLine,4);
+
+	if(($t[0] eq $t[2]) && ($t[0] eq $DONE))
+	{
+		pop(@$logRef);
+		$resultCode=$t[1];
+	}
+	else
+	{
+		#       process got interrupted
+		$resultCode=-1;
+	}
+
+	if($resultCode==1)
+	{
+		print STDERR ("Unable to execute $cmd\n");
+	}
+
+	return $resultCode;
+}
+
+sub executeSQL($)
+{
+	my
+	(
+		$SQL
+	) = @_;
+
+	my $toExec=undef;
+	my @out=();
+
+	($SQL) =~ s/SQL_SINGLE_QUOTE/\'/g;
+	$toExec.="psql songbase -c \"$SQL\" --tuples-only --no-align";
+	executeCMD($toExec,\@out);
+	return @out;
+}
+
+sub exportOnlinePerformance($$$)
+{
+	my
+	(
+		$activeSchema,
+		$currentPositionRef,
+		$opID
+	) = @_;
+
+	my $SQL="SELECT ch.local_data_path || '/' || '$activeSchema' || '/' || path FROM $activeSchema.online_performance op, config_host ch WHERE op.online_performance_id=$opID AND ch.hostname='$host'";
+	my $path=(executeSQL($SQL))[0];
+	($path) =~ s/\\//g;
+	my $file=sprintf("%04d - %s",$$currentPositionRef++, basename($path));
+	printf "Copying $path\n";
+	copy($path,$file) or die("Cannot copy $path");
+}
+
+sub exportPlaylist($$$$$$)
+{
+	my
+	(
+		$activeSchema,
+		$currentPositionRef,
+		$type,
+		$id,
+		$order,
+		$playlistOnly
+	) = @_;
+
+	printf("activeSchema=$activeSchema\n");
+	my $SQL;
+	
+	if($type eq 'list')
+	{
+		$SQL="SELECT online_performance_id,child_playlist_id,chart_id,record_id,artist_id FROM $activeSchema.playlist_detail WHERE playlist_id =$id ORDER BY playlist_position";
+	}
+	elsif($type eq 'chart')
+	{
+		$SQL=
+			"SELECT ".
+				"op.online_performance_id,NULL,cp.chart_id,rp.record_id,p.artist_id ".
+			"FROM ".
+				"$activeSchema.chart_performance cp ".
+					"JOIN $activeSchema.performance p USING (performance_id) ".
+					"JOIN $activeSchema.record_performance rp ON ".
+						"p.preferred_record_performance_id=rp.record_performance_id ".
+					"JOIN $activeSchema.online_performance op ON ".
+						"rp.preferred_online_performance_id=op.online_performance_id ".
+			"WHERE ".
+				"chart_id =$id ".
+			"ORDER BY ".
+				"chart_position ";
+		if($order eq 'desc')
+		{
+			$SQL.=' DESC ';
+		}
+	}
+	my @allRecords=executeSQL($SQL);
+	foreach my $record (@allRecords)
+	{
+		my $opID;
+		my $cpID;
+		my $cID;
+		my $rID;
+		my $aID;
+
+		($opID,$cpID,$cID,$rID,$aID)=split(/\|/,$record);
+		if($opID ne '') { exportOnlinePerformance($activeSchema,$currentPositionRef,$opID); }
+	}
+}
+
+MAIN:
+{
+	my %options=();
+	my @arguments=();
+	my $SQL=undef;
+	my $activeSchema=undef;
+	my $type=undef;
+	my $id=undef;
+	my $order=undef;
+	my $playlistOnly=undef;
+
+	getOptionsAndArguments(\%options,\@arguments);
+
+	$type=$options{'-t'} or die usage();
+	$playlistOnly=$options{'-p'};
+	$activeSchema=$options{'-s'} or die usage();
+	$id=$arguments[0];
+	if(!defined($id))
+	{
+		die usage();
+	}
+	$order=$arguments[1] or $order='';
+	$order=lc($order);
+	if(!defined($order))
+	{
+		die usage();
+	}
+	elsif($order eq '')
+	{
+		$order='asc';
+	}
+
+	if(defined($playlistOnly))
+	{
+		$id=$playlistOnly;
+		$playlistOnly=1;
+	}
+	my $currentPosition=1;
+	exportPlaylist($activeSchema,\$currentPosition,$type,$id,$order,$playlistOnly);
+}

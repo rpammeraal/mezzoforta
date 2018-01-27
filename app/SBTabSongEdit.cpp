@@ -144,6 +144,7 @@ SBTabSongEdit::save() const
     if(editYearOfRelease!=orgSpPtr->year() || editNotes!=orgSongPtr->notes() || editLyrics!=orgSongPtr->lyrics())
     {
         metaDataChangedFlag=1;
+        setMetaDataFlag=1;
     }
 
     //	3.	Look up if song already exists.
@@ -172,6 +173,7 @@ SBTabSongEdit::save() const
                 qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
                 sMgr->merge(orgSongPtr,newSongPtr);
                 mergedFlag=1;
+                setMetaDataFlag=0;
             }
         }
     }
@@ -247,6 +249,7 @@ SBTabSongEdit::save() const
                         qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
                         sMgr->merge(orgSongPtr,newSongPtr);
                         mergedFlag=1;
+                        setMetaDataFlag=0;
                     }
                 }
                 else
@@ -335,10 +338,12 @@ SBTabSongEdit::save() const
             else if(result==Common::result_exists)
             {
                 SB_RETURN_VOID_IF_NULL(newSongPtr);
-                qDebug() << SB_DEBUG_INFO << "merge" << orgSongPtr->key() << orgSongPtr->ID();
-                qDebug() << SB_DEBUG_INFO << "to" << newSongPtr->key() << newSongPtr->ID();
-                sMgr->merge(orgSongPtr,newSongPtr);
-                mergedFlag=1;
+                if(orgSongPtr->songID()!=newSongPtr->songID())
+                {
+                    sMgr->merge(orgSongPtr,newSongPtr);
+                    mergedFlag=1;
+                    setMetaDataFlag=0;
+                }
             }
             else if(result==Common::result_missing)
             {
@@ -354,6 +359,11 @@ SBTabSongEdit::save() const
         SB_RETURN_VOID_IF_NULL(newSongPtr);
         newSongPtr->setNotes(editNotes);
         newSongPtr->setLyrics(editLyrics);
+        SBIDSongPerformancePtr spPtr=newSongPtr->originalSongPerformancePtr();
+        if(spPtr)
+        {
+            spPtr->setYear(editYearOfRelease);
+        }
     }
 
     //	5.	Consolidate song performances with what is on any album.
