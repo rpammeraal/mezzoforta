@@ -89,6 +89,15 @@ SBIDChartPerformance::songPerformancePtr() const
     return spMgr->retrieve(SBIDSongPerformance::createKey(_songPerformanceID));
 }
 
+SBIDSongPtr
+SBIDChartPerformance::songPtr() const
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheSongMgr* sMgr=cm->songMgr();
+    return sMgr->retrieve(SBIDSong::createKey(this->songID()));
+
+}
+
 ///	Redirectors
 int
 SBIDChartPerformance::songID() const
@@ -166,16 +175,17 @@ SBIDChartPerformance::chartPerformancesBySongPerformance(int songPerformanceID)
 }
 
 SBIDChartPerformancePtr
-SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID)
+SBIDChartPerformance::retrieveChartPerformance(const SBKey &key)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartPerformanceMgr* cpMgr=cm->chartPerformanceMgr();
-    SBIDChartPerformancePtr cpPtr;
-    if(chartPerformanceID>=0)
-    {
-        cpPtr=cpMgr->retrieve(createKey(chartPerformanceID));
-    }
-    return cpPtr;
+    return cpMgr->retrieve(key);
+}
+
+SBIDChartPerformancePtr
+SBIDChartPerformance::retrieveChartPerformance(int chartPerformanceID)
+{
+    return retrieveChartPerformance(createKey(chartPerformanceID));
 }
 
 ///	Protected methods

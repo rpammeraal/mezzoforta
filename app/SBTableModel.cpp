@@ -288,7 +288,7 @@ SBTableModel::populateChartContent(const QMap<int, SBIDChartPerformancePtr> &ite
         if(spPtr)
         {
             _setItem(i,0,QString("%1").arg(it.key()));
-            _setItem(i,1,QString("%1").arg(spPtr->songKey().toString()));
+            _setItem(i,1,QString("%1").arg(cpPtr->key().toString()));	//	this needs to be chartPerformanceKey in order for the correct song/performer be played
             _setItem(i,2,QString("%1").arg(spPtr->songTitle()));
             _setItem(i,3,QString("%1").arg(spPtr->songPerformerKey().toString()));
             _setItem(i,4,QString("%1").arg(spPtr->songPerformerName()));
@@ -348,7 +348,7 @@ SBTableModel::populatePlaylists(QVector<SBIDSong::PlaylistOnlinePerformance> lis
     header.append("performer");
     header.append("duration");
     header.append("SB_ITEM_KEY3");
-    header.append("title");
+    header.append("album title");
     setHorizontalHeaderLabels(header);
 
         SBIDSong::PlaylistOnlinePerformance r;

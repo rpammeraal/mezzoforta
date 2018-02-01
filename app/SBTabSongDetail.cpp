@@ -289,6 +289,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
+    qDebug() << SB_DEBUG_INFO;
     SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
@@ -309,12 +310,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     ScreenItem currentScreenItem=si;
     currentScreenItem.updateSBIDBase(sPtr->key());
     mw->ui.labelSongDetailIcon->setKey(sPtr->key());
-
-    {
-        //	Update screenstack with correct song key
-        ScreenStack* st=Context::instance()->screenStack();
-        st->debugShow("after");
-    }
 
     ExternalData* ed=new ExternalData();
     connect(ed, SIGNAL(songWikipediaPageAvailable(QString)),

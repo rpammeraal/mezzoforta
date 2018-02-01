@@ -176,7 +176,6 @@ CacheTemplate<T,parentT>::retrieve(SBKey key,bool includeDependentsFlag)
     {
         if(ptr->reloadFlag() || includeDependentsFlag)
         {
-            qDebug() << SB_DEBUG_INFO << key << includeDependentsFlag << ptr->reloadFlag();
             ptr->clearReloadFlag();
             ptr->refreshDependents(1);
         }
@@ -189,7 +188,6 @@ CacheTemplate<T,parentT>::retrieveAll()
 {
     SBSqlQueryModel* qm=T::retrieveSQL();
 
-    qDebug() << SB_DEBUG_INFO << qm->rowCount();
     for(int i=0;i<qm->rowCount();i++)
     {
         std::shared_ptr<T> newPtr;

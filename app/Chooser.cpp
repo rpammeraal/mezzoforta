@@ -321,11 +321,6 @@ Chooser::playlistDelete()
                 break;
         }
     }
-    {
-        //	DEBUG:
-        ScreenStack* st=Context::instance()->screenStack();
-        st->debugShow("after playlist delete");
-    }
 }
 
 void

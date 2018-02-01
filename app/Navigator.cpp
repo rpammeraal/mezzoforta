@@ -562,6 +562,7 @@ Navigator::_activateScreen()
             key=si.key();
             switch(key.itemType())
             {
+            case SBKey::ChartPerformance:
             case SBKey::OnlinePerformance:
             case SBKey::AlbumPerformance:
             case SBKey::SongPerformance:
@@ -609,7 +610,6 @@ Navigator::_activateScreen()
                 break;
 
             case SBKey::PlaylistDetail:
-            case SBKey::ChartPerformance:
             case SBKey::Invalid:
                 break;
             }

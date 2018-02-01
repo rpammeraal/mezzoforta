@@ -103,10 +103,6 @@ CacheManager::get(SBKey::ItemType itemType,int itemID)
     {
         qDebug() << SB_DEBUG_NPTR;
     }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO << ptr->itemType() << ptr->itemID() << ptr->genericDescription();
-    }
     return ptr;
 }
 

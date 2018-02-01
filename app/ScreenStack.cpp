@@ -59,8 +59,6 @@ ScreenStack::pushScreen(const ScreenItem& id)
     qDebug() << SB_DEBUG_INFO << id << _currentScreenID;
     bool doPush=0;
 
-    debugShow("pushScreen:before");
-
     if(_stack.count()==0)
     {
         doPush=1;
@@ -77,7 +75,6 @@ ScreenStack::pushScreen(const ScreenItem& id)
         if(id==topScreen())
         {
             qDebug() << SB_DEBUG_WARNING << "Screen already added";
-            debugShow("pushScreen:screen already added");
             return;
         }
         ScreenItem current=currentScreen();
@@ -96,7 +93,6 @@ ScreenStack::pushScreen(const ScreenItem& id)
         _stack.append(id);
         _currentScreenID++;
     }
-    debugShow("pushScreen:after");
     qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
@@ -355,34 +351,26 @@ ScreenStack::_dedupe()
     qDebug() << SB_DEBUG_INFO << _stack.length() << _currentScreenID;
     if(_stack.length()>2)
     {
-        debugShow("before:dedupe");
         for(int i=0;i<_stack.length()-1;i++)
         {
-            qDebug() << SB_DEBUG_INFO << i << _stack.length() << _currentScreenID;
             ScreenItem current=_stack.at(i);
             ScreenItem next=_stack.at(i+1);
-            qDebug() << SB_DEBUG_INFO << current << next;
             while(current==next)
             {
-                qDebug() << SB_DEBUG_INFO;
                 _stack.removeAt(i+1);
                 if(_currentScreenID>i)
                 {
                     _currentScreenID--;
-                    qDebug() << SB_DEBUG_INFO << _currentScreenID;
                 }
                 if(i<_stack.length()-1)
                 {
                     next=_stack.at(i+1);
-                    qDebug() << SB_DEBUG_INFO;
                 }
                 else
                 {
                     next=ScreenItem();
-                    qDebug() << SB_DEBUG_INFO;
                 }
             }
         }
-        debugShow("after:dedupe");
     }
 }

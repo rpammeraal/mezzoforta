@@ -84,7 +84,7 @@ public:
     static ItemType convert(Common::sb_field f);
     static QString iconResourceLocationClass(SBKey key);
     static QString iconResourceLocationClass(ItemType itemType);
-    virtual void setToReloadFlag();
+    virtual void setToReloadFlag();	//	tell cache to setReloadFlag after save operation.
 
 protected:
     SBIDBase(const SBIDBase& c);
@@ -121,7 +121,7 @@ protected:
     QMutex          _mutex;
 
     friend class Cache;
-    void setReloadFlag();
+    void setReloadFlag();	//	refreshDependents() will be called on the next reload
 
 private:
     bool            _changedFlag;

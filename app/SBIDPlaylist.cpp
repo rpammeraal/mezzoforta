@@ -111,6 +111,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
 
     if(!found)
     {
+        ptr->setToReloadFlag();
         SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::createPlaylistDetail(this->playlistID(),_items.count()+1,ptr);
         SB_RETURN_IF_NULL(pdPtr,0);
         _items[_items.count()]=pdPtr;
@@ -119,6 +120,9 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
         SBIDPtr childPtr=pdPtr->childPtr();
         SB_RETURN_IF_NULL(childPtr,0);
         childPtr->setToReloadFlag();
+
+        CacheManager* cm=Context::instance()->cacheManager();
+        cm->saveChanges();	//	trigger distributeReloadList();
     }
     return !found;
 }
@@ -201,18 +205,13 @@ SBIDPlaylist::removePlaylistItem(int position)
     SBIDPtr childPtr=pdPtr->childPtr();
     SB_RETURN_IF_NULL(childPtr,0);
     childPtr->setToReloadFlag();
-    qDebug() << SB_DEBUG_INFO << pdPtr->key();
 
     pdPtr->setDeletedFlag();
-    qDebug() << SB_DEBUG_INFO;
     pdmgr->remove(pdPtr);
-    qDebug() << SB_DEBUG_INFO;
 
     cm->saveChanges();
-    qDebug() << SB_DEBUG_INFO;
 
     refreshDependents(1);
-    qDebug() << SB_DEBUG_INFO;
     recalculatePlaylistDuration();
     return 1;
 }

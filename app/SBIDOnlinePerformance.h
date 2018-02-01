@@ -62,6 +62,7 @@ public:
 
     //	Aux
     virtual void setToReloadFlag();
+    virtual void setReloadFlag();
 
     //	Static methods
     static SBKey createKey(int onlinePerformanceID);

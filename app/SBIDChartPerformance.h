@@ -28,6 +28,7 @@ public:
 
     //	Pointers
     SBIDSongPerformancePtr songPerformancePtr() const;
+    SBIDSongPtr songPtr() const;
 
     //	Redirectors
     int songPerformerID() const;
@@ -45,6 +46,7 @@ public:
     //	Static methods
     static SBSqlQueryModel* chartPerformancesBySongPerformance(int songPerformanceID);
     static SBIDChartPerformancePtr retrieveChartPerformance(int chartPerformanceID);
+    static SBIDChartPerformancePtr retrieveChartPerformance(const SBKey& key);
 
     //	Helper methods for CacheTemplate
     static ItemType classType() { return ChartPerformance; }

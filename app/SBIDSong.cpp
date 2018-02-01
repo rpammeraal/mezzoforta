@@ -466,6 +466,7 @@ void
 SBIDSong::refreshDependents(bool forcedFlag)
 {
     getSemaphore();
+    qDebug() << SB_DEBUG_INFO << key() << forcedFlag;
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
@@ -549,6 +550,12 @@ SBIDSong::retrieveSong(SBKey key)
             SBIDSongPerformancePtr opPtr=SBIDSongPerformance::retrieveSongPerformance(key);
             SB_RETURN_IF_NULL(opPtr,SBIDSongPtr());
             sPtr=opPtr->songPtr();
+        }
+        else if(key.itemType()==SBKey::ChartPerformance)
+        {
+            SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::retrieveChartPerformance(key);
+            SB_RETURN_IF_NULL(cpPtr,SBIDSongPtr());
+            sPtr=cpPtr->songPtr();
         }
         else
         {
@@ -1002,6 +1009,7 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
         .arg(this->songID())
     ;
 
+    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery query(db);
     query.exec(dal->customize(q));
 

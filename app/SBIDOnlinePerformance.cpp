@@ -481,6 +481,15 @@ SBIDOnlinePerformance::setToReloadFlag()
     sPtr->setToReloadFlag();
 }
 
+void
+SBIDOnlinePerformance::setReloadFlag()
+{
+    SBIDBase::setReloadFlag();
+    SBIDSongPtr sPtr=this->songPtr();
+    SB_RETURN_VOID_IF_NULL(sPtr);
+    sPtr->setReloadFlag();
+}
+
 ///	Protected methods
 SBIDOnlinePerformance::SBIDOnlinePerformance():SBIDBase(SBKey::OnlinePerformance,-1)
 {
