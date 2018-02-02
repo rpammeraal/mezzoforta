@@ -5,97 +5,97 @@
 ||+----	Windows/Sqlite
 |||+--- Linux/Sqlite
 vvvv
-VV--:All Songs:
-VV--:	For each sort up/down, column:
-VV--:	-	open song title
-VV--:	-	open original performer
-VV--:	-	open album title
+----:All Songs:
+----:	For each sort up/down, column:
+----:	-	open song title
+----:	-	open original performer
+----:	-	open album title
 
-VV--:Song:
-VV--:	-	alt click logo 
-VV--:	For each sort up/down, column, tab
-VV--:	-	hit field
+----:Song:
+----:	-	alt click logo 
+----:	For each sort up/down, column, tab
+----:	-	hit field
 
-VV--:Performer:
-VV--:	-	alt click logo 
-VV--:	-	click 'see also' performer
-VV--:	For each sort up/down, column, tab
-VV--:	-	hit field
+----:Performer:
+----:	-	alt click logo 
+----:	-	click 'see also' performer
+----:	For each sort up/down, column, tab
+----:	-	hit field
 
-VV--:Album:
-VV--:	-	alt click logo 
-VV--:	-	album performer
-VV--:	For each sort up/down, column, tab
-VV--:	-	hit field
+----:Album:
+----:	-	alt click logo 
+----:	-	album performer
+----:	For each sort up/down, column, tab
+----:	-	hit field
 
-VV--:Charts:
-VV--:	-	alt click logo 
-VV-:	-	song, performer
+----:Charts:
+----:	-	alt click logo 
+---:	-	song, performer
 
-VV--:Playlists:
-VV--:	-	alt click logo
-VV--:	-	song, performer
+----:Playlists:
+----:	-	alt click logo
+----:	-	song, performer
 
-VV--:Search box:
-VV--:	-	search for:
-VV--:		-	performer
-VV--:		-	album
-VV--:		-	song
+----:Search box:
+----:	-	search for:
+----:		-	performer
+----:		-	album
+----:		-	song
 
-V---:Change Database:
-V---:	-	search box 
-V---:	-	charts
-V---:	-	playlists
+----:Change Database:
+----:	-	search box 
+----:	-	charts
+----:	-	playlists
 
      2.	DRAG & DROP
-V---:To playlists only.
-V---:1.	Create tmp playlist, rename to 000TEST
-V---:	Renamed playlist should reorder itself.
+----:To playlists only.
+----:1.	Create tmp playlist, rename to 000TEST
+----:	Renamed playlist should reorder itself.
 
-V---:	Add tmp playlist to another playlist.
-V---:	Remove tmp playlist, other playlist should not have tmp playlist
+----:	Add tmp playlist to another playlist.
+----:	Remove tmp playlist, other playlist should not have tmp playlist
 
-V---:	Add song to playlist, song should include newly added playlist.
-V---:	Remove playlist entry for this song, should be reflected in song
+----:	Add song to playlist, song should include newly added playlist.
+----:	Remove playlist entry for this song, should be reflected in song
 
-V---:	Add song to playlist, song should include newly added playlist.
-V---:	Remove playlist entirely, should be reflected in song.
+----:	Add song to playlist, song should include newly added playlist.
+----:	Remove playlist entirely, should be reflected in song.
 
-V---:2.	Assign items from all fields in:
-V---:	All Songs:
-V---:	Songs in Queue, also after reorder
-V---:	Chart
-V---:	-	Item In Chart (song, performer)
-V---:	Playlist
-V---:	-	Item in Chart (song, performer, album, chart, playlist)
-V---:	Song
-V---:	-	album tab, playlist tab
-V---:	Performer
-V---:	-	song tab, album tab, chart tab
-V---:	Album
-V---:	-	song tab
+----:2.	Assign items from all fields in:
+----:	All Songs:
+----:	Songs in Queue, also after reorder
+----:	Chart
+----:	-	Item In Chart (song, performer)
+----:	Playlist
+----:	-	Item in Chart (song, performer, album, chart, playlist)
+----:	Song
+----:	-	album tab, playlist tab
+----:	Performer
+----:	-	song tab, album tab, chart tab
+----:	Album
+----:	-	song tab
 
-V---:3.	Reorder content in playlist
+----:3.	Reorder content in playlist
 
      3.	OTHER EDITS:
-V---:	-	Songs in queue: remove song.
+----:	-	Songs in queue: remove song.
 
      4. PLAY MUSIC:
-V---:	-	All songs: song, performer, album
-V---:	-	Chart: song has to be from performer on chart, not original performer
-V---:	-	Playlist: playlist, online song, album, performer, chart
-V---:	-	Songs in queue: play song
-V---:	-	Songs: album tab, playlist tab
-V---:	-	Performer:
-V---:		-	songs tab, charts tab: need to play song from the `current performer' not original performer, if available.
-V---:	-	Album:
-V---:		-	song: make sure it is actually playing the song from that album (e.g. pick song from non-original album).
+----:	-	All songs: song, performer, album
+----:	-	Chart: song has to be from performer on chart, not original performer
+----:	-	Playlist: playlist, online song, album, performer, chart
+----:	-	Songs in queue: play song
+----:	-	Songs: album tab, playlist tab
+----:	-	Performer:
+----:		-	songs tab, charts tab: need to play song from the `current performer' not original performer, if available.
+----:	-	Album:
+----:		-	song: make sure it is actually playing the song from that album (e.g. pick song from non-original album).
 
      5. EDIT
-V---:	Performer:
-V---:	-	add related performer, see that both sides are populated.
-V---:	Album:
-V---:	-	add notes to album performance.
-V---:	Song:
-V---:	-	edit year of release, notes, lyrics
+----:	Performer:
+----:	-	add related performer, see that both sides are populated.
+----:	Album:
+----:	-	add notes to album performance.
+----:	Song:
+----:	-	edit year of release, notes, lyrics
 
