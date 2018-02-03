@@ -108,7 +108,7 @@ DatabaseSelector::_acceptInput()
 void
 DatabaseSelector::_browseFile()
 {
-    const QString newPath=QFileDialog::getOpenFileName(NULL,tr("Open SQLite Database"),_dc.sqlitePath,"*.sqlite");
+    const QString newPath=QFileDialog::getOpenFileName(NULL,tr("Open Database"),_dc.sqlitePath,"*.db");
     if(newPath.length()!=0)
     {
         ui->SQLITEPath->setText(newPath);

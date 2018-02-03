@@ -17,6 +17,7 @@ SetupWizard::SetupWizard(QWidget *parent) :
     //_dbm(dbm),
     _ui(new Ui::SetupWizard)
 {
+    _init();
     _ui->setupUi(this);
 }
 
@@ -68,19 +69,20 @@ SetupWizard::start(bool firstRunFlag)
         _createNewDBFlag=1;
     }
 
-    if(_newOrOpenDialog->result() || firstRunFlag==0)
+    if(!firstRunFlag || (_newOrOpenDialog!=NULL && _newOrOpenDialog->result()))
     {
-        qDebug() << SB_DEBUG_INFO << _newOrOpenDialog->result() << _createNewDBFlag << _openExistingDBFlag;
+        qDebug() << SB_DEBUG_INFO << _createNewDBFlag << _openExistingDBFlag;
         if(_createNewDBFlag)
         {
             //	Select destinaton for database
-            QFileDialog fdSaveDB(this,"Save Songbase Database:");
+            QFileDialog fdSaveDB(this,"Save Database:");
             fdSaveDB.setFileMode(QFileDialog::AnyFile);
             fdSaveDB.setDirectory(QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).last());
-            fdSaveDB.selectFile("songbase.db");
+            fdSaveDB.selectFile("mezzaforte.db");
             fdSaveDB.setAcceptMode(QFileDialog::AcceptSave);
             fdSaveDB.setLabelText(QFileDialog::Accept,"Save");
             fdSaveDB.setViewMode(QFileDialog::List);
+            fdSaveDB.setDefaultSuffix("db");
 
             if(fdSaveDB.exec())
             {
@@ -119,26 +121,32 @@ SetupWizard::start(bool firstRunFlag)
                 //	Create database
                 struct DBManager::DatabaseCredentials dc;
                 dc.databaseType=DBManager::Sqlite;
-                dc.databaseName="Songbase";
+                dc.databaseName="mezzaforte";
                 dc.sqlitePath=databasePath;
 
                 successFlag=DataAccessLayerSQLite::createDatabase(dc,musicLibraryPath);
+                if(successFlag)
+                {
+                    DBManager* dm=Context::instance()->dbManager();
+                    SB_RETURN_IF_NULL(dm,0);
+                    dm->openDatabase(dc);
 
-                //	Ask music library layout
-                QMessageBox musicFormatChoice;
-                musicFormatChoice.setText("Is your music library organized by album?");
-                musicFormatChoice.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                musicFormatChoice.setDefaultButton(QMessageBox::Yes);
-                int keyPressed=musicFormatChoice.exec();
+                    //	Ask music library layout
+                    QMessageBox musicFormatChoice;
+                    musicFormatChoice.setText("Is your music library organized by album?");
+                    musicFormatChoice.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                    musicFormatChoice.setDefaultButton(QMessageBox::Yes);
+                    int keyPressed=musicFormatChoice.exec();
 
-                PropertiesPtr properties=Context::instance()->properties();
-                properties->setConfigValue(
-                    Properties::sb_performer_album_directory_structure_flag,
-                    keyPressed==QMessageBox::Yes?"1":"0");
-                qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_performer_album_directory_structure_flag);
+                    PropertiesPtr properties=Context::instance()->properties();
+                    properties->setConfigValue(
+                        Properties::sb_performer_album_directory_structure_flag,
+                        keyPressed==QMessageBox::Yes?"1":"0");
+                    qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_performer_album_directory_structure_flag);
 
-                //	Start import
-                properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"1");
+                    //	Start import
+                    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"1");
+                }
             }
             else
             {
@@ -150,7 +158,6 @@ SetupWizard::start(bool firstRunFlag)
         {
             //	Open database
             DBManager* dbm=Context::instance()->dbManager();
-            //_dbm->userOpenDatabase();
             dbm->userOpenDatabase();
             qDebug() << SB_DEBUG_INFO;
         }
@@ -188,7 +195,6 @@ void
 SetupWizard::_init()
 {
     _createNewDBFlag=0;
-    //_dbm=NULL;
     _newOrOpenDialog=NULL;
     _openExistingDBFlag=0;
 }

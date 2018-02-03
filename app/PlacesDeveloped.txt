@@ -1119,6 +1119,10 @@ NEAR FUTURE
     *	AllSongs tab to not use SQL
 	*	SearchItem to not use SQL
 
+BUGS:
+*	Unable to play different versions of Elevation
+*	Now Playing: should include album performance comments
+
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 

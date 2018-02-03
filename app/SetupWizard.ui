@@ -75,7 +75,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Welcome to Songbase!</string>
+    <string>Welcome to MezzoForta!</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -97,7 +97,7 @@
     </font>
    </property>
    <property name="text">
-    <string>In the next couple of steps we'll set up your Songbase and get you going.</string>
+    <string>In the next couple of steps we'll set up Mezzaoforta! and get you going.</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

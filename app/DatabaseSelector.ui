@@ -58,7 +58,7 @@
     </font>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="sqlite">
     <property name="enabled">
@@ -80,7 +80,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Select Songbase database:</string>
+            <string>Select MezzoForta! database:</string>
            </property>
           </widget>
          </item>
@@ -248,7 +248,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Select Songbase:</string>
+    <string>Select Database:</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
