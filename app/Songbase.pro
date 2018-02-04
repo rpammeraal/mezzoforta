@@ -201,5 +201,9 @@ INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
 DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad -lzlibstatic -ltag
+#   win32: INCLUDEPATH += $$PWD/../libs/portaudio/include $$PWD/../libs/libmad-0.15.1b
+#   win32: INCLUDEPATH += /Users/roy/songbase/app/../libs/portaudio/include
+win32: INCLUDEPATH += $$PWD/../libs/portaudio/include
+win32: INCLUDEPATH += $$PWD/../libs/libmad-0.15.1b/msvc++
 
 

@@ -37,6 +37,8 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
         {
             errorString="Unable to remove.";
             errorFlag=1;
+			qDebug() << SB_DEBUG_ERROR << errorString;
+			return 0;
         }
     }
     qDebug() << SB_DEBUG_INFO << errorFlag << errorString;
@@ -58,7 +60,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
         {
             //	Create schema.
             DataAccessLayer dal(SB_TEMPORARY_CONNECTION_NAME);
-        qDebug() << SB_DEBUG_INFO;
+qDebug() << SB_DEBUG_INFO;
 
             QStringList SQL;
 
@@ -77,6 +79,8 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 ");\n"
             ));
 
+qDebug() << SB_DEBUG_INFO;
+
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_rel \n"
                 "( \n"
@@ -89,6 +93,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
             SQL.append("CREATE INDEX idx_artist_rel_a1 ON artist_rel   (artist1_id); ");
             SQL.append("CREATE INDEX idx_artist_rel_a2 ON artist_rel   (artist2_id); ");
+
+qDebug() << SB_DEBUG_INFO;
+
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE song \n"
@@ -106,6 +113,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("CREATE INDEX idx_song_title ON song (title); ");
             SQL.append("CREATE INDEX idx_song_soundex ON song (soundex); ");
 
+qDebug() << SB_DEBUG_INFO;
+
+
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE lyrics \n"
                 "( \n"
@@ -114,6 +124,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                     "CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES song(song_id) \n"
                 "); \n"
             ));
+
+qDebug() << SB_DEBUG_INFO;
+
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE performance \n"
@@ -130,6 +143,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                     "CONSTRAINT fk_performance_preferred_record_performance_id_record_performance_record_performance_id FOREIGN KEY (preferred_record_performance_id) REFERENCES performance(performance_id) \n"
                 "); \n"
             ));
+
+			qDebug() << SB_DEBUG_INFO;
+
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record \n"
@@ -152,6 +168,8 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("CREATE INDEX idx_record_title ON record (title); ");
             SQL.append("CREATE INDEX idx_record_genre ON record (genre); ");
 
+			qDebug() << SB_DEBUG_INFO;
+
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record_performance \n"
                 "( \n"
@@ -168,6 +186,8 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
+			qDebug() << SB_DEBUG_INFO;
+
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE online_performance \n"
                 "( \n"
@@ -180,7 +200,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             ));
             SQL.append("CREATE INDEX idx_online_performance_last_play_date ON online_performance (last_play_date); ");
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist \n"
                 "( \n"
                     "playlist_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
@@ -195,7 +217,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist_detail \n"
                 "( \n"
                     "playlist_detail_id    INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
@@ -217,7 +241,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE chart \n"
                 "( \n"
                     "chart_id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
@@ -227,7 +253,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE chart_performance \n"
                 "( \n"
                     "chart_performance_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
@@ -240,7 +268,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE config_host \n"
                 "( \n"
                     "config_host_id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \n"
@@ -249,7 +279,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(QString(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(QString(
                 "INSERT INTO config_host "
                 "( "
                     "config_host_id, "
@@ -267,7 +299,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 .arg(Common::escapeSingleQuotes(musicLibraryPath))
             );
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE configuration \n"
                 "( \n"
                     "keyword varchar NOT NULL, \n"
@@ -276,14 +310,18 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE genre \n"
                 "( \n"
                     "genrename varchar NOT NULL \n"
                 "); \n"
             ));
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE article \n"
                 "( \n"
                     "word varchar NOT NULL, \n"
@@ -291,13 +329,17 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-            SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
 
             //	Ideally, go thru regular path to have this done.
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___artist (artist_id,name,sort_name) VALUES(0,'VARIOUS ARTISTS','VARIOUS ARTISTS')");
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___record (record_id,artist_id,title,media) VALUES(0,0,'UNKNOWN ALBUM','UNKNOWN ALBUM')");
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE greatest_hits_record \n"
                 "( \n"
                     "greatest_hits_record_id INTEGER PRIMARY KEY NOT NULL, \n"
@@ -317,7 +359,9 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             SQL.append("INSERT INTO greatest_hits_record VALUES (9,'Collection')");
             SQL.append("INSERT INTO greatest_hits_record VALUES (10,'The Singles')");
 
-            SQL.append(Common::escapeSingleQuotes(
+			qDebug() << SB_DEBUG_INFO;
+
+			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_match \n"
                 "( \n"
                     "artist_name             VARCHAR NOT NULL, \n"
@@ -325,20 +369,27 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
             SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
+			qDebug() << SB_DEBUG_INFO;
+
 
             //	Reset properties
             PropertiesPtr properties=Context::instance()->properties();
+			qDebug() << SB_DEBUG_INFO;
+
             properties.reset();
+			qDebug() << SB_DEBUG_INFO;
 
             if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
             {
                 errorFlag=1;
                 errorString="Unable to create database";
+				qDebug() << SB_DEBUG_ERROR << "Unable to create database";
             }
 
+			qDebug() << SB_DEBUG_INFO;
             properties=Properties::createProperties(&dal);
             properties->debugShow("createDatabase");
-            properties->setConfigValue(Properties::sb_version,"20170101");
+            properties->setConfigValue(Properties::sb_version,"20180101");
             properties->setConfigValue(Properties::sb_various_performer_id,"0");
             properties->setConfigValue(Properties::sb_unknown_album_id,"0");
             properties->setConfigValue(Properties::sb_performer_album_directory_structure_flag,"1");

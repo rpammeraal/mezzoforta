@@ -123,6 +123,7 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         }
         else
         {
+			qDebug() << SB_DEBUG_INFO;
             _databaseOpenFlag=1;
         }
     }
