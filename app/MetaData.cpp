@@ -1,4 +1,4 @@
-#include <taglib/toolkit/tpropertymap.h>
+#include <taglib/tpropertymap.h>
 #include "Common.h"
 #include "MetaData.h"
 

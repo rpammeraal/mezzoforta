@@ -23,7 +23,7 @@ class Navigator;
 #define SB_TAB_UNDEF    -1
 #define SB_TAB_PLAYLIST  0
 
-#define SB_DEFAULT_STATUS "Welcome to Songbase!"
+#define SB_DEFAULT_STATUS "Welcome to MezzoForta!"
 
 class Controller : public QObject
 {

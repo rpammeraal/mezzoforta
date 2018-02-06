@@ -1054,7 +1054,7 @@ ExternalData::_sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString &url
 {
     QNetworkRequest nr;
     nr.setUrl(QUrl(urlString));
-    nr.setHeader(QNetworkRequest::UserAgentHeader,QVariant("songbase ( to@be.provided )"));
+    nr.setHeader(QNetworkRequest::UserAgentHeader,QVariant("MezzoForta! ( to@be.provided )"));
     mb->get(nr);
 
     //	CWIP store mb pointer somewhere so we can remove this later
