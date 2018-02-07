@@ -1,3 +1,4 @@
+1.	Prelude:
 Postgres headers and libraries:
 -	Login as root and install fink.
 -	/sw/bin/fink install postgresql94-dev
@@ -5,19 +6,27 @@ Postgres headers and libraries:
 -	files are installed in: /sw/opt/postgresql-9.4
 -	following instructions at: http://doc.qt.io/qt-5/sql-driver.html#qpsql
 
+2.	Xcode agreement
+sudo xcodebuild -license
 
+If Qt Creator still complains about licensing, follow instructions at:
+https://stackoverflow.com/questions/33728905/qt-creator-project-error-xcode-not-set-up-properly-you-may-need-to-confirm-t
+
+3.	Install 3rd party libraries:
 Ogg/vorbis tools -- as root, execute:
 /sw/bin/fink install libogg
 /sw/bin/fink install libvorbis0
 /sw/bin/fink install lame
-/sw/bin/fink install vorbis-tools	--	dependency error 20160301, not cricical for building
+/sw/bin/fink install vorbis-tools	#	dependency error 20160301, not cricical for building
 /sw/bin/fink install libsndfile1-shlibs
 /sw/bin/fink install libsndfile1-dev
 /sw/bin/fink install libsndfile1
-#/sw/bin/fink install portaudio	--	don't install, unless its V19
+#/sw/bin/fink install portaudio	#	don't install, unless its V19
 /sw/bin/fink install libmad
 /sw/bin/fink install libid3tag
 /sw/bin/fink install taglib
+/sw/bin/fink install xz	# to uncompress xz files
+/sw/bin/fink install libflac8-dev
 
 Install portaudio:
 - remove Werror from ./configure
@@ -28,8 +37,8 @@ windows: http://blog.pnapieralski.com/osg/how-to-compileinstall-osgaudio-for-win
 osx: taken care of by fink
 
 Install flac:
-Download from xiph.org
-OSX: ./configure --with-ogg-libraries=/sw/lib --with-ogg-includes=/sw/include;make;make install
+Download from https://xiph.org/flac/download.html (ftp: https://ftp.osuosl.org/pub/xiph/releases/flac/)
+osx: taken care of by fink
 
 Install libmad:
 windows: use msvc2008 (sigh). Copy lib file in msvc++/Debug to usual place. Use mad.h from msvc++.
@@ -38,3 +47,13 @@ osx: taken care of by fink
 Install libid3tag:
 windows: NOT SUPPORTED! Code does not handle libid3tag
 osx: taken care of by fink
+
+3.	dyld: Symbol not found: _iconv
+-	in the left-hand bar, click on Projects
+-	In the Desktop Qt 5.7.0 clang 64bit box in top, click Run
+-	Modify DYLD- env variables from:
+	/Volumes/Home/roy/tmp/Qt5.7.0/5.7/clang_64/lib:/sw/lib/:/usr/local/lib/:/usr/lib:/sw/lib/
+	to
+	/Volumes/Home/roy/tmp/Qt5.7.0/5.7/clang_64/lib:/usr/local/lib/:/usr/lib:/sw/lib/
+
+I

@@ -15822,6 +15822,9 @@ case "${host_os}" in
               elif xcodebuild -version -sdk macosx10.11 Path >/dev/null 2>&1 ; then
                  mac_version_min="-mmacosx-version-min=10.4"
                  mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.11 Path`"
+              elif xcodebuild -version -sdk macosx10.13 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.13 Path`"
               else
                  as_fn_error $? "Couldn't find 10.5, 10.6, 10.7, 10.8 or 10.9 SDK" "$LINENO" 5
               fi
