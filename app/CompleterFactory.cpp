@@ -17,6 +17,7 @@ CompleterFactory::getCompleterAll()
     QStringList articles=Common::articles();
     articles.append(QString());
 
+    qDebug() << SB_DEBUG_INFO;
     QString tpl=
         QString
         (
@@ -50,10 +51,12 @@ CompleterFactory::getCompleterAll()
             .arg(SBKey::Performer)
         ;
 
+    qDebug() << SB_DEBUG_INFO;
     QStringListIterator it(articles);
     QStringList queryList;
     while(it.hasNext())
     {
+    qDebug() << SB_DEBUG_INFO;
         QString query=tpl;
         QString article=it.next();
         Common::toTitleCase(article);
@@ -74,6 +77,7 @@ CompleterFactory::getCompleterAll()
         queryList.append(query);
 
     }
+    qDebug() << SB_DEBUG_INFO;
     QString query=queryList.join(" UNION ");
     query.append(" ORDER BY 1");
 

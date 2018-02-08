@@ -108,6 +108,7 @@ SearchItemModel::populate()
     //	Start populating model.
     beginResetModel();
     this->clear();
+    _entries.clear();
 
     QSqlQuery queryList(query,db);
     QTime time; time.start();
@@ -137,6 +138,7 @@ SearchItemModel::populate()
     endResetModel();
     emit dataChanged(s,e);
     this->sort(0);
+    _entries.clear();
 }
 
 void
@@ -153,6 +155,7 @@ SearchItemModel::remove(SBKey key)
 void
 SearchItemModel::update(SBKey key)
 {
+    _entries.clear();
     beginResetModel();
 
     debugShow(key);
@@ -242,7 +245,12 @@ SearchItemModel::_add(SBKey::ItemType itemType, int songID, const QString &songT
             item=new QStandardItem(currentDisplay); column.append(item); //	sb_column_display
             item=new QStandardItem(key.toString()); column.append(item); //	sb_column_key
             item=new QStandardItem(i); column.append(item);              //	sb_column_main_entry_flag
-            this->appendRow(column); column.clear();
+            if(!_entries.contains(currentDisplay))
+            {
+                //	Simple mechanism to eliminate duplicate entries.
+                this->appendRow(column); column.clear();
+                _entries.insert(currentDisplay);
+            }
         }
     }
 }

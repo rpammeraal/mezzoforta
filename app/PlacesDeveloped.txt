@@ -1103,6 +1103,7 @@ x	if item is queued on empty playlist, auto start play: nope.
 -	Notes are no longer imported from metadata.
 
 20180126:
+-	updated install.txt
 -	Initial import: avoid prompting
 -	Reset properties when a new database is created
 -	Sqlite:
@@ -1110,6 +1111,12 @@ x	if item is queued on empty playlist, auto start play: nope.
 	    becoming more important.
 -	Unable to save lyrics (San Francisco/Foxygen): fixed
 -	bin/exportSongs modified to export charts. To be rewritten in python.
+
+20180207:
+-	Unable to play different versions of Elevation - unable to reproduce, removed ambuigity by:
+-	Now Playing: should include album performance comments
+-	De Mens: 3 songs, only 'Dit Is Mijn Huis' - fixed
+-	Guitar Man by Bread shows up twice in search: actual data problem, fixed
 
 TODO:
 *	Charts/Playlists to be minimized at start up.
@@ -1120,8 +1127,22 @@ NEAR FUTURE
 	*	SearchItem to not use SQL
 
 BUGS:
-*	Unable to play different versions of Elevation
-*	Now Playing: should include album performance comments
+*	When starting from scratch:
+    -	Dialog box: initializing database is not closed
+	-	The app does not ask how music library is organized.
+*	Change Flaco Jimenez to Flaco Jiménez: end up with performance_id with dangling artist_id:
+*	Change internal names to MezzoForta (cache et al)
+
+songbase=# SELECT * FROM rock.song WHERE title='Ay Te Dejo En San Antonio';
+ song_id | original_performance_id |           title           | notes | soundex
+---------+-------------------------+---------------------------+-------+----------
+   35891 |                   35815 | Ay Te Dejo En San Antonio |       | A3320424
+(1 row)
+
+songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
+ performance_id | song_id | artist_id | preferred_record_performance_id | year | notes
+----------------+---------+-----------+---------------------------------+------+-------
+          35815 |   35891 |      7640 |                           39424 | 1990 |
 
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.

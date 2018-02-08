@@ -174,8 +174,14 @@ SBIDPerformer::numAlbums() const
 int
 SBIDPerformer::numSongs() const
 {
-    QVector<SBIDSongPerformancePtr> all=this->songPerformances();
-    return all.count();
+    QVectorIterator<SBIDSongPerformancePtr> it(this->songPerformances());
+    QSet<int> setOfSongIDs;
+    while(it.hasNext())
+    {
+        SBIDSongPerformancePtr spPtr=it.next();
+        setOfSongIDs.insert(spPtr->songID());
+    }
+    return setOfSongIDs.count();
 }
 
 QVector<SBIDPerformerPtr>

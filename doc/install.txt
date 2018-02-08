@@ -1,3 +1,7 @@
+Install xtools from app store.
+Install xtools command line tools.
+Download QT 5.7
+
 Postgres headers and libraries:
 -	Login as root and install fink.
 -	/sw/bin/fink install postgresql94-dev
