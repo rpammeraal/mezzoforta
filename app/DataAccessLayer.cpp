@@ -109,7 +109,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     {
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"save");
         qDebug() << SB_DEBUG_INFO;
-        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,0);
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
     }
     qDebug() << "--	END OF BATCH;";
 

@@ -125,6 +125,7 @@ SetupWizard::start(bool firstRunFlag)
                 dc.sqlitePath=databasePath;
 
                 successFlag=DataAccessLayerSQLite::createDatabase(dc,musicLibraryPath);
+                qDebug() << SB_DEBUG_INFO << successFlag;
                 if(successFlag)
                 {
                     DBManager* dm=Context::instance()->dbManager();

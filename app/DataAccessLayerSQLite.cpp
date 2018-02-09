@@ -16,16 +16,16 @@ bool
 DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredentials& credentials,const QString& musicLibraryPath)
 {
     //	Check parameters
-    QString errorString;
+    QString errorMsg;
     bool errorFlag=0;
 
     //	1.	Length of path
     if(!errorFlag && credentials.sqlitePath.length()==0)
     {
-        errorString="SQLite path parameter empty.";
+        errorMsg="SQLite path parameter empty.";
         errorFlag=1;
     }
-    qDebug() << SB_DEBUG_INFO << errorFlag << errorString;
+    qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
 
     //	2.	Clear if exists
     QFileInfo fi(credentials.sqlitePath);
@@ -35,13 +35,13 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
 
         if(!f.remove())
         {
-            errorString="Unable to remove.";
+            errorMsg="Unable to remove.";
             errorFlag=1;
-			qDebug() << SB_DEBUG_ERROR << errorString;
+            qDebug() << SB_DEBUG_ERROR << errorMsg;
 			return 0;
         }
     }
-    qDebug() << SB_DEBUG_INFO << errorFlag << errorString;
+    qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
 
     //	3.	Create actual database
     if(!errorFlag)
@@ -51,7 +51,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
 
         if(!tmpdb.open())
         {
-            errorString=QString("Cannot open database at %1").arg(credentials.sqlitePath);
+            errorMsg=QString("Cannot open database at %1").arg(credentials.sqlitePath);
             errorFlag=1;
         }
         qDebug() << SB_DEBUG_INFO;
@@ -382,7 +382,7 @@ qDebug() << SB_DEBUG_INFO;
             if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
             {
                 errorFlag=1;
-                errorString="Unable to create database";
+                errorMsg="Unable to create database";
 				qDebug() << SB_DEBUG_ERROR << "Unable to create database";
             }
 
@@ -400,7 +400,7 @@ qDebug() << SB_DEBUG_INFO;
 
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);
 
-        qDebug() << SB_DEBUG_INFO << errorFlag << errorString;
+        qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
         if(!errorFlag)
         {
             //	Open the database system wide
@@ -412,8 +412,9 @@ qDebug() << SB_DEBUG_INFO;
     }
     if(errorFlag)
     {
-
+        SBMessageBox::databaseErrorMessageBox("Something happened...!",errorMsg);
+        qDebug() << SB_DEBUG_ERROR << errorMsg;
     }
     qDebug() << SB_DEBUG_INFO << errorFlag;
-    return errorFlag;
+    return !errorFlag;
 }

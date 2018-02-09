@@ -200,7 +200,7 @@ SBTabPerformerEdit::save() const
     //	If only case is different in performerName, save the new name as is.
     if(editPerformerName!=orgPerformerPtr->performerName())
     {
-        if(editPerformerName.toLower()==orgPerformerPtr->performerName().toLower())
+        if(Common::simplified(editPerformerName)==Common::simplified(orgPerformerPtr->performerName()))
         {
             caseChangeFlag=1;	//	Identify to saveSong that title only has changed.
             mergeFlag=0;	//	Explicitly set over here, indicating that we dealing with the same performer

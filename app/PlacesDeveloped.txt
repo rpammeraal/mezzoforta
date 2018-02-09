@@ -1118,6 +1118,16 @@ x	if item is queued on empty playlist, auto start play: nope.
 -	De Mens: 3 songs, only 'Dit Is Mijn Huis' - fixed
 -	Guitar Man by Bread shows up twice in search: actual data problem, fixed
 
+20180208:
+-	When starting from scratch:
+    -	Dialog box: initializing database is not closed
+	-	The app does not ask how music library is organized.
+-	Change Flaco Jimenez to Flaco Jiménez: end up with performance_id with dangling artist_id:
+    Unable to reproduce, but:
+	-	added missing foreign key constraint to avoid this at database level
+	-	changed SBTabPerformerEdit so that changes to performer name including diacritical characters
+	    are caught.
+
 TODO:
 *	Charts/Playlists to be minimized at start up.
 
@@ -1127,11 +1137,9 @@ NEAR FUTURE
 	*	SearchItem to not use SQL
 
 BUGS:
-*	When starting from scratch:
-    -	Dialog box: initializing database is not closed
-	-	The app does not ask how music library is organized.
-*	Change Flaco Jimenez to Flaco Jiménez: end up with performance_id with dangling artist_id:
 *	Change internal names to MezzoForta (cache et al)
+*	Player stops when enqueueing
+*	DIsplay dialog box after import::save and import::results dialog
 
 songbase=# SELECT * FROM rock.song WHERE title='Ay Te Dejo En San Antonio';
  song_id | original_performance_id |           title           | notes | soundex

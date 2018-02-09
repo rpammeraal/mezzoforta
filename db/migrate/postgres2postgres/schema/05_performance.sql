@@ -11,7 +11,8 @@ CREATE TABLE ---SQL_SCHEMA_NAME---performance
 	year                            INT, 
 	notes                           TEXT, 
 	CONSTRAINT cc_performance_year_check CHECK ((year IS NULL) OR (year >= 1900)), 
-	CONSTRAINT fk_performance_song_id_song FOREIGN KEY (song_id) REFERENCES ---SQL_SCHEMA_NAME---song(song_id) 
+	CONSTRAINT fk_performance_song_id_song FOREIGN KEY (song_id) REFERENCES ---SQL_SCHEMA_NAME---song(song_id),
+	CONSTRAINT fk_performance_artist_id_artist  FOREIGN KEY (artist_id) REFERENCES ---SQL_SCHEMA_NAME---artist(artist_id) 
 ); 
 
 INSERT INTO ---SQL_SCHEMA_NAME---performance 
