@@ -367,10 +367,12 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     //	Populate performer detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(pPtr->performerName());
 
-    QString details=QString("%1 albums %2 %3 songs")
+    QString details=QString("%1 albums %2 %3 song%4")
         .arg(pPtr->numAlbums())
         .arg(QChar(8226))
-        .arg(pPtr->numSongs());
+        .arg(pPtr->numSongs())
+        .arg(pPtr->numSongs()>1?"s":"")
+    ;
     mw->ui.labelPerformerDetailPerformerDetail->setText(details);
 
     //	Related performers

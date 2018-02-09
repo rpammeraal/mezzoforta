@@ -353,8 +353,19 @@ PlayerController::_refreshPlayingNowData() const
     if(_state==PlayerController::sb_player_state_pause ||
        _state==PlayerController::sb_player_state_play)
     {
+        QString apNotes;
+        SBIDAlbumPerformancePtr apPtr=_currentPerformancePlayingPtr->albumPerformancePtr();
+        if(apPtr)
+        {
+            apNotes=apPtr->notes();
+        }
+        if(apNotes.length()!=0)
+        {
+            apNotes=QString(" [%1]").arg(apNotes);
+        }
+
         playState+=QString(
-            "<A HREF=\"%1_%2\">%3</A> by "
+            "<A HREF=\"%1_%2\">%3 %10</A> by "
             "<A HREF=\"%4_%5\">%6</A> from the "
             "<A HREF=\"%7_%8\">'%9'</A> album")
             .arg(SBKey::Song)
@@ -368,6 +379,8 @@ PlayerController::_refreshPlayingNowData() const
             .arg(SBKey::Album)
             .arg(_currentPerformancePlayingPtr->albumID())
             .arg(_currentPerformancePlayingPtr->albumTitle())
+
+            .arg(apNotes)
         ;
     }
     playState+="</CENTER></BODY>";

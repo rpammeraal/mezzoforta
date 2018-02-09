@@ -30,6 +30,7 @@ public slots:
     void update(SBKey key);
 
 private:
+    QSet<QString> _entries;
 
     void _add(SBKey::ItemType itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle);
     void _constructDisplay(SBKey::ItemType itemType, int songID, const QString& songTitle, int performerID, const QString& performerName, int albumID, const QString& albumTitle,SBKey& key, QString& display, QString& altDisplay);
