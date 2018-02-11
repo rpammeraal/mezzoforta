@@ -11,6 +11,15 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+#ifdef _WIN32
+if (AttachConsole(ATTACH_PARENT_PROCESS))
+{
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+}
+#endif
+
+
 #ifdef Q_OS_OSX
     qDebug() << SB_DEBUG_INFO << "Calling OSXSetupSleepCallback";
     OSXSetupSleepCallback();
