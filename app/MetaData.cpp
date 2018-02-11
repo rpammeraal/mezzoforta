@@ -1,4 +1,8 @@
+#ifdef _WIN32
+#include <taglib/toolkit/tpropertymap.h>
+#else
 #include <taglib/tpropertymap.h>
+#endif
 #include "Common.h"
 #include "MetaData.h"
 

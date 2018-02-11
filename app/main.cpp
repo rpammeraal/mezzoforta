@@ -2,23 +2,60 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QDateTime>
-
+#include <QDebug>
+#include <QDir>
 #include "Controller.h"
 #include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
 
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
 
-#ifdef _WIN32
-if (AttachConsole(ATTACH_PARENT_PROCESS))
+#ifdef Q_OS_WIN
+
+QFile _logFile;
+
+#include <iostream>
+using namespace std;
+
+void msgHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    freopen("CONOUT$", "w", stdout);
-    freopen("CONOUT$", "w", stderr);
+	QByteArray localMsg = msg.toLocal8Bit();
+	QTextStream out(&_logFile);
+	out << localMsg.constData() << endl;;
+	switch (type) {
+	case QtDebugMsg:
+		out << localMsg.constData();
+		fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		break;
+	case QtInfoMsg:
+		fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		break;
+	case QtWarningMsg:
+		fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		break;
+	case QtCriticalMsg:
+		fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		break;
+	case QtFatalMsg:
+		fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		abort();
+	}
 }
 #endif
 
+int main(int argc, char *argv[])
+{
+#ifdef Q_OS_WIN
+	QDir tmpDir("/tmp");
+	if(!tmpDir.exists())
+	{
+		QDir().mkdir("/tmp");
+	}
+	_logFile.setFileName("/tmp/mezzaforte.out");
+	_logFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+
+	qInstallMessageHandler(msgHandler);
+#endif
+    QApplication app(argc, argv);
 
 #ifdef Q_OS_OSX
     qDebug() << SB_DEBUG_INFO << "Calling OSXSetupSleepCallback";
@@ -49,5 +86,8 @@ if (AttachConsole(ATTACH_PARENT_PROCESS))
         d.setText("No database selected. Terminating");
         d.exec();
     }
+#ifdef Q_OS_WIN
+	qDebug() << SB_DEBUG_INFO << endl;
+#endif
     return 0;
 }
