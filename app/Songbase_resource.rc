@@ -27,7 +27,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "0.0.0.0\0"
 				VALUE "LegalCopyright", "\0"
-				VALUE "OriginalFilename", "Songbase.exe\0"
+				VALUE "OriginalFilename", "mezzoforta.exe\0"
 				VALUE "ProductName", "Songbase\0"
 				VALUE "ProductVersion", "0.0.0.0\0"
 			END

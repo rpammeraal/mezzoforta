@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        app.exec();
+        app.exec();																							
     }
     else
     {
