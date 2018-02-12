@@ -1128,6 +1128,9 @@ x	if item is queued on empty playlist, auto start play: nope.
 	-	changed SBTabPerformerEdit so that changes to performer name including diacritical characters
 	    are caught.
 
+20180211:
+-	Implemented randomizer with negative ln() distribution.
+
 TODO:
 *	Charts/Playlists to be minimized at start up.
 
@@ -1140,6 +1143,8 @@ BUGS:
 *	Change internal names to MezzoForta (cache et al)
 *	Player stops when enqueueing
 *	DIsplay dialog box after import::save and import::results dialog
+*	Unable to add single related performer to a list of empty related performers:
+    *	Add 3Js to '3Js & Ellen Ten Damme'
 
 songbase=# SELECT * FROM rock.song WHERE title='Ay Te Dejo En San Antonio';
  song_id | original_performance_id |           title           | notes | soundex

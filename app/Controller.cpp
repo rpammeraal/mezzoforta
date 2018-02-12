@@ -348,10 +348,14 @@ Controller::setupUI()
     Preloader::loadAll();
 
     qDebug() << SB_DEBUG_INFO << "playground start";
-    int max=100;
+
+    /*
+     *	randomizer testing
+     *
+    int max=5000;
     quint64 smallest=max;
     quint64 biggest=0;
-    int maxBuckets=10;
+    int maxBuckets=100;
     QVector<int> v(maxBuckets);
     for(int i=0; i<200000;i++)
     {
@@ -362,12 +366,15 @@ Controller::setupUI()
     }
     for(int i=0; i<v.length(); i++)
     {
-        QString t=QString("*").repeated(v[i]/(max*maxBuckets));
-        qDebug() << SB_DEBUG_INFO << i << v[i] << t;
+        //	QString t=QString("*").repeated(v[i]/(max*maxBuckets));
+        //	qDebug() << SB_DEBUG_INFO << i << v[i] << t;
+        qDebug() << SB_DEBUG_INFO << i << v[i];
     }
     qDebug() << SB_DEBUG_INFO << smallest << biggest;
+     */
 
-
+    /*
+     * key testing
     SBKey key;
     QByteArray k;
 
@@ -375,6 +382,21 @@ Controller::setupUI()
     k="12:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
     k="-1:100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
     k="2:-100"; key=SBKey(k); qDebug() << SB_DEBUG_INFO << k << key << key.itemType() << key.itemID() << key.validFlag();
+     */
+
+
+    /*
+    qDebug() << SB_DEBUG_INFO << "natural logaritm";
+    int maxRandom=0;
+    int maxSongs=5000;
+    for(int i=0;i<=maxSongs;i++)
+    {
+        int j= 1 + (-80 * log(i+1))+(80 * log(maxSongs+1));
+        maxRandom+=j;
+        qDebug() << SB_DEBUG_INFO << i << j << maxRandom;
+    }
+    qDebug() << SB_DEBUG_INFO << maxRandom;
+    */
 
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;

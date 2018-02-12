@@ -14,7 +14,7 @@ QStringList noDiacriticLetters_;
 
 Common::Common()
 {
-
+    _initRandomizerDoneFlag=0;
 }
 
 Common::~Common()
@@ -147,6 +147,22 @@ Common::random(quint64 max)
 quint64
 Common::randomOldestFirst(quint64 max)
 {
+    if(_initRandomizerDoneFlag==0 || max!=_maxSongs)
+    {
+        _initRandomizer(max);
+    }
+
+    quint64 i=Common::random(_maxRandom);
+    quint64 rnd=0;
+
+    while(i>_randomDistribution[rnd] && (rnd<max) && (rnd<_maxSongs))
+    {
+        rnd++;
+    }
+
+    return rnd;
+
+    /* OLD
     //	calculate 1-based
     max++;
     quint64 n=((max)*(max+1))/2;
@@ -164,6 +180,7 @@ Common::randomOldestFirst(quint64 max)
         o--;
     }
     return index-1;
+    */
 }
 
 QString
@@ -461,4 +478,20 @@ QString convertByteArray2String(const QByteArray& a)
     }
 
     return s;
+}
+
+///	Private methods
+void
+Common::_initRandomizer(int maxNumber)
+{
+    _maxRandom=0;
+    _maxSongs=maxNumber;
+
+    for(quint64 i=0;i<=_maxSongs;i++)
+    {
+        int j= 1 + (-400 * log(i+1))+(400 * log(_maxSongs+1));
+        _maxRandom+=j;
+        _randomDistribution.append(_maxRandom);
+    }
+    _initRandomizerDoneFlag=1;
 }

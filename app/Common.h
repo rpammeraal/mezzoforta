@@ -64,6 +64,11 @@ class QTableView;
 #include "SBDuration.h"
 
 static int ID=-1;
+static bool _initRandomizerDoneFlag;
+static QVector<quint64> _randomDistribution;
+static quint64 _maxRandom;
+static quint64 _maxSongs;
+
 
 class Common
 {
@@ -181,6 +186,8 @@ public:
     static char ParseChar(QChar c);
 
 private:
+
+    static void _initRandomizer(int maxNumber);
 };
 
 QString convertByteArray2String(const QByteArray& a);
