@@ -486,10 +486,12 @@ Common::_initRandomizer(int maxNumber)
 {
     _maxRandom=0;
     _maxSongs=maxNumber;
+    const int constant=10;
 
-    for(quint64 i=0;i<=_maxSongs;i++)
+    for(quint64 x=0;x<=_maxSongs;x++)
     {
-        int j= 1 + (-400 * log(i+1))+(400 * log(_maxSongs+1));
+        //	int j= 1 + (-constant * log(x+1))+(constant * log(_maxSongs+1));
+        int j= 1 + (constant * maxNumber / ( x + 10));
         _maxRandom+=j;
         _randomDistribution.append(_maxRandom);
     }

@@ -334,7 +334,6 @@ PlayManager::_loadRadio()
     _radioModeFlag=1;
 
     QMap<int,SBIDOnlinePerformancePtr> playList;
-    QList<int> indexCovered;
 
     int progressStep=0;
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Starting Auto DJ",1);
@@ -350,7 +349,7 @@ PlayManager::_loadRadio()
         //	limit this to a 100 to make the view not too large.
         numPerformances=numberSongsToDisplay;
     }
-    const int maxNumberAttempts=numberSongsToDisplay/2;
+    //	const int maxNumberAttempts=numberSongsToDisplay/2;
     int maxNumberToRandomize=qm->rowCount();
     qDebug() << SB_DEBUG_INFO << maxNumberToRandomize;
     //	If collection greater than 400, limit to 1st third of least recent played songs.
@@ -373,6 +372,8 @@ PlayManager::_loadRadio()
     {
     }
 
+    QString indexCovered=QString(".").repeated(maxNumberToRandomize+1);
+    indexCovered+=QString("");
     while(index<numPerformances)
     {
         found=0;
@@ -384,31 +385,28 @@ PlayManager::_loadRadio()
         }
         else
         {
-            for(int j=maxNumberAttempts;j && !found;j--)
+            int rnd=Common::randomOldestFirst(maxNumberToRandomize);
+
+            //	Find first untaken spot, counting untaken spots.
+            idx=0;
+            for(int i=0;i<maxNumberToRandomize && !found;i++)
             {
-                idx=Common::randomOldestFirst(maxNumberToRandomize);
-                if(indexCovered.contains(idx)==0)
+                //	qDebug() << SB_DEBUG_INFO << index << indexCovered.left(100) << i << idx << rnd;
+                //	QString ptr=QString("%1%2").arg(QString(".").repeated(i)).arg("^");
+                //	qDebug() << SB_DEBUG_INFO << index << ptr.left(100);
+
+                if(indexCovered.at(i)=='.')
                 {
-                    found=1;
-                    indexCovered.append(idx);
+                    if(idx==rnd)
+                    {
+                        indexCovered.replace(i,1,'X');
+                        found=1;
+                    }
+                    idx++;
                 }
             }
         }
 
-        if(!found)
-        {
-            //	If we can't get a random index after n tries, get the first
-            //	not-used index
-            for(int i=0;i<numPerformances && found==0;i++)
-            {
-                if(indexCovered.contains(i)==0)
-                {
-                    idx=i;
-                    found=1;
-                    indexCovered.append(idx);
-                }
-            }
-        }
 
         int onlinePerformanceID=qm->record(idx).value(0).toInt();
         SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);

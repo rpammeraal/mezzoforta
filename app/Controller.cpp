@@ -350,28 +350,82 @@ Controller::setupUI()
     qDebug() << SB_DEBUG_INFO << "playground start";
 
     /*
-     *	randomizer testing
-     *
-    int max=5000;
-    quint64 smallest=max;
-    quint64 biggest=0;
-    int maxBuckets=100;
-    QVector<int> v(maxBuckets);
-    for(int i=0; i<200000;i++)
     {
-        quint64 x=Common::randomOldestFirst(max);
-        v[x/maxBuckets]++;
-        smallest=x<smallest?x:smallest;
-        biggest=x>biggest?x:biggest;
+        int max=100;
+        quint64 smallest=max;
+        quint64 biggest=0;
+        int maxBuckets=10;
+        QVector<int> v(maxBuckets);
+        for(int i=0; i<200000;i++)
+        {
+            quint64 x=Common::randomOldestFirst(max);
+            v[x/maxBuckets]++;
+            smallest=x<smallest?x:smallest;
+            biggest=x>biggest?x:biggest;
+        }
+        int sum=0;
+        for(int i=0; i<v.length(); i++)
+        {
+            sum+=v[i];
+        }
+        for(int i=0; i<v.length(); i++)
+        {
+            QString t=QString("*").repeated(v[i]*100/sum);
+            qDebug() << SB_DEBUG_INFO << i << t;
+        }
+        qDebug() << SB_DEBUG_INFO << smallest << biggest;
     }
-    for(int i=0; i<v.length(); i++)
+    */
+
     {
-        //	QString t=QString("*").repeated(v[i]/(max*maxBuckets));
-        //	qDebug() << SB_DEBUG_INFO << i << v[i] << t;
-        qDebug() << SB_DEBUG_INFO << i << v[i];
+        int maxNumberToRandomize=500;
+        int numPerformances=2*26+10;
+        QString indexCovered=QString(".").repeated(maxNumberToRandomize);
+        indexCovered+=QString("");
+        int index=0;
+        while(index<numPerformances)
+        {
+            bool found=0;
+            int idx=-1;
+
+            int rnd=Common::randomOldestFirst(maxNumberToRandomize);
+
+            //	Find first untaken spot, counting untaken spots.
+            idx=0;
+            for(int i=0;i<maxNumberToRandomize && !found;i++)
+            {
+                //	qDebug() << SB_DEBUG_INFO << index << indexCovered.left(100) << i << idx << rnd;
+                //	QString ptr=QString("%1%2").arg(QString(".").repeated(i)).arg("^");
+                //	qDebug() << SB_DEBUG_INFO << index << ptr.left(100);
+
+                if(indexCovered.at(i)=='.')
+                {
+                    if(idx==rnd)
+                    {
+                        QChar c;
+                        if(index>=0 && index<10)
+                        {
+                            c=QChar(48+index);
+                        }
+                        else if(index>=10 && index<36)
+                        {
+                            c=QChar(65+index-10);
+                        }
+                        else
+                        {
+                            c=QChar(97+index-36);
+                        }
+                        qDebug() << SB_DEBUG_INFO << index << c.unicode() << c;
+                        indexCovered.replace(i,1,c);
+                        found=1;
+                    }
+                    idx++;
+                }
+            }
+            index++;
+        }
+        qDebug() << SB_DEBUG_INFO << indexCovered;
     }
-    qDebug() << SB_DEBUG_INFO << smallest << biggest;
-     */
 
     /*
      * key testing
