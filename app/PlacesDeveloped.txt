@@ -1131,6 +1131,15 @@ x	if item is queued on empty playlist, auto start play: nope.
 20180211:
 -	Implemented randomizer with negative ln() distribution.
 
+20180220: Emma Reynders
+-	Change internal names to MezzoForta (cache et al)
+-	Player stops when enqueueing
+-	DIsplay dialog box after import::save and import::results dialog
+-	Unable to add single related performer to a list of empty related performers:
+    -	Add 3Js to '3Js & Ellen Ten Damme': can't reproduce
+-	Multiple times saving U2 causes URL to be appened with http:// over and over
+-	exportSongs to go recursive (to some degree).
+
 TODO:
 *	Charts/Playlists to be minimized at start up.
 
@@ -1140,11 +1149,6 @@ NEAR FUTURE
 	*	SearchItem to not use SQL
 
 BUGS:
-*	Change internal names to MezzoForta (cache et al)
-*	Player stops when enqueueing
-*	DIsplay dialog box after import::save and import::results dialog
-*	Unable to add single related performer to a list of empty related performers:
-    *	Add 3Js to '3Js & Ellen Ten Damme'
 
 songbase=# SELECT * FROM rock.song WHERE title='Ay Te Dejo En San Antonio';
  song_id | original_performance_id |           title           | notes | soundex

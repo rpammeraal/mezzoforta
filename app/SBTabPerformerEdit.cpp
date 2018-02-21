@@ -192,7 +192,7 @@ SBTabPerformerEdit::save() const
     QString editPerformerName=mw->ui.performerEditName->text();
     QString editNotes=mw->ui.performerEditNotes->text();
     QString editURL=mw->ui.performerEditWebSite->text();
-    if((editURL.left(8).toLower()!="https://") &&  (editURL.right(7).toLower()!="http://"))
+    if((editURL.left(8).toLower()!="https://") &&  (editURL.left(7).toLower()!="http://"))
     {
         editURL=QString("http://%1").arg(editURL);
     }
@@ -305,7 +305,6 @@ SBTabPerformerEdit::save() const
 
     if(successFlag)
     {
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
 
@@ -317,12 +316,10 @@ SBTabPerformerEdit::save() const
         Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergeFlag)
         {
@@ -334,13 +331,11 @@ SBTabPerformerEdit::save() const
             st->replace(from,to);
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergeFlag || performerNameChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }

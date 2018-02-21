@@ -94,13 +94,11 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
         if(successFlag==1 && commitFlag==1)
         {
             qDebug() << "COMMIT;";
-            qDebug() << SB_DEBUG_INFO << "--	Attempté to committé";
             successFlag=db.commit();
         }
         if((successFlag==0 || commitFlag==0 ) && (ignoreErrorsFlag==0))
         {
             r=db.lastError();
-            qDebug() << SB_DEBUG_INFO << "--	Rollback time";
             qDebug() << "ROLLBACK;";
             db.rollback();
         }
@@ -108,8 +106,7 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     if(updateProgressDialogFlag)
     {
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"save");
-        qDebug() << SB_DEBUG_INFO;
-        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
+        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,0);
     }
     qDebug() << "--	END OF BATCH;";
 
@@ -120,7 +117,6 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
         msgBox.setInformativeText(r.text());
         msgBox.exec();
     }
-    qDebug() << SB_DEBUG_INFO << "SuccessFlag:" << successFlag;
     return successFlag;
 }
 

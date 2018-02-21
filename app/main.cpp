@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 #endif //	Q_OS_OSX
 
     //	Set up names
-    app.setOrganizationName("Moose!");
-    app.setOrganizationDomain("bargie.net");
-    app.setApplicationName("Songbase");
+    app.setOrganizationName("MezzoForta Inc");
+    app.setOrganizationDomain("mezzoforta.com");
+    app.setApplicationName("MezzoForta!");
 
     //	Set up types
     //qRegisterMetaType<SBIDBase>();

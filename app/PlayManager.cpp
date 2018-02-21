@@ -205,7 +205,10 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
     }
     else
     {
-        this->playerNext(PlayMode::SetReady);
+        if(!this->songPlayingFlag())
+        {
+            this->playerNext(PlayMode::SetReady);
+        }
     }
     return isPlayingFlag;
 }
@@ -351,13 +354,10 @@ PlayManager::_loadRadio()
     }
     //	const int maxNumberAttempts=numberSongsToDisplay/2;
     int maxNumberToRandomize=qm->rowCount();
-    qDebug() << SB_DEBUG_INFO << maxNumberToRandomize;
     //	If collection greater than 400, limit to 1st third of least recent played songs.
     maxNumberToRandomize=(maxNumberToRandomize>(4 * numberSongsToDisplay)?maxNumberToRandomize/3:maxNumberToRandomize);
-    qDebug() << SB_DEBUG_INFO << maxNumberToRandomize;
     //	If greater than 5000, limit to 5000 to avoid long term starvation.
     maxNumberToRandomize=(maxNumberToRandomize>5000?5000:maxNumberToRandomize);
-    qDebug() << SB_DEBUG_INFO << maxNumberToRandomize;
 
     int songInterval=numPerformances/10;
 

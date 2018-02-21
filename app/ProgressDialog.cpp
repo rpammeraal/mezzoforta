@@ -8,10 +8,8 @@
 void
 ProgressDialog::hide()
 {
-        qDebug() << SB_DEBUG_INFO;
     _pd.close();
     _pd.hide();
-        qDebug() << SB_DEBUG_INFO;
     QCoreApplication::processEvents();
 }
 
@@ -143,10 +141,8 @@ ProgressDialog::finishDialog(const QString& prettyFunction, bool hideFlag)
 {
     if(prettyFunction==_prettyFunction)
     {
-        qDebug() << SB_DEBUG_INFO;
         if(hideFlag)
         {
-        qDebug() << SB_DEBUG_INFO;
             hide();
         }
         _reset();
@@ -164,7 +160,6 @@ ProgressDialog::stats() const
     qDebug() << SB_DEBUG_INFO << _prettyFunction;
     qDebug() << SB_DEBUG_INFO << _stepList;
     qDebug() << SB_DEBUG_INFO << _visible;
-
 }
 
 ///	Protected methods

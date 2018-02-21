@@ -499,9 +499,6 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     ProgressDialog::instance()->hide();
     ProgressDialog::instance()->stats();
 
-    qDebug() << SB_DEBUG_INFO;
-    Common::sleep(5);
-    qDebug() << SB_DEBUG_INFO;
     QString resultTxt=QString("<P>%4 %1 songs<BR>%4 %2 performers<BR>%4 %3 albums").arg(_numNewSongs).arg(_numNewPerformers).arg(_numNewAlbums).arg(QChar(8226));
     SBMessageBox::createSBMessageBox(QString("<center>Added:</center>"),resultTxt,QMessageBox::Information,QMessageBox::Ok,QMessageBox::Ok,QMessageBox::Ok,1);
 

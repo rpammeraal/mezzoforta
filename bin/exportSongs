@@ -158,6 +158,25 @@ sub executeSQL($)
 	return @out;
 }
 
+sub exportAlbum($$$)
+{
+	my
+	(
+		$activeSchema,
+		$currentPositionRef,
+		$albumID
+	) = @_;
+
+	print "EXPORT ALBUM: $albumID\n";
+	my $SQL="SELECT preferred_online_performance_id FROM rock.record_performance WHERE record_id=$albumID ORDER BY record_position";
+
+	my @allRecords=executeSQL($SQL);
+	foreach my $opID (@allRecords)
+	{
+		exportOnlinePerformance($activeSchema,$currentPositionRef,$opID); 
+	}
+}
+
 sub exportOnlinePerformance($$$)
 {
 	my
@@ -215,6 +234,7 @@ sub exportPlaylist($$$$$$)
 			$SQL.=' DESC ';
 		}
 	}
+	print "$SQL\n";
 	my @allRecords=executeSQL($SQL);
 	foreach my $record (@allRecords)
 	{
@@ -224,8 +244,21 @@ sub exportPlaylist($$$$$$)
 		my $rID;
 		my $aID;
 
+
 		($opID,$cpID,$cID,$rID,$aID)=split(/\|/,$record);
-		if($opID ne '') { exportOnlinePerformance($activeSchema,$currentPositionRef,$opID); }
+
+		if($opID ne '') 
+		{ 
+			exportOnlinePerformance($activeSchema,$currentPositionRef,$opID); 
+		}
+		elsif($cpID ne '')
+		{
+			&exportPlaylist($activeSchema,$currentPositionRef,$type,$cpID,$order,$playlistOnly);
+		}
+		elsif($rID ne '')
+		{
+			exportAlbum($activeSchema,$currentPositionRef,$rID);
+		}
 	}
 }
 

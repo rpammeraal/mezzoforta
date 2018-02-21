@@ -184,7 +184,6 @@ SBIDPlaylist::recalculatePlaylistDuration()
 bool
 SBIDPlaylist::removePlaylistItem(int position)
 {
-    qDebug() << SB_DEBUG_INFO;
     position--;	//	Position as parameter is 1-based, we need 0-based
     if(position>=items().count())
     {
@@ -193,14 +192,10 @@ SBIDPlaylist::removePlaylistItem(int position)
 
     SBIDPlaylistDetailPtr pdPtr=_items[position];
     SB_RETURN_IF_NULL(pdPtr,0);
-    qDebug() << SB_DEBUG_INFO;
     moveDependent(position,_items.count());
-    qDebug() << SB_DEBUG_INFO;
 
     CacheManager* cm=Context::instance()->cacheManager();
-    qDebug() << SB_DEBUG_INFO;
     CachePlaylistDetailMgr* pdmgr=cm->playlistDetailMgr();
-    qDebug() << SB_DEBUG_INFO;
 
     SBIDPtr childPtr=pdPtr->childPtr();
     SB_RETURN_IF_NULL(childPtr,0);
@@ -260,17 +255,12 @@ SBIDPlaylist::moveItem(SBKey from, int toPosition)
             {
                 //	playlistIndex is 0 based, playlistPosition is 1 based
                 //	Do after increment of playlistIndex
-                qDebug() << SB_DEBUG_INFO
-                         << pdPtr->key()
-                         << "old pos" << pdPtr->playlistPosition()
-                         << "new position=" << i+1
-                ;
                 pdPtr->setPlaylistPosition(i+1);
             }
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << i << "non existing";
+            qDebug() << SB_DEBUG_WARNING << i << "non existing";
         }
     }
 
@@ -600,12 +590,10 @@ SBIDPlaylist::_getOnlineItemsByPlaylist(QList<SBIDPtr>& compositesTraversed,QLis
 {
     SB_RETURN_VOID_IF_NULL(rootPlPtr);
 
-    qDebug() << SB_DEBUG_INFO << rootPlPtr->genericDescription();
     int progressCurrentValue=0;
     int progressMaxValue=rootPlPtr->items().count();
     if(progressDialogTitle.length())
     {
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,progressDialogTitle,1);
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_getOnlineItemsByPlaylist",0,progressMaxValue);
     }
