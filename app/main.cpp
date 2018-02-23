@@ -44,6 +44,7 @@ void msgHandler(QtMsgType type, const QMessageLogContext& context, const QString
 
 int main(int argc, char *argv[])
 {
+	QCoreApplication::addLibraryPath("./");
 #ifdef Q_OS_WIN
 	QDir tmpDir("/tmp");
 	if(!tmpDir.exists())
