@@ -27,13 +27,18 @@ public:
     inline int chartID() const { return itemID(); }
     inline QString chartName() const { return _chartName; }
     inline QString chartNotes() const { return _notes; }
-    inline QDate chartReleaseDate() const { return _releaseDate; }
+    inline QDate chartEndingDate() const { return _chartEndingDate; }
+    bool import(const QString& fileName,bool truncateFlag);
     QMap<int,SBIDChartPerformancePtr> items() const;
     int numItems() const;
     SBTableModel* tableModelItems() const;
     //bool removeChartItem(int chartPosition);
     //bool moveItem(const SBIDPtr& fromPtr, int toRow);
     //void reorderItem(const SBIDPtr fromPtr, const SBIDPtr toID) const;	//	CWIP:pmgr rewrite
+
+    //	Setters
+    inline void setChartName(const QString& chartName) { _chartName=chartName; setChangedFlag(); }
+    inline void setChartEndingDate(const QDate& chartEndingDate) { _chartEndingDate=chartEndingDate; setChangedFlag(); }
 
     //	Operators
     virtual operator QString() const;
@@ -66,12 +71,13 @@ protected:
     //bool moveDependent(int fromPosition, int toPosition);
     //bool removeDependent(int position);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
+    virtual void setDeletedFlag();
     QStringList updateSQL(const Common::db_change db_change) const;
 
 private:
     QString                           _chartName;
     QString                           _notes;
-    QDate                             _releaseDate;
+    QDate                             _chartEndingDate;
 
     //	Not instantiated
     int                               _numItems ;	//	may only be used until _items has been loaded
@@ -83,6 +89,7 @@ private:
     void _copy(const SBIDChart& c);
     void _init();
     void _loadPerformances();
+    void _truncate();
     static QMap<SBIDChartPerformancePtr,SBIDChartPtr> _loadPerformancesFromDB(const SBIDChart& id);
 };
 

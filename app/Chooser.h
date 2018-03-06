@@ -7,6 +7,7 @@
 class Chooser;
 
 #include "SBIDPlaylist.h"
+#include "SBDialogChart.h"
 
 class QAction;
 class QStandardItem;
@@ -36,7 +37,13 @@ public:
 public slots:
     void assignItem(const QModelIndex& idx, SBKey assignToKey);
 
+    void chartEdit();
+    void chartEditSave(SBIDChartPtr cPtr);
     void chartEnqueue();
+    void chartReImport();
+    void chartRemove(SBIDChartPtr cPtr=SBIDChartPtr());
+    void chartImportNew();
+    void chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag=0);
     void chartPlay(bool enqueueFlag=0);
     void playlistChanged(int playlistID);
     void playlistDelete();
@@ -49,6 +56,7 @@ public slots:
     void showContextMenu(const QPoint& p);
 
     void recalculateDuration();
+    void refresh();
 
 protected:
     friend class Context;
@@ -61,7 +69,11 @@ private slots:
 private:
     //	Context menu actions
     QAction* _chartPlayAction;
+    QAction* _chartEditAction;
     QAction* _chartEnqueueAction;
+    QAction* _chartImportAction;
+    QAction* _chartImportNewAction;
+    QAction* _chartRemoveAction;
     QAction* _playlistNewAction;
     QAction* _playlistDeleteAction;
     QAction* _playlistRenameAction;
@@ -72,6 +84,7 @@ private:
     //SBStandardItemModel* model;
     QModelIndex _lastClickedIndex;
     ChooserModel* _cm;
+    SBDialogChart* _dc;
     bool _openPlaylistTab;
 
     QModelIndex _findItem(const QString& toFind);

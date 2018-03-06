@@ -3,11 +3,13 @@
 #include "CacheManager.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "MusicLibrary.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
 #include "SBIDAlbumPerformance.h"
 #include "SBIDChartPerformance.h"
 #include "SBIDOnlinePerformance.h"
+#include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBTableModel.h"
 
@@ -115,6 +117,120 @@ SBIDChart::type() const
 }
 
 //	Methods specific to SBIDChart
+bool
+SBIDChart::import(const QString &fileName, bool truncateFlag)
+{
+    if(truncateFlag)
+    {
+        _truncate();
+    }
+    QVector<QStringList> contents=Common::parseCSVFile(fileName);
+
+    //	Contents needs to have at least 2 entries
+    if(contents.count()<2)
+    {
+        qDebug() << SB_DEBUG_ERROR << contents.count();
+        SBMessageBox::createSBMessageBox("Incomplete File","File needs to have at least 2 rows",QMessageBox::Critical, QMessageBox::Ok, QMessageBox::Ok, QMessageBox::Ok);
+        return 0;
+    }
+
+    //	Check header: this needs to have three fields (in whatever order):
+    //	-	position
+    //	-	performer
+    //	-	title
+    int positionColumn=-1;
+    int performerNameColumn=-1;
+    int songTitleColumn=-1;
+
+    QStringList header=contents.at(0);
+    for(int i=0;i<header.count();i++)
+    {
+        if(header.at(i)=="position")
+        {
+            positionColumn=i;
+        }
+        else if(header.at(i)=="performer")
+        {
+            performerNameColumn=i;
+        }
+        else if(header.at(i)=="song")
+        {
+            songTitleColumn=i;
+        }
+    }
+    if(positionColumn<0 || performerNameColumn<0 || songTitleColumn<0 )
+    {
+        qDebug() << SB_DEBUG_INFO << positionColumn << performerNameColumn << songTitleColumn;
+        SBMessageBox::createSBMessageBox("Incomplete Header","Header should have 'position','performer' and 'song' columns.",QMessageBox::Critical, QMessageBox::Ok, QMessageBox::Ok, QMessageBox::Ok);
+        return 0;
+    }
+
+    QVector<MusicLibrary::MLentityPtr> chartContents;
+    for(int i=1;i<contents.count();i++)
+    {
+        QStringList line=contents.at(i);
+
+        MusicLibrary::MLentity e;
+        e.songPerformerName=line.at(performerNameColumn);
+        e.songTitle=line.at(songTitleColumn);
+        e.chartPosition=line.at(positionColumn).toInt();
+        e.year=this->chartEndingDate().year();
+
+        qDebug() << SB_DEBUG_INFO << e.chartPosition << e.songTitle << e.songPerformerName << e.year;
+        chartContents.append(std::make_shared<MusicLibrary::MLentity>(e));
+    }
+
+    MusicLibrary ml;
+    QHash<QString,MusicLibrary::MLalbumPathPtr> map;
+    ml.validateEntityList(chartContents,map);
+
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Storing Chart",1);
+    int progressCurrentValue=0;
+    int progressMaxValue=chartContents.count();
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
+
+    QVectorIterator<MusicLibrary::MLentityPtr> it(chartContents);
+    CacheManager* cMgr=Context::instance()->cacheManager();
+    CacheSongPerformanceMgr* spMgr=cMgr->songPerformanceMgr();
+    CacheChartPerformanceMgr* cpMgr=cMgr->chartPerformanceMgr();
+    while(it.hasNext())
+    {
+        MusicLibrary::MLentityPtr ePtr=it.next();
+
+        Common::sb_parameters p;
+        p.chartID=this->chartID();
+        p.chartPosition=ePtr->chartPosition;
+
+        //	Find if song performance exists
+        SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(ePtr->songID,ePtr->songPerformerID);
+        if(!spPtr)
+        {
+            //	Create if not
+            spPtr=spMgr->createInDB(p);
+        }
+
+        p.songPerformanceID=spPtr->songPerformanceID();
+
+        //	Set original performance id
+        SBIDSongPtr sPtr=SBIDSong::retrieveSong(SBIDSong::createKey(ePtr->songID));
+        if(sPtr->originalSongPerformanceID()==-1)
+        {
+            sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
+        }
+
+        qDebug() << SB_DEBUG_INFO << p.chartID << p.songPerformanceID << p.chartPosition << p.notes;
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
+        cpMgr->createInDB(p);
+    }
+    cMgr->saveChanges();
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"storeChart");
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
+    ProgressDialog::instance()->hide();
+
+    Context::instance()->chooser()->refresh();
+    return 1;
+}
+
 QMap<int,SBIDChartPerformancePtr>
 SBIDChart::items() const
 {
@@ -244,7 +360,7 @@ SBIDChart::createInDB(Common::sb_parameters& p)
         ")"
     )
         .arg(p.chartName)
-        .arg(p.releaseDate.toString("YYYY-MM-dd"))
+        .arg(p.chartEndingDate.toString("yyyy-MM-dd"))
         .arg(p.notes)
     ;
     dal->customize(q);
@@ -256,7 +372,7 @@ SBIDChart::createInDB(Common::sb_parameters& p)
     SBIDChart c(dal->retrieveLastInsertedKey());
     c._chartName  =p.chartName;
     c._notes      =p.notes;
-    c._releaseDate=p.releaseDate;
+    c._chartEndingDate=p.chartEndingDate;
 
     //	Done
     return std::make_shared<SBIDChart>(c);
@@ -270,7 +386,7 @@ SBIDChart::instantiate(const QSqlRecord &r)
     SBIDChart chart(Common::parseIntFieldDB(&r,i++));
     chart._chartName  =r.value(i++).toString();
     chart._notes      =r.value(i++).toString();
-    chart._releaseDate=r.value(i++).toDate();
+    chart._chartEndingDate=r.value(i++).toDate();
     chart._numItems   =r.value(i++).toInt();
 
     return std::make_shared<SBIDChart>(chart);
@@ -310,11 +426,47 @@ SBIDChart::retrieveSQL(SBKey key)
     return new SBSqlQueryModel(q);
 }
 
+void
+SBIDChart::setDeletedFlag()
+{
+    qDebug() << SB_DEBUG_INFO;
+    //	Chart to be removed -- remove each individual chartPerformance
+    SBIDBase::setDeletedFlag();
+    this->_truncate();
+}
+
 QStringList
 SBIDChart::updateSQL(const Common::db_change db_change) const
 {
+    QStringList SQL;
+    qDebug() << SB_DEBUG_INFO << changedFlag() << db_change;
+    if(deletedFlag() && db_change==Common::db_delete)
+    {
+        SQL.append(QString
+            (
+                "DELETE FROM ___SB_SCHEMA_NAME___chart "
+                "WHERE chart_id=%1 "
+            )
+                .arg(this->chartID())
+        );
+    }
+    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
+    {
+        SQL.append(QString(
+            "UPDATE ___SB_SCHEMA_NAME___chart "
+            "SET "
+                "name='%1', "
+                "release_date='%2' "
+            "WHERE "
+                "chart_id=%3 "
+        )
+            .arg(Common::escapeSingleQuotes(this->chartName()))
+            .arg(this->chartEndingDate().toString("yyyy/MM/dd"))
+            .arg(this->itemID())
+        );
+    }
     Q_UNUSED(db_change);
-    return QStringList();
+    return SQL;
 }
 
 ///	Private
@@ -325,7 +477,7 @@ SBIDChart::_copy(const SBIDChart &c)
 
     _chartName  =c._chartName;
     _notes      =c._notes;
-    _releaseDate=c._releaseDate;
+    _chartEndingDate=c._chartEndingDate;
 
     _numItems   =c._numItems;
     _items      =c._items;
@@ -336,7 +488,7 @@ SBIDChart::_init()
 {
     _chartName=QString();
     _notes=QString();
-    _releaseDate=QDate();
+    _chartEndingDate=QDate();
     _numItems=0;
 
     _items.clear();
@@ -374,4 +526,20 @@ QMap<SBIDChartPerformancePtr,SBIDChartPtr>
 SBIDChart::_loadPerformancesFromDB(const SBIDChart& chart)
 {
     return Preloader::chartItems(chart);
+}
+
+void
+SBIDChart::_truncate()
+{
+    QMapIterator<int,SBIDChartPerformancePtr> it(items());
+    while(it.hasNext())
+    {
+        it.next();
+        SBIDChartPerformancePtr cpPtr=it.value();
+        if(cpPtr)
+        {
+            cpPtr->setDeletedFlag();
+        }
+    }
+    _items.clear();
 }

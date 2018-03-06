@@ -815,7 +815,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
-            result=Common::result_exists;
+            result=Common::result_exists_derived;
         }
         else if(totalMatches==1 && matches[2].count()==1)
         {
@@ -825,7 +825,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
             if(aPtr->albumPerformerID()==vpPtr->performerID())
             {
                 found=aPtr;
-                result=Common::result_exists;
+                result=Common::result_exists_derived;
             }
         }
 
@@ -845,7 +845,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
                     //	Existing album is choosen
                     found=SBIDAlbum::retrieveAlbum(selected->itemID());
                     found->refreshDependents();
-                    result=Common::result_exists;
+                    result=Common::result_exists_user_selected;
                 }
                 else
                 {

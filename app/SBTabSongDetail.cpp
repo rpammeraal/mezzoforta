@@ -94,6 +94,8 @@ SBTabSongDetail::playNow(bool enqueueFlag)
         SBIDSongPtr songPtr=SBIDSong::retrieveSong(currentScreenItem().key());
 
         SBIDOnlinePerformancePtr opPtr=selectOnlinePerformanceFromSong(songPtr);
+        SB_RETURN_VOID_IF_NULL(opPtr);
+
         key=opPtr->key();
     }
     if(key.validFlag())

@@ -453,7 +453,7 @@ CacheTemplate<T,parentT>::debugShowChanges()
         const SBKey key=changes().at(i);
         std::shared_ptr<T> ptr=_leMap[key];
 
-        qDebug() << SB_DEBUG_INFO << name() << i << changes().at(i) << ptr->itemID() << ptr->ID() << ptr->deletedFlag();
+        qDebug() << SB_DEBUG_INFO << name() << i << changes().at(i) << ptr->itemID() << ptr->ID() << ptr->changedFlag() << ptr->deletedFlag();
     }
 }
 

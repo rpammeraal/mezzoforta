@@ -1,4 +1,6 @@
 #include <QAction>
+#include <QFileDialog>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
 #include <QSqlRecord>
@@ -12,6 +14,7 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayManager.h"
+#include "SBDialogChart.h"
 #include "SBDialogRenamePlaylist.h"
 #include "SBDialogSelectItem.h"
 #include "SBIDOnlinePerformance.h"
@@ -264,6 +267,141 @@ Chooser::assignItem(const QModelIndex& idx, SBKey key)
 }
 
 void
+Chooser::chartEdit()
+{
+    SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
+    SB_RETURN_VOID_IF_NULL(cPtr);
+
+    _dc=new SBDialogChart(cPtr,SBDialogChart::sb_edit);
+    connect(_dc,SIGNAL(chartDataCompleted(SBIDChartPtr)),
+            this,SLOT(chartEditSave(SBIDChartPtr)));
+    _dc->exec();
+}
+
+void
+Chooser::chartEditSave(SBIDChartPtr cPtr)
+{
+    //	SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
+    SB_RETURN_VOID_IF_NULL(cPtr);
+
+    CacheManager* cm=Context::instance()->cacheManager();
+    SB_RETURN_VOID_IF_NULL(cm);
+
+    cm->saveChanges();
+    this->_populate();
+
+    QModelIndex in=_findItem(cPtr->chartName());
+    qDebug() << SB_DEBUG_INFO << cPtr->chartName() << in;
+    if(in.isValid())
+    {
+        _setCurrentIndex(in);
+    }
+    QString updateText=QString("Renamed chart %1%2%3.")
+        .arg(QChar(96))    //	1
+        .arg(cPtr->text()) //	2
+        .arg(QChar(180));  //	3
+    Context::instance()->controller()->updateStatusBarText(updateText);
+
+    const MainWindow* mw=Context::instance()->mainWindow();
+    mw->ui.tabChartDetail->refreshTabIfCurrent(cPtr->key());
+}
+
+void
+Chooser::chartReImport()
+{
+    //	Get chart data
+    SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
+    SB_RETURN_VOID_IF_NULL(cPtr);
+    this->chartImportContinue(cPtr,1);
+
+    const MainWindow* mw=Context::instance()->mainWindow();
+    mw->ui.tabChartDetail->refreshTabIfCurrent(cPtr->key());
+}
+
+void
+Chooser::chartRemove(SBIDChartPtr cPtr)
+{
+    if(!cPtr)
+    {
+        cPtr=_getChartSelected(_lastClickedIndex);
+    }
+    SB_RETURN_VOID_IF_NULL(cPtr);
+
+    qDebug() << SB_DEBUG_INFO << cPtr->genericDescription();
+
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheChartMgr* cmgr=cm->chartMgr();
+    Context::instance()->navigator()->removeFromScreenStack(cPtr->key());
+    cmgr->remove(cPtr);
+    cm->saveChanges();
+
+    QString updateText=QString("Removed chart %1%2%3.")
+        .arg(QChar(96))    //	1
+        .arg(cPtr->text()) //	2
+        .arg(QChar(180));  //	3
+    Context::instance()->controller()->updateStatusBarText(updateText);
+
+    //	remove screen
+    this->refresh();
+}
+
+void
+Chooser::chartImportNew()
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheChartMgr* cmgr=cm->chartMgr();
+    Common::sb_parameters p;
+    p.chartName="New Chart";
+    p.chartEndingDate=QDate::currentDate();
+    SBIDChartPtr cPtr=cmgr->createInDB(p);
+
+    //	Get chart data
+    SBDialogChart* c=new SBDialogChart(cPtr,SBDialogChart::sb_import);
+    connect(c,SIGNAL(chartDataCompleted(SBIDChartPtr)),
+            this,SLOT(chartImportContinue(SBIDChartPtr)));
+    connect(c,SIGNAL(chartDataRejected(SBIDChartPtr)),
+            this,SLOT(chartRemove(cPtr)));
+    c->exec();
+}
+
+void
+Chooser::chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag)
+{
+    qDebug() << SB_DEBUG_INFO << truncateFlag;
+    QFileDialog dialog;
+    dialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0]);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setLabelText(QFileDialog::LookIn,"Select CSV File:");
+    if(dialog.exec())
+    {
+        QStringList l=dialog.selectedFiles();
+        const QString chartPath=l[0];
+
+        qDebug() << SB_DEBUG_INFO << chartPath;
+
+        cPtr->import(chartPath,truncateFlag);
+
+        Context::instance()->navigator()->openScreen(cPtr->key());
+
+        QModelIndex in=_findItem(cPtr->chartName());
+        qDebug() << SB_DEBUG_INFO << cPtr->chartName() << in;
+        if(in.isValid())
+        {
+            _setCurrentIndex(in);
+        }
+        QString updateText=QString("Imported chart %1%2%3.")
+            .arg(QChar(96))    //	1
+            .arg(cPtr->text()) //	2
+            .arg(QChar(180));  //	3
+        Context::instance()->controller()->updateStatusBarText(updateText);
+    }
+    ProgressDialog* pd=ProgressDialog::instance();
+    pd->stats();
+    pd->hide();
+}
+
+void
 Chooser::chartPlay(bool enqueueFlag)
 {
     SBIDChartPtr cPtr=_getChartSelected(_lastClickedIndex);
@@ -271,6 +409,7 @@ Chooser::chartPlay(bool enqueueFlag)
     PlayManager* pmgr=Context::instance()->playManager();
     pmgr?pmgr->playItemNow(cPtr->key(),enqueueFlag):0;
 }
+
 
 void
 Chooser::chartEnqueue()
@@ -340,7 +479,7 @@ Chooser::playlistNew()
     SBIDPlaylistPtr ptr=pmgr->createInDB(p);
 
     //	Refresh our tree structure
-    this->_populate();
+    this->refresh();
 
     QModelIndex newPlaylistIndex=_findItem(ptr->playlistName());
     if(newPlaylistIndex.isValid())
@@ -473,6 +612,10 @@ Chooser::showContextMenu(const QPoint &p)
             QMenu menu(NULL);
             menu.addAction(_chartPlayAction);
             menu.addAction(_chartEnqueueAction);
+            menu.addAction(_chartImportAction);
+            menu.addAction(_chartImportNewAction);
+            menu.addAction(_chartEditAction);
+            menu.addAction(_chartRemoveAction);
             menu.exec(gp);
         }
         break;
@@ -524,6 +667,12 @@ Chooser::recalculateDuration()
     SBTabPlaylistDetail* tabPlaylistDetail=mw->ui.tabPlaylistDetail;
     tabPlaylistDetail->refreshTabIfCurrent(key);
 
+}
+
+void
+Chooser::refresh()
+{
+    this->_populate();
 }
 
 ///	PROTECTED METHODS
@@ -712,6 +861,7 @@ void
 Chooser::_init()
 {
     _cm=NULL;
+    _dc=NULL;
     _openPlaylistTab=0;
     const MainWindow* mw=Context::instance()->mainWindow();
 
@@ -729,6 +879,29 @@ Chooser::_init()
     connect(_chartEnqueueAction, SIGNAL(triggered()),
             this, SLOT(chartEnqueue()));
 
+    //	Delete chart
+    _chartRemoveAction = new QAction(tr("Remove Chart"), this);
+    _chartRemoveAction->setStatusTip(tr("Remove Chart"));
+    connect(_chartRemoveAction, SIGNAL(triggered()),
+            this, SLOT(chartRemove()));
+
+    //	Edit chart
+    _chartEditAction = new QAction(tr("Edit Chart"), this);
+    _chartEditAction->setStatusTip(tr("Edit Chart"));
+    connect(_chartEditAction, SIGNAL(triggered()),
+            this, SLOT(chartEdit()));
+
+    //	Import to existing chart
+    _chartImportAction = new QAction(tr("Reimport Chart"), this);
+    _chartImportAction->setStatusTip(tr("Reimport Chart"));
+    connect(_chartImportAction, SIGNAL(triggered()),
+            this, SLOT(chartReImport()));
+
+    //	Import to new chart
+    _chartImportNewAction = new QAction(tr("Import New Chart"), this);
+    _chartImportNewAction->setStatusTip(tr("Import New Chart"));
+    connect(_chartImportNewAction, SIGNAL(triggered()),
+            this, SLOT(chartImportNew()));
 
     //	Play playlist
     _playlistPlayAction = new QAction(tr("&Play Playlist"), this);

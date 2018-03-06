@@ -69,6 +69,9 @@ public:
         bool removedFlag;
         bool newFlag;
 
+        //	Chart edit
+        int chartPosition;
+
         //	Songbase ids
         int songID;
         int songPerformerID;

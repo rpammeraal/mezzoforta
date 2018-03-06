@@ -274,6 +274,47 @@ SBIDPerformer::updateSoundexFields()
     }
 }
 
+void
+SBIDPerformer::addAlternativePerformerName(const QString& alternativePerformerName)
+{
+    //	Save as alternative march
+    QString q=QString
+    (
+        "INSERT INTO ___SB_SCHEMA_NAME___artist_match "
+        "( "
+            "artist_alternative_name, "
+            "artist_correct_name "
+        ") "
+        "SELECT "
+            "a.artist_alternative_name, "
+            "a.artist_correct_name "
+        "FROM "
+            "( "
+                "SELECT "
+                    "'%1'::VARCHAR AS artist_alternative_name, "
+                    "'%2'::VARCHAR AS artist_correct_name"
+            ") a "
+        "WHERE "
+            "NOT EXISTS "
+            "( "
+                "SELECT NULL "
+                "FROM "
+                    "___SB_SCHEMA_NAME___artist_match am "
+                "WHERE "
+                    "a.artist_alternative_name=am.artist_alternative_name AND "
+                    "a.artist_correct_name=am.artist_correct_name "
+            ") "
+    )
+        .arg(Common::escapeSingleQuotes(alternativePerformerName))
+        .arg(Common::escapeSingleQuotes(this->performerName()))
+    ;
+
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    QStringList postBatch;
+    postBatch.append(q);
+    dal->addPostBatchSQL(postBatch);
+}
+
 ///	Setters
 void
 SBIDPerformer::addRelatedPerformer(SBKey key)
@@ -333,13 +374,13 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=SBIDPerformer::retrievePerformer(matches[0][0]->itemID());
-            result=Common::result_exists;
+            result=Common::result_exists_derived;
         }
         else if(matches[1].count()==1)
         {
             //	If there is *exactly* one match without articles, take it.
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
-            result=Common::result_exists;
+            result=Common::result_exists_derived;
         }
         else //	if(matches[2].count()>1): do NOT do this.
         {
@@ -357,7 +398,7 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
                     //	Existing performer is choosen
                     found=SBIDPerformer::retrievePerformer(selected->itemID());
                     found->refreshDependents();
-                    result=Common::result_exists;
+                    result=Common::result_exists_user_selected;
                 }
                 else
                 {
@@ -533,14 +574,21 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
     (
         "WITH allr AS "
         "("
+            //	case 0
             "SELECT "
                 "0 AS match_rank, "
                 "s.artist_id "
             "FROM "
                 "___SB_SCHEMA_NAME___artist s "
+                    "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma ON "
+                        "ma.artist_correct_name=s.name "
             "WHERE "
-                "REPLACE(LOWER(s.name),' ','') = '%1' "
+                "REPLACE(LOWER(s.name),' ','') = '%1' OR "
+                "REPLACE(LOWER(ma.artist_alternative_name),' ','') = '%1' OR "
+                "REPLACE(LOWER(s.name), ' & ', 'and') = '%1' OR "
+                "REPLACE(LOWER(s.name), ' and ', '&') = '%1'  "
             "UNION "
+            //	case 1
             "SELECT DISTINCT "
                 "1 AS match_rank, "
                 "a.artist_id "
@@ -562,8 +610,12 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                         "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=' '||LOWER(t.word) OR "
                         "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=','||LOWER(t.word)  "
                     ") "
-                ") "
+                ") OR "
+                "REPLACE(LOWER(a.name), ' ', '') = '%5' OR "
+                "REPLACE(LOWER(a.name), ' & ', 'and') = '%5' OR "
+                "REPLACE(LOWER(a.name), ' and ', '&') = '%5' "
             "UNION "
+            //	case 2
             "SELECT DISTINCT "
                 "2 AS match_rank, "
                 "s.artist_id "
@@ -587,7 +639,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
             "FROM "
                 "allr a "
         ") "
-        "SELECT "
+        "SELECT DISTINCT "
             "r.match_rank, "
             "s.artist_id, "
             "s.name, "
@@ -606,6 +658,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         .arg(excludeID)
         .arg(newSoundex)
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.performerName)))
+        .arg(Common::escapeSingleQuotes(Common::comparable(Common::removeArticles(tobeFound.performerName))))
     ;
     qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
@@ -630,6 +683,8 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
 {
     SB_RETURN_VOID_IF_NULL(pPtrFrom);
     refreshDependents(0);
+
+    this->addAlternativePerformerName(pPtrFrom->performerName());
 
     CacheManager* cm=Context::instance()->cacheManager();
 
@@ -740,10 +795,9 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
     QString q;
-    bool deletedFlag=this->deletedFlag();
 
     //	Deleted
-    if(deletedFlag && db_change==Common::db_delete)
+    if(deletedFlag() && db_change==Common::db_delete)
     {
         //	Remove artist
         //	Do NOT remove anything else -- this should be performed by SBIDMgr
@@ -757,8 +811,19 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
             .arg(this->performerID())
         ;
         SQL.append(q);
+
+        q=QString
+        (
+            "DELETE FROM  "
+                "___SB_SCHEMA_NAME___artist_match "
+            "WHERE "
+                "artist_correct_name='%1' "
+        )
+            .arg(Common::escapeSingleQuotes(this->_performerName))
+        ;
+        SQL.append(q);
     }
-    else if(changedFlag() && db_change==Common::db_update)
+    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         //	Update sort_name
         const QString sortName=Common::removeArticles(Common::removeAccents(this->performerName()));
@@ -787,6 +852,17 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
                 .arg(Common::escapeSingleQuotes(this->MBID()))
                 .arg(Common::soundex(Common::escapeSingleQuotes(this->_performerName)))
                 .arg(this->itemID())
+            ;
+            SQL.append(q);
+
+            q=QString
+            (
+                "DELETE FROM  "
+                    "___SB_SCHEMA_NAME___artist_match "
+                "WHERE "
+                    "artist_alternative_name='%1' "
+            )
+                .arg(Common::escapeSingleQuotes(this->_performerName))
             ;
             SQL.append(q);
         }

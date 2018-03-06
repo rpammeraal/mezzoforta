@@ -116,7 +116,7 @@ SBTabChartDetail::_populate(const ScreenItem& si)
     mw->ui.labelChartDetailIcon->setKey(cPtr->key());
 
     mw->ui.labelChartDetailChartName->setText(cPtr->chartName());
-    mw->ui.labelChartDetailChartDetail->setText(cPtr->chartReleaseDate().toString());
+    mw->ui.labelChartDetailChartDetail->setText(cPtr->chartEndingDate().toString());
 
     QTableView* tv=mw->ui.chartDetailSongList;
     SBTableModel* tm=cPtr->tableModelItems();

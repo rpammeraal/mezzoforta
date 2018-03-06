@@ -452,6 +452,12 @@ Controller::setupUI()
     qDebug() << SB_DEBUG_INFO << maxRandom;
     */
 
+    QString t;
+    t="Goo Goo Dolls";
+    qDebug() << SB_DEBUG_INFO << Common::removeNonAlphanumericIncludingSpaces(t);
+    t="Goo Goo Dolls!";
+    qDebug() << SB_DEBUG_INFO << Common::removeNonAlphanumericIncludingSpaces(t);
+
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }

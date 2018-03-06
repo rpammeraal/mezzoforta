@@ -7,17 +7,18 @@
 #include "MainWindow.h"
 #include "SearchItemModel.h"
 
+//	This list shows the order in which objects should be removed
 static const SBKey::ItemType _order [] =
 {
-    SBKey::ChartPerformance,
-    SBKey::Chart,
-    SBKey::Album,
-    SBKey::AlbumPerformance,
-    SBKey::OnlinePerformance,
-    SBKey::Performer,
     SBKey::PlaylistDetail,
     SBKey::Playlist,
+    SBKey::OnlinePerformance,
+    SBKey::ChartPerformance,
+    SBKey::Chart,
+    SBKey::AlbumPerformance,
+    SBKey::Album,
     SBKey::SongPerformance,
+    SBKey::Performer,
     SBKey::Song
 };
 

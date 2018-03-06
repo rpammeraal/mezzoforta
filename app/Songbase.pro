@@ -82,7 +82,8 @@ HEADERS     = \
     CacheManager.h \
     CacheTemplate.h \
     Cache.h \
-    SBKey.h
+    SBKey.h \
+    SBDialogChart.h
 
 SOURCES     = \
     main.cpp \
@@ -165,7 +166,8 @@ SOURCES     = \
     SearchItemModel.cpp \
     CacheManager.cpp \
     Cache.cpp \
-    SBKey.cpp
+    SBKey.cpp \
+    SBDialogChart.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
@@ -177,6 +179,7 @@ INSTALLS += target
 FORMS += \
     MainWindow.ui \
     DatabaseSelector.ui \
+    SBDialogChart.ui \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
     SetupWizard.ui \

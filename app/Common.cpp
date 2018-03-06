@@ -125,6 +125,95 @@ Common::hideColumns(QTableView* tv)
     tv->verticalHeader()->hide();
 }
 
+QVector<QStringList>
+Common::parseCSVFile(const QString& fileName)
+{
+    QVector<QStringList> contents;
+    QFile inputFile(fileName);
+    if(inputFile.open(QIODevice::ReadOnly))
+    {
+        QTextStream in(&inputFile);
+        while(!in.atEnd())
+        {
+            contents.append(parseCSVLine(in.readLine()));
+        }
+    }
+    return contents;
+}
+
+QStringList
+Common::parseCSVLine(const QString& string)
+{
+    enum State {Normal, Quote} state = Normal;
+    QStringList fields;
+    QString value;
+
+    for (int i = 0; i < string.size(); i++)
+    {
+        QChar current = string.at(i);
+
+        // Normal state
+        if (state == Normal)
+        {
+            // Comma
+            if (current == ',')
+            {
+                // Save field
+                fields.append(value);
+                value.clear();
+            }
+
+            // Double-quote
+            else if (current == '"')
+            {
+                state = Quote;
+            }
+
+            // Other character
+            else
+            {
+                value += current;
+            }
+        }
+
+        // In-quote state
+        else if (state == Quote)
+        {
+            // Another double-quote
+            if (current == '"')
+            {
+                if (i+1 < string.size())
+                {
+                    QChar next = string.at(i+1);
+
+                    // A double double-quote?
+                    if (next == '"')
+                    {
+                        value += '"';
+                        i++;
+                    }
+                    else
+                    {
+                        state = Normal;
+                    }
+                }
+            }
+
+            // Other character
+            else
+            {
+                value += current;
+            }
+        }
+    }
+    if (!value.isEmpty())
+    {
+        fields.append(value);
+    }
+
+    return fields;
+}
+
 int
 Common::parseIntFieldDB(const QSqlRecord *sr, int index)
 {
@@ -283,7 +372,8 @@ Common::removeNonAlphanumeric(const QString &s)
 QString
 Common::removeNonAlphanumericIncludingSpaces(const QString &s)
 {
-    QString t=removeNonAlphanumeric(s);
+    QString t=removeArticles(s);
+    t=removeNonAlphanumeric(t);
     t.replace(" ","");
     return t;
 }

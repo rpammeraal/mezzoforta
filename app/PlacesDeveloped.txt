@@ -1161,10 +1161,24 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
 ----------------+---------+-----------+---------------------------------+------+-------
           35815 |   35891 |      7640 |                           39424 | 1990 |
 
+20180225:
+-	final 1.0 should include:
+    -	smart tagging of all objects
+	-	editing of online performances
+	-	playlist export
+	-	upload of charts
+
+20180305:
+-	Fixed order in which SQL updates are retrieved:
+    -	Change 'James Taylor & Mark Knopfler' to 'Mark Knopfler & James Taylor' -- db/actual databases/songbase.20180226
+	-	CHange 'Chaka Khan & Rufus -> Rufus & Chaka Khan' -- db/actual databases/songbase.20180305
+	-	Change 'Acda & De Munnik' -> Acda En De Munnik.
+-	Fixed import chart bugs
+-	Added functionality to maintain the artist_match table.
+
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
-
-Enhancements:
+*	updateSql: add !deletedFlag() && changedFlag && mode=sb_change
 
 Near future:
 *1	Create

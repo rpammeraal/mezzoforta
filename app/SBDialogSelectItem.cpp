@@ -185,8 +185,9 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
     d->ui->setupUi(d);
 
     //	Populate choices
-    QString title=QString("Select Correct Name for: <B>'%1'</B>").arg(newPerformerName);
+    QString title=QString("Select Correct Name for: '%1'").arg(newPerformerName);
     d->setTitle(title);
+    title=QString("Select Correct Name for: <B>'%1'</B>").arg(newPerformerName);
     d->ui->lHeader->setText(title);
     d->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 

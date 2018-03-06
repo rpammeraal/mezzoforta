@@ -107,8 +107,9 @@ public:
     enum result
     {
         result_canceled=0,
-        result_exists=1,
-        result_missing=2
+        result_exists_derived=1,
+        result_exists_user_selected=2,
+        result_missing=3
     };
 
     class sb_parameters
@@ -139,7 +140,7 @@ public:
         QString performerName;
         QString playlistName;
         int playlistPosition;
-        QDate releaseDate;
+        QDate chartEndingDate;
         QString songTitle;
         QString www;
         int year;
@@ -169,6 +170,8 @@ public:
     static QString escapeSingleQuotes(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return --ID; }
+    static QVector<QStringList> parseCSVFile(const QString& string);
+    static QStringList parseCSVLine(const QString& string);
     static int parseIntFieldDB(const QSqlRecord* sr, int index);
     static QString parseTextFieldDB(const QSqlRecord* sr, int index);
     static quint64 random(quint64 max);

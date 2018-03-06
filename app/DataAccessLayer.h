@@ -38,6 +38,7 @@ public:
     DataAccessLayer(const DataAccessLayer& c);
     virtual ~DataAccessLayer();
 
+    void addPostBatchSQL(const QStringList& sql);
     bool executeBatch(const QStringList& allQueries,const QString& progressDialogTitle=QString(),bool commitFlag=1,bool ignoreErrorsFlag=0) const;
     QString createRestorePoint() const;
     bool restore(const QString& restorePoint) const;
@@ -73,13 +74,15 @@ protected:
     void setConvertToSecondsFromTime(const QString& n);
 
 private:
-    QString _connectionName;
-    QString _convertToSecondsFromTime;
-    QString _ilike;          //	returns the case insensitive version of SQL like
-    QString _isnull;         // returns the equivalent of ISNULL
-    QString _getDate;        //	return current timestamp
-    QString _getDateTime;    //	return current timestamp
+    QString     _connectionName;
+    QString     _convertToSecondsFromTime;
+    QString     _ilike;          //	returns the case insensitive version of SQL like
+    QString     _isnull;         // returns the equivalent of ISNULL
+    QString     _getDate;        //	return current timestamp
+    QString     _getDateTime;    //	return current timestamp
+    QStringList _postBatchSQL;
 
+    void    _clearPostBatchSQL();
     QString _getSchemaName() const;
 
     void _init();

@@ -44,8 +44,20 @@ DataAccessLayer::~DataAccessLayer()
 {
 }
 
+void
+DataAccessLayer::addPostBatchSQL(const QStringList &sql)
+{
+    QStringListIterator it(sql);
+    while(it.hasNext())
+    {
+        QString q=it.next();
+        this->customize(q);
+        _postBatchSQL.append(q);
+    }
+}
+
 bool
-DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& progressDialogTitle, bool commitFlag, bool ignoreErrorsFlag) const
+DataAccessLayer::executeBatch(const QStringList &queries, const QString& progressDialogTitle, bool commitFlag, bool ignoreErrorsFlag) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -53,6 +65,8 @@ DataAccessLayer::executeBatch(const QStringList &allQueries, const QString& prog
     QString errorMsg;
     bool successFlag=1;
     QString q;
+    QStringList allQueries=queries + _postBatchSQL;
+    const_cast<DataAccessLayer *>(this)->_clearPostBatchSQL();
 
     //	Set up progress dialog
     int progressCurrentValue=0;
@@ -482,6 +496,12 @@ DataAccessLayer::setIsNull(const QString& n)
 
 //	To be called during initialization only (cwip)
 ///	Private
+void
+DataAccessLayer::_clearPostBatchSQL()
+{
+    _postBatchSQL.clear();
+}
+
 QString
 DataAccessLayer::_getSchemaName() const
 {

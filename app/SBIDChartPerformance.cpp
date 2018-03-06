@@ -226,11 +226,10 @@ SBIDChartPerformance::createInDB(Common::sb_parameters& p)
         ") "
         "VALUES "
         "( "
-            "%1', "
+            "%1, "
             "%2, "
             "%3, "
-            "%4, "
-            "%5 "
+            "'%4' "
         ") "
     )
         .arg(p.chartID)

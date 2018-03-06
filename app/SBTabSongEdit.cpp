@@ -220,7 +220,7 @@ SBTabSongEdit::save() const
                 //	set other attributes, save song -- completely new performer means no other matches can be found.
                 setMetaDataFlag=1;
             }
-            else if(result==Common::result_exists)
+            else if(result==Common::result_exists_derived || result==Common::result_exists_user_selected)
             {
                 //	4.1.2	if found:
                 //		find if song performance exist with edited song title & changed performer.
@@ -271,7 +271,7 @@ SBTabSongEdit::save() const
                         return;
                     }
                     qDebug() << SB_DEBUG_INFO;
-                    if(result==Common::result_exists)
+                    if(result==Common::result_exists_derived || result==Common::result_exists_user_selected)
                     {
                         //		if found: merge
                         SB_RETURN_VOID_IF_NULL(newSongPtr);
@@ -335,7 +335,7 @@ SBTabSongEdit::save() const
                 qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
                 return;
             }
-            else if(result==Common::result_exists)
+            else if(result==Common::result_exists_derived || result==Common::result_exists_user_selected)
             {
                 SB_RETURN_VOID_IF_NULL(newSongPtr);
                 if(orgSongPtr->songID()!=newSongPtr->songID())

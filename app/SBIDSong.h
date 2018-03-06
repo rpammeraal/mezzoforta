@@ -119,6 +119,7 @@ protected:
     friend class SBIDAlbum;
     friend class SBTabSongEdit;
     friend class SBIDSongPerformance;
+    friend class SBIDChart;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
     //	Protected setters

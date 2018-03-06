@@ -837,7 +837,7 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
             .arg(this->itemID())
         );
     }
-    if(changedFlag() && db_change==Common::db_update)
+    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (
@@ -884,7 +884,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
             found=matches[0][0];
-            result=Common::result_exists;
+            result=Common::result_exists_derived;
         }
         else if((showAllChoicesFlag==1) || (matches[1].count()>1))
         {
@@ -902,7 +902,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
                     //	Existing song is choosen
                     found=SBIDSong::retrieveSong(selected->itemID());
                     found->refreshDependents();
-                    result=Common::result_exists;
+                    result=Common::result_exists_user_selected;
                 }
                 else
                 {

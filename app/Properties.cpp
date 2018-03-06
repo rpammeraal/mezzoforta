@@ -236,7 +236,7 @@ Properties::userSetMusicLibraryDirectory()
     dialog.setDirectory(musicLibraryDirectory);
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setViewMode(QFileDialog::Detail);
-    dialog.setLabelText(QFileDialog::LookIn,"LabelText");
+    dialog.setLabelText(QFileDialog::LookIn,"Specify Music Directory:");
     if(dialog.exec())
     {
         QStringList l=dialog.selectedFiles();

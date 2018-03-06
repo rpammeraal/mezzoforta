@@ -57,6 +57,7 @@ public:
 
     //	Static methods
     static void updateSoundexFields();
+    void addAlternativePerformerName(const QString& alternativePerformerName);
 
     //	Operators
     virtual operator QString() const;
