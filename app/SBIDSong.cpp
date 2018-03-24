@@ -183,13 +183,11 @@ SBIDSong::addSongPerformance(SBIDSongPerformancePtr spPtr)
 QVector<SBIDAlbumPerformancePtr>
 SBIDSong::allPerformances()
 {
-    getSemaphore();
     if(_albumPerformances.count()==0)
     {
         const_cast<SBIDSong *>(this)->refreshDependents();
     }
-    releaseSemaphore();
-    return _albumPerformances;
+    return QVector<SBIDAlbumPerformancePtr>(_albumPerformances);
 }
 
 SBTableModel*
@@ -733,7 +731,7 @@ SBIDSong::instantiate(const QSqlRecord &r)
     song._songTitle                   =r.value(i++).toString();
     song._notes                       =r.value(i++).toString();
     song._lyrics                      =r.value(i++).toString();
-    song._originalSongPerformanceID   =r.value(i++).toInt();
+    song._originalSongPerformanceID   =Common::parseIntFieldDB(&r,i++);
 
     return std::make_shared<SBIDSong>(song);
 }
@@ -742,10 +740,33 @@ void
 SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
 {
     CacheManager* cm=Context::instance()->cacheManager();
+    _loadSongPerformances();	//	make sure list is loaded.
+
+    //	In the rare case that:
+    //	-	originalPerformanceID is not set for this
+    //	-	there is at least songPerformance,
+    //	Set originalPerformanceID
+    int originalPerformanceID=this->originalSongPerformanceID();
+    qDebug() << SB_DEBUG_INFO << this->key() << "originalPerformanceID=" << this->originalSongPerformanceID();
+    if(originalPerformanceID==-1)
+    {
+        qDebug() << SB_DEBUG_INFO << "originalPerformanceID not set for " << this->key();
+        QMapIterator<int,SBIDSongPerformancePtr> it(this->songPerformances());
+        if(it.hasNext())
+        {
+            it.next();
+            SBIDSongPerformancePtr spPtr=it.value();
+            if(spPtr)
+            {
+                qDebug() << SB_DEBUG_INFO << "set originalPerformanceID for" << this->key() << "to" << spPtr->songPerformanceID();
+                this->setOriginalPerformanceID(spPtr->songPerformanceID());
+            }
+        }
+
+    }
 
     //	SongPerformance
     CacheSongPerformanceMgr *spMgr=cm->songPerformanceMgr();
-    _loadSongPerformances();	//	make sure list is loaded.
     QMapIterator<int,SBIDSongPerformancePtr> fromIt(fromPtr->songPerformances());
 
     getSemaphore();
@@ -837,7 +858,7 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
             .arg(this->itemID())
         );
     }
-    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString
         (

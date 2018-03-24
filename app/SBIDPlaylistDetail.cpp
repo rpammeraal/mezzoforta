@@ -247,7 +247,7 @@ SBIDPlaylistDetail::updateSQL(const Common::db_change db_change) const
             "WHERE playlist_detail_id=%1 "
         ).arg(this->itemID()));
     }
-    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString(
             "UPDATE ___SB_SCHEMA_NAME___playlist_detail "

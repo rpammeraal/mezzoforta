@@ -583,10 +583,10 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                     "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma ON "
                         "ma.artist_correct_name=s.name "
             "WHERE "
-                "REPLACE(LOWER(s.name),' ','') = '%1' OR "
-                "REPLACE(LOWER(ma.artist_alternative_name),' ','') = '%1' OR "
-                "REPLACE(LOWER(s.name), ' & ', 'and') = '%1' OR "
-                "REPLACE(LOWER(s.name), ' and ', '&') = '%1'  "
+                "REPLACE(LOWER(REPLACE(s.name,'''','')),' ','') = '%1' OR "
+                "REPLACE(LOWER(REPLACE(ma.artist_alternative_name,'''','')),' ','') = '%1' OR "
+                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' & ', 'and'),' ','') = '%1' OR "
+                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' and ', '&'),' ','') = '%1'  "
             "UNION "
             //	case 1
             "SELECT DISTINCT "
@@ -817,13 +817,13 @@ SBIDPerformer::updateSQL(const Common::db_change db_change) const
             "DELETE FROM  "
                 "___SB_SCHEMA_NAME___artist_match "
             "WHERE "
-                "artist_correct_name='%1' "
+                "LOWER(artist_correct_name)=LOWER('%1') "
         )
             .arg(Common::escapeSingleQuotes(this->_performerName))
         ;
         SQL.append(q);
     }
-    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         //	Update sort_name
         const QString sortName=Common::removeArticles(Common::removeAccents(this->performerName()));

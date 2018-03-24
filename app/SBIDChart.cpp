@@ -172,7 +172,9 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
 
         MusicLibrary::MLentity e;
         e.songPerformerName=line.at(performerNameColumn);
+        Common::toTitleCase(e.songPerformerName);
         e.songTitle=line.at(songTitleColumn);
+        Common::toTitleCase(e.songTitle);
         e.chartPosition=line.at(positionColumn).toInt();
         e.year=this->chartEndingDate().year();
 
@@ -450,7 +452,7 @@ SBIDChart::updateSQL(const Common::db_change db_change) const
                 .arg(this->chartID())
         );
     }
-    else if(!deletedFlag() && changedFlag() && db_change==Common::db_update)
+    else if(changedFlag() && db_change==Common::db_update)
     {
         SQL.append(QString(
             "UPDATE ___SB_SCHEMA_NAME___chart "
