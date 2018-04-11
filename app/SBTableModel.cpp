@@ -136,7 +136,7 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
             _setItem(index,0,albumPtr->key().toString());
             _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
             _setItem(index,2,QString("%1").arg(albumPtr->albumYear()));
-            _setItem(index,3,albumPtr->performerPtr()->key().toString());
+            _setItem(index,3,albumPtr->albumPerformerPtr()->key().toString());
             _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
             index++;
@@ -159,7 +159,7 @@ SBTableModel::populateAlbumsByPerformer(const QVector<SBIDAlbumPerformancePtr>& 
                 _setItem(index,0,albumPtr->key().toString());
                 _setItem(index,1,QString("%1").arg(albumPtr->albumTitle()));
                 _setItem(index,2,QString("%1").arg(albumPtr->albumYear()));
-                _setItem(index,3,albumPtr->performerPtr()->key().toString());
+                _setItem(index,3,albumPtr->albumPerformerPtr()->key().toString());
                 _setItem(index,4,QString("%1").arg(albumPtr->albumPerformerName()));
 
                 index++;

@@ -260,9 +260,29 @@ SBIDAlbum::tableModelPerformances() const
     return tm;
 }
 
+///	Setters
+void
+SBIDAlbum::setAlbumPerformerID(int performerID)
+{
+    if(performerID!=_albumPerformerID)
+    {
+        SBIDPerformerPtr pPtr;
+        pPtr=this->albumPerformerPtr();
+        SB_RETURN_VOID_IF_NULL(pPtr);
+        pPtr->setToReloadFlag();
+
+        _albumPerformerID=performerID;
+        setChangedFlag();
+
+        pPtr=this->albumPerformerPtr();
+        SB_RETURN_VOID_IF_NULL(pPtr);
+        pPtr->setToReloadFlag();
+    }
+}
+
 ///	Pointers
 SBIDPerformerPtr
-SBIDAlbum::performerPtr() const
+SBIDAlbum::albumPerformerPtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CachePerformerMgr* pMgr=cm->performerMgr();
@@ -273,14 +293,14 @@ SBIDAlbum::performerPtr() const
 QString
 SBIDAlbum::albumPerformerName() const
 {
-    SBIDPerformerPtr pPtr=performerPtr();
+    SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->performerName():QString());
 }
 
 QString
 SBIDAlbum::albumPerformerMBID() const
 {
-    SBIDPerformerPtr pPtr=performerPtr();
+    SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->MBID():QString());
 }
 

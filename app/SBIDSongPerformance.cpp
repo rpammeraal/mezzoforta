@@ -79,6 +79,26 @@ SBIDSongPerformance::type() const
 }
 
 ///	SBIDSongPerformance specific methods
+/// Setters
+void
+SBIDSongPerformance::setSongPerformerID(int songPerformerID)
+{
+    if(songPerformerID!=_performerID)
+    {
+        SBIDSongPtr sPtr;
+
+        sPtr=this->songPtr();
+        SB_RETURN_VOID_IF_NULL(sPtr);
+        sPtr->setToReloadFlag();
+
+        _performerID=songPerformerID;
+        setChangedFlag();
+
+        sPtr=this->songPtr();
+        SB_RETURN_VOID_IF_NULL(sPtr);
+        sPtr->setToReloadFlag();
+    }
+}
 
 ///	Pointers
 SBIDPerformerPtr
@@ -659,6 +679,26 @@ SBIDSongPerformance::updateSQL(const Common::db_change db_change) const
         );
     }
     return SQL;
+}
+
+void
+SBIDSongPerformance::setSongID(int songID)
+{
+    if(songID!=_songID)
+    {
+        SBIDSongPtr sPtr;
+
+        sPtr=this->songPtr();
+        SB_RETURN_VOID_IF_NULL(sPtr);
+        sPtr->setToReloadFlag();
+
+        songID=_songID;
+        setChangedFlag();
+
+        sPtr=this->songPtr();
+        SB_RETURN_VOID_IF_NULL(sPtr);
+        sPtr->setToReloadFlag();
+    }
 }
 
 //	Private methods

@@ -715,6 +715,27 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
     return SQL;
 }
 
+//	Protected setters
+void
+SBIDAlbumPerformance::setAlbumID(int albumID)
+{
+    if(albumID!=_albumID)
+    {
+        SBIDAlbumPtr aPtr;
+
+        aPtr=this->albumPtr();
+        SB_RETURN_VOID_IF_NULL(aPtr);
+        aPtr->setToReloadFlag();
+
+        _albumID=albumID;
+        setChangedFlag();
+
+        aPtr=this->albumPtr();
+        SB_RETURN_VOID_IF_NULL(aPtr);
+        aPtr->setToReloadFlag();
+    }
+}
+
 //	Private methods
 void
 SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)

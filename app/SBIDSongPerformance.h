@@ -29,7 +29,7 @@ public:
     inline int year() const { return _year; }
 
     //	Setters
-    void setSongPerformerID(int songPerformerID) { _performerID=songPerformerID; setChangedFlag(); }
+    void setSongPerformerID(int songPerformerID);
     void setYear(int year) { _year=year; setChangedFlag(); }
 
     //	Pointers
@@ -87,7 +87,7 @@ protected:
     friend class SBIDAlbumPerformance;
     friend class SBIDSong;
     inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { if(_preferredAlbumPerformanceID!=preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); qDebug() << SB_DEBUG_INFO << "CHANGED" << this->ID() << _preferredAlbumPerformanceID; } }
-    inline void setSongID(int songID) { _songID=songID; setChangedFlag(); }
+    void setSongID(int songID);
 
 private:
     //	Attributes

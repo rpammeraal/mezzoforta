@@ -102,7 +102,7 @@ protected:
     friend class SBTabAlbumEdit;
     friend class SBIDSongPerformance;
 
-    inline void setAlbumID(int albumID) { if(_albumID!=albumID) { _albumID=albumID; setChangedFlag(); } }
+    void setAlbumID(int albumID);
     inline void setNotes(const QString& notes) { if(_notes!=notes) { _notes=notes; setChangedFlag(); } }
     inline void setPreferredOnlinePerformanceID(int preferredOnlinePerformanceID) { if(_preferredOnlinePerformanceID!=preferredOnlinePerformanceID) _preferredOnlinePerformanceID=preferredOnlinePerformanceID; setChangedFlag(); }
     inline void setSongPerformanceID(int songPerformanceID) { _songPerformanceID=songPerformanceID; setChangedFlag(); }
