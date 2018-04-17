@@ -1176,12 +1176,16 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
 -	Fixed import chart bugs
 -	Added functionality to maintain the artist_match table.
 
-BUGS:
-Joe Strummer - make Bob Marley org performer of Redemption Song.
 
-TODO:
+20180411:
 -	When ID is changed in SB*object, the parent object needs to have its setToReloadFlag set.
     Example: see SBIDSongPerformance::setSongPerformerID()
+
+BUGS:
+*	Joe Strummer - make Bob Marley org performer of Redemption Song.
+*	Johnny Cougar: change org perf:
+    *	Oh Pretty Woman
+	*	Jailhouse Rock
 
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.

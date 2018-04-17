@@ -364,11 +364,11 @@ qDebug() << SB_DEBUG_INFO;
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_match \n"
                 "( \n"
-                    "artist_name             VARCHAR NOT NULL, \n"
+                    "artist_correct_name     VARCHAR NOT NULL, \n"
                     "artist_alternative_name VARCHAR NOT NULL \n"
                 "); \n"
             ));
-            SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_name);");
+            SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_correct_name);");
 			qDebug() << SB_DEBUG_INFO;
 
 
