@@ -688,16 +688,24 @@ SBIDSongPerformance::setSongID(int songID)
     {
         SBIDSongPtr sPtr;
 
+        //	Previously pointed to song needs to reload as we're changing our parent
         sPtr=this->songPtr();
         SB_RETURN_VOID_IF_NULL(sPtr);
         sPtr->setToReloadFlag();
 
-        songID=_songID;
+        _songID=songID;
         setChangedFlag();
 
-        sPtr=this->songPtr();
-        SB_RETURN_VOID_IF_NULL(sPtr);
-        sPtr->setToReloadFlag();
+        /////////////////////////////////////////////////////////////////////////////
+        //	DEBUG 4/20/2018: Do NOT do the following. This function is only called by
+        //	the merged-to song. It will do the reload.
+        //	Joe Strummer/Redemption Song could not be merged with Bob Marley's
+        //	original one.
+        /////////////////////////////////////////////////////////////////////////////
+        //	New parent need to reload song.
+        //	sPtr=this->songPtr();
+        //	SB_RETURN_VOID_IF_NULL(sPtr);
+        //	sPtr->setToReloadFlag();
     }
 }
 

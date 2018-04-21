@@ -28,6 +28,7 @@ Enroute: LAX-KEF
 Zoetermeer
 On board: Miami - San Juan, Puerto Rico - St Thomas - Sint Maarten
 Enroute: FLL-LAX
+Enroute: EWR-LAX
 
 
 Crown Princess Demo (20150407):
@@ -1181,17 +1182,22 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
 -	When ID is changed in SB*object, the parent object needs to have its setToReloadFlag set.
     Example: see SBIDSongPerformance::setSongPerformerID()
 
+20180421;
+-	sqlite: crash on chart play
+        -	fixed with new code
+-	Joe Strummer - make Bob Marley org performer of Redemption Song.
+-	Johnny Cougar: change org perf:
+        -	Oh Pretty Woman
+        -	Jailhouse Rock
+-	initialize & import on mac/sqlite does not work: not being able to reproduce
+-	sqlite: able to add same performance to playlist (days nigga took over -> craphop)
+        -	probably fixed in earlier code.
+
 BUGS:
-*	Joe Strummer - make Bob Marley org performer of Redemption Song.
-*	Johnny Cougar: change org perf:
-    *	Oh Pretty Woman
-	*	Jailhouse Rock
 
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 *	updateSql: add !deletedFlag() && changedFlag && mode=sb_change
-*	sqlite: able to add same performance to playlist (days nigga took over -> craphop)
-*	sqlite: crash on chart play
 
 Near future:
 *1	Create
@@ -1356,5 +1362,5 @@ nose  hair
 incorrect:
 bckdl
 
-CVS:
+cvs:
 https://stackoverflow.com/questions/27318631/parsing-through-a-csv-file-in-qt

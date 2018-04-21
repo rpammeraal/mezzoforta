@@ -194,7 +194,6 @@ SBTableModel*
 SBIDSong::charts() const
 {
     SBTableModel* tm=new SBTableModel();
-    qDebug() << SB_DEBUG_INFO;
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
@@ -464,7 +463,6 @@ void
 SBIDSong::refreshDependents(bool forcedFlag)
 {
     getSemaphore();
-    qDebug() << SB_DEBUG_INFO << key() << forcedFlag;
     if(forcedFlag==1 || _albumPerformances.count()==0)
     {
         _loadAlbumPerformances();
@@ -747,10 +745,8 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
     //	-	there is at least songPerformance,
     //	Set originalPerformanceID
     int originalPerformanceID=this->originalSongPerformanceID();
-    qDebug() << SB_DEBUG_INFO << this->key() << "originalPerformanceID=" << this->originalSongPerformanceID();
     if(originalPerformanceID==-1)
     {
-        qDebug() << SB_DEBUG_INFO << "originalPerformanceID not set for " << this->key();
         QMapIterator<int,SBIDSongPerformancePtr> it(this->songPerformances());
         if(it.hasNext())
         {
@@ -758,11 +754,9 @@ SBIDSong::mergeFrom(SBIDSongPtr &fromPtr)
             SBIDSongPerformancePtr spPtr=it.value();
             if(spPtr)
             {
-                qDebug() << SB_DEBUG_INFO << "set originalPerformanceID for" << this->key() << "to" << spPtr->songPerformanceID();
                 this->setOriginalPerformanceID(spPtr->songPerformanceID());
             }
         }
-
     }
 
     //	SongPerformance

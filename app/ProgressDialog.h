@@ -55,6 +55,8 @@ private:
     bool            _visible;
     int             _prevOffset;
 
+    int             _tmpWidth;
+
     void _init();
     void _reset();
 };

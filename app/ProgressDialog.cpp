@@ -51,8 +51,15 @@ ProgressDialog::setLabelText(const QString& prettyFunction, const QString& label
 {
     if(prettyFunction==_prettyFunction)
     {
-        _pd.setLabelText(label);
+        QString toDisplay=label;
+        if(toDisplay.length()>50)
+        {
+            toDisplay=toDisplay.left(47)+"...";
+        }
+
+        _pd.setLabelText(toDisplay);
         QCoreApplication::processEvents();
+        _tmpWidth=_pd.width()>_tmpWidth?_pd.width():_tmpWidth;
     }
     else
     {
@@ -181,6 +188,7 @@ ProgressDialog::_init()
     _pd.setCancelButton(NULL);
     hide();
     _reset();
+    _tmpWidth=0;
 }
 
 void
