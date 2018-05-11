@@ -82,16 +82,19 @@ PlayerController::playerStateChanged(QMediaPlayer::State playerState)
     qRegisterMetaType<QMediaPlayer::State>("whatever");
 #endif
 
+    qDebug() << SB_DEBUG_INFO << _state << PlayerController::sb_player_state_changing_media;
     if((_state==PlayerController::sb_player_state_changing_media) ||
             playerState==QMediaPlayer::PausedState ||
             playerState==QMediaPlayer::PlayingState)
     {
+        qDebug() << SB_DEBUG_INFO;
         return;
     }
     if(_state==PlayerController::sb_player_state_play)
     {
         //	Continue with next song
-        emit playNextSong();
+        qDebug() << SB_DEBUG_INFO;
+        emit playNextSong(_state == PlayerController::sb_player_state_play);
     }
 }
 

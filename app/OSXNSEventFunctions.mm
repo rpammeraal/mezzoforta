@@ -6,6 +6,7 @@
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitKeys.h>
 
+
 #include "OSXNSEventFunctions.h"
 #include "Context.h"
 
@@ -131,4 +132,5 @@ OSXSetupSleepCallback()
     //Not reached, CFRunLoopRun doesn't return in this case.
     return (0);
 }
+
 #endif //	Q_OS_OSX

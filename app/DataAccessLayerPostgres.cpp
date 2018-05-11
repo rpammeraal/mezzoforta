@@ -1,4 +1,5 @@
 #include "Common.h"
+#include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayerPostgres.h"
 
@@ -38,6 +39,52 @@ QStringList
 DataAccessLayerPostgres::availableSchemas() const
 {
     return _availableSchemas;
+}
+
+void
+DataAccessLayerPostgres::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const
+{
+    SB_RETURN_VOID_IF_NULL(opPtr);
+    qDebug() << SB_DEBUG_INFO << radioModeFlag << opPtr->genericDescription();
+
+    QString q=QString
+            (
+                "INSERT INTO ___SB_SCHEMA_NAME___play_history "
+                "( "
+                    "artist_name, "
+                    "record_title, "
+                    "record_position, "
+                    "song_title, "
+                    "path, "
+                    "played_by_radio_flag, "
+                    "play_datetime "
+                ") "
+                "VALUES "
+                "( "
+                    "'%1', "
+                    "'%2', "
+                    "%3, "
+                    "'%4', "
+                    "'%5', "
+                    "%6::BOOL, "
+                    "NOW() "
+                ") "
+            )
+                .arg(opPtr->songPerformerName())
+                .arg(opPtr->albumTitle())
+                .arg(opPtr->albumPosition())
+                .arg(opPtr->songTitle())
+                .arg(opPtr->path())
+                .arg(radioModeFlag?"1":"0")
+    ;
+
+
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    dal->customize(q);
+    qDebug() << SB_DEBUG_INFO << q;
+    QSqlQuery insert(q,db);
+    Q_UNUSED(insert);
 }
 
 QString

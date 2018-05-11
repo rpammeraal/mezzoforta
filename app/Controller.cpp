@@ -458,6 +458,9 @@ Controller::setupUI()
     t="Goo Goo Dolls!";
     qDebug() << SB_DEBUG_INFO << Common::removeNonAlphanumericIncludingSpaces(t);
 
+    t=Network::hostName();
+    qDebug() << SB_DEBUG_INFO << t;
+
     qDebug() << SB_DEBUG_INFO << "playground end";
     return;
 }

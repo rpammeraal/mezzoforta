@@ -1194,6 +1194,8 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
         -	probably fixed in earlier code.
 
 BUGS:
+*	Go To Elevation (song). Right click to play. Need to add album comments to list of alternatives.
+	*	Find out live versions.
 
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.

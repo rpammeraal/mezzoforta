@@ -15,9 +15,8 @@ Network::Network()
 
 }
 
-
 QString
 Network::hostName()
 {
-    return QHostInfo::localHostName();
+    return QHostInfo::localHostName() + '.' + QHostInfo::localDomainName();
 }

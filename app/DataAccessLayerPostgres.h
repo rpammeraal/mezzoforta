@@ -15,6 +15,7 @@ public:
 
     //	Database type specific
     virtual QStringList availableSchemas() const;
+    virtual void logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const;
     virtual QString retrieveLastInsertedKeySQL() const;
     virtual bool supportSchemas() const;
 

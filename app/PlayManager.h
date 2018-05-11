@@ -43,7 +43,8 @@ public slots:
     //	Player related
     void playerPrevious();
     bool playerPlay();
-    bool playerNext(PlayMode playMode=PlayMode::Default);
+    bool playerNextAuto(bool endOfSongFlag);
+    bool playerNext(PlayMode playMode=PlayMode::Default,bool endOfSongFlag=0);
     void playerStop();
 
     //	Playlist et al related

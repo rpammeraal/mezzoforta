@@ -416,6 +416,13 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
+void
+DataAccessLayer::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const
+{
+    SB_RETURN_VOID_IF_NULL(opPtr);
+    qDebug() << SB_DEBUG_INFO << radioModeFlag << opPtr->genericDescription();
+}
+
 int
 DataAccessLayer::retrieveLastInsertedKey() const
 {

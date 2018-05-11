@@ -12,6 +12,8 @@
 #include <QStandardItemModel>
 #include <QDebug>
 
+#include "SBIDOnlinePerformance.h"
+
 #define ___SB_SQL_QUERY_WHERECLAUSE___ ___WHERECLAUSE___
 #define ___SB_SQL_QUERY_PLAYLIST_JOIN___ ___SB_SQL_QUERY_PLAYLIST_JOIN___
 #define ___SB_SQL_QUERY_GENRE_JOIN___ ___SB_SQL_QUERY_GENRE_JOIN___
@@ -57,6 +59,7 @@ public:
     const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
+    virtual void logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const;
     virtual int retrieveLastInsertedKey() const;
     virtual QString retrieveLastInsertedKeySQL() const;
     virtual bool schemaExists(const QString& schema);

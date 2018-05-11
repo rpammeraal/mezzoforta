@@ -48,7 +48,7 @@ public:
     inline PlayerController::sb_player_state playState() const { return _state; }
 
 signals:
-    void playNextSong();
+    void playNextSong(bool endOfSongFlag);
     void setRowVisible(int playIndex);
 
 public slots:
@@ -76,7 +76,7 @@ private:
     static const int                  _maxPlayerID=2;
     int                               _currentPlayerID;
     SBIDOnlinePerformancePtr          _currentPerformancePlayingPtr;
-    SBDuration                          _durationTime[_maxPlayerID];
+    SBDuration                        _durationTime[_maxPlayerID];
     QFrame*                           _playerFrame[_maxPlayerID];
     QPushButton*                      _playerPlayButton[_maxPlayerID];
     QSlider*                          _playerProgressSlider[_maxPlayerID];
