@@ -36,8 +36,12 @@ FROM
 		JOIN rock.song s USING(song_id)
 		JOIN rock.artist a USING(artist_id)
 		JOIN rock.record r USING(record_id)
+		LEFT JOIN rock.play_history r_ph ON
+			op.last_play_date = r_ph.play_datetime
 WHERE
-	op.last_play_date IS NOT NULL
+	op.last_play_date IS NOT NULL AND
+	r_ph.play_datetime IS NULL
+	
 ORDER BY
 	op.last_play_date
 ;

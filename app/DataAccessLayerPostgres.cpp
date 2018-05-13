@@ -67,14 +67,14 @@ DataAccessLayerPostgres::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformanceP
                     "'%4', "
                     "'%5', "
                     "%6::BOOL, "
-                    "NOW() "
+                    "NOW() - INTERVAL '13 s' "
                 ") "
             )
-                .arg(opPtr->songPerformerName())
-                .arg(opPtr->albumTitle())
+                .arg(Common::escapeSingleQuotes(opPtr->songPerformerName()))
+                .arg(Common::escapeSingleQuotes(opPtr->albumTitle()))
                 .arg(opPtr->albumPosition())
-                .arg(opPtr->songTitle())
-                .arg(opPtr->path())
+                .arg(Common::escapeSingleQuotes(opPtr->songTitle()))
+                .arg(Common::escapeSingleQuotes(opPtr->path()))
                 .arg(radioModeFlag?"1":"0")
     ;
 
