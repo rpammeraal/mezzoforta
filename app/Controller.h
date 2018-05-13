@@ -20,6 +20,8 @@ class MainWindow;
 class DataEntityPlaylist;
 class Navigator;
 
+#include "SBIDBase.h"
+
 #define SB_TAB_UNDEF    -1
 #define SB_TAB_PLAYLIST  0
 
@@ -57,18 +59,21 @@ public slots:
 
     //	General UI
     void updateStatusBarText(const QString &s);
+    void logSongPlayedHistory(bool radioModeFlag,SBKey onlinePerformanceKey);
 
 
 protected:
 
 private:
-    BackgroundThread* bgt;
-    bool doExactSearch;
-    bool _initSuccessFull;
-    QThread backgroundThread;
-    QTimer statusBarResetTimer;
-    QTimer updateAllPlaylistDurationTimer;
-    QApplication* _app;
+    QApplication*     _app;
+    BackgroundThread* _bgt;
+    bool              _initSuccessFull;
+    QThread           _backgroundThread;
+    SBKey             _logOnlinePerformanceKey;
+    QTimer            _logSongPlayedHistory;	//	note to self: 20180512
+    bool              _logSongPlayedRadioModeFlag;
+    QTimer            _statusBarResetTimer;
+    QTimer            _updateAllPlaylistDurationTimer;
 
     //	Handle reset of filters and selections
 
@@ -88,6 +93,7 @@ private:
 
 private slots:
     void _disableScreenNavigationButtons();
+    void _performLogSongPlayedHistory();
     void _resetStatusBar();
 };
 

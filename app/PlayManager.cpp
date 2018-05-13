@@ -70,16 +70,8 @@ PlayManager::playerPlay()
 }
 
 bool
-PlayManager::playerNextAuto(bool endOfSongFlag)
+PlayManager::playerNext(PlayMode playMode)
 {
-    qDebug() << SB_DEBUG_INFO;
-    return this->playerNext(PlayMode::Default,endOfSongFlag);
-}
-
-bool
-PlayManager::playerNext(PlayMode playMode,bool endOfSongFlag)
-{
-    qDebug() << SB_DEBUG_INFO << playMode << endOfSongFlag;
     PlayerController* pc=Context::instance()->playerController();
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     int numSongs=mqs?mqs->numSongs():0;
@@ -89,16 +81,6 @@ PlayManager::playerNext(PlayMode playMode,bool endOfSongFlag)
     bool lastSongPlayedFlag=0;
 
     //	Log if endOfSong
-    if(endOfSongFlag)
-    {
-        SBIDOnlinePerformancePtr opPtr=(pc?pc->currentPerformancePlaying():SBIDOnlinePerformancePtr());
-        DataAccessLayer* dal=Context::instance()->dataAccessLayer();
-        if(opPtr && dal)
-        {
-            qDebug() << SB_DEBUG_INFO << _radioModeFlag << opPtr->genericDescription();
-            dal->logSongPlayed(_radioModeFlag,opPtr);
-        }
-    }
     if(playMode==PlayMode::Previous && currentPlayID()==0)
     {
         //	Skip to start of song if first song is active
@@ -286,23 +268,22 @@ PlayManager::playItem(unsigned int playlistIndex,PlayMode playMode)
     bool isPlayingFlag=0;
     _setCurrentPlayID(playlistIndex);
 
-    SBIDOnlinePerformancePtr performancePtr=_performanceAt(currentPlayID());
+    SBIDOnlinePerformancePtr opPtr=_performanceAt(currentPlayID());
 
-    if(!performancePtr)
+    SB_RETURN_IF_NULL(opPtr,0);
+
+    //	Song is valid, go and play
+    opPtr->setPlayPosition(this->currentPlayID());
+    isPlayingFlag=pc->playSong(opPtr,playMode==PlayMode::SetReady);
+    if(_radioModeFlag)
     {
-        return 0;
+        opPtr->updateLastPlayDate();
     }
-    else
-    {
-        //	Song is valid, go and play
-        performancePtr->setPlayPosition(this->currentPlayID());
-        isPlayingFlag=pc->playSong(performancePtr,playMode==PlayMode::SetReady);
-        if(_radioModeFlag)
-        {
-    qDebug() << SB_DEBUG_INFO << _radioModeFlag;
-            performancePtr->updateLastPlayDate();
-        }
-    }
+    Controller* c=Context::instance()->controller();
+    SB_RETURN_IF_NULL(c,0);
+
+    c->logSongPlayedHistory(_radioModeFlag,opPtr->key());
+
     return isPlayingFlag;
 }
 
@@ -316,8 +297,8 @@ PlayManager::_init()
     const MainWindow* mw=Context::instance()->mainWindow();
 
     PlayerController* pc=Context::instance()->playerController();
-    connect(pc, SIGNAL(playNextSong(bool)),
-            this, SLOT(playerNextAuto(bool)));
+    connect(pc, SIGNAL(playNextSong()),
+            this, SLOT(playerNext()));
 
     //	Player controls
     connect(mw->ui.pbStartRadio, SIGNAL(clicked(bool)),

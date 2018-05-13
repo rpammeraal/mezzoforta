@@ -45,8 +45,8 @@ Controller::Controller(int argc, char *argv[], QApplication* app) : _app(app)
 
 Controller::~Controller()
 {
-    backgroundThread.quit();
-    backgroundThread.wait();
+    _backgroundThread.quit();
+    _backgroundThread.wait();
 }
 
 bool
@@ -148,8 +148,17 @@ void
 Controller::updateStatusBarText(const QString &s)
 {
     Context::instance()->mainWindow()->ui.statusBar->setText(s);
-    statusBarResetTimer.start(10000);
-    statusBarResetTimer.setSingleShot(1);
+    _statusBarResetTimer.start(10000);
+    _statusBarResetTimer.setSingleShot(1);
+}
+
+void
+Controller::logSongPlayedHistory(bool radioModeFlag,SBKey onlinePerformanceKey)
+{
+    _logSongPlayedHistory.start(13000);
+    _logSongPlayedHistory.setSingleShot(1);
+    _logSongPlayedRadioModeFlag=radioModeFlag;
+    _logOnlinePerformanceKey=onlinePerformanceKey;
 }
 
 //PROTECTED:
@@ -587,20 +596,22 @@ void
 Controller::init()
 {
     slP=NULL;
-    connect(&statusBarResetTimer, SIGNAL(timeout()),
+    connect(&_statusBarResetTimer, SIGNAL(timeout()),
             this, SLOT(_resetStatusBar()));
+    connect(&_logSongPlayedHistory, SIGNAL(timeout()),
+            this, SLOT(_performLogSongPlayedHistory()));
 
     //	Instantiate background thread
-    bgt=new BackgroundThread;
-    bgt->moveToThread(&backgroundThread);
-    backgroundThread.start();
-    Context::instance()->setBackgroundThread(bgt);
+    _bgt=new BackgroundThread;
+    _bgt->moveToThread(&_backgroundThread);
+    _backgroundThread.start();
+    Context::instance()->setBackgroundThread(_bgt);
 
     //	Recalculate playlist duration -- NOT USED ANYMORE
     //	CODE LEFT AS EXAMPLE
-//    updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
-//    statusBarResetTimer.setSingleShot(0);
-//    connect(&updateAllPlaylistDurationTimer, SIGNAL(timeout()),
+//    _updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
+//    _statusBarResetTimer.setSingleShot(0);
+//    connect(&_updateAllPlaylistDurationTimer, SIGNAL(timeout()),
 //            this, SLOT(_updateAllplaylistDurations()));
 //    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
 //            bgt, SLOT(recalculateAllPlaylistDurations()));
@@ -616,6 +627,14 @@ Controller::_disableScreenNavigationButtons()
 }
 
 void
+Controller::_performLogSongPlayedHistory()
+{
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(this->_logOnlinePerformanceKey);
+    dal->logSongPlayed(_logSongPlayedRadioModeFlag,opPtr);
+}
+
+void
 Controller::_resetStatusBar()
 {
     Context::instance()->mainWindow()->ui.statusBar->setText(SB_DEFAULT_STATUS);
@@ -625,6 +644,6 @@ Controller::_resetStatusBar()
 //void
 //Controller::_updateAllplaylistDurations()
 //{
-//    updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
+//    _updateAllPlaylistDurationTimer.start(60*30*1000);	//	Every half hour
 //    emit recalculateAllPlaylistDurations();
 //}

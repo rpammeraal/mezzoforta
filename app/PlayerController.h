@@ -48,7 +48,7 @@ public:
     inline PlayerController::sb_player_state playState() const { return _state; }
 
 signals:
-    void playNextSong(bool endOfSongFlag);
+    void playNextSong();
     void setRowVisible(int playIndex);
 
 public slots:
