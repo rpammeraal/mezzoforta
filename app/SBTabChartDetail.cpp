@@ -25,7 +25,11 @@ SBTabChartDetail::playNow(bool enqueueFlag)
     PlaylistItem selectedPrimary=_getSelectedItem(mw->ui.chartDetailSongList->model(),_lastClickedIndex);
 
     const QAbstractItemModel* aim=_lastClickedIndex.model();
-    QModelIndex secondaryIdx=aim->index(_lastClickedIndex.row(), _lastClickedIndex.column()+2);
+    QModelIndex secondaryIdx;
+    if(aim)
+    {
+        secondaryIdx=aim->index(_lastClickedIndex.row(), _lastClickedIndex.column()+2);
+    }
     PlaylistItem selectedSecondary=_getSelectedItem(mw->ui.chartDetailSongList->model(),secondaryIdx);
 
     if(selectedSecondary.key.validFlag())
