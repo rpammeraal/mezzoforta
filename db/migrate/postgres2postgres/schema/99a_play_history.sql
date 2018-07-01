@@ -37,7 +37,10 @@ FROM
 		JOIN rock.artist a USING(artist_id)
 		JOIN rock.record r USING(record_id)
 		LEFT JOIN rock.play_history r_ph ON
-			op.last_play_date = r_ph.play_datetime
+			TO_CHAR(op.last_play_date,'YYYYMMDD') = TO_CHAR(r_ph.play_datetime, 'YYYYMMDD') AND
+			r_ph.artist_name=a.name AND
+			r_ph.record_title=r.title AND
+			r_ph.song_title=s.title
 WHERE
 	op.last_play_date IS NOT NULL AND
 	r_ph.play_datetime IS NULL

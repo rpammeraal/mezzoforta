@@ -1,0 +1,13 @@
+--	Reset sequences
+
+SELECT setval('rock.artist_artist_id_seq', MAX(  artist_id)) FROM rock.artist;
+SELECT setval('rock.artist_rel_artist_rel_id_seq', MAX(  artist_rel_id)) FROM rock.artist_rel;
+SELECT setval('rock.song_song_id_seq', MAX(  song_id)) FROM rock.song;
+SELECT setval('rock.performance_performance_id_seq', MAX(  performance_id)) FROM rock.performance;
+SELECT setval('rock.record_record_id_seq', MAX(  record_id)) FROM rock.record;
+SELECT setval('rock.record_performance_record_performance_id_seq', MAX(  record_performance_id)) FROM rock.record_performance;
+SELECT setval('rock.online_performance_online_performance_id_seq', MAX(  online_performance_id)) FROM rock.online_performance;
+SELECT setval('rock.chart_chart_id_seq', MAX(  chart_id)) FROM rock.chart;
+SELECT setval('rock.chart_performance_chart_performance_id_seq', MAX(  chart_performance_id)) FROM rock.chart_performance;
+SELECT setval('rock.playlist_playlist_id_seq', MAX(  playlist_id)) FROM rock.playlist;
+SELECT setval('rock.playlist_detail_playlist_detail_id_seq', MAX(  playlist_detail_id)) FROM rock.playlist_detail;

@@ -114,7 +114,7 @@ CacheManager::get(SBKey key)
 }
 
 bool
-CacheManager::saveChanges(const QString& progressDialogTitle)
+CacheManager::saveChanges(const QString& progressDialogTitle,bool doNotUpdateCompletersFlag)
 {
     QStringList updateSQL;
     QStringList insertSQL;
@@ -175,13 +175,16 @@ CacheManager::saveChanges(const QString& progressDialogTitle)
     }
 
     //	CWIP: remove when database is cached
-    if(albumsUpdatedFlag() || performersUpdatedFlag() || songsUpdatedFlag())
+    if(doNotUpdateCompletersFlag==0)
     {
-        Navigator* n=Context::instance()->navigator();
-        n->refreshSearchCompleter();
+        if(albumsUpdatedFlag() || performersUpdatedFlag() || songsUpdatedFlag())
+        {
+            Navigator* n=Context::instance()->navigator();
+            n->refreshSearchCompleter();
 
-        //	CWIP: remove when database is cached
-        Context::instance()->controller()->preloadAllSongs();
+            //	CWIP: remove when database is cached
+            Context::instance()->controller()->preloadAllSongs();
+        }
     }
 
     return resultFlag;

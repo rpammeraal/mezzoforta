@@ -122,7 +122,7 @@ SBIDPlaylist::addPlaylistItem(SBIDPtr ptr)
         childPtr->setToReloadFlag();
 
         CacheManager* cm=Context::instance()->cacheManager();
-        cm->saveChanges();	//	trigger distributeReloadList();
+        cm->saveChanges(QString(),1);	//	Do NOT update completers
     }
     return !found;
 }
@@ -204,7 +204,7 @@ SBIDPlaylist::removePlaylistItem(int position)
     pdPtr->setDeletedFlag();
     pdmgr->remove(pdPtr);
 
-    cm->saveChanges();
+    cm->saveChanges(QString(),1);	//	do NOT update completer caches
 
     refreshDependents(1);
     recalculatePlaylistDuration();

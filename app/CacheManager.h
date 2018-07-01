@@ -38,7 +38,7 @@ public:
     static SBIDPtr get(SBKey::ItemType itemType,int ID);
     static SBIDPtr get(SBKey key);
     inline bool performersUpdatedFlag() const { return _performersUpdatedFlag; }
-    bool saveChanges(const QString& progressDialogTitle=QString());
+    bool saveChanges(const QString& progressDialogTitle=QString(),bool doNotUpdateCompletersFlag=0);
     inline bool songsUpdatedFlag() const { return _songsUpdatedFlag; }
     inline void setAlbumsUpdatedFlag() { _albumsUpdatedFlag=1; }
     inline void setPerformersUpdatedFlag() { _performersUpdatedFlag=1; }
