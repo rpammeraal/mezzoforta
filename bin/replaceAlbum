@@ -1,0 +1,196 @@
+#!/usr/bin/env python
+
+import argparse
+import ast
+import os
+import psycopg2
+import re
+import shutil
+import subprocess
+import sys
+
+_record_position       = 'record_position'
+_online_performance_id = 'online_performance_id'
+_path                  = 'path'
+
+def terminal_width():
+	import fcntl, termios, struct
+	th, tw, hp, wp = struct.unpack('HHHH', fcntl.ioctl(0, termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0)))
+	return tw
+
+def check_path(path):
+	if os.path.isdir(path) == False:
+		sys.stderr.write("`{0}' does not exist\n".format(path))
+		sys.exit(-1)
+
+	if path[len(path)-1] == '/':
+		#   clean paths, please
+		path = path[:-1]
+
+	return path
+
+def unescape(text):
+	text = text.replace('\\ ',' ').replace('\[','[').replace('\]',']').replace('\-','-').replace("\\'","'").replace('\,',',').replace('\+','+').replace('\(','(').replace('\)',')').replace('\&','&')
+
+	
+	if text.find('?') > 0:
+		print("`{0}' contains question marks.".format(text))
+		sys.exit(-1)
+
+	if text.find('\\') > 0:
+		print("`{0}' contains unhandled escapes.".format(text))
+		sys.exit(-1)
+
+	return text;
+
+
+def retrieve_org_album(db, schema, album_id):
+	sql = "SELECT record_position, online_performance_id, path FROM {0}.all WHERE record_id={1} ORDER BY record_position".format(schema,album_id)
+	crsr = db.cursor()
+	crsr.execute(sql)
+
+	album = dict()
+
+	row = crsr.fetchone()
+	while row is not None:
+		album[row[0]]=dict()
+		album[row[0]][_online_performance_id]=row[1]
+		album[row[0]][_path]=unescape(row[2])
+		row = crsr.fetchone()
+		
+	return album
+
+def retrieve_rpl_album(path):
+	p1 = subprocess.Popen(["find", path, "-type", "f"], stdout=subprocess.PIPE)
+	p2 = subprocess.Popen(["sort"], stdin=p1.stdout, stdout=subprocess.PIPE)
+	p1.stdout.close()
+
+	(process_output, err) = p2.communicate()
+	output = []
+	output = process_output.decode("utf-8").split('\n')
+
+	record_position = 1
+	album = {}
+
+	for path in output:
+		if os.path.isfile(path):
+			file_name = os.path.basename(path) 
+			if file_name != '.DS_Store' and file_name[:2] != '._':
+				album[record_position] = path
+				record_position += 1
+
+	return album
+
+def format_string(tw, str):
+	half_tw = int(tw / 2)
+	str = str[-half_tw:]
+	if len(str) < half_tw:
+		str = str + (half_tw - len(str)) * ' '
+	return str
+
+def confirm_replacement(org_album, rpl_album):
+
+	#	show songs side by side
+	tw = terminal_width() - 1 
+	half_tw = int(tw / 2)
+	org_label = 'Original Album'
+	rpl_label = 'Replacement Album'
+	print(org_label + ((half_tw - len(org_label))* ' ') + '|' + rpl_label + ( (half_tw - len(rpl_label))* ' '))
+	print((half_tw * '-') + '|' + (half_tw * '-'))
+	for pos in org_album.keys():
+		if org_album[pos][_path] == 'N/A':
+			org_path = format_string(tw, '<unmerged>')
+		else:
+			org_path = format_string(tw, os.path.basename(org_album[pos][_path]))
+		rpl_path = format_string(tw, os.path.basename(rpl_album[pos]))
+		print ("{0}|{1}".format(org_path, rpl_path))
+
+	str = input("Continue replacing? [Yn]: ") or 'y'
+	str = str[:1].lower()
+
+	return str.lower() == 'y'
+
+
+def remove_file(path):
+	if os.path.isfile(path) == True:
+		os.remove(path)
+
+def replace_file(db, root, schema, album_id, pos, online_performance_id, old, new):
+	new_db_path = "{0}/{1}".format(os.path.dirname(old),os.path.basename(new))
+
+	if old == 'N/A':
+		print("Updating: {0}".format(new_db_path))
+	else:
+		print("Replacing:{0}".format(old))
+		print("With:     {0}".format(new_db_path))
+	print("")
+
+	sql = '''
+		UPDATE {0}.online_performance
+		SET path = %s
+		WHERE online_performance_id =%s 
+	'''.format(schema)
+	try:
+		crsr = db.cursor()
+		crsr.execute(sql, (new_db_path, online_performance_id))
+		db.commit()
+		crsr.close()
+	except (Exception, psycopg2.DatabaseError) as error:
+		print(error)
+		sys.exit(-1)
+
+
+	new_os_path = "{0}/{1}/{2}/{3}".format(root,schema,os.path.dirname(old),os.path.basename(new))
+	old_os_path = "{0}/{1}/{2}".format(root,schema,old)
+
+	
+	print("Copy from: {0}".format(new))
+	print("       to: {0}".format(new_os_path))
+	shutil.copyfile(new, new_os_path)
+	print("")
+	if old != 'N/A':
+		print("Remove: {0}".format(old_os_path))
+	
+	remove_file(old_os_path)
+	print("")
+	
+
+
+
+def replace_album(db, root, schema, album_id, org_album, rpl_album):
+	if len(org_album) != len(rpl_album):
+		print("Found {0} songs in database, {1} songs in source location. Number of songs need to match".format(len(org_album),len(rpl_album)))
+		sys.exit(-1)
+
+	confirmation = confirm_replacement(org_album, rpl_album)
+	if confirmation == False:
+		print("Interrupted.")
+		sys.exit(-1)
+
+	for pos in org_album.keys():
+		replace_file(db, root, schema, album_id, pos, org_album[pos][_online_performance_id], org_album[pos][_path], rpl_album[pos])
+	
+
+def main(argv):
+	parser = argparse.ArgumentParser(description='syncFile')
+	parser.add_argument('root',	            action='store',	  nargs=1, help="root to music directory")
+	parser.add_argument('schema',           action='store',	  nargs=1, help="schema (usually 'rock', 'xmas', etc")
+	parser.add_argument('album_id',         action='store',	  nargs=1, help="album id")
+	parser.add_argument('source_directory', action='store',	  nargs=1, help="location with new files")
+	args = parser.parse_args()
+
+	root = args.root[0]
+	schema = args.schema[0]
+	album_id = args.album_id[0]
+	source_directory = check_path(args.source_directory[0])
+
+	db = psycopg2.connect("dbname=songbase")
+	org_album = retrieve_org_album(db, schema, album_id)
+	rpl_album = retrieve_rpl_album(source_directory)
+
+
+	replace_album(db, root, schema, album_id, org_album, rpl_album)
+
+if __name__ == "__main__":
+	main(sys.argv)
+

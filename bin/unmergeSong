@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+
+import argparse
+import ast
+import os
+import psycopg2
+import re
+import shutil
+import subprocess
+import sys
+
+def exec_sql(db, sql, retrieve_result=True):
+	return_value = None
+	try:
+		crsr = db.cursor()
+		crsr.execute(sql)
+		if retrieve_result == True:
+			return_value = crsr.fetchone()
+		db.commit()
+		crsr.close()
+	except (Exception, psycopg2.DatabaseError) as error:
+		print(error)
+		sys.exit(-1)
+	
+	return return_value
+
+def unmerge_song(db, schema, record_performance_id, song_file):
+
+	#	verify path to all songs on this album.
+	sql = '''
+		SELECT 
+			a.path 
+		FROM 
+			{0}.all a 
+				JOIN {0}.record_performance rp ON 
+					a.record_id=rp.record_id 
+		WHERE 
+			rp.record_performance_id={1}
+	'''.format(schema, record_performance_id)
+
+	root = None
+	try:
+		crsr = db.cursor()
+		crsr.execute(sql)
+		row = crsr.fetchone()
+
+		while row != None:
+			curr_root = os.path.dirname(row[0])
+
+			if root == None:
+				root = curr_root
+			elif root != None and root != curr_root:
+				print("More than 1 location for album. Exit.")
+				print("root={0}".format(root))
+				print("curr_root{0}".format(curr_root))
+				sys.exit(-1)
+			
+			row = crsr.fetchone()
+
+		db.commit()
+		crsr.close()
+	except (Exception, psycopg2.DatabaseError) as error:
+		print(error)
+		sys.exit(-1)
+
+	print("Root found at {0}".format(root))
+
+	#	verify record_performance by making sure:
+	#	1.  it does exist in record_performance
+	#	2.	it does not exist in view all
+	#	3.	both tuples have the same record_id
+
+	print("Verifying record_performance_id '{0}': ".format(record_performance_id), end='')
+	sql = '''
+		SELECT 
+			record_performance_id 
+		FROM 
+			{0}.record_performance rp 
+		WHERE 
+			NOT EXISTS
+			(
+				SELECT 
+					NULL 
+				FROM 
+					{0}.all a 
+				WHERE 
+					rp.record_id=a.record_id AND 
+					rp.record_performance_id=a.record_performance_id
+			) AND 
+			rp.record_performance_id={1}
+	'''.format(schema, record_performance_id)
+
+	verified_record_performance_id = exec_sql(db, sql)
+
+	if verified_record_performance_id != None:
+		print("verified ok")
+	else:
+		print("This song already seems unmerged");
+		sys.exit(-1)
+	
+	#	Insert new record in online_performance
+	song_file = song_file.replace("'","''")
+	print("Insert new record in online_performance, id=", end='')
+	sql = '''
+		INSERT INTO {0}.online_performance 
+		(
+			record_performance_id,
+			path,
+			last_play_date
+		) 
+		SELECT 
+			{1},
+			'{2}/{3}',
+			NOW()
+		RETURNING online_performance_id
+		;
+	'''.format(schema, record_performance_id, root, song_file)
+
+	online_performance_id = exec_sql(db, sql)[0]
+	print(online_performance_id)
+
+	#	Update record.performance
+	print("Update record_performance: ", end='')
+	sql = '''
+		UPDATE 
+			{0}.record_performance 
+		SET 
+			preferred_online_performance_id={1} 
+		WHERE 
+			record_performance_id={2};
+	'''.format(schema, online_performance_id, record_performance_id)
+	exec_sql(db, sql, False)
+	print("Done")
+	print(sql)
+
+
+def main(argv):
+	parser = argparse.ArgumentParser(description='syncFile')
+	parser.add_argument('schema',                action='store', nargs=1, help="schema (usually 'rock', 'xmas', etc")
+	parser.add_argument('record_performance_id', action='store', nargs=1, help="album id")
+	parser.add_argument('song_file',             action='store', nargs=1, help="album id")
+
+	args = parser.parse_args()
+
+	schema = args.schema[0]
+	record_performance_id = args.record_performance_id[0]
+	song_file = args.song_file[0]
+
+	db = psycopg2.connect("dbname=songbase")
+
+	unmerge_song(db, schema, record_performance_id, song_file)
+
+if __name__ == "__main__":
+	main(sys.argv)
+
