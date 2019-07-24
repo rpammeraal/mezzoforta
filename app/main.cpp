@@ -7,7 +7,7 @@
 #include "Controller.h"
 #include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
-
+#include <QMediaPlayer>
 
 #ifdef Q_OS_WIN
 
@@ -62,6 +62,10 @@ int main(int argc, char *argv[])
     qDebug() << SB_DEBUG_INFO << "Calling OSXSetupSleepCallback";
     OSXSetupSleepCallback();
 #endif //	Q_OS_OSX
+
+#ifdef Q_OS_LINUX
+    qRegisterMetaType<QMediaPlayer::State>();
+#endif
 
     //	Set up names
     app.setOrganizationName("MezzoForta Inc");
