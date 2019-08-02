@@ -878,7 +878,7 @@ SBTabAlbumEdit::save() const
             editedSong.newFlag=item->text().toInt();
         }
 
-        //	Songbase ids
+        //	mezzoforta ids
         item=aem->item(i,AlbumEditModel::sb_column_orgsongid);
         if(item)
         {

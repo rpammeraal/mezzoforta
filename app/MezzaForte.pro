@@ -1,3 +1,5 @@
+QMAKE_MAC_SDK = macosx10.14
+
 QT += widgets sql xml network webenginewidgets multimedia
 
 HEADERS     = \
@@ -82,7 +84,8 @@ HEADERS     = \
     CacheManager.h \
     CacheTemplate.h \
     Cache.h \
-    SBKey.h
+    SBKey.h \
+    SBDialogChart.h
 
 SOURCES     = \
     main.cpp \
@@ -165,7 +168,8 @@ SOURCES     = \
     SearchItemModel.cpp \
     CacheManager.cpp \
     Cache.cpp \
-    SBKey.cpp
+    SBKey.cpp \
+    SBDialogChart.cpp
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
@@ -177,10 +181,12 @@ INSTALLS += target
 FORMS += \
     MainWindow.ui \
     DatabaseSelector.ui \
+    SBDialogChart.ui \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
     SetupWizard.ui \
-    MusicImportResult.ui
+    MusicImportResult.ui \
+    SBDialogChart.ui
 
 RESOURCES += \
     resource.qrc
@@ -201,5 +207,9 @@ INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
 DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
 
 win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad -lzlibstatic -ltag
+#   win32: INCLUDEPATH += $$PWD/../libs/portaudio/include $$PWD/../libs/libmad-0.15.1b
+#   win32: INCLUDEPATH += /Users/roy/songbase/app/../libs/portaudio/include
+win32: INCLUDEPATH += $$PWD/../libs/portaudio/include
+win32: INCLUDEPATH += $$PWD/../libs/libmad-0.15.1b/msvc++
 
 
