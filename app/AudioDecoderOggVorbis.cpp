@@ -8,30 +8,63 @@
 ///	Protected methods
 AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 {
+	qDebug() << SB_DEBUG_INFO;
     _fileName=fileName;	//	CWIP
 
     //	Init. What else.
+	qDebug() << SB_DEBUG_INFO;
     _init();
-
+	
+	FILE* fp = NULL;
+	int resultCode = 0;
+#ifdef Q_OS_UNIX
     //	Open file
+	qDebug() << SB_DEBUG_INFO;
     _file=new QFile(fileName);
     SB_DEBUG_IF_NULL(_file);
+
+	qDebug() << SB_DEBUG_INFO;
     if(!_file->open(QIODevice::ReadOnly))
     {
+		qDebug() << SB_DEBUG_INFO;
         _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->errorString());
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
 
-    int resultCode=0;
+	qDebug() << SB_DEBUG_INFO;
     int fd=_file->handle();
-    FILE* fp=fdopen(fd,"r");
+
+	qDebug() << SB_DEBUG_INFO << fd;
+    fp=fdopen(fd,"r");
+	qDebug() << SB_DEBUG_INFO;
     if(fp==NULL)
     {
         _error=QString("Cannot open file pointer: %1").arg(strerror(errno)?strerror(errno):"Unknown");
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
+#endif
+#ifdef Q_OS_WIN
+	
+	QString windowsPath = this->convertToWindowsPath(fileName);
+	QByteArray ba = windowsPath.toLocal8Bit();
+	const char* c_str = ba.data();
+
+	_winFP = fopen(c_str, "rb");
+	if (_winFP == NULL)
+	{
+		_error = QString("Cannot open file pointer: %1").arg(strerror(errno) ? strerror(errno) : "Unknown");
+		qDebug() << SB_DEBUG_ERROR << _error;
+		return;
+	}
+
+	SB_DEBUG_IF_NULL(_winFP);
+	_file = new QFile(fileName);
+	_file->open(QIODevice::ReadOnly);
+
+	fp = _winFP;
+#endif
 
     SB_DEBUG_IF_NULL(fp);
 #ifdef Q_OS_WIN
