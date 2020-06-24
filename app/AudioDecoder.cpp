@@ -62,6 +62,16 @@ AudioDecoder::setPosition(qint64 position)
     return _index;
 }
 
+#ifdef Q_OS_WIN
+QString
+AudioDecoder::convertToWindowsPath(const QString& path)
+{
+	QString windowsPath = path;
+	windowsPath.replace("/", "\\");
+	return windowsPath;
+}
+
+#endif
 ///	Protected methods
 AudioDecoder::AudioDecoder()
 {
@@ -95,6 +105,10 @@ AudioDecoder::_init()
     _sampleRate=0;
     _sampleFormat=0;
     _stream=NULL;
+#ifdef Q_OS_WIN
+	_winFP = NULL;
+#endif
+
 }
 
 void
@@ -104,4 +118,11 @@ AudioDecoder::_exit()
     {
         free(_stream); _stream=NULL;
     }
+#ifdef Q_OS_WIN
+	if (_winFP != NULL)
+	{
+		fclose(_winFP);
+	}
+	_winFP = NULL;
+#endif
 }

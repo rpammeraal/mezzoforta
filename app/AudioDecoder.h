@@ -40,6 +40,10 @@ public:
     inline quint32 sampleRate() const { return _sampleRate; }
     inline int bytesPerStereoSample() const { return bitsPerSample()*2/8; }
 
+#ifdef Q_OS_WIN
+	static QString convertToWindowsPath(const QString& path);
+#endif
+
     //	Conversion
     quint64 bytesToSamples(quint64 bytes) const { return (_numChannels*_bitsPerSample==0)?0:(bytes * 8)/(_numChannels * _bitsPerSample); }
     quint64 samplesToBytes(quint64 samples) const { return (samples * _numChannels * _bitsPerSample)/8 ;}
@@ -85,6 +89,10 @@ protected:
     QString             _error;
     QThread             _workerThread;
     AudioDecoderReader* _adr;
+
+#ifdef Q_OS_WIN
+	FILE*				_winFP;
+#endif
 
     AudioDecoder();
 
