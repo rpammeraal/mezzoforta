@@ -89,10 +89,7 @@ protected:
     QString             _error;
     QThread             _workerThread;
     AudioDecoderReader* _adr;
-
-#ifdef Q_OS_WIN
-	FILE*				_winFP;
-#endif
+    FILE* 				_fp;
 
     AudioDecoder();
 

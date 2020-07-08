@@ -32,7 +32,8 @@ public:
     void assignID(int playerID);
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
     quint64 position() const;
-    bool setMedia(const QString& fileName);
+    bool setMedia(const QString& fileName, bool testFilePathOnly=0);
+    void releaseMedia();
     inline QString error() const { return _errMsg; }
     QMediaPlayer::State state() const;
 
@@ -62,6 +63,7 @@ private:
     quint64             _oldPositionInSec;
 
     void closeStream();
+    QString getErrorMsg() const;
     void init();
     void portAudioInit();
     bool portAudioOpen(AudioDecoder* ad);

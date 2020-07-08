@@ -70,7 +70,7 @@ public:
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(int onlinePerformanceID);
     static SBIDOnlinePerformancePtr retrieveOnlinePerformance(SBKey key);
     static SBSqlQueryModel* retrieveOnlinePerformancesByAlbumPerformance(int albumPerformanceID);
-    static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0);
+    static SBSqlQueryModel* retrieveAllOnlinePerformances(int limit=0, int sortColumn=2);
     static SBSqlQueryModel* retrieveAllOnlinePerformancesExtended(int limit=0);
     static int totalNumberOnlinePerformances();
     static QString onlinePerformancesBySong_Preloader(int songID);

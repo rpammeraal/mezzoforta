@@ -124,6 +124,15 @@ Controller::rescanMusicLibrary()
 }
 
 void
+Controller::dummyPlayAllSongs()
+{
+    qDebug() << SB_DEBUG_INFO << "dummyPlayAllSongs()";
+    PlayManager* pm=Context::instance()->playManager();
+    pm->dummyPlayAllSongs();
+}
+
+
+void
 Controller::changeCurrentDatabaseSchema(const QString& newSchema)
 {
     PropertiesPtr properties=Context::instance()->properties();
@@ -533,6 +542,11 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         {
             connect(i,SIGNAL(triggered()),
                     this, SLOT(rescanMusicLibrary()));
+        }
+        else if(itemName=="menuDummyPlayAllSongs")
+        {
+            connect(i,SIGNAL(triggered()),
+                    this, SLOT(dummyPlayAllSongs()));
         }
         else
         {

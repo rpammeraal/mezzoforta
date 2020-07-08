@@ -4715,6 +4715,7 @@ Click on 'All Songs' to continue.</string>
      <string>Tools</string>
     </property>
     <addaction name="menuRescanMusicLibrary"/>
+    <addaction name="menuDummyPlayAllSongs"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -4781,6 +4782,11 @@ Click on 'All Songs' to continue.</string>
   <action name="menuRecalculatePlaylist">
    <property name="text">
     <string>Recalculate Playlist</string>
+   </property>
+  </action>
+  <action name="menuDummyPlayAllSongs">
+   <property name="text">
+    <string>dummyPlayAllSongs</string>
    </property>
   </action>
  </widget>

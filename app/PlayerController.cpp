@@ -18,6 +18,15 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent)
 {
 }
 
+bool
+PlayerController::testSongFilepath(SBIDOnlinePerformancePtr& opPtr)
+{
+    QString path=_constructPath(opPtr);
+    bool result=_playerInstance[_currentPlayerID].setMedia(path,1);
+    _playerInstance[_currentPlayerID].releaseMedia();
+    return result;
+}
+
 ///	Public slots
 void
 PlayerController::playerRewind()
@@ -181,19 +190,16 @@ PlayerController::playerStop()
 /// \return
 ///
 /// Returns 1 on success, 0 otherwise.
+/// TAG: path constructed
 bool
 PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr, bool setReadyFlag)
 {
-    PropertiesPtr p=Context::instance()->properties();
     Controller* c=Context::instance()->controller();
 
     qDebug() << SB_DEBUG_INFO << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
     qDebug() << SB_DEBUG_INFO << setReadyFlag << opPtr->path();
 
-    QString path=QString("%1/%2")
-                .arg(p->musicLibraryDirectorySchema())
-                .arg(opPtr->path())
-    ;
+    QString path=_constructPath(opPtr);
     emit setRowVisible(opPtr->playPosition());	//	changed to here, so we can continue in case of error of playing a song.
 
     if(_playerInstance[_currentPlayerID].setMedia(path)==0)
@@ -304,6 +310,15 @@ PlayerController::_init()
 
     mw->ui.hsMusicPlayerProgressLeft->setTracking(1);
     mw->ui.hsMusicPlayerProgressRight->setTracking(1);
+}
+
+const QString
+PlayerController::_constructPath(SBIDOnlinePerformancePtr &opPtr)
+{
+    PropertiesPtr p=Context::instance()->properties();
+    return QString("%1/%2")
+                .arg(p->musicLibraryDirectorySchema())
+                .arg(opPtr->path());
 }
 
 void

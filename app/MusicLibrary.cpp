@@ -84,7 +84,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
             e.parentDirectoryName=fi.absoluteDir().dirName();
             e.extension=fi.completeSuffix();
 
-            if(AudioDecoderFactory::fileSupportedFlag(fi))
+            if(AudioDecoderFactory::fileSupportedFlag(fi,0))
             {
                 if(fi.size()>10*1024)
                 {

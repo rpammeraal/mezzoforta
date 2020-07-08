@@ -14,7 +14,7 @@ public:
 protected:
     friend class AudioDecoderFactory;
 
-    AudioDecoderMP3(const QString& fileName);
+    AudioDecoderMP3(const QString& fileName,bool testFilePathOnly);
 
     static bool supportFileExtension(const QString& extension);
 

@@ -80,7 +80,6 @@ AudioDecoder::AudioDecoder()
 
 AudioDecoder::~AudioDecoder()
 {
-
     AudioDecoder::_exit();
 }
 
@@ -105,10 +104,7 @@ AudioDecoder::_init()
     _sampleRate=0;
     _sampleFormat=0;
     _stream=NULL;
-#ifdef Q_OS_WIN
-	_winFP = NULL;
-#endif
-
+    _fp = NULL;
 }
 
 void
@@ -118,11 +114,17 @@ AudioDecoder::_exit()
     {
         free(_stream); _stream=NULL;
     }
-#ifdef Q_OS_WIN
-	if (_winFP != NULL)
+    if (_fp != NULL)
 	{
-		fclose(_winFP);
+        fclose(_fp);
 	}
-	_winFP = NULL;
-#endif
+    _fp = NULL;
+    if(_adr)
+    {
+        delete(_adr); _adr=NULL;
+    }
+    if(_file)
+    {
+        delete(_file); _file=NULL;
+    }
 }
