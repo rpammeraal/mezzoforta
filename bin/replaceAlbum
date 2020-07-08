@@ -30,7 +30,7 @@ def check_path(path):
 	return path
 
 def unescape(text):
-	text = text.replace('\\ ',' ').replace('\[','[').replace('\]',']').replace('\-','-').replace("\\'","'").replace('\,',',').replace('\+','+').replace('\(','(').replace('\)',')').replace('\&','&')
+	text = text.replace('\\ ',' ').replace('\[','[').replace('\]',']').replace('\-','-').replace("\\'","'").replace('\,',',').replace('\+','+').replace('\(','(').replace('\)',')').replace('\&','&').replace('\#','#').replace('\=','=')
 
 	
 	if text.find('?') > 0:
