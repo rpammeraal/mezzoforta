@@ -46,6 +46,7 @@ public:
 
     inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
     inline PlayerController::sb_player_state playState() const { return _state; }
+    bool testSongFilepath(SBIDOnlinePerformancePtr& opPtr);
 
 signals:
     void playNextSong();
@@ -86,6 +87,7 @@ private:
     PlayerController::sb_player_state _state;
 
     void _init();
+    const QString _constructPath(SBIDOnlinePerformancePtr& opPtr);
     void _makePlayerVisible(PlayerController::sb_player player);
     SBDuration _ms2Duration(quint64 ms) const;
 

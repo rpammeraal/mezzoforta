@@ -6,39 +6,30 @@
 #include "Common.h"
 
 ///	Protected methods
-AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
+AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool testFilePathOnly)
 {
-	qDebug() << SB_DEBUG_INFO;
     _fileName=fileName;	//	CWIP
 
     //	Init. What else.
-	qDebug() << SB_DEBUG_INFO;
     _init();
 	
-	FILE* fp = NULL;
 	int resultCode = 0;
 #ifdef Q_OS_UNIX
     //	Open file
-	qDebug() << SB_DEBUG_INFO;
     _file=new QFile(fileName);
     SB_DEBUG_IF_NULL(_file);
 
-	qDebug() << SB_DEBUG_INFO;
     if(!_file->open(QIODevice::ReadOnly))
     {
-		qDebug() << SB_DEBUG_INFO;
         _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->errorString());
         qDebug() << SB_DEBUG_ERROR << _error;
         return;
     }
 
-	qDebug() << SB_DEBUG_INFO;
     int fd=_file->handle();
 
-	qDebug() << SB_DEBUG_INFO << fd;
-    fp=fdopen(fd,"r");
-	qDebug() << SB_DEBUG_INFO;
-    if(fp==NULL)
+    _fp=fdopen(fd,"r");
+    if(_fp==NULL)
     {
         _error=QString("Cannot open file pointer: %1").arg(strerror(errno)?strerror(errno):"Unknown");
         qDebug() << SB_DEBUG_ERROR << _error;
@@ -51,28 +42,33 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 	QByteArray ba = windowsPath.toLocal8Bit();
 	const char* c_str = ba.data();
 
-	_winFP = fopen(c_str, "rb");
-	if (_winFP == NULL)
+    _fp = fopen(c_str, "rb");
+    if (_fp == NULL)
 	{
 		_error = QString("Cannot open file pointer: %1").arg(strerror(errno) ? strerror(errno) : "Unknown");
 		qDebug() << SB_DEBUG_ERROR << _error;
 		return;
 	}
 
-	SB_DEBUG_IF_NULL(_winFP);
+    SB_DEBUG_IF_NULL(_fp);
 	_file = new QFile(fileName);
 	_file->open(QIODevice::ReadOnly);
 
-	fp = _winFP;
 #endif
 
-    SB_DEBUG_IF_NULL(fp);
+    SB_DEBUG_IF_NULL(_fp);
+
+    if(testFilePathOnly)
+    {
+        fclose(_fp); _fp=NULL;
+        return;
+    }
 #ifdef Q_OS_WIN
-    //resultCode=ov_open_callbacks(fp,&_ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
-    resultCode=ov_open_callbacks(fp,&_ovf,NULL,0,OV_CALLBACKS_DEFAULT);
+    //resultCode=ov_open_callbacks(_fp,&_ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
+    resultCode=ov_open_callbacks(_fp,&_ovf,NULL,0,OV_CALLBACKS_DEFAULT);
 #endif
 #ifdef Q_OS_UNIX
-    resultCode=ov_open(fp,&_ovf,NULL,0);
+    resultCode=ov_open(_fp,&_ovf,NULL,0);
 #endif
     if(resultCode!=0)
     {

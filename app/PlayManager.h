@@ -52,6 +52,7 @@ public slots:
     bool playItemNow(SBKey key,const bool enqueueFlag=0);
     void shufflePlaylist();
     void startRadio();
+    void dummyPlayAllSongs();	//	test to see if all songs are accessible
 
 protected:
     friend class Context;

@@ -25,9 +25,9 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     dal->customize(q);
 
-    qDebug() << SB_DEBUG_INFO
-             << "positionColumn=" << _positionColumn
-             << "query=" << q;
+//    qDebug() << SB_DEBUG_INFO
+//             << "positionColumn=" << _positionColumn
+//             << "query=" << q;
     QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
 

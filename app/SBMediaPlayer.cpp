@@ -42,35 +42,49 @@ SBMediaPlayer::assignID(int playerID)
 }
 
 bool
-SBMediaPlayer::setMedia(const QString &fileName)
+SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
 {
-    qDebug() << SB_DEBUG_INFO << fileName;
-    closeStream();
     QString fn=QString(fileName).replace("\\","");
 
     if(_stream)
     {
         closeStream();
     }
+    if(!testFilePathOnly)
+    {
+        qDebug() << SB_DEBUG_INFO << fileName;
+    }
     AudioDecoderFactory adf;
-    _ad=adf.openFile(fn);
+    _ad=adf.openFile(fn,testFilePathOnly);
 
     if(!_ad)
     {
-        qDebug() << SB_DEBUG_ERROR << fileName;
         setErrorMsg(adf.error());
+        qDebug() << SB_DEBUG_ERROR << getErrorMsg();
         return 0;
     }
     if(_ad->error().length())
     {
-        qDebug() << SB_DEBUG_ERROR << _ad->error();
         setErrorMsg(_ad->error());
+        qDebug() << SB_DEBUG_ERROR << getErrorMsg();
         return 0;
     }
-    portAudioOpen(_ad);
+    if(!testFilePathOnly)
+    {
+        portAudioOpen(_ad);
+    }
 
-    qDebug() << SB_DEBUG_INFO << "success" << fileName;
+    if(!testFilePathOnly)
+    {
+        qDebug() << SB_DEBUG_INFO << "success" << fileName;
+    }
     return 1;
+}
+
+void
+SBMediaPlayer::releaseMedia()
+{
+    this->closeStream();
 }
 
 QMediaPlayer::State
@@ -210,6 +224,12 @@ SBMediaPlayer::closeStream()
     {
         delete _ad; _ad=NULL;
     }
+}
+
+QString
+SBMediaPlayer::getErrorMsg() const
+{
+    return _errMsg;
 }
 
 void

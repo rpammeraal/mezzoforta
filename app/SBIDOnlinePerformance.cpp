@@ -307,7 +307,7 @@ SBIDOnlinePerformance::retrieveOnlinePerformancesByAlbumPerformance(int albumPer
 }
 
 SBSqlQueryModel*
-SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
+SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit,int sortColumn)
 {
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
 
@@ -327,11 +327,12 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformances(int limit)
         "FROM "
             "___SB_SCHEMA_NAME___online_performance op "
         "ORDER BY "
-            "2 "
-        "%2 "
+            "%2 "
+        "%3 "
     )
             .arg(dal->getIsNull())
             .arg(limitClause)
+            .arg(sortColumn)
     ;
 
     return new SBSqlQueryModel(q);

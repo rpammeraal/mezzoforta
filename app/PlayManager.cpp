@@ -244,6 +244,45 @@ PlayManager::startRadio()
     Context::instance()->navigator()->showCurrentPlaylist();
 }
 
+void
+PlayManager::dummyPlayAllSongs()
+{
+    _radioModeFlag=1;
+
+    PlayerController* pc=Context::instance()->playerController();
+
+    int progressStep=0;
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Test All Song Paths",1);
+
+    SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0,1);
+    int numPerformances=qm->rowCount();
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs",0,numPerformances);
+
+    int index=0;
+    while(index<numPerformances)
+    {
+        int onlinePerformanceID=qm->record(index).value(0).toInt();
+        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
+
+        if(pc->testSongFilepath(opPtr)==0)
+        {
+            qDebug() << SB_DEBUG_INFO << opPtr->path();
+        }
+
+        index++;
+        if(index % 1000==0)
+        {
+            qDebug() << SB_DEBUG_INFO << "Processed " << index << " songs.";
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs",index,numPerformances);
+        }
+    }
+    qDebug() << SB_DEBUG_INFO << "Processed " << index << " songs";
+
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs");
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+}
+
+
 ///	Protected methods
 void
 PlayManager::doInit()

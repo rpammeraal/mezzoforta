@@ -10,16 +10,20 @@
 
 #include <QFile>
 
-AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
+AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool testFilePathOnly)
 {
     init();
 
-    qDebug() << SB_DEBUG_INFO << fileName;
     _file=new QFile(fileName);
     if(!_file->open(QIODevice::ReadOnly))
     {
         _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
+        return;
+    }
+
+    if(testFilePathOnly)
+    {
         return;
     }
 

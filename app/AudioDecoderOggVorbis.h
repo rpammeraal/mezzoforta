@@ -21,7 +21,7 @@ public:
 protected:
     friend class AudioDecoderFactory;
 
-    AudioDecoderOggVorbis(const QString& fileName);
+    AudioDecoderOggVorbis(const QString& fileName, bool testFilePathOnly);
 
     static bool supportFileExtension(const QString& extension);
 

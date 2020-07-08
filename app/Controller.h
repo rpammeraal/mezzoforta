@@ -53,6 +53,7 @@ public slots:
 
     //	MENU::Tools
     void rescanMusicLibrary();
+    void dummyPlayAllSongs();
 
     //	Apply filters and selections
     void changeCurrentDatabaseSchema(const QString& newSchema);

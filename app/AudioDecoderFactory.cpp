@@ -21,14 +21,14 @@ AudioDecoderFactory::~AudioDecoderFactory()
 }
 
 bool
-AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder **newAudioDecoder)
+AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFilePathOnly, AudioDecoder **newAudioDecoder)
 {
     QString extension=fileInfo.suffix();
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderWave(fileInfo.absoluteFilePath());
+            *newAudioDecoder=new AudioDecoderWave(fileInfo.absoluteFilePath(),testFilePathOnly);
         }
         return true;
     }
@@ -36,7 +36,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder *
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderOggVorbis(fileInfo.absoluteFilePath());
+            *newAudioDecoder=new AudioDecoderOggVorbis(fileInfo.absoluteFilePath(),testFilePathOnly);
         }
         return true;
     }
@@ -44,7 +44,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder *
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderMP3(fileInfo.absoluteFilePath());
+            *newAudioDecoder=new AudioDecoderMP3(fileInfo.absoluteFilePath(),testFilePathOnly);
         }
         return true;
     }
@@ -53,7 +53,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder *
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderFlac(fileInfo.absoluteFilePath());
+            *newAudioDecoder=new AudioDecoderFlac(fileInfo.absoluteFilePath(),testFilePathOnly);
         }
         return true;
     }
@@ -63,13 +63,13 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder *
 }
 
 AudioDecoder*
-AudioDecoderFactory::openFile(const QString &fileName)
+AudioDecoderFactory::openFile(const QString &fileName,bool testFilePathOnly)
 {
     //	Flensburg - Neumuenster
     AudioDecoder* ad=NULL;
 
     QFileInfo fi(fileName);
-    if(fileSupportedFlag(fi,&ad))
+    if(fileSupportedFlag(fi,testFilePathOnly,&ad))
     {
         if(ad->error().length()!=0)
         {
