@@ -143,10 +143,11 @@ AudioDecoderWave::AudioDecoderWave(const QString& fileName,bool testFilePathOnly
     _stream=(char *)malloc(this->lengthInBytes());
 
     //	Put workerthread to work.
-    _adr=new AudioDecoderWaveReader(this);
-    _adr->moveToThread(&_workerThread);
-    connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
-    connect(this, &AudioDecoderWave::startBackfill, _adr, &AudioDecoderReader::backFill);
+    AudioDecoderReader* adr;	//	No need to keep track of this, as the thread, running this instance, owns this instance.
+    adr=new AudioDecoderWaveReader(this);
+    adr->moveToThread(&_workerThread);
+    connect(&_workerThread, &QThread::finished, adr, &QObject::deleteLater);
+    connect(this, &AudioDecoderWave::startBackfill, adr, &AudioDecoderReader::backFill);
     _workerThread.start();
     emit startBackfill();
 

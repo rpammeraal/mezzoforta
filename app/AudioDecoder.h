@@ -88,7 +88,7 @@ protected:
     quint64             _maxScrollableIndex;	//	pointer in bytes to end of _stream read so far by *Reader class
     QString             _error;
     QThread             _workerThread;
-    AudioDecoderReader* _adr;
+//    AudioDecoderReader* _adr;
     FILE* 				_fp;
 
     AudioDecoder();

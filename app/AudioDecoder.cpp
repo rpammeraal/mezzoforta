@@ -94,7 +94,7 @@ AudioDecoder::supportFileExtension(const QString& extension)
 void
 AudioDecoder::_init()
 {
-    _adr=NULL;
+    //_adr=NULL;
     _bitsPerSample=0;
     _error=QString();
     _file=NULL;
@@ -119,10 +119,6 @@ AudioDecoder::_exit()
         fclose(_fp);
 	}
     _fp = NULL;
-    if(_adr)
-    {
-        delete(_adr); _adr=NULL;
-    }
     if(_file)
     {
         delete(_file); _file=NULL;

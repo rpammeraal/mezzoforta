@@ -126,11 +126,13 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool testFi
     _stream=(char *)malloc(this->lengthInBytes());
 
     //	Put reader to work.
-    _adr=new AudioDecoderOggVorbisReader(this);
-    _adr->moveToThread(&_workerThread);
-    _adr->_fileName=this->_fileName;
-    connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
-    connect(this, &AudioDecoderOggVorbis::startBackfill, _adr, &AudioDecoderReader::backFill);
+
+    AudioDecoderReader* adr;	//	No need to keep track of this, as the thread, running this instance, owns this instance.
+    adr=new AudioDecoderOggVorbisReader(this);
+    adr->moveToThread(&_workerThread);
+    adr->_fileName=this->_fileName;
+    connect(&_workerThread, &QThread::finished, adr, &QObject::deleteLater);
+    connect(this, &AudioDecoderOggVorbis::startBackfill, adr, &AudioDecoderReader::backFill);
     _workerThread.start();
     emit startBackfill();
 }

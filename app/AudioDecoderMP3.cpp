@@ -135,10 +135,12 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool testFilePathOnly)
     _stream=(char *)malloc(_length);
 
     //	Put reader to work.
-    _adr=new AudioDecoderMP3Reader(this);
-    _adr->moveToThread(&_workerThread);
-    connect(&_workerThread, &QThread::finished, _adr, &QObject::deleteLater);
-    connect(this, &AudioDecoderMP3::startBackfill, _adr, &AudioDecoderReader::backFill);
+
+    AudioDecoderReader* adr;	//	No need to keep track of this, as the thread, running this instance, owns this instance.
+    adr=new AudioDecoderMP3Reader(this);
+    adr->moveToThread(&_workerThread);
+    connect(&_workerThread, &QThread::finished, adr, &QObject::deleteLater);
+    connect(this, &AudioDecoderMP3::startBackfill, adr, &AudioDecoderReader::backFill);
     _workerThread.start();
     emit startBackfill();
 }
