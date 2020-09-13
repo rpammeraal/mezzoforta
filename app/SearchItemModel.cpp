@@ -111,7 +111,7 @@ SearchItemModel::populate()
     _entries.clear();
 
     QSqlQuery queryList(query,db);
-    QTime time; time.start();
+    QElapsedTimer time; time.start();
     while(queryList.next())
     {
         QSqlRecord r=queryList.record();
@@ -230,6 +230,7 @@ SearchItemModel::_add(SBKey::ItemType itemType, int songID, const QString &songT
 
     display=Common::removeExtraSpaces(display);
     altDisplay=Common::removeExtraSpaces(altDisplay);
+
 
     for(int i=0;i<2;i++)
     {

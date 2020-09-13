@@ -159,12 +159,12 @@ SBDuration::toString(SBDuration::sb_displayformat displayFormat) const
             {
                 duration+=QString("%1:").arg(this->day()*24+this->hour());
             }
-            duration+=QString().sprintf("%02d:%02d",this->minute(),this->second());
+            duration+=QString().asprintf("%02d:%02d",this->minute(),this->second());
         break;
 
     case SBDuration::sb_full_hhmmss_format:
             duration+=QString("%1:").arg(this->day()*24+this->hour());
-            duration+=QString().sprintf("%02d:%02d",this->minute(),this->second());
+            duration+=QString().asprintf("%02d:%02d",this->minute(),this->second());
         break;
 
     default:

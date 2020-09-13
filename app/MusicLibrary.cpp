@@ -67,7 +67,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                     QDirIterator::Subdirectories);
     QCoreApplication::processEvents();
     int ID=9999;
-    QTime time; time.start();
+    QElapsedTimer time; time.start();
     while (it.hasNext())
     {
         it.next();

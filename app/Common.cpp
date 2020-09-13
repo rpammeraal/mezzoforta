@@ -4,6 +4,7 @@
 #include <QStringListIterator>
 #include <QTableView>
 #include <sstream>
+#include <QRandomGenerator>
 
 #include "Common.h"
 #include "Context.h"
@@ -230,7 +231,7 @@ Common::parseTextFieldDB(const QSqlRecord *sr, int index)
 quint64
 Common::random(quint64 max)
 {
-    return (qrand() % max);
+    return (QRandomGenerator::global()->generate64() % max);
 }
 
 quint64
@@ -495,7 +496,7 @@ Common::ParseChar(QChar c)
 void
 Common::toTitleCase(QString &s)
 {
-    if(s.length()<=3)
+    if(s.length()>0 && s.length()<=3)
     {
         //	For words with length less than 3,
         //	if the first character is already uppercased, leave alone.

@@ -36,10 +36,10 @@ SBLabel::mousePressEvent(QMouseEvent* me)
 
         mimeData->setData("application/vnd.text.list", ba);
         drag->setMimeData(mimeData);
-        const QPixmap* pm=this->pixmap();
-        if(pm && pm->isNull()==0)
+        QPixmap pm=pixmap(Qt::ReturnByValue);
+        if(pm.isNull()==0)
         {
-            drag->setPixmap(pm->scaledToWidth(50));
+            drag->setPixmap(pm.scaledToWidth(50));
         }
         else
         {

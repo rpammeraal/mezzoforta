@@ -706,7 +706,7 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
         oldAlbumPositions.append(fromApPtr->albumPosition());
     }
 
-    qSort(oldAlbumPositions);
+    std::sort(oldAlbumPositions.begin(), oldAlbumPositions.end());
     from.toFront();
     while(from.hasNext())
     {

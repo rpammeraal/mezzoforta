@@ -1,215 +1,225 @@
-QMAKE_MAC_SDK = macosx10.14
+QT       += core gui
 
-QT += widgets sql xml network webenginewidgets multimedia
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
 
-HEADERS     = \
-    MainWindow.h \
-    Controller.h \
-    Common.h \
-    DataAccessLayer.h \
-    DataAccessLayerPostgres.h \
-    Context.h \
-    ScreenStack.h \
-    ExternalData.h \
-    SBStandardItemModel.h \
-    SBSqlQueryModel.h \
-    SBLabel.h \
-    SBDialogRenamePlaylist.h \
-    BackgroundThread.h \
-    SBTab.h \
-    SBTabPerformerEdit.h \
-    SBTabSongEdit.h \
-    SBTabSongsAll.h \
-    SBTabPlaylistDetail.h \
-    SBTabPerformerDetail.h \
-    SBTabAlbumDetail.h \
-    SBTabSongDetail.h \
-    Navigator.h \
-    Chooser.h \
-    SBTabAlbumEdit.h \
-    SBModel.h \
-    CompleterFactory.h \
-    SBMessageBox.h \
-    SBDialogSelectItem.h \
-    PlayerController.h \
-    SBMediaPlayer.h \
-    AudioDecoder.h \
-    AudioDecoderFactory.h \
-    AudioDecoderFlac.h \
-    AudioDecoderMP3.h \
-    AudioDecoderOggVorbis.h \
-    AudioDecoderWave.h \
-    AudioDecoderOggVorbisReader.h \
-    AudioDecoderWaveReader.h \
-    AudioDecoderMP3Reader.h \
-    AudioDecoderFlacReader.h \
-    AudioDecoderReader.h \
-    SBTabQueuedSongs.h \
-    SBModelQueuedSongs.h \
-    SBSortFilterProxyQueuedSongsModel.h \
-    PlayManager.h \
-    SBIDSong.h \
-    SBIDPerformer.h \
-    SBIDAlbum.h \
-    SBIDPlaylist.h \
-    Properties.h \
-    MusicLibrary.h \
-    DatabaseSelector.h \
-    DBManager.h \
-    KeyboardEventCatcher.h \
-    OSXNSEventFunctions.h \
-    MetaData.h \
-    SBCaseInsensitiveString.h \
-    SBIDBase.h \
-    ScreenItem.h \
-    SBTableModel.h \
-    SBSortFilterProxyTableModel.h \
-    Preloader.h \
-    SBIDAlbumPerformance.h \
-    SBIDSongPerformance.h \
-    SetupWizard.h \
-    DataAccessLayerSQLite.h \
-    Network.h \
-    Configuration.h \
-    MusicImportResult.h \
-    SBIDOnlinePerformance.h \
-    SBIDChart.h \
-    SBTabChartDetail.h \
-    SBTabChooser.h \
-    SBIDChartPerformance.h \
-    ProgressDialog.h \
-    SBDuration.h \
-    SBIDPlaylistDetail.h \
-    SearchItemModel.h \
-    CacheManager.h \
-    CacheTemplate.h \
-    Cache.h \
-    SBKey.h \
-    SBDialogChart.h
+CONFIG += c++11
 
-SOURCES     = \
+# You can make your code fail to compile if it uses deprecated APIs.
+# In order to do so, uncomment the following line.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+SOURCES += \
     main.cpp \
     MainWindow.cpp \
-    Controller.cpp \
-    Common.cpp \
-    DataAccessLayer.cpp \
-    DataAccessLayerPostgres.cpp \
-    Context.cpp \
-    ScreenStack.cpp \
-    ExternalData.cpp \
-    SBStandardItemModel.cpp \
-    SBSqlQueryModel.cpp \
-    SBLabel.cpp \
-    SBDialogRenamePlaylist.cpp \
-    BackgroundThread.cpp \
-    SBTab.cpp \
-    SBTabPerformerEdit.cpp \
-    SBTabSongEdit.cpp \
-    SBTabSongsAll.cpp \
-    SBTabPlaylistDetail.cpp \
-    SBTabPerformerDetail.cpp \
-    SBTabAlbumDetail.cpp \
-    SBTabSongDetail.cpp \
-    Navigator.cpp \
-    Chooser.cpp \
-    SBTabAlbumEdit.cpp \
-    SBModel.cpp \
-    CompleterFactory.cpp \
-    SBMessageBox.cpp \
-    SBDialogSelectItem.cpp \
-    PlayerController.cpp \
-    SBMediaPlayer.cpp \
     AudioDecoder.cpp \
     AudioDecoderFactory.cpp \
     AudioDecoderFlac.cpp \
-    AudioDecoderMP3.cpp \
-    AudioDecoderOggVorbis.cpp \
-    AudioDecoderWave.cpp \
-    AudioDecoderOggVorbisReader.cpp \
-    AudioDecoderWaveReader.cpp \
-    AudioDecoderMP3Reader.cpp \
     AudioDecoderFlacReader.cpp \
+    AudioDecoderMP3.cpp \
+    AudioDecoderMP3Reader.cpp \
+    AudioDecoderOggVorbis.cpp \
+    AudioDecoderOggVorbisReader.cpp \
     AudioDecoderReader.cpp \
-    SBTabQueuedSongs.cpp \
-    SBModelQueuedSongs.cpp \
-    SBSortFilterProxyQueuedSongsModel.cpp \
-    PlayManager.cpp \
-    SBIDSong.cpp \
-    SBIDPerformer.cpp \
-    SBIDAlbum.cpp \
-    SBIDPlaylist.cpp \
-    Properties.cpp \
-    MusicLibrary.cpp \
-    DatabaseSelector.cpp \
+    AudioDecoderWave.cpp \
+    AudioDecoderWaveReader.cpp \
+    BackgroundThread.cpp \
+    Cache.cpp \
+    CacheManager.cpp \
+    Chooser.cpp \
+    Common.cpp \
+    CompleterFactory.cpp \
+    Configuration.cpp \
+    Context.cpp \
+    Controller.cpp \
     DBManager.cpp \
+    DataAccessLayer.cpp \
+    DataAccessLayerPostgres.cpp \
+    DataAccessLayerSQLite.cpp \
+    DatabaseSelector.cpp \
+    ExternalData.cpp \
     KeyboardEventCatcher.cpp \
     MetaData.cpp \
-    SBCaseInsensitiveString.cpp \
-    SBIDBase.cpp \
-    ScreenItem.cpp \
-    SBTableModel.cpp \
-    SBSortFilterProxyTableModel.cpp \
-    Preloader.cpp \
-    SBIDAlbumPerformance.cpp \
-    SBIDSongPerformance.cpp \
-    SetupWizard.cpp \
-    DataAccessLayerSQLite.cpp \
-    Network.cpp \
-    Configuration.cpp \
     MusicImportResult.cpp \
-    SBIDOnlinePerformance.cpp \
+    MusicLibrary.cpp \
+    Navigator.cpp \
+    Network.cpp \
+    PlayManager.cpp \
+    PlayerController.cpp \
+    Preloader.cpp \
+    ProgressDialog.cpp \
+    Properties.cpp \
+    SBCaseInsensitiveString.cpp \
+    SBDialogChart.cpp \
+    SBDialogRenamePlaylist.cpp \
+    SBDialogSelectItem.cpp \
+    SBDuration.cpp \
+    SBIDAlbum.cpp \
+    SBIDAlbumPerformance.cpp \
+    SBIDBase.cpp \
     SBIDChart.cpp \
+    SBIDChartPerformance.cpp \
+    SBIDOnlinePerformance.cpp \
+    SBIDPerformer.cpp \
+    SBIDPlaylist.cpp \
+    SBIDPlaylistDetail.cpp \
+    SBIDSong.cpp \
+    SBIDSongPerformance.cpp \
+    SBKey.cpp \
+    SBLabel.cpp \
+    SBMediaPlayer.cpp \
+    SBMessageBox.cpp \
+    SBModel.cpp \
+    SBModelQueuedSongs.cpp \
+    SBSortFilterProxyQueuedSongsModel.cpp \
+    SBSortFilterProxyTableModel.cpp \
+    SBSqlQueryModel.cpp \
+    SBStandardItemModel.cpp \
+    SBTab.cpp \
+    SBTabAlbumDetail.cpp \
+    SBTabAlbumEdit.cpp \
     SBTabChartDetail.cpp \
     SBTabChooser.cpp \
-    SBIDChartPerformance.cpp \
-    ProgressDialog.cpp \
-    SBDuration.cpp \
-    SBIDPlaylistDetail.cpp \
+    SBTabPerformerDetail.cpp \
+    SBTabPerformerEdit.cpp \
+    SBTabPlaylistDetail.cpp \
+    SBTabQueuedSongs.cpp \
+    SBTabSongDetail.cpp \
+    SBTabSongEdit.cpp \
+    SBTabSongsAll.cpp \
+    SBTableModel.cpp \
+    ScreenItem.cpp \
+    ScreenStack.cpp \
     SearchItemModel.cpp \
-    CacheManager.cpp \
-    Cache.cpp \
-    SBKey.cpp \
-    SBDialogChart.cpp
+    SetupWizard.cpp 
 
 OBJECTIVE_SOURCES += \
     OSXNSEventFunctions.mm
 
-# install
-target.path = .
-INSTALLS += target
+HEADERS += \
+    AudioDecoder.h \
+    AudioDecoderFactory.h \
+    AudioDecoderFlac.h \
+    AudioDecoderFlacReader.h \
+    AudioDecoderMP3.h \
+    AudioDecoderMP3Reader.h \
+    AudioDecoderOggVorbis.h \
+    AudioDecoderOggVorbisReader.h \
+    AudioDecoderReader.h \
+    AudioDecoderWave.h \
+    AudioDecoderWaveReader.h \
+    BackgroundThread.h \
+    Cache.h \
+    CacheManager.h \
+    CacheTemplate.h \
+    Chooser.h \
+    Common.h \
+    CompleterFactory.h \
+    Configuration.h \
+    Context.h \
+    Controller.h \
+    DBManager.h \
+    DataAccessLayer.h \
+    DataAccessLayerPostgres.h \
+    DataAccessLayerSQLite.h \
+    DatabaseSelector.h \
+    ExternalData.h \
+    KeyboardEventCatcher.h \
+    MainWindow.h \
+    MetaData.h \
+    MusicImportResult.h \
+    MusicLibrary.h \
+    Navigator.h \
+    Network.h \
+    OSXNSEventFunctions.h \
+    PlayManager.h \
+    PlayerController.h \
+    Preloader.h \
+    ProgressDialog.h \
+    Properties.h \
+    SBCaseInsensitiveString.h \
+    SBDialogChart.h \
+    SBDialogRenamePlaylist.h \
+    SBDialogSelectItem.h \
+    SBDuration.h \
+    SBIDAlbum.h \
+    SBIDAlbumPerformance.h \
+    SBIDBase.h \
+    SBIDChart.h \
+    SBIDChartPerformance.h \
+    SBIDOnlinePerformance.h \
+    SBIDPerformer.h \
+    SBIDPlaylist.h \
+    SBIDPlaylistDetail.h \
+    SBIDSong.h \
+    SBIDSongPerformance.h \
+    SBKey.h \
+    SBLabel.h \
+    SBMediaPlayer.h \
+    SBMessageBox.h \
+    SBModel.h \
+    SBModelQueuedSongs.h \
+    SBSortFilterProxyQueuedSongsModel.h \
+    SBSortFilterProxyTableModel.h \
+    SBSqlQueryModel.h \
+    SBStandardItemModel.h \
+    SBTab.h \
+    SBTabAlbumDetail.h \
+    SBTabAlbumEdit.h \
+    SBTabChartDetail.h \
+    SBTabChooser.h \
+    SBTabPerformerDetail.h \
+    SBTabPerformerEdit.h \
+    SBTabPlaylistDetail.h \
+    SBTabQueuedSongs.h \
+    SBTabSongDetail.h \
+    SBTabSongEdit.h \
+    SBTabSongsAll.h \
+    SBTableModel.h \
+    ScreenItem.h \
+    ScreenStack.h \
+    SearchItemModel.h \
+    SetupWizard.h
 
 FORMS += \
-    MainWindow.ui \
     DatabaseSelector.ui \
+    MainWindow.ui \
+    MusicImportResult.ui \
     SBDialogChart.ui \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
-    SetupWizard.ui \
-    MusicImportResult.ui \
-    SBDialogChart.ui
+    SetupWizard.ui 
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
     resource.qrc
-
 
 ICON = resources/logo.icns
 RC_ICONS = resources/logo.ico
 
 DISTFILES += \
-    PlacesDeveloped.txt \
-    resources/squarelogo.bmp
+    resources/AllSongs.png \
+    resources/ChartIcon.png \
+    resources/NoAlbumCover.png \
+    resources/NoBandPhoto.png \
+    resources/PlaylistIcon.png \
+    resources/README \
+    resources/SongIcon.png \
+    resources/blank icon.png \
+    resources/default.qss \
+    resources/logo.icns \
+    resources/logo.ico \
+    resources/playing.png \
+    resources/splash.png \
+    resources/squarelogo.png
 
-unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation
-macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /sw/lib/libogg.a /sw/lib/libvorbis.a /sw/lib/libvorbisfile.a /sw/lib/libmad.a /sw/lib/libid3tag.a
+#	Manually added
+INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include
+DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include
 
-INCLUDEPATH += /usr/local/include /sw/include C:/usr/local/include
-DEPENDPATH += /usr/local/include /sw/include C:/usr/local/include
-
-win32: LIBS += -LC:/usr/local/lib/ -lportaudio_x86  -llibogg -llibvorbis -llibvorbisfile -llibmad -lzlibstatic -ltag
-#   win32: INCLUDEPATH += $$PWD/../libs/portaudio/include $$PWD/../libs/libmad-0.15.1b
-#   win32: INCLUDEPATH += /Users/roy/songbase/app/../libs/portaudio/include
-win32: INCLUDEPATH += $$PWD/../libs/portaudio/include
-win32: INCLUDEPATH += $$PWD/../libs/libmad-0.15.1b/msvc++
-
-
+unix: LIBS += -lportaudio -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation
+#macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /opt/sw/lib/libogg.a /opt/sw/lib/libvorbis.a /opt/sw/lib/libvorbisfile.a /opt/sw/lib/libmad.a /optopt//sw/lib/libid3tag.a

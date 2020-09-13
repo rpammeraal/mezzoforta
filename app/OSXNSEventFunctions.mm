@@ -14,7 +14,7 @@ bool OSXretrieveKeyPressed(void* event,int& key)
 {
     bool keyPressed=0;
     NSEvent* nsevent=reinterpret_cast<NSEvent *>(event);
-    if(([nsevent type]==NSSystemDefined) && ([nsevent subtype]==NSScreenChangedEventType))
+    if(([nsevent type]==NSEventTypeSystemDefined) && ([nsevent subtype]==NSEventSubtypeScreenChanged))
     {
         int data1=([nsevent data1]);
         int keyCode=(data1 & 0xFFFF0000) >> 16;
