@@ -251,7 +251,6 @@ PlayManager::dummyPlayAllSongs()
 
     PlayerController* pc=Context::instance()->playerController();
 
-    int progressStep=0;
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Test All Song Paths",1);
 
     SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0,1);

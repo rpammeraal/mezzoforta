@@ -131,7 +131,7 @@ SBModelQueuedSongs::formatDisplayPlayID(int playID,bool isCurrent) const
 {
     QString str;
 
-    str.sprintf("%s %d",(isCurrent?" ":"   "),playID);
+    QTextStream(&str) << (isCurrent?" ":"   ") << playID;
     return str;
 }
 
@@ -652,7 +652,7 @@ SBModelQueuedSongs::createRecord(const SBIDOnlinePerformancePtr& opPtr,int playP
 QString
 SBModelQueuedSongs::_formatPlaylistPosition(int playlistPositionID) const
 {
-    return QString().sprintf("%08d",playlistPositionID);
+    return QString("%1").arg(playlistPositionID,8);
 }
 
 void

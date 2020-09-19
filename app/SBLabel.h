@@ -15,8 +15,8 @@ class SBLabel : public QLabel
 
 public:
     SBLabel();
-    SBLabel(QWidget* parent, Qt::WindowFlags f=0);
-    SBLabel(const QString& text, QWidget* parent=0, Qt::WindowFlags f=0);
+    SBLabel(QWidget* parent, Qt::WindowFlags f=Qt::WindowFlags());
+    SBLabel(const QString& text, QWidget* parent=0, Qt::WindowFlags f=Qt::WindowFlags());
 
     //	Inherited methods
     virtual void mousePressEvent(QMouseEvent* me);

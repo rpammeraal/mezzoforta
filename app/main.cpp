@@ -75,8 +75,6 @@ int main(int argc, char *argv[])
     //	Set up types
     //qRegisterMetaType<SBIDBase>();
 
-    //	Set up randomizer
-    qsrand(QDateTime::currentMSecsSinceEpoch());
     qDebug() << SB_DEBUG_INFO << app.platformName();
 
     //	Set up system

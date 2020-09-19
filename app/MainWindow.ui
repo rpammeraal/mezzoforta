@@ -482,8 +482,17 @@
             <family>Trebuchet MS</family>
            </font>
           </property>
+          <property name="styleSheet">
+           <string notr="true">background: #ececec;</string>
+          </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>6</number>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
           </property>
           <widget class="SBTabSongsAll" name="tabAllSongs">
            <attribute name="title">
@@ -3188,10 +3197,10 @@ Click on 'All Songs' to continue.</string>
                   <property name="gridStyle">
                    <enum>Qt::NoPen</enum>
                   </property>
-                  <attribute name="verticalHeaderDefaultSectionSize">
+                  <attribute name="verticalHeaderMinimumSectionSize">
                    <number>20</number>
                   </attribute>
-                  <attribute name="verticalHeaderMinimumSectionSize">
+                  <attribute name="verticalHeaderDefaultSectionSize">
                    <number>20</number>
                   </attribute>
                  </widget>

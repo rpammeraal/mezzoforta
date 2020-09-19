@@ -11,13 +11,11 @@ QCompleter*
 CompleterFactory::getCompleterAll()
 {
     SearchItemModel* sim=Context::instance()->searchItemModel();
-    qDebug() << SB_DEBUG_INFO;
     return _instantiateCompleter(sim);
 
     QStringList articles=Common::articles();
     articles.append(QString());
 
-    qDebug() << SB_DEBUG_INFO;
     QString tpl=
         QString
         (
@@ -51,12 +49,10 @@ CompleterFactory::getCompleterAll()
             .arg(SBKey::Performer)
         ;
 
-    qDebug() << SB_DEBUG_INFO;
     QStringListIterator it(articles);
     QStringList queryList;
     while(it.hasNext())
     {
-    qDebug() << SB_DEBUG_INFO;
         QString query=tpl;
         QString article=it.next();
         Common::toTitleCase(article);
@@ -77,7 +73,6 @@ CompleterFactory::getCompleterAll()
         queryList.append(query);
 
     }
-    qDebug() << SB_DEBUG_INFO;
     QString query=queryList.join(" UNION ");
     query.append(" ORDER BY 1");
 
@@ -156,7 +151,6 @@ CompleterFactory::_createCompleter(QString& query)
 //        sqm->fetchMore();
 //    }
 
-    qDebug() << SB_DEBUG_INFO;
     return _instantiateCompleter(sqm);
 }
 
@@ -173,7 +167,6 @@ CompleterFactory::_instantiateCompleter(QAbstractItemModel* qtm)
     c->setFilterMode(Qt::MatchStartsWith);
     c->setCompletionMode(QCompleter::PopupCompletion);
     c->setCompletionColumn(0);
-    qDebug() << SB_DEBUG_INFO;
 
     return c;
 }
