@@ -1,16 +1,18 @@
 #	After fresh install:
-apt-get install g++; read -p cont:
-apt-get install build-essential; read -p cont:
-apt-get install apt-file; read -p cont:
-apt-get install mesa-common-dev; read -p cont:
-apt-get install libglu1-mesa-dev -y; read -p cont:
-apt-get install git; read -p cont:
-apt-get install portaudio19-dev; read -p cont:
-apt-get install ttf-mscorefonts-installer; read -p cont:
-apt-get install libflac-dev; read -p cont:
-apt-get install libmad0-dev; read -p cont:
-apt-get install libvorbis-dev; read -p cont:
-apt-get install libid3tag0-dev; read -p cont:
-apt-get install postgresql postgresql-contrib; read -p cont:
-apt-get install nfs-common; read -p cont:
-apt-get install libtag1-dev; read -p cont:
+apt-get install -y g++;
+apt-get install -y build-essential;
+apt-get install -y apt-file;
+apt-get install -y mesa-common-dev;
+apt-get install -y libglu1-mesa-dev -y;
+apt-get install -y git;
+apt-get install -y portaudio19-dev;
+apt-get install -y ttf-mscorefonts-installer;
+apt-get install -y libflac-dev;
+apt-get install -y libmad0-dev;
+apt-get install -y libvorbis-dev;
+apt-get install -y libid3tag0-dev;
+apt-get install -y postgresql postgresql-contrib;
+apt-get install -y nfs-common;
+apt-get install -y libtag1-dev;
+apt-get install -y libxcb-xinerama0
+apt-get install -y freeglut3-dev
