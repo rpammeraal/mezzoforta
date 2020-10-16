@@ -192,7 +192,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    else if(eventKey==Qt::Key_S && (Qt::AltModifier))
+    else if(eventKey==Qt::Key_S && (event->modifiers()==Qt::AltModifier))
     {
         //	Command S
         if(tab)
@@ -200,7 +200,7 @@ Navigator::keyPressEvent(QKeyEvent *event)
             tab->save();
         }
     }
-    else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && Qt::ControlModifier)
+    else if((eventKey==Qt::Key_PageUp || eventKey==Qt::Key_PageDown) && (event->modifiers()==Qt::ControlModifier))
     {
         navigateDetailTab((eventKey==Qt::Key_PageDown)?1:-1);
     }

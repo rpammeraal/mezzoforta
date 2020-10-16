@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QIcon>
 #include "Controller.h"
 #include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
@@ -71,6 +72,8 @@ int main(int argc, char *argv[])
     app.setOrganizationName("MezzoForta Inc");
     app.setOrganizationDomain("mezzoforta.com");
     app.setApplicationName("MezzoForta!");
+    QIcon icon=QIcon(":/res/resources/squarelogo.png");
+    app.setWindowIcon(icon);
 
     //	Set up types
     //qRegisterMetaType<SBIDBase>();
