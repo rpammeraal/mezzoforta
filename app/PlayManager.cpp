@@ -56,6 +56,7 @@ PlayManager::playerPlay()
                 return 1;
             }
         }
+        break;
 
     case PlayerController::sb_player_state_play:
     case PlayerController::sb_player_state_pause:

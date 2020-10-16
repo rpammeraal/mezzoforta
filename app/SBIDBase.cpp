@@ -59,7 +59,7 @@ SBIDBase::operator QString() const
 SBKey::ItemType
 SBIDBase::convert(Common::sb_field f)
 {
-    ItemType t;
+    ItemType t=Invalid;
     switch(f)
     {
     case Common::sb_field_invalid:
