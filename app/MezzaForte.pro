@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui widgets sql xml network webenginewidgets multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
 
@@ -221,5 +221,5 @@ INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/inclu
 DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include
 
 unix: LIBS += -lportaudio -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation
 #macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /opt/sw/lib/libogg.a /opt/sw/lib/libvorbis.a /opt/sw/lib/libvorbisfile.a /opt/sw/lib/libmad.a /optopt//sw/lib/libid3tag.a
