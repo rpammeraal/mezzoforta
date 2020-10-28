@@ -3,6 +3,7 @@
 if [ $# -eq 0 ]
   then
 	echo Usage 'backupPostgresForMigration <dbname> <schema> <dst sqlite db>'
+	echo <dst sqlite db> needs to be a PREFORMATTED MezzoForta! database.
 	exit;
 fi
 
@@ -14,14 +15,14 @@ HOST=mars
 TEMPDB=tempdb
 
 echo copying source database
-dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
-createdb --host=$HOST --port=$PORT $TEMPDB
+#dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
+#createdb --host=$HOST --port=$PORT $TEMPDB -T "$DB"
 
-echo backup source database
-../../tools/backupPostgresForCopy $1 > /dev/null
-
-echo restore into temp database
-psql -h $HOST -p $PORT $TEMPDB --quiet -f /tmp/$DB.dump	
+psql -h $HOST -p $PORT template1 --quiet << END > /dev/null
+	DROP DATABASE IF EXISTS "tempdb";
+	SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DB';
+	CREATE DATABASE "tempdb" WITH TEMPLATE "$DB"
+END
 
 echo altering temp database
 psql -h $HOST -p $PORT $TEMPDB --quiet << END
@@ -38,7 +39,7 @@ psql -h $HOST -p $PORT $TEMPDB --quiet << END
 	ALTER SEQUENCE $SCHEMA.chart_performance_chart_performance_id_seq OWNED BY none;
 END
 
-echo dump temp database
+echo dump temp database to /tmp/$TEMPDB.out
 echo "BEGIN;" > /tmp/$TEMPDB.out
 
 pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
@@ -79,6 +80,9 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 	-t $SCHEMA.chart               \
 	-t $SCHEMA.chart_performance   \
 | grep -v '^SET'  \
+| grep -v '^SELECT pg_'  \
+| grep -v 'CREATE DATABASE'  \
+| grep -v '\\connect'  \
 | grep -v "VALUES (0, 1, 'UNKNOWN ALBUM'," \
 | sed "s/DEFAULT now()//" \
 | sed "s/::text//g" \
@@ -96,6 +100,7 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 | sed "s/DEFAULT nextval('playlist_detail_playlist_detail_id_seq'::regclass)//" \
 | sed "s/DEFAULT nextval('chart_chart_id_seq'::regclass)//" \
 | sed "s/DEFAULT nextval('chart_performance_chart_performance_id_seq'::regclass)//" \
+| sed "s/INTO rock\./INTO /" \
 >> /tmp/$TEMPDB.out
 
 pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
@@ -107,17 +112,18 @@ pg_dump --dbname=$TEMPDB --host=$HOST --port=$PORT \
 	--section=data \
 	-t $SCHEMA.lyrics     \
 | grep -v '^SET'  \
+| grep -v '^SELECT pg_'  \
 | sed "s/DEFAULT now()//" \
 | sed "s/::text//g" \
+| sed "s/INTO rock\./INTO /" \
 >> /tmp/$TEMPDB.out
 echo "COMMIT;" >> /tmp/$TEMPDB.out
 
-#rm -f /tmp/$SCHEMA.sqlite
-#
 echo build sqlite database $SQLITEDB
 cat /tmp/$TEMPDB.out | sqlite3 $SQLITEDB
 dropdb --host=$HOST --port=$PORT --if-exists $TEMPDB
 
 #	cleanup
-#rm -f /tmp/$DB.dump
-#rm -f /tmp/$TEMPDB.out
+echo cleaning up
+rm -f /tmp/$DB.dump
+rm -f /tmp/$TEMPDB.out
