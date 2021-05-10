@@ -66,7 +66,7 @@ private:
     QString getErrorMsg() const;
     void init();
     void portAudioInit();
-    bool portAudioOpen(AudioDecoder* ad);
+    bool portAudioOpen();
     void setErrorMsg(const QString& errMsg);
     void setState(QMediaPlayer::State state);
 };

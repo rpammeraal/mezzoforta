@@ -71,7 +71,7 @@ SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
     }
     if(!testFilePathOnly)
     {
-        portAudioOpen(_ad);
+        portAudioOpen();
     }
 
     if(!testFilePathOnly)
@@ -220,10 +220,16 @@ SBMediaPlayer::closeStream()
     {
         Pa_CloseStream(_stream); _stream=NULL;
     }
+#ifndef Q_OS_LINUX
+    //  The following code crashes on Ubuntu 20.04. This may be the cause of
+    //  upgraded libraries.
     if(_ad)
     {
         delete _ad; _ad=NULL;
     }
+#endif
+    _ad=NULL;
+    _stream=NULL;
 }
 
 QString
@@ -266,7 +272,7 @@ SBMediaPlayer::portAudioInit()
 }
 
 bool
-SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
+SBMediaPlayer::portAudioOpen()
 {
     if(_paError!=paNoError)
     {
@@ -295,7 +301,6 @@ SBMediaPlayer::portAudioOpen(AudioDecoder* ad)
 //    }
     ////////////////////
 
-    _ad=ad;
     PaStreamParameters outputParameters;
 
     outputParameters.channelCount=_ad->numChannels();
