@@ -268,6 +268,8 @@ SBIDSongPerformance::performancesByPerformer_Preloader(int performerID)
                     "s.song_id=l.song_id "
         "WHERE "
             "p.artist_id=%1 "
+        "ORDER BY "
+            "s.title"
     )
         .arg(performerID)
     ;
