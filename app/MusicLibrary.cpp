@@ -45,6 +45,9 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
 
     //	Init
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Starting",1);
+    _numNewSongs=0;
+    _numNewPerformers=0;
+    _numNewAlbums=0;
 
     const int numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
     int progressCurrentValue=0;
@@ -56,7 +59,6 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         +"/"
         +schema
         +(schema.length()?"/":"");
-
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section A:	Retrieve paths found in directory
@@ -202,13 +204,13 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         progressCurrentValue++;
     }
     delete sqm;
-    qDebug() << SB_DEBUG_INFO;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section C:	Determine new songs and retrieve meta data for these
     ///////////////////////////////////////////////////////////////////////////////////
     QMutableVectorIterator<MLentityPtr> feIT(foundEntities);
+    QVector<MLentityPtr> newEntities;
     int numNewSongs=0;
 
     progressCurrentValue=0;
@@ -217,21 +219,20 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData",progressCurrentValue,progressMaxValue);
     time.restart();
 
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << foundEntities.count();
     while(feIT.hasNext())
     {
         MLentityPtr ePtr=feIT.next();
-
         const QString key=ePtr->filePath.toLower();
 
         if(pathToSong.contains(key))
         {
             pathToSong[key]->pathExists=1;
-            feIT.remove(); //	Gone, gone, gone. Not needed. Exists. Pleitte.
         }
         else if(ePtr->errorFlag()==0)
         {
-            qDebug() << SB_DEBUG_INFO << key;
+            newEntities.append(ePtr);
+            qDebug() << SB_DEBUG_INFO << "new" << key;
 
             //	Populate meta data
             MetaData md(schemaRoot+ePtr->filePath);
@@ -271,7 +272,6 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                 albumPath.year=ePtr->year;
 
                 albumPath.albumTitle=ePtr->albumTitle;
-                qDebug() << SB_DEBUG_INFO << albumPath.albumTitle << albumPath.albumPerformerName;
 
                 albumPathPtr=std::make_shared<MLalbumPath>(albumPath);
 
@@ -285,7 +285,6 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
             if(!albumPathPtr->uniqueAlbumTitles.contains(ePtr->albumTitle.toLower()))
             {
                 albumPathPtr->uniqueAlbumTitles.append(ePtr->albumTitle.toLower());
-                qDebug() << SB_DEBUG_INFO << albumPathPtr->uniqueAlbumTitles.count() << ePtr->albumTitle;
             }
             if(!albumPathPtr->uniqueSongPerformerNames.contains(ePtr->songPerformerName))
             {
@@ -326,6 +325,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         }
         progressCurrentValue++;
     }
+    foundEntities=newEntities;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData");
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);	//	Not done yet
 
@@ -473,23 +473,28 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         }
         qDebug() << SB_DEBUG_INFO;
 
-        //	Collect all errors
-        QMap<QString,QString> errors;
-        feIT.toFront();
-        while(feIT.hasNext())
-        {
-            MLentityPtr entityPtr=feIT.next();
+    }
 
-            if(entityPtr->errorFlag())
-            {
-                errors[entityPtr->filePath]=entityPtr->errorMsg;
-            }
-        }
-        if(errors.count())
+    //	Collect all errors
+    QMap<QString,QString> errors;
+    feIT.toFront();
+    qDebug() << SB_DEBUG_INFO << "collecting errors";
+    while(feIT.hasNext())
+    {
+        MLentityPtr entityPtr=feIT.next();
+
+        if(entityPtr->errorFlag())
         {
-            MusicImportResult mir(errors);
-            mir.exec();
+            errors[entityPtr->filePath]=entityPtr->errorMsg;
+            qDebug() << SB_DEBUG_INFO << errors.count() << entityPtr->filePath << entityPtr->errorMsg;
         }
+    }
+    qDebug() << SB_DEBUG_INFO << errors;
+
+    if(errors.count())
+    {
+        MusicImportResult mir(errors);
+        mir.exec();
     }
 
     //	Refresh caches
@@ -518,10 +523,6 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     int progressCurrentValue=0;
     int progressMaxValue=0;
     QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
-
-    _numNewSongs=0;
-    _numNewPerformers=0;
-    _numNewAlbums=0;
 
     qDebug() << SB_DEBUG_INFO;
     {	//	DEBUG
