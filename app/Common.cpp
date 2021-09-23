@@ -12,6 +12,7 @@
 
 QString diacriticLetters_;
 QStringList noDiacriticLetters_;
+QString toberemoved_;
 
 Common::Common()
 {
@@ -274,28 +275,148 @@ Common::randomOldestFirst(quint64 max)
 }
 
 QString
-Common::removeAccents(const QString &s)
+Common::removeAccents(const QString &s, const bool debug)
 {
+    bool stringPrinted=0;
+    QString debugInfo;
+
     if (diacriticLetters_.isEmpty())
     {
-        diacriticLetters_ = QString::fromUtf8("İşŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ");
-        noDiacriticLetters_ <<"I"<<"s"<<"S"<<"OE"<<"Z"<<"s"<<"oe"<<"z"<<"Y"<<"Y"<<"u"<<"A"<<"A"<<"A"<<"A"<<"A"<<"A"<<"AE"<<"C"<<"E"<<"E"<<"E"<<"E"<<"I"<<"I"<<"I"<<"I"<<"D"<<"N"<<"O"<<"O"<<"O"<<"O"<<"O"<<"O"<<"U"<<"U"<<"U"<<"U"<<"Y"<<"s"<<"a"<<"a"<<"a"<<"a"<<"a"<<"a"<<"ae"<<"c"<<"e"<<"e"<<"e"<<"e"<<"i"<<"i"<<"i"<<"i"<<"o"<<"n"<<"o"<<"o"<<"o"<<"o"<<"o"<<"o"<<"u"<<"u"<<"u"<<"u"<<"y"<<"y";
+        diacriticLetters_ = QString::fromUtf8("İşŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ¡¿ćı™«»…");
+        diacriticLetters_.append(QString::fromUtf8("\u0080"));  //  euro sign
+        diacriticLetters_.append(QString::fromUtf8("\u0099"));  //  tm
+        diacriticLetters_.append(QString::fromUtf8("\u00a0"));  //  no break space
+        diacriticLetters_.append(QString::fromUtf8("\u00a3"));  //  pound sign
+        diacriticLetters_.append(QString::fromUtf8("\u00b0"));  //  degree sign
+        diacriticLetters_.append(QString::fromUtf8("\u00b4"));  //  acute accent
+        diacriticLetters_.append(QString::fromUtf8("\u00fe"));  //  latin small letter thorn
+        diacriticLetters_.append(QString::fromUtf8("\u0107"));  //  small letter c with acute
+        diacriticLetters_.append(QString::fromUtf8("\u010c"));  //  latin capital letter c with caron
+        diacriticLetters_.append(QString::fromUtf8("\u010d"));  //  latin small letter c with caron
+        diacriticLetters_.append(QString::fromUtf8("\u2013"));  //  en dash
+        diacriticLetters_.append(QString::fromUtf8("\u2019"));  //  right quotation mark
+        diacriticLetters_.append(QString::fromUtf8("\u201c"));  //  left double quotation mark
+        diacriticLetters_.append(QString::fromUtf8("\u201d"));  //  right double quotation mark
+        diacriticLetters_.append(QString::fromUtf8("\u2192"));  //  rightwards arrow
+        diacriticLetters_.append(QString::fromUtf8("\u25ef"));  //  large circle
+        diacriticLetters_.append(QString::fromUtf8("\uff1a"));  //  fullwidth colon
+        diacriticLetters_.append(QString::fromUtf8("\uff1d"));  //  fullwidth equal sign
+        noDiacriticLetters_ <<"I"<<"s"<<"S"<<"OE"<<"Z"<<"s"<<"oe"<<"z"<<"Y"<<"Y"<<"u"<<"A"<<"A"<<"A"<<"A"<<"A"<<"A"<<"AE"<<"C"<<"E"<<"E"<<"E"<<"E"<<"I"<<"I"<<"I"<<"I"<<"D"<<"N"<<"O"<<"O"<<"O"<<"O"<<"O"<<"O"<<"U"<<"U"<<"U"<<"U"<<"Y"<<"s"<<"a"<<"a"<<"a"<<"a"<<"a"<<"a"<<"ae"<<"c"<<"e"<<"e"<<"e"<<"e"<<"i"<<"i"<<"i"<<"i"<<"o"<<"n"<<"o"<<"o"<<"o"<<"o"<<"o"<<"o"<<"u"<<"u"<<"u"<<"u"<<"y"<<"y"<<"!"<< "?" << "c" << "i" << "TM" << "<<" << ">>" << "...";
+        noDiacriticLetters_.append("$");    //  euro sign
+        noDiacriticLetters_.append("tm");   //  tm
+        noDiacriticLetters_.append(" ");    //  no break space
+        noDiacriticLetters_.append("#");    //  no break space
+        noDiacriticLetters_.append("*");    //  no break space
+        noDiacriticLetters_.append("'");    //  acute accent
+        noDiacriticLetters_.append("b");    //  latin small letter thorn
+        noDiacriticLetters_.append("c");    //  small letter c with acute
+        noDiacriticLetters_.append("C");    //  latin capital letter c with caron
+        noDiacriticLetters_.append("c");    //  latin small letter c with caron
+        noDiacriticLetters_.append("-");    //  en dash
+        noDiacriticLetters_.append("'");    //  right quotation mark
+        noDiacriticLetters_.append("\"");   //  left double quotation mark
+        noDiacriticLetters_.append("\"");   //  right double quotation mark
+        noDiacriticLetters_.append("->");   //  rightwards arrow
+        noDiacriticLetters_.append("O");    //  large circle
+        noDiacriticLetters_.append(":");    //  fullwidth colon
+        noDiacriticLetters_.append("=");    //  fullwidth equal sign
+    }
+
+    if(debug)
+    {
+        qDebug() << SB_DEBUG_INFO << diacriticLetters_;
+        qDebug() << SB_DEBUG_INFO << noDiacriticLetters_;
+
     }
 
     QString output = "";
-    for (int i = 0; i < s.length(); i++)
+    const QString empty=QString("");
+    bool eos=0;
+    for (int i = 0; i < s.length() && !eos; i++)
     {
         QChar c = s[i];
-        int dIndex = diacriticLetters_.indexOf(c);
-        if (dIndex < 0)
+        QString replacement;
+        if(debug)
         {
-            output.append(c);
+            debugInfo=QString("empty");
+        }
+
+        short uc=c.unicode();
+        if(debug)
+        {
+            qDebug() << SB_DEBUG_INFO << c << uc << c.digitValue();
+        }
+
+        if(uc==0)
+        {
+            replacement=empty;
+            if(debug)
+            {
+                debugInfo="uc=0, replacement:empty";
+            }
+        }
+        else if((uc>31 && uc<127))
+        {
+            //  Regular ascii
+            replacement=c;
+            if(debug)
+            {
+                debugInfo="regular ascii";
+            }
+        }
+        else if(uc>=768 && uc<=879)
+        {
+            //  Unicode character in the 'combining' class. Skip
+            replacement=empty;
+            if(debug)
+            {
+                debugInfo="unicode in 'combining' class. replacement:empty";
+            }
         }
         else
         {
-            QString replacement = noDiacriticLetters_[dIndex];
-            output.append(replacement);
+            //  Not in the list to be removed/ignored.
+            int dIndex = diacriticLetters_.indexOf(c);
+            if(debug)
+            {
+                qDebug() << SB_DEBUG_INFO << c << c.digitValue() << c.toLatin1() << c.unicode() << dIndex ;
+            }
+            if (dIndex>=0)
+            {
+                replacement = noDiacriticLetters_[dIndex];
+                if(debug)
+                {
+                    debugInfo="found in noDiacriticLetters";
+                    qDebug() << SB_DEBUG_INFO << replacement;
+                }
+            }
+            else
+            {
+//                //  Issue warning: character not handled.
+//                if(!stringPrinted)
+//                {
+//                    //  Only print input string once.
+//                    qDebug() << SB_DEBUG_WARNING << "In string '"<< s << "' (length=" << s.length() << "):";
+//                    qDebug() << SB_DEBUG_WARNING << s.normalized (QString::NormalizationForm_KD);
+//                    qDebug() << SB_DEBUG_WARNING << s.toLocal8Bit();
+
+//                    stringPrinted=1;
+//                }
+//                qDebug() << SB_DEBUG_WARNING << "(Unicode) character '" << c << "' (" << c.digitValue() << ") at position " << i << "(0 based) not handled. ";
+//                qDebug() << SB_DEBUG_WARNING << "                     isSymbol=" << c.isSymbol() << ":isPunct=" << c.isPunct() << ":isMark=" << c.isMark() << ":isLoN="  << c.isLetterOrNumber() <<
+//                                                                    ":isPrint=" << c.isPrint() << ":toLatin=" << c.toLatin1();
+
+                if(debug)
+                {
+                    debugInfo="not handled";
+                }
+            }
         }
+        if(debug)
+        {
+            qDebug() << SB_DEBUG_INFO << "#" << i << ":char=" << c << ":replacement:" << replacement << replacement.length() << "info:" << debugInfo;
+        }
+        output.append(replacement);
     }
 
     return output;

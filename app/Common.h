@@ -176,7 +176,7 @@ public:
     static QString parseTextFieldDB(const QSqlRecord* sr, int index);
     static quint64 random(quint64 max);
     static quint64 randomOldestFirst(quint64 max);
-    static QString removeAccents(const QString& s);
+    static QString removeAccents(const QString& s, const bool debug=0);
     static QString removeArticles(const QString& s);
     static QString removeExtraSpaces(const QString& s);
     static QString removeNonAlphanumeric(const QString& s);

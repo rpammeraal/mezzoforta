@@ -60,6 +60,13 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         +schema
         +(schema.length()?"/":"");
 
+    const QString mtaf=QString("b/boney m./greatest hits/boney m. [greatest hits] 02 - rivers of babylon.ogg");
+    const QString mtaf_song=QString("rivers of babylon");
+    const QString mtaf_performer=QString("boney");
+    const int mtaf_songID=3548;
+    QString keyFromFS;
+    QString keyFromDB;
+
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section A:	Retrieve paths found in directory
     ///////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +81,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     {
         it.next();
         QFileInfo fi=it.fileInfo();
-        QString path=it.filePath();
+        QString path=it.filePath().toUtf8();
         if(fi.isFile())
         {
             path=path.mid(schemaRoot.length());
@@ -85,7 +92,14 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
             e.parentDirectoryPath=e.absoluteParentDirectoryPath.mid(schemaRoot.length());
             e.parentDirectoryName=fi.absoluteDir().dirName();
             e.extension=fi.completeSuffix();
+            e.key=Common::removeAccents(e.filePath.toLower());
 
+            if(e.key==mtaf)
+            {
+                qDebug() << SB_DEBUG_INFO << "*********************************************************************";
+                qDebug() << SB_DEBUG_INFO << mtaf_songID << e.key;
+                keyFromFS=e.key;
+            }
             if(AudioDecoderFactory::fileSupportedFlag(fi,0))
             {
                 if(fi.size()>10*1024)
@@ -121,6 +135,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         }
     }
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles");
+    qDebug() << SB_DEBUG_INFO << keyFromFS;
 
     if(0)
     {	//	DEBUG
@@ -184,10 +199,33 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         performance.albumPerformanceID =sqm->data(sqm->index(i,6)).toInt();
         performance.onlinePerformanceID=sqm->data(sqm->index(i,7)).toInt();
         performance.path=sqm->data(sqm->index(i,8)).toString().replace("\\","");
+        performance.key=Common::removeAccents(performance.path.toLower());
 
-        QString pathToSongKey=performance.path.toLower();
-        pathToSong[pathToSongKey]=std::make_shared<MLperformance>(performance);
-        existingPath[pathToSongKey]=0;
+        pathToSong[performance.key]=std::make_shared<MLperformance>(performance);
+        existingPath[performance.key]=0;
+
+        if(performance.songID==mtaf_songID)
+        {
+            qDebug() << SB_DEBUG_INFO << "*********************************************************************";
+            qDebug() << SB_DEBUG_INFO << performance.songID << performance.key << performance.path;
+            qDebug() << SB_DEBUG_INFO << performance.key;
+
+            if(performance.songID==mtaf_songID && performance.key.contains(mtaf_song) && performance.key.contains(mtaf_performer))
+            {
+                keyFromDB=performance.key;
+                qDebug() << SB_DEBUG_INFO << keyFromDB;
+            }
+
+//            QString b=Common::removeAccents(p,1);
+//            qDebug() << SB_DEBUG_INFO << b;
+
+//            QString t=pathToSongKey;
+//            for(int i=0;i<t.length();i++)
+//            {
+//                qDebug() << SB_DEBUG_INFO << i << t.at(i) << t.at(i).unicode();
+
+//            }
+        }
 
         if(time.elapsed()>700)
         {
@@ -206,6 +244,18 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     delete sqm;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
 
+    qDebug() << SB_DEBUG_INFO << "db:" << keyFromDB;
+    qDebug() << SB_DEBUG_INFO << "fs:" << keyFromFS;
+
+    if(keyFromDB==keyFromFS)
+    {
+        qDebug() << SB_DEBUG_INFO << "equal";
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "NOT equal";
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section C:	Determine new songs and retrieve meta data for these
     ///////////////////////////////////////////////////////////////////////////////////
@@ -223,14 +273,32 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     while(feIT.hasNext())
     {
         MLentityPtr ePtr=feIT.next();
-        const QString key=ePtr->filePath.toLower();
+        const QString key=Common::removeAccents(ePtr->filePath.toLower());
+        bool showDebugFlag=0;
+
+        if(key==mtaf)
+        {
+            showDebugFlag=1;
+            qDebug() << SB_DEBUG_INFO << "*********************************************************************";
+            qDebug() << SB_DEBUG_INFO << mtaf_songID << key;
+            QString a=Common::removeAccents(ePtr->filePath.toLower(),1);
+            qDebug() << SB_DEBUG_INFO << a;
+        }
 
         if(pathToSong.contains(key))
         {
             pathToSong[key]->pathExists=1;
+            if(showDebugFlag)
+            {
+                qDebug() << SB_DEBUG_INFO << "FOUND!";
+            }
         }
         else if(ePtr->errorFlag()==0)
         {
+            if(showDebugFlag)
+            {
+                qDebug() << SB_DEBUG_INFO << "NOT FOUND!";
+            }
             newEntities.append(ePtr);
             qDebug() << SB_DEBUG_INFO << "new" << key;
 
@@ -251,8 +319,13 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
             ePtr->year=md.year();
 
             //	Misc. data
-            ePtr->searchKey=key;
+            ePtr->key=key;
 
+            if(key==mtaf)
+            {
+                qDebug() << SB_DEBUG_INFO << "*********************************************************************";
+                qDebug() << SB_DEBUG_INFO << "file found:" << key;
+            }
             //	Check on album title, take parent directory name if not exists
             if(ePtr->albumTitle.length()==0 || (properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1"))
             {
@@ -332,7 +405,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     if(1)
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(foundEntities);
-        qDebug() << SB_DEBUG_INFO << "SECTION C";
+        qDebug() << SB_DEBUG_INFO << "START LIST OF ALL NEW SONGS FOUND:";
         int ok=0;
         while(eIT.hasNext())
         {
@@ -345,20 +418,22 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                          << e->songPerformerName
                          << e->albumTitle
                          << e->albumPosition
+                         << Common::removeAccents(e->filePath.toLower())
                 ;
                 ok++;
             }
-
         }
+        qDebug() << SB_DEBUG_INFO << "END LIST OF ALL NEW SONGS FOUND:";
 
         int incorrect=0;
         eIT.toFront();
+        qDebug() << SB_DEBUG_INFO << "START LIST OF SONGS THAT WILL NOT BE IMPORTED:";
         while(eIT.hasNext())
         {
             MLentityPtr e=eIT.next();
             if(e->errorFlag()!=0)
             {
-                qDebug() << SB_DEBUG_INFO << "NOT IMPORTED"
+                qDebug() << SB_DEBUG_INFO
                          << e->filePath
                          << e->songTitle
                          << e->songPerformerName
@@ -368,8 +443,9 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                 incorrect++;
             }
         }
-        qDebug() << SB_DEBUG_INFO << ok << "correct records";
-        qDebug() << SB_DEBUG_INFO << incorrect << "incorrect records";
+        qDebug() << SB_DEBUG_INFO << "END LIST OF SONGS THAT WILL NOT BE IMPORTED:";
+        qDebug() << SB_DEBUG_INFO << ok << "VALID RECORDS";
+        qDebug() << SB_DEBUG_INFO << incorrect << "INVALID RECORDS";
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -455,6 +531,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                             ePtr->filePath,
                             ePtr->duration,
                             ePtr->notes);
+                ePtr->isImported=1;
                 //	CWIP: do progressbox
             }
         }
@@ -487,6 +564,10 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
         {
             errors[entityPtr->filePath]=entityPtr->errorMsg;
             qDebug() << SB_DEBUG_INFO << errors.count() << entityPtr->filePath << entityPtr->errorMsg;
+        }
+        else if(entityPtr->isImported==0)
+        {
+            errors[entityPtr->filePath]="This song has NOT been imported. Like reason is this song being a duplicate";
         }
     }
     qDebug() << SB_DEBUG_INFO << errors;
@@ -525,6 +606,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     QHashIterator<QString,MLalbumPathPtr> albumIT(directory2AlbumPathMap);
 
     qDebug() << SB_DEBUG_INFO;
+    if(1)
     {	//	DEBUG
         qDebug() << SB_DEBUG_INFO << "START OF VALIDATION" << list.count();
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(list);

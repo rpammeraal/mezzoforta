@@ -32,6 +32,7 @@ public:
         int onlinePerformanceID;
         QString path;
         bool pathExists;
+        QString key;
     private:
         void _init() { pathExists=0; }
     };
@@ -83,7 +84,9 @@ public:
         //	Helper attributes
         QString errorMsg;
         int ID;
-        QString searchKey;	//	file path to online song
+        QString key;	//	file path to online song
+        bool isImported;
+        QString importReason;
 
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
