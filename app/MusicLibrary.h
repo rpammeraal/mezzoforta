@@ -112,8 +112,10 @@ public:
         QVector<QString> uniqueSongPerformerNames;
         bool             variousPerformerFlag;
         int              year;
+        QString          errorMsg;
 
         bool multipleEntriesFlag() const { return (variousPerformerFlag || uniqueAlbumTitles.count()>1 || uniqueSongPerformerNames.count()>1)?1:0; }
+        inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
     private:
         void _init() { albumID=-1; albumPerformerID=-1; maxPosition=0; variousPerformerFlag=0; year=-1; }
 

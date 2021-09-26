@@ -899,12 +899,10 @@ Preloader::songPerformances(QString query)
         SBIDPerformerPtr performerPtr;
         SBIDSongPtr songPtr;
 
-        qDebug() << SB_DEBUG_INFO << queryList.value(0).toInt();
         //	Process song
         if(!queryList.isNull(0))
         {
             key=SBIDSong::createKey(queryList.value(0).toInt());
-            qDebug() << SB_DEBUG_INFO << key;
             if(key.validFlag())
             {
                 songPtr=(smgr->contains(key)? smgr->retrieve(key): _instantiateSong(smgr,songFields,queryList));
