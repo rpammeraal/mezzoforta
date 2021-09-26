@@ -1,5 +1,6 @@
 #include "MusicImportResult.h"
 #include "ui_MusicImportResult.h"
+#include "Common.h"
 
 MusicImportResult::MusicImportResult(const QMap<QString,QString> errors, QWidget *parent) :
     QDialog(parent),
@@ -17,12 +18,15 @@ MusicImportResult::MusicImportResult(const QMap<QString,QString> errors, QWidget
 
 
     QMapIterator<QString,QString> eIT(errors);
+    qDebug() << SB_DEBUG_INFO << "*****************************************************************";
+    qDebug() << SB_DEBUG_INFO << errors;
     int index=0;
     while(eIT.hasNext())
     {
         eIT.next();
         _setItem(index,0,eIT.key());
         _setItem(index,1,eIT.value());
+        index++;
     }
 
     _ui->ErrorList->setModel(&_model);

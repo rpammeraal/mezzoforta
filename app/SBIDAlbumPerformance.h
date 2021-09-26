@@ -12,6 +12,13 @@ public:
     SBIDAlbumPerformance(const SBIDAlbumPerformance& p);
     ~SBIDAlbumPerformance();
 
+    enum sb_create_status
+    {
+        sb_create_status_init=0,
+        sb_create_status_newly_created,
+        sb_create_status_already_exists
+    };
+
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
@@ -31,6 +38,8 @@ public:
     inline QString notes() const { return _notes; }
     inline int preferredOnlinePerformanceID() const { return _preferredOnlinePerformanceID; }
     inline int orgAlbumPosition() const { return _orgAlbumPosition; }
+    inline sb_create_status SBCreateStatus() const { return _sb_create_status; }
+    inline void setSBCreateStatus(sb_create_status newStatus) { _sb_create_status=newStatus; }
 
     //	Implemented methods forwarded to lower classes
     QString path();
@@ -118,6 +127,7 @@ private:
 
     //	Not stored in database
     int                               _orgAlbumPosition;	//	*ONLY* set when retrieved from DB. This way we track positional changes apart from new additions
+    sb_create_status                  _sb_create_status;
 
     void _copy(const SBIDAlbumPerformance& c);
     void _init();

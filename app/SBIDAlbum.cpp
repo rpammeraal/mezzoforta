@@ -158,6 +158,13 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
 
     albumPerformances();	//	load albumPerformances if not already loaded
 
+    qDebug() << SB_DEBUG_INFO
+             << ":albumID=" << this->albumID()
+             << ":songID=" << songID
+             << ":performerID=" << performerID
+             << ":path=" << path
+             ;
+
     //	Look up song (should exists)
     sPtr=SBIDSong::retrieveSong(songID);
     if(!sPtr)
@@ -165,6 +172,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         qDebug() << SB_DEBUG_ERROR << "song does not exist. song_id=" << songID;
         return apPtr;
     }
+    qDebug() << SB_DEBUG_INFO  << "song exists";
 
     //	Look up song performance
     p.songID=songID;
@@ -174,7 +182,7 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(!spPtr)
     {
         spPtr=spMgr->createInDB(p);
-        ;
+        qDebug() << SB_DEBUG_INFO  << "created song performance";
     }
 
     //	Lookup album performance
@@ -187,21 +195,32 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(!apPtr)
     {
         apPtr=apMgr->createInDB(p);
+        apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_newly_created);
+        qDebug() << SB_DEBUG_INFO  << "created album performance";
+    }
+    else
+    {
+        apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_already_exists);
     }
     if(!albumPerformances().contains(apPtr->albumPerformanceID()))
     {
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
         this->setChangedFlag();
+        qDebug() << SB_DEBUG_INFO  << "set changed flag";
     }
 
     //	Lookup online performance
     p.albumPerformanceID=apPtr->albumPerformanceID();
     p.path=path;
+    qDebug() << SB_DEBUG_INFO  << "path=" << path;
     SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::findByFK(p);
     if(!opPtr)
     {
+        qDebug() << SB_DEBUG_INFO  << "created online performance";
         opPtr=opMgr->createInDB(p);
     }
+
+    qDebug() << SB_DEBUG_INFO  << "almost done";
 
     //	Set ID's pointing down the hierarchy
     if(sPtr->originalSongPerformanceID()<0)

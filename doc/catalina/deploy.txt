@@ -1,0 +1,5 @@
+make clean
+~/Qt/5.15.1/clang_64/bin/qmake -makefile -config release Songbase.pro
+make -j 6
+~/Qt/5.15.1/clang_64/bin/macdeployqt Songbase.app -dmg
+
