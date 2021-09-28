@@ -144,6 +144,16 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
         //	CWIP: SBIDOnlinePerformance
         QLabel* l=new QLabel;
         SBIDAlbumPtr aPtr=opPtr->albumPtr();
+        SBIDAlbumPerformancePtr apPtr=opPtr->albumPerformancePtr();
+        QString albumPerformanceNotes="";
+        if(apPtr)
+        {
+            albumPerformanceNotes=apPtr->notes();
+            if(albumPerformanceNotes.length()>0)
+            {
+                albumPerformanceNotes=QString("'%1' " ).arg(apPtr->notes());
+            }
+        }
 
         SB_DEBUG_IF_NULL(aPtr);
 
@@ -158,13 +168,14 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
         }
         l->setText(QString("<html><head><style type=text/css> "
                            "a:link {color:black; text-decoration:none;} "
-                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     by %4 on album '%3' (%5)</a></body></html>")
+                           "</style></head><body><a href='%2'><img align=\"MIDDLE\" src=\"%1\" width=\"50\">     %6by %4 on album '%3' (%5)</a></body></html>")
                    //	set args correctly
                    .arg(imagePath)
                    .arg(opPtr->key().toString())
                    .arg(aPtr->albumTitle())
                    .arg(opPtr->songPerformerName())
-                   .arg(opPtr->duration().toString(SBDuration::sb_hhmmss_format)));
+                   .arg(opPtr->duration().toString(SBDuration::sb_hhmmss_format))
+                   .arg(albumPerformanceNotes));
 
         l->setStyleSheet( ":hover{ background-color: darkgrey; }");
         connect(l, SIGNAL(linkActivated(QString)),
