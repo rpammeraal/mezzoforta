@@ -43,6 +43,7 @@ public:
     };
 
     explicit PlayerController(QObject *parent = 0);
+    ~PlayerController();
 
     inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
     inline PlayerController::sb_player_state playState() const { return _state; }

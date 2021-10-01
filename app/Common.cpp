@@ -277,7 +277,6 @@ Common::randomOldestFirst(quint64 max)
 QString
 Common::removeAccents(const QString &s, const bool debug)
 {
-    bool stringPrinted=0;
     QString debugInfo;
 
     if (diacriticLetters_.isEmpty())
