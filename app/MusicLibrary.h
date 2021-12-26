@@ -16,6 +16,13 @@ class MusicLibrary : public QObject
 {
     Q_OBJECT
 public:
+    enum  MLvalidationType
+    {
+        validation_type_none=0,
+        validation_type_album=1,
+        validation_type_chart=2
+    };
+
     //	Represents entry as it already exists in the database
     class MLperformance
     {
@@ -125,7 +132,7 @@ public:
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary(bool suppressDialogsFlag=false);
-    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, bool suppressDialogsFlag=false);
+    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, MusicLibrary::MLvalidationType validationType=MusicLibrary::validation_type_none, bool suppressDialogsFlag=false);
 
 signals:
 
