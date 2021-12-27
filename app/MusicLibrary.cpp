@@ -449,7 +449,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
     /// 	-	Songs.
     ///////////////////////////////////////////////////////////////////////////////////
     bool cancelFlag=0;
-    if(validateEntityList(foundEntities,directory2AlbumPathMap,suppressDialogsFlag)==0)
+    if(validateEntityList(foundEntities,directory2AlbumPathMap,MusicLibrary::validation_type_album,suppressDialogsFlag)==0)
     {
         cancelFlag=1;
         ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Canceling",1);
@@ -595,8 +595,18 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
 }
 
 bool
-MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalbumPathPtr>& directory2AlbumPathMap, bool suppressDialogsFlag)
+MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalbumPathPtr>& directory2AlbumPathMap, const MusicLibrary::MLvalidationType validationType, bool suppressDialogsFlag)
 {
+    if(validationType==MusicLibrary::validation_type_none)
+    {
+        SBMessageBox::createSBMessageBox("Internal error in validateEntityList",
+                                         "Type of validation not specified",
+                                         QMessageBox::Critical,
+                                         QMessageBox::Close,
+                                         QMessageBox::Close,
+                                         QMessageBox::Close);
+
+    }
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
     CachePerformerMgr* pemgr=cm->performerMgr();
@@ -788,16 +798,19 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 
             qDebug() << SB_DEBUG_INFO << ePtr->key << ":path=" << ePtr->filePath << ":albumPerformerName=" << ePtr->albumPerformerName << ":lookup=" << name2PerformerIDMap[ePtr->albumPerformerName];
 
-            if(albumPerformerName!="")
+            if(validationType==MusicLibrary::validation_type_album)
             {
-                ePtr->albumPerformerID=name2PerformerIDMap[albumPerformerName];
-                ePtr->albumPerformerName=performerID2CorrectNameMap[ePtr->albumPerformerID];
-            }
-            else
-            {
-                ePtr->isImported=0;
-                qDebug() << SB_DEBUG_ERROR << ePtr->key << ":marking song as invalid: missing album performer name in meta data";
-                ePtr->errorMsg="Album performer name not populated for this song (Missing album performer name in meta data)";
+                if(albumPerformerName!="")
+                {
+                    ePtr->albumPerformerID=name2PerformerIDMap[albumPerformerName];
+                    ePtr->albumPerformerName=performerID2CorrectNameMap[ePtr->albumPerformerID];
+                }
+                else
+                {
+                    ePtr->isImported=0;
+                    qDebug() << SB_DEBUG_ERROR << ePtr->key << ":marking song as invalid: missing album performer name in meta data";
+                    ePtr->errorMsg="Album performer name not populated for this song (Missing album performer name in meta data)";
+                }
             }
             if(songPerformerName!="")
             {

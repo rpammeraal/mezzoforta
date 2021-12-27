@@ -4,6 +4,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "MusicLibrary.h"
+#include "MusicImportResult.h"
 #include "Preloader.h"
 #include "ProgressDialog.h"
 #include "SBIDAlbumPerformance.h"
@@ -184,7 +185,8 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
 
     MusicLibrary ml;
     QHash<QString,MusicLibrary::MLalbumPathPtr> map;
-    ml.validateEntityList(chartContents,map);
+    ml.validateEntityList(chartContents,map,MusicLibrary::validation_type_chart);
+    qDebug() << SB_DEBUG_INFO;
 
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Storing Chart",1);
     int progressCurrentValue=0;
@@ -195,34 +197,55 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
     CacheManager* cMgr=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cMgr->songPerformanceMgr();
     CacheChartPerformanceMgr* cpMgr=cMgr->chartPerformanceMgr();
+    QMap<QString,QString> errors;
     while(it.hasNext())
     {
         MusicLibrary::MLentityPtr ePtr=it.next();
 
-        Common::sb_parameters p;
-        p.chartID=this->chartID();
-        p.chartPosition=ePtr->chartPosition;
-
-        //	Find if song performance exists
-        SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(ePtr->songID,ePtr->songPerformerID);
-        if(!spPtr)
+        if(ePtr->errorFlag()==0)
         {
-            //	Create if not
-            spPtr=spMgr->createInDB(p);
+            Common::sb_parameters p;
+            p.chartID=this->chartID();
+            p.chartPosition=ePtr->chartPosition;
+
+            //	Find if song performance exists
+            SBIDSongPerformancePtr spPtr=SBIDSongPerformance::retrieveSongPerformanceByPerformerID(ePtr->songID,ePtr->songPerformerID);
+            if(!spPtr)
+            {
+                //	Create if not
+                spPtr=spMgr->createInDB(p);
+            }
+
+
+            p.songPerformanceID=spPtr->songPerformanceID();
+
+            //	Set original performance id
+            SBIDSongPtr sPtr=SBIDSong::retrieveSong(SBIDSong::createKey(ePtr->songID));
+            SB_RETURN_IF_NULL(sPtr,0);
+            if(sPtr)
+            {
+                if(sPtr->originalSongPerformanceID()==-1)
+                {
+                    sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
+                }
+
+                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
+                cpMgr->createInDB(p);
+            }
+        }
+        else
+        {
+            QString performerSong;
+            performerSong="Performer '" + ePtr->songPerformerName + "' with song '"+ePtr->songTitle+'"';
+            errors[performerSong]=ePtr->errorMsg;
+            qDebug() << SB_DEBUG_INFO << ePtr->errorMsg;
         }
 
-        p.songPerformanceID=spPtr->songPerformanceID();
-
-        //	Set original performance id
-        SBIDSongPtr sPtr=SBIDSong::retrieveSong(SBIDSong::createKey(ePtr->songID));
-        if(sPtr->originalSongPerformanceID()==-1)
+        if(errors.count())
         {
-            sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
+            MusicImportResult mir(errors);
+            mir.exec();
         }
-
-        qDebug() << SB_DEBUG_INFO << p.chartID << p.songPerformanceID << p.chartPosition << p.notes;
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
-        cpMgr->createInDB(p);
     }
     cMgr->saveChanges();
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"storeChart");
