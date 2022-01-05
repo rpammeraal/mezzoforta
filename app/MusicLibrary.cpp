@@ -305,11 +305,11 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
             //	Primary meta data
             ePtr->albumPosition=md.albumPosition();
             ePtr->albumTitle=md.albumTitle();
-            ePtr->songPerformerName=_retrieveCorrectPerformerName(dal,md.songPerformerName());
+            ePtr->songPerformerName=_retrieveCorrectPerformerName(dal,md.songPerformerName()).trimmed();
             ePtr->songTitle=md.songTitle();
 
             //	Secondary meta data
-            ePtr->albumPerformerName=ePtr->songPerformerName; // for now, default to <>
+            ePtr->albumPerformerName=ePtr->songPerformerName.trimmed(); // for now, default to <>
             ePtr->duration=md.duration();
             ePtr->genre=md.genre();
             ePtr->notes=QString();	//	Don't import notes

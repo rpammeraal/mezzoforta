@@ -172,9 +172,9 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
         QStringList line=contents.at(i);
 
         MusicLibrary::MLentity e;
-        e.songPerformerName=line.at(performerNameColumn);
+        e.songPerformerName=line.at(performerNameColumn).trimmed();
         Common::toTitleCase(e.songPerformerName);
-        e.songTitle=line.at(songTitleColumn);
+        e.songTitle=line.at(songTitleColumn).trimmed();
         Common::toTitleCase(e.songTitle);
         e.chartPosition=line.at(positionColumn).toInt();
         e.year=this->chartEndingDate().year();

@@ -189,7 +189,7 @@ SBTabPerformerEdit::save() const
     }
 
     //	A.	Initialization
-    QString editPerformerName=mw->ui.performerEditName->text();
+    QString editPerformerName=mw->ui.performerEditName->text().trimmed();
     QString editNotes=mw->ui.performerEditNotes->text();
     QString editURL=mw->ui.performerEditWebSite->text();
     if((editURL.left(8).toLower()!="https://") &&  (editURL.left(7).toLower()!="http://"))
@@ -218,7 +218,7 @@ SBTabPerformerEdit::save() const
     {
         //	Find out if performer exists.
         Common::sb_parameters tobeMatched;
-        tobeMatched.performerName=editPerformerName;
+        tobeMatched.performerName=editPerformerName.trimmed();
         tobeMatched.performerID=orgPerformerPtr->performerID();
         Common::result result=peMgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
         if(result==Common::result_canceled)
