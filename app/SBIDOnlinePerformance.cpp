@@ -54,12 +54,6 @@ SBIDOnlinePerformance::iconResourceLocation() const
     return QString("n/a");
 }
 
-SBKey::ItemType
-SBIDOnlinePerformance::itemType() const
-{
-    return SBKey::OnlinePerformance;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDOnlinePerformance::onlinePerformances(bool updateProgressDialogFlag) const
 {

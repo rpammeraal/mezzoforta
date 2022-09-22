@@ -47,7 +47,6 @@ public:
     virtual QString commonPerformerName() const=0;
     virtual QString genericDescription() const=0;
     virtual QString iconResourceLocation() const=0;
-    virtual SBKey::ItemType itemType() const=0;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
@@ -58,6 +57,7 @@ public:
     inline QString url() const { return _url; }
     inline QString wiki() const { return _wiki; }
 
+    inline SBKey::ItemType itemType() const { return _key.itemType();}
     inline int itemID() const { return _key.itemID();}
     inline SBKey key() const { return _key; }
 

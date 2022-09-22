@@ -48,12 +48,6 @@ SBIDSong::iconResourceLocation() const
     return iconResourceLocationStatic();
 }
 
-SBKey::ItemType
-SBIDSong::itemType() const
-{
-    return SBKey::Song;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDSong::onlinePerformances(bool updateProgressDialogFlag) const
 {

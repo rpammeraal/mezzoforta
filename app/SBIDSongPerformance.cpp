@@ -29,12 +29,6 @@ SBIDSongPerformance::iconResourceLocation() const
     return QString(":/images/SongIcon.png");
 }
 
-SBKey::ItemType
-SBIDSongPerformance::itemType() const
-{
-    return SBKey::SongPerformance;
-}
-
 QString
 SBIDSongPerformance::genericDescription() const
 {

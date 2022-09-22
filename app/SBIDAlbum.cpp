@@ -48,12 +48,6 @@ SBIDAlbum::iconResourceLocation() const
     return ":/images/NoAlbumCover.png";
 }
 
-SBKey::ItemType
-SBIDAlbum::itemType() const
-{
-    return SBKey::Album;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
 {
