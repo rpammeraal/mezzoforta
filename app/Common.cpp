@@ -13,6 +13,10 @@
 QString diacriticLetters_;
 QStringList noDiacriticLetters_;
 
+static bool _initRandomizerDoneFlag;
+static quint64 _maxRandom;
+static quint64 _maxSongs;
+
 Common::Common()
 {
     _initRandomizerDoneFlag=0;

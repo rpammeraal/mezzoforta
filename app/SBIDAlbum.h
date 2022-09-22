@@ -65,7 +65,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
-    static SBKey::ItemType classType() { return SBKey::Album; }
+    //static SBKey::ItemType classType() { return SBKey::Album; }
     static SBIDAlbumPtr retrieveAlbum(int albumID);
     static SBIDAlbumPtr retrieveAlbum(SBKey key);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath);

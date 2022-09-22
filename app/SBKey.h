@@ -26,6 +26,7 @@ public:
     SBKey();
     SBKey(ItemType itemType, int itemID);
     SBKey(const QByteArray& ba);
+    SBKey(const SBKey& k) = default;
     ~SBKey();
 
     QByteArray encode() const;

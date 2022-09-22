@@ -60,7 +60,7 @@ public:
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID);
 
     //	Helper methods for CacheTemplate
-    static SBKey::ItemType classType() { return SBKey::SongPerformance; }
+    //static SBKey::ItemType classType() { return SBKey::SongPerformance; }
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID);
 

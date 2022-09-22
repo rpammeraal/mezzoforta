@@ -31,7 +31,7 @@ class SBIDPerformer;        typedef std::shared_ptr<SBIDPerformer>         SBIDP
 class SBIDSong;             typedef std::shared_ptr<SBIDSong>              SBIDSongPtr;
 class SBIDSongPerformance;  typedef std::shared_ptr<SBIDSongPerformance>   SBIDSongPerformancePtr;
 
-class SBIDBase : public SBKey
+class SBIDBase //: public SBKey  // CHGINHERI
 {
 
 public:
@@ -47,7 +47,7 @@ public:
     virtual QString commonPerformerName() const=0;
     virtual QString genericDescription() const=0;
     virtual QString iconResourceLocation() const=0;
-    virtual ItemType itemType() const=0;
+    virtual SBKey::ItemType itemType() const=0;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
@@ -56,6 +56,9 @@ public:
     //	Common Getters
     inline QString url() const { return _url; }
     inline QString wiki() const { return _wiki; }
+
+    inline int itemID() const { return _key.itemID();} // CHGINHERIT
+    inline SBKey key() const { return _key; } // CHGINHERI
 
     //	Methods specific to SBIDBase
     QString errorMessage() const { return _errorMsg; }
@@ -81,14 +84,14 @@ public:
     virtual void refreshDependents(bool forcedFlag=0)=0;
 
     //	Aux methods
-    static ItemType convert(Common::sb_field f);
+    static SBKey::ItemType convert(Common::sb_field f);
     static QString iconResourceLocationClass(SBKey key);
-    static QString iconResourceLocationClass(ItemType itemType);
+    static QString iconResourceLocationClass(SBKey::ItemType itemType);
     virtual void setToReloadFlag();	//	tell cache to setReloadFlag after save operation.
 
 protected:
     SBIDBase(const SBIDBase& c);
-    SBIDBase(ItemType itemType,int itemID);
+    SBIDBase(SBKey::ItemType itemType,int itemID);
 
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
@@ -124,6 +127,7 @@ protected:
     void setReloadFlag();	//	refreshDependents() will be called on the next reload
 
 private:
+    SBKey           _key;
     bool            _changedFlag;
     bool            _deletedFlag;
     int             _id;
