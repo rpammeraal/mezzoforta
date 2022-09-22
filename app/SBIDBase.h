@@ -31,7 +31,7 @@ class SBIDPerformer;        typedef std::shared_ptr<SBIDPerformer>         SBIDP
 class SBIDSong;             typedef std::shared_ptr<SBIDSong>              SBIDSongPtr;
 class SBIDSongPerformance;  typedef std::shared_ptr<SBIDSongPerformance>   SBIDSongPerformancePtr;
 
-class SBIDBase //: public SBKey  // CHGINHERI
+class SBIDBase
 {
 
 public:
@@ -53,12 +53,13 @@ public:
     virtual QString text() const=0;
     virtual QString type() const=0;
 
+
     //	Common Getters
     inline QString url() const { return _url; }
     inline QString wiki() const { return _wiki; }
 
-    inline int itemID() const { return _key.itemID();} // CHGINHERIT
-    inline SBKey key() const { return _key; } // CHGINHERI
+    inline int itemID() const { return _key.itemID();}
+    inline SBKey key() const { return _key; }
 
     //	Methods specific to SBIDBase
     QString errorMessage() const { return _errorMsg; }
@@ -84,9 +85,6 @@ public:
     virtual void refreshDependents(bool forcedFlag=0)=0;
 
     //	Aux methods
-    static SBKey::ItemType convert(Common::sb_field f);
-    static QString iconResourceLocationClass(SBKey key);
-    static QString iconResourceLocationClass(SBKey::ItemType itemType);
     virtual void setToReloadFlag();	//	tell cache to setReloadFlag after save operation.
 
 protected:

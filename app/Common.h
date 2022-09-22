@@ -88,20 +88,6 @@ public:
         sp_playing=2
     };
 
-    enum sb_field
-    {
-        sb_field_invalid=0,
-        sb_field_song_id,
-        sb_field_performer_id,
-        sb_field_album_id,
-        sb_field_chart_id,
-        sb_field_playlist_id,
-        sb_field_album_position,
-        sb_field_album_performance_id,
-        sb_field_key,
-        sb_field_online_performance_id
-    };
-
     enum result
     {
         result_canceled=0,
