@@ -34,7 +34,8 @@ QByteArray
 SBKey::encode() const
 {
     QByteArray encodedData;
-    encodedData.append(toString());
+    const QString s=this->toString();
+    encodedData.append(s.toLocal8Bit());
 
     return encodedData;
 }

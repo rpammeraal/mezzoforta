@@ -47,12 +47,6 @@ SBIDPlaylist::iconResourceLocation() const
     return ":/images/PlaylistIcon.png";
 }
 
-SBKey::ItemType
-SBIDPlaylist::itemType() const
-{
-    return SBKey::Playlist;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDPlaylist::onlinePerformances(bool updateProgressDialogFlag) const
 {

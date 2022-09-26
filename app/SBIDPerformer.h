@@ -29,7 +29,6 @@ public:
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -73,7 +72,7 @@ public:
     static SBIDPerformerPtr retrieveVariousPerformers();
 
     //	Helper methods for CacheTemplate
-    static ItemType classType() { return Performer; }
+    //static ItemType classType() { return Performer; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;

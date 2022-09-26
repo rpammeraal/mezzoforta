@@ -42,13 +42,6 @@ SBLabel::mousePressEvent(QMouseEvent* me)
         {
             drag->setPixmap(pmPtr->scaledToWidth(50));
         }
-        else
-        {
-            QString l=SBIDBase::iconResourceLocationClass(_key);
-            QPixmap pb(l);
-            pb.load(l);
-            drag->setPixmap(pb.scaledToWidth(50));
-        }
         drag->exec();
     }
 }

@@ -13,7 +13,6 @@ public:
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual ItemType itemType() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
@@ -58,7 +57,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
-    static ItemType classType() { return OnlinePerformance; }
+    //static ItemType classType() { return OnlinePerformance; }
 
     //	Aux
     virtual void setToReloadFlag();

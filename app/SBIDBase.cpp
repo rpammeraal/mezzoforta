@@ -14,14 +14,15 @@
 #include "SBIDSong.h"
 
 
-SBIDBase::SBIDBase(const SBIDBase &c):SBKey(c)
+SBIDBase::SBIDBase(const SBIDBase &c)
 {
     _copy(c);
 }
 
-SBIDBase::SBIDBase(ItemType itemType, int itemID):SBKey(itemType,itemID)
+SBIDBase::SBIDBase(SBKey::ItemType itemType, int itemID)
 {
     _init();
+    _key=SBKey(itemType,itemID);
 }
 
 SBIDBase::~SBIDBase()
@@ -53,95 +54,6 @@ SBIDBase::operator !=(const SBIDBase& i) const
 SBIDBase::operator QString() const
 {
     return this->key().toString() + ":" + this->genericDescription();
-}
-
-///	Aux
-SBKey::ItemType
-SBIDBase::convert(Common::sb_field f)
-{
-    ItemType t=Invalid;
-    switch(f)
-    {
-    case Common::sb_field_invalid:
-        t=Invalid;
-        break;
-
-    case Common::sb_field_song_id:
-        t=Song;
-        break;
-
-    case Common::sb_field_performer_id:
-        t=Performer;
-        break;
-
-    case Common::sb_field_album_id:
-        t=Album;
-        break;
-
-    case Common::sb_field_chart_id:
-        t=Chart;
-        break;
-
-    case Common::sb_field_album_performance_id:
-        t=AlbumPerformance;
-        break;
-
-    case Common::sb_field_online_performance_id:
-        t=OnlinePerformance;
-        break;
-
-    case Common::sb_field_playlist_id:
-        t=Playlist;
-        break;
-
-
-    case Common::sb_field_key:
-    case Common::sb_field_album_position:
-        qDebug() << SB_DEBUG_ERROR << "Not able to translate Common::sb_field_album_position to Common::sb_type!";
-        t=Invalid;
-        break;
-    }
-    return t;
-}
-
-QString
-SBIDBase::iconResourceLocationClass(SBKey key)
-{
-    return iconResourceLocationClass(key.itemType());
-}
-
-QString
-SBIDBase::iconResourceLocationClass(ItemType itemType)
-{
-    switch(itemType)
-    {
-    case Performer:
-        return QString(":/images/NoBandPhoto.png");
-
-    case Album:
-        return ":/images/NoAlbumCover.png";
-
-    case Chart:
-        return ":/images/ChartIcon.png";
-
-    case Playlist:
-        return ":/images/PlaylistIcon.png";
-
-    case AlbumPerformance:
-    case ChartPerformance:
-    case PlaylistDetail:
-    case Song:
-    case SongPerformance:
-        return QString(":/images/SongIcon.png");
-
-    case OnlinePerformance:
-        break;
-
-    case Invalid:
-        break;
-    }
-
-    return QString("n/a");
 }
 
 void
@@ -200,6 +112,7 @@ SBIDBase::_copy(const SBIDBase &c)
     _url=c._url;
     _wiki=c._wiki;
     _owningCache=NULL;	//	do NOT copy -- identifies copy
+    _key=c._key;
 }
 
 void
@@ -232,6 +145,7 @@ SBIDBase::_init()
     QString e;
 
     //	Private
+    _key=SBKey();
     _changedFlag=0;
     _deletedFlag=0;
     _id=Common::nextID();

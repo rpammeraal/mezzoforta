@@ -13,7 +13,6 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString iconResourceLocation() const;
-    virtual SBKey::ItemType itemType() const;
     virtual QString genericDescription() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
@@ -60,7 +59,7 @@ public:
     static SBIDSongPerformancePtr retrieveSongPerformanceByPerformerID(int songID, int performerID);
 
     //	Helper methods for CacheTemplate
-    static SBKey::ItemType classType() { return SBKey::SongPerformance; }
+    //static SBKey::ItemType classType() { return SBKey::SongPerformance; }
     static SBSqlQueryModel* performancesBySong(int songID);
     static SBSqlQueryModel* performancesByPreferredAlbumPerformanceID(int preferredAlbumPerformanceID);
 

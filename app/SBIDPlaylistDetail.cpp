@@ -29,12 +29,6 @@ SBIDPlaylistDetail::commonPerformerName() const
     return (p?p->commonPerformerName():QString());
 }
 
-SBKey::ItemType
-SBIDPlaylistDetail::itemType() const
-{
-    return SBKey::PlaylistDetail;
-}
-
 QString
 SBIDPlaylistDetail::genericDescription() const
 {

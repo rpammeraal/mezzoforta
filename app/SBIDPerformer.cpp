@@ -46,12 +46,6 @@ SBIDPerformer::iconResourceLocation() const
     return QString(":/images/NoBandPhoto.png");
 }
 
-SBKey::ItemType
-SBIDPerformer::itemType() const
-{
-    return SBKey::Performer;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDPerformer::onlinePerformances(bool updateProgressDialogFlag) const
 {

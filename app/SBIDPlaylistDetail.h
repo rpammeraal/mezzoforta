@@ -18,7 +18,6 @@ public:
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
-    virtual ItemType itemType() const;
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
@@ -27,7 +26,7 @@ public:
     virtual QString type() const;
 
     //	SBIDPlaylistDetail specific methods
-    virtual ItemType consistOfItemType() const;
+    virtual SBKey::ItemType consistOfItemType() const;
     int playlistPosition() const { return _playlistPosition; }
     void setPlaylistPosition(int i) { if (i!=_playlistPosition) { _playlistPosition=i; setChangedFlag(); } }
 
@@ -56,7 +55,7 @@ public:
     static SBIDPlaylistDetailPtr createPlaylistDetail(int playlistID, int playlistPosition, SBIDPtr childPtr);
 
     //	Helper methods for CacheTemplate
-    static ItemType classType() { return PlaylistDetail; }
+    //static ItemType classType() { return PlaylistDetail; }
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;

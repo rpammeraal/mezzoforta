@@ -25,7 +25,6 @@ public:
 
     virtual QString genericDescription() const;
     virtual QString iconResourceLocation() const;
-    virtual SBKey::ItemType itemType() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
@@ -65,7 +64,6 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Helper methods for CacheTemplate
-    static SBKey::ItemType classType() { return SBKey::Album; }
     static SBIDAlbumPtr retrieveAlbum(int albumID);
     static SBIDAlbumPtr retrieveAlbum(SBKey key);
     static SBIDAlbumPtr retrieveAlbumByPath(const QString& albumPath);

@@ -133,6 +133,8 @@ HEADERS += \
     OSXNSEventFunctions.h \
     PlayManager.h \
     PlayerController.h \
+    Preloader.h \
+    ProgressDialog.h \
     Properties.h \
     SBCaseInsensitiveString.h \
     SBDialogChart.h \
@@ -215,9 +217,8 @@ DISTFILES += \
     resources/squarelogo.png
 
 #	Manually added
-INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include
-DEPENDPATH  += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include
+INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14
+DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14
 
-unix: LIBS += -lportaudio -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
-macx: LIBS += -L/usr/local/lib/ -lportaudio -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -framework CoreServices -framework CoreFoundation -framework AudioUnit -framework AudioToolbox -framework CoreAudio
-#macx: PRE_TARGETDEPS += /usr/local/lib/libportaudio.a /opt/sw/lib/libogg.a /opt/sw/lib/libvorbis.a /opt/sw/lib/libvorbisfile.a /opt/sw/lib/libmad.a /optopt//sw/lib/libid3tag.a
+unix: LIBS += -lportaudio -L /usr/local/lib -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -L/usr/local/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -L/usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14

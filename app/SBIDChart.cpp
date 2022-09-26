@@ -49,12 +49,6 @@ SBIDChart::iconResourceLocation() const
     return ":/images/ChartIcon.png";
 }
 
-SBKey::ItemType
-SBIDChart::itemType() const
-{
-    return SBKey::Chart;
-}
-
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDChart::onlinePerformances(bool updateProgressDialogFlag) const
 {

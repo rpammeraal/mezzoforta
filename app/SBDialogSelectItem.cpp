@@ -61,7 +61,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 //	Process new performerName
                 SBIDAlbumPtr tmpPtr=SBIDAlbum::retrieveUnknownAlbum();	//	only to get iconResourceLocation
                 imagePath=tmpPtr->iconResourceLocation();
-                imagePath=SBIDBase::iconResourceLocationClass(SBKey::Album);
+                //imagePath=SBIDBase::iconResourceLocation();
                 currentKey=SBKey();
                 currentAlbumTitle=newAlbum.albumTitle;
                 currentAlbumPerformerName=newAlbum.performerName;
