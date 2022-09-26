@@ -744,6 +744,7 @@ SBIDAlbumPerformance::_copy(const SBIDAlbumPerformance &c)
     _preferredOnlinePerformanceID =c._preferredOnlinePerformanceID;
 
     _orgAlbumPosition             =c._orgAlbumPosition;
+    _sb_create_status             =c._sb_create_status;
 }
 
 void
@@ -756,4 +757,5 @@ SBIDAlbumPerformance::_init()
     _notes=QString();
     _preferredOnlinePerformanceID=-1;
     _orgAlbumPosition=-1;
+    _sb_create_status=sb_create_status_init;
 }

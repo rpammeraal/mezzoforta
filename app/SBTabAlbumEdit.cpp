@@ -790,7 +790,7 @@ SBTabAlbumEdit::save() const
 
     //	A.	Initialization
     QString editAlbumTitle=mw->ui.albumEditTitle->text();
-    QString editAlbumPerformerName=mw->ui.albumEditPerformer->text();
+    QString editAlbumPerformerName=mw->ui.albumEditPerformer->text().trimmed();
     int editAlbumYear=mw->ui.albumEditYear->text().toInt();
 
     qDebug() << SB_DEBUG_INFO << editAlbumTitle;
@@ -960,7 +960,7 @@ SBTabAlbumEdit::save() const
 
     //	D.	Validate
     MusicLibrary ml;
-    if(!ml.validateEntityList(songList,directory2AlbumPathMap))
+    if(!ml.validateEntityList(songList,directory2AlbumPathMap,MusicLibrary::validation_type_album))
     {
         return;
     }

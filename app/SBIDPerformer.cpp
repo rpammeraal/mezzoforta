@@ -578,9 +578,9 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                         "ma.artist_correct_name=s.name "
             "WHERE "
                 "REPLACE(LOWER(REPLACE(s.name,'''','')),' ','') = '%1' OR "
-                "REPLACE(LOWER(REPLACE(ma.artist_alternative_name,'''','')),' ','') = '%1' OR "
-                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' & ', 'and'),' ','') = '%1' OR "
-                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' and ', '&'),' ','') = '%1'  "
+                "REPLACE(LOWER(REPLACE(ma.artist_alternative_name,'''','')),' ','') = LOWER('%1') OR "
+                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' & ', 'and'),' ','') = LOWER('%1') OR "
+                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' and ', '&'),' ','') = LOWER('%1')  "
             "UNION "
             //	case 1
             "SELECT DISTINCT "

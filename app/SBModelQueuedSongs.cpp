@@ -258,6 +258,7 @@ SBModelQueuedSongs::getAllPerformances()
 void
 SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag)
 {
+    qDebug() << SB_DEBUG_INFO;
     int offset=0;
     int initialCount=this->rowCount();
 
@@ -278,8 +279,10 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"populating",progressCurrentValue,progressMaxValue);
     int currentIndex=offset+1;
 
+    qDebug() << SB_DEBUG_INFO << newPlaylist.count();
     for(int i=0;i<newPlaylist.count();i++)
     {
+        qDebug() << SB_DEBUG_INFO << i;
         if(currentPlayID()==-1)
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
@@ -288,16 +291,22 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
         if(opPtr)
         {
+            qDebug() << SB_DEBUG_INFO << i << opPtr->path();
             record=createRecord(opPtr,currentIndex);
             _totalDuration+=opPtr->duration();
 
             if(_recordExists(record)==0)
             {
+                qDebug() << SB_DEBUG_INFO << i;
                 this->appendRow(record);
                 currentIndex++;
             }
 
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"populating",progressCurrentValue++,progressMaxValue);
+        }
+        else
+        {
+            qDebug() << SB_DEBUG_WARNING << i << "NULL opPtr: ";
         }
     }
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"populating");
@@ -697,7 +706,13 @@ SBModelQueuedSongs::_populateMapPlaylistPosition2ViewPosition()
 bool
 SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
 {
+    return 0;
+
+    //  Use case: Damn The Torpedoes (Tom Petty). When this album is played the last four songs
+    //  would be omitted. Not good.
+
     const int matchPerformanceID=record[SBModelQueuedSongs::sb_column_performance_id]->text().toInt();
+    qDebug() << SB_DEBUG_INFO << matchPerformanceID;
 
     for(int i=0;i<this->rowCount();i++)
     {
@@ -705,8 +720,10 @@ SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
 
         if(performanceID==matchPerformanceID)
         {
+            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
     }
+    qDebug() << SB_DEBUG_INFO;
     return 0;
 }

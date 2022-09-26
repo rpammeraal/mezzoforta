@@ -41,8 +41,20 @@ SBIDOnlinePerformance::commonPerformerName() const
 QString
 SBIDOnlinePerformance::genericDescription() const
 {
-    return QString("Online Song - %1 by %2 on '%3'")
+    SBIDAlbumPerformancePtr apPtr=this->albumPerformancePtr();
+    QString albumPerformanceNotes="";
+    if(apPtr)
+    {
+        albumPerformanceNotes=apPtr->notes();
+        if(albumPerformanceNotes.length()>0)
+        {
+            albumPerformanceNotes=QString(" [%1]" ).arg(apPtr->notes());
+        }
+    }
+
+    return QString("Online Song - %1%2 by %3 on '%4'")
         .arg(this->songTitle())
+        .arg(albumPerformanceNotes)
         .arg(this->songPerformerName())
         .arg(this->albumTitle())
     ;

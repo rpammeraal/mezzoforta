@@ -141,12 +141,12 @@ SBTabSongEdit::save() const
     bool setMetaDataFlag=0;	//	if set, update meta data
 
     //	1.	Check if song title only has changed.
-    qDebug() << SB_DEBUG_INFO << Common::comparable(editTitle);
-    qDebug() << SB_DEBUG_INFO << Common::comparable(orgSongPtr->songTitle());
-    if(editPerformerName==orgSongPtr->songOriginalPerformerName() && Common::comparable(editTitle)==Common::comparable(orgSongPtr->songTitle()))
+    if(editPerformerName==orgSongPtr->songOriginalPerformerName())
     {
-        qDebug() << SB_DEBUG_INFO;
-        songTitleChangedFlag=1;
+        if(Common::comparable(editTitle)==Common::comparable(orgSongPtr->songTitle()))
+        {
+            songTitleChangedFlag=1;
+        }
     }
 
     //	2.	Determine metaDataChangedFlag
@@ -157,7 +157,7 @@ SBTabSongEdit::save() const
     }
 
     //	3.	Look up if song already exists.
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << songTitleChangedFlag;
     //	if(songTitleChangedFlag==0)
     {
         qDebug() << SB_DEBUG_INFO;

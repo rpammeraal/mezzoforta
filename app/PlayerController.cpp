@@ -18,6 +18,10 @@ PlayerController::PlayerController(QObject *parent) : QObject(parent)
 {
 }
 
+PlayerController::~PlayerController()
+{
+}
+
 bool
 PlayerController::testSongFilepath(SBIDOnlinePerformancePtr& opPtr)
 {

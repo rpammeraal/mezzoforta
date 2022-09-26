@@ -16,6 +16,13 @@ class MusicLibrary : public QObject
 {
     Q_OBJECT
 public:
+    enum  MLvalidationType
+    {
+        validation_type_none=0,
+        validation_type_album=1,
+        validation_type_chart=2
+    };
+
     //	Represents entry as it already exists in the database
     class MLperformance
     {
@@ -32,6 +39,7 @@ public:
         int onlinePerformanceID;
         QString path;
         bool pathExists;
+        QString key;
     private:
         void _init() { pathExists=0; }
     };
@@ -83,7 +91,9 @@ public:
         //	Helper attributes
         QString errorMsg;
         int ID;
-        QString searchKey;	//	file path to online song
+        QString key;	//	file path to online song
+        bool isImported;
+        QString importReason;
 
         inline bool compareID(const MLentity& i) const { return ((songID==i.songID)&&(songPerformerID==i.songPerformerID)&&(albumID==i.albumID)&&(albumPosition==i.albumPosition))?1:0; }
         inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
@@ -109,8 +119,10 @@ public:
         QVector<QString> uniqueSongPerformerNames;
         bool             variousPerformerFlag;
         int              year;
+        QString          errorMsg;
 
         bool multipleEntriesFlag() const { return (variousPerformerFlag || uniqueAlbumTitles.count()>1 || uniqueSongPerformerNames.count()>1)?1:0; }
+        inline bool errorFlag() const { return errorMsg.length()>0?1:0; }
     private:
         void _init() { albumID=-1; albumPerformerID=-1; maxPosition=0; variousPerformerFlag=0; year=-1; }
 
@@ -120,7 +132,7 @@ public:
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
     void rescanMusicLibrary(bool suppressDialogsFlag=false);
-    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, bool suppressDialogsFlag=false);
+    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, MusicLibrary::MLvalidationType validationType=MusicLibrary::validation_type_none, bool suppressDialogsFlag=false);
 
 signals:
 
