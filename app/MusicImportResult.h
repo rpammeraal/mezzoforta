@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QStandardItemModel>
 #include <QString>
+#include <QAbstractButton>
 
 namespace Ui {
 class MusicImportResult;
@@ -17,6 +18,9 @@ class MusicImportResult : public QDialog
 public:
     explicit MusicImportResult(const QMap<QString,QString> errors,QWidget *parent = 0);
     ~MusicImportResult();
+
+private slots:
+    //void on_buttonBoxold_clicked(QAbstractButton *button);
 
 private:
     Ui::MusicImportResult* _ui;
