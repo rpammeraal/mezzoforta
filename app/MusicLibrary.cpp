@@ -526,15 +526,17 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                             ePtr->duration,
                             ePtr->notes);
 
-                if(newAlbumPerformancePtr->SBCreateStatus()==SBIDAlbumPerformance::sb_create_status_already_exists)
-                {
+                //	CHG 20220928
+                //if(newAlbumPerformancePtr->SBCreateStatus()==SBIDAlbumPerformance::sb_create_status_already_exists)
+                //{
+                    //ePtr->isImported=1;
+                    //ePtr->errorMsg="Song already exists";	//	NEED TO FIGURE OUT WHY THIS IS A PROBLEM.
+                //}
+                //else
+                //{
+                    //ePtr->isImported=1;
+                //}
                     ePtr->isImported=1;
-                    ePtr->errorMsg="Song already exists";
-                }
-                else
-                {
-                    ePtr->isImported=1;
-                }
             }
         }
         qDebug() << SB_DEBUG_INFO;
@@ -867,7 +869,6 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     }
     {
         QString albumPerformerName;
-        QString songPerformerName;
         albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);
         while(albumIT.hasNext())
         {
@@ -1009,7 +1010,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             albumIT.next();
             qDebug() << SB_DEBUG_INFO << albumIT.key();
             MLalbumPathPtr apPtr=albumIT.value();
-            qDebug() << SB_DEBUG_INFO << apPtr->albumTitle << apPtr->path << apPtr->albumPerformerName << apPtr->albumPerformerID;
+            qDebug() << SB_DEBUG_INFO << apPtr->albumID << apPtr->albumTitle << apPtr->path << apPtr->albumPerformerName << apPtr->albumPerformerID;
             SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbumByPath(apPtr->path);
             if(aPtr && apPtr->errorFlag()==0)
             {
@@ -1061,12 +1062,25 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                      << apPtr->albumPerformerID
                      << apPtr->albumPerformerName
                      <<	apPtr->maxPosition
+                     << apPtr->errorFlag()
             ;
+            qDebug() << SB_DEBUG_INFO
+                     << apPtr->variousPerformerFlag
+                     << apPtr->uniqueAlbumTitles.count()
+                     << apPtr->uniqueSongPerformerNames.count()
+                     << apPtr->maxPosition
+                ;
 
             if(apPtr->errorFlag()==0)
             {
-                if(apPtr->multipleEntriesFlag())
+                //	Only create collection album if album is not found.
+                if(apPtr->multipleEntriesFlag() && apPtr->albumID==-1)
                 {
+                    qDebug() << SB_DEBUG_INFO
+                             << apPtr->multipleEntriesFlag()
+                             << apPtr->albumID
+                    ;
+
                     //	No validation needed -- create collection album
                     Common::sb_parameters p;
                     p.albumTitle=apPtr->albumTitle;
@@ -1246,11 +1260,12 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                         ePtr->albumID=selectedAlbumPtr->albumID();
                         ePtr->albumPerformerID=selectedAlbumPtr->albumPerformerID();
 
-                        if(apPtr->multipleEntriesFlag())
-                        {
+                        //	CHG 20220928: do not overwrite albumPosition
+                        //if(apPtr->multipleEntriesFlag())
+                        //{
                             //	Overwrite and assign new album position if collection album.
-                            ePtr->albumPosition=++(apPtr->maxPosition);
-                        }
+                            //ePtr->albumPosition=++(apPtr->maxPosition);
+                        //}
                     }
                     else
                     {

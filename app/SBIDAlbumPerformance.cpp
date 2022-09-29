@@ -244,7 +244,7 @@ SBIDAlbumPerformance::createKey(int albumPerformanceID)
 SBIDAlbumPerformancePtr
 SBIDAlbumPerformance::findByFK(const Common::sb_parameters &p)
 {
-    SBIDAlbumPerformancePtr spPtr;
+    SBIDAlbumPerformancePtr spPtr=NULL;
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumPerformanceMgr* spMgr=cm->albumPerformanceMgr();
     QMap<int,QList<SBIDAlbumPerformancePtr>> matches;
