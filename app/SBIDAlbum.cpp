@@ -186,16 +186,33 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     p.duration=duration;
     p.notes=notes;
     apPtr=SBIDAlbumPerformance::findByFK(p);
+
+    if(apPtr)
+    {
+        //	See if we truly want to add the same performance.
+        qDebug() << SB_DEBUG_INFO
+               << "albumPosition" << albumPosition
+               << "apPtr->albumPosition" << apPtr->albumPosition()
+               ;
+        if(albumPosition==apPtr->albumPosition())
+        {
+            apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_already_exists);
+            qDebug() << SB_DEBUG_INFO << "True duplicate";
+        }
+        else
+        {
+            apPtr=NULL;
+            qDebug() << SB_DEBUG_INFO << "No duplicate";
+        }
+    }
+
     if(!apPtr)
     {
         apPtr=apMgr->createInDB(p);
         apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_newly_created);
         qDebug() << SB_DEBUG_INFO  << "created album performance";
     }
-    else
-    {
-        apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_already_exists);
-    }
+
     if(!albumPerformances().contains(apPtr->albumPerformanceID()))
     {
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
@@ -403,6 +420,7 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
     {
         aPtr=SBIDAlbum::retrieveAlbum(albumID);
     }
+
     return aPtr;
 }
 
