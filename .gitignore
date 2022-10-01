@@ -1,2 +1,5 @@
 MezzaForte.pro.user
-build-MezzaForte-Desktop_Qt_5_7_0_clang_64bit-Debug/
+build*
+archives
+catalina
+

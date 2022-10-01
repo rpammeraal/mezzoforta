@@ -54,6 +54,9 @@ SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
     {
         qDebug() << SB_DEBUG_INFO << fileName;
     }
+    portAudioTerminate();
+    portAudioInit();
+
     AudioDecoderFactory adf;
     _ad=adf.openFile(fn,testFilePathOnly);
 
@@ -134,6 +137,7 @@ SBMediaPlayer::paCallback
         memset(output, 0, sampleCount * _ad->numChannels() * (_ad->bitsPerSample()/8));
         resultCode=paComplete;
         setState(QMediaPlayer::StoppedState);
+
     }
 
     /*
@@ -218,7 +222,7 @@ SBMediaPlayer::closeStream()
 {
     if(_stream)
     {
-        Pa_CloseStream(_stream); _stream=NULL;
+        Pa_CloseStream(_stream);
     }
 #ifndef Q_OS_LINUX
     //  The following code crashes on Ubuntu 20.04. This may be the cause of
@@ -259,6 +263,7 @@ SBMediaPlayer::portAudioInit()
 {
     if(!_portAudioInitFlag)
     {
+        qDebug() << SB_DEBUG_INFO << "Initiating Portaudio";
         _paError=Pa_Initialize();
         if(_paError != paNoError)
         {
@@ -370,11 +375,23 @@ SBMediaPlayer::portAudioOpen()
         if(_stream)
         {
             closeStream();
+            portAudioTerminate();
         }
         return false;
     }
     emit durationChanged(_ad->lengthInMs());
     return 1;
+}
+
+void
+SBMediaPlayer::portAudioTerminate()
+{
+    if(_portAudioInitFlag)
+    {
+        qDebug() << SB_DEBUG_INFO << "Terminating Portaudio";
+        Pa_Terminate();
+    }
+    _portAudioInitFlag=0;
 }
 
 void

@@ -5,12 +5,10 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataAccessLayer.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "Properties.h"
 #include "SBMediaPlayer.h"
-#include "SBModelQueuedSongs.h"
 #include "SBIDOnlinePerformance.h"
 
 

@@ -448,6 +448,9 @@ PlayManager::_loadRadio()
                 }
             }
         }
+        qDebug() << SB_DEBUG_INFO << indexCovered;
+        qDebug() << SB_DEBUG_INFO << indexCovered.length();
+
 
 
         int onlinePerformanceID=qm->record(idx).value(0).toInt();
