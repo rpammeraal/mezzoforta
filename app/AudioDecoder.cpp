@@ -5,7 +5,6 @@
 
 #include "Common.h"
 #include "AudioDecoder.h"
-#include "AudioDecoderReader.h"
 
 ///	Public methods
 quint64
