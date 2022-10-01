@@ -36,6 +36,7 @@ public:
     void releaseMedia();
     inline QString error() const { return _errMsg; }
     QMediaPlayer::State state() const;
+    QString status () const;
 
 signals:
     void durationChanged(quint64 duration);
@@ -67,6 +68,7 @@ private:
     void init();
     void portAudioInit();
     bool portAudioOpen();
+    void portAudioTerminate();
     void setErrorMsg(const QString& errMsg);
     void setState(QMediaPlayer::State state);
 };

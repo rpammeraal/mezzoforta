@@ -35,9 +35,6 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
     {
         QSqlQueryModel::fetchMore();
     }
-    qDebug() << SB_DEBUG_INFO
-             << "rowcount:"
-             << this->rowCount();
     handleSQLError();
 }
 
