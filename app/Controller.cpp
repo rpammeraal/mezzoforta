@@ -11,12 +11,10 @@
 #include "BackgroundThread.h"
 #include "Chooser.h"
 #include "Common.h"
-#include "CompleterFactory.h"
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayer.h"
 #include "DBManager.h"
-#include "ExternalData.h"
 #include "MainWindow.h"
 #include "MusicLibrary.h"
 #include "Navigator.h"
@@ -26,13 +24,11 @@
 #include "Properties.h"
 #include "SBIDBase.h"
 #include "SBIDOnlinePerformance.h"
-#include "SBDialogSelectItem.h"
 #include "SBMessageBox.h"
-#include "SBStandardItemModel.h"
 #include "SBTabSongsAll.h"
-#include "ScreenStack.h"
 #include "SearchItemModel.h"
 #include "SetupWizard.h"
+#include "Preferences.h"
 
 Controller::Controller(int argc, char *argv[], QApplication* app) : _app(app)
 {
@@ -72,6 +68,13 @@ Controller::refreshModels()
 }
 
 ///	Public slots:
+void
+Controller::preferences()
+{
+    qDebug() << SB_DEBUG_INFO << "preferences";
+    Preferences p;
+}
+
 void
 Controller::newDatabase()
 {
@@ -503,7 +506,12 @@ Controller::configureMenuItems(const QList<QAction *>& list)
     {
         i=(*it);
         const QString& itemName=(*it)->objectName();
-        if(itemName=="menuNewDatabase")
+		if(itemName=="menuPreferences")
+		{
+            connect(i,SIGNAL(triggered()),
+                    this,SLOT(preferences()));
+		}
+        else if(itemName=="menuNewDatabase")
         {
             connect(i,SIGNAL(triggered()),
                     this,SLOT(newDatabase()));
@@ -565,7 +573,6 @@ Controller::setFontSizes() const
         {
             QWidget* w=l.at(i);
             const QString cn=w->metaObject()->className();
-            const QString on=w->objectName();
             if(cn=="QLabel")
             {
                 QLabel* l=dynamic_cast<QLabel* >(w);

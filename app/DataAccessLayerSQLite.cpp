@@ -15,6 +15,7 @@ DataAccessLayerSQLite::DataAccessLayerSQLite()
 bool
 DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredentials& credentials,const QString& musicLibraryPath)
 {
+    Q_UNUSED(credentials);
     //	Check parameters
     QString errorMsg;
     bool errorFlag=0;

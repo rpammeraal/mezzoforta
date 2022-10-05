@@ -2,8 +2,6 @@
 #include <QDebug>
 
 #include "Context.h"
-#include "Controller.h"
-#include "DataAccessLayer.h"
 #include "MainWindow.h"
 #include "Navigator.h"
 
@@ -98,6 +96,11 @@ void MainWindow::createActions()
 //    printAct->setShortcuts(QKeySequence::Print);
 //    printAct->setStatusTip(tr("Print the document"));
 //    connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
+
+//    preferencesAct = new QAction(tr("Preferences"), this);
+//    preferencesAct->setMenuRole(QAction::PreferencesRole);
+//    preferencesAct->setStatusTip(tr("Opens Preferences"));
+//    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(preferences()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);

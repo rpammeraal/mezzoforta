@@ -1,6 +1,7 @@
 #include <QCompleter>
 #include <QMessageBox>
 
+#include "DataAccessLayer.h"
 #include "SBTabPerformerEdit.h"
 
 #include "CacheManager.h"

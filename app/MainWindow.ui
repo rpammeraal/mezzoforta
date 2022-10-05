@@ -567,7 +567,6 @@
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>15</pointsize>
-                     <weight>75</weight>
                      <italic>true</italic>
                      <bold>true</bold>
                     </font>
@@ -660,7 +659,6 @@
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>14</pointsize>
-                     <weight>75</weight>
                      <italic>true</italic>
                      <bold>true</bold>
                     </font>
@@ -760,7 +758,6 @@
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>15</pointsize>
-                     <weight>75</weight>
                      <italic>true</italic>
                      <bold>true</bold>
                     </font>
@@ -953,7 +950,6 @@
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>15</pointsize>
-                     <weight>75</weight>
                      <italic>true</italic>
                      <bold>true</bold>
                     </font>
@@ -1725,7 +1721,6 @@
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>12</pointsize>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -2622,7 +2617,6 @@
                   <font>
                    <family>Trebuchet MS</family>
                    <pointsize>36</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -2646,7 +2640,6 @@
                   <font>
                    <family>Trebuchet MS</family>
                    <pointsize>12</pointsize>
-                   <weight>75</weight>
                    <italic>true</italic>
                    <bold>true</bold>
                   </font>
@@ -2665,7 +2658,6 @@
                   <font>
                    <family>Trebuchet MS</family>
                    <pointsize>15</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -2762,7 +2754,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -2834,7 +2825,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -2861,7 +2851,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -2904,7 +2893,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3019,7 +3007,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3042,7 +3029,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3136,7 +3122,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3351,7 +3336,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3420,7 +3404,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3450,7 +3433,6 @@ Click on 'All Songs' to continue.</string>
                    <property name="font">
                     <font>
                      <family>Trebuchet MS</family>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -3595,7 +3577,6 @@ Click on 'All Songs' to continue.</string>
                     <font>
                      <family>Trebuchet MS</family>
                      <pointsize>15</pointsize>
-                     <weight>75</weight>
                      <italic>true</italic>
                      <bold>true</bold>
                     </font>
@@ -4693,7 +4674,7 @@ Click on 'All Songs' to continue.</string>
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -4703,6 +4684,7 @@ Click on 'All Songs' to continue.</string>
     <addaction name="menuNewDatabase"/>
     <addaction name="menuOpenDatabase"/>
     <addaction name="menuSetMusicLibrary"/>
+    <addaction name="menuPreferences"/>
    </widget>
    <widget class="QMenu" name="menuPlaylist">
     <property name="title">
@@ -4796,6 +4778,14 @@ Click on 'All Songs' to continue.</string>
   <action name="menuDummyPlayAllSongs">
    <property name="text">
     <string>dummyPlayAllSongs</string>
+   </property>
+  </action>
+  <action name="menuPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
  </widget>

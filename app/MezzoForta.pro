@@ -9,6 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Preferences.cpp \
     main.cpp \
     MainWindow.cpp \
     AudioDecoder.cpp \
@@ -133,6 +134,7 @@ HEADERS += \
     OSXNSEventFunctions.h \
     PlayManager.h \
     PlayerController.h \
+    Preferences.h \
     Preloader.h \
     ProgressDialog.h \
     Properties.h \
@@ -184,6 +186,7 @@ FORMS += \
     DatabaseSelector.ui \
     MainWindow.ui \
     MusicImportResult.ui \
+    PreferencesWindow.ui \
     SBDialogChart.ui \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \

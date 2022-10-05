@@ -1,4 +1,3 @@
-/*
 #include "Configuration.h"
 
 #include "Context.h"
@@ -34,7 +33,7 @@ Configuration::setConfigValue(sb_config_keyword keyword, const QString &value)
         doInit();
     }
 
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
@@ -105,6 +104,7 @@ Configuration::doInit()
     qDebug() << SB_DEBUG_INFO;
     _enumToKeyword[sb_version]=QString("version_qt");
     _enumToKeyword[sb_default_schema]=QString("default_schema");
+    _enumToKeyword[sb_smart_import]=QString("smart_import");
 
     QMapIterator<sb_config_keyword,QString> etkIT(_enumToKeyword);
     while(etkIT.hasNext())
@@ -113,7 +113,7 @@ Configuration::doInit()
         _keywordToEnum[etkIT.value()]=etkIT.key();
     }
 
-    DataAccessLayer* dal=(_dal?_dal:Context::instance()->getDataAccessLayer());
+    DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
 
     //	Load configuration from table
@@ -134,5 +134,3 @@ Configuration::doInit()
 }
 
 ///	Private methods
-
-*/

@@ -1,11 +1,10 @@
-/*
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
 #include <QMap>
 #include <QString>
 
-class DataAccessLayer;
+#include "DataAccessLayer.h"
 
 class Configuration
 {
@@ -13,7 +12,8 @@ public:
     enum sb_config_keyword
     {
         sb_version=0,
-        sb_default_schema
+        sb_default_schema,
+        sb_smart_import
     };
 
     Configuration(DataAccessLayer* dal=NULL);	//	only to be used when creating new database
@@ -33,4 +33,3 @@ private:
 };
 
 #endif // CONFIGURATION_H
-*/

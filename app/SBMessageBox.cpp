@@ -1,7 +1,6 @@
 #include "SBMessageBox.h"
 #include <QDebug>
 
-#include "Common.h"
 
 ///	Public
 int

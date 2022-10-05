@@ -8,8 +8,6 @@
 
 #include "Common.h"
 #include "Context.h"
-#include "Controller.h"
-#include "DBManager.h"
 #include "ProgressDialog.h"
 
 //	Singleton

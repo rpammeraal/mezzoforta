@@ -71,6 +71,7 @@ Context::doInit(MainWindow* mw)
     _nav.doInit();  //	no dep
     _dbm.doInit();	//	no dep
     _kec.doInit();	//	no dep
+    _cfg.doInit();	//	dependency of DBManager
 }
 
 ///	PRIVATE
