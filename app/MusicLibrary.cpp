@@ -321,7 +321,7 @@ MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
                 qDebug() << SB_DEBUG_INFO << "file found:" << ePtr->key;
             }
             //	Check on album title, take parent directory name if not exists
-            if(ePtr->albumTitle.length()==0 || (properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1"))
+            if(ePtr->albumTitle.length()==0 || (properties->configValue(Configuration::sb_performer_album_directory_structure_flag)=="1"))
             {
                 //	Take the name of the parent directory as the album title.
                 ePtr->albumTitle=ePtr->parentDirectoryName;
@@ -1002,7 +1002,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     //		a.	Go thru each albumPtr and find out if album can be found based on path name
     //			This can only be done if directories are structured.
     PropertiesPtr properties=Context::instance()->properties();
-    if(properties->configValue(Properties::sb_performer_album_directory_structure_flag)=="1" && directory2AlbumPathMap.count()>0)
+    if(properties->configValue(Configuration::sb_performer_album_directory_structure_flag)=="1" && directory2AlbumPathMap.count()>0)
     {
         albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);
         while(albumIT.hasNext())

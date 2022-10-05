@@ -37,7 +37,10 @@ Configuration::setConfigValue(sb_config_keyword keyword, const QString &value)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    if(_configuration.contains(keyword))
+    this->debugShow("setConfigValue:40");
+    qDebug() << SB_DEBUG_INFO << keyword << _configuration.contains(keyword);
+
+    if(!_configuration.contains(keyword))
     {
         //	Insert in db
         q=QString
@@ -79,6 +82,12 @@ Configuration::setConfigValue(sb_config_keyword keyword, const QString &value)
 }
 
 void
+Configuration::reset()
+{
+    _configuration=_default;
+}
+
+void
 Configuration::debugShow(const QString &title)
 {
     qDebug() << SB_DEBUG_INFO << _configuration.count();
@@ -92,7 +101,7 @@ Configuration::debugShow(const QString &title)
     while(cIT.hasNext())
     {
         cIT.next();
-        qDebug() << SB_DEBUG_INFO << _enumToKeyword[cIT.key()] << "=" << _configuration[cIT.key()];
+        qDebug() << SB_DEBUG_INFO << _enumToKeyword[cIT.key()] << "[" << cIT.key() << "]" << "=" << _configuration[cIT.key()];
     }
 
     qDebug() << SB_DEBUG_INFO << title << "end";
@@ -102,15 +111,34 @@ void
 Configuration::doInit()
 {
     qDebug() << SB_DEBUG_INFO;
-    _enumToKeyword[sb_version]=QString("version_qt");
+    _enumToKeyword[sb_version]=QString("version");
     _enumToKeyword[sb_default_schema]=QString("default_schema");
+    _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
+    _enumToKeyword[sb_unknown_album_id]=QString("unknown_album_id");
+    _enumToKeyword[sb_performer_album_directory_structure_flag]=QString("performer_album_directory_structure_flag");
+    _enumToKeyword[sb_run_import_on_startup_flag]=QString("run_import_on_startup_flag");
     _enumToKeyword[sb_smart_import]=QString("smart_import");
 
+    _default[sb_version]=QString("20180101");
+    _default[sb_default_schema]=QString("");
+    _default[sb_various_performer_id]=QString("1");
+    _default[sb_unknown_album_id]=QString("0");
+    _default[sb_performer_album_directory_structure_flag]=QString("1");
+    _default[sb_run_import_on_startup_flag]=QString("0");
+    _default[sb_smart_import]=QString("1");
+
+    //	Populate look up from keyword to enum
+    QMap<sb_config_keyword,bool> isConfigured;
     QMapIterator<sb_config_keyword,QString> etkIT(_enumToKeyword);
     while(etkIT.hasNext())
     {
         etkIT.next();
-        _keywordToEnum[etkIT.value()]=etkIT.key();
+
+        QString value=etkIT.value();
+        sb_config_keyword key=etkIT.key();
+
+        _keywordToEnum[value]=key;
+        isConfigured[key]=0;
     }
 
     DataAccessLayer* dal=(_dal?_dal:Context::instance()->dataAccessLayer());
@@ -129,8 +157,27 @@ Configuration::doInit()
         {
             sb_config_keyword key=_keywordToEnum[keyword];
             _configuration[key]=value;
+            isConfigured[key]=1;
         }
     }
+
+    this->debugShow("doInit:161");
+
+    //	Find out if configuration table lacks any config value
+    QMapIterator<sb_config_keyword,bool> isConfiguredIT(isConfigured);
+    while(isConfiguredIT.hasNext())
+    {
+        isConfiguredIT.next();
+
+        if(isConfiguredIT.value()==0)
+        {
+            sb_config_keyword key=isConfiguredIT.key();
+            qDebug() << SB_DEBUG_INFO << key << _default[key];
+            this->setConfigValue(key,_default[key]);
+        }
+    }
+
+
 }
 
 ///	Private methods

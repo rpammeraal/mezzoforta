@@ -281,12 +281,12 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     //	Kick off import
     PropertiesPtr properties=Context::instance()->properties();
-    if(properties->configValue(Properties::sb_run_import_on_startup_flag)=="1")
+    if(properties->configValue(Configuration::sb_run_import_on_startup_flag)=="1")
     {
         MusicLibrary ml;
         ml.rescanMusicLibrary(1);
     }
-    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"0");
+    properties->setConfigValue(Configuration::sb_run_import_on_startup_flag,"0");
 
     return 1;
 }
