@@ -6,7 +6,6 @@
 
 #include "Common.h"
 #include "SBIDSong.h"
-#include "SBIDPlaylist.h"
 
 ///
 /// \brief The PlayManager class

@@ -55,6 +55,10 @@ PlayManager::playerPlay()
                 startRadio();	//	No need to do anything else.
                 return 1;
             }
+            else
+            {
+                (pc?pc->playerPlay():0);
+            }
         }
         break;
 
@@ -76,7 +80,7 @@ PlayManager::playerNext(PlayMode playMode)
     PlayerController* pc=Context::instance()->playerController();
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     int numSongs=mqs?mqs->numSongs():0;
-    int numTries=numSongs;
+    int numTries=0;
     bool isPlayingFlag=0;
     bool exitLoopFlag=0;	//	meta indicator to avoid infinite loops
     bool lastSongPlayedFlag=0;

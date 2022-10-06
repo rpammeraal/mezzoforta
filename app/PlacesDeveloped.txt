@@ -1193,9 +1193,11 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
 -	sqlite: able to add same performance to playlist (days nigga took over -> craphop)
         -	probably fixed in earlier code.
 
-BUGS:
+20221005:
 *	Go To Elevation (song). Right click to play. Need to add album comments to list of alternatives.
 	*	Find out live versions.
+*	Album positions now taken from meta data.
+*	Multiple other fixes
 
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
@@ -1230,8 +1232,6 @@ Near future:
 
 Import bugs/features/missing:
 *	Look up record_performance by title, performer & title in addition to album position
-*	Dialogbox needed at additional places during import
-*	Validate album positions
 -	Import songbase directory:
     *	Asks for N.w.a: too many choices offered
 	*	The War On Drugs: one option is War On Drugs, The. This should be automatically accepted.
