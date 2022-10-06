@@ -46,6 +46,9 @@ signals:
     void populateSearchItems();
 
 public slots:
+    //	MENU::SYSTEM
+    void preferences();
+
     //	MENU::FILE
     void newDatabase();
     void openDatabase();

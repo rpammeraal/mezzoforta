@@ -1,12 +1,12 @@
 #include <QMessageBox>
 
+#include "DataAccessLayer.h"
 #include "SBTabSongEdit.h"
 
 #include "CacheManager.h"
 #include "Context.h"
 #include "Controller.h"
 #include "MainWindow.h"
-#include "SBDialogSelectItem.h"
 #include "SBIDPerformer.h"
 
 SBTabSongEdit::SBTabSongEdit(QWidget* parent) : SBTab(parent,1)

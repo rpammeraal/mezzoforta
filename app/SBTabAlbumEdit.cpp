@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <typeinfo>
 
+#include "DataAccessLayer.h"
 #include "SBTabAlbumEdit.h"
 
 #include <QCompleter>
@@ -15,11 +16,8 @@
 #include "MainWindow.h"
 #include "MusicLibrary.h"
 #include "Navigator.h"
-#include "SBDialogSelectItem.h"
 #include "SBIDAlbum.h"
-#include "SBIDOnlinePerformance.h"
 #include "SBIDPerformer.h"
-#include "SBIDSong.h"
 #include "SBMessageBox.h"
 
 

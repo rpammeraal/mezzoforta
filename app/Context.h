@@ -4,6 +4,7 @@
 #include <QDebug>
 
 #include "Chooser.h"
+#include "Configuration.h"
 #include "CompleterFactory.h"
 #include "DBManager.h"
 #include "KeyboardEventCatcher.h"

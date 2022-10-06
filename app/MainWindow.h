@@ -5,8 +5,6 @@
 #include <QtSql>
 
 #include "ui_MainWindow.h"
-#include "DataAccessLayer.h"
-#include "KeyboardEventCatcher.h"
 
 class QLabel;
 class Controller;
@@ -74,6 +72,7 @@ private:
     QMenu *formatMenu;
     QMenu *helpMenu;
     QActionGroup *alignmentGroup;
+    QAction *preferencesAct;
     QAction *newAct;
     QAction *openDatabaseAction;
     QAction *saveAct;

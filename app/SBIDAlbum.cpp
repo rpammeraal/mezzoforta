@@ -471,7 +471,7 @@ SBIDAlbum::retrieveUnknownAlbum()
     PropertiesPtr properties=Context::instance()->properties();
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
-    int albumID=properties->configValue(Properties::sb_unknown_album_id).toInt();
+    int albumID=properties->configValue(Configuration::sb_unknown_album_id).toInt();
     SBIDAlbumPtr albumPtr=SBIDAlbum::retrieveAlbum(albumID);
 
     if(!albumPtr)

@@ -1,11 +1,10 @@
 #include <QCompleter>
 
+#include "DataAccessLayer.h"
 #include "CacheManager.h"
 #include "CacheTemplate.h"
 #include "Context.h"
 #include "Controller.h"
-#include "MainWindow.h"
-#include "SearchItemModel.h"
 
 //	This list shows the order in which objects should be removed
 static const SBKey::ItemType _order [] =

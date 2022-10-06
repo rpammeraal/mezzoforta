@@ -111,10 +111,10 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         PropertiesPtr properties=Properties::createProperties(this->dataAccessLayer());
         Context::instance()->setProperties(properties);
 
-        qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_version);
-        if(properties->configValue(Properties::sb_version)!=QString("20180101"))
+        qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_version);
+        if(properties->configValue(Configuration::sb_version)!=QString("20180101"))
         {
-            qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_version);
+            qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_version);
             rc=0;
             _databaseOpenFlag=0;
             _destroyDAL();

@@ -141,12 +141,12 @@ SetupWizard::start(bool firstRunFlag)
 
                     PropertiesPtr properties=Context::instance()->properties();
                     properties->setConfigValue(
-                        Properties::sb_performer_album_directory_structure_flag,
+                        Configuration::sb_performer_album_directory_structure_flag,
                         keyPressed==QMessageBox::Yes?"1":"0");
-                    qDebug() << SB_DEBUG_INFO << properties->configValue(Properties::sb_performer_album_directory_structure_flag);
+                    qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_performer_album_directory_structure_flag);
 
                     //	Start import
-                    properties->setConfigValue(Properties::sb_run_import_on_startup_flag,"1");
+                    properties->setConfigValue(Configuration::sb_run_import_on_startup_flag,"1");
                 }
             }
             else
