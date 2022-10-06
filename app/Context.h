@@ -80,7 +80,6 @@ private:
 
     //	Instantiated
     CompleterFactory _cf;
-    Configuration _cfg;
     Chooser _lcc;
     DBManager _dbm;
     KeyboardEventCatcher _kec;

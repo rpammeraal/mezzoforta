@@ -25,11 +25,13 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 }
 
 void
-MusicLibrary::rescanMusicLibrary(bool suppressDialogsFlag)
+MusicLibrary::rescanMusicLibrary()
 {
     PropertiesPtr properties=Context::instance()->properties();
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
+    bool suppressDialogsFlag=Context::instance()->properties()->configValue(Configuration::sb_smart_import).toInt();
+
 
     const QString schema=properties->currentDatabaseSchema();
 

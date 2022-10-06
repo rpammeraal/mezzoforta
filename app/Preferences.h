@@ -18,6 +18,7 @@ private:
 
 private slots:
     void _init();
+    void _acceptInput();
 };
 
 #endif // PREFERENCES_H
