@@ -214,8 +214,9 @@ SBTabPerformerEdit::save() const
         performerNameChangedFlag=1;
     }
 
+    //	Leaving this commented out to enable to merge duplicates.
     //	Different performer name
-    if(performerNameChangedFlag==1 && caseChangeFlag==0)
+    //if(performerNameChangedFlag==1 && caseChangeFlag==0)
     {
         //	Find out if performer exists.
         Common::sb_parameters tobeMatched;

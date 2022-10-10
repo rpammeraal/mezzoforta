@@ -376,7 +376,8 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
             found=SBIDPerformer::retrievePerformer(matches[1][0]->itemID());
             result=Common::result_exists_derived;
         }
-        else //	if(matches[2].count()>1): do NOT do this.
+        else if(p.suppressDialogsFlag==0)
+            //	if(matches[2].count()>1): do NOT do this.
         {
             //	Dataset has at least two records, of which the 2nd one is an soundex match,
             //	display pop-up
@@ -403,6 +404,10 @@ SBIDPerformer::userMatch(const Common::sb_parameters& p, SBIDPerformerPtr exclud
             {
                 result=Common::result_missing;
             }
+        }
+        else
+        {
+            result=Common::result_missing;
         }
     }
     else
@@ -558,7 +563,7 @@ SBSqlQueryModel*
 SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr existingPerformerPtr)
 {
     QString newSoundex=Common::soundex(tobeFound.performerName);
-    int excludeID=(existingPerformerPtr?existingPerformerPtr->performerID():-1);
+    int excludeID=(existingPerformerPtr?existingPerformerPtr->performerID():tobeFound.performerID);
 
     //	MatchRank:
     //	0	-	exact match (0 or 1 in data set).
@@ -575,7 +580,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
             "FROM "
                 "___SB_SCHEMA_NAME___artist s "
                     "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma ON "
-                        "ma.artist_correct_name=s.name "
+                        "ma.artist_alternative_name=s.name "
             "WHERE "
                 "REPLACE(LOWER(REPLACE(s.name,'''','')),' ','') = '%1' OR "
                 "REPLACE(LOWER(REPLACE(ma.artist_alternative_name,'''','')),' ','') = LOWER('%1') OR "
@@ -623,15 +628,58 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                 ") AND "
                 "length(s.soundex)<= 2*length('%3') "
         "), "
-        "ranked AS "
+        //	Count number of matches for match_rank 0.
+        //	This indicates that a duplicate performer is being merged.
+        "sum_match_rank_zero AS "
         "( "
             "SELECT "
-                "a.match_rank, "
+                "match_rank, "
+                "COUNT(*) AS match_rank_count "
+            "FROM "
+                "allr "
+            "WHERE "
+                "match_rank=0 "
+            "GROUP BY "
+                "match_rank "
+        "), "
+        //	Find out the 'original' performer, only if there if the count>0 at
+        //	match_rank 0
+        "identify_original_performer AS "
+        "( "
+            "SELECT "
+                "allr.artist_id, "
+                "smrz.match_rank_count, "
+                //	identify potential 'original performer id'
+                "SUM(CASE WHEN allr.artist_id != CAST(REPLACE('%2',' ','') AS INTEGER) THEN 1 ELSE 0 END) AS is_original_artist_id "
+            "FROM "
+                "allr "
+                    "JOIN sum_match_rank_zero smrz USING(match_rank) "
+            "WHERE "
+                "allr.match_rank=0 AND "
+                "smrz.match_rank_count>1 "
+            "GROUP BY "
+                "allr.artist_id, "
+                "smrz.match_rank_count "
+        "), "
+        "ranked AS "
+        "( "
+            "SELECT DISTINCT "
+                "CASE "
+                    "WHEN a.match_rank=0 THEN "
+                        "CASE "
+                            "WHEN COALESCE(iop.match_rank_count,0)>1 AND COALESCE(iop.is_original_artist_id,0)=0  "
+                            "THEN a.match_rank+1 "
+                            "ELSE a.match_rank "
+                        "END "
+                    "ELSE  "
+                        "a.match_rank "
+                    "END AS match_rank, "
                 "a.artist_id, "
                 //	SQLITE does not support window functions.
                 " (SELECT COUNT(*) FROM allr b WHERE a.artist_id=b.artist_id AND b.match_rank<a.match_rank) as rank "
             "FROM "
                 "allr a "
+                    "LEFT JOIN identify_original_performer iop USING(artist_id) "
         ") "
         "SELECT DISTINCT "
             "r.match_rank, "
@@ -654,7 +702,6 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.performerName)))
         .arg(Common::escapeSingleQuotes(Common::comparable(Common::removeArticles(tobeFound.performerName))))
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

@@ -113,7 +113,7 @@ protected:
     void postInstantiate(SBIDSongPtr& ptr);
     static SBSqlQueryModel* retrieveSQL(SBKey key=SBKey());
     QStringList updateSQL(const Common::db_change db_change) const;
-    static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag=0);
+    static Common::result userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found);
 
     friend class SBIDAlbum;
     friend class SBTabSongEdit;

@@ -850,6 +850,7 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     CacheAlbumMgr* amgr=cm->albumMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
+    qDebug() << SB_DEBUG_INFO << p.suppressDialogsFlag;
 
     if(amgr->find(p,exclude,matches))
     {
@@ -880,29 +881,36 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
             }
         }
 
-        if(!found)
+        if(p.suppressDialogsFlag==0)
         {
-            //	Dataset has at least two records, of which the 2nd one is an soundex match,
-            //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
-            pu->exec();
-
-            //	Go back to screen if no item has been selected
-            if(pu->hasSelectedItem()!=0)
+            if(!found)
             {
-                SBIDPtr selected=pu->getSelected();
-                if(selected)
+                //	Dataset has at least two records, of which the 2nd one is an soundex match,
+                //	display pop-up
+                SBDialogSelectItem* pu=SBDialogSelectItem::selectAlbum(p,exclude,matches);
+                pu->exec();
+
+                //	Go back to screen if no item has been selected
+                if(pu->hasSelectedItem()!=0)
                 {
-                    //	Existing album is choosen
-                    found=SBIDAlbum::retrieveAlbum(selected->itemID());
-                    found->refreshDependents();
-                    result=Common::result_exists_user_selected;
-                }
-                else
-                {
-                    result=Common::result_missing;
+                    SBIDPtr selected=pu->getSelected();
+                    if(selected)
+                    {
+                        //	Existing album is choosen
+                        found=SBIDAlbum::retrieveAlbum(selected->itemID());
+                        found->refreshDependents();
+                        result=Common::result_exists_user_selected;
+                    }
+                    else
+                    {
+                        result=Common::result_missing;
+                    }
                 }
             }
+        }
+        else
+        {
+            result=Common::result_missing;
         }
     }
     else

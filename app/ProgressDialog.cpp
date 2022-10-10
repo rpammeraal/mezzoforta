@@ -93,7 +93,6 @@ ProgressDialog::update(const QString& prettyFunction, const QString& step, int c
                 while(it.hasNext())
                 {
                     QString step=it.next();
-                    qDebug() << SB_DEBUG_WARNING << step;
                 }
             }
         }

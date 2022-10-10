@@ -129,6 +129,8 @@ public:
         QString www;
         int year;
 
+        bool suppressDialogsFlag;
+
     private:
         void _init()
         {
@@ -144,6 +146,8 @@ public:
             songID=-1;
             songPerformanceID=-1;
             onlinePerformanceID=-1;
+
+            suppressDialogsFlag=0;
         }
     };
 

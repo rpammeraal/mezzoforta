@@ -713,7 +713,6 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     {
         QString performerName=allPerformersIT.next();
 
-        qDebug() << SB_DEBUG_INFO << performerName;
         int performerID=-1;
         if(!name2PerformerIDMap.contains(performerName))
         {
@@ -721,14 +720,11 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             Common::sb_parameters p;
             p.performerName=performerName;
             p.performerID=-1;
+            p.suppressDialogsFlag=suppressDialogsFlag;
 
             Common::result result=Common::result_missing;
-            qDebug() << SB_DEBUG_INFO << p.performerName;
-            if(suppressDialogsFlag==0)
-            {
-                result=pemgr->userMatch(p,SBIDPerformerPtr(),selectedPerformerPtr);
-                qDebug() << SB_DEBUG_INFO << result;
-            }
+            result=pemgr->userMatch(p,SBIDPerformerPtr(),selectedPerformerPtr);
+
             if(result==Common::result_canceled)
             {
                 qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
@@ -741,8 +737,6 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             }
             else if(result==Common::result_exists_user_selected)
             {
-                qDebug() << SB_DEBUG_INFO << p.performerName;
-                qDebug() << SB_DEBUG_INFO << selectedPerformerPtr->performerName();
                 if(p.performerName != selectedPerformerPtr->performerName())
                 {
                     selectedPerformerPtr->addAlternativePerformerName(p.performerName);
@@ -1107,6 +1101,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     p.performerName=apPtr->albumPerformerName;
                     p.year=apPtr->year;
                     p.genre=apPtr->genre;
+                    p.suppressDialogsFlag=suppressDialogsFlag;
 
                     //	Set up excluding album:
                     //	-	if ePtr.albumID=-1 then empty,
@@ -1147,14 +1142,9 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     qDebug() << SB_DEBUG_INFO;
 
                     Common::result result=Common::result_missing;
-                    if(suppressDialogsFlag==0 && !originalAlbumPtr)
+                    if(!originalAlbumPtr)
                     {
                         result=amgr->userMatch(p,originalAlbumPtr,selectedAlbumPtr);
-                    }
-                    qDebug() << SB_DEBUG_INFO << result;
-                    if(selectedAlbumPtr)
-                    {
-                        qDebug() << SB_DEBUG_INFO << selectedAlbumPtr->text();
                     }
                     if(result==Common::result_canceled)
                     {
@@ -1364,12 +1354,10 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     p.year=entityPtr->year;
                     p.notes=entityPtr->notes;
                     p.songID=entityPtr->songID;
+                    p.suppressDialogsFlag=suppressDialogsFlag;
 
                     Common::result result=Common::result_missing;
-                    if(suppressDialogsFlag==0)
-                    {
-                        result=smgr->userMatch(p,SBIDSongPtr(),selectedSongPtr);
-                    }
+                    result=smgr->userMatch(p,SBIDSongPtr(),selectedSongPtr);
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";

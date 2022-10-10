@@ -880,7 +880,7 @@ SBIDSong::updateSQL(const Common::db_change db_change) const
 }
 
 Common::result
-SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found, bool showAllChoicesFlag)
+SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSongPtr& found)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* smgr=cm->songMgr();
@@ -895,31 +895,38 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
             found=matches[0][0];
             result=Common::result_exists_derived;
         }
-        else if((showAllChoicesFlag==1) || (matches[1].count()>1))
+        else if(p.suppressDialogsFlag==0)
         {
-            //	Dataset has at least two records, of which the 2nd one is an soundex match,
-            //	display pop-up
-            SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(p,exclude,matches);
-            pu->exec();
-
-            //	Go back to screen if no item has been selected
-            if(pu->hasSelectedItem()!=0)
+            if(matches[1].count()>1)
             {
-                SBIDPtr selected=pu->getSelected();
-                if(selected)
+                //	Dataset has at least two records, of which the 2nd one is an soundex match,
+                //	display pop-up
+                SBDialogSelectItem* pu=SBDialogSelectItem::selectSong(p,exclude,matches);
+                pu->exec();
+
+                //	Go back to screen if no item has been selected
+                if(pu->hasSelectedItem()!=0)
                 {
-                    //	Existing song is choosen
-                    found=SBIDSong::retrieveSong(selected->itemID());
-                    found->refreshDependents();
-                    result=Common::result_exists_user_selected;
-                }
-                else
-                {
-                    result=Common::result_missing;
+                    SBIDPtr selected=pu->getSelected();
+                    if(selected)
+                    {
+                        //	Existing song is choosen
+                        found=SBIDSong::retrieveSong(selected->itemID());
+                        found->refreshDependents();
+                        result=Common::result_exists_user_selected;
+                    }
+                    else
+                    {
+                        result=Common::result_missing;
+                    }
                 }
             }
+            else
+            {
+                result=Common::result_missing;
+            }
         }
-        else if(showAllChoicesFlag==0)
+        else
         {
             result=Common::result_missing;
         }

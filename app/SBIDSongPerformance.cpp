@@ -312,7 +312,6 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery select(q,db);
     select.next();
@@ -348,7 +347,6 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int perfor
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
 
     QSqlQuery select(q,db);
     select.next();
@@ -381,8 +379,6 @@ SBIDSongPerformance::performancesBySong(int songID)
     )
         .arg(songID)
     ;
-    qDebug() << SB_DEBUG_INFO << q;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -458,7 +454,6 @@ SBIDSongPerformance::createInDB(Common::sb_parameters& p)
         .arg(p.notes)
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 
@@ -543,7 +538,6 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
         .arg(excludeID==-1?"":QString(" AND s.song_id!=(%1)").arg(excludeID))
         .arg(tobeFound.songID)
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -625,8 +619,6 @@ SBIDSongPerformance::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE p.performance_id=%1").arg(key.itemID()):QString())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
-
     return new SBSqlQueryModel(q);
 }
 

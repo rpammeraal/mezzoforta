@@ -452,17 +452,14 @@ PlayManager::_loadRadio()
                 }
             }
         }
-        qDebug() << SB_DEBUG_INFO << indexCovered;
-        qDebug() << SB_DEBUG_INFO << indexCovered.length();
-
-
 
         int onlinePerformanceID=qm->record(idx).value(0).toInt();
+
         SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
 
         playList[nextOpenSlotIndex++]=opPtr;
 
-        if(index%songInterval==0 || index+1==numPerformances)
+        if(index==0 || songInterval==0 || index%songInterval==0 || index+1==numPerformances)
         {
             //	Update progress
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);

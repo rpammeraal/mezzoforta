@@ -12,8 +12,6 @@ class QLineEdit;
 class SBIDPerformer;
 typedef std::shared_ptr<SBIDPerformer> SBIDPerformerPtr;
 
-#include "SBIDAlbumPerformance.h"
-
 class SBTableModel;
 
 class SBIDPerformer : public SBIDBase
