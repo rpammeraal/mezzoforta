@@ -417,6 +417,13 @@ PlayManager::_loadRadio()
     while(qm->record(nextPlayedSongID++).value(1).toDate()==QDate(1900,1,1))
     {
     }
+    qDebug() << SB_DEBUG_INFO << nextPlayedSongID;
+
+    //	Avoid having the same performer show up more than once.
+    bool avoidDuplicatePerformer=1;			//	When we're loading unplayed songs
+    bool selectingUnplayedSongsFirst=0;		//	this flag supersedes the selectingUnplayedSongsFirst
+    int numberOfRejects=0;
+    QSet<QString> performerInList;
 
     QString indexCovered=QString(".").repeated(maxNumberToRandomize+1);
     indexCovered+=QString("");
@@ -425,12 +432,14 @@ PlayManager::_loadRadio()
         found=0;
         int idx=-1;
 
-        if(index<nextPlayedSongID)
+        if(index<nextPlayedSongID-1)
         {
+            selectingUnplayedSongsFirst=1;
             idx=index;
         }
         else
         {
+            selectingUnplayedSongsFirst=0;
             int rnd=Common::randomOldestFirst(maxNumberToRandomize);
 
             //	Find first untaken spot, counting untaken spots.
@@ -456,38 +465,81 @@ PlayManager::_loadRadio()
         int onlinePerformanceID=qm->record(idx).value(0).toInt();
 
         SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
+        bool addToPlaylist=0;
+        QString performerName=opPtr->songPerformerName();
 
-        playList[nextOpenSlotIndex++]=opPtr;
-
-        if(index==0 || songInterval==0 || index%songInterval==0 || index+1==numPerformances)
+        if (selectingUnplayedSongsFirst==1)
         {
-            //	Update progress
-            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
+            //	Adding unplayed songs or logic to avoid duplicate performers is turned off
+            addToPlaylist=1;
         }
-
-        //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
-        if(index+1==firstBatchNumber || index+1==numPerformances)
+        else
         {
-            if(!firstBatchLoaded)
+            if(avoidDuplicatePerformer==1)
             {
-                mqs->populate(playList);
-                tqs->setViewLayout();
+                //	Find out if we have performer already in list
 
-                this->playerNext();
-                emit playlistChanged(-1);
-
-                firstBatchLoaded=true;
-
-                //	Got the first batch loaded, clear playList and reset nextOpenSlotIndex
-                playList.clear();
-                nextOpenSlotIndex=0;
+                if(performerInList.contains(performerName))
+                {
+                    qDebug() << SB_DEBUG_WARNING << "Performer " << performerName << " already in playlist";
+                    addToPlaylist=0;
+                    numberOfRejects++;
+                    if(numberOfRejects>numPerformances)
+                    {
+                        //	Turn off logic after n (numPerformances) tries.
+                        avoidDuplicatePerformer=0;
+                        qDebug() << SB_DEBUG_WARNING << "avoidDuplicatePerformer in playlist turned off";
+                    }
+                }
+                else
+                {
+                    addToPlaylist=1;
+                }
             }
             else
             {
-                mqs->populate(playList,firstBatchLoaded);
+                //	Logic is (already) turned off.
+                addToPlaylist=1;
             }
         }
-        index++;
+
+        if (addToPlaylist)
+        {
+            performerInList.insert(performerName);
+            qDebug() << SB_DEBUG_INFO << "Loading: " << opPtr->path();
+
+            playList[nextOpenSlotIndex++]=opPtr;
+
+            if(index==0 || songInterval==0 || index%songInterval==0 || index+1==numPerformances)
+            {
+                //	Update progress
+                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
+            }
+
+            //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
+            if(index+1==firstBatchNumber || index+1==numPerformances)
+            {
+                if(!firstBatchLoaded)
+                {
+                    mqs->populate(playList);
+                    tqs->setViewLayout();
+
+                    this->playerNext();
+                    emit playlistChanged(-1);
+
+                    firstBatchLoaded=true;
+
+                    //	Got the first batch loaded, clear playList and reset nextOpenSlotIndex
+                    playList.clear();
+                    nextOpenSlotIndex=0;
+                }
+                else
+                {
+                    mqs->populate(playList,firstBatchLoaded);
+                }
+            }
+            index++;
+        }
     }
 
     QString allIDX=" ";
