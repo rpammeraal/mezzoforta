@@ -51,9 +51,7 @@ SBIDAlbum::iconResourceLocation() const
 QMap<int,SBIDOnlinePerformancePtr>
 SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
 {
-    qDebug() << SB_DEBUG_INFO ;
     QMap<int,SBIDAlbumPerformancePtr> albumPerformances=this->albumPerformances();
-    qDebug() << SB_DEBUG_INFO << _albumPerformances.count();
 
     int progressCurrentValue=0;
     int progressMaxValue=albumPerformances.count()*2;
@@ -66,42 +64,32 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     //	Collect onlinePerformancePtrs and their album position
     QMapIterator<int,SBIDAlbumPerformancePtr> pIT(albumPerformances);
     QMap<int, SBIDOnlinePerformancePtr> position2OnlinePerformancePtr;
-    qDebug() << SB_DEBUG_INFO << albumPerformances.count();
     while(pIT.hasNext())
     {
         pIT.next();
         const SBIDAlbumPerformancePtr apPtr=pIT.value();
-        qDebug() << SB_DEBUG_INFO << apPtr->key() << apPtr->genericDescription();
         const SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
         if(!opPtr)
         {
-            qDebug() << SB_DEBUG_INFO << "opPtr NOT defined";
-        }
-        else
-        {
-            qDebug() << SB_DEBUG_INFO << opPtr->path();
+            qDebug() << SB_DEBUG_WARNING << "opPtr NOT defined";
         }
         if(opPtr && opPtr->path().length()>0)
         {
             position2OnlinePerformancePtr[apPtr->albumPosition()]=opPtr;
-            qDebug() << SB_DEBUG_INFO << apPtr->albumPosition() << opPtr->key() << opPtr->genericDescription();
         }
         if(updateProgressDialogFlag)
         {
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"onlinePerformances",progressCurrentValue++,progressMaxValue);
         }
     }
-    qDebug() << SB_DEBUG_INFO << albumPerformances.count() << position2OnlinePerformancePtr.count();
 
     //	Now put everything in order. Note that some albumPositions may be missing.
     QMap<int,SBIDOnlinePerformancePtr> list;
     QMapIterator<int,SBIDOnlinePerformancePtr> po2olIT(position2OnlinePerformancePtr);
     int index=0;
-    qDebug() << SB_DEBUG_INFO << position2OnlinePerformancePtr.count();
     while(po2olIT.hasNext())
     {
         po2olIT.next();
-        qDebug() << SB_DEBUG_INFO << index << po2olIT.value()->genericDescription();
         list[index++]=po2olIT.value();
         if(updateProgressDialogFlag)
         {
@@ -113,8 +101,6 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"onlinePerformances");
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
-
-    qDebug() << SB_DEBUG_INFO << "done";
     return list;
 }
 
@@ -152,13 +138,6 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
 
     albumPerformances();	//	load albumPerformances if not already loaded
 
-    qDebug() << SB_DEBUG_INFO
-             << ":albumID=" << this->albumID()
-             << ":songID=" << songID
-             << ":performerID=" << performerID
-             << ":path=" << path
-             ;
-
     //	Look up song (should exists)
     sPtr=SBIDSong::retrieveSong(songID);
     if(!sPtr)
@@ -166,7 +145,6 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
         qDebug() << SB_DEBUG_ERROR << "song does not exist. song_id=" << songID;
         return apPtr;
     }
-    qDebug() << SB_DEBUG_INFO  << "song exists";
 
     //	Look up song performance
     p.songID=songID;
@@ -176,7 +154,6 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(!spPtr)
     {
         spPtr=spMgr->createInDB(p);
-        qDebug() << SB_DEBUG_INFO  << "created song performance";
     }
 
     //	Lookup album performance
@@ -190,19 +167,13 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     if(apPtr)
     {
         //	See if we truly want to add the same performance.
-        qDebug() << SB_DEBUG_INFO
-               << "albumPosition" << albumPosition
-               << "apPtr->albumPosition" << apPtr->albumPosition()
-               ;
         if(albumPosition==apPtr->albumPosition())
         {
             apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_already_exists);
-            qDebug() << SB_DEBUG_INFO << "True duplicate";
         }
         else
         {
             apPtr=NULL;
-            qDebug() << SB_DEBUG_INFO << "No duplicate";
         }
     }
 
@@ -210,28 +181,22 @@ SBIDAlbum::addAlbumPerformance(int songID, int performerID, int albumPosition, i
     {
         apPtr=apMgr->createInDB(p);
         apPtr->setSBCreateStatus(SBIDAlbumPerformance::sb_create_status_newly_created);
-        qDebug() << SB_DEBUG_INFO  << "created album performance";
     }
 
     if(!albumPerformances().contains(apPtr->albumPerformanceID()))
     {
         _albumPerformances[apPtr->albumPerformanceID()]=apPtr;
         this->setChangedFlag();
-        qDebug() << SB_DEBUG_INFO  << "set changed flag";
     }
 
     //	Lookup online performance
     p.albumPerformanceID=apPtr->albumPerformanceID();
     p.path=path;
-    qDebug() << SB_DEBUG_INFO  << "path=" << path;
     SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::findByFK(p);
     if(!opPtr)
     {
-        qDebug() << SB_DEBUG_INFO  << "created online performance";
         opPtr=opMgr->createInDB(p);
     }
-
-    qDebug() << SB_DEBUG_INFO  << "almost done";
 
     //	Set ID's pointing down the hierarchy
     if(sPtr->originalSongPerformanceID()<0)
@@ -404,7 +369,6 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qID(q,db);
     while(albumID==-1 && qID.next())
     {
@@ -450,7 +414,6 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery qID(q,db);
     while(albumID==-1 && qID.next())
     {
@@ -508,8 +471,6 @@ SBIDAlbum::albumsByPerformer(int performerID)
     )
         .arg(performerID)
     ;
-
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -545,7 +506,6 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
         int maxNum=1;
         q=QString("SELECT title FROM ___SB_SCHEMA_NAME___record WHERE name %1 \"New Album%\"").arg(dal->getILike());
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
         QSqlQuery qName(q,db);
 
         while(qName.next())
@@ -599,7 +559,6 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
     QSqlQuery insert(q,db);
     Q_UNUSED(insert);
 
@@ -619,13 +578,6 @@ SBSqlQueryModel*
 SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbumPtr)
 {
     int excludeID=(existingAlbumPtr?existingAlbumPtr->albumID():-1);
-
-    qDebug() << SB_DEBUG_INFO
-             << tobeFound.albumID
-             << tobeFound.albumTitle
-             << tobeFound.performerID
-             << tobeFound.performerName
-    ;
 
     //	MatchRank:
     //	0	-	exact match with specified performer (0 or 1)
@@ -795,7 +747,6 @@ SBIDAlbum::retrieveSQL(SBKey key)
         .arg(key.validFlag()?QString("WHERE r.record_id=%1").arg(key.itemID()):QString())
     ;
 
-    qDebug() << SB_DEBUG_INFO << key << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -839,7 +790,6 @@ SBIDAlbum::updateSQL(const Common::db_change db_change) const
 
         SQL.append(_updateSQLAlbumPerformances());
     }
-
     return SQL;
 }
 
@@ -850,7 +800,6 @@ SBIDAlbum::userMatch(const Common::sb_parameters &p, SBIDAlbumPtr exclude, SBIDA
     CacheAlbumMgr* amgr=cm->albumMgr();
     Common::result result=Common::result_canceled;
     QMap<int,QList<SBIDAlbumPtr>> matches;
-    qDebug() << SB_DEBUG_INFO << p.suppressDialogsFlag;
 
     if(amgr->find(p,exclude,matches))
     {
@@ -975,15 +924,12 @@ SBIDAlbum::_findAlbumPerformanceBySongPerformanceID(int songPerformanceID) const
 void
 SBIDAlbum::_loadAlbumPerformances()
 {
-    qDebug() << SB_DEBUG_INFO;
     _albumPerformances=_loadAlbumPerformancesFromDB();
-    qDebug() << SB_DEBUG_INFO << _albumPerformances.count();
 }
 
 QMap<int,SBIDAlbumPerformancePtr>
 SBIDAlbum::_loadAlbumPerformancesFromDB() const
 {
-    qDebug() << SB_DEBUG_INFO;
     return Preloader::performanceMap(SBIDAlbumPerformance::performancesByAlbum_Preloader(this->albumID()));
 }
 

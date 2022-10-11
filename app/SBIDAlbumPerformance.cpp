@@ -637,7 +637,6 @@ SBIDAlbumPerformance::retrieveSQL(SBKey key)
         .arg(key.validFlag()?QString("WHERE rp.record_performance_id=%1").arg(key.itemID()):QString())
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -702,10 +701,6 @@ SBIDAlbumPerformance::updateSQL(const Common::db_change db_change) const
         );
     }
 
-    if(SQL.count())
-    {
-        qDebug() << SB_DEBUG_INFO << SQL;
-    }
     return SQL;
 }
 

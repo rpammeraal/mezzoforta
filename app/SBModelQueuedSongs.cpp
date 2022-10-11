@@ -5,10 +5,8 @@
 
 #include "CacheManager.h"
 #include "Common.h"
-#include "Context.h"
 #include "SBIDBase.h"
 #include "SBIDOnlinePerformance.h"
-#include "MainWindow.h"
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 
@@ -27,11 +25,6 @@ SBModelQueuedSongs::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     {
         qDebug() << SB_DEBUG_ERROR << "ABORTED DROP";
         return false;
-    }
-    if(column>=0)
-    {
-        //	Always make sure that we don't create extra columns
-        column=-1;
     }
 
     //	Populate record
@@ -282,7 +275,6 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     qDebug() << SB_DEBUG_INFO << newPlaylist.count();
     for(int i=0;i<newPlaylist.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO << i;
         if(currentPlayID()==-1)
         {
             _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
@@ -291,13 +283,11 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
         if(opPtr)
         {
-            qDebug() << SB_DEBUG_INFO << i << opPtr->path();
             record=createRecord(opPtr,currentIndex);
             _totalDuration+=opPtr->duration();
 
             if(_recordExists(record)==0)
             {
-                qDebug() << SB_DEBUG_INFO << i;
                 this->appendRow(record);
                 currentIndex++;
             }
@@ -667,7 +657,6 @@ SBModelQueuedSongs::_formatPlaylistPosition(int playlistPositionID) const
 void
 SBModelQueuedSongs::_populateHeader()
 {
-    QList<QStandardItem *>column;
     QStandardItem* item;
 
     int columnIndex=0;

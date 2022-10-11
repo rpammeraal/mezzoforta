@@ -20,6 +20,7 @@ class AudioDecoder;
 /// play anything else than RAW files (on Mac) or RAW/MP3 files (on Windows).
 /// Since we need a bit more than these, the SBMediaPlayer class was created that
 /// used PortAudio.
+/// Logic to play songs is in PlayManager
 ///
 class SBMediaPlayer : public QObject
 {
