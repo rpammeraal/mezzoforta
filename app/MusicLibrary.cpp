@@ -798,38 +798,48 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
         }
         qDebug() << SB_DEBUG_INFO << "END: ALL";
     }
-	if(0)
-    {
-        QString albumPerformerName;
-        albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);
-        while(albumIT.hasNext())
-        {
-            albumIT.next();
-            MLalbumPathPtr apPtr=albumIT.value();
-            albumPerformerName=apPtr->albumPerformerName;
 
-            qDebug() << SB_DEBUG_INFO << albumIT.key() << ":albumTitle=" << apPtr->albumTitle << ":albumPerformerID=" << apPtr->albumPerformerID << ":albumPerformerName=" << apPtr->albumPerformerName;
-            qDebug() << SB_DEBUG_INFO << albumIT.key() << apPtr->variousPerformerFlag << apPtr->uniqueAlbumTitles.count() << apPtr->uniqueSongPerformerNames.count() << apPtr->multipleEntriesFlag();
-            if(apPtr->uniqueAlbumTitles.count()>1)
-            {
-                qDebug() << SB_DEBUG_INFO << apPtr->uniqueAlbumTitles;
-            }
-            if(apPtr->multipleEntriesFlag()==1)
-            {
-                apPtr->albumPerformerID=variousPerformerPtr->performerID();
-                apPtr->albumPerformerName=variousPerformerPtr->performerName();
-            }
-            else if(albumPerformerName!="")
-            {
-                apPtr->albumPerformerID=name2PerformerIDMap[albumPerformerName];
-                apPtr->albumPerformerName=performerID2CorrectNameMap[apPtr->albumPerformerID];
-            }
-            else
-            {
-                apPtr->errorMsg="Empty performer name"; //  not being displayed.
-            }
-            qDebug() << SB_DEBUG_INFO << albumIT.key() << ":albumPerformerID=" << apPtr->albumPerformerID << ":albumPerformerName=" << apPtr->albumPerformerName;
+    QString albumPerformerName;
+    albumIT=QHashIterator<QString,MLalbumPathPtr>(directory2AlbumPathMap);
+    while(albumIT.hasNext())
+    {
+        albumIT.next();
+        MLalbumPathPtr apPtr=albumIT.value();
+        albumPerformerName=apPtr->albumPerformerName;
+
+        qDebug() << SB_DEBUG_INFO
+                 << albumIT.key()
+                 << ":albumTitle="  << apPtr->albumTitle
+                 << ":albumPerformerID="  << apPtr->albumPerformerID
+                 << ":albumPerformerName=" << apPtr->albumPerformerName
+        ;
+        qDebug() << SB_DEBUG_INFO
+                 << albumIT.key()
+                 << ":variousPerformerFlag=" << apPtr->variousPerformerFlag
+                 << ":uniqueAlbumTitles.count()=" << apPtr->uniqueAlbumTitles.count()
+                 << ":uniqueSongPerformerNames.count()=" << apPtr->uniqueSongPerformerNames.count()
+                 << ":mulipleEntriesFlag=" << apPtr->multipleEntriesFlag()
+        ;
+        if(apPtr->uniqueAlbumTitles.count()>1)
+        {
+            qDebug() << SB_DEBUG_INFO << apPtr->uniqueAlbumTitles;
         }
+        if(apPtr->multipleEntriesFlag()==1)
+        {
+            qDebug() << SB_DEBUG_INFO << apPtr->multipleEntriesFlag();
+            apPtr->albumPerformerID=variousPerformerPtr->performerID();
+            apPtr->albumPerformerName=variousPerformerPtr->performerName();
+        }
+        else if(albumPerformerName!="")
+        {
+            apPtr->albumPerformerID=name2PerformerIDMap[albumPerformerName];
+            apPtr->albumPerformerName=performerID2CorrectNameMap[apPtr->albumPerformerID];
+        }
+        else
+        {
+            apPtr->errorMsg="Empty performer name"; //  not being displayed.
+        }
+        qDebug() << SB_DEBUG_INFO << albumIT.key() << ":albumPerformerID=" << apPtr->albumPerformerID << ":albumPerformerName=" << apPtr->albumPerformerName;
     }
 
 
@@ -882,7 +892,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     }
 
     //	2.	Validate albums
-	if(0)
+    if(0)
     {	//	DEBUG
         QVectorIterator<MLentityPtr> eIT(list);
         qDebug() << SB_DEBUG_INFO << "BEFORE ALBUM VALIDATION" << list.count();
@@ -963,12 +973,13 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
             albumIT.next();
             MLalbumPathPtr apPtr=albumIT.value();
             qDebug() << SB_DEBUG_INFO
-                     << apPtr->albumID
-                     << apPtr->albumTitle
-                     << apPtr->albumPerformerID
-                     << apPtr->albumPerformerName
-                     << apPtr->path
-                     << apPtr->multipleEntriesFlag()
+                     << "New albums"
+                     << ":albumID=" << apPtr->albumID
+                     << ":albumTitle=" << apPtr->albumTitle
+                     << ":albumPermerID=" << apPtr->albumPerformerID
+                     << ":albumPerformerName=" << apPtr->albumPerformerName
+                     << ":path=" << apPtr->path
+                     << "multipleEntriesFlag:" << apPtr->multipleEntriesFlag()
             ;
         }
     }
@@ -1003,6 +1014,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
 
             if(apPtr->errorFlag()==0)
             {
+
                 //	Only create collection album if album is not found.
                 if(apPtr->multipleEntriesFlag() && apPtr->albumID==-1)
                 {
@@ -1099,7 +1111,10 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                 //	Set multiple entries flag if collection album
                 if(apPtr->albumPerformerID==variousPerformerPtr->performerID())
                 {
-                    qDebug() << SB_DEBUG_WARNING << "ASSIGNMENT VARIOUS PERFORMER";
+                    qDebug()
+                        << SB_DEBUG_WARNING
+                        << "ASSIGNMENT VARIOUS PERFORMER:"
+                        << apPtr->albumPerformerName;
                     apPtr->variousPerformerFlag=1;
                 }
             }
@@ -1359,7 +1374,7 @@ MusicLibrary::_retrieveCorrectPerformerName(DataAccessLayer* dal, const QString 
     if(_alternativePerformerName2CorrectPerformerName.count()==0)
     {
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
-        QString q="SELECT artist_alternative_name, artist_correct_name FROM ___SQL_SCHEMA_NAME___artist_match";
+        QString q="SELECT artist_alternative_name, artist_correct_name FROM ___SB_SCHEMA_NAME___artist_match";
         dal->customize(q);
         SqlQuery queryList(q,db);
         while(queryList.next())
@@ -1379,16 +1394,25 @@ MusicLibrary::_addAlternativePerformerName(DataAccessLayer *dal, const QString& 
     {
         QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
         QString q=
-            "INSERT INTO ___SQL_SCHEMA_NAME___artist_match "
+            "INSERT INTO ___SB_SCHEMA_NAME___artist_match "
             "( "
                 "artist_alternative_name, "
                 "artist_correct_name "
             ") "
-            "VALUES "
-            "( "
+            "SELECT "
                 "'%1', "
                 "'%2' "
-            ") ";
+            "WHERE "
+                "NOT EXISTS "
+                "("
+                    "SELECT "
+                        "NULL "
+                    "FROM "
+                        "___SB_SCHEMA_NAME___artist_match "
+                    "WHERE "
+                        "artist_alternative_name= '%1' AND "
+                        "artist_correct_name= '%2' "
+                ") ";
         dal->customize(q);
         SqlQuery insert(q,db);
         Q_UNUSED(insert);
