@@ -26,7 +26,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
         errorMsg="SQLite path parameter empty.";
         errorFlag=1;
     }
-    qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
 
     //	2.	Clear if exists
     QFileInfo fi(credentials.sqlitePath);
@@ -42,7 +41,6 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
 			return 0;
         }
     }
-    qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
 
     //	3.	Create actual database
     if(!errorFlag)
@@ -55,13 +53,11 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             errorMsg=QString("Cannot open database at %1").arg(credentials.sqlitePath);
             errorFlag=1;
         }
-        qDebug() << SB_DEBUG_INFO;
 
         if(!errorFlag)
         {
             //	Create schema.
             DataAccessLayer dal(SB_TEMPORARY_CONNECTION_NAME);
-qDebug() << SB_DEBUG_INFO;
 
             QStringList SQL;
 
@@ -80,7 +76,6 @@ qDebug() << SB_DEBUG_INFO;
                 ");\n"
             ));
 
-qDebug() << SB_DEBUG_INFO;
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_rel \n"
@@ -94,9 +89,6 @@ qDebug() << SB_DEBUG_INFO;
             ));
             SQL.append("CREATE INDEX idx_artist_rel_a1 ON artist_rel   (artist1_id); ");
             SQL.append("CREATE INDEX idx_artist_rel_a2 ON artist_rel   (artist2_id); ");
-
-qDebug() << SB_DEBUG_INFO;
-
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE song \n"
@@ -114,9 +106,6 @@ qDebug() << SB_DEBUG_INFO;
             SQL.append("CREATE INDEX idx_song_title ON song (title); ");
             SQL.append("CREATE INDEX idx_song_soundex ON song (soundex); ");
 
-qDebug() << SB_DEBUG_INFO;
-
-
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE lyrics \n"
                 "( \n"
@@ -125,9 +114,6 @@ qDebug() << SB_DEBUG_INFO;
                     "CONSTRAINT fk_lyrics_song_id_song_song_id FOREIGN KEY(song_id) REFERENCES song(song_id) \n"
                 "); \n"
             ));
-
-qDebug() << SB_DEBUG_INFO;
-
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE performance \n"
@@ -144,9 +130,6 @@ qDebug() << SB_DEBUG_INFO;
                     "CONSTRAINT fk_performance_preferred_record_performance_id_record_performance_record_performance_id FOREIGN KEY (preferred_record_performance_id) REFERENCES performance(performance_id) \n"
                 "); \n"
             ));
-
-			qDebug() << SB_DEBUG_INFO;
-
 
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record \n"
@@ -169,8 +152,6 @@ qDebug() << SB_DEBUG_INFO;
             SQL.append("CREATE INDEX idx_record_title ON record (title); ");
             SQL.append("CREATE INDEX idx_record_genre ON record (genre); ");
 
-			qDebug() << SB_DEBUG_INFO;
-
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE record_performance \n"
                 "( \n"
@@ -187,8 +168,6 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
 
-			qDebug() << SB_DEBUG_INFO;
-
             SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE online_performance \n"
                 "( \n"
@@ -200,8 +179,6 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
             SQL.append("CREATE INDEX idx_online_performance_last_play_date ON online_performance (last_play_date); ");
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist \n"
@@ -217,8 +194,6 @@ qDebug() << SB_DEBUG_INFO;
                     "CONSTRAINT cc_playlist_playlist_id_check CHECK ((playlist_id >= 0)) \n"
                 "); \n"
             ));
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE playlist_detail \n"
@@ -242,8 +217,6 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE chart \n"
                 "( \n"
@@ -253,8 +226,6 @@ qDebug() << SB_DEBUG_INFO;
                     "notes        TEXT \n"
                 "); \n"
             ));
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE chart_performance \n"
@@ -269,8 +240,6 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE config_host \n"
                 "( \n"
@@ -279,8 +248,6 @@ qDebug() << SB_DEBUG_INFO;
                     "local_data_path INTEGER NOT NULL \n"
                 "); \n"
             ));
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(QString(
                 "INSERT INTO config_host "
@@ -300,8 +267,6 @@ qDebug() << SB_DEBUG_INFO;
                 .arg(Common::escapeSingleQuotes(musicLibraryPath))
             );
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE configuration \n"
                 "( \n"
@@ -311,16 +276,12 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE genre \n"
                 "( \n"
                     "genrename varchar NOT NULL \n"
                 "); \n"
             ));
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE article \n"
@@ -330,15 +291,11 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
 
             //	Ideally, go thru regular path to have this done.
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___artist (artist_id,name,sort_name) VALUES(0,'VARIOUS ARTISTS','VARIOUS ARTISTS')");
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___record (record_id,artist_id,title,media) VALUES(0,0,'UNKNOWN ALBUM','UNKNOWN ALBUM')");
-
-			qDebug() << SB_DEBUG_INFO;
 
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE greatest_hits_record \n"
@@ -360,8 +317,6 @@ qDebug() << SB_DEBUG_INFO;
             SQL.append("INSERT INTO greatest_hits_record VALUES (9,'Collection')");
             SQL.append("INSERT INTO greatest_hits_record VALUES (10,'The Singles')");
 
-			qDebug() << SB_DEBUG_INFO;
-
 			SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE artist_match \n"
                 "( \n"
@@ -370,15 +325,10 @@ qDebug() << SB_DEBUG_INFO;
                 "); \n"
             ));
             SQL.append("CREATE UNIQUE INDEX ui_artist_match ON artist_match (artist_alternative_name,artist_correct_name);");
-			qDebug() << SB_DEBUG_INFO;
-
 
             //	Reset properties
             PropertiesPtr properties=Context::instance()->properties();
-			qDebug() << SB_DEBUG_INFO;
-
             properties.reset();
-			qDebug() << SB_DEBUG_INFO;
 
             if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
             {
@@ -387,7 +337,6 @@ qDebug() << SB_DEBUG_INFO;
 				qDebug() << SB_DEBUG_ERROR << "Unable to create database";
             }
 
-			qDebug() << SB_DEBUG_INFO;
             properties=Properties::createProperties(&dal);
             properties->debugShow("createDatabase");
             properties->setMusicLibraryDirectory(musicLibraryPath);
@@ -397,21 +346,17 @@ qDebug() << SB_DEBUG_INFO;
 
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);
 
-        qDebug() << SB_DEBUG_INFO << errorFlag << errorMsg;
         if(!errorFlag)
         {
             //	Open the database system wide
             DBManager* dbm=Context::instance()->dbManager();
             dbm->openDatabase(credentials);
-            qDebug() << SB_DEBUG_INFO << dbm->databaseOpened();
         }
-        qDebug() << SB_DEBUG_INFO;
     }
     if(errorFlag)
     {
         SBMessageBox::databaseErrorMessageBox("Something happened...!",errorMsg);
         qDebug() << SB_DEBUG_ERROR << errorMsg;
     }
-    qDebug() << SB_DEBUG_INFO << errorFlag;
     return !errorFlag;
 }

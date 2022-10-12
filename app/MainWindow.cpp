@@ -29,7 +29,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 void
 MainWindow::keyPressEvent(QKeyEvent * event)
 {
-    qDebug() << SB_DEBUG_INFO;
     Context::instance()->navigator()->keyPressEvent(event);
     QMainWindow::keyPressEvent(event);
 }
@@ -238,7 +237,6 @@ void MainWindow::redo()
 
 void MainWindow::cut()
 {
-    qDebug() << SB_DEBUG_INFO;
     //ininfoLabel->setText(tr("Invoked <b>Edit|Cut</b>"));
 }
 

@@ -15,7 +15,6 @@ SBSortFilterProxyQueuedSongsModel::sort(int column, Qt::SortOrder order)
 {
     if(column==SBModelQueuedSongs::sb_column_displayplaylistpositionid)
     {
-        qDebug() << SB_DEBUG_INFO;
         column=SBModelQueuedSongs::sb_column_playlistpositionid;
     }
     QSortFilterProxyModel::sort(column,order);
@@ -49,7 +48,6 @@ SBSortFilterProxyQueuedSongsModel::mimeData(const QModelIndexList &indexes) cons
             n.append(mapToSource(idx));
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return sourceModel()->mimeData(n);
 }
 

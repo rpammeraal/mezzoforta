@@ -85,8 +85,8 @@ DatabaseSelector::_determineAvailableDBTypes()
     {
         _postgresDriverAvailable=1;
     }
-    qDebug() << SB_DEBUG_INFO << "QSQLITE" << _sqliteDriverAvailable;
-    qDebug() << SB_DEBUG_INFO << "QPSQL" << _postgresDriverAvailable;
+    qDebug() << SB_DEBUG_WARNING << "QSQLITE" << _sqliteDriverAvailable;
+    qDebug() << SB_DEBUG_WARNING << "QPSQL" << _postgresDriverAvailable;
 }
 
 void
@@ -119,7 +119,6 @@ DatabaseSelector::_browseFile()
 void
 DatabaseSelector::_cancel()
 {
-    qDebug() << SB_DEBUG_INFO;
     _cancelFlag=1;
 }
 

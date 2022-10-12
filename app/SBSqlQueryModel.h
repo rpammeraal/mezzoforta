@@ -4,7 +4,6 @@
 #include <QSqlQueryModel>
 #include <QStringList>
 
-#include "Common.h"
 #include "SBModel.h"
 
 class DataAccessLayer;
@@ -37,7 +36,7 @@ public:
     //	Native methods
     SBKey determineKey(const QModelIndex &idx) const;
     inline int getSelectedColumn() const { return _selectedColumn; }
-    void handleSQLError() const;
+    void handleSQLError(const QString& sqlQuery) const;
     void setDragableColumns(const QList<bool>& list);
     void setSelectedColumn(int c);
 

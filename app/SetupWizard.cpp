@@ -38,7 +38,6 @@ SetupWizard::start(bool firstRunFlag)
         }
 
         //	Select between new or open existing database.
-        qDebug() << SB_DEBUG_INFO << firstRunFlag;
         QDialogButtonBox* newOpenDBB=new QDialogButtonBox();
 
         QPushButton* newButton=new QPushButton(tr("&New"));
@@ -71,7 +70,6 @@ SetupWizard::start(bool firstRunFlag)
 
     if(!firstRunFlag || (_newOrOpenDialog!=NULL && _newOrOpenDialog->result()))
     {
-        qDebug() << SB_DEBUG_INFO << _createNewDBFlag << _openExistingDBFlag;
         if(_createNewDBFlag)
         {
             //	Select destinaton for database
@@ -115,7 +113,6 @@ SetupWizard::start(bool firstRunFlag)
                 if(fdSelectMusicLibrary.exec())
                 {
                     musicLibraryPath=fdSelectMusicLibrary.selectedFiles().first();
-                    qDebug() << SB_DEBUG_INFO << musicLibraryPath;
                 }
 
                 //	Create database
@@ -125,7 +122,6 @@ SetupWizard::start(bool firstRunFlag)
                 dc.sqlitePath=databasePath;
 
                 successFlag=DataAccessLayerSQLite::createDatabase(dc,musicLibraryPath);
-                qDebug() << SB_DEBUG_INFO << successFlag;
                 if(successFlag)
                 {
                     DBManager* dm=Context::instance()->dbManager();
@@ -143,7 +139,6 @@ SetupWizard::start(bool firstRunFlag)
                     properties->setConfigValue(
                         Configuration::sb_performer_album_directory_structure_flag,
                         keyPressed==QMessageBox::Yes?"1":"0");
-                    qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_performer_album_directory_structure_flag);
 
                     //	Start import
                     properties->setConfigValue(Configuration::sb_run_import_on_startup_flag,"1");
@@ -160,11 +155,9 @@ SetupWizard::start(bool firstRunFlag)
             //	Open database
             DBManager* dbm=Context::instance()->dbManager();
             dbm->userOpenDatabase();
-            qDebug() << SB_DEBUG_INFO;
         }
         successFlag=1;
     }
-    qDebug() << SB_DEBUG_INFO << successFlag;
     return successFlag;
 }
 

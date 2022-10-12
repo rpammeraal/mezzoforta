@@ -9,6 +9,7 @@
 #include "Common.h"
 #include "Context.h"
 #include "ProgressDialog.h"
+#include "SqlQuery.h"
 
 //	Singleton
 int dalCOUNT;
@@ -88,6 +89,9 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& progres
 
             qDebug().noquote() << q << ";";
 
+            //	We want to use the native class, as our SqlQuery class
+            //	aborts upon the first error. In our current scenario
+            //	we're handling all errors.
             QSqlQuery runQuery(q,db);
 
             QSqlError e=runQuery.lastError();
@@ -193,7 +197,7 @@ DataAccessLayer::createRestorePoint() const
         if(q.length()>0)
         {
             this->customize(q);
-            QSqlQuery qID(q,db);
+            SqlQuery qID(q,db);
             qID.next();
             ID.append(qID.value(0).toString());
         }
@@ -427,7 +431,7 @@ DataAccessLayer::retrieveLastInsertedKey() const
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
     QString q=retrieveLastInsertedKeySQL();
     this->customize(q);
-    QSqlQuery qID(q,db);
+    SqlQuery qID(q,db);
     qID.next();
     return qID.value(0).toInt();
 }

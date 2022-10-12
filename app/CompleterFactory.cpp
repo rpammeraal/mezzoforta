@@ -76,7 +76,6 @@ CompleterFactory::getCompleterAll()
     QString query=queryList.join(" UNION ");
     query.append(" ORDER BY 1");
 
-    qDebug() << SB_DEBUG_INFO << query;
     return _createCompleter(query);
 }
 
@@ -141,7 +140,6 @@ CompleterFactory::_createCompleter(QString& query)
     //	Prep query
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
 
     //	Get data
     QSqlQueryModel* sqm = new QSqlQueryModel();

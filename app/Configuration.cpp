@@ -2,6 +2,7 @@
 
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SqlQuery.h"
 
 static QString enumValues[]={"SB_VERSION","SB_WHATEVER"};
 
@@ -37,9 +38,6 @@ Configuration::setConfigValue(sb_config_keyword keyword, const QString &value)
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     QString q;
 
-    this->debugShow("setConfigValue:40");
-    qDebug() << SB_DEBUG_INFO << keyword << _configuration.contains(keyword);
-
     if(!_configuration.contains(keyword))
     {
         //	Insert in db
@@ -74,8 +72,7 @@ Configuration::setConfigValue(sb_config_keyword keyword, const QString &value)
         ;
     }
 
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery upsert(q,db);
+    SqlQuery upsert(q,db);
     Q_UNUSED(upsert);
 
     _configuration[keyword]=value;
@@ -110,7 +107,6 @@ Configuration::debugShow(const QString &title)
 void
 Configuration::doInit()
 {
-    qDebug() << SB_DEBUG_INFO;
     _enumToKeyword[sb_version]=QString("version");
     _enumToKeyword[sb_default_schema]=QString("default_schema");
     _enumToKeyword[sb_various_performer_id]=QString("various_performer_id");
@@ -146,8 +142,7 @@ Configuration::doInit()
 
     //	Load configuration from table
     QString q="SELECT keyword,value FROM configuration";
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery qID(q,db);
+    SqlQuery qID(q,db);
     while(qID.next())
     {
         QString keyword=qID.value(0).toString();
@@ -161,7 +156,6 @@ Configuration::doInit()
         }
     }
 
-    this->debugShow("doInit:161");
 
     //	Find out if configuration table lacks any config value
     QMapIterator<sb_config_keyword,bool> isConfiguredIT(isConfigured);
@@ -172,12 +166,9 @@ Configuration::doInit()
         if(isConfiguredIT.value()==0)
         {
             sb_config_keyword key=isConfiguredIT.key();
-            qDebug() << SB_DEBUG_INFO << key << _default[key];
             this->setConfigValue(key,_default[key]);
         }
     }
-
-
 }
 
 ///	Private methods

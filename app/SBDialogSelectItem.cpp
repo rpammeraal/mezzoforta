@@ -3,7 +3,6 @@
 #include <QLabel>
 #include <QPropertyAnimation>
 #include <QRadioButton>
-#include <QSqlQueryModel>
 
 #include "CacheManager.h"
 #include "Common.h"

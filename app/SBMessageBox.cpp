@@ -1,6 +1,8 @@
 #include "SBMessageBox.h"
 #include <QDebug>
+#include <QApplication>
 
+#include "Common.h"
 
 ///	Public
 int
@@ -37,13 +39,16 @@ SBMessageBox::databaseErrorMessageBox(const QString& sql,const QSqlError& e)
 {
     if(e.isValid())
     {
-        createSBMessageBox(sql,
-                           e.text(),
+        qDebug() << SB_DEBUG_ERROR << sql;
+        createSBMessageBox("Database Error",
+                           sql + "\n\n" +  e.text(),
                            QMessageBox::Critical,
                            QMessageBox::Abort,
                            QMessageBox::Abort,
                            QMessageBox::Abort,
                            1);
+        QCoreApplication::exit(-1);
+        exit(-1);
     }
 }
 

@@ -10,7 +10,6 @@
 ///	Public methods
 DBManager::DBManager()
 {
-    qDebug() << SB_DEBUG_INFO;
     _init();
 
 }
@@ -73,7 +72,6 @@ DBManager::debugShow(const struct DatabaseCredentials &dc,const QString& title)
 bool
 DBManager::openDatabase(const struct DatabaseCredentials &dc)
 {
-    qDebug() << SB_DEBUG_INFO;
     bool rc=0;
     struct DatabaseCredentials credentials=dc;
 
@@ -93,7 +91,6 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
             break;
     }
 
-    qDebug() << SB_DEBUG_INFO << rc;
     if(rc==1)
     {
          _databaseOpenFlag=1;
@@ -111,10 +108,8 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         PropertiesPtr properties=Properties::createProperties(this->dataAccessLayer());
         Context::instance()->setProperties(properties);
 
-        qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_version);
         if(properties->configValue(Configuration::sb_version)!=QString("20180101"))
         {
-            qDebug() << SB_DEBUG_INFO << properties->configValue(Configuration::sb_version);
             rc=0;
             _databaseOpenFlag=0;
             _destroyDAL();
@@ -123,7 +118,6 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
         }
         else
         {
-			qDebug() << SB_DEBUG_INFO;
             _databaseOpenFlag=1;
         }
     }
@@ -140,7 +134,6 @@ DBManager::openDatabase(const struct DatabaseCredentials &dc)
 bool
 DBManager::openDefaultDatabase()
 {
-    qDebug() << SB_DEBUG_INFO;
     QSettings settings;
     _dc.databaseType=    static_cast<DatabaseType>(settings.value(SB_DATABASE_TYPE).toInt());
     _dc.databaseName=    settings.value(SB_DATABASE_NAME).toString();
@@ -167,8 +160,7 @@ DBManager::openDefaultDatabase()
 bool
 DBManager::userOpenDatabase()
 {
-    qDebug() << SB_DEBUG_INFO;
-    debugShow(_dc,"Current");
+    //	debugShow(_dc,"Current");
     struct DatabaseCredentials currentDC=_dc;	//	Preserve current;
     int openFlag=0;
 
@@ -214,7 +206,6 @@ DBManager::doInit()
 void
 DBManager::_createDAL()
 {
-    qDebug() << SB_DEBUG_INFO << _databaseOpenFlag;
     if(_databaseOpenFlag)
     {
         _destroyDAL();
@@ -247,7 +238,6 @@ DBManager::_destroyDAL()
 void
 DBManager::_init()
 {
-    qDebug() << SB_DEBUG_INFO;
     _dal=NULL;
     _databaseOpenFlag=0;
     _errorString=QString();
@@ -257,8 +247,7 @@ DBManager::_init()
 bool
 DBManager::_openPostgresql(struct DatabaseCredentials& dc)
 {
-    qDebug() << SB_DEBUG_INFO;
-    debugShow(dc,"openPostgres");
+    //debugShow(dc,"openPostgres");
 
     //	Open database with temporary database name
     QSqlDatabase tmpdb = QSqlDatabase::addDatabase("QPSQL",SB_TEMPORARY_CONNECTION_NAME);
@@ -275,7 +264,6 @@ DBManager::_openPostgresql(struct DatabaseCredentials& dc)
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);
         _errorFlag=1;
         _errorString=tmpdb.lastError().text();
-        qDebug() << SB_DEBUG_INFO;
         return 0;
     }
 
@@ -310,7 +298,6 @@ DBManager::_openPostgresql(struct DatabaseCredentials& dc)
 bool
 DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
 {
-    qDebug() << SB_DEBUG_INFO;
     debugShow(dc,"openSqlite");
 
     QFileInfo f(dc.sqlitePath);
@@ -321,7 +308,6 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
         return 0;
     }
 
-    qDebug() << SB_DEBUG_INFO;
     if(QSqlDatabase::contains(SB_TEMPORARY_CONNECTION_NAME))
     {
         {
@@ -331,12 +317,10 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
         }
         QSqlDatabase::removeDatabase(SB_TEMPORARY_CONNECTION_NAME);
     }
-    qDebug() << SB_DEBUG_INFO;
 
     //	Open database with temporary database name
     QSqlDatabase tmpdb = QSqlDatabase::addDatabase("QSQLITE",SB_TEMPORARY_CONNECTION_NAME);
     tmpdb.setDatabaseName(dc.sqlitePath);
-    qDebug() << SB_DEBUG_INFO;
 
     //	Open database
     if (!tmpdb.open())
@@ -348,12 +332,10 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
         qDebug() << SB_DEBUG_ERROR << _errorString;
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO;
 
     //	Opening proposed was successful, now close current
     if(QSqlDatabase::contains(SB_DEFAULT_CONNECTION_NAME))
     {
-    qDebug() << SB_DEBUG_INFO;
         {
             QSqlDatabase currentlyOpen=QSqlDatabase::database(SB_DEFAULT_CONNECTION_NAME);
             currentlyOpen.commit();
@@ -361,12 +343,10 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
         }
         QSqlDatabase::removeDatabase(SB_DEFAULT_CONNECTION_NAME);
     }
-    qDebug() << SB_DEBUG_INFO;
 
     //	Clone previously opened database to current
     QSqlDatabase db=QSqlDatabase::cloneDatabase(tmpdb,SB_DEFAULT_CONNECTION_NAME);
     Q_UNUSED(db);
-    qDebug() << SB_DEBUG_INFO;
 
     //	Now close tmp
     if(QSqlDatabase::contains(SB_TEMPORARY_CONNECTION_NAME))
@@ -383,14 +363,12 @@ DBManager::_openSqliteDB(struct DatabaseCredentials& dc)
     //dc.databaseName=f.baseName();
     dc.databaseName=f.absoluteFilePath();
 
-    qDebug() << SB_DEBUG_INFO << "Success";
     return 1;
 }
 
 void
 DBManager::_updateDatabaseCredentials(const struct DatabaseCredentials &dc)
 {
-    qDebug() << SB_DEBUG_INFO;
     QSettings settings;
     settings.setValue(SB_DATABASE_TYPE,      dc.databaseType);
     settings.setValue(SB_DATABASE_NAME,      dc.databaseName);

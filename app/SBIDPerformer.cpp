@@ -11,6 +11,7 @@
 #include "SBIDOnlinePerformance.h"
 #include "SBModelQueuedSongs.h"
 #include "SBTableModel.h"
+#include "SqlQuery.h"
 
 SBIDPerformer::SBIDPerformer(const SBIDPerformer &c):SBIDBase(c)
 {
@@ -139,7 +140,6 @@ SBTableModel*
 SBIDPerformer::charts() const
 {
     SBTableModel* tm=new SBTableModel();
-    qDebug() << SB_DEBUG_INFO;
     QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
 
     tm->populateChartsByItemType(SBKey::Performer,list);
@@ -239,7 +239,7 @@ SBIDPerformer::updateSoundexFields()
             "s.name "
     );
 
-    QSqlQuery q1(db);
+    SqlQuery q1(db);
     q1.exec(dal->customize(q));
 
     QString title;
@@ -263,7 +263,7 @@ SBIDPerformer::updateSoundexFields()
         ;
         dal->customize(q);
 
-        QSqlQuery q2(q,db);
+        SqlQuery q2(q,db);
         q2.exec();
     }
 }
@@ -504,7 +504,7 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
         int maxNum=1;
         q=QString("SELECT name FROM ___SB_SCHEMA_NAME___artist WHERE name %1 \"New Performer%\"").arg(dal->getILike());
         dal->customize(q);
-        QSqlQuery qName(q,db);
+        SqlQuery qName(q,db);
 
         while(qName.next())
         {
@@ -546,8 +546,7 @@ SBIDPerformer::createInDB(Common::sb_parameters& p)
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -826,8 +825,6 @@ SBIDPerformer::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE a.artist_id=%1").arg(key.itemID()):QString())
     ;
-
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -1073,7 +1070,6 @@ SBIDPerformer::_loadRelatedPerformers() const
     ).
         arg(this->performerID())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
 
     QVector<SBKey> relatedPerformerKey;
     SBSqlQueryModel qm(q);
@@ -1125,7 +1121,7 @@ SBIDPerformer::_mergeRelatedPerformer(SBKey fromKey, SBKey toKey)
 QVector<SBIDAlbumPerformancePtr>
 SBIDPerformer::_loadAlbumPerformancesFromDB() const
 {
-    return Preloader::albumPerformances(this->key(),SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
+    return Preloader::albumPerformances(SBIDAlbumPerformance::performancesByPerformer_Preloader(this->performerID()));
 }
 
 QVector<SBIDAlbumPtr>

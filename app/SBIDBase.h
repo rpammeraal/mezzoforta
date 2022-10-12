@@ -71,7 +71,7 @@ public:
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
-    void setMBID(const QString& mbid) { qDebug() << SB_DEBUG_INFO; _sb_mbid=mbid; setChangedFlag(); }
+    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
     void setURL(const QString& url) { _url=url; setChangedFlag(); }	//	CWIPneed to save this in DB instantly
 
     void showDebug(const QString& title) const;

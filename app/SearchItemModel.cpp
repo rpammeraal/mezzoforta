@@ -4,6 +4,7 @@
 #include "DataAccessLayer.h"
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
+#include "SqlQuery.h"
 
 SearchItemModel::SearchItemModel()
 {
@@ -103,14 +104,13 @@ SearchItemModel::populate()
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
 
     //	Start populating model.
     beginResetModel();
     this->clear();
     _entries.clear();
 
-    QSqlQuery queryList(query,db);
+    SqlQuery queryList(query,db);
     QElapsedTimer time; time.start();
     while(queryList.next())
     {

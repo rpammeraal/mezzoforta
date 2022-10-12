@@ -4,6 +4,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBIDAlbumPerformance.h"
+#include "SqlQuery.h"
 
 SBIDSongPerformance::SBIDSongPerformance(const SBIDSongPerformance &p):SBIDBase(p)
 {
@@ -313,7 +314,7 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle
 
     dal->customize(q);
 
-    QSqlQuery select(q,db);
+    SqlQuery select(q,db);
     select.next();
 
     if(!select.isNull(0))
@@ -348,7 +349,7 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformerID(int songID, int perfor
 
     dal->customize(q);
 
-    QSqlQuery select(q,db);
+    SqlQuery select(q,db);
     select.next();
 
     if(!select.isNull(0))
@@ -454,7 +455,7 @@ SBIDSongPerformance::createInDB(Common::sb_parameters& p)
         .arg(p.notes)
     ;
     dal->customize(q);
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate

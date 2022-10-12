@@ -347,9 +347,6 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
         const SBSqlQueryModel* m=dynamic_cast<const SBSqlQueryModel *>(sfpm->sourceModel());
         if(m)
         {
-            qDebug() << ' ';
-            qDebug() << SB_DEBUG_INFO << "######################################################################";
-            qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
             key=m->determineKey(idy);
         }
         else
@@ -357,11 +354,7 @@ SBTab::tableViewCellClicked(const QModelIndex& idx)
             const SBTableModel* m=dynamic_cast<const SBTableModel *>(sfpm->sourceModel());
             if(m)
             {
-                qDebug() << ' ';
-                qDebug() << SB_DEBUG_INFO << "######################################################################";
-                qDebug() << SB_DEBUG_INFO << idy << idy.row() << idy.column();
                 key=m->determineKey(idy);
-                qDebug() << SB_DEBUG_INFO << key;
             }
         }
         Context::instance()->navigator()->openScreen(key);

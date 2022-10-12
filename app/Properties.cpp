@@ -11,6 +11,7 @@
 #include "DataAccessLayer.h"
 #include "Network.h"
 #include "SBMessageBox.h"
+#include "SqlQuery.h"
 
 
 ///	Public methods
@@ -56,7 +57,7 @@ Properties::musicLibraryDirectory(bool interactiveFlag)
             .arg(Common::escapeSingleQuotes(Network::hostName()));
         ;
         dal->customize(q);
-        QSqlQuery query(q,db);
+        SqlQuery query(q,db);
 
         if(query.next())
         {
@@ -169,9 +170,8 @@ Properties::setMusicLibraryDirectory(const QString musicLibraryDirectory)
         ;
 
     }
-    qDebug() << SB_DEBUG_INFO << q;
     dal->customize(q);
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
     query.exec();
     QSqlError err=query.lastError();
 
@@ -267,7 +267,7 @@ Properties::_getHostID() const
         .arg(Common::escapeSingleQuotes(Network::hostName()));
     ;
     dal->customize(q);
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
 
     if(query.next())
     {
@@ -319,7 +319,7 @@ Properties::_setConfigValue(Configuration::sb_config_keyword keyword, const QStr
 //    }
 
 //    qDebug() << SB_DEBUG_INFO << q;
-//    QSqlQuery upsert(q,db);
+//    SqlQuery upsert(q,db);
 //    Q_UNUSED(upsert);
 
 //    _configuration[keyword]=value;

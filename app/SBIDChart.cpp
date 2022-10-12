@@ -13,6 +13,7 @@
 #include "SBMessageBox.h"
 #include "SBModelQueuedSongs.h"
 #include "SBTableModel.h"
+#include "SqlQuery.h"
 
 //	Ctors, dtors
 SBIDChart::SBIDChart(const SBIDChart& c):SBIDBase(c)
@@ -155,7 +156,6 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
     }
     if(positionColumn<0 || performerNameColumn<0 || songTitleColumn<0 )
     {
-        qDebug() << SB_DEBUG_INFO << positionColumn << performerNameColumn << songTitleColumn;
         SBMessageBox::createSBMessageBox("Incomplete Header","Header should have 'position','performer' and 'song' columns.",QMessageBox::Critical, QMessageBox::Ok, QMessageBox::Ok, QMessageBox::Ok);
         return 0;
     }
@@ -173,14 +173,12 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
         e.chartPosition=line.at(positionColumn).toInt();
         e.year=this->chartEndingDate().year();
 
-        qDebug() << SB_DEBUG_INFO << e.chartPosition << e.songTitle << e.songPerformerName << e.year;
         chartContents.append(std::make_shared<MusicLibrary::MLentity>(e));
     }
 
     MusicLibrary ml;
     QHash<QString,MusicLibrary::MLalbumPathPtr> map;
     ml.validateEntityList(chartContents,map,MusicLibrary::validation_type_chart);
-    qDebug() << SB_DEBUG_INFO;
 
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Storing Chart",1);
     int progressCurrentValue=0;
@@ -232,7 +230,6 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
             QString performerSong;
             performerSong="Performer '" + ePtr->songPerformerName + "' with song '"+ePtr->songTitle+'"';
             errors[performerSong]=ePtr->errorMsg;
-            qDebug() << SB_DEBUG_INFO << ePtr->errorMsg;
         }
 
         if(errors.count())
@@ -346,8 +343,7 @@ SBIDChart::createInDB(Common::sb_parameters& p)
         int maxNum=0;
         q=QString("SELECT name FROM ___SB_SCHEMA_NAME___chart WHERE name %1 \"New Chart%\"").arg(dal->getILike());
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery qName(q,db);
+        SqlQuery qName(q,db);
 
         while(qName.next())
         {
@@ -383,8 +379,7 @@ SBIDChart::createInDB(Common::sb_parameters& p)
         .arg(p.notes)
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -441,14 +436,12 @@ SBIDChart::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE p.chart_id=%1").arg(key.itemID()):QString())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
 void
 SBIDChart::setDeletedFlag()
 {
-    qDebug() << SB_DEBUG_INFO;
     //	Chart to be removed -- remove each individual chartPerformance
     SBIDBase::setDeletedFlag();
     this->_truncate();
@@ -458,7 +451,6 @@ QStringList
 SBIDChart::updateSQL(const Common::db_change db_change) const
 {
     QStringList SQL;
-    qDebug() << SB_DEBUG_INFO << changedFlag() << db_change;
     if(deletedFlag() && db_change==Common::db_delete)
     {
         SQL.append(QString

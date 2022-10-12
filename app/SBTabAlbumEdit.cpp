@@ -307,8 +307,8 @@ public:
                 {
                     row+="|<NULL>";
                 }
+                qDebug() << SB_DEBUG_INFO << row;
             }
-            qDebug() << SB_DEBUG_INFO << row;
         }
     }
 
@@ -791,7 +791,6 @@ SBTabAlbumEdit::save() const
     QString editAlbumPerformerName=mw->ui.albumEditPerformer->text().trimmed();
     int editAlbumYear=mw->ui.albumEditYear->text().toInt();
 
-    qDebug() << SB_DEBUG_INFO << editAlbumTitle;
     if(Common::removeAccents(Common::simplified(editAlbumTitle))!=Common::removeAccents(Common::simplified(orgAlbumPtr->albumTitle())))
     {
         albumTitleChangedFlag=1;
@@ -907,7 +906,6 @@ SBTabAlbumEdit::save() const
         MusicLibrary::MLentityPtr entityPtr=std::make_shared<MusicLibrary::MLentity>(editedSong);
         songList.append(entityPtr);
     }
-    qDebug() << SB_DEBUG_INFO << songList.count();
 
     //	Add header data
     QHash<QString,MusicLibrary::MLalbumPathPtr> directory2AlbumPathMap;	//	album path map
@@ -930,6 +928,7 @@ SBTabAlbumEdit::save() const
         directory2AlbumPathMap[QString("current")]=albumPathPtr;
     }
 
+	if(0)
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "PRIOR TO VALIDATION" << songList.count();
@@ -963,7 +962,7 @@ SBTabAlbumEdit::save() const
         return;
     }
 
-    if(1)
+    if(0)
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "AFTER VALIDATION";
@@ -1004,11 +1003,9 @@ SBTabAlbumEdit::save() const
     //		a.	find header record
     MusicLibrary::MLalbumPathPtr apPtr;
     QHashIterator<QString,MusicLibrary::MLalbumPathPtr> d2apmIT(directory2AlbumPathMap);
-    qDebug() << SB_DEBUG_INFO << directory2AlbumPathMap.count();
     if(d2apmIT.hasNext())
     {
         d2apmIT.next();
-        qDebug() << SB_DEBUG_INFO << d2apmIT.key();
         apPtr=d2apmIT.value();
         SB_RETURN_VOID_IF_NULL(apPtr);
     }
@@ -1028,35 +1025,14 @@ SBTabAlbumEdit::save() const
     while(slIT.hasNext())
     {
         MusicLibrary::MLentityPtr ePtr=slIT.next();
-        qDebug() << SB_DEBUG_INFO
-                 << ePtr->albumPosition
-                 << ePtr->orgAlbumPosition
-                 << ePtr->albumPerformanceID
-                 << "processing"
-                 << ePtr->songTitle
-        ;
-
         SBIDAlbumPerformancePtr apPtr=SBIDAlbumPerformance::retrieveAlbumPerformance(ePtr->albumPerformanceID);
         if(apPtr)
         {
             if(ePtr->albumPosition!=ePtr->orgAlbumPosition)
             {
                 //	assign new album position
-                qDebug() << SB_DEBUG_INFO
-                         << ePtr->albumPosition
-                         << ePtr->orgAlbumPosition
-                         << apPtr->albumPerformanceID()
-                         << "assigning pos " << ePtr->albumPosition
-                         << "to" << ePtr->songTitle
-                ;
                 apPtr->setAlbumPosition(ePtr->albumPosition);
-
-                qDebug() << SB_DEBUG_INFO
-                         << apPtr->albumPerformanceID()
-                         << apPtr->albumPosition()
-                ;
             }
-            qDebug() << SB_DEBUG_INFO << ePtr->notes << apPtr->notes();
             if(ePtr->notes!=apPtr->notes())
             {
                 apPtr->setNotes(ePtr->notes);
@@ -1083,7 +1059,6 @@ SBTabAlbumEdit::save() const
     {
         newAlbumPtr=SBIDAlbum::retrieveAlbum(apPtr->albumID);
         //	Merge.
-        qDebug() << SB_DEBUG_INFO << "MERGÉÉ!";
         SBIDAlbumPtr fromPtr=orgAlbumPtr;
         amgr->merge(fromPtr,newAlbumPtr);
         mergedFlag=1;
@@ -1094,7 +1069,6 @@ SBTabAlbumEdit::save() const
 
     if(successFlag)
     {
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
 
@@ -1106,12 +1080,10 @@ SBTabAlbumEdit::save() const
         Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergedFlag)
         {
@@ -1123,25 +1095,21 @@ SBTabAlbumEdit::save() const
             st->replace(from,to);
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergedFlag || albumTitleChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO;
         dal->restore(restorePoint);
     }
 
     //	G.	Close screen
-    qDebug() << SB_DEBUG_INFO << successFlag;
     Context::instance()->navigator()->closeCurrentTab(1);
 }
 
@@ -1149,7 +1117,6 @@ SBTabAlbumEdit::save() const
 void
 SBTabAlbumEdit::setEditFlag()
 {
-    qDebug() << SB_DEBUG_INFO;
     _hasChanges=1;
 }
 
@@ -1265,7 +1232,6 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     mw->ui.albumEditTitle->setText(aPtr->albumTitle());
     mw->ui.albumEditPerformer->setText(aPtr->albumPerformerName());
     mw->ui.albumEditYear->setText(QString("%1").arg(aPtr->albumYear()));
-    qDebug() << SB_DEBUG_INFO << aPtr->albumYear();
 
     //	Songs
 

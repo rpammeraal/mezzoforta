@@ -18,8 +18,8 @@ MusicImportResult::MusicImportResult(const QMap<QString,QString> errors, QWidget
 
 
     QMapIterator<QString,QString> eIT(errors);
-    qDebug() << SB_DEBUG_INFO << "*****************************************************************";
-    qDebug() << SB_DEBUG_INFO << errors;
+    qDebug() << SB_DEBUG_ERROR << "*****************************************************************";
+    qDebug() << SB_DEBUG_ERROR << errors;
     int index=0;
     while(eIT.hasNext())
     {

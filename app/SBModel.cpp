@@ -37,7 +37,6 @@ SBModel::_canDropMimeData(const QMimeData* data, Qt::DropAction action, int row,
 SBKey
 SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) const
 {
-    qDebug() << SB_DEBUG_INFO;
     //	Two types of how data can be dragged and dropped.
     //	-	non-positional: each row contains one item (this is the default). Only this item can be dragged
     //	-	positional: a row contains multiple items that can be dragged -- allSongs is one example. In
@@ -72,7 +71,6 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             if(header=="sb_item_key")
             {
                 key=SBKey(v.toByteArray());
-                qDebug() << SB_DEBUG_INFO << key;
                 return key;
             }
             if(header=="sb_item_type" || header=="sb_main_item")
@@ -102,7 +100,6 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             if((!key.validFlag()) && (itemType!=SBKey::Invalid && itemID>=0))
             {
                 key=SBKey(itemType,itemID);
-                qDebug() << SB_DEBUG_INFO << key;
                 return key;
             }
         }
@@ -118,7 +115,6 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
             {
                 n=aim->index(idx.row(),i-1);
                 QString s=aim->data(n, Qt::DisplayRole).toString();
-                qDebug() << SB_DEBUG_INFO << i << s;
             }
         }
         n=aim->index(idx.row(),idx.column()-1);
@@ -127,7 +123,6 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
         if((!key.validFlag()) && ba.length())
         {
             key=SBKey(ba);
-                qDebug() << SB_DEBUG_INFO << key;
             return key;
         }
     }
@@ -160,11 +155,9 @@ SBModel::_determineKey(const QAbstractItemModel* aim, const QModelIndex &idx) co
         if((!key.validFlag()) && (itemType!=SBKey::Invalid && itemID>=0))
         {
             key=SBKey(itemType,itemID);
-                qDebug() << SB_DEBUG_INFO << key;
             return key;
         }
     }
-                qDebug() << SB_DEBUG_INFO << key;
     return key;
 }
 

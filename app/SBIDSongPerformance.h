@@ -85,7 +85,7 @@ protected:
     friend class SBIDAlbum;
     friend class SBIDAlbumPerformance;
     friend class SBIDSong;
-    inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { if(_preferredAlbumPerformanceID!=preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); qDebug() << SB_DEBUG_INFO << "CHANGED" << this->ID() << _preferredAlbumPerformanceID; } }
+    inline void setPreferredAlbumPerformanceID(int preferredAlbumPerformanceID) { if(_preferredAlbumPerformanceID!=preferredAlbumPerformanceID) { _preferredAlbumPerformanceID=preferredAlbumPerformanceID; setChangedFlag(); } }
     void setSongID(int songID);
 
 private:
