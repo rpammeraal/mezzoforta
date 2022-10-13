@@ -6,7 +6,6 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
-#include "SBMessageBox.h"
 
 
 SBSqlQueryModel::SBSqlQueryModel()
@@ -149,11 +148,7 @@ SBSqlQueryModel::determineKey(const QModelIndex &idx) const
 void
 SBSqlQueryModel::handleSQLError(const QString& query) const
 {
-    QSqlError e=this->lastError();
-    if(e.isValid()==1 || e.type()!=QSqlError::NoError)
-    {
-        SBMessageBox::databaseErrorMessageBox(query,e);
-    }
+    Common::handleSQLError(query,this->lastError());
 }
 
 void

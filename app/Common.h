@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QThread>
 #include <QTime>
+#include <QSqlError>
 
 class QString;
 class QSqlRecord;
@@ -175,6 +176,7 @@ public:
     static QString soundex(const QString& s);
     static void toTitleCase(QString &);
     static char ParseChar(QChar c);
+    static void handleSQLError(const QString& query, const QSqlError& e);
 
 private:
 

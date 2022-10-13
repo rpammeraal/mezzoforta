@@ -8,7 +8,9 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBMessageBox.h"
 #include "SqlQuery.h"
+
 
 QString diacriticLetters_;
 QStringList noDiacriticLetters_;
@@ -615,6 +617,17 @@ Common::ParseChar(QChar c)
         return '5';
     }
     return '6';
+}
+
+
+void
+Common::handleSQLError(const QString& query, const QSqlError& e)
+{
+    if(e.isValid()==1 || e.type()!=QSqlError::NoError)
+    {
+        SBMessageBox::databaseErrorMessageBox(query,e);
+    }
+
 }
 
 void
