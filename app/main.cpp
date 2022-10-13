@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
 #ifdef Q_OS_OSX
-    qDebug() << SB_DEBUG_INFO << "Calling OSXSetupSleepCallback";
     OSXSetupSleepCallback();
 #endif //	Q_OS_OSX
 
@@ -78,8 +77,6 @@ int main(int argc, char *argv[])
     //	Set up types
     //qRegisterMetaType<SBIDBase>();
 
-    qDebug() << SB_DEBUG_INFO << app.platformName();
-
     //	Set up system
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
@@ -93,7 +90,6 @@ int main(int argc, char *argv[])
         d.exec();
     }
 #ifdef Q_OS_WIN
-	qDebug() << SB_DEBUG_INFO << endl;
 #endif
     return 0;
 }

@@ -71,7 +71,6 @@ Controller::refreshModels()
 void
 Controller::preferences()
 {
-    qDebug() << SB_DEBUG_INFO << "preferences";
     Preferences p;
 }
 
@@ -192,12 +191,10 @@ Controller::logSongPlayedHistory(bool radioModeFlag,SBKey onlinePerformanceKey)
 bool
 Controller::openMainWindow(bool appStartUpFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "Creating cache manager";
     CacheManager* cm=new CacheManager();
     Context::instance()->setCacheManager(cm);
 
     //	Instantiate DatabaseSelector, check if database could be opened.
-    qDebug() << SB_DEBUG_INFO << "Opening database";
     DBManager* dbm=Context::instance()->dbManager();
     if(appStartUpFlag)
     {
@@ -205,8 +202,6 @@ Controller::openMainWindow(bool appStartUpFlag)
         if(!openedFlag)
         {
             //	Start wizard
-            qDebug() << SB_DEBUG_INFO << "start wizard";
-
             //	1.	Open 'Hi!' dialog
             SetupWizard sw;
             sw.start();
@@ -368,9 +363,9 @@ Controller::setupUI()
 
     Preloader::loadAll();
 
-    qDebug() << SB_DEBUG_INFO << "playground start";
 
     /*
+    qDebug() << SB_DEBUG_INFO << "playground start";
     {
         int max=100;
         quint64 smallest=max;
@@ -436,7 +431,6 @@ Controller::setupUI()
                         {
                             c=QChar(97+index-36);
                         }
-                        qDebug() << SB_DEBUG_INFO << index << c.unicode() << c;
                         indexCovered.replace(i,1,c);
                         found=1;
                     }
@@ -445,7 +439,6 @@ Controller::setupUI()
             }
             index++;
         }
-        qDebug() << SB_DEBUG_INFO << indexCovered;
     }
 
     /*
@@ -473,16 +466,20 @@ Controller::setupUI()
     qDebug() << SB_DEBUG_INFO << maxRandom;
     */
 
+	/*
     QString t;
     t="Goo Goo Dolls";
     qDebug() << SB_DEBUG_INFO << Common::removeNonAlphanumericIncludingSpaces(t);
     t="Goo Goo Dolls!";
     qDebug() << SB_DEBUG_INFO << Common::removeNonAlphanumericIncludingSpaces(t);
+	*/
 
+	/*
     t=Network::hostName();
     qDebug() << SB_DEBUG_INFO << t;
 
     qDebug() << SB_DEBUG_INFO << "playground end";
+	*/
     return;
 }
 
@@ -558,7 +555,7 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         }
         else
         {
-            qDebug() << SB_DEBUG_INFO << "default:objectName=" << (*it)->objectName();
+            qDebug() << SB_DEBUG_WARNING << "default:objectName=" << (*it)->objectName();
         }
     }
 }

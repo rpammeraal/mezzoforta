@@ -55,7 +55,6 @@ SBTabChooser::showContextMenuView(const QPoint& p)
     //	title etc not populated
     if(selected.key.validFlag())
     {
-        qDebug() << SB_DEBUG_INFO << selected.key;
         _lastClickedIndex=idx;
 
         QPoint gp = subtabID2TableView(-1)->mapToGlobal(p);

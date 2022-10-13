@@ -8,6 +8,7 @@
 #include "Preloader.h"
 #include "SBDialogSelectItem.h"
 #include "SBTableModel.h"
+#include "SqlQuery.h"
 
 ///	Ctors
 SBIDSong::SBIDSong(SBIDSong &c):SBIDBase(c)
@@ -221,7 +222,7 @@ SBIDSong::deleteIfOrphanized()
 
     dal->customize(q);
 
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
 
     if(query.next())
     {
@@ -362,7 +363,7 @@ SBIDSong::updateSoundexFields()
             "s.title "
     );
 
-    QSqlQuery q1(db);
+    SqlQuery q1(db);
     q1.exec(dal->customize(q));
 
     QString title;
@@ -385,9 +386,7 @@ SBIDSong::updateSoundexFields()
             .arg(Common::escapeSingleQuotes(title))
         ;
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-
-        QSqlQuery q2(q,db);
+        SqlQuery q2(q,db);
         q2.exec();
     }
 }
@@ -600,8 +599,7 @@ SBIDSong::createInDB(Common::sb_parameters& p)
             .arg(dal->getILike())
         ;
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery qName(q,db);
+        SqlQuery qName(q,db);
 
         while(qName.next())
         {
@@ -635,8 +633,7 @@ SBIDSong::createInDB(Common::sb_parameters& p)
         .arg(Common::soundex(p.songTitle))
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -815,8 +812,6 @@ SBIDSong::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE s.song_id=%1").arg(key.itemID()):QString())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -1025,8 +1020,7 @@ SBIDSong::_loadPlaylistOnlinePerformanceListFromDB() const
         .arg(this->songID())
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery query(db);
+    SqlQuery query(db);
     query.exec(dal->customize(q));
 
     //	Set up progress dialog

@@ -291,7 +291,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     const MainWindow* mw=Context::instance()->mainWindow();
     QList<bool> dragableColumns;
     SBTableModel* tm;
-    qDebug() << SB_DEBUG_INFO;
     SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
     SB_RETURN_IF_NULL(sPtr,ScreenItem());
 
@@ -338,8 +337,6 @@ SBTabSongDetail::_populate(const ScreenItem& si)
     QVector<int> performerList=sPtr->performerIDList();
     QString cs;
     int toDisplay=performerList.count();
-    qDebug() << SB_DEBUG_INFO << toDisplay;
-    qDebug() << SB_DEBUG_INFO << sPtr->songOriginalPerformerName() << sPtr->songOriginalPerformerID();
     if(toDisplay>3)
     {
         toDisplay=3;

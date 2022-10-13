@@ -61,13 +61,11 @@ OSXSleepCallback(void* refCon,io_service_t service,natural_t messageType,void * 
             if(songPlayingFlag)
             {
                 //	Cancel idle sleep
-                qDebug() << SB_DEBUG_INFO << "denying idle sleep";
                 IOCancelPowerChange( root_port, (long)messageArgument );
             }
             else
             {
                 // Allow idle sleep
-                qDebug() << SB_DEBUG_INFO << "allowing idle sleep";
                 IOAllowPowerChange( root_port, (long)messageArgument );
             }
             break;

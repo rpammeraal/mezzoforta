@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     Preferences.cpp \
+    SqlQuery.cpp \
     main.cpp \
     MainWindow.cpp \
     AudioDecoder.cpp \
@@ -180,7 +181,8 @@ HEADERS += \
     ScreenItem.h \
     ScreenStack.h \
     SearchItemModel.h \
-    SetupWizard.h
+    SetupWizard.h \
+    SqlQuery.h
 
 FORMS += \
     DatabaseSelector.ui \

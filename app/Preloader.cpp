@@ -5,6 +5,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBIDAlbumPerformance.h"
+#include "SqlQuery.h"
 
 //	Retrieve map between chart and chart performance based on an SBID object, which is either:
 //	-	chart
@@ -130,8 +131,7 @@ Preloader::chartItems(const SBIDBase& id)
     ;
 
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery queryList(q,db);
+    SqlQuery queryList(q,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -242,12 +242,11 @@ Preloader::chartItems(const SBIDBase& id)
             items[chartPerformancePtr]=chartPtr;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return items;
 }
 
 QVector<SBIDAlbumPerformancePtr>
-Preloader::albumPerformances(SBKey key, QString query)
+Preloader::albumPerformances(QString query)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheAlbumMgr* amgr=cm->albumMgr();
@@ -267,9 +266,7 @@ Preloader::albumPerformances(SBKey key, QString query)
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << key << query;
-
-    QSqlQuery queryList(query,db);
+    SqlQuery queryList(query,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -387,9 +384,7 @@ Preloader::onlinePerformances(QString query)
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-
-    QSqlQuery queryList(query,db);
+    SqlQuery queryList(query,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -505,8 +500,7 @@ Preloader::performanceMap(QString query)
     QStringList albumPerformanceFields; albumPerformanceFields << "20" << "22" <<  "6" << "17" << "18" << "19" << "26";
 
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-    QSqlQuery queryList(query,db);
+    SqlQuery queryList(query,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -757,9 +751,7 @@ Preloader::playlistItems(int playlistID)
     ;
 
     dal->customize(q);
-    QSqlQuery queryList(q,db);
-
-    qDebug() << SB_DEBUG_INFO << q;
+    SqlQuery queryList(q,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -845,7 +837,6 @@ Preloader::playlistItems(int playlistID)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return items;
 }
 
@@ -870,9 +861,7 @@ Preloader::songPerformances(QString query)
     QStringList onlinePerformanceFields; onlinePerformanceFields << "23" << "21" << "20";
 
     dal->customize(query);
-    qDebug() << SB_DEBUG_INFO << query;
-
-    QSqlQuery queryList(query,db);
+    SqlQuery queryList(query,db);
 
     //	Set up progress dialog
 //    int progressCurrentValue=0;
@@ -1007,7 +996,7 @@ Preloader::loadAllPerformers()
 
 ///	Private methods
 SBIDAlbumPtr
-Preloader::_instantiateAlbum(CacheAlbumMgr* amgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateAlbum(CacheAlbumMgr* amgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDAlbumPtr albumPtr=SBIDAlbum::instantiate(_populate(fields,queryList));
     amgr->addItem(albumPtr);
@@ -1015,7 +1004,7 @@ Preloader::_instantiateAlbum(CacheAlbumMgr* amgr, const QStringList& fields, con
 }
 
 SBIDChartPtr
-Preloader::_instantiateChart(CacheChartMgr* cmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateChart(CacheChartMgr* cmgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDChartPtr cPtr=SBIDChart::instantiate(_populate(fields,queryList));
     cmgr->addItem(cPtr);
@@ -1023,7 +1012,7 @@ Preloader::_instantiateChart(CacheChartMgr* cmgr, const QStringList& fields, con
 }
 
 SBIDChartPerformancePtr
-Preloader::_instantiateChartPerformance(CacheChartPerformanceMgr* cpmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateChartPerformance(CacheChartPerformanceMgr* cpmgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDChartPerformancePtr cpPtr=SBIDChartPerformance::instantiate(_populate(fields,queryList));
     cpmgr->addItem(cpPtr);
@@ -1031,7 +1020,7 @@ Preloader::_instantiateChartPerformance(CacheChartPerformanceMgr* cpmgr, const Q
 }
 
 SBIDPlaylistPtr
-Preloader::_instantiatePlaylist(CachePlaylistMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
+Preloader::_instantiatePlaylist(CachePlaylistMgr *pdmgr, const QStringList &fields, const SqlQuery &queryList)
 {
     SBIDPlaylistPtr pPtr=SBIDPlaylist::instantiate(_populate(fields,queryList));
     pdmgr->addItem(pPtr);
@@ -1039,7 +1028,7 @@ Preloader::_instantiatePlaylist(CachePlaylistMgr *pdmgr, const QStringList &fiel
 }
 
 SBIDPlaylistDetailPtr
-Preloader::_instantiatePlaylistDetailInstance(CachePlaylistDetailMgr *pdmgr, const QStringList &fields, const QSqlQuery &queryList)
+Preloader::_instantiatePlaylistDetailInstance(CachePlaylistDetailMgr *pdmgr, const QStringList &fields, const SqlQuery &queryList)
 {
     SBIDPlaylistDetailPtr pdPtr=SBIDPlaylistDetail::instantiate(_populate(fields,queryList));
     pdmgr->addItem(pdPtr);
@@ -1047,7 +1036,7 @@ Preloader::_instantiatePlaylistDetailInstance(CachePlaylistDetailMgr *pdmgr, con
 }
 
 SBIDSongPerformancePtr
-Preloader::_instantiateSongPerformance(CacheSongPerformanceMgr* spmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateSongPerformance(CacheSongPerformanceMgr* spmgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDSongPerformancePtr performancePtr=SBIDSongPerformance::instantiate(_populate(fields,queryList));
     spmgr->addItem(performancePtr);
@@ -1055,7 +1044,7 @@ Preloader::_instantiateSongPerformance(CacheSongPerformanceMgr* spmgr, const QSt
 }
 
 SBIDAlbumPerformancePtr
-Preloader::_instantiateAlbumPerformance(CacheAlbumPerformanceMgr* apmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateAlbumPerformance(CacheAlbumPerformanceMgr* apmgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDAlbumPerformancePtr performancePtr=SBIDAlbumPerformance::instantiate(_populate(fields,queryList));
     apmgr->addItem(performancePtr);
@@ -1063,7 +1052,7 @@ Preloader::_instantiateAlbumPerformance(CacheAlbumPerformanceMgr* apmgr, const Q
 }
 
 SBIDOnlinePerformancePtr
-Preloader::_instantiateOnlinePerformance(CacheOnlinePerformanceMgr* opmgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateOnlinePerformance(CacheOnlinePerformanceMgr* opmgr, const QStringList& fields, const SqlQuery& queryList)
 {
     SBIDOnlinePerformancePtr performancePtr=SBIDOnlinePerformance::instantiate(_populate(fields,queryList));
     opmgr->addItem(performancePtr);
@@ -1071,7 +1060,7 @@ Preloader::_instantiateOnlinePerformance(CacheOnlinePerformanceMgr* opmgr, const
 }
 
 SBIDPerformerPtr
-Preloader::_instantiatePerformer(CachePerformerMgr* pemgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiatePerformer(CachePerformerMgr* pemgr, const QStringList& fields, const SqlQuery& queryList)
 {
     QSqlRecord r;
     QSqlField f;
@@ -1088,7 +1077,7 @@ Preloader::_instantiatePerformer(CachePerformerMgr* pemgr, const QStringList& fi
 }
 
 SBIDSongPtr
-Preloader::_instantiateSong(CacheSongMgr* smgr, const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_instantiateSong(CacheSongMgr* smgr, const QStringList& fields, const SqlQuery& queryList)
 {
     QSqlRecord r;
     QSqlField f;
@@ -1105,7 +1094,7 @@ Preloader::_instantiateSong(CacheSongMgr* smgr, const QStringList& fields, const
 }
 
 QSqlRecord
-Preloader::_populate(const QStringList& fields, const QSqlQuery& queryList)
+Preloader::_populate(const QStringList& fields, const SqlQuery& queryList)
 {
     QSqlRecord r;
 

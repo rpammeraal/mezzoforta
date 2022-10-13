@@ -4,6 +4,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBModelQueuedSongs.h"
+#include "SqlQuery.h"
 
 ///	Ctors, dtors
 SBIDOnlinePerformance::SBIDOnlinePerformance(const SBIDOnlinePerformance& p):SBIDBase(p)
@@ -119,9 +120,8 @@ SBIDOnlinePerformance::updateLastPlayDate()
         .arg(this->onlinePerformanceID())
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
 
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
     query.exec();
 
     return 1;	//	CWIP: need proper error handling
@@ -400,9 +400,7 @@ SBIDOnlinePerformance::totalNumberOnlinePerformances()
     )
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
 
     if(query.next())
     {
@@ -541,8 +539,7 @@ SBIDOnlinePerformance::createInDB(Common::sb_parameters& p)
         .arg(Common::escapeSingleQuotes(p.path))
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -580,7 +577,6 @@ SBIDOnlinePerformance::find(const Common::sb_parameters& tobeFound,SBIDOnlinePer
     )
         .arg(tobeFound.albumPerformanceID)
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -641,8 +637,6 @@ SBIDOnlinePerformance::updateSQL(const Common::db_change db_change) const
             .arg(this->itemID())
         );
     }
-
-    qDebug() << SB_DEBUG_INFO << SQL;
     return SQL;
 }
 

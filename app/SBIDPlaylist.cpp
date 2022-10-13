@@ -11,6 +11,7 @@
 #include "SBIDPlaylistDetail.h"
 #include "SBModelQueuedSongs.h"
 #include "SBTableModel.h"
+#include "SqlQuery.h"
 
 SBIDPlaylist::SBIDPlaylist(const SBIDPlaylist &c):SBIDBase(c)
 {
@@ -169,7 +170,7 @@ SBIDPlaylist::recalculatePlaylistDuration()
     ;
     dal->customize(q);
 
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
     query.exec();
 
     _duration=duration;
@@ -330,8 +331,6 @@ SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
         .arg(key.itemType()==SBKey::Performer?key.itemID():-1)
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
-
     SBSqlQueryModel* qm=new SBSqlQueryModel(q);
     SB_RETURN_VOID_IF_NULL(qm);
     for(int i=0;i<qm->rowCount();i++)
@@ -387,8 +386,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
         q=QString
         ("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
         dal->customize(q);
-        qDebug() << SB_DEBUG_INFO << q;
-        QSqlQuery qName(q,db);
+        SqlQuery qName(q,db);
 
         while(qName.next())
         {
@@ -423,8 +421,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
         .arg(dal->getGetDate())
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -507,7 +504,6 @@ SBIDPlaylist::retrieveSQL(SBKey key)
     )
         .arg(key.validFlag()?QString("WHERE p.playlist_id=%1").arg(key.itemID()):QString())
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -705,7 +701,7 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
     ;
     dal->customize(q);
 
-    QSqlQuery query(q,db);
+    SqlQuery query(q,db);
     int newPosition=1;
     int actualPosition;
 
@@ -731,7 +727,7 @@ SBIDPlaylist::_reorderPlaylistPositions(int maxPosition) const
 
             dal->customize(q);
 
-            QSqlQuery update(q,db);
+            SqlQuery update(q,db);
             Q_UNUSED(update);
         }
         newPosition++;

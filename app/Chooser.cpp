@@ -291,7 +291,6 @@ Chooser::chartEditSave(SBIDChartPtr cPtr)
     this->_populate();
 
     QModelIndex in=_findItem(cPtr->chartName());
-    qDebug() << SB_DEBUG_INFO << cPtr->chartName() << in;
     if(in.isValid())
     {
         _setCurrentIndex(in);
@@ -326,8 +325,6 @@ Chooser::chartRemove(SBIDChartPtr cPtr)
         cPtr=_getChartSelected(_lastClickedIndex);
     }
     SB_RETURN_VOID_IF_NULL(cPtr);
-
-    qDebug() << SB_DEBUG_INFO << cPtr->genericDescription();
 
     CacheManager* cm=Context::instance()->cacheManager();
     CacheChartMgr* cmgr=cm->chartMgr();
@@ -367,7 +364,6 @@ Chooser::chartImportNew()
 void
 Chooser::chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag)
 {
-    qDebug() << SB_DEBUG_INFO << truncateFlag;
     QFileDialog dialog;
     dialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0]);
     dialog.setFileMode(QFileDialog::ExistingFile);
@@ -378,14 +374,11 @@ Chooser::chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag)
         QStringList l=dialog.selectedFiles();
         const QString chartPath=l[0];
 
-        qDebug() << SB_DEBUG_INFO << chartPath;
-
         cPtr->import(chartPath,truncateFlag);
 
         Context::instance()->navigator()->openScreen(cPtr->key());
 
         QModelIndex in=_findItem(cPtr->chartName());
-        qDebug() << SB_DEBUG_INFO << cPtr->chartName() << in;
         if(in.isValid())
         {
             _setCurrentIndex(in);
@@ -686,7 +679,6 @@ Chooser::doInit()
 void
 Chooser::_clicked(const QModelIndex &idx)
 {
-    qDebug() << SB_DEBUG_INFO;
     _lastClickedIndex=idx;
 }
 
@@ -750,15 +742,7 @@ Chooser::_findItem(const QString& toFind)
                         }
                     }
                     si1=si0->child(i,1);
-                    if(si1)
-                    {
-                        //qDebug() << SB_DEBUG_INFO << "c+1" << si1->text();
-                    }
                     si1=si0->child(i,2);
-                    if(si1)
-                    {
-                        //qDebug() << SB_DEBUG_INFO << "c+2" << si1->text();
-                    }
                 }
             }
         }

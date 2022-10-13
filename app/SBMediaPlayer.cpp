@@ -50,10 +50,6 @@ SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
     {
         closeStream();
     }
-    if(!testFilePathOnly)
-    {
-        qDebug() << SB_DEBUG_INFO << fileName;
-    }
     portAudioTerminate();
     portAudioInit();
 
@@ -75,11 +71,6 @@ SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
     if(!testFilePathOnly)
     {
         portAudioOpen();
-    }
-
-    if(!testFilePathOnly)
-    {
-        qDebug() << SB_DEBUG_INFO << "success" << fileName;
     }
     return 1;
 }
@@ -160,7 +151,6 @@ SBMediaPlayer::paCallback
     else
     {
         memset(output, 0, sampleCount * _sc.numChannels() * (_sc.bitsPerSample()/8));
-        qDebug() << SB_DEBUG_INFO << "Done";
         resultCode=paComplete;
         setState(QMediaPlayer::StoppedState);
     }
@@ -181,7 +171,6 @@ SBMediaPlayer::position() const
 void
 SBMediaPlayer::play()
 {
-    qDebug() << SB_DEBUG_INFO << "start";
     _paError=Pa_StartStream(_stream);
     if( _paError != paNoError )
     {
@@ -263,7 +252,6 @@ SBMediaPlayer::portAudioInit()
 {
     if(!_portAudioInitFlag)
     {
-        qDebug() << SB_DEBUG_INFO << "Initiating Portaudio";
         _paError=Pa_Initialize();
         if(_paError != paNoError)
         {
@@ -388,7 +376,6 @@ SBMediaPlayer::portAudioTerminate()
 {
     if(_portAudioInitFlag)
     {
-        qDebug() << SB_DEBUG_INFO << "Terminating Portaudio";
         Pa_Terminate();
     }
     _portAudioInitFlag=0;

@@ -234,8 +234,6 @@ PlayManager::startRadio()
     _resetCurrentPlayID();
     _radioModeFlag=1;
 
-    qDebug() << SB_DEBUG_INFO << _radioModeFlag;
-
     PlayerController* pc=Context::instance()->playerController();
 
     //	stop player
@@ -254,8 +252,6 @@ PlayManager::dummyPlayAllSongs()
 {
     _radioModeFlag=1;
 
-    PlayerController* pc=Context::instance()->playerController();
-
     ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Test All Song Paths",1);
 
     SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0,1);
@@ -268,19 +264,12 @@ PlayManager::dummyPlayAllSongs()
         int onlinePerformanceID=qm->record(index).value(0).toInt();
         SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
 
-        if(pc->testSongFilepath(opPtr)==0)
-        {
-            qDebug() << SB_DEBUG_INFO << opPtr->path();
-        }
-
         index++;
         if(index % 1000==0)
         {
-            qDebug() << SB_DEBUG_INFO << "Processed " << index << " songs.";
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs",index,numPerformances);
         }
     }
-    qDebug() << SB_DEBUG_INFO << "Processed " << index << " songs";
 
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs");
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
@@ -417,7 +406,6 @@ PlayManager::_loadRadio()
     while(qm->record(nextPlayedSongID++).value(1).toDate()==QDate(1900,1,1))
     {
     }
-    qDebug() << SB_DEBUG_INFO << nextPlayedSongID;
 
     //	Avoid having the same performer show up more than once.
     bool avoidDuplicatePerformer=1;			//	When we're loading unplayed songs
@@ -506,7 +494,6 @@ PlayManager::_loadRadio()
         if (addToPlaylist)
         {
             performerInList.insert(performerName);
-            qDebug() << SB_DEBUG_INFO << "Loading: " << opPtr->path();
 
             playList[nextOpenSlotIndex++]=opPtr;
 

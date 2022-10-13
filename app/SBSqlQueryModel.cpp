@@ -1,12 +1,10 @@
 #include "SBSqlQueryModel.h"
 
 #include <QDebug>
-#include <QSqlQuery>
 #include <QMessageBox>
 
 #include "Common.h"
 #include "Context.h"
-#include "Controller.h"
 #include "DataAccessLayer.h"
 
 
@@ -35,7 +33,7 @@ SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
     {
         QSqlQueryModel::fetchMore();
     }
-    handleSQLError();
+    handleSQLError(q);
 }
 
 
@@ -148,16 +146,9 @@ SBSqlQueryModel::determineKey(const QModelIndex &idx) const
 }
 
 void
-SBSqlQueryModel::handleSQLError() const
+SBSqlQueryModel::handleSQLError(const QString& query) const
 {
-    QSqlError e=this->lastError();
-    if(e.isValid()==1 || e.type()!=QSqlError::NoError)
-    {
-        qDebug() << e.text();
-        QMessageBox m;
-        m.setText(e.text());
-        m.exec();
-    }
+    Common::handleSQLError(query,this->lastError());
 }
 
 void

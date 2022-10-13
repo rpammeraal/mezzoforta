@@ -251,7 +251,6 @@ SBModelQueuedSongs::getAllPerformances()
 void
 SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool firstBatchHasLoadedFlag)
 {
-    qDebug() << SB_DEBUG_INFO;
     int offset=0;
     int initialCount=this->rowCount();
 
@@ -272,7 +271,6 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"populating",progressCurrentValue,progressMaxValue);
     int currentIndex=offset+1;
 
-    qDebug() << SB_DEBUG_INFO << newPlaylist.count();
     for(int i=0;i<newPlaylist.count();i++)
     {
         if(currentPlayID()==-1)
@@ -701,7 +699,6 @@ SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
     //  would be omitted. Not good.
 
     const int matchPerformanceID=record[SBModelQueuedSongs::sb_column_performance_id]->text().toInt();
-    qDebug() << SB_DEBUG_INFO << matchPerformanceID;
 
     for(int i=0;i<this->rowCount();i++)
     {
@@ -709,10 +706,8 @@ SBModelQueuedSongs::_recordExists(const QList<QStandardItem *> &record) const
 
         if(performanceID==matchPerformanceID)
         {
-            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return 0;
 }

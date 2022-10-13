@@ -3,6 +3,7 @@
 #include "CacheManager.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SqlQuery.h"
 
 ///	Public
 SBIDPlaylistDetail::SBIDPlaylistDetail(const SBIDPlaylistDetail &p):SBIDBase(p)
@@ -464,8 +465,7 @@ SBIDPlaylistDetail::createInDB(Common::sb_parameters& p)
         .arg(p.notes)
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -559,7 +559,6 @@ SBIDPlaylistDetail::retrieveSQL(SBKey key)
         .arg(key.validFlag()?QString("WHERE pd.playlist_detail_id=%1").arg(key.itemID()):QString())
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

@@ -4,6 +4,7 @@
 #include "Context.h"
 #include "DataAccessLayer.h"
 #include "SBIDOnlinePerformance.h"
+#include "SqlQuery.h"
 
 ///	Ctors, dtors
 SBIDAlbumPerformance::SBIDAlbumPerformance(const SBIDAlbumPerformance &p):SBIDBase(p)
@@ -401,8 +402,6 @@ SBIDAlbumPerformance::performancesBySong(int songID)
     )
         .arg(songID)
     ;
-
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -430,7 +429,6 @@ SBIDAlbumPerformance::performancesBySongPerformance(int songPerformanceID)
         .arg(songPerformanceID)
     ;
 
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 
@@ -500,8 +498,7 @@ SBIDAlbumPerformance::createInDB(Common::sb_parameters& p)
         .arg(Common::escapeSingleQuotes(p.notes))
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -556,7 +553,6 @@ SBIDAlbumPerformance::find(const Common::sb_parameters& p,SBIDAlbumPerformancePt
         .arg(p.albumID)
         .arg(p.albumPosition)
     ;
-    qDebug() << SB_DEBUG_INFO << q;
     return new SBSqlQueryModel(q);
 }
 

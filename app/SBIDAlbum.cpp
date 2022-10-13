@@ -12,6 +12,7 @@
 #include "SBIDSongPerformance.h"
 #include "SBModelQueuedSongs.h"
 #include "SBTableModel.h"
+#include "SqlQuery.h"
 
 SBIDAlbum::SBIDAlbum(const SBIDAlbum &c):SBIDBase(c)
 {
@@ -369,7 +370,7 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
     ;
 
     dal->customize(q);
-    QSqlQuery qID(q,db);
+    SqlQuery qID(q,db);
     while(albumID==-1 && qID.next())
     {
         albumID=qID.value(0).toInt();
@@ -414,7 +415,7 @@ SBIDAlbum::retrieveAlbumByTitlePerformer(const QString &albumTitle, const QStrin
     ;
 
     dal->customize(q);
-    QSqlQuery qID(q,db);
+    SqlQuery qID(q,db);
     while(albumID==-1 && qID.next())
     {
         albumID=qID.value(0).toInt();
@@ -506,7 +507,7 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
         int maxNum=1;
         q=QString("SELECT title FROM ___SB_SCHEMA_NAME___record WHERE name %1 \"New Album%\"").arg(dal->getILike());
         dal->customize(q);
-        QSqlQuery qName(q,db);
+        SqlQuery qName(q,db);
 
         while(qName.next())
         {
@@ -559,7 +560,7 @@ SBIDAlbum::createInDB(Common::sb_parameters& p)
     ;
 
     dal->customize(q);
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate

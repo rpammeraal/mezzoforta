@@ -15,7 +15,6 @@ AudioDecoderWaveReader::~AudioDecoderWaveReader()
 void
 AudioDecoderWaveReader::backFill()
 {
-    qDebug() << SB_DEBUG_INFO << "start";
     SB_DEBUG_IF_NULL(_ad);
     SB_DEBUG_IF_NULL(_ad->_file);
     SB_DEBUG_IF_NULL(_ad->_stream);
@@ -32,6 +31,5 @@ AudioDecoderWaveReader::backFill()
         index+=bytesRead;
         _ad->_maxScrollableIndex=index;
     }
-    qDebug() << SB_DEBUG_INFO << "end";
     emit QThread::currentThread()->exit();
 }

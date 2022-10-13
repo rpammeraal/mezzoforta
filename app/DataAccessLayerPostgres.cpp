@@ -2,6 +2,7 @@
 #include "Context.h"
 #include "Controller.h"
 #include "DataAccessLayerPostgres.h"
+#include "SqlQuery.h"
 
 DataAccessLayerPostgres::DataAccessLayerPostgres()
 {
@@ -45,7 +46,6 @@ void
 DataAccessLayerPostgres::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const
 {
     SB_RETURN_VOID_IF_NULL(opPtr);
-    qDebug() << SB_DEBUG_INFO << radioModeFlag << opPtr->genericDescription();
 
     QString q=QString
             (
@@ -82,8 +82,7 @@ DataAccessLayerPostgres::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformanceP
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 }
 
@@ -111,7 +110,7 @@ DataAccessLayerPostgres::_initAvailableSchemas()
                 "namespace ns "
                     "LEFT JOIN configuration c ON "
                         "keyword='default_schema'";
-    QSqlQuery qAllSchemas(q,QSqlDatabase::database(this->getConnectionName()));
+    SqlQuery qAllSchemas(q,QSqlDatabase::database(this->getConnectionName()));
 
     while(qAllSchemas.next())
     {

@@ -69,14 +69,18 @@ AudioDecoderFactory::openFile(const QString &fileName,bool testFilePathOnly)
     AudioDecoder* ad=NULL;
 
     QFileInfo fi(fileName);
+    qDebug() << SB_DEBUG_INFO;
     if(fileSupportedFlag(fi,testFilePathOnly,&ad))
     {
+    qDebug() << SB_DEBUG_INFO;
         if(ad->error().length()!=0)
         {
+    qDebug() << SB_DEBUG_INFO;
             _error=ad->error();
             delete ad; ad=NULL;
         }
     }
+    qDebug() << SB_DEBUG_INFO;
     return ad;
 }
 

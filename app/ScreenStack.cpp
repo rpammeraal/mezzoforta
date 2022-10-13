@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "Context.h"
 #include "Controller.h"
-#include "DataAccessLayer.h"
 #include "ScreenStack.h"
 
 #include <QMessageBox>
@@ -35,7 +34,6 @@ ScreenStack::count() const
 ScreenItem
 ScreenStack::popScreen()
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     ScreenItem id;
 
     if(_stack.isEmpty()==0)
@@ -48,15 +46,12 @@ ScreenStack::popScreen()
             _currentScreenID=getScreenCount()-1;
         }
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
 void
 ScreenStack::pushScreen(const ScreenItem& id)
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << id << _currentScreenID;
     bool doPush=0;
 
     if(_stack.count()==0)
@@ -93,7 +88,6 @@ ScreenStack::pushScreen(const ScreenItem& id)
         _stack.append(id);
         _currentScreenID++;
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 ScreenItem
@@ -111,8 +105,6 @@ ScreenStack::currentScreen() const
 ScreenItem
 ScreenStack::nextScreen()
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << _currentScreenID;
     ScreenItem id;
 
     if(_stack.isEmpty()==0)
@@ -123,15 +115,12 @@ ScreenStack::nextScreen()
         }
         id=_stack.at(_currentScreenID);
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
 ScreenItem
 ScreenStack::previousScreen()
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << _currentScreenID;
     ScreenItem id;
 
     if(_currentScreenID>0)
@@ -139,7 +128,6 @@ ScreenStack::previousScreen()
         _currentScreenID--;
         id=_stack.at(_currentScreenID);
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
     return id;
 }
 
@@ -172,32 +160,25 @@ ScreenStack::replace(const ScreenItem &from, const ScreenItem &to)
 void
 ScreenStack::removeCurrentScreen()
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
     if(_stack.count()>1)
     {
         _stack.removeLast();
         _currentScreenID--;
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 void
 ScreenStack::removeForward()
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << _currentScreenID;
     while(_stack.count()-1>_currentScreenID)
     {
         _stack.removeLast();
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 void
 ScreenStack::removeScreen(const ScreenItem &id, bool editOnlyFlag)
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-    qDebug() << SB_DEBUG_INFO << id << editOnlyFlag << _currentScreenID << _stack.count();
     for(int i=_stack.count()-1;i>=0;i--)
     {
         const ScreenItem& currentID=_stack.at(i);
@@ -220,7 +201,6 @@ ScreenStack::removeScreen(const ScreenItem &id, bool editOnlyFlag)
             }
         }
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 ScreenItem
@@ -237,11 +217,6 @@ ScreenStack::topScreen() const
 void
 ScreenStack::updateCurrentScreen(const ScreenItem &id)
 {
-    qDebug() << SB_DEBUG_INFO << "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
-
-    qDebug() << SB_DEBUG_INFO << "id=" << id;
-    qDebug() << SB_DEBUG_INFO << "curr=" << currentScreen();
-
     if(_currentScreenID>=0 && _currentScreenID<_stack.count())
     {
         if(id==currentScreen())
@@ -263,7 +238,6 @@ ScreenStack::updateCurrentScreen(const ScreenItem &id)
     {
         qDebug() << SB_DEBUG_ERROR << "NO SCREENS ON STACK";
     }
-    qDebug() << SB_DEBUG_INFO << "sssssssssssssssssssssssssssssssssssssssssssssssssssssss";
 }
 
 ///
@@ -312,9 +286,8 @@ ScreenStack::debugShow(const QString& c)
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << "<empty>";
+        qDebug() << SB_DEBUG_WARNING << "<empty>";
     }
-    qDebug() << SB_DEBUG_INFO << "_currentScreenID=" << _currentScreenID;
 }
 
 ///	PUBLIC SLOTS
@@ -348,7 +321,6 @@ ScreenStack::_init()
 void
 ScreenStack::_dedupe()
 {
-    qDebug() << SB_DEBUG_INFO << _stack.length() << _currentScreenID;
     if(_stack.length()>2)
     {
         for(int i=0;i<_stack.length()-1;i++)

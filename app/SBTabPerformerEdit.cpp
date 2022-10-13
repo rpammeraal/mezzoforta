@@ -177,7 +177,7 @@ SBTabPerformerEdit::save() const
     SBIDPerformerPtr selectedPerformerPtr;
     bool mergeFlag=0;
     bool successFlag=0;
-    bool caseChangeFlag=0;
+    //bool caseChangeFlag=0;
     bool performerNameChangedFlag=0;
 
     SB_RETURN_VOID_IF_NULL(orgPerformerPtr);
@@ -203,12 +203,12 @@ SBTabPerformerEdit::save() const
     {
         if(Common::simplified(editPerformerName)==Common::simplified(orgPerformerPtr->performerName()))
         {
-            caseChangeFlag=1;	//	Identify to saveSong that title only has changed.
+            //caseChangeFlag=1;	//	Identify to saveSong that title only has changed.
             mergeFlag=0;	//	Explicitly set over here, indicating that we dealing with the same performer
         }
         else
         {
-            caseChangeFlag=0;
+            //caseChangeFlag=0;
             Common::toTitleCase(editPerformerName);
         }
         performerNameChangedFlag=1;
@@ -225,7 +225,7 @@ SBTabPerformerEdit::save() const
         Common::result result=peMgr->userMatch(tobeMatched,SBIDPerformerPtr(),selectedPerformerPtr);
         if(result==Common::result_canceled)
         {
-            qDebug() << SB_DEBUG_INFO << "none selected -- exit from import";
+            qDebug() << SB_DEBUG_WARNING << "none selected -- exit from import";
             dal->restore(restorePoint);
             return;
         }
@@ -279,7 +279,6 @@ SBTabPerformerEdit::save() const
             }
             else
             {
-                qDebug() << SB_DEBUG_INFO << "no go";
                 it=rpt->item(i,0);
             }
         }

@@ -179,7 +179,7 @@ SBTabQueuedSongs::tableViewCellClicked(QModelIndex idx)
 {
     if((SBModelQueuedSongs::sb_column_type)idx.column()==SBModelQueuedSongs::sb_column_playlistpositionid)
     {
-        qDebug() << SB_DEBUG_INFO;
+        //qDebug() << SB_DEBUG_INFO;
     }
     else
     {

@@ -1,6 +1,5 @@
 #include <QString>
 #include <QHeaderView>
-#include <QSqlQuery>
 #include <QStringListIterator>
 #include <QTableView>
 #include <sstream>
@@ -9,6 +8,9 @@
 #include "Common.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SBMessageBox.h"
+#include "SqlQuery.h"
+
 
 QString diacriticLetters_;
 QStringList noDiacriticLetters_;
@@ -39,7 +41,7 @@ Common::articles()
                 "word "
             "FROM "
                 "article ";
-        QSqlQuery qWords(q,QSqlDatabase::database(dal->getConnectionName()));
+        SqlQuery qWords(q,QSqlDatabase::database(dal->getConnectionName()));
 
         while(qWords.next())
         {
@@ -615,6 +617,17 @@ Common::ParseChar(QChar c)
         return '5';
     }
     return '6';
+}
+
+
+void
+Common::handleSQLError(const QString& query, const QSqlError& e)
+{
+    if(e.isValid()==1 || e.type()!=QSqlError::NoError)
+    {
+        SBMessageBox::databaseErrorMessageBox(query,e);
+    }
+
 }
 
 void

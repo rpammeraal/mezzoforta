@@ -3,6 +3,7 @@
 #include "CacheManager.h"
 #include "Context.h"
 #include "DataAccessLayer.h"
+#include "SqlQuery.h"
 
 SBIDChartPerformance::SBIDChartPerformance(const SBIDChartPerformance& p):SBIDBase(p)
 {
@@ -232,8 +233,7 @@ SBIDChartPerformance::createInDB(Common::sb_parameters& p)
         .arg(p.notes)
     ;
     dal->customize(q);
-    qDebug() << SB_DEBUG_INFO << q;
-    QSqlQuery insert(q,db);
+    SqlQuery insert(q,db);
     Q_UNUSED(insert);
 
     //	Instantiate
@@ -317,7 +317,6 @@ SBIDChartPerformance::updateSQL(const Common::db_change db_change) const
         );
     }
 
-    qDebug() << SB_DEBUG_INFO << SQL;
     return SQL;
 }
 
