@@ -384,7 +384,7 @@ SBIDPlaylist::createInDB(Common::sb_parameters& p)
         //	Give new playlist unique name
         int maxNum=1;
         q=QString
-        ("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 \"New Playlist%\"").arg(dal->getILike());
+        ("SELECT name FROM ___SB_SCHEMA_NAME___playlist WHERE name %1 'New Playlist%'").arg(dal->getILike());
         dal->customize(q);
         SqlQuery qName(q,db);
 
