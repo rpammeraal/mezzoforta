@@ -60,8 +60,6 @@ private:
     bool                _hasErrorFlag;
     QMediaPlayer::State _state;
     bool                _threadPrioritySetFlag;
-    quint64             _bufferIndex;
-    void*               _buffer[BUFFERSIZE];
     quint64             _oldPositionInSec;
 
     void closeStream();
