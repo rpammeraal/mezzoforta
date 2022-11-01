@@ -179,7 +179,7 @@ PlayerController::playerStop()
 /// Returns 1 on success, 0 otherwise.
 /// TAG: path constructed
 bool
-PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr, bool setReadyFlag)
+PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 {
     Controller* c=Context::instance()->controller();
 
@@ -199,15 +199,8 @@ PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr, bool setReadyFlag)
 
     //	Instruct player to play
     _currentPerformancePlayingPtr=opPtr;
-    if(setReadyFlag==0)
-    {
-        _playerInstance[_currentPlayerID].play();
-        _updatePlayState(PlayerController::sb_player_state_play);
-    }
-    else
-    {
-        _updatePlayState(PlayerController::sb_player_state_stopped);
-    }
+    _playerInstance[_currentPlayerID].play();
+    _updatePlayState(PlayerController::sb_player_state_play);
 
     return 1;
 }
@@ -267,8 +260,6 @@ PlayerController::_init()
     //	Instantiate media players
     for(int i=0; i<_maxPlayerID;i++)
     {
-        _playerInstance[i].assignID(i);
-
         //	durationChanged
         connect(&_playerInstance[i],SIGNAL(durationChanged(quint64)),
                 this, SLOT(playerDurationChanged(quint64)));

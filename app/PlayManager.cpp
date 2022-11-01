@@ -306,7 +306,7 @@ PlayManager::playItem(unsigned int playlistIndex,PlayMode playMode)
 
     //	Song is valid, go and play
     opPtr->setPlayPosition(this->currentPlayID());
-    isPlayingFlag=pc->playSong(opPtr,playMode==PlayMode::SetReady);
+    isPlayingFlag=pc->playSong(opPtr);
     if(_radioModeFlag)
     {
         opPtr->updateLastPlayDate();

@@ -30,7 +30,6 @@ public:
     SBMediaPlayer();
     ~SBMediaPlayer();
 
-    void assignID(int playerID);
     int paCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags);
     quint64 position() const;
     bool setMedia(const QString& fileName, bool testFilePathOnly=0);
@@ -51,7 +50,6 @@ public slots:
     void stop();
 
 private:
-    int                 _playerID;
     AudioDecoder*       _ad;
     bool                _portAudioInitFlag;
     PaError             _paError;
