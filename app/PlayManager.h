@@ -58,7 +58,7 @@ protected:
     void doInit();	//	Init done by Context::
 
     friend class SBTabQueuedSongs;
-    bool playItem(unsigned int playlistIndex,PlayMode playMode=PlayMode::Default);
+    bool playItem(unsigned int playlistIndex);
 
 private:
     int  _currentPlayID;    //	0-based, -1: no song active

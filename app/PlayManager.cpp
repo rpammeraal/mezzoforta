@@ -125,7 +125,7 @@ PlayManager::playerNext(PlayMode playMode)
                 return 0;
             }
         }
-        isPlayingFlag=playItem(nextCurrentPlayID,playMode);
+        isPlayingFlag=playItem(nextCurrentPlayID);
 
         //	If previous and first song is not playing reverse directions
         if(isPlayingFlag==0)
@@ -291,7 +291,7 @@ PlayManager::doInit()
 /// ::playItemNow(unsigned int) is the lowest level function that will call PlayerController
 /// to play a song.
 bool
-PlayManager::playItem(unsigned int playlistIndex,PlayMode playMode)
+PlayManager::playItem(unsigned int playlistIndex)
 {
     //	Check if music library directory is set up prior to playing.
     Context::instance()->properties()->musicLibraryDirectory();
