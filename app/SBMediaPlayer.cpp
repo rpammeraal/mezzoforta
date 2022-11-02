@@ -35,12 +35,6 @@ SBMediaPlayer::~SBMediaPlayer()
     closeStream();
 }
 
-void
-SBMediaPlayer::assignID(int playerID)
-{
-    _playerID=playerID;
-}
-
 bool
 SBMediaPlayer::setMedia(const QString &fileName, bool testFilePathOnly)
 {
@@ -235,7 +229,6 @@ void
 SBMediaPlayer::init()
 {
     _ad=NULL;
-    _playerID=-1;
     _portAudioInitFlag=0;
     _paError=paNoError;
     _stream=NULL;
