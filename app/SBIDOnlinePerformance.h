@@ -25,6 +25,7 @@ public:
     inline QString path() const { return _path; }
     inline int onlinePerformanceID() const { return itemID(); }
     inline int playPosition() const { return _playPosition; }
+    void resetPlayPosition() { qDebug() << SB_DEBUG_INFO << &(*this) << "resetPlayPosition"; _playPosition=-1; }
     void setPlayPosition(int playPosition) { _playPosition=playPosition; }
     bool updateLastPlayDate();
 

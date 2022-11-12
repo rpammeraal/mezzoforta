@@ -12,8 +12,8 @@ class QSlider;
 class QTextBrowser;
 
 #include "SBMediaPlayer.h"
-#include "SBIDSong.h"
 #include "SBDuration.h"
+#include "SBIDBase.h"
 
 ///
 /// \brief The PlayerController class
@@ -34,20 +34,15 @@ public:
         sb_player_both=3
     };
 
-    enum sb_player_state
-    {
-        sb_player_state_stopped=0,
-        sb_player_state_play=1,
-        sb_player_state_pause=2,
-        sb_player_state_changing_media=4
-    };
-
     explicit PlayerController(QObject *parent = 0);
     ~PlayerController();
 
-    inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _currentPerformancePlayingPtr; }
-    inline PlayerController::sb_player_state playState() const { return _state; }
-    bool testSongFilepath(SBIDOnlinePerformancePtr& opPtr);
+    inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _playerInstance[_currentPlayerID].getSBIDOnlinePerformancePtr(); }
+    inline int getCurrentPlayer() const { return _currentPlayerID; }
+    QMediaPlayer::State playState() const;
+    void setPlayerFinished() { _playerPlayingID=-1; }
+    inline int getPlayerPlayingID() const { return _playerPlayingID; }
+    void handlePlayingSong(int playerID, SBIDOnlinePerformancePtr opPtr);
 
 signals:
     void playNextSong();
@@ -56,9 +51,7 @@ signals:
 public slots:
     void playerRewind();
     void playerForward();
-    void playerDurationChanged(quint64 duration);
-    void playerPositionChanged(quint64 duration);
-    void playerStateChanged(QMediaPlayer::State playerState);
+    void startNextSong(int fromCurrentPlayerID);
 
 private slots:
     void playerDataClicked(const QUrl& url);
@@ -66,8 +59,12 @@ private slots:
 protected:
     friend class PlayManager;
     friend class Context;
+    friend class SBMediaPlayer;
+
     void doInit();	//	Init done by Context::
     bool playSong(SBIDOnlinePerformancePtr& performancePtr);
+    void continueNextSong(int newCurrentPlayerID);
+    void explicitSetPlayerVisible(int playerID);
 
 protected slots:
     bool playerPlay();
@@ -75,25 +72,20 @@ protected slots:
     void playerStop();
 
 private:
-    static const int                  _maxPlayerID=2;
-    int                               _currentPlayerID;
-    SBIDOnlinePerformancePtr          _currentPerformancePlayingPtr;
-    SBDuration                        _durationTime[_maxPlayerID];
-    QFrame*                           _playerFrame[_maxPlayerID];
-    QPushButton*                      _playerPlayButton[_maxPlayerID];
-    QSlider*                          _playerProgressSlider[_maxPlayerID];
-    QLabel*                           _playerDurationLabel[_maxPlayerID];
-    QTextBrowser*                     _playerDataLabel[_maxPlayerID];
-    SBMediaPlayer                     _playerInstance[_maxPlayerID];
-    PlayerController::sb_player_state _state;
+    static const int                _maxPlayerID=2;
+    int                             _currentPlayerID;
+    SBDuration                      _durationTime[_maxPlayerID];
+    SBMediaPlayer                   _playerInstance[_maxPlayerID];
+    SBIDOnlinePerformancePtr        _nextPerformancePlayingPtr;
+    int								_playerPlayingID;
 
     void _init();
-    const QString _constructPath(SBIDOnlinePerformancePtr& opPtr);
-    void _makePlayerVisible(PlayerController::sb_player player);
-    SBDuration _ms2Duration(quint64 ms) const;
-
+    inline int _getNextPlayerID(int currentPlayerID) const { return currentPlayerID+1>=_maxPlayerID?0:currentPlayerID+1; }
+    void _loadNextSong();
+    void _makePlayerVisible(int playerID);
     void _refreshPlayingNowData() const;
-    void _updatePlayState(PlayerController::sb_player_state newState);
+    bool _setupPlayer(int playerID, SBIDOnlinePerformancePtr opPtr);
+    void _startPlayer(int playerID);
 };
 
 #endif // PLAYERCONTROLLER_H

@@ -78,6 +78,18 @@ SBDuration::SBDuration(int hours, int minutes, int seconds)
     setHMS(hours,minutes,seconds);
 }
 
+SBDuration::SBDuration(int ms)
+{
+    const int s=ms/1000;
+    const int seconds = (s) % 60;
+    const int m=(s/60);
+    const int minutes = (m) % 60;
+    const int h=(m/24);
+    const int hours = (h) % 24;
+
+    setHMS(hours,minutes,seconds);
+}
+
 SBDuration&
 SBDuration::operator =(const SBDuration& t)
 {

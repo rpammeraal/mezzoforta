@@ -28,6 +28,7 @@ public:
     SBDuration(const SBDuration& t);
     SBDuration(const QString& t);
     SBDuration(int hours, int minutes, int seconds);
+    SBDuration(int timeMs);
 
     SBDuration& operator=(const SBDuration& t);
     SBDuration& operator=(const QTime& t);

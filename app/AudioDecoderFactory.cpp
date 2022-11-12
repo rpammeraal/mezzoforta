@@ -2,7 +2,6 @@
 #include <QFileInfo>
 #include <QString>
 
-#include "Common.h"
 #include "AudioDecoder.h"
 #include "AudioDecoderFactory.h"
 #include "AudioDecoderFlac.h"
@@ -21,14 +20,14 @@ AudioDecoderFactory::~AudioDecoderFactory()
 }
 
 bool
-AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFilePathOnly, AudioDecoder **newAudioDecoder)
+AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, AudioDecoder **newAudioDecoder)
 {
     QString extension=fileInfo.suffix();
     if(AudioDecoderWave::supportFileExtension(extension)==1)
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderWave(fileInfo.absoluteFilePath(),testFilePathOnly);
+            *newAudioDecoder=new AudioDecoderWave(fileInfo.absoluteFilePath());
         }
         return true;
     }
@@ -36,7 +35,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFileP
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderOggVorbis(fileInfo.absoluteFilePath(),testFilePathOnly);
+            *newAudioDecoder=new AudioDecoderOggVorbis(fileInfo.absoluteFilePath());
         }
         return true;
     }
@@ -44,7 +43,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFileP
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderMP3(fileInfo.absoluteFilePath(),testFilePathOnly);
+            *newAudioDecoder=new AudioDecoderMP3(fileInfo.absoluteFilePath());
         }
         return true;
     }
@@ -53,7 +52,7 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFileP
     {
         if(newAudioDecoder)
         {
-            *newAudioDecoder=new AudioDecoderFlac(fileInfo.absoluteFilePath(),testFilePathOnly);
+            *newAudioDecoder=new AudioDecoderFlac(fileInfo.absoluteFilePath());
         }
         return true;
     }
@@ -63,24 +62,20 @@ AudioDecoderFactory::fileSupportedFlag(const QFileInfo& fileInfo, bool testFileP
 }
 
 AudioDecoder*
-AudioDecoderFactory::openFile(const QString &fileName,bool testFilePathOnly)
+AudioDecoderFactory::openFile(const QString &fileName)
 {
     //	Flensburg - Neumuenster
     AudioDecoder* ad=NULL;
 
     QFileInfo fi(fileName);
-    qDebug() << SB_DEBUG_INFO;
-    if(fileSupportedFlag(fi,testFilePathOnly,&ad))
+    if(fileSupportedFlag(fi,&ad))
     {
-    qDebug() << SB_DEBUG_INFO;
         if(ad->error().length()!=0)
         {
-    qDebug() << SB_DEBUG_INFO;
             _error=ad->error();
             delete ad; ad=NULL;
         }
     }
-    qDebug() << SB_DEBUG_INFO;
     return ad;
 }
 

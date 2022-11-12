@@ -78,6 +78,7 @@ SBTabQueuedSongs::playNow(bool enqueueFlag)
     SBSortFilterProxyQueuedSongsModel* sm=_proxyModel();
     int viewPosition=sm->mapFromSource(_lastClickedIndex).row();
     PlayManager* pm=Context::instance()->playManager();
+    qDebug() << SB_DEBUG_INFO << "Calling playItem2";
     pm->playItem(viewPosition);
     SBTab::playNow(enqueueFlag);
     return;

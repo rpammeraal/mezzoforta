@@ -10,7 +10,7 @@
 
 #include <QFile>
 
-AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool testFilePathOnly)
+AudioDecoderMP3::AudioDecoderMP3(const QString& fileName)
 {
     init();
 
@@ -19,11 +19,6 @@ AudioDecoderMP3::AudioDecoderMP3(const QString& fileName,bool testFilePathOnly)
     {
         _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
-        return;
-    }
-
-    if(testFilePathOnly)
-    {
         return;
     }
 

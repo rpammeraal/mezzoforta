@@ -12,7 +12,7 @@
 #include "Common.h"
 
 ///	Protected methods
-AudioDecoderWave::AudioDecoderWave(const QString& fileName,bool testFilePathOnly)
+AudioDecoderWave::AudioDecoderWave(const QString& fileName)
 {
     qDebug() << SB_DEBUG_INFO << fileName;
 
@@ -22,11 +22,6 @@ AudioDecoderWave::AudioDecoderWave(const QString& fileName,bool testFilePathOnly
     {
         _error=QString("Error opening file: '%1' [%2]").arg(fileName).arg(_file->error());
         qDebug() << SB_DEBUG_ERROR << _error;
-        return;
-    }
-
-    if(testFilePathOnly)
-    {
         return;
     }
 

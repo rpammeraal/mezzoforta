@@ -20,15 +20,24 @@ bool
 PlayManager::songPlayingFlag() const
 {
     PlayerController* pc=Context::instance()->playerController();
-    PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
-    return currentPlayState==PlayerController::sb_player_state_play?1:0;
+    QMediaPlayer::State currentPlayState=pc?pc->playState():QMediaPlayer::State::StoppedState;
+    return currentPlayState==QMediaPlayer::State::PlayingState?1:0;
+}
+
+int
+PlayManager::numSongs() const
+{
+    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
+    return mqs?mqs->numSongs():0;
 }
 
 ///	Public slots:
 void
 PlayManager::playerPrevious()
 {
+    qDebug() << SB_DEBUG_INFO << "start:Calling playerNext";
     playerNext(PlayMode::Previous);
+    qDebug() << SB_DEBUG_INFO << "Finish";
 }
 
 ///
@@ -42,11 +51,11 @@ bool
 PlayManager::playerPlay()
 {
     PlayerController* pc=Context::instance()->playerController();
-    PlayerController::sb_player_state currentPlayState=pc?pc->playState():PlayerController::sb_player_state_stopped;
+    QMediaPlayer::State currentPlayState=pc?pc->playState():QMediaPlayer::State::StoppedState;
 
     switch(currentPlayState)
     {
-    case PlayerController::sb_player_state_stopped:
+    case QMediaPlayer::State::StoppedState:
         {
             SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
             int numSongs=mqs?mqs->numSongs():0;
@@ -62,30 +71,27 @@ PlayManager::playerPlay()
         }
         break;
 
-    case PlayerController::sb_player_state_play:
-    case PlayerController::sb_player_state_pause:
+    case QMediaPlayer::State::PlayingState:
+    case QMediaPlayer::State::PausedState:
         return (pc?pc->playerPlay():0);
-        break;
-
-    case PlayerController::sb_player_state_changing_media:
-    default:
         break;
     }
     return 0;
 }
 
 bool
-PlayManager::playerNext(PlayMode playMode)
+PlayManager::playerNext(PlayManager::PlayMode playMode)
 {
+    qDebug() << SB_DEBUG_INFO << "Start:playMode=" << playMode;
     PlayerController* pc=Context::instance()->playerController();
-    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
-    int numSongs=mqs?mqs->numSongs():0;
+    int numSongs=this->numSongs();
     int numTries=0;
     bool isPlayingFlag=0;
     bool exitLoopFlag=0;	//	meta indicator to avoid infinite loops
     bool lastSongPlayedFlag=0;
 
     //	Log if endOfSong
+    qDebug() << SB_DEBUG_INFO;
     if(playMode==PlayMode::Previous && currentPlayID()==0)
     {
         //	Skip to start of song if first song is active
@@ -101,16 +107,19 @@ PlayManager::playerNext(PlayMode playMode)
     {
         numTries=numSongs-currentPlayID()-1;
     }
+    qDebug() << SB_DEBUG_INFO << numTries;
     if(numTries>5)
     {
         numTries=5;
     }
     lastSongPlayedFlag=(numSongs-currentPlayID()-1)==0;
 
+    qDebug() << SB_DEBUG_INFO << this->currentPlayID();
     pc->playerStop();
     while((numTries>0 && isPlayingFlag==0 && exitLoopFlag==0) || (lastSongPlayedFlag==1 && radioModeFlag()))
     {
         int nextCurrentPlayID=(playMode==PlayMode::Previous)?currentPlayID()-1:currentPlayID()+1;
+        qDebug() << SB_DEBUG_INFO << nextCurrentPlayID;
 
         //	Handle end of the list
         if(nextCurrentPlayID>=numSongs)
@@ -125,18 +134,22 @@ PlayManager::playerNext(PlayMode playMode)
                 return 0;
             }
         }
+        qDebug() << SB_DEBUG_INFO << "Calling playItem2";
         isPlayingFlag=playItem(nextCurrentPlayID);
+        qDebug() << SB_DEBUG_INFO << "isPlayingFlag" << isPlayingFlag;
 
         //	If previous and first song is not playing reverse directions
         if(isPlayingFlag==0)
         {
             if(playMode==PlayMode::Previous && nextCurrentPlayID==0)
             {
+                qDebug() << SB_DEBUG_INFO;
                 playMode=PlayMode::Default;
                 numTries=numSongs;
             }
             if(playMode==PlayMode::Default && nextCurrentPlayID==numSongs-1)
             {
+                qDebug() << SB_DEBUG_INFO;
                 //	We may not have any songs at all, exit loop
                 exitLoopFlag=1;
             }
@@ -154,6 +167,7 @@ PlayManager::playerNext(PlayMode playMode)
             QMessageBox::Ok,
             1);
     }
+    qDebug() << SB_DEBUG_INFO << "finish:isPlayingFlag" << isPlayingFlag;
     return isPlayingFlag;
 }
 
@@ -207,12 +221,14 @@ PlayManager::playItemNow(SBKey key, const bool enqueueFlag)
 
     if(enqueueFlag==0)
     {
+        qDebug() << SB_DEBUG_INFO << "Calling playerNext";
         isPlayingFlag=this->playerNext();
     }
     else
     {
         if(!this->songPlayingFlag())
         {
+            qDebug() << SB_DEBUG_INFO << "Calling playerNext";
             this->playerNext(PlayMode::SetReady);
         }
     }
@@ -224,8 +240,8 @@ PlayManager::shufflePlaylist()
 {
     SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
     const int newPlayID=mqs->shuffle(1);	//	always leave played songs untouched.
+    qDebug() << SB_DEBUG_INFO << "About to call _setCurrentPlayID";
     _setCurrentPlayID(newPlayID);
-    emit setRowVisible(newPlayID+1);
 }
 
 void
@@ -247,35 +263,6 @@ PlayManager::startRadio()
     Context::instance()->navigator()->showCurrentPlaylist();
 }
 
-void
-PlayManager::dummyPlayAllSongs()
-{
-    _radioModeFlag=1;
-
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Test All Song Paths",1);
-
-    SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0,1);
-    int numPerformances=qm->rowCount();
-    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs",0,numPerformances);
-
-    int index=0;
-    while(index<numPerformances)
-    {
-        int onlinePerformanceID=qm->record(index).value(0).toInt();
-        SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(onlinePerformanceID);
-
-        index++;
-        if(index % 1000==0)
-        {
-            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs",index,numPerformances);
-        }
-    }
-
-    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_dummyPlayAllSongs");
-    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-}
-
-
 ///	Protected methods
 void
 PlayManager::doInit()
@@ -288,35 +275,113 @@ PlayManager::doInit()
 /// \param playlistIndex
 /// \return
 ///
-/// ::playItemNow(unsigned int) is the lowest level function that will call PlayerController
+/// ::playItem(unsigned int) is the lowest level function that will call PlayerController
 /// to play a song.
 bool
 PlayManager::playItem(unsigned int playlistIndex)
 {
+    qDebug() << SB_DEBUG_INFO << "start:playlistIndex=" << playlistIndex;
     //	Check if music library directory is set up prior to playing.
     Context::instance()->properties()->musicLibraryDirectory();
+    //qDebug() << SB_DEBUG_INFO;
 
     PlayerController* pc=Context::instance()->playerController();
+    //qDebug() << SB_DEBUG_INFO;
     bool isPlayingFlag=0;
-    _setCurrentPlayID(playlistIndex);
 
-    SBIDOnlinePerformancePtr opPtr=_performanceAt(currentPlayID());
-
+    int newPlayID=playlistIndex;	//	this->currentPlayID();
+    //qDebug() << SB_DEBUG_INFO << newPlayID;
+    if(newPlayID<0)
+    {
+        newPlayID=0;
+    }
+    qDebug() << SB_DEBUG_INFO << newPlayID;
+    SBIDOnlinePerformancePtr opPtr=_performanceAt(newPlayID);
+    SB_DEBUG_IF_NULL(opPtr);
     SB_RETURN_IF_NULL(opPtr,0);
+    opPtr->setPlayPosition(playlistIndex);
+    qDebug() << SB_DEBUG_INFO << opPtr->path();
+
 
     //	Song is valid, go and play
-    opPtr->setPlayPosition(this->currentPlayID());
+    qDebug() << SB_DEBUG_INFO << "Calling playSong";
     isPlayingFlag=pc->playSong(opPtr);
+    qDebug() << SB_DEBUG_INFO << isPlayingFlag;
+
+
+    return isPlayingFlag;
+}
+
+SBIDOnlinePerformancePtr
+PlayManager::getNextPlayItem() const
+{
+    if(currentPlayID()+1>=this->numSongs())
+    {
+        return nullptr;
+    }
+    return _performanceAt(currentPlayID()+1);
+}
+
+//	Tell PlayManager to handle admin tasks
+void
+PlayManager::handlePlayingSong(SBIDOnlinePerformancePtr opPtr)
+{
+    qDebug() << SB_DEBUG_INFO << "start";
+    qDebug() << SB_DEBUG_INFO << "currentPlayID=" << this->currentPlayID();
+    qDebug() << SB_DEBUG_INFO << "_radioModeFlag=" << _radioModeFlag;
+
+    //	Figure out playPosition.
+    int newPlayID=-1;
+    qDebug() << SB_DEBUG_INFO << opPtr->path();
+    qDebug() << SB_DEBUG_INFO << opPtr->playPosition();
+    if(opPtr->playPosition()!=-1)
+    {
+        newPlayID=opPtr->playPosition();
+        qDebug() << SB_DEBUG_INFO << "opPtr:path=" << opPtr->path();
+        qDebug() << SB_DEBUG_INFO << "using pre-assigned play position";
+    }
+    else
+    {
+        int startPlayID=(currentPlayID()-1<0?0:currentPlayID()-1);
+        for(int i=startPlayID;newPlayID==-1 && i<=currentPlayID()+1;i++)
+        {
+            SBIDOnlinePerformancePtr currentOpPtr=_performanceAt(i);
+            if(currentOpPtr!=SBIDOnlinePerformancePtr())
+            {
+                qDebug() << SB_DEBUG_INFO << currentOpPtr->path();
+
+                if(currentOpPtr->key()==opPtr->key())
+                {
+                    newPlayID=i;
+                    qDebug() << SB_DEBUG_INFO << "found:newPlayID=" << newPlayID;
+                }
+            }
+        }
+    }
+
+    if(newPlayID==-1)
+    {
+        qDebug() << SB_DEBUG_ERROR << "Unable to determine newPlayID";
+        return;
+    }
+
+    qDebug() << SB_DEBUG_INFO << "path=" << opPtr->path();
+    qDebug() << SB_DEBUG_INFO << "newPlayID=" << newPlayID;
+    emit setRowVisible(newPlayID);
+    qDebug() << SB_DEBUG_INFO << "About to call _setCurrentPlayID";
+    _setCurrentPlayID(newPlayID);
+    opPtr->setPlayPosition(newPlayID);	//	this is the only place where playPosition should be set.
+
+    qDebug() << SB_DEBUG_INFO << "opPtr=" << &(*opPtr);
+    qDebug() << SB_DEBUG_INFO << "playPosition=" << opPtr->playPosition();
     if(_radioModeFlag)
     {
         opPtr->updateLastPlayDate();
     }
+
     Controller* c=Context::instance()->controller();
-    SB_RETURN_IF_NULL(c,0);
-
+    SB_RETURN_VOID_IF_NULL(c);
     c->logSongPlayedHistory(_radioModeFlag,opPtr->key());
-
-    return isPlayingFlag;
 }
 
 ///	Private methods
@@ -511,6 +576,7 @@ PlayManager::_loadRadio()
                     mqs->populate(playList);
                     tqs->setViewLayout();
 
+                    qDebug() << SB_DEBUG_INFO << "Calling playerNext";
                     this->playerNext();
                     emit playlistChanged(-1);
 
@@ -544,6 +610,7 @@ PlayManager::_loadRadio()
 void
 PlayManager::_resetCurrentPlayID()
 {
+    qDebug() << SB_DEBUG_INFO << "About to call _setCurrentPlayID";
     _setCurrentPlayID(-1);
 }
 
@@ -555,10 +622,19 @@ PlayManager::_performanceAt(int index) const
 }
 
 void
-PlayManager::_setCurrentPlayID(int currentPlayID)
+PlayManager::_setCurrentPlayID(int newPlayID)
 {
-    SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
-    mqs->setCurrentPlayID(currentPlayID);
-    _currentPlayID=currentPlayID;
+    qDebug() << SB_DEBUG_INFO << "*****************************************************************";
+    qDebug() << SB_DEBUG_INFO << "old" << this->currentPlayID();
+    qDebug() << SB_DEBUG_INFO << "new" << newPlayID;
+
+    emit setRowVisible(newPlayID);
+
+    if(newPlayID>=0)
+    {
+        SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
+        mqs->setCurrentPlayID(newPlayID);
+        _currentPlayID=newPlayID;
+    }
     return;
 }

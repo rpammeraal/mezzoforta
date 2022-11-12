@@ -6,7 +6,7 @@
 #include "Common.h"
 
 ///	Protected methods
-AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool testFilePathOnly)
+AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
 {
     _fileName=fileName;	//	CWIP
 
@@ -58,11 +58,6 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName,bool testFi
 
     SB_DEBUG_IF_NULL(_fp);
 
-    if(testFilePathOnly)
-    {
-        fclose(_fp); _fp=NULL;
-        return;
-    }
 #ifdef Q_OS_WIN
     //resultCode=ov_open_callbacks(_fp,&_ovf,NULL,0,OV_CALLBACKS_NOCLOSE);
     resultCode=ov_open_callbacks(_fp,&_ovf,NULL,0,OV_CALLBACKS_DEFAULT);
