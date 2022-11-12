@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MezzoForta! [Hasselt]</string>
+   <string>MezzoForta! [Yvoir]</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -2645,7 +2645,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Hasselt</string>
+                  <string>Yvoir</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -4706,7 +4706,6 @@ Click on 'All Songs' to continue.</string>
      <string>Tools</string>
     </property>
     <addaction name="menuRescanMusicLibrary"/>
-    <addaction name="menuDummyPlayAllSongs"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>

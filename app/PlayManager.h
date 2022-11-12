@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QDebug>
 
-#include "Common.h"
-#include "SBIDSong.h"
+#include "SBKey.h"
+#include "SBIDBase.h"
 
 ///
 /// \brief The PlayManager class
@@ -33,6 +33,7 @@ public:
     inline int currentPlayID() const { return _currentPlayID; }
     inline int radioModeFlag() const { return _radioModeFlag; }
     bool songPlayingFlag() const;
+    int numSongs() const;
 
 signals:
     void playlistChanged(int playlistID);
@@ -42,7 +43,7 @@ public slots:
     //	Player related
     void playerPrevious();
     bool playerPlay();
-    bool playerNext(PlayMode playMode=PlayMode::Default);
+    bool playerNext(PlayManager::PlayMode playMode=PlayManager::PlayMode::Default);
     void playerStop();
 
     //	Playlist et al related
@@ -51,14 +52,16 @@ public slots:
     bool playItemNow(SBKey key,const bool enqueueFlag=0);
     void shufflePlaylist();
     void startRadio();
-    void dummyPlayAllSongs();	//	test to see if all songs are accessible
 
 protected:
     friend class Context;
+    friend class PlayerController;
     void doInit();	//	Init done by Context::
 
     friend class SBTabQueuedSongs;
     bool playItem(unsigned int playlistIndex);
+    SBIDOnlinePerformancePtr getNextPlayItem() const;
+    void handlePlayingSong(SBIDOnlinePerformancePtr opPtr);
 
 private:
     int  _currentPlayID;    //	0-based, -1: no song active

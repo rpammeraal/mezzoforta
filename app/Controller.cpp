@@ -18,7 +18,6 @@
 #include "MainWindow.h"
 #include "MusicLibrary.h"
 #include "Navigator.h"
-#include "Network.h"
 #include "PlayerController.h"
 #include "Preloader.h"
 #include "Properties.h"
@@ -86,9 +85,9 @@ Controller::openDatabase()
 {
     //	If song is playing, stop player and proceed.
     PlayerController* pc=Context::instance()->playerController();
-    PlayerController::sb_player_state state=pc->playState();
+    QMediaPlayer::State state=pc->playState();
 
-    if(state==PlayerController::sb_player_state_play || state==PlayerController::sb_player_state_pause)
+    if(state==QMediaPlayer::State::PlayingState || state==QMediaPlayer::State::PausedState)
     {
         int action=SBMessageBox::createSBMessageBox("Song is still playing",
                                          "Music will be stopped before selecting another database. Click OK to proceed.",
@@ -124,15 +123,6 @@ Controller::rescanMusicLibrary()
     MusicLibrary ml;
     ml.rescanMusicLibrary();
 }
-
-void
-Controller::dummyPlayAllSongs()
-{
-    qDebug() << SB_DEBUG_INFO << "dummyPlayAllSongs()";
-    PlayManager* pm=Context::instance()->playManager();
-    pm->dummyPlayAllSongs();
-}
-
 
 void
 Controller::changeCurrentDatabaseSchema(const QString& newSchema)
@@ -547,11 +537,6 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         {
             connect(i,SIGNAL(triggered()),
                     this, SLOT(rescanMusicLibrary()));
-        }
-        else if(itemName=="menuDummyPlayAllSongs")
-        {
-            connect(i,SIGNAL(triggered()),
-                    this, SLOT(dummyPlayAllSongs()));
         }
         else
         {
