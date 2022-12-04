@@ -19,6 +19,7 @@
 #include "SBIDAlbum.h"
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
+#include "SongAlbumNotes.h"
 
 
 class AlbumEditModel : public QStandardItemModel
@@ -37,7 +38,8 @@ public:
         sb_column_startofdata=7,
         sb_column_songtitle=8,
         sb_column_performername=9,
-        sb_column_notes=10
+        sb_column_mod_notes=10,
+        sb_column_notes=11
         //	make sure hidden columns are updated in ::_populate()
     };
 
@@ -62,6 +64,7 @@ public:
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_itemnumber
         item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_songtitle
         item=new QStandardItem("Performer"); column.append(item);	               //	sb_column_performername
+        item=new QStandardItem(""); column.append(item);	                       //	sb_column_mod_notes
         item=new QStandardItem("Notes"); column.append(item);	                   //	sb_column_notes
         this->appendRow(column); column.clear();
 
@@ -141,6 +144,10 @@ public:
             if(index.column()==sb_column_notes)
             {
                 return  Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
+            }
+            if(index.column()==sb_column_mod_notes)
+            {
+                return  Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
             }
             return Qt::ItemIsDragEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
         }
@@ -269,6 +276,7 @@ public:
             item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_itemnumber
             item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_songtitle
             item=new QStandardItem(QString("%1").arg(apPtr->songPerformerName())); column.append(item);  //	sb_column_performername
+            item=new QStandardItem("...");  column.append(item);                                         //	sb_column_mod_notes
             item=new QStandardItem(apPtr->notes()); column.append(item);                                 //	sb_column_notes
             this->appendRow(column); column.clear();
             i++;
@@ -285,6 +293,7 @@ public:
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_itemnumber
         item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
         item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
+        item=new QStandardItem("..."); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_mod_notes
         item=new QStandardItem("Notes"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_notes
 
         this->sort(sb_column_type::sb_column_sortfield);
@@ -460,6 +469,21 @@ SBTabAlbumEdit::hasEdits() const
 }
 
 ///	Public slots
+void
+SBTabAlbumEdit::handleClicked(const QModelIndex index)
+{
+    if(index.column()==AlbumEditModel::sb_column_type::sb_column_mod_notes)
+    {
+        const MainWindow* mw=Context::instance()->mainWindow();
+        QTableView* tv=mw->ui.albumEditSongList;
+        AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+
+        QString songTitle=aem->item(index.row(),AlbumEditModel::sb_column_songtitle)->text();
+        _san=new SongAlbumNotes(songTitle,this);
+        _san->exec();
+    }
+}
+
 void
 SBTabAlbumEdit::showContextMenu(const QPoint &p)
 {
@@ -751,6 +775,7 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 {
     Q_UNUSED(i);
     Q_UNUSED(j);
+
 
     int numRowsSelected=0;
     int numRowsRemoved=0;
@@ -1209,6 +1234,10 @@ SBTabAlbumEdit::_init()
         tv->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(tv, SIGNAL(customContextMenuRequested(const QPoint&)),
                 this, SLOT(showContextMenu(QPoint)));
+
+        //	Regular select
+        connect(tv, SIGNAL(clicked(QModelIndex)),
+                this, SLOT(handleClicked(QModelIndex)));
     }
 }
 
@@ -1294,6 +1323,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
 void
 SBTabAlbumEdit::_setFocusOnRow(QModelIndex idx) const
 {
+
     const MainWindow* mw=Context::instance()->mainWindow();
     QTableView* tv=mw->ui.albumEditSongList;
 

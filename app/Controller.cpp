@@ -43,7 +43,6 @@ Controller::~Controller()
     _backgroundThread.quit();
     _backgroundThread.wait();
 }
-
 bool
 Controller::initSuccessFull() const
 {

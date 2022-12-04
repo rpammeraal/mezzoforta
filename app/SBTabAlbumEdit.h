@@ -2,8 +2,8 @@
 #define SBTABALBUMEDIT_H
 
 #include "SBTab.h"
+#include "SongAlbumNotes.h"
 
-#include "SBIDAlbum.h"
 
 class QAction;
 class QItemSelection;
@@ -23,6 +23,7 @@ public:
     virtual bool hasEdits() const;
 
 public slots:
+    void handleClicked(const QModelIndex index);
     void showContextMenu(const QPoint& qp);
 
 private slots:
@@ -35,11 +36,13 @@ private slots:
     void setEditFlag();
 
 
+
 private:
-    QAction*  _clearAllAction;
-    QAction*  _deleteSongAction;
-    QAction*  _mergeSongAction;
-    bool      _hasChanges;
+    QAction*  		_clearAllAction;
+    QAction*  		_deleteSongAction;
+    QAction*  		_mergeSongAction;
+    bool      		_hasChanges;
+    SongAlbumNotes*	_san;
 
     int _count() const;
     void _getSelectionStatus(int& numRowsSelected, int& numRowsRemoved,int& numRowsMarkedAsMerged);
