@@ -8,7 +8,6 @@
 #include "MainWindow.h"
 #include "Navigator.h"
 #include "PlayManager.h"
-#include "Properties.h"
 #include "SBMediaPlayer.h"
 #include "SBIDOnlinePerformance.h"
 
@@ -21,30 +20,30 @@ PlayerController::~PlayerController()
 {
 }
 
-void
-PlayerController::handlePlayingSong(int playerID, SBIDOnlinePerformancePtr opPtr)
-{
-    _playerPlayingID=playerID;
-
-    PlayManager* pm=Context::instance()->playManager();
-    qDebug() << SB_DEBUG_INFO << playerID << "About to call pm->handlePlayingSong()";
-    pm->handlePlayingSong(opPtr);
-
-    qDebug() << SB_DEBUG_INFO<< _currentPlayerID << opPtr->playPosition();
-    emit setRowVisible(opPtr->playPosition());
-}
-
 QMediaPlayer::State
 PlayerController::playState() const
 {
-    return _playerInstance[_currentPlayerID].state();
+    return _playerInstance[getCurrentPlayerID()].state();
+}
+
+void
+PlayerController::setPlayerFinished(int currentPlayerID)
+{
+    if(currentPlayerID==getPlayerPlayingID())
+    {
+        _setPlayerPlayingID(-1);
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_ERROR << getCurrentPlayerID() << "attempt from player " << currentPlayerID << "to reset status";
+    }
 }
 
 ///	Public slots
 void
 PlayerController::playerRewind()
 {
-    qint64 position=_playerInstance[_currentPlayerID].position();
+    qint64 position=_playerInstance[getCurrentPlayerID()].position();
     position=position/1000-10;
     playerSeek(position);
 }
@@ -52,21 +51,82 @@ PlayerController::playerRewind()
 void
 PlayerController::playerForward()
 {
-    qint64 position=_playerInstance[_currentPlayerID].position();
+    qint64 position=_playerInstance[getCurrentPlayerID()].position();
     position=(position/1000)+10;
     playerSeek(position);
 }
 
 void
-PlayerController::startNextSong(int currentPlayerID)
+PlayerController::startNextPlayerOnCue(int currentPlayerID)
 {
     //	Called then `currentPlayer` is about a second away from playing.
     //	Instruct the nextPlayer to play until currentPlayer is truly done.
-    qDebug() << SB_DEBUG_INFO << currentPlayerID << "now playing" << _playerPlayingID;
+    qDebug() << SB_DEBUG_INFO << currentPlayerID;
     int nextPlayerID=_getNextPlayerID(currentPlayerID);
-    qDebug() << SB_DEBUG_INFO << currentPlayerID << "about to play" << nextPlayerID;
     _playerInstance[nextPlayerID].playOnCue();
 }
+
+void
+PlayerController::handleNeedMoreSongs()
+{
+    qDebug() << SB_DEBUG_INFO;
+    _resetPlayers();	//	reset anyway.
+    emit needMoreSongs();
+}
+
+void
+PlayerController::handleReorderedPlaylist()
+{
+    qDebug() << SB_DEBUG_INFO;
+    this->loadNextSong();
+}
+
+//	CWIP:
+//	Finishing playlist is handled gracefully.
+//	If playing radio, we'll need to continue
+//	Next:
+//	Start one song playing, queue next song.
+//	When song is queued, PC needs to manage this next song to be loaded in 2nd player
+
+void
+PlayerController::loadNextSong()
+{
+    PlayManager* pm=Context::instance()->playManager();
+    SBIDOnlinePerformancePtr nextOpPtr=pm->getNextPlayItem();
+
+    int nextPlayerID=this->_getNextPlayerID(this->getCurrentPlayerID());
+    if(nextOpPtr!=nullptr)
+    {
+        qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "loading player" << nextPlayerID << "with" << nextOpPtr->path();
+        this->_setupPlayer(nextPlayerID,nextOpPtr);
+        nextOpPtr->resetPlayPosition();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "releasing media on player" << nextPlayerID;
+        _playerInstance[nextPlayerID].releaseMedia();
+        qDebug() << SB_DEBUG_WARNING << getCurrentPlayerID() << "no next song";
+    }
+    qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "ok";
+}
+
+void
+PlayerController::processPlayerStarted(int playerID, SBIDOnlinePerformancePtr opPtr)
+{
+    qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "playerID=" << playerID;
+    _setCurrentPlayerID(playerID);
+    _setPlayerPlayingID(playerID);
+
+    PlayManager* pm=Context::instance()->playManager();
+    pm->handlePlayingSong(opPtr);
+
+    emit setRowVisible(opPtr->playPosition());
+
+    loadNextSong();
+    this->_makePlayerVisible(getCurrentPlayerID());
+    qDebug() << SB_DEBUG_INFO << playerID << "ok";
+}
+
 
 ///	Private slots
 
@@ -81,7 +141,8 @@ PlayerController::playerDataClicked(const QUrl &url)
     QStringList l=url.toString().split('_');
     SBKey key=SBKey(static_cast<SBKey::ItemType>(l[0].toInt()),l[1].toInt());
     Context::instance()->navigator()->openScreen(key);
-    _refreshPlayingNowData();	//	For whatever reason, data is hidden after link is clicked.
+    //	For whatever reason, data is hidden after link is clicked.
+    _playerInstance[getCurrentPlayerID()].refreshPlayingNowData();
 }
 
 ///	Protected methods
@@ -103,37 +164,35 @@ bool
 PlayerController::playerPlay()
 {
     //	Handle UI stuff
-    if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PlayingState)
+    if(_playerInstance[getCurrentPlayerID()].state()==QMediaPlayer::PlayingState)
     {
         //	If playing, pause
-        _playerInstance[_currentPlayerID].pause();
+        _playerInstance[getCurrentPlayerID()].pause();
     }
-    else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::PausedState)
+    else if(_playerInstance[getCurrentPlayerID()].state()==QMediaPlayer::PausedState)
     {
         //	If paused, resume play
-        _playerInstance[_currentPlayerID].play();
+        _playerInstance[getCurrentPlayerID()].play();
     }
-    //else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState && _currentPerformancePlayingPtr)
-    else if(_playerInstance[_currentPlayerID].state()==QMediaPlayer::StoppedState && _playerInstance[_currentPlayerID].getSBIDOnlinePerformancePtr())
+    //else if(_playerInstance[getCurrentPlayerID()].state()==QMediaPlayer::StoppedState && _currentPerformancePlayingPtr)
+    else if(_playerInstance[getCurrentPlayerID()].state()==QMediaPlayer::StoppedState && _playerInstance[getCurrentPlayerID()].getSBIDOnlinePerformancePtr())
     {
         //	If stopped and there is a valid song, play.
-        _playerInstance[_currentPlayerID].play();
+        _playerInstance[getCurrentPlayerID()].play();
     }
-    _refreshPlayingNowData();
     return 0;
 }
 
 void
 PlayerController::playerSeek(int s)
 {
-    _playerInstance[_currentPlayerID].setPosition(s * 1000 );
+    _playerInstance[getCurrentPlayerID()].setPosition(s * 1000 );
 }
 
 void
 PlayerController::playerStop()
 {
-    _refreshPlayingNowData();
-    _playerInstance[_currentPlayerID].stop();
+    _playerInstance[getCurrentPlayerID()].stop();
     playerSeek(0);
 }
 
@@ -147,47 +206,21 @@ PlayerController::playerStop()
 bool
 PlayerController::playSong(SBIDOnlinePerformancePtr& opPtr)
 {
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "start";
+    //	Called from PlayManager to start specific song.
     SB_RETURN_IF_NULL(opPtr,0);
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "path=" << opPtr->path();
-    int result=this->_setupPlayer(_currentPlayerID, opPtr);
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "result=" << result;
+    qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "path=" << opPtr->path();
+    int result=this->_setupPlayer(getCurrentPlayerID(), opPtr);
     if(result)
     {
 
         //	Instruct player to play
-        this->_startPlayer(_currentPlayerID);
+        this->_startPlayer(getCurrentPlayerID());
 
-        //	Load next song in alternate player
-        this->_loadNextSong();
-
-        qDebug() << SB_DEBUG_INFO << _currentPlayerID << "finish:ok";
+        qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "ok";
         return 1;
     }
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "finish:error";
+    qDebug() << SB_DEBUG_INFO << getCurrentPlayerID() << "finish:error";
     return 0;
-}
-
-void
-PlayerController::continueNextSong(int newCurrentPlayerID)
-{
-    qDebug() << SB_DEBUG_INFO << "_currentPlayerID=" << _currentPlayerID;
-    qDebug() << SB_DEBUG_INFO << "newCurrentPlayerID=" << newCurrentPlayerID;
-
-    _currentPlayerID=newCurrentPlayerID;
-
-    SBIDOnlinePerformancePtr opPtr=_playerInstance[_currentPlayerID].getSBIDOnlinePerformancePtr();
-    if(opPtr!=SBIDOnlinePerformancePtr())
-    {
-        qDebug() << SB_DEBUG_INFO << opPtr->playPosition();
-        emit setRowVisible(opPtr->playPosition());	//	CWIP:	Handle from SBMediaPlayer
-    }
-
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << _playerInstance[_currentPlayerID].path();
-    this->_makePlayerVisible(_currentPlayerID);
-    this->_refreshPlayingNowData();
-
-    this->_loadNextSong();
 }
 
 void
@@ -225,8 +258,12 @@ PlayerController::_init()
 
     for(int i=0;i<_maxPlayerID;i++)
     {
-        connect(&(_playerInstance[i]), SIGNAL(prepareNextSong(int)),
-            this, SLOT(startNextSong(int)));
+        connect(&(_playerInstance[i]), SIGNAL(prepareToStartNextSong(int)),
+            this, SLOT(startNextPlayerOnCue(int)));
+        connect(&(_playerInstance[i]), SIGNAL(needMoreSongs()),
+                this, SLOT(handleNeedMoreSongs()));
+        connect(&(_playerInstance[i]), SIGNAL(weArePlayingTime2LoadNextSong(int,SBIDOnlinePerformancePtr)),
+            this, SLOT(processPlayerStarted(int,SBIDOnlinePerformancePtr)));
     }
 
     //	Get QFrame pointers
@@ -250,7 +287,7 @@ PlayerController::_init()
     _playerInstance[1].setPlayerDataLabel(mw->ui.lMusicPlayerDataRight);
 
     //	Set left player visible
-    _makePlayerVisible(_currentPlayerID);
+    _makePlayerVisible(getCurrentPlayerID());
 
     //	Instantiate media players
 //    for(int i=0; i<_maxPlayerID;i++)
@@ -277,23 +314,10 @@ PlayerController::_init()
     {
         _playerInstance[i].setPlayerID(i);
     }
-    _playerPlayingID=-1;
-}
-
-void
-PlayerController::_loadNextSong()
-{
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "start";
-
-    PlayManager* pm=Context::instance()->playManager();
-    SBIDOnlinePerformancePtr nextOpPtr=pm->getNextPlayItem();
-    if(nextOpPtr!=nullptr)
-    {
-        qDebug() << SB_DEBUG_INFO << _currentPlayerID << "loading next:" << nextOpPtr->path();
-        this->_setupPlayer(_getNextPlayerID(this->_currentPlayerID),nextOpPtr);
-        nextOpPtr->resetPlayPosition();
-    }
-    qDebug() << SB_DEBUG_INFO << _currentPlayerID << "finish";
+    SBModelQueuedSongs* qs=Context::instance()->sbModelQueuedSongs();
+    connect(qs, SIGNAL(listReordered()),
+            this, SLOT(handleReorderedPlaylist()));
+    _setPlayerPlayingID(-1);
 }
 
 void
@@ -304,28 +328,61 @@ PlayerController::_makePlayerVisible(int playerID)
 }
 
 void
-PlayerController::_refreshPlayingNowData() const
+PlayerController::_resetPlayers()
 {
     qDebug() << SB_DEBUG_INFO;
-    _playerInstance[_currentPlayerID].refreshPlayingNowData();
+    _setPlayerPlayingID(-1);
+
+    const int defaultPlayerID=0;
+    _makePlayerVisible(defaultPlayerID);
+    _setCurrentPlayerID(defaultPlayerID);
+    for(int i=0;i<_maxPlayerID;i++)
+    {
+        qDebug() << SB_DEBUG_INFO << i;
+        _playerInstance[i].resetPlayer();
+    }
+
+    qDebug() << SB_DEBUG_INFO;
+    _playerInstance[0].refreshPlayingNowData();
+    qDebug() << SB_DEBUG_INFO;
+}
+
+void
+PlayerController::_setCurrentPlayerID(int newPlayerID)
+{
+    if(newPlayerID<0 || newPlayerID>=_maxPlayerID)
+    {
+        qDebug() << SB_DEBUG_ERROR << "newPlayerID" << newPlayerID << "out of bounds";
+        return;
+    }
+    _currentPlayerID=newPlayerID;
+}
+
+void
+PlayerController::_setPlayerPlayingID(int newPlayerID)
+{
+    if(newPlayerID<-1 || newPlayerID>=_maxPlayerID)
+    {
+        qDebug() << SB_DEBUG_ERROR << "newPlayerID" << newPlayerID << "out of bounds";
+        return;
+    }
+    _playerPlayingID=newPlayerID;
 }
 
 bool
 PlayerController::_setupPlayer(int playerID, SBIDOnlinePerformancePtr opPtr)
 {
-    qDebug() << SB_DEBUG_INFO << playerID << "start";
     if(_playerInstance[playerID].setMedia(opPtr)==0)
     {
         QString errorMsg=_playerInstance[playerID].error();
         qDebug() << SB_DEBUG_ERROR << errorMsg;
         Controller* c=Context::instance()->controller();
         c->updateStatusBarText(errorMsg);
-        _refreshPlayingNowData();
         opPtr->setErrorMessage(errorMsg);
-        qDebug() << SB_DEBUG_INFO << playerID << "finish:error";
+        qDebug() << SB_DEBUG_INFO << playerID << "error";
         return 0;
     }
-    qDebug() << SB_DEBUG_INFO << playerID << "finish";
+    qDebug() << SB_DEBUG_INFO << playerID << "ok";
     return 1;
 }
 
@@ -333,6 +390,6 @@ void
 PlayerController::_startPlayer(int playerID)
 {
     qDebug() << SB_DEBUG_INFO << "playerID=" << playerID;
-    _playerInstance[playerID].play();
-    _refreshPlayingNowData();
+    qDebug() << SB_DEBUG_INFO << "_currentPlayerID=" << getCurrentPlayerID();
+    _playerInstance[playerID].startPlay();
 }
