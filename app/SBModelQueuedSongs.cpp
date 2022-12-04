@@ -273,10 +273,6 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
 
     for(int i=0;i<newPlaylist.count();i++)
     {
-        if(currentPlayID()==-1)
-        {
-            _currentPlayID=0;	//	now that we have at least one entry, set current song to play to 0.
-        }
         SBIDOnlinePerformancePtr opPtr=newPlaylist[i];
 
         if(opPtr)
@@ -313,7 +309,7 @@ SBModelQueuedSongs::populate(QMap<int,SBIDOnlinePerformancePtr> newPlaylist,bool
             //	If queue gets cleared (user presses clear button) and items are enqueued,
             //	player will start with the 2nd song. Therefore, _currentPlayID needs to be
             //	reset.
-            _currentPlayID=0;
+            _currentPlayID=-1;
         }
     }
     emit listChanged();
@@ -543,7 +539,7 @@ SBModelQueuedSongs::setCurrentPlayID(int playID)
 }
 
 int
-SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
+SBModelQueuedSongs::shuffle()
 {
     QMap<int,int> pp2vpMap=_populateMapPlaylistPosition2ViewPosition();
 
@@ -552,25 +548,24 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
     int index=1;                                    //	1-based
 
     //	skip played songs -- used by radio mode
-    if(skipPlayedSongsFlag)
-    {
+//    {
         while(index<=currentPlayID()+1)
         {
             fromTo[index]=index;
             usedIndex.append(index);
             index++;
         }
-    }
-    else if(currentPlayID()>=0 && currentPlayID()<this->rowCount())
-    {
+//    }
+//    else if(currentPlayID()>=0 && currentPlayID()<this->rowCount())
+//    {
         //	Assign current playing to first spot, used by non-radio mode
-        if(fromTo.contains(index)==0)
-        {
-            fromTo[index]=(currentPlayID()+1);
-            usedIndex.append(currentPlayID()+1);
-            index++;
-        }
-    }
+//        if(fromTo.contains(index)==0)
+//        {
+//            fromTo[index]=(currentPlayID()+1);
+//            usedIndex.append(currentPlayID()+1);
+//            index++;
+//        }
+//    }
 
     //	Create fromTo mapping
     while(index<=this->rowCount())
@@ -614,6 +609,8 @@ SBModelQueuedSongs::shuffle(bool skipPlayedSongsFlag)
         }
     }
     _populateMapPlaylistPosition2ViewPosition();
+    this->sort(sb_column_displayplaylistpositionid,Qt::SortOrder::AscendingOrder);
+	emit listReordered();
     return fromTo[currentPlayID()+1]-1;
 }
 

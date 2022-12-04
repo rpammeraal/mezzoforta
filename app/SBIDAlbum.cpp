@@ -366,7 +366,7 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
         "HAVING "
             "COUNT(DISTINCT r.record_id)=1 "
     )
-        .arg(albumPath)
+        .arg(Common::escapeSingleQuotes(albumPath))
     ;
 
     dal->customize(q);
