@@ -30,7 +30,7 @@ class PlayManager : public QObject
 
 public:
     PlayManager(QObject *parent = 0);
-    inline int currentPlayID() const { return _currentPlayID; }
+    int currentPlayID() const;
     inline int radioModeFlag() const { return _radioModeFlag; }
     bool songPlayingFlag() const;
     int numSongs() const;
@@ -38,6 +38,7 @@ public:
 signals:
     void playlistChanged(int playlistID);
     void setRowVisible(int playIndex);
+    void listReordered();
 
 public slots:
     //	Player related
@@ -45,6 +46,7 @@ public slots:
     bool playerPlay();
     bool playerNext(PlayManager::PlayMode playMode=PlayManager::PlayMode::Default);
     void playerStop();
+    void handleNeedMoreSongs();
 
     //	Playlist et al related
     void changeCurrentDatabaseSchema();
@@ -64,7 +66,6 @@ protected:
     void handlePlayingSong(SBIDOnlinePerformancePtr opPtr);
 
 private:
-    int  _currentPlayID;    //	0-based, -1: no song active
     bool _radioModeFlag;
 
     void _init();

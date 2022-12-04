@@ -72,6 +72,7 @@ public:
 signals:
     void listCleared();
     void listChanged();
+    void listReordered();
 
 protected:
     friend class Context;
@@ -80,7 +81,7 @@ protected:
     virtual void clear();
     void doInit();
     virtual QModelIndex setCurrentPlayID(int currentPlayID);
-    int shuffle(bool skipPlayedSongsFlag=0);
+    int shuffle();
 
 private:
     int  _currentPlayID;	//	Shadow of PlayManager::PlayManager

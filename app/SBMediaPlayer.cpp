@@ -63,17 +63,19 @@ SBMediaPlayer::paCallback
 
     quint64 samplesRead=_ad->getSamples(output,sampleCount);
 
-    if(!_fiveSecondMarkPassed && (_ad->lengthInMs() - this->position())<5000)
+    if(!_fiveSecondsLeftToPlay && (_ad->lengthInMs() - this->position())<5000)
     {
         qDebug() << SB_DEBUG_INFO << "5 second left";
-        _fiveSecondMarkPassed=1;
+        _fiveSecondsLeftToPlay=1;
         _playerProgressSlider->setEnabled(0);
     }
     else if(!_startNextSongSignalGiven && (_ad->lengthInMs() - this->position())<1000)
     {
         qDebug() << SB_DEBUG_INFO << "1 second left";
-        _startNextSongSignalGiven=1;	//	only throw signal once.
-        emit prepareNextSong(this->_playerID);
+        //	throw signal to alert other player that we're almost done.
+        emit prepareToStartNextSong(this->_playerID);
+        //	only throw signal once.
+        _startNextSongSignalGiven=1;
     }
 
     if(samplesRead)
@@ -95,9 +97,13 @@ SBMediaPlayer::paCallback
         memset(output, 0, sampleCount * _ad->numChannels() * (_ad->bitsPerSample()/8));
         resultCode=paComplete;
 
-        PlayerController* pc=Context::instance()->playerController();
         _isActivePlayer=0;
-        pc->setPlayerFinished();
+        _mediaLoaded=0;
+        _isReadyTogo=0;
+        //	Setting the player to finished cannot be done with QT signal/slots. It is way to slow.
+        PlayerController* pc=Context::instance()->playerController();
+        pc->setPlayerFinished(_playerID);
+        _state=QMediaPlayer::State::StoppedState;
     }
 
     /*
@@ -157,7 +163,7 @@ SBMediaPlayer::setMedia(SBIDOnlinePerformancePtr opPtr)
     _opPtr=SBIDOnlinePerformancePtr();
     _state=QMediaPlayer::State::StoppedState;
     _durationTime=SBDuration();
-    qDebug() << SB_DEBUG_INFO << this->path();
+    qDebug() << SB_DEBUG_INFO << _playerID << opPtr->path();
 
     if(_stream)
     {
@@ -184,40 +190,18 @@ SBMediaPlayer::setMedia(SBIDOnlinePerformancePtr opPtr)
     this->_setDuration(_ad->lengthInMs());
     _opPtr=opPtr;
     _portAudioOpen();
+    _mediaLoaded=1;
+    qDebug() << SB_DEBUG_INFO << _playerID << "_mediaLoaded=" << _mediaLoaded;
 
     return 1;
 }
 
 ///	Public slots
 void
-SBMediaPlayer::play()
-{
-    qDebug() << SB_DEBUG_INFO << _playerID << "start";
-    _isActivePlayer=1;
-    _fiveSecondMarkPassed=0;
-    _playerProgressSlider->setEnabled(1);
-    _startNextSongSignalGiven=0;
-    qDebug() << SB_DEBUG_INFO << _playerID << "**********************************************************************";
-    qDebug() << SB_DEBUG_INFO << _playerID << "path=" << path();
-    _paError=Pa_StartStream(_stream);
-    if( _paError != paNoError )
-    {
-        _setErrorMsg(Pa_GetErrorText(_paError));
-        qDebug() << SB_DEBUG_ERROR << Pa_GetErrorText(_paError);
-        return;
-    }
-    qDebug() << SB_DEBUG_INFO << _playerID;
-    _setState(QMediaPlayer::PlayingState);
-    PlayerController* pc=Context::instance()->playerController();
-    qDebug() << SB_DEBUG_INFO << _playerID << "Setting playerPlaying";
-    pc->handlePlayingSong(this->_playerID,_opPtr);
-}
-
-void
 SBMediaPlayer::playOnCue()
 {
     PlayerController* pc=Context::instance()->playerController();
-    int pID=pc->getPlayerPlayingID();
+    int pID=pc->getCurrentPlayerID();
     int i=0;	//	This can be removed later on.
     qDebug() << SB_DEBUG_INFO << _playerID << "start:playerPlaying=" << pID;
     while(pID!=-1)
@@ -229,46 +213,103 @@ SBMediaPlayer::playOnCue()
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
         pID=pc->getPlayerPlayingID();
     }
-    qDebug() << SB_DEBUG_INFO << _playerID << "calling play()";
-    this->play();
-    pc->continueNextSong(_playerID);
-    qDebug() << SB_DEBUG_INFO << _playerID << "finish";
+    qDebug() << SB_DEBUG_INFO << _playerID << "_mediaLoaded" << _mediaLoaded;
+    qDebug() << SB_DEBUG_INFO << _playerID << "calling startPlay()";
+    this->startPlay();
+}
+
+int
+SBMediaPlayer::startPlay()
+{
+    if(!_mediaLoaded)
+    {
+        qDebug() << SB_DEBUG_INFO << _playerID << "_mediaLoaded=" << _mediaLoaded;
+        qDebug() << SB_DEBUG_WARNING << _playerID << "no media loaded";
+        emit needMoreSongs();
+        return 0;
+    }
+    if(_isReadyTogo)
+    {
+        qDebug() << SB_DEBUG_ERROR << _playerID << "Player already going";
+        return 0;
+    }
+    qDebug() << SB_DEBUG_INFO << _playerID << "start";
+    _isActivePlayer=1;
+    _fiveSecondsLeftToPlay=0;
+    _playerProgressSlider->setEnabled(1);
+    _startNextSongSignalGiven=0;
+    qDebug() << SB_DEBUG_INFO << _playerID << "path=" << path();
+    _paError=Pa_StartStream(_stream);
+    if( _paError != paNoError )
+    {
+        _setErrorMsg(Pa_GetErrorText(_paError));
+        qDebug() << SB_DEBUG_ERROR << Pa_GetErrorText(_paError);
+        return 0;
+    }
+    qDebug() << SB_DEBUG_INFO << _playerID;
+    _setState(QMediaPlayer::PlayingState);
+    _isReadyTogo=1;
+    qDebug() << SB_DEBUG_INFO << _playerID << "Setting playerPlaying";
+    emit weArePlayingTime2LoadNextSong(_playerID,_opPtr);
+    return 1;
+}
+
+void
+SBMediaPlayer::play()
+{
+    if(_checkReadyTogoStatus() && _progressSliderMovable())
+    {
+        qDebug() << SB_DEBUG_INFO << _playerID;
+        Pa_StartStream(_stream);
+        _setState(QMediaPlayer::PlayingState);
+    }
 }
 
 void
 SBMediaPlayer::pause()
 {
-    Pa_StopStream(_stream);
-    qDebug() << SB_DEBUG_INFO << _playerID;
-    _setState(QMediaPlayer::PausedState);
+    if(_checkReadyTogoStatus() && _progressSliderMovable())
+    {
+        qDebug() << SB_DEBUG_INFO << _playerID;
+        Pa_StopStream(_stream);
+        _setState(QMediaPlayer::PausedState);
+    }
 }
 
 void
 SBMediaPlayer::setPosition(qint64 position)
 {
     //	setPosition is controlled by sliding da slider.
-    if(_ad)
+    if(_ad && _progressSliderMovable())
     {
         _ad->setPosition(position);
     }
-    return;
 }
 
 void
 SBMediaPlayer::stop()
 {
-    qDebug() << SB_DEBUG_INFO << _playerID;
-    Pa_StopStream(_stream);
-    _setState(QMediaPlayer::StoppedState);
-    _playerProgressSlider->setValue(0);
+    if(_checkReadyTogoStatus() && _progressSliderMovable())
+    {
+        qDebug() << SB_DEBUG_INFO << _playerID;
+        Pa_StopStream(_stream);
+        _setState(QMediaPlayer::StoppedState);
+        _playerProgressSlider->setValue(0);
+    }
 }
 
 ///	Protected methods
 void
+SBMediaPlayer::resetPlayer()
+{
+    _resetPlayer();
+}
+
+void
 SBMediaPlayer::refreshPlayingNowData() const
 {
     QString playState;
-    qDebug() << SB_DEBUG_INFO << _playerID << _state;
+    qDebug() << SB_DEBUG_INFO;
     switch(_state)
     {
     case QMediaPlayer::State::StoppedState:
@@ -278,28 +319,24 @@ SBMediaPlayer::refreshPlayingNowData() const
 
     case QMediaPlayer::State::PlayingState:
         _playerPlayButton->setText("||");
-        playState="Now Playing: ";
+        playState="Now Playing";
         break;
 
     case QMediaPlayer::State::PausedState:
         _playerPlayButton->setText(">");
-        playState="Paused: ";
+        playState="Paused";
         break;
     }
+    qDebug() << SB_DEBUG_INFO;
 
     playState="<BODY BGCOLOR=\"#f0f0f0\"><CENTER>"+playState;
-    if(_state==QMediaPlayer::State::PausedState ||
-       _state==QMediaPlayer::State::PlayingState)
     {
-        qDebug() << SB_DEBUG_INFO << _playerID << _state;
         QString apNotes;
         SBIDAlbumPerformancePtr apPtr;
 
-        //	Debug info
-        SB_DEBUG_IF_NULL(_opPtr);
-
         if(_opPtr)
         {
+            playState=playState+": ";
             apPtr=SBIDAlbumPerformancePtr();
 
             if(apPtr)
@@ -331,11 +368,25 @@ SBMediaPlayer::refreshPlayingNowData() const
             ;
         }
     }
+    qDebug() << SB_DEBUG_INFO;
     playState+="</CENTER></BODY>";
+    qDebug() << SB_DEBUG_INFO;
     _playerDataLabel->setText(playState);
+    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Private methods
+int
+SBMediaPlayer::_checkReadyTogoStatus() const
+{
+    if(_isReadyTogo)
+    {
+        return 1;
+    }
+    qDebug() << SB_DEBUG_WARNING << _playerID  << "not ready to go";
+    return 0;
+}
+
 void
 SBMediaPlayer::_closeStream()
 {
@@ -353,6 +404,9 @@ SBMediaPlayer::_closeStream()
 #endif
     _ad=NULL;
     _stream=NULL;
+    _mediaLoaded=0;
+    _isReadyTogo=0;
+    _opPtr=nullptr;
 }
 
 QString
@@ -390,9 +444,11 @@ SBMediaPlayer::_init()
     _oldPositionInSec=0;
     _isActivePlayer=0;
     _playerID=0;
-    _fiveSecondMarkPassed=0;
+    _fiveSecondsLeftToPlay=0;
     _startNextSongSignalGiven=0;
     _opPtr=SBIDOnlinePerformancePtr();
+    _mediaLoaded=0;
+    _isReadyTogo=0;
 
     _portAudioInit();
 }
@@ -512,8 +568,7 @@ SBMediaPlayer::_portAudioOpen()
 
         if(_stream)
         {
-            _closeStream();
-            _portAudioTerminate();
+            _resetPlayer();
         }
         return false;
     }
@@ -528,6 +583,26 @@ SBMediaPlayer::_portAudioTerminate()
         Pa_Terminate();
     }
     _portAudioInitFlag=0;
+}
+
+int
+SBMediaPlayer::_progressSliderMovable() const
+{
+    return _playerProgressSlider->isEnabled();
+}
+
+void
+SBMediaPlayer::_resetPlayer()
+{
+    _closeStream();
+    _portAudioTerminate();
+    _paError=paNoError;
+    _state=QMediaPlayer::StoppedState;
+    _hasErrorFlag=0;
+    _oldPositionInSec=0;
+    _isActivePlayer=0;
+    _fiveSecondsLeftToPlay=0;
+    _startNextSongSignalGiven=0;
 }
 
 void
@@ -551,6 +626,7 @@ SBMediaPlayer::_setState(QMediaPlayer::State state)
 {
     qDebug() << SB_DEBUG_INFO << _playerID << state;
     _state=state;
+    refreshPlayingNowData();
 }
 
 void

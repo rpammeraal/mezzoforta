@@ -38,20 +38,25 @@ public:
     ~PlayerController();
 
     inline SBIDOnlinePerformancePtr currentPerformancePlaying() const { return _playerInstance[_currentPlayerID].getSBIDOnlinePerformancePtr(); }
-    inline int getCurrentPlayer() const { return _currentPlayerID; }
-    QMediaPlayer::State playState() const;
-    void setPlayerFinished() { _playerPlayingID=-1; }
+    inline int getCurrentPlayerID() const { return _currentPlayerID; }
     inline int getPlayerPlayingID() const { return _playerPlayingID; }
     void handlePlayingSong(int playerID, SBIDOnlinePerformancePtr opPtr);
+    QMediaPlayer::State playState() const;
+    void setPlayerFinished(int currentPlayerID);
 
 signals:
     void playNextSong();
+    void needMoreSongs(); 	//	Thrown when no more songs are available.
     void setRowVisible(int playIndex);
 
 public slots:
     void playerRewind();
     void playerForward();
-    void startNextSong(int fromCurrentPlayerID);
+    void startNextPlayerOnCue(int fromCurrentPlayerID);
+    void handleNeedMoreSongs();
+    void handleReorderedPlaylist();
+    void loadNextSong();
+    void processPlayerStarted(int playerID, SBIDOnlinePerformancePtr opPtr);
 
 private slots:
     void playerDataClicked(const QUrl& url);
@@ -63,7 +68,6 @@ protected:
 
     void doInit();	//	Init done by Context::
     bool playSong(SBIDOnlinePerformancePtr& performancePtr);
-    void continueNextSong(int newCurrentPlayerID);
     void explicitSetPlayerVisible(int playerID);
 
 protected slots:
@@ -73,17 +77,22 @@ protected slots:
 
 private:
     static const int                _maxPlayerID=2;
-    int                             _currentPlayerID;
+    int                             _currentPlayerID;	//	This value can not be larger than _maxPlayerID-1
+                                                        //	(In practice: 0 or 1).
     SBDuration                      _durationTime[_maxPlayerID];
     SBMediaPlayer                   _playerInstance[_maxPlayerID];
     SBIDOnlinePerformancePtr        _nextPerformancePlayingPtr;
-    int								_playerPlayingID;
+    int								_playerPlayingID;	//	used to find out which player is actually playing.
+                                                        //	Used to start player 'on cue' when other player finishes.
+                                                        //	Can have values -1,0,1, where -1 means that no player
+                                                        //	is playing.
 
     void _init();
     inline int _getNextPlayerID(int currentPlayerID) const { return currentPlayerID+1>=_maxPlayerID?0:currentPlayerID+1; }
-    void _loadNextSong();
     void _makePlayerVisible(int playerID);
-    void _refreshPlayingNowData() const;
+    void _resetPlayers();
+    void _setCurrentPlayerID(int playerID);
+    void _setPlayerPlayingID(int playerID);
     bool _setupPlayer(int playerID, SBIDOnlinePerformancePtr opPtr);
     void _startPlayer(int playerID);
 };
