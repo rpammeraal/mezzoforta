@@ -109,6 +109,13 @@ SongAlbumNotes::reset()
     _findNextNotes();
 }
 
+void
+SongAlbumNotes::nextSongButton()
+{
+    _loadNextSong=1;
+    QDialog::accept();
+}
+
 //	Private methods
 qsizetype
 SongAlbumNotes::_findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const
@@ -179,6 +186,8 @@ SongAlbumNotes::_findNextNotes()
 void
 SongAlbumNotes::_init()
 {
+    _loadNextSong=0;
+
     connect(ui->moveButton, SIGNAL(clicked(bool)),
             this, SLOT(move()));
     connect(ui->nextButton, SIGNAL(clicked(bool)),
@@ -187,4 +196,13 @@ SongAlbumNotes::_init()
             this, SLOT(findPrevNotes()));
     connect(ui->resetButton, SIGNAL(clicked(bool)),
             this, SLOT(reset()));
+
+    connect(ui->cancelButton, SIGNAL(clicked(bool)),
+            this, SLOT(reject()));
+    connect(ui->doneButton, SIGNAL(clicked()),
+            this, SLOT(accept()));
+    connect(ui->nextSongButton, SIGNAL(clicked()),
+            this, SLOT(nextSongButton()));
+    connect(ui->albumNotes, SIGNAL(returnPressed()),
+            this, SLOT(nextSongButton()));
 }

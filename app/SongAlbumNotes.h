@@ -24,9 +24,10 @@ public slots:
     void findPrevNotes();
     void move();
     void reset();
+    void nextSongButton();
 
 private:
-    Ui::SongAlbumNotes  *ui;
+    Ui::SongAlbumNotes* ui;
     QString				_orgSongTitle;
     QString				_modSongTitle;
     int					_commentIndex;
@@ -34,6 +35,7 @@ private:
     int					_commentStartIndex;
     int					_commentEndIndex;
     QString             _currentSongNotes;
+    bool                _loadNextSong;
 
     qsizetype _findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const;
     void _findNextNotes();
