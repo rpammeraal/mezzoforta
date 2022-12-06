@@ -12,20 +12,32 @@ class SongAlbumNotes : public QDialog
     Q_OBJECT
 
 public:
-    explicit SongAlbumNotes(QString songTitle,QWidget *parent = nullptr);
+    explicit SongAlbumNotes(QString songTitle,QString albumNotes,QWidget *parent = nullptr);
     ~SongAlbumNotes();
+
+    QString albumNotes() const;
+    inline QString modSongTitle() const { return _modSongTitle; }
+    inline QString orgSongTitle() const { return _orgSongTitle; }
+
+public slots:
+    void findNextNotes();
+    void findPrevNotes();
+    void move();
+    void reset();
 
 private:
     Ui::SongAlbumNotes  *ui;
-    QString				_albumComment;
     QString				_orgSongTitle;
     QString				_modSongTitle;
     int					_commentIndex;
+    int					_maxNotesIndex;
     int					_commentStartIndex;
     int					_commentEndIndex;
-    QString             _currentSongComment;
+    QString             _currentSongNotes;
 
-    void _findNextComment();
+    qsizetype _findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const;
+    void _findNextNotes();
+    void _init();
 };
 
 #endif // SONGALBUMNOTE_H

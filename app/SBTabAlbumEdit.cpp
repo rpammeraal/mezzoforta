@@ -479,8 +479,16 @@ SBTabAlbumEdit::handleClicked(const QModelIndex index)
         AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
 
         QString songTitle=aem->item(index.row(),AlbumEditModel::sb_column_songtitle)->text();
-        _san=new SongAlbumNotes(songTitle,this);
-        _san->exec();
+        QString albumNotes=aem->item(index.row(),AlbumEditModel::sb_column_notes)->text();
+        SongAlbumNotes san(songTitle,albumNotes,this);
+        int result=san.exec();
+        qDebug() << SB_DEBUG_INFO << result;
+        qDebug() << SB_DEBUG_INFO << san.modSongTitle();
+        qDebug() << SB_DEBUG_INFO << san.albumNotes();
+        QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
+        aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
+        QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
+        aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
     }
 }
 
