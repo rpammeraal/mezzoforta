@@ -63,6 +63,7 @@ public:
         QString albumTitle;
         QString songPerformerName;
         QString songTitle;
+        QString orgSongTitle;					//	Used by SBTabAlbumEdit
 
         //	Secondary meta data attributes (optional)
         QString albumPerformerName;

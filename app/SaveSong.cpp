@@ -1,81 +1,16 @@
-#include <QMessageBox>
-
-#include "DataAccessLayer.h"
-#include "SBTabSongEdit.h"
+#include "SaveSong.h"
 
 #include "CacheManager.h"
 #include "Context.h"
-#include "Controller.h"
-#include "MainWindow.h"
-#include "SBIDPerformer.h"
-#include "SaveSong.h"
+#include "DataAccessLayer.h"
 
-SBTabSongEdit::SBTabSongEdit(QWidget* parent) : SBTab(parent,1)
+SaveSong::SaveSong()
 {
 }
 
-void
-SBTabSongEdit::handleEnterKey()
+int
+SaveSong::save(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText)
 {
-    save();
-}
-
-bool
-SBTabSongEdit::hasEdits() const
-{
-    const SBKey key=this->currentScreenItem().key();
-    const MainWindow* mw=Context::instance()->mainWindow();
-
-    SBIDSongPtr songPtr=SBIDSong::retrieveSong(key);
-    SB_RETURN_IF_NULL(songPtr,0);
-
-    if(songPtr->songTitle()!=mw->ui.songEditTitle->text() ||
-        songPtr->songOriginalPerformerName()!=mw->ui.songEditPerformerName->text() ||
-        songPtr->songOriginalYear()!=mw->ui.songEditYearOfRelease->text().toInt() ||
-        songPtr->notes()!=mw->ui.songEditNotes->text() ||
-        songPtr->lyrics()!=mw->ui.songEditLyrics->toPlainText()
-    )
-    {
-        return 1;
-    }
-
-    return 0;
-}
-
-///	Public slots
-void
-SBTabSongEdit::save() const
-{
-    ScreenItem currentScreenItem=this->currentScreenItem();
-    if(currentScreenItem.editFlag()==0)
-    {
-        qDebug() << SB_DEBUG_ERROR << "isEditFlag flag not set. Aborting.";
-        return;
-    }
-
-    SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().key());
-    const MainWindow* mw=Context::instance()->mainWindow();
-    QString editTitle=mw->ui.songEditTitle->text().simplified();
-    QString editPerformerName=mw->ui.songEditPerformerName->text().simplified();
-    int editYearOfRelease=mw->ui.songEditYearOfRelease->text().toInt();
-    QString editNotes=mw->ui.songEditNotes->text();
-    QString editLyrics=mw->ui.songEditLyrics->toPlainText();
-
-
-    SaveSong s;
-    QString updateText;
-    int dataHasChanged=0;
-    dataHasChanged=s.save(orgSongPtr,editTitle,editPerformerName,editYearOfRelease,editNotes,editLyrics,updateText);
-    currentScreenItem.setEditFlag(0);
-    Context::instance()->controller()->updateStatusBarText(updateText);
-    if(dataHasChanged)
-    {
-        mw->ui.tabAllSongs->preload();
-    }
-
-/*
-    //	OLD
-
     //	Test cases:
     //	A1.	[simple rename] Bad - U2: change to Badaa. Should be simple renames.
     //	A2.	[simple rename w/ case] Badaa - U2 to BadaA. Should take into account case change.
@@ -140,30 +75,14 @@ SBTabSongEdit::save() const
     CachePerformerMgr* peMgr=cm->performerMgr();
     CacheSongMgr* sMgr=cm->songMgr();
 
-    ScreenItem currentScreenItem=this->currentScreenItem();
-    if(currentScreenItem.editFlag()==0)
-    {
-        qDebug() << SB_DEBUG_ERROR << "isEditFlag flag not set. Aborting.";
-        return;
-    }
-
     //	1.	Pointers to original song.
-    SBIDSongPtr orgSongPtr=SBIDSong::retrieveSong(this->currentScreenItem().key());
     SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
 
-    SB_RETURN_VOID_IF_NULL(orgSongPtr);
-    SB_RETURN_VOID_IF_NULL(orgSpPtr);
+    SB_RETURN_IF_NULL(orgSongPtr,0);
+    SB_RETURN_IF_NULL(orgSpPtr,0);
 
     //	Pointer to new song, only if found
     SBIDSongPtr newSongPtr;
-
-    //	Attributes
-    const MainWindow* mw=Context::instance()->mainWindow();
-    QString editTitle=mw->ui.songEditTitle->text().simplified();
-    QString editPerformerName=mw->ui.songEditPerformerName->text().simplified();
-    int editYearOfRelease=mw->ui.songEditYearOfRelease->text().toInt();
-    QString editNotes=mw->ui.songEditNotes->text();
-    QString editLyrics=mw->ui.songEditLyrics->toPlainText();
 
     //	Flags
     bool metaDataChangedFlag=0;
@@ -206,7 +125,7 @@ SBTabSongEdit::save() const
             else
             {
                 newSongPtr=altSpPtr->songPtr();
-                SB_RETURN_VOID_IF_NULL(newSongPtr);
+                SB_RETURN_IF_NULL(newSongPtr,0);
                 mergedFlag=1;
                 setMetaDataFlag=0;
             }
@@ -229,7 +148,7 @@ SBTabSongEdit::save() const
             if(result==Common::result_canceled)
             {
                 qDebug() << SB_DEBUG_WARNING << "none selected -- exit from import";
-                return;
+                return 0;
             }
             else if(result==Common::result_missing)
             {
@@ -274,7 +193,7 @@ SBTabSongEdit::save() const
                     {
                         //		If found, merge -> save.
                         newSongPtr=altSpPtr->songPtr();
-                        SB_RETURN_VOID_IF_NULL(newSongPtr);
+                        SB_RETURN_IF_NULL(newSongPtr,0);
                         mergedFlag=1;
                     }
                 }
@@ -292,12 +211,12 @@ SBTabSongEdit::save() const
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_WARNING << "none selected -- exit from import";
-                        return;
+                        return 0;
                     }
                     if(result==Common::result_exists_derived || result==Common::result_exists_user_selected)
                     {
                         //		if found: merge
-                        SB_RETURN_VOID_IF_NULL(newSongPtr);
+                        SB_RETURN_IF_NULL(newSongPtr,0);
                         mergedFlag=1;
                     }
                     if(result==Common::result_missing)
@@ -337,11 +256,11 @@ SBTabSongEdit::save() const
             if(result==Common::result_canceled)
             {
                 qDebug() << SB_DEBUG_WARNING << "none selected -- exit from import";
-                return;
+                return 0;
             }
             else if(result==Common::result_exists_derived || result==Common::result_exists_user_selected)
             {
-                SB_RETURN_VOID_IF_NULL(newSongPtr);
+                SB_RETURN_IF_NULL(newSongPtr,0);
                 if(orgSongPtr->songID()!=newSongPtr->songID())
                 {
                     mergedFlag=1;
@@ -365,7 +284,7 @@ SBTabSongEdit::save() const
 
     if(setMetaDataFlag && metaDataChangedFlag)
     {
-        SB_RETURN_VOID_IF_NULL(newSongPtr);
+        SB_RETURN_IF_NULL(newSongPtr,0);
         newSongPtr->setNotes(editNotes);
         newSongPtr->setLyrics(editLyrics);
         SBIDSongPerformancePtr spPtr=newSongPtr->originalSongPerformancePtr();
@@ -425,15 +344,13 @@ SBTabSongEdit::save() const
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
 
         //	Update screenstack, display notice, etc.
-        QString updateText=QString("Saved song %1%2%3.")
+        updateText=QString("Saved song %1%2%3.")
             .arg(QChar(96))      //	1
             .arg(newSongPtr->songTitle())   //	2
             .arg(QChar(180));    //	3
 
         //	Update screenstack
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
-        currentScreenItem.setEditFlag(0);
-        Context::instance()->controller()->updateStatusBarText(updateText);
 
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergedFlag)
@@ -451,7 +368,7 @@ SBTabSongEdit::save() const
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
         if(mergedFlag || songTitleChangedFlag)
         {
-            mw->ui.tabAllSongs->preload();
+            return 1;
         }
 
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
@@ -469,64 +386,5 @@ SBTabSongEdit::save() const
 
     //	Close screen
     Context::instance()->navigator()->closeCurrentTab(1);
-    */
-}
-
-void
-SBTabSongEdit::_init()
-{
-    if(_initDoneFlag==0)
-    {
-        _initDoneFlag=1;
-
-        const MainWindow* mw=Context::instance()->mainWindow();
-
-        connect(mw->ui.pbSongEditSave, SIGNAL(clicked(bool)),
-                this, SLOT(save()));
-        connect(mw->ui.pbSongEditCancel, SIGNAL(clicked(bool)),
-                Context::instance()->navigator(), SLOT(closeCurrentTab()));
-    }
-}
-
-ScreenItem
-SBTabSongEdit::_populate(const ScreenItem& si)
-{
-    _init();
-    const MainWindow* mw=Context::instance()->mainWindow();
-    SBIDSongPtr sPtr=SBIDSong::retrieveSong(si.key());
-    SB_RETURN_IF_NULL(sPtr,ScreenItem());
-
-    if(si.key()!=sPtr->key())
-    {
-        //	Update screenstack with correct song key
-        ScreenStack* st=Context::instance()->screenStack();
-
-        st->replace(ScreenItem(si.key()),ScreenItem(sPtr->key()));
-    }
-
-    //	Refresh completers
-    CompleterFactory* cf=Context::instance()->completerFactory();
-    mw->ui.songEditPerformerName->setCompleter(cf->getCompleterPerformer());
-
-    ScreenItem currentScreenItem=si;
-    currentScreenItem.setEditFlag(1);
-    currentScreenItem.updateSBIDBase(sPtr->key());
-    //SBTab::_setCurrentScreenItem(currentScreenItem);
-
-    mw->ui.songEditTitle->setText(sPtr->songTitle());
-    mw->ui.songEditPerformerName->setText(sPtr->songOriginalPerformerName());
-    mw->ui.songEditYearOfRelease->setText(QString("%1").arg(sPtr->songOriginalYear()));
-    mw->ui.songEditNotes->setText(sPtr->notes());
-    mw->ui.songEditLyrics->setText(sPtr->lyrics());
-
-    //	Disable tmpButtons
-    mw->ui.pbNA2->hide();
-
-    //	Set correct focus
-    mw->ui.songEditTitle->selectAll();
-    mw->ui.songEditTitle->setFocus();
-
-    mw->ui.tabSongEditLists->setCurrentIndex(0);
-
-    return currentScreenItem;
+    return 0;
 }

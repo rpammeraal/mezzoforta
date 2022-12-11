@@ -13,19 +13,21 @@ SBSqlQueryModel::SBSqlQueryModel()
     _init();
 }
 
-SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn)
+SBSqlQueryModel::SBSqlQueryModel(const QString& query,int positionColumn,bool verboseFlag)
 {
     _init();
     _positionColumn=positionColumn;
 
     QString q=query;
-
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     dal->customize(q);
+    if(verboseFlag)
+    {
+        qDebug() << SB_DEBUG_INFO
+                 << "positionColumn=" << _positionColumn
+                 << "query=" << q;
+    }
 
-//    qDebug() << SB_DEBUG_INFO
-//             << "positionColumn=" << _positionColumn
-//             << "query=" << q;
     QSqlQueryModel::clear();
     QSqlQueryModel::setQuery(q,QSqlDatabase::database(dal->getConnectionName()));
 

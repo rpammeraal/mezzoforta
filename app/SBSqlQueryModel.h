@@ -20,7 +20,7 @@ class SBSqlQueryModel : public QSqlQueryModel, public SBModel
 
 public:
     SBSqlQueryModel();
-    SBSqlQueryModel(const QString& query,int positionColumn=-1);
+    SBSqlQueryModel(const QString& query,int positionColumn=-1,bool verboseFlag=0);
     ~SBSqlQueryModel();
 
     //	Inherited methods

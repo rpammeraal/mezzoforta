@@ -20,7 +20,6 @@ class SBTableModel;
 class SBIDSong;
 typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 
-#include "SBIDAlbumPerformance.h"
 #include "SBIDPlaylist.h"
 
 class SBIDSong : public SBIDBase
@@ -119,6 +118,7 @@ protected:
     friend class SBTabSongEdit;
     friend class SBIDSongPerformance;
     friend class SBIDChart;
+    friend class SaveSong;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
     //	Protected setters

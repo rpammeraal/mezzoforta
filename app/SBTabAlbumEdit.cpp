@@ -20,6 +20,7 @@
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
 #include "SongAlbumNotes.h"
+#include "SaveSong.h"
 
 
 class AlbumEditModel : public QStandardItemModel
@@ -34,12 +35,13 @@ public:
         sb_column_orgalbumperformanceid=4,
         sb_column_orgsongid=5,
         sb_column_sortfield=6,
-        sb_column_itemnumber=7,
-        sb_column_startofdata=7,
-        sb_column_songtitle=8,
-        sb_column_performername=9,
-        sb_column_mod_notes=10,
-        sb_column_notes=11
+        sb_column_orgsongtitle=7,
+        sb_column_itemnumber=8,
+        sb_column_startofdata=8,
+        sb_column_songtitle=9,
+        sb_column_performername=10,
+        sb_column_mod_notes=11,
+        sb_column_notes=12
         //	make sure hidden columns are updated in ::_populate()
     };
 
@@ -61,6 +63,7 @@ public:
         item=new QStandardItem("0"); column.append(item);	                       //	sb_column_orgalbumperformanceid
         item=new QStandardItem("0"); column.append(item);	                       //	sb_column_orgsongid
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_sortfield
+        item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_orgsongtitle
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_itemnumber
         item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_songtitle
         item=new QStandardItem("Performer"); column.append(item);	               //	sb_column_performername
@@ -273,6 +276,7 @@ public:
             item=new QStandardItem(QString("%1").arg(apPtr->albumPerformanceID())); column.append(item); //	sb_column_orgalbumperformanceid
             item=new QStandardItem(QString("%1").arg(apPtr->songID())); column.append(item);             //	sb_column_orgsongid
             item=new QStandardItem(itemNumber); column.append(item);                                     //	sb_column_sortfield
+            item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_orgsongtitle
             item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_itemnumber
             item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_songtitle
             item=new QStandardItem(QString("%1").arg(apPtr->songPerformerName())); column.append(item);  //	sb_column_performername
@@ -290,6 +294,7 @@ public:
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgalbumperformanceid
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongid
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_sortfield
+        item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongtitle
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_itemnumber
         item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
         item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
@@ -799,6 +804,7 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 void
 SBTabAlbumEdit::save() const
 {
+    qDebug() << SB_DEBUG_INFO;
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
@@ -868,6 +874,7 @@ SBTabAlbumEdit::save() const
         //	{
         //		orgAlbumPosition=item->text().toInt();
         //}
+        editedSong.albumPerformerName=editAlbumPerformerName;
 
         item=aem->item(i,AlbumEditModel::sb_column_performername);
         if(item)
@@ -881,6 +888,12 @@ SBTabAlbumEdit::save() const
             editedSong.songTitle=item->text();
         }
 
+        item=aem->item(i,AlbumEditModel::sb_column_orgsongtitle);
+        if(item)
+        {
+            editedSong.orgSongTitle=item->text();
+        }
+
         //	Secondary meta data attributes
         item=aem->item(i,AlbumEditModel::sb_column_notes);
         if(item)
@@ -888,6 +901,7 @@ SBTabAlbumEdit::save() const
             editedSong.notes=item->text();
         }
         editedSong.year=orgAlbumPtr->albumYear();
+
 
         //	Album edit
         item=aem->item(i,AlbumEditModel::sb_column_orgitemnumber);
@@ -995,7 +1009,7 @@ SBTabAlbumEdit::save() const
         return;
     }
 
-    if(0)
+    if(1)
     {	//	DEBUG
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
         qDebug() << SB_DEBUG_INFO << "AFTER VALIDATION";
@@ -1009,6 +1023,7 @@ SBTabAlbumEdit::save() const
                      << ePtr->albumPosition
                      << ePtr->albumPerformanceID
                      << ePtr->songTitle
+                     << ePtr->orgSongTitle
                      << ePtr->songPerformerName
                      << ePtr->removedFlag
                      << ePtr->notes
@@ -1029,6 +1044,39 @@ SBTabAlbumEdit::save() const
                      << apPtr->multipleEntriesFlag()
             ;
         }
+    }
+    //	Create a list of songs which titles has been changed.
+    QVector<MusicLibrary::MLentityPtr> changedSongList;               //	<position:1,SBIDSong:song>
+    QVectorIterator<MusicLibrary::MLentityPtr> eIT(songList);
+    while(eIT.hasNext())
+    {
+        MusicLibrary::MLentityPtr ePtr=eIT.next();
+        if(ePtr && ePtr->errorFlag()==0)
+        {
+            if(ePtr->songTitle!=ePtr->orgSongTitle)
+            {
+                changedSongList.append(ePtr);
+            }
+        }
+    }
+
+    if(1)
+    {
+        QVectorIterator<MusicLibrary::MLentityPtr> eIT(changedSongList);
+        qDebug() << SB_DEBUG_INFO << "CHANGED SONGLIST";
+        while(eIT.hasNext())
+        {
+            MusicLibrary::MLentityPtr ePtr=eIT.next();
+            if(ePtr && ePtr->errorFlag()==0)
+            {
+                qDebug() << SB_DEBUG_INFO
+                     << ePtr->orgSongTitle
+                     << "CHANGED TO"
+                     << ePtr->songTitle
+                ;
+            }
+        }
+
     }
 
     //	Now need to figure out if we still are 'talking' to the same album or
@@ -1097,16 +1145,36 @@ SBTabAlbumEdit::save() const
         mergedFlag=1;
     }
 
-    //	E.	Commit changes
+    //	E.	Go through songList, compare songID in songList with songID in AlbumEditModel
+    //		and merge albumEditModel.songID with songList.songID if they are different
+    //		(using the same logic that is used when editing a song).
+
+    //	F.	Commit changes
     successFlag=cm->saveChanges("Saving Album");
 
     if(successFlag)
     {
+        QString updateText;
+
+        //	Save changed to changed songs.
+        QVectorIterator<MusicLibrary::MLentityPtr> eIT(changedSongList);
+        qDebug() << SB_DEBUG_INFO << "CHANGED SONGLIST";
+        while(eIT.hasNext())
+        {
+            MusicLibrary::MLentityPtr ePtr=eIT.next();
+            SBIDSongPtr sPtr=SBIDSong::retrieveSong(ePtr->songID);
+            sPtr->setSongTitle(ePtr->songTitle);
+            SaveSong s;
+            qDebug() << SB_DEBUG_INFO <<  ePtr->songTitle << ePtr->songPerformerName << ePtr->year << sPtr->notes() << sPtr->lyrics();
+            s.save(sPtr,ePtr->songTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText);
+            Context::instance()->controller()->updateStatusBarText(updateText);
+
+        }
         ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
 
         //	Update screenstack, display notice, etc.
-        QString updateText=QString("Saved album %1%2%3.")
+        updateText=QString("Saved album %1%2%3.")
             .arg(QChar(96))      //	1
             .arg(newAlbumPtr->albumTitle())	//	2
             .arg(QChar(180));    //	3
@@ -1294,6 +1362,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     tv->setColumnHidden(AlbumEditModel::sb_column_orgalbumperformanceid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_orgsongid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_sortfield,1);
+    tv->setColumnHidden(AlbumEditModel::sb_column_orgsongtitle,1);
 
     QHeaderView* hv=NULL;
     hv=tv->horizontalHeader();

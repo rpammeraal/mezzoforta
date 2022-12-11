@@ -12,6 +12,7 @@ QTPLUGIN    += qjpeg qgif qtiffG
 
 SOURCES += \
     Preferences.cpp \
+    SaveSong.cpp \
 	SongAlbumNotes.cpp \
     SqlQuery.cpp \
     main.cpp \
@@ -181,6 +182,7 @@ HEADERS += \
     SBTabSongEdit.h \
     SBTabSongsAll.h \
     SBTableModel.h \
+    SaveSong.h \
     ScreenItem.h \
     ScreenStack.h \
     SearchItemModel.h \

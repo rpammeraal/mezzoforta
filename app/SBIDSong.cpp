@@ -707,8 +707,9 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
         .arg(newSoundex)
         .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
         .arg(p.songID)
+        .arg(p.songTitle)
     ;
-    return new SBSqlQueryModel(q);
+    return new SBSqlQueryModel(q,-1,1);
 }
 
 SBIDSongPtr
@@ -884,6 +885,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 
     if(smgr->find(p,exclude,matches))
     {
+        qDebug() << SB_DEBUG_INFO << matches[0].count() << p.suppressDialogsFlag;
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
@@ -892,6 +894,7 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
         }
         else if(p.suppressDialogsFlag==0)
         {
+            qDebug() << SB_DEBUG_INFO << matches[1].count();
             if(matches[1].count()>1)
             {
                 //	Dataset has at least two records, of which the 2nd one is an soundex match,
@@ -919,17 +922,21 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
             else
             {
                 result=Common::result_missing;
+                qDebug() << SB_DEBUG_INFO << result;
             }
         }
         else
         {
             result=Common::result_missing;
+            qDebug() << SB_DEBUG_INFO << result;
         }
     }
     else
     {
         result=Common::result_missing;
+        qDebug() << SB_DEBUG_INFO << result;
     }
+    qDebug() << SB_DEBUG_INFO << result;
     return result;
 }
 
