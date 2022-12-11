@@ -370,7 +370,7 @@ SBMediaPlayer::refreshPlayingNowData() const
     }
     qDebug() << SB_DEBUG_INFO;
     playState+="</CENTER></BODY>";
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_INFO << playState;
     _playerDataLabel->setText(playState);
     qDebug() << SB_DEBUG_INFO;
 }

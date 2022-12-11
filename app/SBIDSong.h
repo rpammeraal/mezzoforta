@@ -91,6 +91,9 @@ public:
     static SBIDSongPtr retrieveSong(SBKey key);
     static QString iconResourceLocationStatic();
 
+    //	Other
+    static int save(SBIDSongPtr orgSongPtr, const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText);
+
     //	Helper methods for CacheTemplate
     //static ItemType classType() { return Song; }
 
@@ -118,7 +121,6 @@ protected:
     friend class SBTabSongEdit;
     friend class SBIDSongPerformance;
     friend class SBIDChart;
-    friend class SaveSong;
     inline void setOriginalPerformanceID(int originalPerformanceID) { _originalSongPerformanceID=originalPerformanceID; setChangedFlag(); }
 
     //	Protected setters

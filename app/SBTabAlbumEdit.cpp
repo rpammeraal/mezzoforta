@@ -20,7 +20,6 @@
 #include "SBIDPerformer.h"
 #include "SBMessageBox.h"
 #include "SongAlbumNotes.h"
-#include "SaveSong.h"
 
 
 class AlbumEditModel : public QStandardItemModel
@@ -1164,9 +1163,8 @@ SBTabAlbumEdit::save() const
             MusicLibrary::MLentityPtr ePtr=eIT.next();
             SBIDSongPtr sPtr=SBIDSong::retrieveSong(ePtr->songID);
             sPtr->setSongTitle(ePtr->songTitle);
-            SaveSong s;
             qDebug() << SB_DEBUG_INFO <<  ePtr->songTitle << ePtr->songPerformerName << ePtr->year << sPtr->notes() << sPtr->lyrics();
-            s.save(sPtr,ePtr->songTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText);
+            SBIDSong::save(sPtr,ePtr->songTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText);
             Context::instance()->controller()->updateStatusBarText(updateText);
 
         }
