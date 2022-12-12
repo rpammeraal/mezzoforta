@@ -21,7 +21,6 @@
 #include "SBMessageBox.h"
 #include "SongAlbumNotes.h"
 
-
 class AlbumEditModel : public QStandardItemModel
 {
 public:

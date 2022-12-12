@@ -2,8 +2,8 @@
 #include "ui_SongAlbumNotes.h"
 
 #include <QDebug>
-
 #include "Common.h"
+
 
 SongAlbumNotes::SongAlbumNotes(QString songTitle, QString albumNotes, QWidget *parent):
     QDialog(parent),
@@ -39,6 +39,7 @@ SongAlbumNotes::findNextNotes()
 {
     _commentIndex=(_commentIndex+1<_maxNotesIndex)?_commentIndex+1:_commentIndex;
     _findNextNotes();
+    _adjustButtons();
 }
 
 void
@@ -46,11 +47,13 @@ SongAlbumNotes::findPrevNotes()
 {
     _commentIndex=(_commentIndex<0)?0:_commentIndex-1;
     _findNextNotes();
+    _adjustButtons();
 }
 
 void
 SongAlbumNotes::move()
 {
+    qDebug() << SB_DEBUG_INFO << _maxNotesIndex << _commentIndex;
     //	Strip comment of parentheses at beginning and end
     QString comment=_currentSongNotes.mid(1,_currentSongNotes.length()-2);
     QString currentAlbumNotes=ui->albumNotes->text();
@@ -117,6 +120,19 @@ SongAlbumNotes::nextSongButton()
 }
 
 //	Private methods
+void
+SongAlbumNotes::_adjustButtons()
+{
+    qDebug() << SB_DEBUG_INFO << _maxNotesIndex << _commentIndex;
+    bool moveEnabled=_maxNotesIndex>0;
+    bool prevEnabled=_maxNotesIndex>1 && _commentIndex>0;
+    bool nextEnabled=_maxNotesIndex>1 && _commentIndex<(_maxNotesIndex-1);
+
+    ui->moveButton->setEnabled(moveEnabled);
+    ui->prevButton->setEnabled(prevEnabled);
+    ui->nextButton->setEnabled(nextEnabled);
+}
+
 qsizetype
 SongAlbumNotes::_findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const
 {
@@ -181,6 +197,8 @@ SongAlbumNotes::_findNextNotes()
         toDisplay=_modSongTitle + " <font color='grey'><I>&lt;no comments&gt;</I></font>";
     }
     ui->songTitle->setText(toDisplay);
+
+    _adjustButtons();
 }
 
 void

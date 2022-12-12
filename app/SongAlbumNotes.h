@@ -37,6 +37,7 @@ private:
     QString             _currentSongNotes;
     bool                _loadNextSong;
 
+    void _adjustButtons();
     qsizetype _findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const;
     void _findNextNotes();
     void _init();
