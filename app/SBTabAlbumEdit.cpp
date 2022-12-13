@@ -480,18 +480,34 @@ SBTabAlbumEdit::handleClicked(const QModelIndex index)
         const MainWindow* mw=Context::instance()->mainWindow();
         QTableView* tv=mw->ui.albumEditSongList;
         AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+        int currentRow=index.row();
+        bool loadNextSong=0;
 
-        QString songTitle=aem->item(index.row(),AlbumEditModel::sb_column_songtitle)->text();
-        QString albumNotes=aem->item(index.row(),AlbumEditModel::sb_column_notes)->text();
-        SongAlbumNotes san(songTitle,albumNotes,this);
-        int result=san.exec();
-        qDebug() << SB_DEBUG_INFO << result;
-        qDebug() << SB_DEBUG_INFO << san.modSongTitle();
-        qDebug() << SB_DEBUG_INFO << san.albumNotes();
-        QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
-        aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
-        QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
-        aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+        do
+        {
+            QString songTitle=aem->item(currentRow,AlbumEditModel::sb_column_songtitle)->text();
+            QString albumNotes=aem->item(currentRow,AlbumEditModel::sb_column_notes)->text();
+            SongAlbumNotes san(songTitle,albumNotes,currentRow+1<aem->rowCount(),this);
+            int result=san.exec();
+            qDebug() << SB_DEBUG_INFO << result;
+            qDebug() << SB_DEBUG_INFO << san.modSongTitle();
+            qDebug() << SB_DEBUG_INFO << san.albumNotes();
+            QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
+            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
+            QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
+            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+
+            qDebug() << SB_DEBUG_INFO << currentRow << aem->rowCount() << san.loadNextSong();
+            if(san.loadNextSong() && currentRow+1<aem->rowCount())
+            {
+                currentRow++;
+                loadNextSong=1;
+            }
+            else
+            {
+                loadNextSong=0;
+            }
+        } while(loadNextSong);
     }
 }
 

@@ -5,7 +5,7 @@
 #include "Common.h"
 
 
-SongAlbumNotes::SongAlbumNotes(QString songTitle, QString albumNotes, QWidget *parent):
+SongAlbumNotes::SongAlbumNotes(QString songTitle, QString albumNotes, bool showNextSongButton, QWidget *parent):
     QDialog(parent),
     ui(new Ui::SongAlbumNotes)
 {
@@ -16,6 +16,7 @@ SongAlbumNotes::SongAlbumNotes(QString songTitle, QString albumNotes, QWidget *p
     _init();
     reset();
 
+    ui->nextSongButton->setEnabled(showNextSongButton);
     ui->songTitle->setText(songTitle);
     ui->albumNotes->setText(albumNotes);
     _findNextNotes();

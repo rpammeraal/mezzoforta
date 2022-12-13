@@ -12,12 +12,14 @@ class SongAlbumNotes : public QDialog
     Q_OBJECT
 
 public:
-    explicit SongAlbumNotes(QString songTitle,QString albumNotes,QWidget *parent = nullptr);
+    explicit SongAlbumNotes(QString songTitle,QString albumNotes,bool showNextSongButton,QWidget *parent = nullptr);
     ~SongAlbumNotes();
 
     QString albumNotes() const;
     inline QString modSongTitle() const { return _modSongTitle; }
     inline QString orgSongTitle() const { return _orgSongTitle; }
+
+    inline bool loadNextSong() const { return _loadNextSong; }
 
 public slots:
     void findNextNotes();
