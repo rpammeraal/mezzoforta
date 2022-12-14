@@ -59,7 +59,7 @@ SBTabSongEdit::save() const
 
     QString updateText;
     int dataHasChanged=0;
-    dataHasChanged=SBIDSong::save(orgSongPtr,editTitle,editPerformerName,editYearOfRelease,editNotes,editLyrics,updateText);
+    dataHasChanged=SBIDSong::setAndSave(orgSongPtr,editTitle,editPerformerName,editYearOfRelease,editNotes,editLyrics,updateText,1);
     currentScreenItem.setEditFlag(0);
     Context::instance()->controller()->updateStatusBarText(updateText);
     if(dataHasChanged)

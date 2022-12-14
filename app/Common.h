@@ -8,6 +8,8 @@
 #include <QThread>
 #include <QTime>
 #include <QSqlError>
+#include <QAbstractButton>
+#include <QKeySequence>
 
 class QString;
 class QSqlRecord;
@@ -153,6 +155,7 @@ public:
     };
 
     static QStringList articles();
+    static void bindShortcut(QAbstractButton *button, const QKeySequence &shortcut);
     static QString comparable(const QString& );
     static QString correctArticle(const QString& );
     static QString db_change_to_string(Common::db_change db_change);

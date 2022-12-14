@@ -92,7 +92,7 @@ public:
     static QString iconResourceLocationStatic();
 
     //	Other
-    static int save(SBIDSongPtr orgSongPtr, const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText);
+    static int setAndSave(SBIDSongPtr orgSongPtr, const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack=0);
 
     //	Helper methods for CacheTemplate
     //static ItemType classType() { return Song; }

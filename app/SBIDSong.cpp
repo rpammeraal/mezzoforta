@@ -410,6 +410,7 @@ SBIDSong::originalSongPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
+    qDebug() << SB_DEBUG_INFO << _originalSongPerformanceID;
     return spMgr->retrieve(SBIDSongPerformance::createKey(_originalSongPerformanceID));
 }
 
@@ -568,7 +569,7 @@ SBIDSong::iconResourceLocationStatic()
 
 ///	Other
 int
-SBIDSong::save(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText)
+SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack)
 {
     //	This method has to be static as it may invalidate the orgSongPtr.
 
@@ -638,6 +639,8 @@ SBIDSong::save(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& e
 
     //	1.	Pointers to original song.
     SBIDSongPerformancePtr orgSpPtr=orgSongPtr->originalSongPerformancePtr();
+    qDebug() << SB_DEBUG_INFO << orgSongPtr->songTitle();
+
 
     SB_RETURN_IF_NULL(orgSongPtr,0);
     SB_RETURN_IF_NULL(orgSpPtr,0);
@@ -914,7 +917,7 @@ SBIDSong::save(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& e
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
 
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
-        if(mergedFlag)
+        if(mergedFlag && modifyScreenStack)
         {
             //	Refresh models -- since song got removed.
 
@@ -938,11 +941,6 @@ SBIDSong::save(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& e
     else
     {
         dal->restore(restorePoint);
-    }
-
-    {
-            ScreenStack* st=Context::instance()->screenStack();
-            st->debugShow("end of save");
     }
 
     //	Close screen
@@ -1270,7 +1268,6 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
 
     if(smgr->find(p,exclude,matches))
     {
-        qDebug() << SB_DEBUG_INFO << matches[0].count() << p.suppressDialogsFlag;
         if(matches[0].count()==1)
         {
             //	Dataset indicates an exact match if the 2nd record identifies an exact match.
@@ -1279,7 +1276,6 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
         }
         else if(p.suppressDialogsFlag==0)
         {
-            qDebug() << SB_DEBUG_INFO << matches[1].count();
             if(matches[1].count()>1)
             {
                 //	Dataset has at least two records, of which the 2nd one is an soundex match,
@@ -1307,21 +1303,17 @@ SBIDSong::userMatch(const Common::sb_parameters& p, SBIDSongPtr exclude, SBIDSon
             else
             {
                 result=Common::result_missing;
-                qDebug() << SB_DEBUG_INFO << result;
             }
         }
         else
         {
             result=Common::result_missing;
-            qDebug() << SB_DEBUG_INFO << result;
         }
     }
     else
     {
         result=Common::result_missing;
-        qDebug() << SB_DEBUG_INFO << result;
     }
-    qDebug() << SB_DEBUG_INFO << result;
     return result;
 }
 

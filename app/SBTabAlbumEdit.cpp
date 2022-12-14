@@ -33,7 +33,7 @@ public:
         sb_column_orgalbumperformanceid=4,
         sb_column_orgsongid=5,
         sb_column_sortfield=6,
-        sb_column_orgsongtitle=7,
+        sb_column_modsongtitle=7,
         sb_column_itemnumber=8,
         sb_column_startofdata=8,
         sb_column_songtitle=9,
@@ -278,7 +278,8 @@ public:
             item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_itemnumber
             item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_songtitle
             item=new QStandardItem(QString("%1").arg(apPtr->songPerformerName())); column.append(item);  //	sb_column_performername
-            item=new QStandardItem("...");  column.append(item);                                         //	sb_column_mod_notes
+            item=new QStandardItem(SongAlbumNotes::hasNotes(apPtr->songTitle())?"...":"");  column.append(item);
+                                                                                                         //	sb_column_mod_notes
             item=new QStandardItem(apPtr->notes()); column.append(item);                                 //	sb_column_notes
             this->appendRow(column); column.clear();
             i++;
@@ -481,33 +482,33 @@ SBTabAlbumEdit::handleClicked(const QModelIndex index)
         QTableView* tv=mw->ui.albumEditSongList;
         AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
         int currentRow=index.row();
-        bool loadNextSong=0;
+        //bool loadNextSong=0;
 
-        do
-        {
-            QString songTitle=aem->item(currentRow,AlbumEditModel::sb_column_songtitle)->text();
-            QString albumNotes=aem->item(currentRow,AlbumEditModel::sb_column_notes)->text();
-            SongAlbumNotes san(songTitle,albumNotes,currentRow+1<aem->rowCount(),this);
-            int result=san.exec();
-            qDebug() << SB_DEBUG_INFO << result;
-            qDebug() << SB_DEBUG_INFO << san.modSongTitle();
-            qDebug() << SB_DEBUG_INFO << san.albumNotes();
-            QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
-            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
-            QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
-            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+        //do
+        //{
+            QString songTitle;//=aem->item(currentRow,AlbumEditModel::sb_column_songtitle)->text();
+            QString albumNotes;//=aem->item(currentRow,AlbumEditModel::sb_column_notes)->text();
 
-            qDebug() << SB_DEBUG_INFO << currentRow << aem->rowCount() << san.loadNextSong();
-            if(san.loadNextSong() && currentRow+1<aem->rowCount())
-            {
-                currentRow++;
-                loadNextSong=1;
-            }
-            else
-            {
-                loadNextSong=0;
-            }
-        } while(loadNextSong);
+            getSongData(currentRow,songTitle,albumNotes);
+            SongAlbumNotes san(currentRow,songTitle,albumNotes,currentRow+1<aem->rowCount(),this);
+            san.exec();
+
+//            QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
+//            aem->setItem(ndex.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
+//            QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
+//            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+
+//            qDebug() << SB_DEBUG_INFO << currentRow << aem->rowCount() << san.loadNextSong();
+//            if(san.loadNextSong() && currentRow+1<aem->rowCount())
+//            {
+//                currentRow++;
+//                loadNextSong=1;
+//            }
+//            else
+//            {
+//                loadNextSong=0;
+//            }
+//        } while(loadNextSong);
     }
 }
 
@@ -544,6 +545,36 @@ SBTabAlbumEdit::showContextMenu(const QPoint &p)
     {
         menu.exec(gp);
     }
+}
+
+//	Protected methods
+int
+SBTabAlbumEdit::getSongData(int index,QString& songTitle,QString& albumNotes) const
+{
+    const MainWindow* mw=Context::instance()->mainWindow();
+    QTableView* tv=mw->ui.albumEditSongList;
+    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+    if(index<aem->rowCount())
+    {
+        songTitle=aem->item(index,AlbumEditModel::sb_column_songtitle)->text();
+        albumNotes=aem->item(index,AlbumEditModel::sb_column_notes)->text();
+        return 1;
+    }
+    return 0;
+}
+
+void
+SBTabAlbumEdit::saveSongData(int index, const QString& songTitle, const QString& albumNotes)
+{
+    const MainWindow* mw=Context::instance()->mainWindow();
+    QTableView* tv=mw->ui.albumEditSongList;
+    AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
+
+    QStandardItem* modSongTitle=new QStandardItem(songTitle);
+    aem->setItem(index,AlbumEditModel::sb_column_type::sb_column_modsongtitle,modSongTitle);
+    QStandardItem* newAlbumNotes=new QStandardItem(albumNotes);
+    aem->setItem(index,AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+
 }
 
 ///	Private slots
@@ -818,7 +849,6 @@ SBTabAlbumEdit::rowSelected(const QItemSelection& i, const QItemSelection& j)
 void
 SBTabAlbumEdit::save() const
 {
-    qDebug() << SB_DEBUG_INFO;
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     QString restorePoint=dal->createRestorePoint();
     CacheManager* cm=Context::instance()->cacheManager();
@@ -902,10 +932,10 @@ SBTabAlbumEdit::save() const
             editedSong.songTitle=item->text();
         }
 
-        item=aem->item(i,AlbumEditModel::sb_column_orgsongtitle);
+        item=aem->item(i,AlbumEditModel::sb_column_modsongtitle);
         if(item)
         {
-            editedSong.orgSongTitle=item->text();
+            editedSong.modSongTitle=item->text();
         }
 
         //	Secondary meta data attributes
@@ -1037,7 +1067,7 @@ SBTabAlbumEdit::save() const
                      << ePtr->albumPosition
                      << ePtr->albumPerformanceID
                      << ePtr->songTitle
-                     << ePtr->orgSongTitle
+                     << ePtr->modSongTitle
                      << ePtr->songPerformerName
                      << ePtr->removedFlag
                      << ePtr->notes
@@ -1067,7 +1097,7 @@ SBTabAlbumEdit::save() const
         MusicLibrary::MLentityPtr ePtr=eIT.next();
         if(ePtr && ePtr->errorFlag()==0)
         {
-            if(ePtr->songTitle!=ePtr->orgSongTitle)
+            if(ePtr->songTitle!=ePtr->modSongTitle)
             {
                 changedSongList.append(ePtr);
             }
@@ -1077,14 +1107,14 @@ SBTabAlbumEdit::save() const
     if(1)
     {
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(changedSongList);
-        qDebug() << SB_DEBUG_INFO << "CHANGED SONGLIST";
+        qDebug() << SB_DEBUG_INFO << "CHANGED SONGLIST" << changedSongList.count();
         while(eIT.hasNext())
         {
             MusicLibrary::MLentityPtr ePtr=eIT.next();
             if(ePtr && ePtr->errorFlag()==0)
             {
                 qDebug() << SB_DEBUG_INFO
-                     << ePtr->orgSongTitle
+                     << ePtr->modSongTitle
                      << "CHANGED TO"
                      << ePtr->songTitle
                 ;
@@ -1172,14 +1202,19 @@ SBTabAlbumEdit::save() const
 
         //	Save changed to changed songs.
         QVectorIterator<MusicLibrary::MLentityPtr> eIT(changedSongList);
-        qDebug() << SB_DEBUG_INFO << "CHANGED SONGLIST";
+        qDebug() << SB_DEBUG_INFO << "SAVING CHANGED SONGLIST" << changedSongList.count();
         while(eIT.hasNext())
         {
             MusicLibrary::MLentityPtr ePtr=eIT.next();
             SBIDSongPtr sPtr=SBIDSong::retrieveSong(ePtr->songID);
-            sPtr->setSongTitle(ePtr->songTitle);
-            qDebug() << SB_DEBUG_INFO <<  ePtr->songTitle << ePtr->songPerformerName << ePtr->year << sPtr->notes() << sPtr->lyrics();
-            SBIDSong::save(sPtr,ePtr->songTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText);
+            qDebug() << SB_DEBUG_INFO <<  "sPtr title:" << sPtr->songTitle();
+            qDebug() << SB_DEBUG_INFO <<  "sPtr key:" << sPtr->key();
+            qDebug() << SB_DEBUG_INFO <<  "sPtr orgSongPerformanceID:" << sPtr->originalSongPerformanceID();
+
+            qDebug() << SB_DEBUG_INFO <<  "org song title:" << ePtr->songTitle;
+            sPtr->setSongTitle(ePtr->modSongTitle);
+            qDebug() << SB_DEBUG_INFO <<  "mod song title:" << sPtr->songTitle() << sPtr->key();
+            SBIDSong::setAndSave(sPtr,ePtr->modSongTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText,0);
             Context::instance()->controller()->updateStatusBarText(updateText);
 
         }
@@ -1375,7 +1410,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     tv->setColumnHidden(AlbumEditModel::sb_column_orgalbumperformanceid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_orgsongid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_sortfield,1);
-    tv->setColumnHidden(AlbumEditModel::sb_column_orgsongtitle,1);
+    tv->setColumnHidden(AlbumEditModel::sb_column_modsongtitle,1);
 
     QHeaderView* hv=NULL;
     hv=tv->horizontalHeader();

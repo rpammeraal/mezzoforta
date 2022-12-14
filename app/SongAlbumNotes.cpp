@@ -3,22 +3,21 @@
 
 #include <QDebug>
 #include "Common.h"
+#include "SBTabAlbumEdit.h"
 
 
-SongAlbumNotes::SongAlbumNotes(QString songTitle, QString albumNotes, bool showNextSongButton, QWidget *parent):
+SongAlbumNotes::SongAlbumNotes(int index, QString songTitle, QString albumNotes, bool showNextSongButton, QWidget *parent):
     QDialog(parent),
     ui(new Ui::SongAlbumNotes)
 {
     ui->setupUi(this);
-    _orgSongTitle=songTitle;
-    _modSongTitle=songTitle;
+    _parent=parent;
 
     _init();
+    _setup(index,songTitle,albumNotes);
     reset();
 
     ui->nextSongButton->setEnabled(showNextSongButton);
-    ui->songTitle->setText(songTitle);
-    ui->albumNotes->setText(albumNotes);
     _findNextNotes();
 }
 
@@ -32,6 +31,12 @@ QString
 SongAlbumNotes::albumNotes() const
 {
     return ui->albumNotes->text();
+}
+
+bool
+SongAlbumNotes::hasNotes(const QString& str)
+{
+    return (_findInString(str,")]",0)!=-1);
 }
 
 //	Public slots
@@ -54,7 +59,6 @@ SongAlbumNotes::findPrevNotes()
 void
 SongAlbumNotes::move()
 {
-    qDebug() << SB_DEBUG_INFO << _maxNotesIndex << _commentIndex;
     //	Strip comment of parentheses at beginning and end
     QString comment=_currentSongNotes.mid(1,_currentSongNotes.length()-2);
     QString currentAlbumNotes=ui->albumNotes->text();
@@ -96,6 +100,11 @@ SongAlbumNotes::move()
     ui->songTitle->setText(_modSongTitle);
     ui->albumNotes->setText(currentAlbumNotes);
     _findNextNotes();
+
+    if(_maxNotesIndex==0)
+    {
+        nextSongButton();
+    }
 }
 
 void
@@ -116,7 +125,44 @@ SongAlbumNotes::reset()
 void
 SongAlbumNotes::nextSongButton()
 {
-    _loadNextSong=1;
+    SBTabAlbumEdit* tae=dynamic_cast<SBTabAlbumEdit *>(_parent);
+    SB_RETURN_VOID_IF_NULL(tae);
+
+    tae->saveSongData(_index,_modSongTitle,this->albumNotes());
+    QString songTitle;
+    QString albumNotes;
+
+    bool songDataLeft=1;
+
+    while(songDataLeft)
+    {
+        songDataLeft=tae->getSongData(_index+1, songTitle, albumNotes);
+        if(songDataLeft)
+        {
+            _setup(_index+1,songTitle,albumNotes);
+            reset();
+            _findNextNotes();
+
+            if(_maxNotesIndex>0)
+            {
+                return;
+            }
+        }
+        else
+        {
+            ui->nextSongButton->setEnabled(false);
+        }
+    }
+    QDialog::accept();
+}
+
+void
+SongAlbumNotes::doneButton()
+{
+    SBTabAlbumEdit* tae=dynamic_cast<SBTabAlbumEdit *>(_parent);
+    SB_RETURN_VOID_IF_NULL(tae);
+
+    tae->saveSongData(_index,_modSongTitle,this->albumNotes());
     QDialog::accept();
 }
 
@@ -124,7 +170,6 @@ SongAlbumNotes::nextSongButton()
 void
 SongAlbumNotes::_adjustButtons()
 {
-    qDebug() << SB_DEBUG_INFO << _maxNotesIndex << _commentIndex;
     bool moveEnabled=_maxNotesIndex>0;
     bool prevEnabled=_maxNotesIndex>1 && _commentIndex>0;
     bool nextEnabled=_maxNotesIndex>1 && _commentIndex<(_maxNotesIndex-1);
@@ -135,7 +180,7 @@ SongAlbumNotes::_adjustButtons()
 }
 
 qsizetype
-SongAlbumNotes::_findInString(const QString& str, const QString& toFind, qsizetype fromPosition) const
+SongAlbumNotes::_findInString(const QString& str, const QString& toFind, qsizetype fromPosition)
 {
     qsizetype pos=-1;
     for(qsizetype i=0;i<toFind.length();i++)
@@ -205,8 +250,6 @@ SongAlbumNotes::_findNextNotes()
 void
 SongAlbumNotes::_init()
 {
-    _loadNextSong=0;
-
     connect(ui->moveButton, SIGNAL(clicked(bool)),
             this, SLOT(move()));
     connect(ui->nextButton, SIGNAL(clicked(bool)),
@@ -219,9 +262,25 @@ SongAlbumNotes::_init()
     connect(ui->cancelButton, SIGNAL(clicked(bool)),
             this, SLOT(reject()));
     connect(ui->doneButton, SIGNAL(clicked()),
-            this, SLOT(accept()));
+            this, SLOT(doneButton()));
     connect(ui->nextSongButton, SIGNAL(clicked()),
             this, SLOT(nextSongButton()));
     connect(ui->albumNotes, SIGNAL(returnPressed()),
             this, SLOT(nextSongButton()));
+
+    Common::bindShortcut(ui->nextSongButton, Qt::Key_N | Qt::CTRL);
+    ui->nextSongButton->setShortcut(Qt::Key_N | Qt::CTRL);
+    Common::bindShortcut(ui->moveButton, Qt::Key_M | Qt::CTRL);
+    ui->moveButton->setShortcut(Qt::Key_M | Qt::CTRL);
+
+}
+
+void
+SongAlbumNotes::_setup(int index, const QString& songTitle, const QString& albumNotes)
+{
+    _index=index;
+    _orgSongTitle=songTitle;
+    _modSongTitle=songTitle;
+    ui->songTitle->setText(songTitle);
+    ui->albumNotes->setText(albumNotes);
 }
