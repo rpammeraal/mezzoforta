@@ -41,7 +41,7 @@ public slots:
     void chartEditSave(SBIDChartPtr cPtr);
     void chartEnqueue();
     void chartReImport();
-    void chartRemove(SBIDChartPtr cPtr=SBIDChartPtr());
+    void aap(SBIDChartPtr cPtr=SBIDChartPtr());
     void chartImportNew();
     void chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag=0);
     void chartPlay(bool enqueueFlag=0);

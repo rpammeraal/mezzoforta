@@ -4,7 +4,8 @@
 
 #include "BackgroundThread.h"
 #include "Common.h"
-#include "SBIDPlaylist.h"
+#include "Context.h"
+#include "SBTabSongsAll.h"
 
 BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
 {
@@ -23,6 +24,19 @@ BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
 //    qDebug() << SB_DEBUG_INFO << "semaphore release";
 //    s_cpd->release(1);
 //}
+void
+BackgroundThread::reload() const
+{
+    qDebug() << SB_DEBUG_INFO << "semaphore start";
+    s_cpd->acquire(1);
+
+    SBTabSongsAll* tabSA=Context::instance()->tabSongsAll();
+    SB_RETURN_VOID_IF_NULL(tabSA);
+    tabSA->preload();
+    qDebug() << SB_DEBUG_INFO << "semaphore release";
+    s_cpd->release(1);
+
+}
 
 void
 BackgroundThread::init()

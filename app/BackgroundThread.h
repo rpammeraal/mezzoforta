@@ -3,7 +3,8 @@
 
 #include <QObject>
 
-#include "SBIDBase.h"
+
+#include "DBManager.h"
 
 class QSemaphore;
 class QSqlQueryModel;
@@ -20,9 +21,11 @@ signals:
 public slots:
     //	NOT USED ANYMORE -- CODE LEFT AS EXAMPLE
     //void recalculateAllPlaylistDurations() const;
+    void reload() const;
 
 private:
     QSemaphore* s_cpd;
+    DBManager _dbm;
 
     void init();
 };

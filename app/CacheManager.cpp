@@ -113,7 +113,7 @@ CacheManager::get(SBKey key)
 }
 
 bool
-CacheManager::saveChanges(const QString& progressDialogTitle,bool doNotUpdateCompletersFlag)
+CacheManager::saveChanges(const QString& progressDialogTitle,bool refreshData)
 {
     QStringList updateSQL;
     QStringList insertSQL;
@@ -174,7 +174,8 @@ CacheManager::saveChanges(const QString& progressDialogTitle,bool doNotUpdateCom
     }
 
     //	CWIP: remove when database is cached
-    if(doNotUpdateCompletersFlag==0)
+    qDebug() << SB_DEBUG_INFO << refreshData;
+    if(refreshData==1)
     {
         if(albumsUpdatedFlag() || performersUpdatedFlag() || songsUpdatedFlag())
         {

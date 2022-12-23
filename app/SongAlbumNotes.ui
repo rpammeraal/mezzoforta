@@ -89,6 +89,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="removeButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Remove</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="nextButton">
           <property name="enabled">
            <bool>true</bool>

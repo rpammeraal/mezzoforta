@@ -651,6 +651,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     while(allPerformersIT.hasNext())
     {
         QString performerName=allPerformersIT.next();
+        qDebug() << SB_DEBUG_INFO << performerName;
 
         int performerID=-1;
         if(!name2PerformerIDMap.contains(performerName))

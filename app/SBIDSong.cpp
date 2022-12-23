@@ -410,7 +410,6 @@ SBIDSong::originalSongPerformancePtr() const
 {
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongPerformanceMgr* spMgr=cm->songPerformanceMgr();
-    qDebug() << SB_DEBUG_INFO << _originalSongPerformanceID;
     return spMgr->retrieve(SBIDSongPerformance::createKey(_originalSongPerformanceID));
 }
 
@@ -569,7 +568,7 @@ SBIDSong::iconResourceLocationStatic()
 
 ///	Other
 int
-SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack)
+SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack, bool refreshData)
 {
     //	This method has to be static as it may invalidate the orgSongPtr.
 
@@ -900,7 +899,8 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
     }
 
     cm->debugShowChanges("before save");
-    const bool successFlag=cm->saveChanges("Saving Song");
+    //const bool successFlag=cm->saveChanges("Saving Song",refreshData);
+    const bool successFlag=cm->saveChanges("Saving Song",0);	//	TAKE ABOVE VERSION
 
     if(successFlag)
     {
@@ -919,32 +919,51 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
         if(mergedFlag && modifyScreenStack)
         {
-            //	Refresh models -- since song got removed.
+            if(refreshData)
+            {
+                //	Refresh models -- since song got removed.
 
-            ScreenStack* st=Context::instance()->screenStack();
+                ScreenStack* st=Context::instance()->screenStack();
 
-            newSongPtr->refreshDependents(1);
-            ScreenItem from(orgSongPtr->key());
-            ScreenItem to(newSongPtr->key());
-            st->replace(from,to);
+                qDebug() << SB_DEBUG_INFO << "refresh";
+
+                //	newSongPtr->refreshDependents(1);		UNCOMMENT BEFORE DEPLOY
+                ScreenItem from(orgSongPtr->key());
+                qDebug() << SB_DEBUG_INFO;
+                ScreenItem to(newSongPtr->key());
+                qDebug() << SB_DEBUG_INFO;
+                st->replace(from,to);
+                qDebug() << SB_DEBUG_INFO;
+            }
         }
 
+        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
+        qDebug() << SB_DEBUG_INFO;
         if(mergedFlag || songTitleChangedFlag)
         {
+            qDebug() << SB_DEBUG_INFO;
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
+            ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
 
+
+        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
+        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+        qDebug() << SB_DEBUG_INFO;
     }
     else
     {
         dal->restore(restorePoint);
     }
+    qDebug() << SB_DEBUG_INFO;
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+    qDebug() << SB_DEBUG_INFO;
 
-    //	Close screen
-    Context::instance()->navigator()->closeCurrentTab(1);
     return 0;
 
 }

@@ -1,5 +1,6 @@
 #include <QMessageBox>
 
+#include "BackgroundThread.h"
 #include "SBTabSongEdit.h"
 #include "Context.h"
 #include "Controller.h"
@@ -59,13 +60,19 @@ SBTabSongEdit::save() const
 
     QString updateText;
     int dataHasChanged=0;
-    dataHasChanged=SBIDSong::setAndSave(orgSongPtr,editTitle,editPerformerName,editYearOfRelease,editNotes,editLyrics,updateText,1);
+    dataHasChanged=SBIDSong::setAndSave(orgSongPtr,editTitle,editPerformerName,editYearOfRelease,editNotes,editLyrics,updateText,1,1);
     currentScreenItem.setEditFlag(0);
     Context::instance()->controller()->updateStatusBarText(updateText);
     if(dataHasChanged)
     {
-        mw->ui.tabAllSongs->preload();
+        qDebug() << SB_DEBUG_INFO;
+        //mw->ui.tabAllSongs->preload();
+        qDebug() << SB_DEBUG_INFO;
     }
+
+    //	Close screen
+    qDebug() << SB_DEBUG_INFO;
+    Context::instance()->navigator()->closeCurrentTab(1);
 }
 
 void

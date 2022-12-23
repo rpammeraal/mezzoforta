@@ -24,7 +24,8 @@ public:
 public slots:
     void findNextNotes();
     void findPrevNotes();
-    void move();
+    void move(bool doRemove=0);
+    void remove();
     void reset();
     void nextSongButton();
     void doneButton();

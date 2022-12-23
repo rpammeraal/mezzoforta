@@ -57,7 +57,7 @@ SongAlbumNotes::findPrevNotes()
 }
 
 void
-SongAlbumNotes::move()
+SongAlbumNotes::move(bool doRemove)
 {
     //	Strip comment of parentheses at beginning and end
     QString comment=_currentSongNotes.mid(1,_currentSongNotes.length()-2);
@@ -76,12 +76,17 @@ SongAlbumNotes::move()
     }
     _modSongTitle=newSongTitle;
 
-    //	Adjust comments if not empty
-    if(currentAlbumNotes.length()!=0)
+    qDebug() << SB_DEBUG_INFO << doRemove;
+    if(!doRemove)
     {
-        comment=", " + comment;
+        qDebug() << SB_DEBUG_INFO;
+        //	Adjust comments if not empty
+        if(currentAlbumNotes.length()!=0)
+        {
+            comment=", " + comment;
+        }
+        currentAlbumNotes+=comment;
     }
-    currentAlbumNotes+=comment;
 
     //	Adjust indexes
     _maxNotesIndex--;
@@ -101,10 +106,18 @@ SongAlbumNotes::move()
     ui->albumNotes->setText(currentAlbumNotes);
     _findNextNotes();
 
+    qDebug() << SB_DEBUG_INFO << _modSongTitle << currentAlbumNotes;
+
     if(_maxNotesIndex==0)
     {
         nextSongButton();
     }
+}
+
+void
+SongAlbumNotes::remove()
+{
+    move(1);
 }
 
 void
@@ -252,6 +265,8 @@ SongAlbumNotes::_init()
 {
     connect(ui->moveButton, SIGNAL(clicked(bool)),
             this, SLOT(move()));
+    connect(ui->removeButton, SIGNAL(clicked(bool)),
+            this, SLOT(remove()));
     connect(ui->nextButton, SIGNAL(clicked(bool)),
             this, SLOT(findNextNotes()));
     connect(ui->prevButton, SIGNAL(clicked(bool)),
@@ -267,12 +282,6 @@ SongAlbumNotes::_init()
             this, SLOT(nextSongButton()));
     connect(ui->albumNotes, SIGNAL(returnPressed()),
             this, SLOT(nextSongButton()));
-
-    Common::bindShortcut(ui->nextSongButton, Qt::Key_N | Qt::CTRL);
-    ui->nextSongButton->setShortcut(Qt::Key_N | Qt::CTRL);
-    Common::bindShortcut(ui->moveButton, Qt::Key_M | Qt::CTRL);
-    ui->moveButton->setShortcut(Qt::Key_M | Qt::CTRL);
-
 }
 
 void

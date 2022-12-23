@@ -21,6 +21,10 @@
 #include "SBMessageBox.h"
 #include "SongAlbumNotes.h"
 
+
+//	Little Feat -- Refresh Data dialog box left open, also need to find way to do single refresh data
+//	SongAlbumNotes: add button 'Remove'
+
 class AlbumEditModel : public QStandardItemModel
 {
 public:
@@ -1214,7 +1218,7 @@ SBTabAlbumEdit::save() const
             qDebug() << SB_DEBUG_INFO <<  "org song title:" << ePtr->songTitle;
             sPtr->setSongTitle(ePtr->modSongTitle);
             qDebug() << SB_DEBUG_INFO <<  "mod song title:" << sPtr->songTitle() << sPtr->key();
-            SBIDSong::setAndSave(sPtr,ePtr->modSongTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText,0);
+            SBIDSong::setAndSave(sPtr,ePtr->modSongTitle,ePtr->songPerformerName,ePtr->year,sPtr->notes(),sPtr->lyrics(),updateText,0,0);
             Context::instance()->controller()->updateStatusBarText(updateText);
 
         }
