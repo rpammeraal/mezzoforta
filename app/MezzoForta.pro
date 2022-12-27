@@ -3,6 +3,8 @@ QT       += core gui widgets sql xml network webenginewidgets multimedia
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
 
 CONFIG += c++11
+QTPLUGIN += QPSQL
+QT_DEBUG_PLUGINS=1
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -222,8 +224,8 @@ DISTFILES += \
     resources/squarelogo.png
 
 #	Manually added
-INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14
-DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14
+INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib /usr/local/opt/libpq/include
+DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib
 
-unix: LIBS += -lportaudio -L /usr/local/lib -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -L/usr/local/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -L/usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14
+unix: LIBS += -lportaudio -L /usr/local/lib -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag -lpq
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -L/usr/local/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -L/usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14  -L/usr/local/opt/libpq/lib -lpq
