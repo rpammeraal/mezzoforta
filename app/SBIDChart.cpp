@@ -116,6 +116,7 @@ SBIDChart::type() const
 bool
 SBIDChart::import(const QString &fileName, bool truncateFlag)
 {
+    qDebug() << SB_DEBUG_INFO << "start";
     if(truncateFlag)
     {
         _truncate();
@@ -159,21 +160,39 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
         SBMessageBox::createSBMessageBox("Incomplete Header","Header should have 'position','performer' and 'song' columns.",QMessageBox::Critical, QMessageBox::Ok, QMessageBox::Ok, QMessageBox::Ok);
         return 0;
     }
+    qDebug() << SB_DEBUG_INFO << contents.count();
 
     QVector<MusicLibrary::MLentityPtr> chartContents;
     for(int i=1;i<contents.count();i++)
     {
+        qDebug() << SB_DEBUG_INFO << i;
         QStringList line=contents.at(i);
+        if(line.count()!=3)
+        {
+            qDebug() << SB_DEBUG_ERROR << "CSV file f'd up";
+            return 0;
+        }
 
+        qDebug() << SB_DEBUG_INFO << line;
         MusicLibrary::MLentity e;
+        qDebug() << SB_DEBUG_INFO << line.count();
+        qDebug() << SB_DEBUG_INFO << performerNameColumn;
+        qDebug() << SB_DEBUG_INFO << line.at(performerNameColumn);
         e.songPerformerName=line.at(performerNameColumn).trimmed();
+        qDebug() << SB_DEBUG_INFO;
         Common::toTitleCase(e.songPerformerName);
+        qDebug() << SB_DEBUG_INFO;
         e.songTitle=line.at(songTitleColumn).trimmed();
+        qDebug() << SB_DEBUG_INFO;
         Common::toTitleCase(e.songTitle);
+        qDebug() << SB_DEBUG_INFO;
         e.chartPosition=line.at(positionColumn).toInt();
+        qDebug() << SB_DEBUG_INFO;
         e.year=this->chartEndingDate().year();
+        qDebug() << SB_DEBUG_INFO;
 
         chartContents.append(std::make_shared<MusicLibrary::MLentity>(e));
+        qDebug() << SB_DEBUG_INFO;
     }
 
     MusicLibrary ml;

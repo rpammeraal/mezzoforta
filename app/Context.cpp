@@ -51,10 +51,17 @@ Context::setTab(SBTab *tab)
 {
     _tab=tab;
 }
+
 void
 Context::setTabQueuedSongs(SBTabQueuedSongs* tabQS)
 {
     _tabQS=tabQS;
+}
+
+void
+Context::setTabSongsAll(SBTabSongsAll* tabSA)
+{
+    _tabSA=tabSA;
 }
 
 ///	PROTECTED

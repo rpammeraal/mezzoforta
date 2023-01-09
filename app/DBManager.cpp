@@ -3,7 +3,7 @@
 #include "CacheManager.h"
 #include "Common.h"
 #include "Context.h"
-#include "DataAccessLayer.h"
+#include "DataAccessLayerSQLite.h"
 #include "DataAccessLayerPostgres.h"
 #include "DatabaseSelector.h"
 
@@ -212,7 +212,7 @@ DBManager::_createDAL()
         switch(_dc.databaseType)
         {
             case Sqlite:
-                _dal=new DataAccessLayer(connectionName());
+                _dal=new DataAccessLayerSQLite(connectionName());
             break;
 
             case Postgresql:

@@ -318,7 +318,7 @@ Chooser::chartReImport()
 }
 
 void
-Chooser::chartRemove(SBIDChartPtr cPtr)
+Chooser::aap(SBIDChartPtr cPtr)
 {
     if(!cPtr)
     {
@@ -327,6 +327,7 @@ Chooser::chartRemove(SBIDChartPtr cPtr)
     SB_RETURN_VOID_IF_NULL(cPtr);
 
     CacheManager* cm=Context::instance()->cacheManager();
+
     CacheChartMgr* cmgr=cm->chartMgr();
     Context::instance()->navigator()->removeFromScreenStack(cPtr->key());
     cmgr->remove(cPtr);
@@ -357,18 +358,22 @@ Chooser::chartImportNew()
     connect(c,SIGNAL(chartDataCompleted(SBIDChartPtr)),
             this,SLOT(chartImportContinue(SBIDChartPtr)));
     connect(c,SIGNAL(chartDataRejected(SBIDChartPtr)),
-            this,SLOT(chartRemove(cPtr)));
+            this,SLOT(aap(cPtr)));
     c->exec();
 }
 
 void
 Chooser::chartImportContinue(SBIDChartPtr cPtr, bool truncateFlag)
 {
+    SB_RETURN_VOID_IF_NULL(cPtr);
+    qDebug() << SB_DEBUG_INFO << QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0];
     QFileDialog dialog;
     dialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0]);
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setViewMode(QFileDialog::Detail);
     dialog.setLabelText(QFileDialog::LookIn,"Select CSV File:");
+    qDebug() << SB_DEBUG_INFO ;
+
     if(dialog.exec())
     {
         QStringList l=dialog.selectedFiles();
@@ -867,7 +872,7 @@ Chooser::_init()
     _chartRemoveAction = new QAction(tr("Remove Chart"), this);
     _chartRemoveAction->setStatusTip(tr("Remove Chart"));
     connect(_chartRemoveAction, SIGNAL(triggered()),
-            this, SLOT(chartRemove()));
+            this, SLOT(aap()));
 
     //	Edit chart
     _chartEditAction = new QAction(tr("Edit Chart"), this);

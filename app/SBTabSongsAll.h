@@ -3,7 +3,6 @@
 
 #include "SBTab.h"
 
-#include "SBIDBase.h"
 
 class SBTabSongsAll : public SBTab
 {

@@ -1,7 +1,6 @@
 #ifndef SBTABSONGEDIT_H
 #define SBTABSONGEDIT_H
 
-#include "SBIDSong.h"
 #include "SBTab.h"
 
 class QCompleter;

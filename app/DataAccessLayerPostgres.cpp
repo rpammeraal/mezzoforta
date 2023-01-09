@@ -1,6 +1,5 @@
 #include "Common.h"
 #include "Context.h"
-#include "Controller.h"
 #include "DataAccessLayerPostgres.h"
 #include "SqlQuery.h"
 
@@ -36,10 +35,18 @@ DataAccessLayerPostgres::~DataAccessLayerPostgres()
 {
 }
 
+//	Virtual
 QStringList
 DataAccessLayerPostgres::availableSchemas() const
 {
     return _availableSchemas;
+}
+
+QString
+DataAccessLayerPostgres::getLeft(const QString& str,const QString& len) const
+{
+    qDebug() << SB_DEBUG_INFO;
+    return QString("LEFT(%1,%2)").arg(str).arg(len);
 }
 
 void

@@ -20,7 +20,6 @@ class SBTableModel;
 class SBIDSong;
 typedef std::shared_ptr<SBIDSong> SBIDSongPtr;
 
-#include "SBIDAlbumPerformance.h"
 #include "SBIDPlaylist.h"
 
 class SBIDSong : public SBIDBase
@@ -91,6 +90,9 @@ public:
     static SBIDSongPtr retrieveSong(int songID);
     static SBIDSongPtr retrieveSong(SBKey key);
     static QString iconResourceLocationStatic();
+
+    //	Other
+    static int setAndSave(SBIDSongPtr orgSongPtr, const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack=0, bool refreshData=0);
 
     //	Helper methods for CacheTemplate
     //static ItemType classType() { return Song; }
