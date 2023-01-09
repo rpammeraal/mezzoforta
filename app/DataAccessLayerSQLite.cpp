@@ -3,15 +3,98 @@
 #include "DataAccessLayerSQLite.h"
 
 #include "Common.h"
-#include "Configuration.h"
 #include "Context.h"
 #include "Network.h"
 #include "SBMessageBox.h"
+#include "SqlQuery.h"
 
 DataAccessLayerSQLite::DataAccessLayerSQLite()
 {
 }
 
+DataAccessLayerSQLite::DataAccessLayerSQLite(const QString& connectionName) : DataAccessLayer(connectionName)
+{
+}
+
+DataAccessLayerSQLite::~DataAccessLayerSQLite()
+{
+}
+
+//	Implemented virtual functions
+QStringList
+DataAccessLayerSQLite::availableSchemas() const
+{
+    QStringList sl;
+    return sl;
+}
+
+QString
+DataAccessLayerSQLite::getLeft(const QString& str,const QString& len) const
+{
+    qDebug() << SB_DEBUG_INFO;
+    return QString("SUBSTR(%1,0,%2)").arg(str).arg(len);
+}
+
+void
+DataAccessLayerSQLite::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const
+{
+    SB_RETURN_VOID_IF_NULL(opPtr);
+
+    QString q=QString
+            (
+                "INSERT INTO play_history "
+                "( "
+                    "artist_name, "
+                    "record_title, "
+                    "record_position, "
+                    "song_title, "
+                    "path, "
+                    "played_by_radio_flag, "
+                    "play_datetime "
+                ") "
+                "VALUES "
+                "( "
+                    "'%1', "
+                    "'%2', "
+                    "%3, "
+                    "'%4', "
+                    "'%5', "
+                    "%6::BOOL, "
+                    "DATETIME('now','localtime','-13 seconds')"
+                ") "
+            )
+            //	SELECT datetime('now');
+
+                .arg(Common::escapeSingleQuotes(opPtr->songPerformerName()))
+                .arg(Common::escapeSingleQuotes(opPtr->albumTitle()))
+                .arg(opPtr->albumPosition())
+                .arg(Common::escapeSingleQuotes(opPtr->songTitle()))
+                .arg(Common::escapeSingleQuotes(opPtr->path()))
+                .arg(radioModeFlag?"1":"0")
+    ;
+
+
+    DataAccessLayer* dal=Context::instance()->dataAccessLayer();
+    QSqlDatabase db=QSqlDatabase::database(dal->getConnectionName());
+    dal->customize(q);
+    SqlQuery insert(q,db);
+    Q_UNUSED(insert);
+}
+
+QString
+DataAccessLayerSQLite::retrieveLastInsertedKeySQL() const
+{
+    return QString("SELECT last_insert_rowid();");
+}
+
+
+bool
+DataAccessLayerSQLite::supportSchemas() const
+{
+    return 0;
+}
+
+//	Static functions
 bool
 DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredentials& credentials,const QString& musicLibraryPath)
 {
@@ -57,7 +140,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
         if(!errorFlag)
         {
             //	Create schema.
-            DataAccessLayer dal(SB_TEMPORARY_CONNECTION_NAME);
+            DataAccessLayerSQLite dal(SB_TEMPORARY_CONNECTION_NAME);
 
             QStringList SQL;
 
@@ -283,11 +366,24 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-			SQL.append(Common::escapeSingleQuotes(
+            SQL.append(Common::escapeSingleQuotes(
                 "CREATE TABLE article \n"
                 "( \n"
                     "word varchar NOT NULL, \n"
                     "CONSTRAINT pk_article PRIMARY KEY(word) \n"
+                "); \n"
+            ));
+
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE play_history \n"
+                "( \n"
+                    "artist_name VARCHAR NOT NULL, \n"
+                    "record_title VARCHAR NOT NULL, \n"
+                    "record_position VARCHAR NOT NULL, \n"
+                    "song_title VARCHAR NOT NULL, \n"
+                    "path VARCHAR NOT NULL, \n"
+                    "played_by_radio_flag BOOL NOT NULL, \n"
+                    "play_datetime TIMESTAMP NOT NULL \n"
                 "); \n"
             ));
 

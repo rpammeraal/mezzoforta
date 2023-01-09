@@ -37,10 +37,10 @@ public:
         sb_column_orgalbumperformanceid=4,
         sb_column_orgsongid=5,
         sb_column_sortfield=6,
-        sb_column_modsongtitle=7,
-        sb_column_itemnumber=8,
+        sb_column_orgsongtitle=7,
         sb_column_startofdata=8,
-        sb_column_songtitle=9,
+        sb_column_itemnumber=8,
+        sb_column_modsongtitle=9,
         sb_column_performername=10,
         sb_column_mod_notes=11,
         sb_column_notes=12
@@ -67,7 +67,7 @@ public:
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_sortfield
         item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_orgsongtitle
         item=new QStandardItem(QString("%1").arg(newRowID)); column.append(item);  //	sb_column_itemnumber
-        item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_songtitle
+        item=new QStandardItem("Title"); column.append(item);	                   //	sb_column_modsongtitle
         item=new QStandardItem("Performer"); column.append(item);	               //	sb_column_performername
         item=new QStandardItem(""); column.append(item);	                       //	sb_column_mod_notes
         item=new QStandardItem("Notes"); column.append(item);	                   //	sb_column_notes
@@ -280,7 +280,7 @@ public:
             item=new QStandardItem(itemNumber); column.append(item);                                     //	sb_column_sortfield
             item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_orgsongtitle
             item=new QStandardItem(QString("%1").arg(apPtr->albumPosition())); column.append(item);      //	sb_column_itemnumber
-            item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_songtitle
+            item=new QStandardItem(QString("%1").arg(apPtr->songTitle())); column.append(item);          //	sb_column_modsongtitle
             item=new QStandardItem(QString("%1").arg(apPtr->songPerformerName())); column.append(item);  //	sb_column_performername
             item=new QStandardItem(SongAlbumNotes::hasNotes(apPtr->songTitle())?"...":"");  column.append(item);
                                                                                                          //	sb_column_mod_notes
@@ -297,9 +297,9 @@ public:
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgalbumperformanceid
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongid
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_sortfield
-        item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongtitle
+        item=new QStandardItem("orgsong"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_orgsongtitle
         item=new QStandardItem("#"); this->setHorizontalHeaderItem(columnIndex++,item);          //	sb_column_itemnumber
-        item=new QStandardItem("Song"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_songtitle
+        item=new QStandardItem("modsong"); this->setHorizontalHeaderItem(columnIndex++,item);       //	sb_column_modsongtitle
         item=new QStandardItem("Performer"); this->setHorizontalHeaderItem(columnIndex++,item);  //	sb_column_performername
         item=new QStandardItem("..."); this->setHorizontalHeaderItem(columnIndex++,item);        //	sb_column_mod_notes
         item=new QStandardItem("Notes"); this->setHorizontalHeaderItem(columnIndex++,item);      //	sb_column_notes
@@ -486,33 +486,14 @@ SBTabAlbumEdit::handleClicked(const QModelIndex index)
         QTableView* tv=mw->ui.albumEditSongList;
         AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
         int currentRow=index.row();
-        //bool loadNextSong=0;
 
-        //do
-        //{
-            QString songTitle;//=aem->item(currentRow,AlbumEditModel::sb_column_songtitle)->text();
-            QString albumNotes;//=aem->item(currentRow,AlbumEditModel::sb_column_notes)->text();
+        QString songTitle;
+        QString albumNotes;
 
-            getSongData(currentRow,songTitle,albumNotes);
-            SongAlbumNotes san(currentRow,songTitle,albumNotes,currentRow+1<aem->rowCount(),this);
-            san.exec();
+        getSongData(currentRow,songTitle,albumNotes);
+        SongAlbumNotes san(currentRow,songTitle,albumNotes,currentRow+1<aem->rowCount(),this);
+        san.exec();
 
-//            QStandardItem* modSongTitle=new QStandardItem(san.modSongTitle());
-//            aem->setItem(ndex.row(),AlbumEditModel::sb_column_type::sb_column_songtitle,modSongTitle);
-//            QStandardItem* newAlbumNotes=new QStandardItem(san.albumNotes());
-//            aem->setItem(index.row(),AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
-
-//            qDebug() << SB_DEBUG_INFO << currentRow << aem->rowCount() << san.loadNextSong();
-//            if(san.loadNextSong() && currentRow+1<aem->rowCount())
-//            {
-//                currentRow++;
-//                loadNextSong=1;
-//            }
-//            else
-//            {
-//                loadNextSong=0;
-//            }
-//        } while(loadNextSong);
     }
 }
 
@@ -560,7 +541,7 @@ SBTabAlbumEdit::getSongData(int index,QString& songTitle,QString& albumNotes) co
     AlbumEditModel* aem=dynamic_cast<AlbumEditModel *>(tv->model());
     if(index<aem->rowCount())
     {
-        songTitle=aem->item(index,AlbumEditModel::sb_column_songtitle)->text();
+        songTitle=aem->item(index,AlbumEditModel::sb_column_modsongtitle)->text();
         albumNotes=aem->item(index,AlbumEditModel::sb_column_notes)->text();
         return 1;
     }
@@ -578,6 +559,9 @@ SBTabAlbumEdit::saveSongData(int index, const QString& songTitle, const QString&
     aem->setItem(index,AlbumEditModel::sb_column_type::sb_column_modsongtitle,modSongTitle);
     QStandardItem* newAlbumNotes=new QStandardItem(albumNotes);
     aem->setItem(index,AlbumEditModel::sb_column_type::sb_column_notes,newAlbumNotes);
+
+    QModelIndex idx=aem->index(index,AlbumEditModel::sb_column_type::sb_column_modsongtitle);
+    tv->scrollTo(idx,QAbstractItemView::EnsureVisible);
 
 }
 
@@ -683,7 +667,7 @@ SBTabAlbumEdit::mergeSong()
             {
                 //	First item selected
                 toBeMergedToIndex=mil.at(i).row();
-                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_songtitle)->text();
+                toBeMergedSongTitle=aem->item(idx.row(),AlbumEditModel::sb_column_orgsongtitle)->text();
                 removedFlag=aem->item(idx.row(),AlbumEditModel::sb_column_deleteflag)->text().toInt();
                 if(removedFlag==1)
                 {
@@ -930,7 +914,7 @@ SBTabAlbumEdit::save() const
             editedSong.songPerformerName=item->text();
         }
 
-        item=aem->item(i,AlbumEditModel::sb_column_songtitle);
+        item=aem->item(i,AlbumEditModel::sb_column_orgsongtitle);
         if(item)
         {
             editedSong.songTitle=item->text();
@@ -1407,6 +1391,8 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     tv->setDragDropMode(QAbstractItemView::InternalMove);
     tv->setDefaultDropAction(Qt::MoveAction);
     tv->setDragDropOverwriteMode(false);
+
+    //	CWIP: put in for loop
     tv->setColumnHidden(AlbumEditModel::sb_column_deleteflag,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_newflag,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_mergedtoindex,1);
@@ -1414,7 +1400,7 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     tv->setColumnHidden(AlbumEditModel::sb_column_orgalbumperformanceid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_orgsongid,1);
     tv->setColumnHidden(AlbumEditModel::sb_column_sortfield,1);
-    tv->setColumnHidden(AlbumEditModel::sb_column_modsongtitle,1);
+    tv->setColumnHidden(AlbumEditModel::sb_column_orgsongtitle,1);
 
     QHeaderView* hv=NULL;
     hv=tv->horizontalHeader();

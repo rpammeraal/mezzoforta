@@ -349,6 +349,7 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
 
     //	Find albumID, then retrieve through aMgr
     int albumID=-1;
+    QString leftClause=dal->getLeft("path",QString("LENGTH('%1')").arg(Common::escapeSingleQuotes(albumPath)));
     QString q=QString
     (
         "SELECT DISTINCT "
@@ -359,18 +360,20 @@ SBIDAlbum::retrieveAlbumByPath(const QString& albumPath)
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp USING(record_performance_id) "
                 "JOIN ___SB_SCHEMA_NAME___record r USING(record_id) "
         "WHERE "
-            "LEFT(path,LENGTH('%1'))='%1' AND "
-            "LENGTH('%1')<>0 "
+            "%1='%2' AND "
+            "LENGTH('%2')<>0 "
         "GROUP BY "
             "r.record_id "
         "HAVING "
             "COUNT(DISTINCT r.record_id)=1 "
     )
+        .arg(leftClause)
         .arg(Common::escapeSingleQuotes(albumPath))
     ;
 
     dal->customize(q);
     SqlQuery qID(q,db);
+    qDebug() << SB_DEBUG_INFO << q;
     while(albumID==-1 && qID.next())
     {
         albumID=qID.value(0).toInt();
