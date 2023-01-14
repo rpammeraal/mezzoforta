@@ -4,4 +4,5 @@
 \i 003_post_qa/004_top10bydecade.sql
 \i 003_post_qa/005_song_disappeared.sql
 \i 003_post_qa/006_song_new.sql
+\i 003_post_qa/007_dutch_language_top2000.sql
 \i 003_post_qa/999_export.sql
