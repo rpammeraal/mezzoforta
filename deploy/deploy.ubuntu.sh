@@ -9,7 +9,7 @@ APP_NAME=MezzoForta\!
 
 MEZZOFORTA_ROOT=/home/roy/mezzoforta
 MEZZOFORTA_APP=$MEZZOFORTA_ROOT/app
-MEZZOFORTA_EXEC=$MEZZOFORTA_APP/MezzaForte
+MEZZOFORTA_EXEC=$MEZZOFORTA_APP/MezzoForta
 
 QT_ROOT=/home/roy/Qt/5.15.1
 QT_BIN=$QT_ROOT/gcc_64/bin
@@ -38,7 +38,7 @@ git pull -q -f
 echo 2.	Generating makefile
 cd $MEZZOFORTA_APP
 rm -f Makefile
-$QT_BIN/qmake -makefile -config release MezzaForte.pro
+$QT_BIN/qmake -makefile -config release MezzoForta.pro
 
 echo 3.	Modifying makefile
 mv Makefile Makefile.tmp
