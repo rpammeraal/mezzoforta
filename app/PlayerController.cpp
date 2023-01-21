@@ -20,7 +20,7 @@ PlayerController::~PlayerController()
 {
 }
 
-QMediaPlayer::State
+QMediaPlayer::PlaybackState
 PlayerController::playState() const
 {
     return _playerInstance[getCurrentPlayerID()].state();

@@ -11,7 +11,7 @@ class KeyboardEventCatcher : public QObject, public QAbstractNativeEventFilter
 
 public:
     KeyboardEventCatcher();
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result);
 
 signals:
     void songNext();

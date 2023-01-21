@@ -1,10 +1,10 @@
 #include <QString>
 #include <QHeaderView>
-#include <QStringListIterator>
 #include <QTableView>
 #include <sstream>
 #include <QRandomGenerator>
 #include <QShortcut>
+#include <QRegularExpression>
 
 #include "Common.h"
 #include "Context.h"
@@ -81,7 +81,7 @@ Common::correctArticle(const QString &s)
     {
         QString a=it.next();
         QString r=QString(", %1$").arg(a);
-        QRegExp re=QRegExp(r,Qt::CaseInsensitive);
+        QRegularExpression re=QRegularExpression(r,QRegularExpression::CaseInsensitiveOption);
         if(s.contains(re))
         {
             processedFlag=1;
@@ -500,7 +500,7 @@ QString
 Common::removeNonAlphanumeric(const QString &s)
 {
     QString t=s;
-    return t.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
+    return t.remove(QRegularExpression(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}ʻ\'\"\\\[\\\\]")));
 }
 
 QString
@@ -555,7 +555,7 @@ Common::soundex(const QString& input)
 {
     QString code;
     QString name = removeAccents(input.toUpper());
-    name.remove(QRegExp(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\\]")));
+    name.remove(QRegularExpression(QString::fromUtf8("[-`~!@#$%^&*()_—+=|:;<>«»,.?/{}\'\"\\\[\\\\]")));
     name=name.simplified();
     name.replace(" ","");
 

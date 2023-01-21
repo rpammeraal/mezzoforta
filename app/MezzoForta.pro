@@ -12,7 +12,7 @@ QT_DEBUG_PLUGINS=1
 
 SOURCES += \
     Preferences.cpp \
-	SongAlbumNotes.cpp \
+    SongAlbumNotes.cpp \
     SqlQuery.cpp \
     main.cpp \
     MainWindow.cpp \
@@ -227,8 +227,9 @@ DISTFILES += \
     resources/squarelogo.png
 
 #	Manually added
-INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib /usr/local/opt/libpq/include
-DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib
+INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib /usr/local/opt/libpq/include /opt/homebrew/include/ /opt/homebrew/opt/libpq/include
+DEPENDPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib /opt/homebrew/include/
 
 unix: LIBS += -lportaudio -L /usr/local/lib -L/opt/sw/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag -lpq
-macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -L/usr/local/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -L/usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14  -L$$[QT_INSTALL_PLUGINS]/imageformats -L/usr/local/opt/libpq/lib -lpq
+macx: LIBS += -L/usr/local/lib/ -lportaudio -L/opt/sw/lib -L/usr/local/lib -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -framework Foundation -L/usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14  -L$$[QT_INSTALL_PLUGINS]/imageformats -L/usr/local/opt/libpq/lib -lpq -L/opt/homebrew/lib/ -L/opt/homebrew/opt/libpq/lib
+                                                              

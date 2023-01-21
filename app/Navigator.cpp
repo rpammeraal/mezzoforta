@@ -348,18 +348,18 @@ Navigator::applySonglistFilter()
     //			-	item is selectable item.
     //	This way, search will work both ways
 
-    QRegExp re;
-    re=QRegExp("- song by ");
+    QRegularExpression re;
+    re=QRegularExpression("- song by ");
     if(filter.contains(re))
     {
         return;
     }
-    re=QRegExp("- album by ");
+    re=QRegularExpression("- album by ");
     if(filter.contains(re))
     {
         return;
     }
-    re=QRegExp("- performer$");
+    re=QRegularExpression("- performer$");
     if(filter.contains(re))
     {
         return;
@@ -732,7 +732,7 @@ Navigator::_filterSongs(const ScreenItem& si)
     QString labelAllSongDetailNameText="All Songs";
 
     //	Apply filter here
-    QRegExp re;
+    QRegularExpression re;
     MainWindow* mw=Context::instance()->mainWindow();
     QSortFilterProxyModel* m=dynamic_cast<QSortFilterProxyModel *>(mw->ui.allSongsList->model());
     if(m!=NULL)
@@ -743,15 +743,15 @@ Navigator::_filterSongs(const ScreenItem& si)
     //	Prepare filter
     //	http://stackoverflow.com/questions/13690571/qregexp-match-lines-containing-n-words-all-at-once-but-regardless-of-order-i-e
     QString filter=si.searchCriteria();
-    re=QRegExp();
+    re=QRegularExpression();
     if(filter.length()>0)
     {
-        filter.replace(QRegExp("^\\s+")," "); //	replace multiple ws with 1 space
+        filter.replace(QRegularExpression("^\\s+")," "); //	replace multiple ws with 1 space
         filter.replace(" ",")(?=[^\r\n]*");	  //	use lookahead to match all criteria
         filter="^(?=[^\r\n]*"+filter+")[^\r\n]*$";
 
         //	Apply filter
-        re=QRegExp(filter,Qt::CaseInsensitive);
+        re=QRegularExpression(filter,QRegularExpression::CaseInsensitiveOption);
         labelAllSongDetailAllSongsText="Search Results for:";
         labelAllSongDetailNameText=si.searchCriteria();
     }
@@ -759,7 +759,7 @@ Navigator::_filterSongs(const ScreenItem& si)
     mw->ui.labelAllSongDetailName->setText(labelAllSongDetailNameText);
     if(m!=NULL)
     {
-        m->setFilterRegExp(re);
+        m->setFilterRegularExpression(re);
     }
 }
 

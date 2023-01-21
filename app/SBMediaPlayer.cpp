@@ -1,6 +1,6 @@
 #include <portaudio.h>
 
-#include <QAudioDeviceInfo>
+//#include <QAudioDeviceInfo>
 #include <QCoreApplication>
 #include "QFileInfo"
 #include "QHBoxLayout"
@@ -103,7 +103,7 @@ SBMediaPlayer::paCallback
         //	Setting the player to finished cannot be done with QT signal/slots. It is way to slow.
         PlayerController* pc=Context::instance()->playerController();
         pc->setPlayerFinished(_playerID);
-        _state=QMediaPlayer::State::StoppedState;
+        _state=QMediaPlayer::PlaybackState::StoppedState;
     }
 
     /*
@@ -161,7 +161,7 @@ SBMediaPlayer::setMedia(SBIDOnlinePerformancePtr opPtr)
     SB_RETURN_IF_NULL(opPtr,0);
 
     _opPtr=SBIDOnlinePerformancePtr();
-    _state=QMediaPlayer::State::StoppedState;
+    _state=QMediaPlayer::PlaybackState::StoppedState;
     _durationTime=SBDuration();
     qDebug() << SB_DEBUG_INFO << _playerID << opPtr->path();
 
@@ -312,17 +312,17 @@ SBMediaPlayer::refreshPlayingNowData() const
     qDebug() << SB_DEBUG_INFO;
     switch(_state)
     {
-    case QMediaPlayer::State::StoppedState:
+    case QMediaPlayer::PlaybackState::StoppedState:
         _playerPlayButton->setText(">");
         playState="Stopped";
         break;
 
-    case QMediaPlayer::State::PlayingState:
+    case QMediaPlayer::PlaybackState::PlayingState:
         _playerPlayButton->setText("||");
         playState="Now Playing";
         break;
 
-    case QMediaPlayer::State::PausedState:
+    case QMediaPlayer::PlaybackState::PausedState:
         _playerPlayButton->setText(">");
         playState="Paused";
         break;
@@ -622,7 +622,7 @@ SBMediaPlayer::_setErrorMsg(const QString &errMsg)
 }
 
 void
-SBMediaPlayer::_setState(QMediaPlayer::State state)
+SBMediaPlayer::_setState(QMediaPlayer::PlaybackState state)
 {
     qDebug() << SB_DEBUG_INFO << _playerID << state;
     _state=state;

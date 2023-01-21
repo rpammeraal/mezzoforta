@@ -84,9 +84,9 @@ Controller::openDatabase()
 {
     //	If song is playing, stop player and proceed.
     PlayerController* pc=Context::instance()->playerController();
-    QMediaPlayer::State state=pc->playState();
+    QMediaPlayer::PlaybackState state=pc->playState();
 
-    if(state==QMediaPlayer::State::PlayingState || state==QMediaPlayer::State::PausedState)
+    if(state==QMediaPlayer::PlaybackState::PlayingState || state==QMediaPlayer::PlaybackState::PausedState)
     {
         int action=SBMessageBox::createSBMessageBox("Song is still playing",
                                          "Music will be stopped before selecting another database. Click OK to proceed.",

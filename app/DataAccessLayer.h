@@ -11,6 +11,7 @@
 #include <QSqlDatabase>
 #include <QStandardItemModel>
 #include <QDebug>
+#include <QStringList>
 
 #include "SBIDOnlinePerformance.h"
 
@@ -20,7 +21,6 @@
 
 
 class QDebug;
-class QStringList;
 class QSqlQueryModel;
 class QSqlTableModel;
 
