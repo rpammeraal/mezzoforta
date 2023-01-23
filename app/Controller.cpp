@@ -214,14 +214,16 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     QPixmap pm(":/images/splash.png");
     QSplashScreen splash(pm);
+    qDebug() << SB_DEBUG_INFO << pm.height() << pm.width();
 
     if(appStartUpFlag)
     {
         splash.show();
         _app->processEvents();
+        qDebug() << SB_DEBUG_INFO << "splash screen should show";
     }
 
-    MainWindow* oldMW=Context::instance()->mainWindow();
+    MainWindow* oldMW=Context::instance()->mainWindow(0);
     if(oldMW)
     {
         Context::instance()->setMainWindow(NULL);
@@ -258,6 +260,7 @@ Controller::openMainWindow(bool appStartUpFlag)
     if(appStartUpFlag)
     {
         splash.finish(mw);
+        qDebug() << SB_DEBUG_INFO << "splash screen done";
     }
 
     mw->show();
@@ -328,7 +331,7 @@ Controller::setupUI()
         mw->ui.labelSchema->setVisible(1);
         mw->ui.frSchema->setVisible(1);
 
-        connect(mw->ui.cbSchema,SIGNAL(currentIndexChanged(QString)),
+        connect(mw->ui.cbSchema,SIGNAL(currentTextChanged(QString)),
                 this,SLOT(changeCurrentDatabaseSchema(QString)));
 
         PropertiesPtr properties=Context::instance()->properties();

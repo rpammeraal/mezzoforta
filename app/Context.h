@@ -44,7 +44,7 @@ public:
     inline DataAccessLayer* dataAccessLayer() { DataAccessLayer* dal=_dbm.dataAccessLayer();SB_DEBUG_IF_NULL(dal); return dal; }
     inline DBManager* dbManager() { return &_dbm; }
     inline KeyboardEventCatcher* keyboardEventCatcher() { return &_kec; }
-    inline MainWindow* mainWindow() const { SB_DEBUG_IF_NULL(_mw); return _mw; }
+    inline MainWindow* mainWindow(bool checkNull=1) const { if(checkNull) { SB_DEBUG_IF_NULL(_mw); } return _mw; }
     inline Navigator* navigator() { return &_nav; }
     inline PlayerController* playerController() { return &_pc; }
     inline SearchItemModel* searchItemModel() { return _sim; }
