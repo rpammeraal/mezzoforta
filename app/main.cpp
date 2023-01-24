@@ -9,6 +9,7 @@
 #include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
 #include <QMediaPlayer>
+#include <QtHttpServer>
 
 #ifdef Q_OS_WIN
 
@@ -71,11 +72,39 @@ int main(int argc, char *argv[])
     app.setOrganizationName("MezzoForta Inc");
     app.setOrganizationDomain("mezzoforta.com");
     app.setApplicationName("MezzoForta!");
-    QIcon icon=QIcon(":/res/resources/squarelogo.png");
+    QIcon icon=QIcon(":/resources/squarelogo.png");
     app.setWindowIcon(icon);
 
     //	Set up types
     //qRegisterMetaType<SBIDBase>();
+
+    //  Set up HTTP server
+    qDebug() << SB_DEBUG_INFO << "Setting up web server";
+    QHttpServer httpServer; httpServer.route("/", []()
+    {
+        //QString qt("Hello, this is finally MezzoForta!");
+        //return qt;
+        //QFile f("/Users/roy/Projects/qt/songbase/app/resources/www/index.html");
+        QFile f(":/www/index.html");
+        qDebug() << SB_DEBUG_INFO << f.fileName();
+        if (!f.open(QFile::ReadOnly | QFile::Text))
+        {
+            qDebug() << SB_DEBUG_ERROR << "Cannot open file";
+        }
+        QTextStream in(&f);
+        QString qs=in.readAll();
+        return qs;
+
+    });
+
+    const auto port = httpServer.listen(QHostAddress::Any,80);
+    if (!port)
+    {
+       qDebug() << SB_DEBUG_ERROR << QCoreApplication::translate("QHttpServerExample", "Server failed to listen on a port.");
+    }
+    qDebug() << SB_DEBUG_INFO << "Listening on port" << port;
+
+    qDebug() << SB_DEBUG_INFO << "Setting up web server done.";
 
     //	Set up system
     Controller c(argc, argv, &app);

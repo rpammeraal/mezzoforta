@@ -1,4 +1,4 @@
-QT       += core gui widgets sql xml network webenginewidgets multimedia
+QT       += core gui widgets sql xml network webenginewidgets multimedia httpserver
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
 
@@ -224,7 +224,8 @@ DISTFILES += \
     resources/logo.ico \
     resources/playing.png \
     resources/splash.png \
-    resources/squarelogo.png
+    resources/squarelogo.png \
+    resources/www/index.html
 
 #	Manually added
 INCLUDEPATH += /usr/local/include /sw/include /opt/sw/include C:/usr/local/include /usr/local/Cellar/postgresql@14/14.5_4/lib/postgresql@14 /usr/local/opt/libpq/lib /usr/local/opt/libpq/include /opt/homebrew/include/ /opt/homebrew/opt/libpq/include
