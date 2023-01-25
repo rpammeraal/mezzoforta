@@ -123,6 +123,9 @@ private:
     void _setErrorMsg(const QString& errMsg);
     void _setState(QMediaPlayer::State state);
     void _updatePosition();
+
+private slots:
+    void _setPlayerDataLabel(QString text) const;
 };
 
 #endif // SBMEDIAPLAYER_H

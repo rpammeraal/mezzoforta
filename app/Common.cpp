@@ -4,6 +4,7 @@
 #include <QTableView>
 #include <sstream>
 #include <QRandomGenerator>
+#include <QShortcut>
 
 #include "Common.h"
 #include "Context.h"
@@ -51,6 +52,12 @@ Common::articles()
     }
 
     return _articles;
+}
+
+void
+Common::bindShortcut(QAbstractButton *button, const QKeySequence &shortcut)
+{
+    QObject::connect(new QShortcut(shortcut, button), &QShortcut::activated, [button](){ button->animateClick(); });
 }
 
 //	Comparable needs to be used to find items in the database:

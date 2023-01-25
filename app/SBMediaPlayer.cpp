@@ -370,8 +370,8 @@ SBMediaPlayer::refreshPlayingNowData() const
     }
     qDebug() << SB_DEBUG_INFO;
     playState+="</CENTER></BODY>";
-    qDebug() << SB_DEBUG_INFO;
-    _playerDataLabel->setText(playState);
+    qDebug() << SB_DEBUG_INFO << playState;
+    _setPlayerDataLabel(playState);
     qDebug() << SB_DEBUG_INFO;
 }
 
@@ -648,4 +648,11 @@ SBMediaPlayer::_updatePosition()
     this->_playerProgressSlider->setValue(durationSec);
     this->_playerDurationLabel->setText(tStr);
 
+}
+
+void
+SBMediaPlayer::_setPlayerDataLabel(QString text) const
+{
+    SB_RETURN_VOID_IF_NULL(_playerDataLabel);
+    _playerDataLabel->setText(text);
 }

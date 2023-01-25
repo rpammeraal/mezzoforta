@@ -358,13 +358,6 @@ DataAccessLayer::databaseName() const
     return db.databaseName();
 }
 
-QStringList
-DataAccessLayer::availableSchemas() const
-{
-    QStringList sl;
-    return sl;
-}
-
 QString
 DataAccessLayer::customize(QString &s) const
 {
@@ -418,13 +411,6 @@ DataAccessLayer::getIsNull() const
     return _isnull;
 }
 
-void
-DataAccessLayer::logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const
-{
-    SB_RETURN_VOID_IF_NULL(opPtr);
-    qDebug() << SB_DEBUG_INFO << radioModeFlag << opPtr->genericDescription();
-}
-
 int
 DataAccessLayer::retrieveLastInsertedKey() const
 {
@@ -436,22 +422,10 @@ DataAccessLayer::retrieveLastInsertedKey() const
     return qID.value(0).toInt();
 }
 
-QString
-DataAccessLayer::retrieveLastInsertedKeySQL() const
-{
-    return QString("SELECT last_insert_rowid();");
-}
-
 bool
 DataAccessLayer::schemaExists(const QString &schema)
 {
     return availableSchemas().contains(schema);
-}
-
-bool
-DataAccessLayer::supportSchemas() const
-{
-    return 0;
 }
 
 ///	Protected

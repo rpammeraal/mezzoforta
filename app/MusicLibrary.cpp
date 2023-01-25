@@ -651,6 +651,7 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     while(allPerformersIT.hasNext())
     {
         QString performerName=allPerformersIT.next();
+        qDebug() << SB_DEBUG_INFO << performerName;
 
         int performerID=-1;
         if(!name2PerformerIDMap.contains(performerName))
@@ -1253,17 +1254,22 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     songTitle2songIDMap.reserve(list.count());
     while(listIT.hasNext())
     {
+        qDebug() << SB_DEBUG_INFO;
         MLentityPtr entityPtr=listIT.next();
 
         if(entityPtr)
         {
+            qDebug() << SB_DEBUG_INFO;
             if(!entityPtr->errorFlag() && !(entityPtr->removedFlag))
             {
                 SBIDSongPtr selectedSongPtr;
 
                 const QString key=QString("%1:%2").arg(entityPtr->songTitle).arg(entityPtr->songPerformerID);
+                qDebug() << SB_DEBUG_INFO << key;
                 if(!songTitle2songIDMap.contains(key))
                 {
+                    qDebug() << SB_DEBUG_INFO;
+
                     Common::sb_parameters p;
                     p.songTitle=entityPtr->songTitle;
                     p.performerID=entityPtr->songPerformerID;
@@ -1273,8 +1279,11 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
                     p.songID=entityPtr->songID;
                     p.suppressDialogsFlag=suppressDialogsFlag;
 
+                    qDebug() << SB_DEBUG_INFO << p.songTitle;
+
                     Common::result result=Common::result_missing;
                     result=smgr->userMatch(p,SBIDSongPtr(),selectedSongPtr);
+                    qDebug() << SB_DEBUG_INFO << result;
                     if(result==Common::result_canceled)
                     {
                         qDebug() << SB_DEBUG_WARNING << "none selected -- exit from import";

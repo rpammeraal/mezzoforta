@@ -35,9 +35,6 @@ public:
     friend class DataEntityGenrelist;
     friend class DatabaseSelector;
 
-    DataAccessLayer();
-    DataAccessLayer(const QString& connectionName);
-    DataAccessLayer(const DataAccessLayer& c);
     virtual ~DataAccessLayer();
 
     void addPostBatchSQL(const QStringList& sql);
@@ -48,9 +45,8 @@ public:
     DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
 
-    //	Database type specific
-    QString databaseName() const;
-    virtual QStringList availableSchemas() const;
+    //	Database type generic
+    virtual QString databaseName() const;
     QString customize(QString& sqlString) const;
     const QString& getConnectionName() const;
     const QString& getConvertToSecondsFromTime() const;
@@ -59,13 +55,22 @@ public:
     const QString& getGetDateTime() const;
     const QString& getILike() const;
     const QString& getIsNull() const;
-    virtual void logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const;
     virtual int retrieveLastInsertedKey() const;
-    virtual QString retrieveLastInsertedKeySQL() const;
     virtual bool schemaExists(const QString& schema);
-    virtual bool supportSchemas() const;
+
+    //	Database type specific
+    virtual QStringList availableSchemas() const=0;
+    virtual QString getLeft(const QString& str, const QString& len) const=0;
+    virtual void logSongPlayed(bool radioModeFlag,SBIDOnlinePerformancePtr opPtr) const=0;
+    virtual QString retrieveLastInsertedKeySQL() const=0;
+    virtual bool supportSchemas() const=0;
+
 
 protected:
+    DataAccessLayer();
+    DataAccessLayer(const QString& connectionName);
+    DataAccessLayer(const DataAccessLayer& c);
+
     int dalID;
 
     void addMissingDatabaseItems();

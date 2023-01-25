@@ -21,6 +21,7 @@ class ExternalData;
 class MainWindow;
 class SBTab;
 class SBTabQueuedSongs;	//	CWIP: remove
+class SBTabSongsAll;
 class ScreenStack;
 class SearchItemModel;
 
@@ -53,6 +54,7 @@ public:
     inline SBModelQueuedSongs* sbModelQueuedSongs() { return &_mqs; }
     inline SBTab* tab() const { SB_DEBUG_IF_NULL(_tab); return _tab; }
     inline SBTabQueuedSongs* tabQueuedSongs() const { SB_DEBUG_IF_NULL(_tabQS); return _tabQS; }
+    inline SBTabSongsAll* tabSongsAll() const { SB_DEBUG_IF_NULL(_tabSA); return _tabSA; }
 
     void setBackgroundThread(BackgroundThread* bgt);
     void setCacheManager(CacheManager* cm);
@@ -62,6 +64,7 @@ public:
     void setSearchItemModel(SearchItemModel* sim);
     void setTab(SBTab* tab);
     void setTabQueuedSongs(SBTabQueuedSongs* tabQS);
+    void setTabSongsAll(SBTabSongsAll* tabSA);
 
 protected:
     friend class Controller;
@@ -76,6 +79,7 @@ private:
     MainWindow* _mw;
     SBTab* _tab;
     SBTabQueuedSongs* _tabQS;
+    SBTabSongsAll* _tabSA;
 
     //	Instantiated
     CompleterFactory _cf;
