@@ -2,4 +2,6 @@ MezzaForte.pro.user
 build*
 archives
 catalina
-
+*.csv
+.DS_Store
+*.swp
