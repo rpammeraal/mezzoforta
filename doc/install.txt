@@ -2,7 +2,20 @@
 Install xtools from app store.
 Install xtools command line tools.
 Download QT 5.7
+Install brew
 
+2.	Xcode agreement
+sudo xcodebuild -license
+
+If Qt Creator still complains about licensing, follow instructions at:
+https://stackoverflow.com/questions/33728905/qt-creator-project-error-xcode-not-set-up-properly-you-may-need-to-confirm-t
+
+
+3.	Install 3rd party libraries with brew:
+brew install libogg libvorbis lame vorbis-tools libsndfile portaudio mad libid3tag taglib xz flac ffmpeg libpq
+
+
+*** OLD ***
 Postgres headers and libraries:
 -	Login as root and install fink.
 -	/sw/bin/fink install postgresql94-dev

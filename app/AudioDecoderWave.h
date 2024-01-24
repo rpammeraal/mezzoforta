@@ -9,6 +9,7 @@ class AudioDecoderWave : public AudioDecoder
 
 public:
     virtual ~AudioDecoderWave();
+    virtual QString getType() const { return QString("WAVE"); }
 
 protected:
     friend class AudioDecoderFactory;
