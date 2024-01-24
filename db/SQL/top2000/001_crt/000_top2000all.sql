@@ -36,9 +36,9 @@ FROM
 		JOIN rock.performance p USING(performance_id)
 		JOIN rock.song s USING(song_id)
 		JOIN rock.artist a USING(artist_id)
-		JOIN rock.record_performance r_p ON
+		LEFT JOIN rock.record_performance r_p ON
 			p.preferred_record_performance_id=r_p.record_performance_id
-		JOIN rock.online_performance o_p ON
+		LEFT JOIN rock.online_performance o_p ON
 			r_p.preferred_online_performance_id=o_p.online_performance_id
 ORDER BY 1
 ;
