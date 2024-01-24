@@ -5,13 +5,13 @@
 #	Also install patchelf
 #	And appimagetool
 
-APP_NAME=MezzoForta\!
+APP_NAME=MezzoForta
 
 MEZZOFORTA_ROOT=/home/roy/mezzoforta
-MEZZOFORTA_APP=$MEZZOFORTA_ROOT/app
-MEZZOFORTA_EXEC=$MEZZOFORTA_APP/MezzoForta
+MEZZOFORTA_SRC=$MEZZOFORTA_ROOT/app
+MEZZOFORTA_EXEC=$MEZZOFORTA_SRC/MezzoForta
 
-QT_ROOT=/home/roy/Qt/5.15.1
+QT_ROOT=/home/roy/Qt/6.4.2
 QT_BIN=$QT_ROOT/gcc_64/bin
 
 
@@ -36,8 +36,9 @@ cd $MEZZOFORTA_ROOT
 git pull -q -f
 
 echo 2.	Generating makefile
-cd $MEZZOFORTA_APP
+cd $MEZZOFORTA_SRC
 rm -f Makefile
+echo $QT_BIN/qmake -makefile -config release MezzoForta.pro
 $QT_BIN/qmake -makefile -config release MezzoForta.pro
 
 echo 3.	Modifying makefile
@@ -57,7 +58,7 @@ mkdir -p $APP_DIR/usr/share/applications
 mkdir -p $APP_DIR/usr/share/icons/hicolor/256x256/apps
 
 #	Creating MezzoForta.desktop
-cat << EOF > $APP_DIR/usr/share/applications/MezzoForta!.desktop
+cat << EOF > $APP_DIR/usr/share/applications/MezzoForta.desktop
 [Desktop Entry]
 Type=Application
 Name=MezzoForta!
@@ -69,11 +70,12 @@ EOF
 
 #	Moving exec
 cp $MEZZOFORTA_EXEC $APP_DIR/usr/bin/MezzoForta
-cp $MEZZOFORTA_APP/resources/squarelogo.png $APP_DIR/usr/share/icons/hicolor/256x256/apps
+cp $MEZZOFORTA_SRC/resources/squarelogo.png $APP_DIR/usr/share/icons/hicolor/256x256/apps
 
 #	Creating image
 echo 6.	Creating image
 cd $DEPLOY_DIR
 pwd
-$QT_BIN/linuxdeployqt $APP_DIR/usr/share/applications/MezzoForta\!.desktop -appimage -verbose=1 | tee $ARTIFACTS_FILE_DEPLOY
-mv MezzoForta\!-x86_64.AppImage MezzoForta\!.AppImage
+echo $QT_BIN/linuxdeployqt $APP_DIR/usr/share/applications/MezzoForta.desktop -appimage -verbose=1 
+$QT_BIN/linuxdeployqt $APP_DIR/usr/share/applications/MezzoForta.desktop -appimage -verbose=1 | tee $ARTIFACTS_FILE_DEPLOY
+#mv MezzoForta-x86_64.AppImage MezzoForta.AppImage

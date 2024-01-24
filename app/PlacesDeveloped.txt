@@ -1202,6 +1202,7 @@ songbase=# SELECT * FROM rock.performance WHERE performance_id =35815;
 Bugs that need to be fixed:
 *	If performer name missing and library is set up as performer/album/songs, take performer name from directory structure.
 *	updateSql: add !deletedFlag() && changedFlag && mode=sb_change
+*   Play Jackson 5. Multiple entries for the same song show up.
 
 Near future:
 *1	Create

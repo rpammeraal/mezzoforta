@@ -10,6 +10,7 @@ class AudioDecoderMP3 : public AudioDecoder
 
 public:
     virtual ~AudioDecoderMP3();
+    virtual QString getType() const { return QString("MP3"); }
 
 protected:
     friend class AudioDecoderFactory;

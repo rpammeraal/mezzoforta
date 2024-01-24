@@ -89,7 +89,7 @@ SBMediaPlayer::paCallback
             _oldPositionInSec=newPositionInSec;
             this->_updatePosition();
             this->setPlayerVisible(1);
-            qDebug() << SB_DEBUG_INFO << _playerID << newPositionInSec;
+            //qDebug() << SB_DEBUG_INFO << _playerID << newPositionInSec;
         }
     }
     else
@@ -192,6 +192,8 @@ SBMediaPlayer::setMedia(SBIDOnlinePerformancePtr opPtr)
     _portAudioOpen();
     _mediaLoaded=1;
     qDebug() << SB_DEBUG_INFO << _playerID << "_mediaLoaded=" << _mediaLoaded;
+    qDebug() << SB_DEBUG_INFO << _playerID << "type=" << _ad->getType();
+    qDebug() << SB_DEBUG_INFO << _playerID << "sampleRate=" << _ad->sampleRate();
 
     return 1;
 }
