@@ -39,6 +39,7 @@ public:
     inline PaSampleFormat sampleFormat() const { return _sampleFormat; }
     inline quint32 sampleRate() const { return _sampleRate; }
     inline int bytesPerStereoSample() const { return bitsPerSample()*2/8; }
+    virtual QString getType() const=0;
 
 #ifdef Q_OS_WIN
 	static QString convertToWindowsPath(const QString& path);

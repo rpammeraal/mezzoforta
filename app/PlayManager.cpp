@@ -27,8 +27,8 @@ bool
 PlayManager::songPlayingFlag() const
 {
     PlayerController* pc=Context::instance()->playerController();
-    QMediaPlayer::State currentPlayState=pc?pc->playState():QMediaPlayer::State::StoppedState;
-    return currentPlayState==QMediaPlayer::State::PlayingState?1:0;
+    QMediaPlayer::PlaybackState currentPlayState=pc?pc->playState():QMediaPlayer::PlaybackState::StoppedState;
+    return currentPlayState==QMediaPlayer::PlaybackState::PlayingState?1:0;
 }
 
 int
@@ -57,11 +57,11 @@ bool
 PlayManager::playerPlay()
 {
     PlayerController* pc=Context::instance()->playerController();
-    QMediaPlayer::State currentPlayState=pc?pc->playState():QMediaPlayer::State::StoppedState;
+    QMediaPlayer::PlaybackState currentPlayState=pc?pc->playState():QMediaPlayer::PlaybackState::StoppedState;
 
     switch(currentPlayState)
     {
-    case QMediaPlayer::State::StoppedState:
+    case QMediaPlayer::PlaybackState::StoppedState:
         {
             SBModelQueuedSongs* mqs=Context::instance()->sbModelQueuedSongs();
             int numSongs=mqs?mqs->numSongs():0;
@@ -77,8 +77,8 @@ PlayManager::playerPlay()
         }
         break;
 
-    case QMediaPlayer::State::PlayingState:
-    case QMediaPlayer::State::PausedState:
+    case QMediaPlayer::PlaybackState::PlayingState:
+    case QMediaPlayer::PlaybackState::PausedState:
         return (pc?pc->playerPlay():0);
         break;
     }
@@ -597,14 +597,14 @@ PlayManager::_loadRadio()
         }
     }
 
-    QString allIDX=" ";
-    for(int i=0;i<indexCovered.count();i++)
-    {
-        if(indexCovered.contains(i))
-        {
-            allIDX+=QString("%1 ").arg(i);
-        }
-    }
+//    QString allIDX=" ";
+//    for(int i=0;i<indexCovered.length();i++)
+//    {
+//        if(indexCovered.contains(i))
+//        {
+//            allIDX+=QString("%1 ").arg(i);
+//        }
+//    }
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadRadio");
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
 }

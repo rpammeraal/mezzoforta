@@ -134,7 +134,19 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
     dialog->ui->lHeader->setText(title);
     dialog->ui->lHeader->setFont(QFont("Trebuchet MS",13));
 
-    QVectorIterator<SBIDOnlinePerformancePtr> allOPPtrIt(allOPPtr);
+    QList<int> a;
+    QListIterator<int> ita(a);
+    while(ita.hasNext())
+    {
+        ita.next();
+    }
+    QVector<int> b;
+    QListIterator<int> itb(b);
+    while(itb.hasNext())
+    {
+    }
+
+    QListIterator<SBIDOnlinePerformancePtr> allOPPtrIt(allOPPtr);
     while(allOPPtrIt.hasNext())
     {
         SBIDOnlinePerformancePtr opPtr=allOPPtrIt.next();

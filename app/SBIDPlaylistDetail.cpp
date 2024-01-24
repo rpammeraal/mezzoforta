@@ -588,5 +588,5 @@ SBIDPlaylistDetail::_init()
     this->_chartID            =-1;
     this->_albumID            =-1;
     this->_performerID        =-1;
-    this->_notes              =-1;
+    this->_notes              =QString();
 }

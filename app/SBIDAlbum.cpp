@@ -472,6 +472,7 @@ SBIDAlbum::albumsByPerformer(int performerID)
                     "r.artist_id=a.artist_id "
         "WHERE "
             "r.artist_id=%1 "
+
     )
         .arg(performerID)
     ;

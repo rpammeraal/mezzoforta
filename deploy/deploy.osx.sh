@@ -1,5 +1,6 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 #	Requires linuxdeployqt: https://github.com/probonopd/linuxdeployqt
 #	Installed manually (not with help of QT UI)
 #	Also install patchelf
@@ -8,15 +9,16 @@
 NAME=MezzoForta
 NAME_APP=$NAME.app
 
+
 MEZZOFORTA_ROOT=/Users/roy/mezzoforta
 MEZZOFORTA_SRC=$MEZZOFORTA_ROOT/app
-MEZZOFORTA_PRO=$NAME.pro
-
-MEZZOFORTA_EXEC=$MEZZOFORTA_SRC/$NAME_APP
+MEZZOFORTA_APP=$MEZZOFORTA_SRC/$NAME.app
 MEZZOFORTA_DMG=$MEZZOFORTA_SRC/$NAME.dmg
+MEZZOFORTA_PRO=$NAME.pro
+MEZZOFORTA_EXEC=$MEZZOFORTA_SRC/$NAME_APP
 
-QT_ROOT=/Users/roy/Qt/5.15.1
-QT_BIN=$QT_ROOT/clang_64/bin
+QT_ROOT=/Users/roy/Qt/6.4.2
+QT_BIN=$QT_ROOT/macos/bin
 
 
 
@@ -42,7 +44,7 @@ rm -f Makefile
 $QT_BIN/qmake -makefile -config release $MEZZOFORTA_PRO
 
 echo 3.	Removing .app directory
-rm -rf $MEZZOFORTA_EXEC
+rm -rf $MEZZOFORTA_APP
 rm -rf $MEZZOFORTA_DMG
 
 echo 4.	Building app
@@ -50,17 +52,16 @@ make clean
 make | tee $ARTIFACTS_FILE_MAKE
 
 echo 5.	Moving frameworks
-mkdir -p $MEZZOFORTA_EXEC/Contents/Frameworks
-cp -Rp \
-	$QT_ROOT/clang_64/lib/QtQuickWidgets.framework \
-	$QT_ROOT/clang_64/lib/QtWebEngine.framework \
-	$QT_ROOT/clang_64/lib/QtWebEngineCore.framework \
-	$QT_ROOT/clang_64/lib/QtWebEngineWidgets.framework \
-	$QT_ROOT/clang_64/lib/QtWebSockets.framework \
-		$MEZZOFORTA_EXEC/Contents/Frameworks
+mkdir -p $MEZZOFORTA_APP/Contents/Frameworks
+cp -Rpf \
+	$QT_ROOT/macos/lib/QtQuickWidgets.framework \
+	$QT_ROOT/macos/lib/QtWebEngineCore.framework \
+	$QT_ROOT/macos/lib/QtWebEngineWidgets.framework \
+	$QT_ROOT/macos/lib/QtWebSockets.framework \
+		MezzoForta.app/Contents/Frameworks
 
 echo 6.	Creating image
-$QT_BIN/macdeployqt $NAME_APP -dmg | tee ARTIFACTS_FILE_DEPLOY
+$QT_BIN/macdeployqt NAME_APP -dmg | tee $ARTIFACTS_FILE_DEPLOY
 
 echo 7.	Move DMG file to deploy directory
 mv -f $MEZZOFORTA_DMG $DEPLOY_DIR

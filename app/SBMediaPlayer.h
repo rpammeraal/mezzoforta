@@ -2,6 +2,7 @@
 #define SBMEDIAPLAYER_H
 
 #include <portaudio.h>
+#include <QMediaPlayer>
 
 class QFrame;
 class QPushButton;
@@ -50,10 +51,10 @@ public:
     void releaseMedia();
     bool setMedia(SBIDOnlinePerformancePtr opPtr);
     inline void setPlayerID(int id) { _playerID=id; }
-    inline QMediaPlayer::State state() const { return _state; }
+    inline QMediaPlayer::PlaybackState state() const { return _state; }
 
 signals:
-    void stateChanged(QMediaPlayer::State state);
+    void stateChanged(QMediaPlayer::PlaybackState state);
     void prepareToStartNextSong(int currentPlayerID);
     void needMoreSongs();	//	thrown when no more songs in current playlist exists.
     void weArePlayingTime2LoadNextSong(int currentPlayerID, SBIDOnlinePerformancePtr opPtr);	//	This will be emitted *once* only.
@@ -92,22 +93,22 @@ private:
     PaStream*           		_stream;
     QString             		_errMsg;
     bool                		_hasErrorFlag;
-    QMediaPlayer::State 		_state;
+    QMediaPlayer::PlaybackState         _state;
     bool                		_threadPrioritySetFlag;
     quint64             		_oldPositionInSec;
     bool						_isActivePlayer;
     int                 		_playerID;
     bool                		_startNextSongSignalGiven;
     bool						_fiveSecondsLeftToPlay;
-    SBDuration					_durationTime;
-    SBIDOnlinePerformancePtr	_opPtr;	//	online performance to be played
-    QFrame*						_playerFrame;
+    SBDuration                          _durationTime;
+    SBIDOnlinePerformancePtr            _opPtr;	//	online performance to be played
+    QFrame*                            _playerFrame;
     QPushButton*        		_playerPlayButton;
     QSlider*            		_playerProgressSlider;
     QLabel*             		_playerDurationLabel;
     QTextBrowser*     			_playerDataLabel;
-    bool                        _mediaLoaded;	//	player is ready to play.
-    bool						_isReadyTogo;	//	use this to signify that we have thrown weArePlayingTime2Load...
+    bool                               _mediaLoaded;	//	player is ready to play.
+    bool                               _isReadyTogo;	//	use this to signify that we have thrown weArePlayingTime2Load...
 
     int _checkReadyTogoStatus() const;
     void _closeStream();
@@ -121,7 +122,7 @@ private:
     void _resetPlayer();
     void _setDuration(int durationMs);
     void _setErrorMsg(const QString& errMsg);
-    void _setState(QMediaPlayer::State state);
+    void _setState(QMediaPlayer::PlaybackState state);
     void _updatePosition();
 
 private slots:

@@ -12,7 +12,7 @@ KeyboardEventCatcher::KeyboardEventCatcher()
 }
 
 bool
-KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
     bool returnCode=0;
     Q_UNUSED(eventType);

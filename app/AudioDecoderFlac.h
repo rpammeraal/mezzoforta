@@ -27,6 +27,7 @@ public:
     FLAC__StreamDecoderWriteStatus flacWrite(const FLAC__Frame *frame, const FLAC__int32 *const buffer[]);
     void flacMetadata(const FLAC__StreamMetadata *metadata);
     void flacError(FLAC__StreamDecoderErrorStatus status);
+    virtual QString getType() const { return QString("FLAC"); }
 
 protected:
     friend class AudioDecoderFactory;

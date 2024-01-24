@@ -15,6 +15,7 @@ class AudioDecoderOggVorbis : public AudioDecoder
 
 public:
     virtual ~AudioDecoderOggVorbis();
+    virtual QString getType() const { return QString("OGG"); }
 
 protected:
     friend class AudioDecoderFactory;

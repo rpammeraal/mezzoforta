@@ -41,7 +41,7 @@ public:
     inline int getCurrentPlayerID() const { return _currentPlayerID; }
     inline int getPlayerPlayingID() const { return _playerPlayingID; }
     void handlePlayingSong(int playerID, SBIDOnlinePerformancePtr opPtr);
-    QMediaPlayer::State playState() const;
+    QMediaPlayer::PlaybackState playState() const;
     void setPlayerFinished(int currentPlayerID);
 
 signals:

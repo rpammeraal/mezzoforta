@@ -118,9 +118,20 @@ private:
     QVector<SBIDAlbumPtr> _loadAlbumsFromDB() const;
 };
 
-inline uint qHash(const SBIDPerformer& p,uint seed=0)
-{
-    return p.performerID()>=0?qHash(p.performerID(),seed):qHash(p.performerName(),seed);
-}
+//inline uint qHash(const SBIDPerformer& p,uint seed=0)
+//{
+//    //return p.performerID()>=0?qHash(p.performerID(),seed):qHash(p.performerName().constData(),seed);
+//    QHash myHash;
+//    if(p.performerID()>=0)
+//    {
+//        return QHash::qHash((int)p.performerID(),seed);
+
+//    }
+//    else
+//    {
+//        return QHash::qHash(p.performerName().constData(),seed);
+//    }
+//    return 0;
+//}
 
 #endif // SBIDPERFORMER_H

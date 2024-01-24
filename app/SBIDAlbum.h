@@ -119,7 +119,7 @@ private:
 
 inline uint qHash(const SBIDAlbum& p,uint seed=0)
 {
-    return p.albumID()>=0?qHash(p.albumID(),seed):qHash(p.albumTitle(),seed);
+    return p.albumID()>=0?qHash((int)p.albumID(),(size_t)seed):qHash(p.albumTitle(),(size_t)seed);
 }
 
 //	Use case: import of new songs. This way we can create a hash function based
