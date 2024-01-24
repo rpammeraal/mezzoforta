@@ -227,6 +227,8 @@ DISTFILES += \
     resources/squarelogo.png
 
 #	Manually added
+# export LDFLAGS="-L/usr/local/opt/libpq/lib"
+# export CPPFLAGS="-I/usr/local/opt/libpq/include"
 INCLUDEPATH += /usr/local/include /opt/homebrew/include/ /opt/homebrew/opt/libpq/include
 DEPENDPATH +=  /usr/local/include /opt/homebrew/include/ /opt/homebrew/opt/libpq/include
 
