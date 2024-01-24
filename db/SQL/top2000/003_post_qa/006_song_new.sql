@@ -57,7 +57,7 @@ SELECT
 	o.song_title,
 	o.performer,
 	CASE
-		WHEN LENGTH(e.appears_in)>4 THEN 'Laatst in de top 2000 van ' ||regexp_replace(REPLACE(e.appears_in,',2022',''),'.*,', '')
+		WHEN LENGTH(e.appears_in)>4 THEN 'Laatst in de top 2000 van ' ||regexp_replace(REPLACE(e.appears_in,',2023',''),'.*,', '')
 		ELSE 'Nieuw in ' || lt2.year_txt
 	END 			AS comments
 FROM 
