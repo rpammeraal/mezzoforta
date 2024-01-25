@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<SBIDBase>();
 
     qDebug() << SB_DEBUG_INFO;
-    //	WebService* ws=new WebService();
 
     qDebug() << SB_DEBUG_INFO;
 
@@ -89,7 +88,8 @@ int main(int argc, char *argv[])
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        myHTTPserver server;
+        //	WebService server;
+        WebService server;
         app.exec();
     }
     else

@@ -7,19 +7,27 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QDebug>
+#include <QDateTime>
 
-class myHTTPserver : public QObject
+class WebService : public QObject
 {
     Q_OBJECT
 public:
-    explicit myHTTPserver(QObject *parent = 0);
-    ~myHTTPserver();
-    QTcpSocket *socket ;
+    explicit WebService(QObject *parent = 0);
+    ~WebService();
+
 public slots:
-    void myConnection();
+    void request(int timeout=100);
+
 private:
-    qint64 bytesAvailable() const;
-    QTcpServer *server;
+    QTcpServer*		_server;
+    QDateTime       _startDateTime;
+
+    void			_home(QTcpSocket* s) const;
+    void			_fourOhFour(QTcpSocket* s) const;
+
+    const QString	_retrievePath(const char* header) const;
+    void			_writeBody(QTcpSocket* s,const QString& contents) const;
 signals:
 };
 
