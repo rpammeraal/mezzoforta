@@ -1,19 +1,26 @@
-#ifndef WEBSERVICE_H
-#define WEBSERVICE_H
-
+#ifndef MYHTTPSERVER
+#define MYHTTPSERVER
+#include <QCoreApplication>
+#include <QNetworkInterface>
+#include <iostream>
 #include <QObject>
+#include <QTcpSocket>
+#include <QTcpServer>
+#include <QDebug>
 
-class WebService : public QObject
+class myHTTPserver : public QObject
 {
     Q_OBJECT
 public:
-    WebService();
-    ~WebService();
-
-    static QString root();
-
+    explicit myHTTPserver(QObject *parent = 0);
+    ~myHTTPserver();
+    QTcpSocket *socket ;
+public slots:
+    void myConnection();
 private:
-    void _init();
+    qint64 bytesAvailable() const;
+    QTcpServer *server;
+signals:
 };
 
-#endif // WEBSERVICE_H
+#endif

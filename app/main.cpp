@@ -62,9 +62,9 @@ int main(int argc, char *argv[])
 #endif
     QApplication app(argc, argv);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     OSXSetupSleepCallback();
-#endif //	Q_OS_OSX
+#endif //	Q_OS_MACOS
 
 #ifdef Q_OS_LINUX
     qRegisterMetaType<QMediaPlayer::State>();
@@ -81,14 +81,16 @@ int main(int argc, char *argv[])
     qRegisterMetaType<SBIDBase>();
 
     qDebug() << SB_DEBUG_INFO;
-    WebService ws;
+    //	WebService* ws=new WebService();
+
     qDebug() << SB_DEBUG_INFO;
 
     //	Set up system
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        app.exec();																							
+        myHTTPserver server;
+        app.exec();
     }
     else
     {
@@ -96,6 +98,8 @@ int main(int argc, char *argv[])
         d.setText("No database selected. Terminating");
         d.exec();
     }
+
+
 #ifdef Q_OS_WIN
 #endif
     return 0;

@@ -1,53 +1,50 @@
 #include "WebService.h"
-#include "QHttpServer"
-#include "QHttpServerResponse"
+#include "Common.h"
 
-#include "Context.h"
-
-WebService::WebService()
+myHTTPserver::myHTTPserver(QObject *parent) : QObject(parent)
 {
-    qDebug() << SB_DEBUG_INFO;
-    this->_init();
-    qDebug() << SB_DEBUG_INFO;
-}
-
-WebService::~WebService()
-{
-
-}
-
-QString
-WebService::root()
-{
-    QFile f(":/www/index.html");
-    qDebug() << SB_DEBUG_INFO << f.fileName();
-    if (!f.open(QFile::ReadOnly | QFile::Text))
+    server = new QTcpServer(this);
+    // waiting for the web brower to make contact,this will emit signal
+    connect(server, SIGNAL(newConnection()),this, SLOT(myConnection()));
+    if(!server->listen(QHostAddress::Any,8080))
     {
-        qDebug() << SB_DEBUG_ERROR << "Cannot open file";
+        qDebug() << SB_DEBUG_INFO << "Web server could not start";
     }
-    QTextStream in(&f);
-    QString qs=in.readAll();
-    return qs;
+    else
+    {
+        qDebug() << SB_DEBUG_INFO << "Web server is waiting for a connection on port 8080";
+    }
 }
 
-void
-WebService::_init()
+void myHTTPserver::myConnection()
 {
-    qDebug() << SB_DEBUG_INFO << "Setting up web server";
+    static qint16 count;  //count number to be displayed on web browser
+    socket = server->nextPendingConnection();
+    while(!(socket->waitForReadyRead(100)));  //waiting for data to be read from web browser
 
-    QHttpServer httpServer;
-    httpServer.route("/", []()
-    {
-        //return QHttpServerResponse::fromFile(QString(":/www/index.html"));
-        return WebService::root();
-    });
+    char webBrowerRXData[1000];
+    int sv=socket->read(webBrowerRXData,1000);
+    qDebug() << SB_DEBUG_INFO <<"\nreading web browser data=\n";
+    qDebug() << SB_DEBUG_INFO <<webBrowerRXData;
 
-    const auto port = httpServer.listen(QHostAddress::Any,80);
-    if(!port)
-    {
-       qDebug() << SB_DEBUG_ERROR << QCoreApplication::translate("QHttpServerExample", "Server failed to listen on a port.");
-    }
-    qDebug() << SB_DEBUG_INFO << "Listening on port" << port;
+    socket->write("HTTP/1.1 200 OK\r\n");       // \r needs to be before \n
+    socket->write("Content-Type: text/html\r\n");
+    socket->write("Connection: close\r\n");
+    socket->write("\r\n\r\n");
 
-    qDebug() << SB_DEBUG_INFO << "Setting up web server done.";
+    socket->write("<!DOCTYPE html>\r\n");
+    socket->write("<html><body>Number of seconds since connected.. ");
+    QByteArray str;
+    str.setNum(count++);   //convert int to string
+    socket->write(str);
+    socket->write(" </body>\n</html>\n");
+
+    socket->flush();
+    connect(socket, SIGNAL(disconnected()),socket, SLOT(deleteLater()));
+    socket->disconnectFromHost();
+}
+
+myHTTPserver::~myHTTPserver()
+{
+    socket->close();
 }
