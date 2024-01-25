@@ -1,3 +1,5 @@
+#include <QDirIterator>
+#include <QBuffer>
 #include "WebService.h"
 #include "Common.h"
 
@@ -6,7 +8,7 @@ WebService::WebService(QObject *parent) : QObject(parent)
     _server = new QTcpServer(this);
     // waiting for the web brower to make contact,this will emit signal
     connect(_server, SIGNAL(newConnection()),this, SLOT(request()));
-    int port=8080;
+    int port=80;
     if(!_server->listen(QHostAddress::Any,port))
     {
         qDebug() << SB_DEBUG_INFO << "Web server could not start";
@@ -32,19 +34,21 @@ WebService::request(int timeout)
     int sv=socket->read(webBrowerRXData,10000);
 
     QString path=_retrievePath(webBrowerRXData);
+    qDebug() << SB_DEBUG_INFO << "path=" << path;
 
     if(path==QString("/") || path==QString(""))
     {
         qDebug() << SB_DEBUG_INFO << timeout << "home";
         this->_home(socket);
     }
+    else if(path==QString("/favicon.ico"))
+    {
+        qDebug() << SB_DEBUG_INFO;
+        this->_favIcon(socket);
+        this->_fourOhFour(socket);
+    }
     else
     {
-        if(path!=QString("/favicon.ico"))
-        {
-            //	No clutter stdout
-            qDebug() << SB_DEBUG_INFO << timeout << "404";
-        }
         this->_fourOhFour(socket);
     }
     socket->close();
@@ -64,6 +68,19 @@ WebService::_home(QTcpSocket* s) const
 
     this->_writeBody(s,body);
 
+}
+
+void
+WebService::_favIcon(QTcpSocket* s) const
+{
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QImage qp(":/images/squarelogo");
+    qDebug() << SB_DEBUG_INFO << qp;
+    qp.save(&buffer, "PNG");
+    QString encoded = buffer.data().toBase64();
+    QString body=QString("<img src=\"data:image/png;base64,\n%1\">").arg(encoded);
+    this->_writeBody(s,body);
 }
 
 void

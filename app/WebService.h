@@ -17,13 +17,14 @@ public:
     ~WebService();
 
 public slots:
-    void request(int timeout=100);
+    void request(int timeout=1000);
 
 private:
     QTcpServer*		_server;
     QDateTime       _startDateTime;
 
     void			_home(QTcpSocket* s) const;
+    void			_favIcon(QTcpSocket* s) const;
     void			_fourOhFour(QTcpSocket* s) const;
 
     const QString	_retrievePath(const char* header) const;
