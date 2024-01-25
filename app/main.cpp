@@ -9,6 +9,9 @@
 #include "OSXNSEventFunctions.h"
 #include "SBIDBase.h"
 #include <QMediaPlayer>
+#include <QtHttpServer>
+
+#include "WebService.h"
 
 #ifdef Q_OS_WIN
 
@@ -59,9 +62,9 @@ int main(int argc, char *argv[])
 #endif
     QApplication app(argc, argv);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     OSXSetupSleepCallback();
-#endif //	Q_OS_OSX
+#endif //	Q_OS_MACOS
 
 #ifdef Q_OS_LINUX
     qRegisterMetaType<QMediaPlayer::State>();
@@ -71,17 +74,23 @@ int main(int argc, char *argv[])
     app.setOrganizationName("MezzoForta Inc");
     app.setOrganizationDomain("mezzoforta.com");
     app.setApplicationName("MezzoForta!");
-    QIcon icon=QIcon(":/res/resources/squarelogo.png");
+    QIcon icon=QIcon(":/resources/squarelogo.png");
     app.setWindowIcon(icon);
 
     //	Set up types
-    //qRegisterMetaType<SBIDBase>();
+    qRegisterMetaType<SBIDBase>();
+
+    qDebug() << SB_DEBUG_INFO;
+    //	WebService* ws=new WebService();
+
+    qDebug() << SB_DEBUG_INFO;
 
     //	Set up system
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        app.exec();																							
+        myHTTPserver server;
+        app.exec();
     }
     else
     {
@@ -89,6 +98,8 @@ int main(int argc, char *argv[])
         d.setText("No database selected. Terminating");
         d.exec();
     }
+
+
 #ifdef Q_OS_WIN
 #endif
     return 0;

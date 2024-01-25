@@ -19,7 +19,7 @@ KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *messa
     Q_UNUSED(message);
     Q_UNUSED(result);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     if(eventType=="mac_generic_NSEvent")
     {
         int key;
@@ -47,7 +47,7 @@ KeyboardEventCatcher::nativeEventFilter(const QByteArray &eventType, void *messa
             }
         }
     }
-#endif //	Q_OS_OSX
+#endif //	Q_OS_MACOS
     return returnCode;
 }
 

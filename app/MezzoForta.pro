@@ -14,6 +14,7 @@ SOURCES += \
     Preferences.cpp \
     SongAlbumNotes.cpp \
     SqlQuery.cpp \
+    WebService.cpp \
     main.cpp \
     MainWindow.cpp \
     AudioDecoder.cpp \
@@ -186,7 +187,8 @@ HEADERS += \
     SearchItemModel.h \
     SetupWizard.h \
 	SongAlbumNotes.h \
-    SqlQuery.h
+    SqlQuery.h \
+    WebService.h
 
 FORMS += \
     DatabaseSelector.ui \
@@ -224,7 +226,8 @@ DISTFILES += \
     resources/logo.ico \
     resources/playing.png \
     resources/splash.png \
-    resources/squarelogo.png
+    resources/squarelogo.png \
+    resources/www/index.html
 
 #	Manually added
 # export LDFLAGS="-L/usr/local/opt/libpq/lib"

@@ -1,6 +1,6 @@
 #include <QtGlobal>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 
 #import <iostream>
 #import <AppKit/AppKit.h>
@@ -131,4 +131,4 @@ OSXSetupSleepCallback()
     return (0);
 }
 
-#endif //	Q_OS_OSX
+#endif //	Q_OS_MACOS

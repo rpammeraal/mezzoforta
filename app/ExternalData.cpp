@@ -347,7 +347,7 @@ ExternalData::handleImageDataNetwork(QNetworkReply *r)
         if(r->open(QIODevice::ReadOnly))
         {
             QByteArray a=r->readAll();
-            if(a.count()>0)
+            if(a.length()>0)
             {
                 QPixmap image;
 
