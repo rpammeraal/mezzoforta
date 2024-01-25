@@ -148,15 +148,11 @@ Preloader::chartItems(const SBIDBase& id)
     items.clear();
     queryList.first();
     queryList.previous();
-    int chartPosition=0;
     while(queryList.next())
     {
         SBKey currentKey;
         SBIDChartPtr chartPtr;
         SBIDChartPerformancePtr chartPerformancePtr;
-
-        //	Chart position
-        chartPosition++;
 
         //	Process chart
         if(!queryList.isNull(0))

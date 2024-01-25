@@ -72,7 +72,6 @@ MusicLibrary::rescanMusicLibrary()
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section A:	Retrieve paths found in directory
     ///////////////////////////////////////////////////////////////////////////////////
-    int numFiles=0;
     QDirIterator it(schemaRoot,
                     QDir::AllDirs | QDir::AllEntries | QDir::Files | QDir::NoSymLinks | QDir::Readable,
                     QDirIterator::Subdirectories);
@@ -102,11 +101,7 @@ MusicLibrary::rescanMusicLibrary()
             }
             if(AudioDecoderFactory::fileSupportedFlag(fi,0))
             {
-                if(fi.size()>10*1024)
-                {
-                    numFiles++;
-                }
-                else
+                if(fi.size()<10*1024)
                 {
                     e.errorMsg=QString("File size too short: %1 bytes").arg(fi.size());
                 }
@@ -332,10 +327,6 @@ MusicLibrary::rescanMusicLibrary()
             else if(ePtr->songTitle.length()==0)
             {
                 ePtr->errorMsg="Missing song title in meta data";
-            }
-            else
-            {
-                numNewSongs++;
             }
             if(ePtr->errorMsg.length())
             {

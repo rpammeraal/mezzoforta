@@ -3,7 +3,7 @@
 
 #include <QtGlobal>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@ bool OSXretrieveKeyPressed(void* event,int& key);
 void OSXSleepCallback(void* refCon,io_service_t service,natural_t messageType,void * messageArgument );
 int  OSXSetupSleepCallback();
 
-#endif //	Q_OS_OSX
+#endif //	Q_OS_MACOS
 
 
 #endif // OSXNSEVENTFUNCTIONS_H
