@@ -43,9 +43,7 @@ WebService::request(int timeout)
     }
     else if(path==QString("/favicon.ico"))
     {
-        qDebug() << SB_DEBUG_INFO;
         this->_favIcon(socket);
-        this->_fourOhFour(socket);
     }
     else
     {
