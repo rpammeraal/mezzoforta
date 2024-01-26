@@ -27,7 +27,8 @@ private:
     void			_favIcon(QTcpSocket* s) const;
     void			_fourOhFour(QTcpSocket* s) const;
 
-    const QString	_retrievePath(const char* header) const;
+    const QString	_processHTML(const QString& rPath, const QHash<QString,QString>& hash) const;
+    const QString	_retrievePath(const QString& header) const;
     void			_writeBody(QTcpSocket* s,const QString& contents) const;
 signals:
 };

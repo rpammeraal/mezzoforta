@@ -1,4 +1,5 @@
 #include <QDirIterator>
+#include <QFile>
 #include <QBuffer>
 #include "WebService.h"
 #include "Common.h"
@@ -30,15 +31,14 @@ WebService::request(int timeout)
     QTcpSocket* socket = _server->nextPendingConnection();
     while(!(socket->waitForReadyRead(timeout)));  //waiting for data to be read from web browser
 
-    char webBrowerRXData[10000];
-    int sv=socket->read(webBrowerRXData,10000);
-
-    QString path=_retrievePath(webBrowerRXData);
+    static char rawHeader[10000];
+    int sv=socket->read(rawHeader,10000);
+    QString header=QString(rawHeader).left(sv);
+    QString path=_retrievePath(header);
     qDebug() << SB_DEBUG_INFO << "path=" << path;
 
     if(path==QString("/") || path==QString(""))
     {
-        qDebug() << SB_DEBUG_INFO << timeout << "home";
         this->_home(socket);
     }
     else if(path==QString("/favicon.ico"))
@@ -62,10 +62,11 @@ WebService::_home(QTcpSocket* s) const
     int mDiff=tsDiff/60;
     int sDiff=tsDiff - (mDiff * 60);
 
-    QString body=QString("<H1><CENTER>Hello Mezzoforta!</CENTER></H1><br><CENTER>We have been up for %1m:%2s</CENTER><br>.").arg(mDiff).arg(sDiff);
+    QHash<QString,QString> hash;
+    hash["___SB_DURATION___"]=QString("%1m:%2s").arg(mDiff).arg(sDiff);
 
+    QString body = _processHTML(":www/index.html",hash);
     this->_writeBody(s,body);
-
 }
 
 void
@@ -74,7 +75,6 @@ WebService::_favIcon(QTcpSocket* s) const
     QBuffer buffer;
     buffer.open(QIODevice::WriteOnly);
     QImage qp(":/images/squarelogo");
-    qDebug() << SB_DEBUG_INFO << qp;
     qp.save(&buffer, "PNG");
     QString encoded = buffer.data().toBase64();
     QString body=QString("<img src=\"data:image/png;base64,\n%1\">").arg(encoded);
@@ -88,10 +88,30 @@ WebService::_fourOhFour(QTcpSocket* s) const
 
     this->_writeBody(s,body);
 }
+
 const QString
-WebService::_retrievePath(const char* header) const
+WebService::_processHTML(const QString& path, const QHash<QString,QString>& hash) const
 {
-    QStringList headers=QString(header).split(QString("\r\n"));
+    QString body=QString("");
+    QFile f=QFile(path);
+    if(!f.open(QFile::ReadOnly | QFile::Text))
+    {
+        qDebug() << SB_DEBUG_ERROR << "Could not open file for read: " << path;
+        return body;
+    }
+    QTextStream in(&f);
+    body = in.readAll();
+    for (auto i = hash.cbegin(), end = hash.cend(); i != end; ++i)
+    {
+        body=body.replace(i.key(),i.value());
+    }
+    return body;
+}
+
+const QString
+WebService::_retrievePath(const QString& header) const
+{
+    QStringList headers=header.split(QString("\r\n"));
     QString hostArg;
     QString pathArg;
     for (const auto & i : headers)
