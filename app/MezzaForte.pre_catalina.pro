@@ -196,7 +196,7 @@ RC_ICONS = resources/images/logo.ico
 
 DISTFILES += \
     PlacesDeveloped.txt \
-    resources/images/squarelogo.bmp
+    resources/images/squarelogo.png
 
 unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
 macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation

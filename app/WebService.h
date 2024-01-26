@@ -2,7 +2,6 @@
 #define MYHTTPSERVER
 #include <QCoreApplication>
 #include <QNetworkInterface>
-#include <iostream>
 #include <QObject>
 #include <QTcpSocket>
 #include <QTcpServer>
@@ -17,19 +16,23 @@ public:
     ~WebService();
 
 public slots:
-    void request(int timeout=1000);
+    void request(int timeout=1000) const;
 
 private:
-    QTcpServer*		_server;
-    QDateTime       _startDateTime;
+    QTcpServer*				_server;
+    QDateTime       		_startDateTime;
+    QHash<QString,QString>	_availableImages;
 
-    void			_home(QTcpSocket* s) const;
-    void			_favIcon(QTcpSocket* s) const;
-    void			_fourOhFour(QTcpSocket* s) const;
+    void					_home(QTcpSocket* s) const;
 
-    const QString	_processHTML(const QString& rPath, const QHash<QString,QString>& hash) const;
-    const QString	_retrievePath(const QString& header) const;
-    void			_writeBody(QTcpSocket* s,const QString& contents) const;
+    void					_init();
+    void					_fourOhFour(QTcpSocket* s) const;
+
+    bool					_isImage(const QString& path) const;
+    const QString			_processHTML(const QString& rPath, const QHash<QString,QString>& hash) const;
+    const QString			_retrievePath(const QString& header) const;
+    void					_serveImage(QTcpSocket* s,const QString &path) const;
+    void					_writeBody(QTcpSocket* s,const QString& contents) const;
 signals:
 };
 
