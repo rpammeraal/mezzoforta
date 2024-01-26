@@ -209,25 +209,25 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     resource.qrc
 
-ICON = resources/logo.icns
-RC_ICONS = resources/logo.ico
+ICON = resources/images/logo.icns
+RC_ICONS = resources/images/logo.ico
 
 DISTFILES += \
-    resources/AllSongs.png \
-    resources/ChartIcon.png \
-    resources/NoAlbumCover.png \
-    resources/NoBandPhoto.png \
-    resources/PlaylistIcon.png \
-    resources/README \
-    resources/SongIcon.png \
-    resources/blank icon.png \
-    resources/default.qss \
-    resources/logo.icns \
-    resources/logo.ico \
-    resources/playing.png \
-    resources/splash.png \
-    resources/squarelogo.png \
-    resources/www/index.html
+    resources/images/AllSongs.png \
+    resources/images/ChartIcon.png \
+    resources/images/NoAlbumCover.png \
+    resources/images/NoBandPhoto.png \
+    resources/images/PlaylistIcon.png \
+    resources/images/README \
+    resources/images/SongIcon.png \
+    resources/images/blank icon.png \
+    resources/images/default.qss \
+    resources/images/logo.icns \
+    resources/images/logo.ico \
+    resources/images/playing.png \
+    resources/images/splash.png \
+    resources/images/squarelogo.png \
+    resources/images/www/index.html
 
 #	Manually added
 # export LDFLAGS="-L/usr/local/opt/libpq/lib"
