@@ -191,12 +191,12 @@ RESOURCES += \
     resource.qrc
 
 
-ICON = resources/logo.icns
-RC_ICONS = resources/logo.ico
+ICON = resources/images/logo.icns
+RC_ICONS = resources/images/logo.ico
 
 DISTFILES += \
     PlacesDeveloped.txt \
-    resources/squarelogo.bmp
+    resources/images/squarelogo.bmp
 
 unix: LIBS += -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC -ltag
 macx: LIBS += -L/usr/local/lib/ -lportaudio -L/sw/lib/ -logg -lvorbis -lvorbisfile -lmad -lid3tag -lFLAC.8 -framework Foundation

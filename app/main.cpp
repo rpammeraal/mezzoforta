@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("MezzoForta Inc");
     app.setOrganizationDomain("mezzoforta.com");
     app.setApplicationName("MezzoForta!");
-    QIcon icon=QIcon(":/resources/squarelogo.png");
+    QIcon icon=QIcon(":/resources/images/squarelogo.png");
     app.setWindowIcon(icon);
 
     //	Set up types
