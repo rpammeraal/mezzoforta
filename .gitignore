@@ -5,3 +5,7 @@ catalina
 *.csv
 .DS_Store
 *.swp
+.qmake.stash
+deploy
+external
+tmp
