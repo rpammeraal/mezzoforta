@@ -27,7 +27,8 @@ WebService::_init()
 {
     _httpServer.route("/", []()
     {
-        return "Hello world";
+        qDebug() << SB_DEBUG_INFO;
+        return QHttpServerResponse::fromFile(":/www/redirect.html");
     });
 
     _httpServer.route("/image", [] (const QHttpServerRequest &request)
