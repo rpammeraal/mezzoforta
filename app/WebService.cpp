@@ -37,23 +37,25 @@ WebService::_init()
     });
 
     //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
-    _httpServer.route("/image/", WebService::_handleImage);
+    _httpServer.route("/image/", WebService::_getResource);
     // {
     //     qDebug() << SB_DEBUG_INFO << "image=" << path;
     //     return u"%1/image/%2"_s.arg(host(request)).arg(path);
     // });
 
-    _httpServer.route("/image/<arg>", [] (QString id, const QHttpServerRequest &request)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        return u"%1/image/%2"_s.arg(host(request)).arg(id);
-    });
+    //_httpServer.route("/<arg>", [] (QString id, const QHttpServerRequest &request)
+    _httpServer.route("/<arg>", WebService::_getResource);
+    // {
+    //     Q_UNUSED(request);
+    //     qDebug() << SB_DEBUG_INFO;
+    //     return u"%1/image/%2"_s.arg(id);
+    // });
 
-    _httpServer.route("/image/<arg>/", [] (QString id, QString threshold, const QHttpServerRequest &request)
-    {
-        qDebug() << SB_DEBUG_INFO;
-        return u"%1/image/%2/%3"_s.arg(host(request)).arg(id).arg(threshold);
-    });
+    // _httpServer.route("/image/<arg>/", [] (QString id, QString threshold, const QHttpServerRequest &request)
+    // {
+    //     qDebug() << SB_DEBUG_INFO;
+    //     return u"%1/image/%2/%3"_s.arg(host(request)).arg(id).arg(threshold);
+    // });
 
 
     // _httpServer.route("/user/", [] (const qint32 id) {
@@ -68,15 +70,15 @@ WebService::_init()
     //     return u"User %1 detail year - %2"_s.arg(id).arg(year);
     // });
 
-    _httpServer.route("/json/", [] {
-        return QJsonObject{
-            {
-                {"key1", "1"},
-                {"key2", "2"},
-                {"key3", "3"}
-            }
-        };
-    });
+    // _httpServer.route("/json/", [] {
+    //     return QJsonObject{
+    //         {
+    //             {"key1", "1"},
+    //             {"key2", "2"},
+    //             {"key3", "3"}
+    //         }
+    //     };
+    // });
 
     // _httpServer.route("/resources/<arg>", [] (const QUrl &url, const QHttpServerRequest& r)
     // {
@@ -127,74 +129,47 @@ WebService::_init()
 
 
     QDirIterator it(":", QDirIterator::Subdirectories);
+    static const QString images("/images");
+    static const QString www("/www");
+
     while (it.hasNext())
     {
         QString c=it.next();
         QString path=c.mid(1,c.length());
-        QFileInfo fi=QFileInfo(path);
-        if(fi.path()==QString("/images"))
+        QFileInfo fi(path);
+        if(fi.path()==images || fi.path()==www)
         {
-            if(_isImage(path))
-            {
-                _availableImages[fi.fileName()]=c;
-            }
+            _availableResource[fi.fileName()]=c;
         }
     }
-    for (auto i = _availableImages.cbegin(), end = _availableImages.cend(); i != end; ++i)
+    if(1)
     {
-        qDebug() << SB_DEBUG_INFO << i.key() << " -> " << i.value();
+        for (auto i = _availableResource.cbegin(), end = _availableResource.cend(); i != end; ++i)
+        {
+            qDebug() << SB_DEBUG_INFO << i.key() << " -> " << i.value();
+        }
     }
-}
-
-bool
-WebService::_isImage(const QString& path) const
-{
-    static const QString ico=QString("ico");
-    static const QString png=QString("png");
-
-    QFileInfo fi=QFileInfo(path);
-    const QString suffix=fi.suffix();
-
-    return(suffix==ico || suffix==png)?1:0;
 }
 
 QHttpServerResponse
-WebService::_handleImage(QString path, const QHttpServerRequest& r)
+WebService::_fourOhFour()
 {
     qDebug() << SB_DEBUG_INFO;
+    return QHttpServerResponse::fromFile(":/www/404.html");
+}
+
+QHttpServerResponse
+WebService::_getResource(QString path, const QHttpServerRequest& r)
+{
+    Q_UNUSED(r);
     const QFileInfo fi_p=QFileInfo(path);
-    const QString resourcePath=_availableImages[fi_p.fileName()];
+    QString resourcePath=_availableResource[fi_p.fileName()];
 
     if(resourcePath.size()==0)
     {
         qDebug() << SB_DEBUG_ERROR << "Resource does not exist" << path;
-        //	this->_fourOhFour(s);
-        //	return;
-        //	CWIP: not handled
+        return WebService::_fourOhFour();
     }
     qDebug() << SB_DEBUG_INFO << resourcePath;
-    static const QString png=QString("png");
-    static const QString ico=QString("ico");	//	Huge assumption that these files are PNG files.
-
-    const QFileInfo fi_rp=QFileInfo(resourcePath);
-    QString suffix=fi_rp.suffix();
-    if(suffix==ico)
-    {
-        suffix=png;
-    }
-
-    if(suffix!=png)
-    {
-        qDebug() << SB_DEBUG_ERROR << "Suffix " << suffix << " not handled.";
-        //	this->_fourOhFour(s);
-        //return;
-        //	CWIP: not handles
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_INFO;
-        return QHttpServerResponse::fromFile(resourcePath);
-    }
-
-    return u"%1/image/%2"_s.arg(host(r)).arg(path);
+    return QHttpServerResponse::fromFile(resourcePath);
 }

@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/www">
-        <file alias='index.html'>resources/www/index.html</file>
+        <file alias="index.html">resources/www/index.html</file>
+        <file alias="404.html">resources/www/404.html</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="squarelogo.png">resources/images/squarelogo.png</file>

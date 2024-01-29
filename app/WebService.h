@@ -5,7 +5,7 @@
 #include <QHttpServer>
 #include <QHttpServerResponse>
 
-static QHash<QString,QString>		_availableImages;
+static QHash<QString,QString>		_availableResource;
 
 class WebService : public QObject
 {
@@ -19,7 +19,8 @@ private:
     void							_init();
     bool							_isImage(const QString& path) const;
 
-    static QHttpServerResponse		_handleImage(QString path, const QHttpServerRequest& r);
+    static QHttpServerResponse		_fourOhFour();
+    static QHttpServerResponse		_getResource(QString path, const QHttpServerRequest& r);
 };
 
 #endif

@@ -186,7 +186,7 @@ HEADERS += \
     ScreenStack.h \
     SearchItemModel.h \
     SetupWizard.h \
-	SongAlbumNotes.h \
+    SongAlbumNotes.h \
     SqlQuery.h \
     WebService.h
 
@@ -199,7 +199,7 @@ FORMS += \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
     SetupWizard.ui  \
-	SongAlbumNotes.ui
+    SongAlbumNotes.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
