@@ -1,0 +1,53 @@
+<head>
+<style type="text/css">
+body {
+	font-family:verdana,arial,sans-serif;
+	font-size:10pt;
+	margin:30px;
+	background-color:#ECECEC;
+}
+.button {
+  border: yes;
+  padding: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  margin: 0px 0px;
+  cursor: pointer;
+}
+
+</style>
+<script>
+function controlPlayer() {
+const xhr = new XMLHttpRequest();
+const url="/player/play?action=";
+const action=arguments[0];
+const request=url.concat(action);
+xhr.open("POST", request);
+xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+const body = JSON.stringify({
+  title: "",
+  body: ""
+});
+xhr.onload = () => {
+  if (xhr.readyState == 4 && xhr.status == 201) {
+    console.log(JSON.parse(xhr.responseText));
+  } else {
+    console.log(`Error: ${xhr.status}`);
+  }
+};
+xhr.send(body);
+
+}
+</script>
+</head>
+<body>
+<CENTER>
+    <button class="button" onclick="controlPlayer('prev')">|<</button>
+    <button class="button" onclick="controlPlayer('stop')">[]</button>
+    <button class="button" onclick="controlPlayer('play')">&gt</button>
+    <button class="button" onclick="controlPlayer('next')">&gt|</button>
+</CENTER>
+</body>
+
+

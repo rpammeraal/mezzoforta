@@ -3,7 +3,9 @@
 #include <QApplication>
 #include "WebService.h"
 
+#include "Context.h"
 #include "Common.h"
+#include "PlayManager.h"
 
 using namespace Qt::StringLiterals;
 
@@ -27,7 +29,6 @@ WebService::_init()
 {
     _httpServer.route("/", []()
     {
-        qDebug() << SB_DEBUG_INFO;
         return QHttpServerResponse::fromFile(":/www/redirect.html");
     });
 
@@ -36,6 +37,18 @@ WebService::_init()
         qDebug() << SB_DEBUG_INFO;
         return host(request) + u"/image/"_s;
     });
+
+    _httpServer.route("/player/", WebService::_controlPlayer);
+    // _httpServer.route("/player/", [] (QString path, const QHttpServerRequest &request)
+    // {
+    //     const static QString parameter("action");
+    //     qDebug() << SB_DEBUG_INFO << "player=" << path;
+    //     qDebug() << SB_DEBUG_INFO << "query=" << request.query().query();
+    //     const QString action=request.query().queryItemValue(parameter);
+    //     qDebug() << SB_DEBUG_INFO << "action=" << action;
+    //     return u"%1/player/%2"_s.arg(host(request)).arg(path);
+    //     return u"%1/player/%2"_s.arg(host(request)).arg(path);
+    // });
 
     //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
     _httpServer.route("/image/", WebService::_getResource);
@@ -120,9 +133,9 @@ WebService::_init()
     });
 
     const auto port = _httpServer.listen(QHostAddress::Any,80);
-    if (!port) {
-        qWarning() << QApplication::translate("QHttpServerExample",
-                                                  "Server failed to listen on a port.");
+    if (!port)
+    {
+        qWarning() << QApplication::translate("QHttpServerExample","Server failed to listen on a port.");
         return;	//	CWIP: something else but -1;
     }
 
@@ -150,6 +163,42 @@ WebService::_init()
             qDebug() << SB_DEBUG_INFO << i.key() << " -> " << i.value();
         }
     }
+}
+
+QHttpServerResponse
+WebService::_controlPlayer(QString unused,const QHttpServerRequest& r)
+{
+    Q_UNUSED(unused);
+    const static QString parameter("action");
+    const QString action=r.query().queryItemValue(parameter);
+    qDebug() << SB_DEBUG_INFO << "action=" << action;
+    const static QString prev("prev");
+    const static QString stop("stop");
+    const static QString play("play");
+    const static QString next("next");
+    PlayManager* pm=Context::instance()->playManager();
+    if(action==prev)
+    {
+        pm->playerPrevious();
+    }
+    else if(action==stop)
+    {
+        pm->playerStop();
+    }
+    else if(action==play)
+    {
+        pm->playerPlay();
+    }
+    else if(action==next)
+    {
+        pm->playerNext();
+    }
+    else
+    {
+        qDebug() << SB_DEBUG_ERROR << "Unknown action:" << action;
+    }
+
+    return QHttpServerResponse("At Your Service!");
 }
 
 QHttpServerResponse

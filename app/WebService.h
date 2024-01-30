@@ -19,6 +19,7 @@ private:
     void							_init();
     bool							_isImage(const QString& path) const;
 
+    static QHttpServerResponse		_controlPlayer(QString unused, const QHttpServerRequest& r);
     static QHttpServerResponse		_fourOhFour();
     static QHttpServerResponse		_getResource(QString path, const QHttpServerRequest& r);
 };
