@@ -6,6 +6,7 @@
         <file alias="header.html">resources/www/header.html</file>
         <file alias="content.html">resources/www/content.html</file>
         <file alias="footer.html">resources/www/footer.html</file>
+        <file alias="status.html">resources/www/status.html</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="squarelogo.png">resources/images/squarelogo.png</file>

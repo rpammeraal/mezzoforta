@@ -6,6 +6,7 @@
 #include "Context.h"
 #include "Common.h"
 #include "PlayManager.h"
+#include "PlayerController.h"
 
 using namespace Qt::StringLiterals;
 
@@ -51,14 +52,14 @@ WebService::_init()
     // });
 
     //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
-    _httpServer.route("/image/", WebService::_getResource);
+    _httpServer.route("/image/", WebService::_getImageResource);
     // {
     //     qDebug() << SB_DEBUG_INFO << "image=" << path;
     //     return u"%1/image/%2"_s.arg(host(request)).arg(path);
     // });
 
     //_httpServer.route("/<arg>", [] (QString id, const QHttpServerRequest &request)
-    _httpServer.route("/<arg>", WebService::_getResource);
+    _httpServer.route("/<arg>", WebService::_getHTMLResource);
     // {
     //     Q_UNUSED(request);
     //     qDebug() << SB_DEBUG_INFO;
@@ -171,7 +172,7 @@ WebService::_controlPlayer(QString unused,const QHttpServerRequest& r)
     Q_UNUSED(unused);
     const static QString parameter("action");
     const QString action=r.query().queryItemValue(parameter);
-    qDebug() << SB_DEBUG_INFO << "action=" << action;
+    qDebug() << SB_DEBUG_INFO << "headers=" << r.headers();
     const static QString prev("prev");
     const static QString stop("stop");
     const static QString play("play");
@@ -209,7 +210,19 @@ WebService::_fourOhFour()
 }
 
 QHttpServerResponse
-WebService::_getResource(QString path, const QHttpServerRequest& r)
+WebService::_getImageResource(QString path, const QHttpServerRequest& r)
+{
+    return WebService::_getResource(path,r,1);
+}
+
+QHttpServerResponse
+WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
+{
+    return WebService::_getResource(path,r);
+}
+
+QHttpServerResponse
+WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage)
 {
     Q_UNUSED(r);
     const QFileInfo fi_p=QFileInfo(path);
@@ -221,5 +234,58 @@ WebService::_getResource(QString path, const QHttpServerRequest& r)
         return WebService::_fourOhFour();
     }
     qDebug() << SB_DEBUG_INFO << resourcePath;
-    return QHttpServerResponse::fromFile(resourcePath);
+
+    if(isImage)
+    {
+        return QHttpServerResponse::fromFile(resourcePath);
+    }
+    return QHttpServerResponse(WebService::_populateData(resourcePath));
+}
+
+QString
+WebService::_populateData(const QString& resourcePath)
+{
+    QFile f(resourcePath);
+    f.open(QFile::ReadOnly | QFile::Text);	//	ignore results. Always works, right?
+    QTextStream f_str(&f);
+    QString str=f_str.readAll();
+
+    PlayerController* pc=Context::instance()->playerController();
+    PlayManager* pm=Context::instance()->playManager();
+
+    QString playerStatus;
+    QString playerSongTitle;
+
+    const QMediaPlayer::PlaybackState playState=pc->playState();
+    switch(playState)
+    {
+        case QMediaPlayer::StoppedState:
+            playerStatus="Stopped";
+            break;
+
+        case QMediaPlayer::PlayingState:
+            playerStatus="Now Playing";
+            break;
+
+        case QMediaPlayer::PausedState:
+            playerStatus="Paused:";
+            break;
+    }
+
+    //	Populate song specific
+    SBIDOnlinePerformancePtr opPtr=pc->currentPerformancePlaying();
+    if(opPtr)
+    {
+        playerSongTitle=opPtr->songTitle();
+        playerStatus+=QString(": %1 by %2 from the '%3' album").arg(opPtr->songTitle()).arg(opPtr->songPerformerName()).arg(opPtr->albumTitle());
+    }
+    else
+    {
+        playerStatus+=QString('.');
+    }
+
+    const static QString SB_PLAYER_STATUS("___SB_PLAYER_STATUS___");
+    str=str.replace(SB_PLAYER_STATUS,playerStatus);
+
+    return str;
 }
