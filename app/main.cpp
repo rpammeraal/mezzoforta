@@ -66,10 +66,6 @@ int main(int argc, char *argv[])
     OSXSetupSleepCallback();
 #endif //	Q_OS_MACOS
 
-#ifdef Q_OS_LINUX
-    qRegisterMetaType<QMediaPlayer::State>();
-#endif
-
     //	Set up names
     app.setOrganizationName("MezzoForta Inc");
     app.setOrganizationDomain("mezzoforta.com");
