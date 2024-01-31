@@ -7,32 +7,54 @@ body {
 	background-color:#ECECEC;
 }
 </style>
-<title>HTML Frames Example - Content</title>
 </head>
 <body>
-<h1>Content</h1>
-<h2>Replacing the Contents of the Current Frame</h2>
-<p>Clicking on these links will open the new page within the current frame.</p>
-<ul>
-	<li><a href="white.html" target="content">Load white page</a></li>
-	<li><a href="green.html" target="content">Load green page</a></li>
-</ul>
-
-<h2>Replacing the Whole Frameset</h2>
-<p>When you click on any of the following links, the whole frameset is replaced with the new website. This is because we're using <code>target="_top"</code> in the anchor links.</p>
-<ul>
-	<li><a href="http://www.quackit.com" target="_top">Quackit</a></li>
-	<li><a href="http://www.quackit.com/html/templates/frames/" target="_top">HTML Frames Templates</a></li>
-	<li>Learn more about frames with the <a href="http://www.quackit.com/html/tutorial/html_frames.cfm" target="_top">frames tutorial</a><//li>
-</ul>
-
-<h2>Open a New Window</h2>
-<p>These links open in a new browser window. This is because we use <code>target="_blank"</code>.</p>
-<ul>
-	<li><a href="http://www.code-generator.net" target="_blank">Code Generator</a></li>
-	<li><a href="http://www.zappyhost.com" target="_blank">ZappyHost</a></li>
-	<li><a href="http://www.natural-environment.com" target="_blank">Natural Environment</a></li>
-	<li><a href="http://www.great-workout.com" target="_blank">Great Workout</a></li>
-</ul>
-
+<style type="text/css">
+.tg {border-collapse:collapse;border-spacing:0;width:100%;margin:auto}
+.tg td{border-color:black;border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:0px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-zpsleft{border-color:inherit;font-family:"Trebuchet MS", Helvetica, sans-serif !important;font-size:100px;text-align:left;
+  vertical-align:top}
+.tg .tg-zpsright{border-color:inherit;font-family:"Trebuchet MS", Helvetica, sans-serif !important;font-size:100px;text-align:right;
+  vertical-align:top}
+.bs {
+  text-decoration: none;
+  display: inline-block;
+  font-size: 75pt;
+  font-family: "Trebuchet MS";
+  padding:0;
+  border:none;
+  background:none;
+}
+</style>
+<table class="tg">
+<tbody>
+  <tr>
+    <th class="tg-zpsleft"><img src="/image/PlaylistIcon.png"   style="width:100px;height:100px;">&nbsp;&nbsp;Playlists</th>
+    <th class="tg-zpsright">&gt;</th>
+  </tr>
+  <tr>
+    <td class="tg-zpsleft"><img src="/image/NoBandPhoto.png"    style="width:100px;height:100px;">&nbsp;&nbsp;Performers</td>
+    <td class="tg-zpsright">&gt;</td>
+  </tr>
+  <tr>
+    <td class="tg-zpsleft"><img src="/image/NoAlbumCover.png"   style="width:100px;height:100px;">&nbsp;&nbsp;Albums</td>
+    <td class="tg-zpsright">&gt;</td>
+  </tr>
+  <tr>
+    <td class="tg-zpsleft">
+        <button class="bs" onclick="location.href='/all_songs.html"><img src="/image/SongIcon.png" style="width:100px;height:100px;"></button>
+        <button class="bs" onclick="location.href='/all_songs.html">Songs</button>
+    </td>
+        <button class="bs" onclick="location.href='/all_songs.html">&gt</button>
+    </td>
+  </tr>
+  <tr>
+    <td class="tg-zpsleft"><img src="/image/ChartIcon.png"      style="width:100px;height:100px;">&nbsp;&nbsp;Charts</td>
+    <td class="tg-zpsright">&gt;</td>
+  </tr>
+</tbody>
+</table>
 </body>
