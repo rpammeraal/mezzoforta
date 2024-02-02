@@ -214,13 +214,11 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     QPixmap pm(":/images/splash.png");
     QSplashScreen splash(pm);
-    qDebug() << SB_DEBUG_INFO << pm.height() << pm.width();
 
     if(appStartUpFlag)
     {
         splash.show();
         _app->processEvents();
-        qDebug() << SB_DEBUG_INFO << "splash screen should show";
     }
 
     MainWindow* oldMW=Context::instance()->mainWindow(0);
