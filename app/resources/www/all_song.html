@@ -1,13 +1,68 @@
 <head>
 <style type="text/css">
+.play_ctrl_button {
+  border: yes;
+  padding: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 50pt;
+  margin: 0px 0px;
+  cursor: pointer;
+}
 body {
     font-family: "Trebuchet MS";
 	font-size: 50pt;
 	margin:30px;
 	background-color:#ECECEC;
 }
+.icon {
+    width:100px;
+    height:100px;
+}
+.song {
+    font-family: "Trebuchet MS";
+	font-size: 60pt;
+    font-weight: bold;
+}
+.album {
+    font-family: "Trebuchet MS";
+	font-size: 30pt;
+    font-style: italic;
+}
+.alphabet_array {
+    vertical-align: text-top;
+    font-family: "Trebuchet MS";
+	font-size: 50pt;
+    font-style: italic;
+    padding: 5px;
+}
 </style>
+<script>
+function controlPlayer() {
+const xhr = new XMLHttpRequest();
+const url="/player/play?action=";
+const action=arguments[0];
+const key=arguments[1];
+const request=url.concat(action,'&key=',key);
+xhr.open("POST", request);
+xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+const body = JSON.stringify({
+  title: "",
+  body: ""
+});
+xhr.onload = () => {
+  if (xhr.readyState == 4 && xhr.status == 201) {
+    console.log(JSON.parse(xhr.responseText));
+  } else {
+    console.log(`Error: ${xhr.status}`);
+  }
+};
+xhr.send(body);
+
+}
+</script>
 </head>
 <body>
-HELLO WORLD!
+<H1>Songs</H1>
+___SB_SONG_TABLE___
 </body>

@@ -474,10 +474,15 @@ SBIDSong::refreshDependents(bool forcedFlag)
 
 //	Static methods
 SBSqlQueryModel*
-SBIDSong::retrieveAllSongs()
+SBIDSong::retrieveAllSongs(const QChar& startsWith)
 {
     //	List songs with actual online performance only
-    QString q=QString
+    QString whereClause;
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(s.title,1))='%1'").arg(startsWith.toLower());
+    }
+    const QString q=QString
     (
         "SELECT "
             "s.title || ' ' || COALESCE(a.name,'') || ' ' || COALESCE(r.title,'')  AS SB_KEYWORDS, "
@@ -497,6 +502,7 @@ SBIDSong::retrieveAllSongs()
                     "p.preferred_record_performance_id=rp.record_performance_id "
                 "LEFT JOIN ___SB_SCHEMA_NAME___record r ON "
                     "rp.record_id=r.record_id "
+        "%4 "
         "ORDER BY "
             "3,5,7 "
 
@@ -504,6 +510,7 @@ SBIDSong::retrieveAllSongs()
         .arg(SBKey::Song)
         .arg(SBKey::Performer)
         .arg(SBKey::Album)
+        .arg(whereClause)
     ;
 
     return new SBSqlQueryModel(q);

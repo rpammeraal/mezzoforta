@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "PlayManager.h"
 #include "PlayerController.h"
+#include "SBHtmlSongsAll.h"
 
 using namespace Qt::StringLiterals;
 
@@ -33,10 +34,10 @@ WebService::_init()
         return QHttpServerResponse::fromFile(":/www/redirect.html");
     });
 
-    _httpServer.route("/image", [] (const QHttpServerRequest &request)
+    _httpServer.route("/images", [] (const QHttpServerRequest &request)
     {
         qDebug() << SB_DEBUG_INFO;
-        return host(request) + u"/image/"_s;
+        return host(request) + u"/images/"_s;
     });
 
     _httpServer.route("/player/", WebService::_controlPlayer);
@@ -52,7 +53,7 @@ WebService::_init()
     // });
 
     //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
-    _httpServer.route("/image/", WebService::_getImageResource);
+    _httpServer.route("/images/", WebService::_getImageResource);
     // {
     //     qDebug() << SB_DEBUG_INFO << "image=" << path;
     //     return u"%1/image/%2"_s.arg(host(request)).arg(path);
@@ -85,15 +86,15 @@ WebService::_init()
     //     return u"User %1 detail year - %2"_s.arg(id).arg(year);
     // });
 
-    // _httpServer.route("/json/", [] {
-    //     return QJsonObject{
-    //         {
-    //             {"key1", "1"},
-    //             {"key2", "2"},
-    //             {"key3", "3"}
-    //         }
-    //     };
-    // });
+    _httpServer.route("/json/", [] {
+        return QJsonObject{
+            {
+                {"key1", "1"},
+                {"key2", "2"},
+                {"key3", "3"}
+            }
+        };
+    });
 
     // _httpServer.route("/resources/<arg>", [] (const QUrl &url, const QHttpServerRequest& r)
     // {
@@ -167,12 +168,16 @@ WebService::_init()
 }
 
 QHttpServerResponse
-WebService::_controlPlayer(QString unused,const QHttpServerRequest& r)
+WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
 {
     Q_UNUSED(unused);
-    const static QString parameter("action");
-    const QString action=r.query().queryItemValue(parameter);
-    qDebug() << SB_DEBUG_INFO << "headers=" << r.headers();
+    const static QString p_action("action");
+    const static QString k_action("key");
+    const QString action=r.query().queryItemValue(p_action);
+    const QString key=r.query().queryItemValue(k_action);
+    SBKey sbKey(key.toLatin1());
+    qDebug() << SB_DEBUG_INFO << "action=" << action;
+    qDebug() << SB_DEBUG_INFO << "sbKey=" << sbKey;
     const static QString prev("prev");
     const static QString stop("stop");
     const static QString play("play");
@@ -188,7 +193,14 @@ WebService::_controlPlayer(QString unused,const QHttpServerRequest& r)
     }
     else if(action==play)
     {
-        pm->playerPlay();
+        if(sbKey.validFlag())
+        {
+            pm->playItemNow(sbKey);
+        }
+        else
+        {
+            pm->playerPlay();
+        }
     }
     else if(action==next)
     {
@@ -212,12 +224,18 @@ WebService::_fourOhFour()
 QHttpServerResponse
 WebService::_getImageResource(QString path, const QHttpServerRequest& r)
 {
+    qDebug() << SB_DEBUG_INFO << path;
     return WebService::_getResource(path,r,1);
 }
 
 QHttpServerResponse
 WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
 {
+    const static QString status("status.html");
+    if(path!=status)
+    {
+        qDebug() << SB_DEBUG_INFO << path;
+    }
     return WebService::_getResource(path,r);
 }
 
@@ -233,59 +251,83 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
         qDebug() << SB_DEBUG_ERROR << "Resource does not exist" << path;
         return WebService::_fourOhFour();
     }
-    qDebug() << SB_DEBUG_INFO << resourcePath;
+    const static QString status(":/www/status.html");
+    if(resourcePath!=status)
+    {
+        qDebug() << SB_DEBUG_INFO << resourcePath;
+    }
 
     if(isImage)
     {
         return QHttpServerResponse::fromFile(resourcePath);
     }
-    return QHttpServerResponse(WebService::_populateData(resourcePath));
+    return QHttpServerResponse(WebService::_populateData(resourcePath, path, r));
 }
 
 QString
-WebService::_populateData(const QString& resourcePath)
+WebService::_populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r)
 {
     QFile f(resourcePath);
     f.open(QFile::ReadOnly | QFile::Text);	//	ignore results. Always works, right?
     QTextStream f_str(&f);
     QString str=f_str.readAll();
 
-    PlayerController* pc=Context::instance()->playerController();
-    PlayManager* pm=Context::instance()->playManager();
+    QString allSong("all_song.html");
+    QString status("status.html");
 
-    QString playerStatus;
-    QString playerSongTitle;
-
-    const QMediaPlayer::PlaybackState playState=pc->playState();
-    switch(playState)
+    if(path==status)
     {
-        case QMediaPlayer::StoppedState:
-            playerStatus="Stopped";
-            break;
+        PlayerController* pc=Context::instance()->playerController();
 
-        case QMediaPlayer::PlayingState:
-            playerStatus="Now Playing";
-            break;
+        QString playerStatus;
+        QString playerSongTitle;
 
-        case QMediaPlayer::PausedState:
-            playerStatus="Paused:";
-            break;
+        const QMediaPlayer::PlaybackState playState=pc->playState();
+        switch(playState)
+        {
+            case QMediaPlayer::StoppedState:
+                playerStatus="Stopped";
+                break;
+
+            case QMediaPlayer::PlayingState:
+                playerStatus="Now Playing";
+                break;
+
+            case QMediaPlayer::PausedState:
+                playerStatus="Paused:";
+                break;
+        }
+
+        //	Populate song specific
+        SBIDOnlinePerformancePtr opPtr=pc->currentPerformancePlaying();
+        if(opPtr)
+        {
+            playerSongTitle=opPtr->songTitle();
+            playerStatus+=QString(": %1 by %2 from the '%3' album").arg(opPtr->songTitle()).arg(opPtr->songPerformerName()).arg(opPtr->albumTitle());
+        }
+        else
+        {
+            playerStatus+=QString('.');
+        }
+
+        const static QString SB_PLAYER_STATUS("___SB_PLAYER_STATUS___");
+        str=str.replace(SB_PLAYER_STATUS,playerStatus);
     }
-
-    //	Populate song specific
-    SBIDOnlinePerformancePtr opPtr=pc->currentPerformancePlaying();
-    if(opPtr)
+    else if(path==allSong)
     {
-        playerSongTitle=opPtr->songTitle();
-        playerStatus+=QString(": %1 by %2 from the '%3' album").arg(opPtr->songTitle()).arg(opPtr->songPerformerName()).arg(opPtr->albumTitle());
+        const static QString p_start("start");
+        QString startStr=r.query().queryItemValue(p_start);
+        QChar start(startStr.size()>0?startStr[0]:'A');
+
+        QString allSongs;
+
+        const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
+        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start));
     }
     else
     {
-        playerStatus+=QString('.');
+        //	Somehow do a 404 here
     }
-
-    const static QString SB_PLAYER_STATUS("___SB_PLAYER_STATUS___");
-    str=str.replace(SB_PLAYER_STATUS,playerStatus);
 
     return str;
 }

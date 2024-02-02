@@ -6,15 +6,6 @@ body {
 	margin:30px;
 	background-color:#ECECEC;
 }
-.button {
-  border: yes;
-  padding: 5px 5px;
-  text-align: center;
-  text-decoration: none;
-  font-size: 50pt;
-  margin: 0px 0px;
-  cursor: pointer;
-}
 
 </style>
 <script>
@@ -44,14 +35,23 @@ xhr.send(body);
 body {
 	font-size: 100pt;
 }
+.play_ctrl_button {
+  border: yes;
+  padding: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 50pt;
+  margin: 0px 0px;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
 <CENTER>
-    <button class="button" onclick="controlPlayer('prev')">|<</button>
-    <button class="button" onclick="controlPlayer('stop')">[]</button>
-    <button class="button" onclick="controlPlayer('play')">&gt</button>
-    <button class="button" onclick="controlPlayer('next')">&gt|</button>
+    <button class="play_ctrl_button" onclick="controlPlayer('prev')">|<</button>
+    <button class="play_ctrl_button" onclick="controlPlayer('stop')">[]</button>
+    <button class="play_ctrl_button" onclick="controlPlayer('play')">&gt</button>
+    <button class="play_ctrl_button" onclick="controlPlayer('next')">&gt|</button>
 </CENTER>
 </body>
 
