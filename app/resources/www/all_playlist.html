@@ -7,6 +7,30 @@ body {
 	background-color:#ECECEC;
 }
 </style>
+<script>
+function controlPlayer() {
+const xhr = new XMLHttpRequest();
+const url="/player/play?action=";
+const action=arguments[0];
+const key=arguments[1];
+const request=url.concat(action,'&key=',key);
+xhr.open("POST", request);
+xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+const body = JSON.stringify({
+  title: "",
+  body: ""
+});
+xhr.onload = () => {
+  if (xhr.readyState == 4 && xhr.status == 201) {
+    console.log(JSON.parse(xhr.responseText));
+  } else {
+    console.log(`Error: ${xhr.status}`);
+  }
+};
+xhr.send(body);
+
+}
+</script>
 </head>
 <body>
 HELLO WORLD!
