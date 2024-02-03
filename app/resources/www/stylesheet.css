@@ -1,0 +1,135 @@
+body {
+	font-family: Trebuchet MS;
+	margin: 0 auto;
+	opacity: 0;
+}
+
+#Logo {
+    position: relative;
+    background-image: url(./images/squarelogo.png);
+    width: 125px;
+    height: 125px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+	margin-bottom: 20px;
+    top: 10px;
+    left: 0%;
+    right: 0%;
+	cursor: pointer;
+}
+
+#Menu {
+    position: absolute;
+    left: 10px;
+    top: 140px;
+    width: calc(100% - 20px);
+}
+
+#Menu.hide {
+	display: none;
+}
+
+.Menu-Item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px;
+	cursor: pointer;
+}
+
+.Menu-Item img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.Menu-Item p {
+    margin: 0;
+}
+
+.Menu-Item::after {
+    content: '>';
+    margin-left: auto;
+	margin-right: 4px;
+}
+
+.Menu-Item:hover {
+    color: dodgerblue;
+}
+
+.Menu-Item:active {
+    font-weight: bold;
+}
+
+#Menu-Output {
+	display: none;
+	opacity: 0;
+	position: absolute;
+	top: 140px;
+	width: 100%;
+	height: calc(100% - 240px);
+	transition: opacity 1s ease;
+}
+
+#Menu-Output.show {
+	display: block;
+	opacity: 1;
+}
+
+#Menu-Output-Header {
+	font-size: 150%;
+	padding: 10px;
+}
+
+#Menu-Output-Content {
+	padding: 10px;
+	height: calc(100% - 75px);
+	overflow-y: auto;
+	background-color: gainsboro;
+	scrollbar-color: grey transparent;
+	white-space: break-spaces;
+}
+
+#Status {
+	position: absolute;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+	bottom: 55px;
+	left: 0%;
+	right: 0%;
+}
+
+#Buttons {
+	display: flex;
+	position: fixed;
+	text-align: center;
+	background-color: lightgray;
+	border-style: groove;
+	bottom: 0px;
+	height: 50px;
+	left: 0%;
+	right: 0%;
+	justify-content: center;
+}
+
+.Button {
+	position: relative;
+	min-width: 40px;
+	margin: 0 5px;
+	padding: 10px;
+	bottom: -5px;
+	cursor: pointer;
+	border: 1px groove darkgrey;
+	border-radius: 5px;
+	transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.5s;
+}
+
+.Button:hover {
+	color: dodgerblue;
+	background-color: black;
+	border: 1px groove black;
+	box-shadow: 10px 10px 19px -6px rgba(0, 0, 0, 0.75);
+}

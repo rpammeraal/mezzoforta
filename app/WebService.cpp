@@ -176,6 +176,10 @@ WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
     const QString action=r.query().queryItemValue(p_action);
     const QString key=r.query().queryItemValue(k_action);
     SBKey sbKey(key.toLatin1());
+    if(!sbKey.validFlag())
+    {
+        sbKey=SBKey();
+    }
     qDebug() << SB_DEBUG_INFO << "action=" << action;
     qDebug() << SB_DEBUG_INFO << "sbKey=" << sbKey;
     const static QString prev("prev");
@@ -272,7 +276,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     QTextStream f_str(&f);
     QString str=f_str.readAll();
 
-    QString allSong("all_song.html");
+    QString allSong("song_list.html");
     QString status("status.html");
 
     if(path==status)
