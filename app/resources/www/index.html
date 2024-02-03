@@ -1,24 +1,168 @@
-<html>
+<html lang="en">
+
 <head>
-<style type="text/css">
-body {
-    font-family: "Trebuchet MS";
-	font-size: 50pt;
-	margin:30px;
-	background-color:#ECECEC;
-}
-</style>
-<title>MezzoForta!Online</title>
+	<title>Mezzoforta!Online</title>	
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="stylesheet.css">
 </head>
-<frameset rows="230,*,150,200" frameborder="0" border="0" framespacing="0">
-  <frame name="header"  src="header.html"  marginheight="0" marginwidth="0" noresize>
-  <frame name="content" src="content.html" marginheight="0" marginwidth="0" scrolling="auto">
-  <frame name="status"  src="status.html" marginheight="0" marginwidth="0" noresize>
-  <frame name="footer"  src="footer.html"  marginheight="0" marginwidth="0" noresize>
 
-<noframes>
-<p>Yer using an old browser. Under what stone have yer been living, eh?<p>
-</noframes>
+<body>
+	<div id="Logo"></div>
 
-</frameset>
+	<div id="Menu">
+
+		<div class="Menu-Item" link="/playlist_list.html">
+			<img src="/images/PlaylistIcon.png" alt="Playlists">
+			<p>Playlists</p>
+		</div>
+
+		<div class="Menu-Item">
+			<img src="/images/NoBandPhoto.png" alt="Performers">
+			<p>Performers</p>
+		</div>
+
+		<div class="Menu-Item">
+			<img src="/images/NoAlbumCover.png" alt="Albums">
+			<p>Albums</p>
+		</div>
+
+        <div class="Menu-Item" link="/song_list.html">
+			<img src="/images/SongIcon.png" alt="Songs">
+			<p>Songs</p>
+		</div>
+
+		<div class="Menu-Item">
+			<img src="/images/ChartIcon.png" alt="Charts">
+			<p>Charts</p>
+		</div>
+	</div>
+	
+	<div id="Menu-Output">
+		<div id="Menu-Output-Header"></div>
+		<div id="Menu-Output-Content"></div>
+	</div>
+	
+	<div id="Status"></div>
+	<div id="Buttons">
+		<div class="Stripe">|</div>
+		<div class="Button" id="<<" onclick="control_player('prev')">&lt;&lt;</div>
+		<div class="Stripe">|</div>
+		<div class="Button" id="[]" onclick="control_player('stop')">[]</div>
+		<div class="Stripe">|</div>
+		<div class="Button" id=">" onclick="control_player('play')">&gt;</div>
+		<div class="Stripe">|</div>
+		<div class="Button" id=">>" onclick="control_player('next')">&gt;&gt;</div>
+		<div class="Stripe">|</div>
+	</div>
+	
+	<script>
+		// Wait till DOM is loaded //
+		document.addEventListener("DOMContentLoaded", function() {
+			// FadeIn Body //
+			document.body.style.transition = "opacity 1.5s ease";
+			document.body.style.opacity = 1;
+		});
+		
+		// Status Updater //
+		function statusInterval() {
+			setInterval(StatusUpdate, 2000);
+		}
+		
+		statusInterval();
+
+		var StatusTemp = null;
+		var StatusURL = "/status.html";
+
+		function StatusUpdate() {
+			var xhr = new XMLHttpRequest();
+			var url = StatusURL + "?_=" + new Date().getTime();
+			
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == 4 && xhr.status == 200) {
+					var Content = xhr.responseText.trim();
+					if (StatusTemp !== Content) {
+						var Element = document.getElementById("Status");
+						StatusTemp = Content;
+						Element.innerHTML = Content;
+					}
+				}
+			};
+			
+			xhr.open("GET", url, true);
+			xhr.send();
+		}
+
+		StatusUpdate();
+
+		// locatie defineren zodat we correct gebruik maken van complete URLs //
+		const loc = window.location.href + '/';
+
+        function control_player() {
+            const xhr = new XMLHttpRequest();
+            const url="/player/play?action=";
+            const action=arguments[0];
+            const key=arguments[1];
+            const request=url.concat(action,'&key=',key);
+			fetch(request)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('404 - Brain Not Found: ' + response.statusText);
+					}
+					return response.text();
+				})
+				.then(data => {
+
+				})
+				.catch(error => {
+					console.error(error);
+				});
+		}
+		
+		// Menu-Items ->> Menu-Output
+		document.addEventListener('DOMContentLoaded', function () {
+			const logo = document.getElementById('Logo');
+			const menu = document.getElementById('Menu');
+			const menuOutput = document.getElementById('Menu-Output');
+
+			logo.addEventListener('click', function () {
+				// Toggle the classes to control visibility
+				menuOutput.classList.remove('show');
+				menu.classList.remove('hide');
+			});
+
+			const menuItems = document.querySelectorAll('.Menu-Item');
+			const menuOutputContent = document.getElementById('Menu-Output-Content');
+			const menuOutputHeader = document.getElementById('Menu-Output-Header');
+
+			menuItems.forEach(function (menuItem) {
+				menuItem.addEventListener('click', function () {
+
+					// Use the text of a Menu-Item in the Paragraph
+					const menuItemText = this.querySelector('p').innerText;
+
+					// Use the name from the Paragraph and append .html
+                    const menuItemFileName = this.getAttribute('link');
+
+
+					const xhr = new XMLHttpRequest();
+					xhr.onreadystatechange = function () {
+						if (xhr.readyState === 4 && xhr.status === 200) {
+							menuOutputContent.innerHTML = xhr.responseText;
+							menuOutputHeader.innerText = menuItemText;
+							// Toggle the classes to control visibility
+							menuOutput.classList.add('show');
+							menu.classList.add('hide');
+						}
+					};
+
+					xhr.open('GET', menuItemFileName, true);
+					xhr.send();
+				});
+			});
+		});
+	
+	</script>
+	
+</body>
 </html>
