@@ -4,8 +4,6 @@
         <file alias="playlist_list.html">resources/www/playlist_list.html</file>
         <file alias="content.html">resources/www/content.html</file>
         <file alias="detail_song.html">resources/www/detail_song.html</file>
-        <file alias="footer.html">resources/www/footer.html</file>
-        <file alias="header.html">resources/www/header.html</file>
         <file alias="index.html">resources/www/index.html</file>
         <file alias="redirect.html">resources/www/redirect.html</file>
         <file alias="song_list.html">resources/www/song_list.html</file>
@@ -13,16 +11,20 @@
         <file alias="stylesheet.css">resources/www/stylesheet.css</file>
     </qresource>
     <qresource prefix="/images">
-        <file alias="squarelogo.png">resources/images/squarelogo.png</file>
+        <file alias="AllSongs.png">resources/images/AllSongs.png</file>
+        <file alias="ChartIcon.png">resources/images/ChartIcon.png</file>
         <file alias="favicon.ico">resources/images/squarelogo.png</file>
         <file alias="NoAlbumCover.png">resources/images/NoAlbumCover.png</file>
         <file alias="NoBandPhoto.png">resources/images/NoBandPhoto.png</file>
+        <file alias="playing.png">resources/images/playing.png</file>
         <file alias="PlaylistIcon.png">resources/images/PlaylistIcon.png</file>
         <file alias="SongIcon.png">resources/images/SongIcon.png</file>
-        <file alias="AllSongs.png">resources/images/AllSongs.png</file>
         <file alias="splash.png">resources/images/splash.png</file>
-        <file alias="playing.png">resources/images/playing.png</file>
-        <file alias="ChartIcon.png">resources/images/ChartIcon.png</file>
+        <file alias="squarelogo.png">resources/images/squarelogo.png</file>
+        <file alias="player_next.png">resources/images/player_next.png</file>
+        <file alias="player_play.png">resources/images/player_play.png</file>
+        <file alias="player_prev.png">resources/images/player_prev.png</file>
+        <file alias="player_stop.png">resources/images/player_stop.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file alias="default">resources/default.qss</file>

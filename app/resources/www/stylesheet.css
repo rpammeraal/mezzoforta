@@ -6,9 +6,9 @@ body {
 
 #Logo {
     position: relative;
-    background-image: url(./images/squarelogo.png);
-    width: 125px;
-    height: 125px;
+    background-image: url(/images/squarelogo.png);
+    width: 75px;
+    height: 75px;
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0 auto;
@@ -88,7 +88,6 @@ body {
 	overflow-y: auto;
 	background-color: gainsboro;
 	scrollbar-color: grey transparent;
-	white-space: break-spaces;
 }
 
 #Status {
@@ -117,19 +116,83 @@ body {
 
 .Button {
 	position: relative;
-	min-width: 40px;
-	margin: 0 5px;
-	padding: 10px;
+	margin: 0 10px;
 	bottom: -5px;
 	cursor: pointer;
-	border: 1px groove darkgrey;
-	border-radius: 5px;
-	transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.5s;
+	filter: contrast(0.1);
+	transition: filter 0.5s;
 }
 
-.Button:hover {
-	color: dodgerblue;
-	background-color: black;
-	border: 1px groove black;
-	box-shadow: 10px 10px 19px -6px rgba(0, 0, 0, 0.75);
+#prev {
+    position: relative;
+    background-image: url(/images/player_prev.png);
+    width: 40px;
+    height: 40px;    
+}
+
+#play {
+    position: relative;
+    background-image: url(/images/player_play.png);
+    width: 36px;
+    height: 40px;    
+}
+
+#stop {
+    position: relative;
+    background-image: url(/images/player_stop.png);
+    width: 40px;
+    height: 40px;    
+}
+
+#next {
+    position: relative;
+    background-image: url(/images/player_next.png);
+    width: 40px;
+    height: 40px;    
+}
+
+.SongListTable {
+    width: calc(100% - 15px);
+}
+
+.SongListIcon {
+	width: 50px;
+}
+
+.SongListPlayButton {
+	width: 36px;
+}
+
+.play_ctrl_button {
+    background-image: url(/images/player_play.png);
+    width: 30px;
+    height: 30px;
+	cursor: pointer;
+}
+
+.icon {
+	background-image: url(/images/SongIcon.png);
+	width:40px;
+	height:40px;
+}
+
+.song {
+	font-weight: bold;
+}
+
+.album {
+	font-style: italic;
+}
+
+#alphabet_array {
+    position: absolute;
+    top: 52px;
+    top: 0px;
+    right: 5px;
+    bottom: 10px;
+    overflow-y: auto;
+    max-height: -webkit-fill-available;
+    margin-top: 50px;
+	background-color: transparent;
+	scrollbar-color: transparent transparent;	
 }
