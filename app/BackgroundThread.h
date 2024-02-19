@@ -2,12 +2,7 @@
 #define BACKGROUNDTHREAD_H
 
 #include <QObject>
-
-
-#include "DBManager.h"
-
-class QSemaphore;
-class QSqlQueryModel;
+#include "SBKey.h"
 
 class BackgroundThread : public QObject
 {
@@ -17,17 +12,18 @@ public:
     explicit BackgroundThread(QObject *parent = 0);
 
 signals:
+    void imageDataReady(const QString& path, const SBKey& key);
+    void retrieveSingleAlbumImageLocations(const QString& mbid, const SBKey& key);
+    void done();
 
 public slots:
-    //	NOT USED ANYMORE -- CODE LEFT AS EXAMPLE
-    //void recalculateAllPlaylistDurations() const;
-    void reload() const;
+    void processAlbumImages(const QStringList& mbids, const SBKey& key);
+    void retrieveNextAlbumImageLocations();
+    void retrieveImageData(const QStringList& urls, const SBKey& key);
 
 private:
-    QSemaphore* s_cpd;
-    DBManager _dbm;
-
-    void init();
+    SBKey                   _currentKey;
+    QStringList             _albumMBIDs;
 };
 
 #endif // BACKGROUNDTHREAD_H

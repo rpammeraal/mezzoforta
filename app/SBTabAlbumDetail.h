@@ -1,6 +1,7 @@
 #ifndef SBTABALBUMDETAIL_H
 #define SBTABALBUMDETAIL_H
 
+#include "ExternalData.h"
 #include "SBTab.h"
 
 #include "SBIDAlbum.h"
@@ -29,16 +30,17 @@ public slots:
 
 private slots:
     void refreshAlbumReviews();
-    void setAlbumImage(const QPixmap& p);
+    void setAlbumImage(const QPixmap& p, const SBKey& key=SBKey());
     void setAlbumReviews(const QList<QString>& reviews);
     void setAlbumWikipediaPage(const QString& url);
 
 private:
-    QList<QString> _currentReviews;
+    ExternalData 		_ed;
+    QList<QString> 		_currentReviews;
 
     void _init();
     virtual QTableView* _determineViewCurrentTab() const;
-    virtual ScreenItem _populate(const ScreenItem& id);
+    virtual ScreenItem 	_populate(const ScreenItem& id);
 };
 
 #endif // SBTABALBUMDETAIL_H
