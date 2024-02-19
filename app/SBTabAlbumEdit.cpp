@@ -1182,6 +1182,10 @@ SBTabAlbumEdit::save() const
     //		(using the same logic that is used when editing a song).
 
     //	F.	Commit changes
+
+    //  open up ProgressDialog
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Save",1);
+
     successFlag=cm->saveChanges("Saving Album");
 
     if(successFlag)
