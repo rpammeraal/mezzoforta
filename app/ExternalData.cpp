@@ -1096,10 +1096,8 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
                 if(debug) qDebug() << SB_DEBUG_INFO << ts << "array:";
                 QJsonArray ja=jv.toArray();
                 const QStringList result=_iterateJsonArray(ja,search,recursion+1,debug);
-                qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                 if(search.size() && result.size())
                 {
-                    qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                     return result;
                 }
                 break;
@@ -1118,13 +1116,13 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
 
         case QJsonValue::Undefined:
             {
-                qDebug() << SB_DEBUG_INFO << ts << "Undefined value. Error inside JSON data";
+                qDebug() << SB_DEBUG_ERROR << ts << "Undefined value. Error inside JSON data";
                 break;
             }
 
         default:
             {
-                qDebug() << SB_DEBUG_INFO << ts << "type" << jt << "not handled.";
+                qDebug() << SB_DEBUG_ERROR << ts << "type" << jt << "not handled.";
                 break;
             }
     }

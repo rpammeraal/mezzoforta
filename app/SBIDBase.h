@@ -67,6 +67,7 @@ public:
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
     inline bool reloadFlag() const { return _reloadFlag; }
+    inline bool hasChanges() const { return _changedFlag; }
 
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
