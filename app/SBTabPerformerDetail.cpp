@@ -135,7 +135,10 @@ SBTabPerformerDetail::updatePerformerHomePage(SBKey key)
     SB_RETURN_VOID_IF_NULL(pPtr);
 
     pPtr->setURL(pPtr->url());
-    cm->saveChanges();
+    if(pPtr->hasChanges())
+    {
+        cm->saveChanges(QString(),0);
+    }
 }
 
 void
@@ -146,7 +149,10 @@ SBTabPerformerDetail::updatePerformerMBID(SBKey key)
     SB_RETURN_VOID_IF_NULL(pPtr);
 
     pPtr->setMBID(pPtr->MBID());
-    cm->saveChanges(QString(),0);
+    if(pPtr->hasChanges())
+    {
+        cm->saveChanges(QString(),0);
+    }
 }
 
 
