@@ -187,13 +187,24 @@ SBTabPerformerDetail::setPerformerHomePage(const QString &url)
 }
 
 void
-SBTabPerformerDetail::setPerformerImage(const QPixmap& p)
+SBTabPerformerDetail::setPerformerImage(const QPixmap& p, const SBKey& key)
 {
     QWidget* w=QApplication::focusWidget();
-    setImage(p,Context::instance()->mainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
-    if(w)
+    const SBKey currentKey=this->currentScreenItem().key();
+    if(key.validFlag()==0 || (key.validFlag() && key==currentKey))
     {
-        w->setFocus();
+        //	Allow to clear image (key.validFlag()==0) OR
+        //	Only set image if keys correspond.
+        setImage(p,Context::instance()->mainWindow()->ui.labelPerformerDetailIcon, this->currentScreenItem().key());
+
+        if(w)
+        {
+            w->setFocus();
+        }
+    }
+    else if(key.validFlag())
+    {
+        qDebug() << SB_DEBUG_WARNING << "Image received for key=" << key << ", current key=" << currentKey;
     }
 }
 
@@ -315,6 +326,14 @@ SBTabPerformerDetail::_init()
         SBLabel* l=mw->ui.labelPerformerDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
+
+        //	Get external data
+        connect(&_ed, &ExternalData::performerHomePageAvailable,      this, &SBTabPerformerDetail::setPerformerHomePage);
+        connect(&_ed, &ExternalData::performerWikipediaPageAvailable, this, &SBTabPerformerDetail::setPerformerWikipediaPage);
+        connect(&_ed, &ExternalData::updatePerformerMBID,             this, &SBTabPerformerDetail::updatePerformerMBID);
+        connect(&_ed, &ExternalData::updatePerformerHomePage,         this, &SBTabPerformerDetail::updatePerformerHomePage);
+        connect(&_ed, &ExternalData::imageDataReady,                  this, &SBTabPerformerDetail::setPerformerImage);
+        connect(&_ed, &ExternalData::performerNewsAvailable,          this, &SBTabPerformerDetail::setPerformerNews);
     }
 }
 
@@ -344,25 +363,10 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
     mw->ui.labelPerformerDetailIcon->setKey(pPtr->key());
 
     //	Clear image
-    setPerformerImage(QPixmap());
-
-    //	Get external data
-    ExternalData* ed=new ExternalData();
-    connect(ed, SIGNAL(performerHomePageAvailable(QString)),
-            this, SLOT(setPerformerHomePage(QString)));
-    connect(ed, SIGNAL(performerWikipediaPageAvailable(QString)),
-            this, SLOT(setPerformerWikipediaPage(QString)));
-    connect(ed, SIGNAL(updatePerformerMBID(SBKey)),
-            this, SLOT(updatePerformerMBID(SBKey)));
-    connect(ed, SIGNAL(updatePerformerHomePage(SBKey)),
-            this, SLOT(updatePerformerHomePage(SBKey)));
-    connect(ed, SIGNAL(imageDataReady(QPixmap)),
-            this, SLOT(setPerformerImage(QPixmap)));
-    connect(ed, SIGNAL(performerNewsAvailable(QList<NewsItem>)),
-            this, SLOT(setPerformerNews(QList<NewsItem>)));
+    setPerformerImage(QPixmap(),SBKey());
 
     //	Performer cover image
-    ed->loadPerformerData(pPtr->key());
+    _ed.loadPerformerData(pPtr->key());
 
     //	Populate performer detail tab
     mw->ui.labelPerformerDetailPerformerName->setText(pPtr->performerName());

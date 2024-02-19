@@ -1,9 +1,12 @@
 #ifndef EXTERNALDATA_H
 #define EXTERNALDATA_H
 
+#include <QDomElement>
 #include <QObject>
 #include <QPixmap>
+#include <QThread>
 
+class QDomElement;
 class QNetworkReply;
 class QNetworkAccessManager;
 
@@ -21,6 +24,9 @@ struct NewsItem
 class ExternalData : public QObject
 {
     Q_OBJECT
+    QThread t_SingleImageData;
+    QThread t_AlbumImageLocations;
+
 public:
     explicit ExternalData(QObject *parent = 0);
     ~ExternalData();
@@ -36,7 +42,7 @@ public:
 signals:
     void albumWikipediaPageAvailable(const QString& url);
     void albumReviewsAvailable(const QList<QString>& allReviews);
-    void imageDataReady(const QPixmap& p);
+    void imageDataReady(const QPixmap& p, const SBKey& key);
     void performerHomePageAvailable(const QString& url);
     void performerNewsAvailable(const QList<NewsItem>& news);
     void performerWikipediaPageAvailable(const QString& url);
@@ -44,38 +50,52 @@ signals:
     void songWikipediaPageAvailable(const QString& url);
     void updatePerformerMBID(SBKey key);
     void updatePerformerHomePage(SBKey key);
+    void startRetrieveImageData(const QStringList& urls, const SBKey& key);
+
+    void startAlbumImageProcess(const QStringList& mbids, const SBKey& key);
+    void handleNextAlbumImageLocation();
 
 public slots:
-    void handleAlbumImageURLFromAS(QNetworkReply *r);
-    void handleAlbumURLDataFromMB(QNetworkReply* r);
-    void handleImageDataNetwork(QNetworkReply* r);
-    void handleMBIDNetwork(QNetworkReply* r);
-    void handlePerformerImageURLFromWC(QNetworkReply* r);
-    void handlePerformerNewsURLFromEN(QNetworkReply* r);
-    void handlePerformerURLFromMB(QNetworkReply* r);
-    void handleSongMetaDataFromMB(QNetworkReply* r);
-    void handleSongURLFromMB(QNetworkReply* r);
+    void processAlbum(QNetworkReply* r);
+    void processAlbumImage (QNetworkReply *reply);
+    void processAlbumsByPerformer (QNetworkReply *reply);
+    void processImageRetrieved(const QString& path, const SBKey& key);
+    void processMBID(QNetworkReply* r);
+    void processPerformer(QNetworkReply* r);
+    void processSong(QNetworkReply* r);
+    void processSingleAlbumImageLocations(const QString& mbid, const SBKey& key);
+    void processWikidata(QNetworkReply* r);
 
 private:
-    bool _artworkRetrievedFlag;             //	album performer
-    bool _performerHomepageRetrievedFlag;   //	performer
-    bool _songLyricsURLRetrievedFlag;       //	song (always retrieved, not stored)
-    bool _wikipediaURLRetrievedFlag;        // 	album performer song
+    bool                    _artworkRetrievedFlag;              //	album performer
+    bool                    _performerHomepageRetrievedFlag;    //	performer
+    bool                    _performerMBIDRetrievedFlag;        //	set if call to retrieve MBID already has been made.
+    bool                    _songLyricsURLRetrievedFlag;        //	song (always retrieved, not stored)
+    bool                    _wikipediaURLRetrievedFlag;         // 	album performer song
 
-    int _currentOffset;
-    SBKey _currentKey;
-    bool _performerMBIDRetrievedFlag;       //	set if call to retrieve MBID already has been made.
+    int                     _currentOffset;
+    SBKey                   _currentKey;
+    QString                 _wikiDataQValue;                    //  ID used by wikimedia
 
-    QList<NewsItem> _allNewsItems;
-    QList<QString> _allReviews;
+    QList<NewsItem>         _allNewsItems;
+    QList<QString>          _allReviews;
 
-    void _init();
-    void _loadAlbumCoverAS();
-    static bool _loadImageFromCache(QPixmap& p,SBKey key);
-    void _getMBIDAndMore();
-    void _sendMusicBrainzQuery(QNetworkAccessManager* mb,const QString& url);
-    void _storeInCache(QByteArray* a) const;
+    void                    _init();
+    void                    _softInit();
 
+    void                    _getMBIDAndMore();
+    static bool             _loadImageFromCache(QPixmap& p, const SBKey& key);
+    void                    _sendNetworkRequest(QNetworkAccessManager* am, const QString& url);
+    void                    _sendNetworkRequest(QNetworkAccessManager* am, const QUrl& url);
+    void                    _storeInCache(QByteArray* a) const;
+
+    void                    _postNetwork(QNetworkReply* r);
+    QStringList             _inspectJsonDoc(const QJsonDocument& jd, const QString& search=QString(), const bool& debug=0) const;
+    QStringList             _iterateJsonArray(const QJsonArray& ja, const QStringList& search, const int& recursion, const bool& debug) const;
+    QStringList             _recurseJsonObject(const QJsonObject& jo, const QStringList& search, const int& recursion, const bool& debug) const;
+    QStringList             _inspectJsonValue(const QJsonValue& jv, const QStringList& search, const int& recursion, const bool& debug) const;
+    QString                 _crtIndent(int tabstops) const;
+    QString                 _normalizeString(const QString& s) const;
 };
 
 #endif // EXTERNALDATA_H

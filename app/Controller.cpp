@@ -603,21 +603,6 @@ Controller::init()
             this, SLOT(_resetStatusBar()));
     connect(&_logSongPlayedHistory, SIGNAL(timeout()),
             this, SLOT(_performLogSongPlayedHistory()));
-
-    //	Instantiate background thread
-    _bgt=new BackgroundThread;
-    _bgt->moveToThread(&_backgroundThread);
-    _backgroundThread.start();
-    Context::instance()->setBackgroundThread(_bgt);
-
-    //	Recalculate playlist duration -- NOT USED ANYMORE
-    //	CODE LEFT AS EXAMPLE
-//    _updateAllPlaylistDurationTimer.start(10*60*1000);	//	start recalc in 20s
-//    _statusBarResetTimer.setSingleShot(0);
-//    connect(&_updateAllPlaylistDurationTimer, SIGNAL(timeout()),
-//            this, SLOT(_updateAllplaylistDurations()));
-//    connect(this, SIGNAL(recalculateAllPlaylistDurations()),
-//            bgt, SLOT(recalculateAllPlaylistDurations()));
 }
 
 ///	PRIVATE SLOTS

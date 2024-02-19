@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
 #endif //	Q_OS_MACOS
 
     //	Set up names
-    app.setOrganizationName("MezzoForta Inc");
-    app.setOrganizationDomain("mezzoforta.com");
+    app.setOrganizationName("roam-corp");
+    app.setOrganizationDomain("roam-corp.com");
     app.setApplicationName("MezzoForta!");
     QIcon icon=QIcon(":/resources/images/squarelogo.png");
     app.setWindowIcon(icon);
