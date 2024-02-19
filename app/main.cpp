@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        myHTTPserver server;
+        //  myHTTPserver server;
         app.exec();
     }
     else

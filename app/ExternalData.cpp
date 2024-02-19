@@ -45,7 +45,6 @@ ExternalData::loadAlbumData(SBKey key)
     if(_loadImageFromCache(p,_currentKey))
     {
         _artworkRetrievedFlag=1;
-    qDebug() << SB_DEBUG_INFO;
         emit imageDataReady(p, _currentKey);
     }
 
@@ -652,6 +651,18 @@ ExternalData::_softInit()
     _currentOffset=0;
 }
 
+QString
+ExternalData::_crtIndent(int tabstops) const
+{
+    const static QString singleTab("   ");
+    QString result;
+    for(int i=0; i<tabstops; i++)
+    {
+        result+=singleTab;
+    }
+    return result;
+}
+
 ///
 /// \brief ExternalData::_getMBIDAndMore
 ///
@@ -666,9 +677,6 @@ void
 ExternalData::_getMBIDAndMore()
 {
     qDebug() << SB_DEBUG_INFO;
-    QNetworkAccessManager* en;
-    QString urlString;
-
     SBIDPtr ptr=CacheManager::get(_currentKey);
     SB_RETURN_VOID_IF_NULL(ptr);
 
@@ -805,10 +813,30 @@ ExternalData::_getMBIDAndMore()
 }
 
 bool
+ExternalData::_lengthCompare(const QString& s1, const QString& s2) const
+{
+    const qsizetype s1l=s1.length();
+    const qsizetype s2l=s2.length();
+
+    if(s1l && s2l)
+    {
+        if(s1l<=s2l)
+        {
+            return s2.indexOf(s1,Qt::CaseInsensitive)==0;
+        }
+        return s1.indexOf(s2,Qt::CaseInsensitive)==0;
+    }
+    else if(!s1l && !s2l)
+    {
+        return 1;   //  both strings are empty, they are equal.
+    }
+    return 0;   //  only compare if both strings are non-empty.
+}
+
+bool
 ExternalData::_loadImageFromCache(QPixmap& p,const SBKey& key)
 {
     QString fn=getCachePath(key);
-    qDebug() << SB_DEBUG_INFO << key << fn;
     QFile f(fn);
 
     if(f.open(QIODevice::ReadOnly))
@@ -828,6 +856,13 @@ ExternalData::_loadImageFromCache(QPixmap& p,const SBKey& key)
         free(mem);
     }
     return 0;
+}
+
+
+QString
+ExternalData::_normalizeString(const QString& str) const
+{
+    return str.toLower().replace("’","'").replace("“","\"").replace("”","\"");
 }
 
 void
@@ -1004,7 +1039,7 @@ ExternalData::_recurseJsonObject(const QJsonObject& jo, const QStringList& searc
                     {
                         searchValue=jsonValue;
                     }
-                    if(queryAttribute==key && queryValue==_normalizeString(jsonValue))
+                    if(queryAttribute==key && _lengthCompare(queryValue,_normalizeString(jsonValue)))
                     {
                         if(queryValue.size())
                         {
@@ -1061,10 +1096,8 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
                 if(debug) qDebug() << SB_DEBUG_INFO << ts << "array:";
                 QJsonArray ja=jv.toArray();
                 const QStringList result=_iterateJsonArray(ja,search,recursion+1,debug);
-                qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                 if(search.size() && result.size())
                 {
-                    qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                     return result;
                 }
                 break;
@@ -1083,33 +1116,15 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
 
         case QJsonValue::Undefined:
             {
-                qDebug() << SB_DEBUG_INFO << ts << "Undefined value. Error inside JSON data";
+                qDebug() << SB_DEBUG_ERROR << ts << "Undefined value. Error inside JSON data";
                 break;
             }
 
         default:
             {
-                qDebug() << SB_DEBUG_INFO << ts << "type" << jt << "not handled.";
+                qDebug() << SB_DEBUG_ERROR << ts << "type" << jt << "not handled.";
                 break;
             }
     }
     return QStringList();
-}
-
-QString
-ExternalData::_crtIndent(int tabstops) const
-{
-    const static QString singleTab("   ");
-    QString result;
-    for(int i=0; i<tabstops; i++)
-    {
-        result+=singleTab;
-    }
-    return result;
-}
-
-QString
-ExternalData::_normalizeString(const QString& str) const
-{
-    return str.toLower().replace("’","'").replace("“","\"").replace("”","\"");
 }

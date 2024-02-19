@@ -49,30 +49,21 @@ ProgressDialog::startDialog(const QString& prettyFunction,const QString& label, 
 void
 ProgressDialog::setLabelText(const QString& prettyFunction, const QString& label)
 {
-    if(prettyFunction==_prettyFunction)
+    QString toDisplay=label;
+    if(toDisplay.length()>50)
     {
-        QString toDisplay=label;
-        if(toDisplay.length()>50)
-        {
-            toDisplay=toDisplay.left(47)+"...";
-        }
+        toDisplay=toDisplay.left(47)+"...";
+    }
 
-        _pd.setLabelText(toDisplay);
-        QCoreApplication::processEvents();
-        _tmpWidth=_pd.width()>_tmpWidth?_pd.width():_tmpWidth;
-    }
-    else
-    {
-        qDebug() << SB_DEBUG_WARNING << "ignore:" << prettyFunction << label;
-        qDebug() << SB_DEBUG_WARNING << "owned by:" << _prettyFunction;
-        //	Ignore
-    }
+    _pd.setLabelText(toDisplay);
+    QCoreApplication::processEvents();
+    _tmpWidth=_pd.width()>_tmpWidth?_pd.width():_tmpWidth;
 }
 
 void
 ProgressDialog::update(const QString& prettyFunction, const QString& step, int currentValue, int maxValue)
 {
-    if(_visible && prettyFunction==_prettyFunction)
+    if(_visible)
     {
         if(!_stepList.contains(step))
         {
