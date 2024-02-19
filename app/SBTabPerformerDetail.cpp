@@ -146,7 +146,7 @@ SBTabPerformerDetail::updatePerformerMBID(SBKey key)
     SB_RETURN_VOID_IF_NULL(pPtr);
 
     pPtr->setMBID(pPtr->MBID());
-    cm->saveChanges();
+    cm->saveChanges(QString(),0);
 }
 
 

@@ -71,8 +71,8 @@ public:
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
-    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
-    void setURL(const QString& url) { _url=url; setChangedFlag(); }	//	CWIPneed to save this in DB instantly
+    void setMBID(const QString& mbid) { if(mbid!=_sb_mbid) { _sb_mbid=mbid; setChangedFlag(); } }
+    void setURL(const QString& url) { if(url!=_url) { _url=url; setChangedFlag(); } }	//	CWIPneed to save this in DB instantly}
 
     void showDebug(const QString& title) const;
 

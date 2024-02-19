@@ -45,7 +45,6 @@ ExternalData::loadAlbumData(SBKey key)
     if(_loadImageFromCache(p,_currentKey))
     {
         _artworkRetrievedFlag=1;
-    qDebug() << SB_DEBUG_INFO;
         emit imageDataReady(p, _currentKey);
     }
 
@@ -808,7 +807,6 @@ bool
 ExternalData::_loadImageFromCache(QPixmap& p,const SBKey& key)
 {
     QString fn=getCachePath(key);
-    qDebug() << SB_DEBUG_INFO << key << fn;
     QFile f(fn);
 
     if(f.open(QIODevice::ReadOnly))
