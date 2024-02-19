@@ -36,17 +36,18 @@ public slots:
 private slots:
     void refreshPerformerNews();
     void setPerformerHomePage(const QString& url);
-    void setPerformerImage(const QPixmap& p);
+    void setPerformerImage(const QPixmap& p, const SBKey& key=SBKey());
     void setPerformerNews(const QList<NewsItem>& news);
     void setPerformerWikipediaPage(const QString& url);
 
 private:
-    QList<NewsItem>  _currentNews;
-    QList<QWidget *> _relatedItems;
+    ExternalData 		_ed;
+    QList<NewsItem>  	_currentNews;
+    QList<QWidget *> 	_relatedItems;
 
     virtual QTableView* _determineViewCurrentTab() const;
-    void _init();
-    virtual ScreenItem _populate(const ScreenItem& id);
+    void 				_init();
+    virtual ScreenItem 	_populate(const ScreenItem& id);
 };
 
 #endif // SBTABPERFORMERDETAIL_H
