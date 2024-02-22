@@ -56,6 +56,35 @@
 		<div class="Button" id=">>" onclick="control_player('next')">&gt;&gt;</div>
 		<div class="Stripe">|</div>
 	</div>
+
+    <div id="alphabet_array">
+        <div class="alphabet-item" link="/song_list.html?start=A"><p>A</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=B"><p>B</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=C"><p>C</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=D"><p>D</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=E"><p>E</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=F"><p>F</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=G"><p>G</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=H"><p>H</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=I"><p>I</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=J"><p>J</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=K"><p>K</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=L"><p>L</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=M"><p>M</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=N"><p>N</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=O"><p>O</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=P"><p>P</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=Q"><p>Q</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=R"><p>R</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=S"><p>S</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=T"><p>T</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=U"><p>U</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=V"><p>V</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=W"><p>W</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=X"><p>X</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=Y"><p>Y</p></div>
+        <div class="alphabet-item" link="/song_list.html?start=Z"><p>Z</p></div>
+    </div>
 	
 	<script>
 		// Wait till DOM is loaded //
@@ -98,6 +127,9 @@
 
 		// locatie defineren zodat we correct gebruik maken van complete URLs //
 		const loc = window.location.href + '/';
+        context = 'menu';
+
+        console.log(context);
 
         function control_player() {
             const xhr = new XMLHttpRequest();
@@ -158,6 +190,33 @@
 					};
 
 					xhr.open('GET', menuItemFileName, true);
+					xhr.send();
+				});
+			});
+
+			const alphabetItems = document.querySelectorAll('.alphabet-item');
+			alphabetItems.forEach(function (alphabetItem) {
+				alphabetItem.addEventListener('click', function () {
+
+					// Use the text of a Menu-Item in the Paragraph
+					const alphabetItemText = this.querySelector('p').innerText;
+
+					// Use the name from the Paragraph and append .html
+                    const alphabetItemFileName = this.getAttribute('link');
+
+
+					const xhr = new XMLHttpRequest();
+					xhr.onreadystatechange = function () {
+						if (xhr.readyState === 4 && xhr.status === 200) {
+							menuOutputContent.innerHTML = xhr.responseText;
+							menuOutputHeader.innerText = alphabetItemText;
+							// Toggle the classes to control visibility
+							menuOutput.classList.add('show');
+							menu.classList.add('hide');
+						}
+					};
+
+					xhr.open('GET', alphabetItemFileName, true);
 					xhr.send();
 				});
 			});

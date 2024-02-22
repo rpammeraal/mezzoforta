@@ -1,6 +1,6 @@
 QT       += core gui widgets sql xml network webenginewidgets multimedia httpserver
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql network webenginewidgets multimedia
 
 CONFIG 		+= c++11 import_plugins static sdk_no_version_check plugin
 QTPLUGIN    +=  QPSQL

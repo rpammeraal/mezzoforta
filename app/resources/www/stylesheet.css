@@ -186,13 +186,30 @@ body {
 
 #alphabet_array {
     position: absolute;
-    top: 52px;
+    top: 62px;
     top: 0px;
     right: 5px;
     bottom: 10px;
     overflow-y: auto;
     max-height: -webkit-fill-available;
-    margin-top: 50px;
+    margin-top: 62;
 	background-color: transparent;
 	scrollbar-color: transparent transparent;	
 }
+
+.alphabet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px;
+	cursor: pointer;
+}
+
+.alphabet-item:hover {
+    color: dodgerblue;
+}
+
+.alphabet-item:active {
+    font-weight: bold;
+}
+
