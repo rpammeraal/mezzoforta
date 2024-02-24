@@ -1,91 +1,80 @@
-<html lang="en">
-
+<html>
 <head>
-	<title>Mezzoforta!Online</title>	
-	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="stylesheet.css">
+	<link href="stylesheet.css" rel="stylesheet">
 </head>
 
 <body>
-	<div id="Logo"></div>
 
-	<div id="Menu">
+    <div class="container">
+        <div id="logo"></div>
+        <div id="menu">
+            <div class="menu-item" context="playlist_list">
+                <img src="/images/PlaylistIcon.png" alt="Playlists">
+                <p>Playlists</p>
+            </div>
 
-		<div class="Menu-Item" link="/playlist_list.html">
-			<img src="/images/PlaylistIcon.png" alt="Playlists">
-			<p>Playlists</p>
-		</div>
+            <div class="menu-item">
+                <img src="/images/NoBandPhoto.png" alt="Performers">
+                <p>Performers</p>
+            </div>
 
-		<div class="Menu-Item">
-			<img src="/images/NoBandPhoto.png" alt="Performers">
-			<p>Performers</p>
-		</div>
+            <div class="menu-item">
+                <img src="/images/NoAlbumCover.png" alt="Albums">
+                <p>Albums</p>
+            </div>
 
-		<div class="Menu-Item">
-			<img src="/images/NoAlbumCover.png" alt="Albums">
-			<p>Albums</p>
-		</div>
+            <div class="menu-item" context="song_list">
+                <img src="/images/SongIcon.png" alt="Songs">
+                <p>Songs</p>
+            </div>
 
-        <div class="Menu-Item" link="/song_list.html">
-			<img src="/images/SongIcon.png" alt="Songs">
-			<p>Songs</p>
-		</div>
-
-		<div class="Menu-Item">
-			<img src="/images/ChartIcon.png" alt="Charts">
-			<p>Charts</p>
-		</div>
-	</div>
-	
-	<div id="Menu-Output">
-		<div id="Menu-Output-Header"></div>
-		<div id="Menu-Output-Content"></div>
-	</div>
-	
-	<div id="Status"></div>
-
-	<div id="Buttons">
-		<div class="Stripe">|</div>
-		<div class="Button" id="<<" onclick="control_player('prev')">&lt;&lt;</div>
-		<div class="Stripe">|</div>
-		<div class="Button" id="[]" onclick="control_player('stop')">[]</div>
-		<div class="Stripe">|</div>
-		<div class="Button" id=">" onclick="control_player('play')">&gt;</div>
-		<div class="Stripe">|</div>
-		<div class="Button" id=">>" onclick="control_player('next')">&gt;&gt;</div>
-		<div class="Stripe">|</div>
-	</div>
-
-    <div id="alphabet_array">
-        <div class="alphabet-item" link="/song_list.html?start=A"><p>A</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=B"><p>B</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=C"><p>C</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=D"><p>D</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=E"><p>E</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=F"><p>F</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=G"><p>G</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=H"><p>H</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=I"><p>I</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=J"><p>J</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=K"><p>K</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=L"><p>L</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=M"><p>M</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=N"><p>N</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=O"><p>O</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=P"><p>P</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=Q"><p>Q</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=R"><p>R</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=S"><p>S</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=T"><p>T</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=U"><p>U</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=V"><p>V</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=W"><p>W</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=X"><p>X</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=Y"><p>Y</p></div>
-        <div class="alphabet-item" link="/song_list.html?start=Z"><p>Z</p></div>
+            <div class="menu-item">
+                <img src="/images/ChartIcon.png" alt="Charts">
+                <p>Charts</p>
+            </div>
+      </div>
+      <div id="alphabet">
+            <div class="alphabet-item" link="/song_list.html?start=A"><p>A</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=B"><p>B</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=C"><p>C</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=D"><p>D</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=E"><p>E</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=F"><p>F</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=G"><p>G</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=H"><p>H</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=I"><p>I</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=J"><p>J</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=K"><p>K</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=L"><p>L</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=M"><p>M</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=N"><p>N</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=O"><p>O</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=P"><p>P</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Q"><p>Q</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=R"><p>R</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=S"><p>S</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=T"><p>T</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=U"><p>U</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=V"><p>V</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=W"><p>W</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=X"><p>X</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Y"><p>Y</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Z"><p>Z</p></div>
+        </div>
+        <div id="output">
+            <div id="output_header">output_header</div>
+            <div id="output_content">output_content</div>
+        </div>
+        <div id="playerstatus"></div>
+        <div id="playercontrol">
+            <div class="playercontrol_button" id="<<" onclick="control_player('prev')"><button>&lt;&lt;</button></div>
+            <div class="playercontrol_button" id="[]" onclick="control_player('stop')"><button>[]</button></div>      
+            <div class="playercontrol_button" id=">" onclick="control_player('play')"> <button>&gt;</button></div>     
+            <div class="playercontrol_button" id=">>" onclick="control_player('next')"><button>&gt;&gt;</button></div>
+        </div>
     </div>
-	
+
 	<script>
 		// Wait till DOM is loaded //
 		document.addEventListener("DOMContentLoaded", function() {
@@ -93,7 +82,7 @@
 			document.body.style.transition = "opacity 1.5s ease";
 			document.body.style.opacity = 1;
 		});
-		
+
 		// Status Updater //
 		function statusInterval() {
 			setInterval(StatusUpdate, 2000);
@@ -112,7 +101,7 @@
 				if (xhr.readyState == 4 && xhr.status == 200) {
 					var Content = xhr.responseText.trim();
 					if (StatusTemp !== Content) {
-						var Element = document.getElementById("Status");
+					    var Element = document.getElementById("playerstatus");
 						StatusTemp = Content;
 						Element.innerHTML = Content;
 					}
@@ -130,6 +119,71 @@
         context = 'menu';
 
         console.log(context);
+
+        function retrieve_url() {
+            p_context=arguments[0];
+            url='';
+            console.log(p_context);
+            switch(p_context) {
+                case 'song_list':
+                    console.log("handle song_list");
+                    return '/song_list.html'
+                    break;
+
+                case 'playlist_list':
+                    console.log("handle playlist_list");
+                    return '/playlist_list.html'
+                    break;
+            }
+            console.log("retrieve_url: p_context not handled", p_context);
+            return '';
+        }
+
+        function set_screen() {
+            p_context=arguments[0];
+            console.log("Switch from",context,"to",p_context);
+            alphabet_visible_toggle='hidden';
+            menu_visible_toggle='hidden';
+            output_visible_toggle='hidden';
+            switch(p_context) {
+                case 'menu':
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='visible';
+                    output_visible_toggle='hidden';
+                    break;
+
+                case 'song_list': 
+                    alphabet_visible_toggle='visible';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    break;
+
+                case 'playlist_list':
+                    alphabet_visible_toggle='visible';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    break;
+            }
+            const alphabet_div = document.getElementById('alphabet'); 
+            console.log("Set visibility on alphabet_div to",alphabet_visible_toggle);
+            alphabet_div.style.visibility = alphabet_visible_toggle;
+
+            const menu_div = document.getElementById('menu'); 
+            console.log("Set visibility on menu_div to",menu_visible_toggle);
+            menu_div.style.visibility = menu_visible_toggle;
+
+            const output_div = document.getElementById('output'); 
+            console.log("Set visibility on output_div to",output_visible_toggle);
+            output_div.style.visibility = output_visible_toggle;
+
+            if(output_visible_toggle=='visible') {
+                const output_content_div = document.getElementById('output_content'); 
+                output_content_div.scrollTo(0,0);
+                output_content.scrollTo(0,0);
+            }
+
+            context=p_context;
+        }
 
         function control_player() {
             const xhr = new XMLHttpRequest();
@@ -152,21 +206,23 @@
 				});
 		}
 		
-		// Menu-Items ->> Menu-Output
+		// Menu-Items ->> Output
 		document.addEventListener('DOMContentLoaded', function () {
-			const logo = document.getElementById('Logo');
-			const menu = document.getElementById('Menu');
-			const menuOutput = document.getElementById('Menu-Output');
+			const logo = document.getElementById('logo');
+			const menu = document.getElementById('menu');
+			const menuOutput = document.getElementById('output');
 
 			logo.addEventListener('click', function () {
 				// Toggle the classes to control visibility
 				menuOutput.classList.remove('show');
 				menu.classList.remove('hide');
+                set_screen("menu");
+
 			});
 
-			const menuItems = document.querySelectorAll('.Menu-Item');
-			const menuOutputContent = document.getElementById('Menu-Output-Content');
-			const menuOutputHeader = document.getElementById('Menu-Output-Header');
+			const menuItems = document.querySelectorAll('.menu-item');
+			const menuOutputContent = document.getElementById('output_content');
+			const menuOutputHeader = document.getElementById('output_header');
 
 			menuItems.forEach(function (menuItem) {
 				menuItem.addEventListener('click', function () {
@@ -175,8 +231,10 @@
 					const menuItemText = this.querySelector('p').innerText;
 
 					// Use the name from the Paragraph and append .html
-                    const menuItemFileName = this.getAttribute('link');
-
+                    const new_context = this.getAttribute('context');
+                    console.log(new_context);
+                    const url=retrieve_url(new_context);
+                    console.log(url)
 
 					const xhr = new XMLHttpRequest();
 					xhr.onreadystatechange = function () {
@@ -186,10 +244,11 @@
 							// Toggle the classes to control visibility
 							menuOutput.classList.add('show');
 							menu.classList.add('hide');
+                            set_screen(new_context);
 						}
 					};
 
-					xhr.open('GET', menuItemFileName, true);
+					xhr.open('GET', url, true);
 					xhr.send();
 				});
 			});
@@ -202,27 +261,27 @@
 					const alphabetItemText = this.querySelector('p').innerText;
 
 					// Use the name from the Paragraph and append .html
-                    const alphabetItemFileName = this.getAttribute('link');
+                    const url = this.getAttribute('link');
 
 
 					const xhr = new XMLHttpRequest();
 					xhr.onreadystatechange = function () {
 						if (xhr.readyState === 4 && xhr.status === 200) {
 							menuOutputContent.innerHTML = xhr.responseText;
-							menuOutputHeader.innerText = alphabetItemText;
 							// Toggle the classes to control visibility
 							menuOutput.classList.add('show');
 							menu.classList.add('hide');
 						}
 					};
 
-					xhr.open('GET', alphabetItemFileName, true);
+					xhr.open('GET', url, true);
 					xhr.send();
 				});
 			});
 		});
 	
+        set_screen('menu');
+
 	</script>
-	
 </body>
 </html>

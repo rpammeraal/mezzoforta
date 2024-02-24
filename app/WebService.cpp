@@ -52,7 +52,10 @@ WebService::_init()
     //     return u"%1/player/%2"_s.arg(host(request)).arg(path);
     // });
 
+    _httpServer.route("/icon", WebService::_getIconResource);
+    _httpServer.route("/icon/", WebService::_getIconResource);
     //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
+
     _httpServer.route("/images/", WebService::_getImageResource);
     // {
     //     qDebug() << SB_DEBUG_INFO << "image=" << path;
@@ -226,13 +229,6 @@ WebService::_fourOhFour()
 }
 
 QHttpServerResponse
-WebService::_getImageResource(QString path, const QHttpServerRequest& r)
-{
-    qDebug() << SB_DEBUG_INFO << path;
-    return WebService::_getResource(path,r,1);
-}
-
-QHttpServerResponse
 WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
 {
     const static QString status("status.html");
@@ -241,6 +237,36 @@ WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
         qDebug() << SB_DEBUG_INFO << path;
     }
     return WebService::_getResource(path,r);
+}
+
+QHttpServerResponse
+WebService::_getIconResource(QString path, const QHttpServerRequest& r)
+{
+    const static QString defaultIconPath("/images/SongIcon.png");
+    QString iconPath;
+    qDebug() << SB_DEBUG_INFO << "****** " << path;
+    const SBKey key=SBKey(path.toUtf8());
+    if(key.validFlag())
+    {
+        iconPath=ExternalData::getCachePath(key);
+        if(!QFile::exists(iconPath))
+        {
+            iconPath=defaultIconPath;
+        }
+    }
+    else
+    {
+        iconPath=defaultIconPath;
+    }
+    qDebug() << SB_DEBUG_INFO << "****** " << iconPath;
+    return QHttpServerResponse::fromFile(iconPath);
+}
+
+QHttpServerResponse
+WebService::_getImageResource(QString path, const QHttpServerRequest& r)
+{
+    qDebug() << SB_DEBUG_INFO << path;
+    return WebService::_getResource(path,r,1);
 }
 
 QHttpServerResponse

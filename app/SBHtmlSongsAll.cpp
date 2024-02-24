@@ -1,7 +1,12 @@
+#include <QFile>
+
+
 #include "ExternalData.h"
 #include "SBSqlQueryModel.h"
 #include "SBHtmlSongsAll.h"
 #include "SBIDOnlinePerformance.h"
+#include "SBIDAlbum.h"
+#include "SBIDPerformer.h"
 #include "SBIDSong.h"
 
 SBHtmlSongsAll::SBHtmlSongsAll()
@@ -12,6 +17,7 @@ SBHtmlSongsAll::SBHtmlSongsAll()
 QString
 SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
 {
+    const static QString defaultIconPath("/images/SongIcon.png");
     QString table;
     SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs(startsWith);
 
@@ -23,9 +29,11 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
         {
             //	Find icon to display
             QString iconLocation;
-            QString prefix("");
+            SBKey iconKey;
 
-            //	Find icon and
+            //	Find icon. If found pass corresponding SBKey as /icon/<sbkey value>.
+            //  Otherwise pass default icon for songs.
+            //  Find album icon first, if not exists, find performer icon.
             SBKey opKey;
             QMapIterator<int,SBIDOnlinePerformancePtr> it=sPtr->onlinePerformances();
             while(it.hasNext() && !opKey.validFlag())
@@ -35,26 +43,53 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                 if(opPtr)
                 {
                     opKey=opPtr->key();
-                    SBKey albumKey=opPtr->albumKey();
-                    //	iconLocation=ExternalData::getCachePath(albumKey);	Need to fix calls to API first
-                    //	prefix=QString("cache/");
+                    SBIDAlbumPtr aPtr=opPtr->albumPtr();
+                    if(aPtr)
+                    {
+                        const SBKey albumKey=aPtr->key();
+                        iconLocation=ExternalData::getCachePath(albumKey);
+                        if(QFile::exists(iconLocation))
+                        {
+                            iconKey=albumKey;
+                        }
+                        else
+                        {
+                            //  Try performer
+
+                            SBIDPerformerPtr pPtr=aPtr->albumPerformerPtr();
+                            if(pPtr)
+                            {
+                                const SBKey performerKey=pPtr->key();
+                                iconLocation=ExternalData::getCachePath(performerKey);
+
+                                if(QFile::exists(iconLocation))
+                                {
+                                    iconKey=performerKey;
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            if(iconLocation.size()==0)
+            if(!iconKey.validFlag())
             {
                 //	Retrieve std song icon
-                iconLocation=SBIDSong::iconResourceLocationStatic().mid(2);
+                iconLocation=defaultIconPath;
+            }
+            else
+            {
+                iconLocation=QString("/icon/%1").arg(iconKey.toString());
             }
 
             //	Start table row
             const QString row=QString(
                 "<THEAD>\n\t"
                     "<TR>\n\t\t"
-                        "<TD class=\"SongListIcon\" rowspan=\"2\">"
-                            "<img class=\"icon\"></img>\n\t\t\t"
+                        "<TD class=\"SBIconDiv\" rowspan=\"2\">"
+                            "<img class=\"SBIcon\" src=\"%4\"></img>\n\t\t\t"
                         "</TD>\n\t\t\t"
-                        "<TD class=\"song\">%1</td>\n\t\t\t"
-                        "<TD class=\"SongListPlayButton\" rowspan=\"2\">\n\t\t\t"
+                        "<TD class=\"SBItem\">%1</td>\n\t\t\t"
+                        "<TD class=\"playercontrol_button\" rowspan=\"2\">\n\t\t\t"
                             "<IMG class=\"play_ctrl_button\" onclick=\"controlPlayer('play',%2)\"></img>\n\t\t\t\t"
                         "</TD>\n\t\t"
                     "</TR>\n\t\t"
@@ -64,24 +99,14 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                 "</THEAD>"
             )
                 .arg(sPtr->songTitle())
-                .arg(opKey.toString())
+                .arg(sPtr->key().toString())
                 .arg(sPtr->commonPerformerName())
+                .arg(iconLocation)
             ;
 
             table+=row;
 
         }
     }
-
-    //	Alphabet
-    // table+=QString("<TD class=\"alphabet_array\"><TABLE class=\"alphabet_array\"><TBODY>");
-    // for(int a='A';a<='Z';a++)
-    // {
-    //     table+=QString("<TR class=\"alpabet_array\" ><TD><A HREF=\"/song_detail.html?start=%1\">%1</A></TD></TR>").arg(QChar(a));
-    // }
-    // table+=QString("</TBODY></TABLE>");
-    // table+=QString("</TD></TR>");
-    // table+=QString("</TBODY></TABLE>");
-
     return table;
 }

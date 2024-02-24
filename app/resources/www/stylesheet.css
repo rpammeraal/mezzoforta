@@ -1,36 +1,46 @@
 body {
 	font-family: Trebuchet MS;
-	margin: 0 auto;
-	opacity: 0;
 }
 
-#Logo {
-    position: relative;
+.container {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-areas: "logo logo"
+  "menu alphabet"
+  "output alphabet"
+  "playerstatus playerstatus"
+  "playercontrol playercontrol";
+  grid-template-columns: auto 60px;
+  grid-template-rows: 75px auto auto 150px 100px;
+}
+.container > div {
+  border: 1px dashed #888;
+}
+
+#logo {
+    grid-area: logo;
     background-image: url(/images/squarelogo.png);
     width: 75px;
     height: 75px;
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0 auto;
-	margin-bottom: 20px;
+	margin-bottom: 10px;
     top: 10px;
     left: 0%;
     right: 0%;
 	cursor: pointer;
 }
 
-#Menu {
-    position: absolute;
-    left: 10px;
-    top: 140px;
-    width: calc(100% - 20px);
+#menu {
+  grid-area: menu;
 }
-
-#Menu.hide {
+#menu.hide {
 	display: none;
 }
 
-.Menu-Item {
+.menu-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -38,178 +48,107 @@ body {
 	cursor: pointer;
 }
 
-.Menu-Item img {
+.menu-item img {
     width: 40px;
     height: 40px;
     margin-right: 10px;
 }
 
-.Menu-Item p {
+.menu-item p {
     margin: 0;
 }
 
-.Menu-Item::after {
-    content: '>';
+.menu-item::after {
+    content: '';
     margin-left: auto;
 	margin-right: 4px;
 }
 
-.Menu-Item:hover {
+.menu-item:hover {
     color: dodgerblue;
 }
 
-.Menu-Item:active {
+.menu-item:active {
     font-weight: bold;
 }
 
-#Menu-Output {
-	display: none;
-	opacity: 0;
-	position: absolute;
-	top: 140px;
-	width: 100%;
-	height: calc(100% - 240px);
-	transition: opacity 1s ease;
-}
 
-#Menu-Output.show {
-	display: block;
-	opacity: 1;
-}
-
-#Menu-Output-Header {
-	font-size: 150%;
-	padding: 10px;
-}
-
-#Menu-Output-Content {
-	padding: 10px;
-	height: calc(100% - 75px);
-	overflow-y: auto;
-	background-color: gainsboro;
-	scrollbar-color: grey transparent;
-}
-
-#Status {
-	position: absolute;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-align: center;
-	bottom: 55px;
-	left: 0%;
-	right: 0%;
-}
-
-#Buttons {
-	display: flex;
-	position: fixed;
-	text-align: center;
-	background-color: lightgray;
-	border-style: groove;
-	bottom: 0px;
-	height: 50px;
-	left: 0%;
-	right: 0%;
-	justify-content: center;
-}
-
-.Button {
-	position: relative;
-	margin: 0 10px;
-	bottom: -5px;
-	cursor: pointer;
-	filter: contrast(0.1);
-	transition: filter 0.5s;
-}
-
-#prev {
-    position: relative;
-    background-image: url(/images/player_prev.png);
-    width: 40px;
-    height: 40px;    
-}
-
-#play {
-    position: relative;
-    background-image: url(/images/player_play.png);
-    width: 36px;
-    height: 40px;    
-}
-
-#stop {
-    position: relative;
-    background-image: url(/images/player_stop.png);
-    width: 40px;
-    height: 40px;    
-}
-
-#next {
-    position: relative;
-    background-image: url(/images/player_next.png);
-    width: 40px;
-    height: 40px;    
-}
-
-.SongListTable {
-    width: calc(100% - 15px);
-}
-
-.SongListIcon {
-	width: 50px;
-}
-
-.SongListPlayButton {
-	width: 36px;
-}
-
-.play_ctrl_button {
-    background-image: url(/images/player_play.png);
-    width: 30px;
-    height: 30px;
-	cursor: pointer;
-}
-
-.icon {
-	background-image: url(/images/SongIcon.png);
-	width:40px;
-	height:40px;
-}
-
-.song {
-	font-weight: bold;
-}
-
-.album {
-	font-style: italic;
-}
-
-#alphabet_array {
-    position: absolute;
-    top: 62px;
-    top: 0px;
-    right: 5px;
-    bottom: 10px;
+#alphabet {
     overflow-y: auto;
-    max-height: -webkit-fill-available;
-    margin-top: 62;
-	background-color: transparent;
-	scrollbar-color: transparent transparent;	
+    grid-area: alphabet;
 }
 
 .alphabet-item {
+	font-size: 150%;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2px;
+    align-items: right;
+    padding: 0px;
 	cursor: pointer;
 }
-
 .alphabet-item:hover {
     color: dodgerblue;
 }
 
 .alphabet-item:active {
     font-weight: bold;
+}
+
+#output {
+	transition: opacity 1s ease;
+    height: -moz-calc(100vh - (75px + 150px + 100px));
+    height: -webkit-calc(100vh - (75px + 150px + 100px));
+	height: calc(100vh - (75px + 150px + 100px));
+    overflow-y: auto;
+}
+
+#output.show {
+	display: block;
+	opacity: 1;
+}
+
+#output_header {
+    grid-area: output_header;
+}
+#output_content {
+    grid-area: output_content;
+	scrollbar-color: grey transparent;
+    overflow-y: auto;
+}
+#playerstatus {
+    grid-area: playerstatus;
+    align: center;
+	text-align: center;
+}
+#playercontrol {
+    grid-area: playercontrol;
+    align: center;
+    display: flex;
+	text-align: center;
+	justify-content: center;
+}
+.playercontrol_button {
+	position: relative;
+	margin: 0 0px;
+	bottom: -5px;
+	cursor: pointer;
+}
+
+.playercontrol_button button {
+	font-size: 150%;
+    type="button";
+    min-width=300px;
+}
+
+.SBIconDiv {
+	width: 50px;
+}
+
+.SBIcon {
+	width:40px;
+	height:40px;
+}
+
+.SBItem {
+	font-weight: bold;
 }
 
