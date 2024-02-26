@@ -25,7 +25,6 @@ QString
 SBHtmlSongsAll::songDetail(QString html, const QString& key)
 {
     QString contents;
-    qDebug() << SB_DEBUG_INFO << key;
 
     SBKey songKey=SBKey(key.toLatin1());
 
@@ -59,7 +58,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                     {
                         if(originalPerformerKey!=spPtr->songPerformerKey())
                         {
-                            qDebug() << SB_DEBUG_INFO << originalPerformerKey << spPtr->songPerformerKey();
                             //  Avoid original performer
                             table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(spPtr->songPerformerName());
                             count++;
@@ -97,7 +95,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             table=QString();
             if(allPlaylists.count())
             {
-                table=QString("<TR><TD>Playlists:</TD></TR><TR><TD class=\"SBItemMinor\">");
+                table=QString("<TR><TD class=\"SBItemMajor\">Playlists:</TD></TR><TR><TD class=\"SBItemMinor\">");
                 QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(allPlaylists);
                 while(it.hasNext())
                 {
@@ -114,7 +112,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 
             //  Charts
             QMap<SBIDChartPerformancePtr, SBIDChartPtr> allCharts=sPtr->charts(SBIDSong::retrieve_qmap());
-            qDebug() << SB_DEBUG_INFO;
             table=QString();
             if(allCharts.count())
             {
@@ -130,11 +127,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                     }
                 }
             }
-            qDebug() << SB_DEBUG_INFO << table;
-            qDebug() << SB_DEBUG_INFO << charts;
-            qDebug() << SB_DEBUG_INFO << html;
             html.replace(charts,table);
-            qDebug() << SB_DEBUG_INFO << html;
         }
     }
     return html;
@@ -163,7 +156,6 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                 //	Find icon to display
                 QString iconLocation;
                 SBKey iconKey;
-                qDebug() << SB_DEBUG_INFO << sPtr->key() << sPtr->genericDescription();
 
                 //	Find icon. If found pass corresponding SBKey as /icon/<sbkey value>.
                 //  Otherwise pass default icon for songs.
@@ -239,7 +231,6 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                     .arg(iconLocation)
                 ;
                 table+=row;
-                qDebug() << SB_DEBUG_INFO << row;
             }
         }
     }
