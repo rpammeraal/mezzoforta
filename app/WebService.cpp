@@ -52,9 +52,7 @@ WebService::_init()
     //     return u"%1/player/%2"_s.arg(host(request)).arg(path);
     // });
 
-    _httpServer.route("/icon", WebService::_getIconResource);
     _httpServer.route("/icon/", WebService::_getIconResource);
-    //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
 
     _httpServer.route("/images/", WebService::_getImageResource);
     // {
@@ -244,7 +242,6 @@ WebService::_getIconResource(QString path, const QHttpServerRequest& r)
 {
     const static QString defaultIconPath("/images/SongIcon.png");
     QString iconPath;
-    qDebug() << SB_DEBUG_INFO << "****** " << path;
     const SBKey key=SBKey(path.toUtf8());
     if(key.validFlag())
     {
@@ -258,7 +255,6 @@ WebService::_getIconResource(QString path, const QHttpServerRequest& r)
     {
         iconPath=defaultIconPath;
     }
-    qDebug() << SB_DEBUG_INFO << "****** " << iconPath;
     return QHttpServerResponse::fromFile(iconPath);
 }
 
@@ -302,11 +298,13 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     QTextStream f_str(&f);
     QString str=f_str.readAll();
 
-    QString allSong("song_list.html");
-    QString status("status.html");
+    const static QString allSong("song_list.html");
+    const static QString songDetail("song_detail.html");
+    const static QString status("status.html");
 
-    if(path==status)
+    if(path==status)    //  CWIP: rename to playerstatus
     {
+        //  Player status
         PlayerController* pc=Context::instance()->playerController();
 
         QString playerStatus;
@@ -349,10 +347,15 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
         QString startStr=r.query().queryItemValue(p_start);
         QChar start(startStr.size()>0?startStr[0]:'A');
 
-        QString allSongs;
-
         const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
         str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start));
+    }
+    else if(path==songDetail)
+    {
+        const static QString SB_ORG_PERFORMER("___SB_ORG_PERFORMER___");
+        const static QString p_key("sb_key");
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlSongsAll::songDetail(str,key);
     }
     else
     {

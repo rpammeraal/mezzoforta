@@ -59,7 +59,7 @@ body {
 }
 
 .menu-item::after {
-    content: '';
+    content: '>';
     margin-left: auto;
 	margin-right: 4px;
 }
@@ -143,12 +143,56 @@ body {
 	width: 50px;
 }
 
+
 .SBIcon {
 	width:40px;
 	height:40px;
 }
 
-.SBItem {
+.SBIcon:hover {
+    color: dodgerblue;
+}
+
+.SBIcon:active {
+    font-weight: bold;
+}
+
+.SBItemMajorTitleOnly {
+    margin-top: 10px;
+	font-size: 125%;
 	font-weight: bold;
 }
 
+.SBItemMajor {
+    margin-top: 10px;
+	font-size: 125%;
+	font-weight: bold;
+}
+
+.SBItemMajor:hover {
+    color: dodgerblue;
+}
+
+.SBItemMajor:active {
+    font-weight: bold;
+}
+
+.SBItemMinor {
+    margin-top: 0px;
+	font-weight: bold;
+}
+
+.SBItemMinor:hover {
+    color: dodgerblue;
+}
+
+.SBItemMinor:active {
+    font-weight: bold;
+}
+
+.item_play_button {
+    cursor: pointer;
+	font-size: 150%;
+    type="button";
+    min-width=300px;
+}

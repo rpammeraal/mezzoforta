@@ -186,12 +186,18 @@ SBIDSong::allPerformances()
 }
 
 SBTableModel*
-SBIDSong::charts() const
+SBIDSong::charts(retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=this->charts(SBIDSong::retrieve_qmap());
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
+}
+
+QMap<SBIDChartPerformancePtr, SBIDChartPtr>
+SBIDSong::charts(retrieve_qmap) const
+{
+    return Preloader::chartItems(*this);
 }
 
 void
@@ -262,7 +268,15 @@ SBIDSong::numAlbumPerformances()
 }
 
 SBTableModel*
-SBIDSong::playlists()
+SBIDSong::playlists(retrieve_sbtablemodel)
+{
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePlaylists(this->playlists(as_qvector));
+    return tm;
+}
+
+QVector<SBIDSong::PlaylistOnlinePerformance>
+SBIDSong::playlists(retrieve_qvector)
 {
     getSemaphore();
     if(!_playlistOnlinePerformances.count())
@@ -270,11 +284,11 @@ SBIDSong::playlists()
         //	Playlists may not be loaded -- retrieve again
         this->_loadPlaylists();
     }
-    SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_playlistOnlinePerformances);
     releaseSemaphore();
-    return tm;
+
+    return _playlistOnlinePerformances;
 }
+
 
 QMap<int,SBIDSongPerformancePtr>
 SBIDSong::songPerformances()
@@ -421,6 +435,17 @@ SBIDSong::songOriginalPerformerName() const
     return (spPtr?spPtr->songPerformerName():QString());
 }
 
+SBKey
+SBIDSong::songOriginalPerformerKey() const
+{
+    SBIDSongPerformancePtr spPtr=originalSongPerformancePtr();
+    SB_RETURN_IF_NULL(spPtr,SBKey());
+
+    SBIDPerformerPtr pPtr=spPtr->performerPtr();
+    SB_RETURN_IF_NULL(pPtr,SBKey());
+    return pPtr->key();
+}
+
 int
 SBIDSong::songOriginalPerformerID() const
 {
@@ -512,7 +537,6 @@ SBIDSong::retrieveAllSongs(const QChar& startsWith)
         .arg(SBKey::Album)
         .arg(whereClause)
     ;
-
     return new SBSqlQueryModel(q);
 }
 

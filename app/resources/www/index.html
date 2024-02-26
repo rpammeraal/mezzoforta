@@ -70,7 +70,7 @@
         <div id="playercontrol">
             <div class="playercontrol_button" id="<<" onclick="control_player('prev')"><button>&lt;&lt;</button></div>
             <div class="playercontrol_button" id="[]" onclick="control_player('stop')"><button>[]</button></div>      
-            <div class="playercontrol_button" id=">" onclick="control_player('play')"> <button>&gt;</button></div>     
+            <div class="playercontrol_button" id=">"  onclick="control_player('play')"><button>&gt;</button></div>     
             <div class="playercontrol_button" id=">>" onclick="control_player('next')"><button>&gt;&gt;</button></div>
         </div>
     </div>
@@ -78,12 +78,10 @@
 	<script>
 		// Wait till DOM is loaded //
 		document.addEventListener("DOMContentLoaded", function() {
-			// FadeIn Body //
 			document.body.style.transition = "opacity 1.5s ease";
 			document.body.style.opacity = 1;
 		});
 
-		// Status Updater //
 		function statusInterval() {
 			setInterval(StatusUpdate, 2000);
 		}
@@ -114,7 +112,6 @@
 
 		StatusUpdate();
 
-		// locatie defineren zodat we correct gebruik maken van complete URLs //
 		const loc = window.location.href + '/';
         context = 'menu';
 
@@ -125,6 +122,11 @@
             url='';
             console.log(p_context);
             switch(p_context) {
+                case 'song_detail':
+                    console.log("handle song_detail");
+                    return '/song_detail.html'
+                    break;
+
                 case 'song_list':
                     console.log("handle song_list");
                     return '/song_list.html'
@@ -150,6 +152,12 @@
                     alphabet_visible_toggle='hidden';
                     menu_visible_toggle='visible';
                     output_visible_toggle='hidden';
+                    break;
+
+                case 'song_detail': 
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
                     break;
 
                 case 'song_list': 
@@ -194,7 +202,7 @@
 			fetch(request)
 				.then(response => {
 					if (!response.ok) {
-						throw new Error('404 - Brain Not Found: ' + response.statusText);
+						throw new Error('4 oh n0 4: ' + response.statusText);
 					}
 					return response.text();
 				})
@@ -279,6 +287,36 @@
 				});
 			});
 		});
+
+        function open_page() {
+            const new_context=arguments[0];
+            const sb_key=arguments[1];
+            const output_header=arguments[2];
+            console.log(new_context,sb_key);
+
+            var url=retrieve_url(new_context);
+            url=url.concat('?sb_key=',sb_key);
+            console.log(url);
+
+			const menuOutputContent = document.getElementById('output_content');
+			const menuOutputHeader = document.getElementById('output_header');
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    menuOutputContent.innerHTML = xhr.responseText;
+                    menuOutputHeader.innerText = output_header;
+                    // Toggle the classes to control visibility
+                    //menuOutput.classList.add('show');   //  not used
+                    menu.classList.add('hide');
+                    console.log("Calling set screen with",new_context);
+
+                    set_screen(new_context);
+                }
+            };
+
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
 	
         set_screen('menu');
 

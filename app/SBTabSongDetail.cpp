@@ -406,7 +406,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailPlaylistList
     tv=mw->ui.songDetailPlaylists;
-    tm=sPtr->playlists();
+    tm=sPtr->playlists(SBIDSong::retrieve_sbtablemodel());
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0 << 0 << 1;
     tm->setDragableColumns(dragableColumns);
@@ -415,7 +415,7 @@ SBTabSongDetail::_populate(const ScreenItem& si)
 
     //  populate tabSongDetailChartList
     tv=mw->ui.songDetailCharts;
-    tm=sPtr->charts();
+    tm=sPtr->charts(SBIDSong::retrieve_sbtablemodel());
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);
