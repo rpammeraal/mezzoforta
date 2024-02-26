@@ -39,7 +39,6 @@ ExternalData::loadAlbumData(SBKey key)
     _softInit();
     _currentKey=key;
 
-    qDebug() << SB_DEBUG_INFO;
     //	1.	Artwork
     QPixmap p;
     if(_loadImageFromCache(p,_currentKey))
@@ -57,7 +56,6 @@ ExternalData::loadAlbumData(SBKey key)
         _wikipediaURLRetrievedFlag=1;
         emit albumWikipediaPageAvailable(ptr->wiki());
     }
-    qDebug() << SB_DEBUG_INFO << _currentKey;
     _getMBIDAndMore();
 }
 
@@ -70,23 +68,15 @@ ExternalData::loadPerformerData(SBKey key)
     SB_RETURN_VOID_IF_NULL(ptr);
 
     //	Always refresh performer home page.
-    //	1.	Performer home page
-    // if(ptr->url().length()>0)
-    // {
-    //     qDebug() << SB_DEBUG_INFO << ptr->url();
-    //     _performerHomepageRetrievedFlag=1;
-    //     emit performerHomePageAvailable(ptr->url());
-    // }
 
-
-    //	2.	Wikipedia page
+    //	1.	Wikipedia page
     if(ptr->wiki().length()>0)
     {
         _wikipediaURLRetrievedFlag=1;
         emit performerWikipediaPageAvailable(ptr->wiki());
     }
 
-    //	3.	Artwork
+    //	2.	Artwork
     QPixmap p;
     if(_loadImageFromCache(p,key))
     {
@@ -181,11 +171,9 @@ ExternalData::processAlbum(QNetworkReply *r)
                     if(jo.value("type")=="wikidata" && !wikiDataURL.size())
                     {
                         wikiDataURL=jo.value("url").toObject().value("resource").toString();
-                        qDebug() << SB_DEBUG_INFO <<  wikiDataURL;
                     }
                     if(jo.value("type")=="review")
                     {
-                        qDebug() << SB_DEBUG_INFO <<  jo.value("url").toObject().value("resource").toString();
                         _allReviews << jo.value("url").toObject().value("resource").toString();
                     }
                 }
@@ -211,7 +199,6 @@ ExternalData::processAlbum(QNetworkReply *r)
 
         const QString url=QString("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=%1&props=claims%7Clabels%7Cdescriptions%7Csitelinks%2Furls&languages=en&languagefallback=1&normalize=1&sitefilter=enwiki&formatversion=2")
                                 .arg(_wikiDataQValue);
-        qDebug() << SB_DEBUG_INFO;
         _sendNetworkRequest(am, url);
     }
 }
@@ -238,10 +225,8 @@ ExternalData::processAlbumImage(QNetworkReply *r)
             return;
         }
 
-        qDebug() << SB_DEBUG_INFO << jd;
         QString searchImage=QString("images/image");
         const QStringList sl=_inspectJsonDoc(jd,searchImage,0);
-        qDebug() << SB_DEBUG_INFO << sl;
         if(sl.size())
         {
             emit(startRetrieveImageData(sl,_currentKey));
@@ -253,7 +238,6 @@ ExternalData::processAlbumImage(QNetworkReply *r)
 void
 ExternalData::processAlbumsByPerformer (QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(r->error())
     {
         qDebug() << SB_DEBUG_ERROR << r->errorString();
@@ -278,13 +262,12 @@ ExternalData::processAlbumsByPerformer (QNetworkReply *r)
         QString searchAlbumMBID=QString("releases/title=%1?id").arg(aPtr->albumTitle());   //  In each item in `release`,
                                                                                             //  look for matching `title`
                                                                                             //  and retrieve values for `id`.
-        QStringList sl=_inspectJsonDoc(jd,searchAlbumMBID,1);
+        QStringList sl=_inspectJsonDoc(jd,searchAlbumMBID,0);
 
         if(sl.size())
         {
             //  This will cause more networking, we can't do wikipedia retrieval yet.
             //  Yes-- this can be all done way more elegantly.
-            qDebug() << SB_DEBUG_INFO << sl;
             emit(startAlbumImageProcess(sl,_currentKey));
         }
     }
@@ -330,15 +313,13 @@ ExternalData::processMBID(QNetworkReply *r)
         }
 
         const QString mbidPath("artists/score=100?id");
-        QStringList sl=_inspectJsonDoc(jd,mbidPath,1);
-        qDebug() << SB_DEBUG_INFO << sl;
+        QStringList sl=_inspectJsonDoc(jd,mbidPath,0);
 
         if(sl.size())
         {
             const QString mbid=sl[0];
-            ptr->setMBID(mbid);
 
-            emit updatePerformerMBID(_currentKey);
+            emit updatePerformerMBID(_currentKey,mbid);
             found=1;
         }
     }
@@ -355,7 +336,6 @@ ExternalData::processPerformer(QNetworkReply *r)
 {
     QString wikiDataURL;
     QString officialPerformerHomePageURL;
-    qDebug() << SB_DEBUG_INFO;
     if(r->error())
     {
         qDebug() << SB_DEBUG_ERROR << r->errorString();
@@ -379,18 +359,15 @@ ExternalData::processPerformer(QNetworkReply *r)
             if(jo.value("type")=="wikidata" && !wikiDataURL.size())
             {
                 wikiDataURL=jo.value("url").toObject().value("resource").toString();
-                qDebug() << SB_DEBUG_INFO <<  jo.value("url").toObject().value("resource").toString();
             }
             if(jo.value("type")=="official homepage")
             {
                 officialPerformerHomePageURL=jo.value("url").toObject().value("resource").toString();
-                qDebug() << SB_DEBUG_INFO <<  jo.value("url").toObject().value("resource").toString();
             }
             if(jo.value("type")=="fanpage" && !officialPerformerHomePageURL.size())
             {
                 //  Fallback on fanpage if no official home page is available
                 officialPerformerHomePageURL=jo.value("url").toObject().value("resource").toString();
-                qDebug() << SB_DEBUG_INFO <<  jo.value("url").toObject().value("resource").toString();
             }
             //  CWIP: lyrics URL to be found in this data set.
         }
@@ -421,7 +398,6 @@ ExternalData::processPerformer(QNetworkReply *r)
 
         const QString url=QString("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=%1&props=claims%7Clabels%7Cdescriptions%7Csitelinks%2Furls&languages=en&languagefallback=1&normalize=1&sitefilter=enwiki&formatversion=2")
                                 .arg(_wikiDataQValue);
-        qDebug() << SB_DEBUG_INFO;
         _sendNetworkRequest(am, url);
     }
     return;
@@ -430,13 +406,13 @@ ExternalData::processPerformer(QNetworkReply *r)
 void
 ExternalData::processSingleAlbumImageLocations(const QString& mbid, const SBKey& key)
 {
+    Q_UNUSED(key);
     QNetworkAccessManager* am = new QNetworkAccessManager(this);
 
     connect(am, &QNetworkAccessManager::finished,
             this, &ExternalData::processAlbumImage);
 
     QUrl url=QUrl(QString("https://coverartarchive.org/release/%1").arg(mbid));
-    qDebug() << SB_DEBUG_INFO;
     _sendNetworkRequest(am, url);
 }
 
@@ -446,7 +422,6 @@ ExternalData::processSong(QNetworkReply *r)
     //  CWIP include pagination
     QString wikiDataURL;
 
-    qDebug() << SB_DEBUG_INFO;
     if(r->error())
     {
         qDebug() << SB_DEBUG_ERROR << r->errorString();
@@ -458,7 +433,6 @@ ExternalData::processSong(QNetworkReply *r)
         const SBIDSongPtr sPtr=SBIDSong::retrieveSong(_currentKey);
         const QString songTitle=_normalizeString(sPtr->songTitle());
         SB_RETURN_VOID_IF_NULL(sPtr);
-        qDebug() << SB_DEBUG_INFO << _wikiDataQValue;
 
         QByteArray a=r->readAll();
         QJsonParseError jpe;
@@ -503,7 +477,6 @@ ExternalData::processSong(QNetworkReply *r)
 
         const QString url=QString("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=%1&props=claims%7Clabels%7Cdescriptions%7Csitelinks%2Furls&languages=en&languagefallback=1&normalize=1&sitefilter=enwiki&formatversion=2")
                                 .arg(_wikiDataQValue);
-        qDebug() << SB_DEBUG_INFO;
         _sendNetworkRequest(am, url);
     }
     else
@@ -526,7 +499,6 @@ ExternalData::processSong(QNetworkReply *r)
 void
 ExternalData::processWikidata(QNetworkReply *r)
 {
-    qDebug() << SB_DEBUG_INFO;
     if(r->error())
     {
         qDebug() << SB_DEBUG_ERROR << r->errorString();
@@ -534,7 +506,6 @@ ExternalData::processWikidata(QNetworkReply *r)
     }
     else
     {
-        qDebug() << SB_DEBUG_INFO << _wikiDataQValue;
         QString searchWikipediaPage=QString("entities/%1/sitelinks/enwiki/url").arg(_wikiDataQValue);
         QByteArray a=r->readAll();
         QJsonParseError jpe;
@@ -651,18 +622,6 @@ ExternalData::_softInit()
     _currentOffset=0;
 }
 
-QString
-ExternalData::_crtIndent(int tabstops) const
-{
-    const static QString singleTab("   ");
-    QString result;
-    for(int i=0; i<tabstops; i++)
-    {
-        result+=singleTab;
-    }
-    return result;
-}
-
 ///
 /// \brief ExternalData::_getMBIDAndMore
 ///
@@ -677,6 +636,8 @@ void
 ExternalData::_getMBIDAndMore()
 {
     qDebug() << SB_DEBUG_INFO;
+    QString urlString;
+
     SBIDPtr ptr=CacheManager::get(_currentKey);
     SB_RETURN_VOID_IF_NULL(ptr);
 
@@ -699,7 +660,6 @@ ExternalData::_getMBIDAndMore()
 
         const QString url=QString("http://musicbrainz.org/ws/2/artist/?query=artist:%1&fmt=json")
                                 .arg(ptr->commonPerformerName());
-        qDebug() << SB_DEBUG_INFO;
         _sendNetworkRequest(am, url);
     }
     else
@@ -716,7 +676,6 @@ ExternalData::_getMBIDAndMore()
 
                 const QString url=QString("http://musicbrainz.org/ws/2/artist/%1?inc=url-rels&fmt=json")
                     .arg(ptr->MBID());
-                qDebug() << SB_DEBUG_INFO;
                 _sendNetworkRequest(am, url);
             }
             else
@@ -749,7 +708,6 @@ ExternalData::_getMBIDAndMore()
 
                     const QString url=QString("https://musicbrainz.org/ws/2/release/?artist=%1&inc=recordings&fmt=json")
                                          .arg(pPtr->MBID());
-                    qDebug() << SB_DEBUG_INFO;
                     _sendNetworkRequest(am, url);
                 }
                 else
@@ -771,7 +729,6 @@ ExternalData::_getMBIDAndMore()
                 const QString url=QString("https://musicbrainz.org/ws/2/release-group?artist=%1&inc=url-rels&offset=0&limit=%2&fmt=json")
                                         .arg(performerMBID)
                                         .arg(MUSICBRAINZ_MAXNUM);
-                qDebug() << SB_DEBUG_INFO;
                 _sendNetworkRequest(am, url);
             }
             else
@@ -781,7 +738,6 @@ ExternalData::_getMBIDAndMore()
         }
         else if(_currentKey.itemType()==SBKey::Song)
         {
-            qDebug() << SB_DEBUG_INFO;
             SBIDSongPtr sPtr=SBIDSong::retrieveSong(_currentKey);
             SB_RETURN_VOID_IF_NULL(sPtr);
 
@@ -813,27 +769,6 @@ ExternalData::_getMBIDAndMore()
 }
 
 bool
-ExternalData::_lengthCompare(const QString& s1, const QString& s2) const
-{
-    const qsizetype s1l=s1.length();
-    const qsizetype s2l=s2.length();
-
-    if(s1l && s2l)
-    {
-        if(s1l<=s2l)
-        {
-            return s2.indexOf(s1,Qt::CaseInsensitive)==0;
-        }
-        return s1.indexOf(s2,Qt::CaseInsensitive)==0;
-    }
-    else if(!s1l && !s2l)
-    {
-        return 1;   //  both strings are empty, they are equal.
-    }
-    return 0;   //  only compare if both strings are non-empty.
-}
-
-bool
 ExternalData::_loadImageFromCache(QPixmap& p,const SBKey& key)
 {
     QString fn=getCachePath(key);
@@ -856,13 +791,6 @@ ExternalData::_loadImageFromCache(QPixmap& p,const SBKey& key)
         free(mem);
     }
     return 0;
-}
-
-
-QString
-ExternalData::_normalizeString(const QString& str) const
-{
-    return str.toLower().replace("’","'").replace("“","\"").replace("”","\"");
 }
 
 void
@@ -894,7 +822,6 @@ ExternalData::_sendNetworkRequest(QNetworkAccessManager* am, const QUrl &url)
 
     QNetworkRequest nr;
     nr.setUrl(url);
-    qDebug() << SB_DEBUG_INFO << url << url.isValid() << url.errorString();
     nr.setHeader(QNetworkRequest::UserAgentHeader,QVariant("MezzoForta!/1.0"));
     am->get(nr);
 }
@@ -1039,7 +966,7 @@ ExternalData::_recurseJsonObject(const QJsonObject& jo, const QStringList& searc
                     {
                         searchValue=jsonValue;
                     }
-                    if(queryAttribute==key && _lengthCompare(queryValue,_normalizeString(jsonValue)))
+                    if(queryAttribute==key && queryValue==_normalizeString(jsonValue))
                     {
                         if(queryValue.size())
                         {
@@ -1096,8 +1023,10 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
                 if(debug) qDebug() << SB_DEBUG_INFO << ts << "array:";
                 QJsonArray ja=jv.toArray();
                 const QStringList result=_iterateJsonArray(ja,search,recursion+1,debug);
+                qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                 if(search.size() && result.size())
                 {
+                    qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                     return result;
                 }
                 break;
@@ -1116,15 +1045,34 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
 
         case QJsonValue::Undefined:
             {
-                qDebug() << SB_DEBUG_ERROR << ts << "Undefined value. Error inside JSON data";
+                qDebug() << SB_DEBUG_INFO << ts << "Undefined value. Error inside JSON data";
                 break;
             }
 
         default:
             {
-                qDebug() << SB_DEBUG_ERROR << ts << "type" << jt << "not handled.";
+                qDebug() << SB_DEBUG_INFO << ts << "type" << jt << "not handled.";
                 break;
             }
     }
     return QStringList();
 }
+
+QString
+ExternalData::_crtIndent(int tabstops) const
+{
+    const static QString singleTab("   ");
+    QString result;
+    for(int i=0; i<tabstops; i++)
+    {
+        result+=singleTab;
+    }
+    return result;
+}
+
+QString
+ExternalData::_normalizeString(const QString& str) const
+{
+    return str.toLower().replace("’","'").replace("“","\"").replace("”","\"");
+}
+

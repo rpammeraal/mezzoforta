@@ -48,7 +48,7 @@ signals:
     void performerWikipediaPageAvailable(const QString& url);
     void songLyricsURLAvailable(const QString& url);
     void songWikipediaPageAvailable(const QString& url);
-    void updatePerformerMBID(SBKey key);
+    void updatePerformerMBID(const SBKey& key, const QString& mbid);
     void updatePerformerHomePage(SBKey key);
     void startRetrieveImageData(const QStringList& urls, const SBKey& key);
 

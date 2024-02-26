@@ -1061,11 +1061,11 @@ Preloader::_instantiatePerformer(CachePerformerMgr* pemgr, const QStringList& fi
     QSqlRecord r;
     QSqlField f;
 
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
-    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
-    f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
-    f=QSqlField("f5",QVariant::String); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
+    f=QSqlField("f1",QMetaType::fromType<int>());     f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
+    f=QSqlField("f2",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
+    f=QSqlField("f3",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
+    f=QSqlField("f4",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
+    f=QSqlField("f5",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(4).toInt()).toString()); r.append(f);
 
     SBIDPerformerPtr performerPtr=SBIDPerformer::instantiate(_populate(fields,queryList));
     pemgr->addItem(performerPtr);
@@ -1078,11 +1078,11 @@ Preloader::_instantiateSong(CacheSongMgr* smgr, const QStringList& fields, const
     QSqlRecord r;
     QSqlField f;
 
-    f=QSqlField("f1",QVariant::Int);    f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
-    f=QSqlField("f2",QVariant::String); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
-    f=QSqlField("f3",QVariant::String); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
-    f=QSqlField("f4",QVariant::String); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
-    f=QSqlField("f5",QVariant::Int);    f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
+    f=QSqlField("f1",QMetaType::fromType<int>());     f.setValue(queryList.value(fields.at(0).toInt()).toInt());    r.append(f);
+    f=QSqlField("f2",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(1).toInt()).toString()); r.append(f);
+    f=QSqlField("f3",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(2).toInt()).toString()); r.append(f);
+    f=QSqlField("f4",QMetaType::fromType<QString>()); f.setValue(queryList.value(fields.at(3).toInt()).toString()); r.append(f);
+    f=QSqlField("f5",QMetaType::fromType<int>());     f.setValue(queryList.value(fields.at(4).toInt()).toInt());    r.append(f);
 
     SBIDSongPtr songPtr=SBIDSong::instantiate(_populate(fields,queryList));
     smgr->addItem(songPtr);
@@ -1097,7 +1097,7 @@ Preloader::_populate(const QStringList& fields, const SqlQuery& queryList)
     for(int i=0;i<fields.length();i++)
     {
         QVariant v=queryList.value(fields.at(i).toInt());
-        QSqlField f=QSqlField(QString("f%1").arg(i+1),v.type());
+        QSqlField f=QSqlField(QString("f%1").arg(i+1),v.metaType());
         f.setValue(v);
         r.append(f);
     }
