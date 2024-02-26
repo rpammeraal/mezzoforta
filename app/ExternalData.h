@@ -48,7 +48,7 @@ signals:
     void performerWikipediaPageAvailable(const QString& url);
     void songLyricsURLAvailable(const QString& url);
     void songWikipediaPageAvailable(const QString& url);
-    void updatePerformerMBID(SBKey key);
+    void updatePerformerMBID(const SBKey& key, const QString& mbid);
     void updatePerformerHomePage(SBKey key);
     void startRetrieveImageData(const QStringList& urls, const SBKey& key);
 
@@ -83,19 +83,21 @@ private:
     void                    _init();
     void                    _softInit();
 
+    QString                 _crtIndent(int tabstops) const;
     void                    _getMBIDAndMore();
+    bool                    _lengthCompare(const QString& s1, const QString& s2) const;
     static bool             _loadImageFromCache(QPixmap& p, const SBKey& key);
+    QString                 _normalizeString(const QString& s) const;
+    void                    _postNetwork(QNetworkReply* r);
     void                    _sendNetworkRequest(QNetworkAccessManager* am, const QString& url);
     void                    _sendNetworkRequest(QNetworkAccessManager* am, const QUrl& url);
     void                    _storeInCache(QByteArray* a) const;
 
-    void                    _postNetwork(QNetworkReply* r);
+
     QStringList             _inspectJsonDoc(const QJsonDocument& jd, const QString& search=QString(), const bool& debug=0) const;
     QStringList             _iterateJsonArray(const QJsonArray& ja, const QStringList& search, const int& recursion, const bool& debug) const;
     QStringList             _recurseJsonObject(const QJsonObject& jo, const QStringList& search, const int& recursion, const bool& debug) const;
     QStringList             _inspectJsonValue(const QJsonValue& jv, const QStringList& search, const int& recursion, const bool& debug) const;
-    QString                 _crtIndent(int tabstops) const;
-    QString                 _normalizeString(const QString& s) const;
 };
 
 #endif // EXTERNALDATA_H

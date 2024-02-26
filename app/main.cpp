@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
     Controller c(argc, argv, &app);
     if(c.initSuccessFull())
     {
-        //	WebService server;
         WebService server;
         app.exec();
     }

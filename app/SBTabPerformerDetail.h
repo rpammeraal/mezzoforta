@@ -31,7 +31,7 @@ public slots:
     void showContextMenuLabel(const QPoint &p);
     void showContextMenuView(const QPoint &p);
     void updatePerformerHomePage(SBKey key);
-    void updatePerformerMBID(SBKey key);
+    void updatePerformerMBID(const SBKey& key, const QString& mbid);
 
 private slots:
     void refreshPerformerNews();

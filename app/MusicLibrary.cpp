@@ -237,7 +237,6 @@ MusicLibrary::rescanMusicLibrary()
     ///////////////////////////////////////////////////////////////////////////////////
     QMutableVectorIterator<MLentityPtr> feIT(foundEntities);
     QVector<MLentityPtr> newEntities;
-    int numNewSongs=0;
 
     progressCurrentValue=0;
     progressMaxValue=foundEntities.count();
