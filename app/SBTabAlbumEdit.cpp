@@ -264,7 +264,6 @@ public:
 
         //for(int i=0;i<qm->rowCount();i++)
         QMapIterator<int,SBIDAlbumPerformancePtr> pIT(_albumPtr->albumPerformances());
-        int i=0;
         while(pIT.hasNext())
         {
             pIT.next();
@@ -286,7 +285,6 @@ public:
                                                                                                          //	sb_column_mod_notes
             item=new QStandardItem(apPtr->notes()); column.append(item);                                 //	sb_column_notes
             this->appendRow(column); column.clear();
-            i++;
         }
 
         int columnIndex=0;

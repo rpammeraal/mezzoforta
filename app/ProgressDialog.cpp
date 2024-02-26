@@ -49,6 +49,7 @@ ProgressDialog::startDialog(const QString& prettyFunction,const QString& label, 
 void
 ProgressDialog::setLabelText(const QString& prettyFunction, const QString& label)
 {
+    Q_UNUSED(prettyFunction);   //  may use later
     QString toDisplay=label;
     if(toDisplay.length()>50)
     {
@@ -63,6 +64,7 @@ ProgressDialog::setLabelText(const QString& prettyFunction, const QString& label
 void
 ProgressDialog::update(const QString& prettyFunction, const QString& step, int currentValue, int maxValue)
 {
+    Q_UNUSED(prettyFunction);   //  may use later
     if(_visible)
     {
         if(!_stepList.contains(step))

@@ -142,13 +142,13 @@ SBTabPerformerDetail::updatePerformerHomePage(SBKey key)
 }
 
 void
-SBTabPerformerDetail::updatePerformerMBID(SBKey key)
+SBTabPerformerDetail::updatePerformerMBID(const SBKey& key, const QString& mbid)
 {
     CacheManager* cm=Context::instance()->cacheManager();
     SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(key);
     SB_RETURN_VOID_IF_NULL(pPtr);
 
-    pPtr->setMBID(pPtr->MBID());
+    pPtr->setMBID(mbid);
     if(pPtr->hasChanges())
     {
         cm->saveChanges(QString(),0);
