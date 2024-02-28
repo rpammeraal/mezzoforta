@@ -20,7 +20,7 @@ table, th, td {
   grid-template-rows: 75px auto auto 150px 100px;
 }
 .container > div {
-  border: 1px dashed #888;
+  border: 0px dashed #888;
 }
 
 #logo {
@@ -148,11 +148,11 @@ table, th, td {
 }
 
 .SBIconDiv {
-	width: 50px;
+	width: 40px;
 }
 
 .SBIconCell {
-    width: 50px;
+    width: 40px;
 }
 
 .SBIcon {
@@ -168,13 +168,23 @@ table, th, td {
     font-weight: bold;
 }
 
+.SBItemSection {
+    width: 100%;
+    margin-top: 10px;
+	font-size: 200%;
+	font-weight: bold;
+}
+
+
 .SBItemMajorTitleOnly {
+    width: 100%;
     margin-top: 10px;
 	font-size: 125%;
 	font-weight: bold;
 }
 
 .SBItemMajor {
+    width: 100%;
     margin-top: 10px;
 	font-size: 125%;
 	font-weight: bold;
@@ -215,5 +225,6 @@ table, th, td {
 .SBLyrics {
     margin-top: 0px;
 	font-weight: bold;
+	font-size: 125%;
 }
 

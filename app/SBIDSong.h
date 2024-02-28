@@ -94,7 +94,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
-    static SBSqlQueryModel* retrieveAllSongs(const QChar& startsWith=QChar());
+    static SBSqlQueryModel* retrieveAllSongs(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype=0);
     static SBIDSongPtr retrieveSong(int songID);
     static SBIDSongPtr retrieveSong(SBKey key);
     static QString iconResourceLocationStatic();

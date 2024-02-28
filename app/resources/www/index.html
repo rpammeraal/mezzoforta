@@ -35,32 +35,32 @@
             </div>
       </div>
       <div id="alphabet">
-            <div class="alphabet-item" link="/song_list.html?start=A"><p>A</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=B"><p>B</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=C"><p>C</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=D"><p>D</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=E"><p>E</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=F"><p>F</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=G"><p>G</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=H"><p>H</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=I"><p>I</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=J"><p>J</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=K"><p>K</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=L"><p>L</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=M"><p>M</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=N"><p>N</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=O"><p>O</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=P"><p>P</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Q"><p>Q</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=R"><p>R</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=S"><p>S</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=T"><p>T</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=U"><p>U</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=V"><p>V</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=W"><p>W</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=X"><p>X</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Y"><p>Y</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Z"><p>Z</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=A&offset=0&size=100"><p>A</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=B&offset=0&size=100"><p>B</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=C&offset=0&size=100"><p>C</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=D&offset=0&size=100"><p>D</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=E&offset=0&size=100"><p>E</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=F&offset=0&size=100"><p>F</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=G&offset=0&size=100"><p>G</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=H&offset=0&size=100"><p>H</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=I&offset=0&size=100"><p>I</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=J&offset=0&size=100"><p>J</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=K&offset=0&size=100"><p>K</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=L&offset=0&size=100"><p>L</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=M&offset=0&size=100"><p>M</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=N&offset=0&size=100"><p>N</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=O&offset=0&size=100"><p>O</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=P&offset=0&size=100"><p>P</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Q&offset=0&size=100"><p>Q</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=R&offset=0&size=100"><p>R</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=S&offset=0&size=100"><p>S</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=T&offset=0&size=100"><p>T</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=U&offset=0&size=100"><p>U</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=V&offset=0&size=100"><p>V</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=W&offset=0&size=100"><p>W</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=X&offset=0&size=100"><p>X</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Y&offset=0&size=100"><p>Y</p></div>
+            <div class="alphabet-item" link="/song_list.html?start=Z&offset=0&size=100"><p>Z</p></div>
         </div>
         <div id="output">
             <div id="output_header">output_header</div>
@@ -129,7 +129,7 @@
 
                 case 'song_list':
                     console.log("handle song_list");
-                    return '/song_list.html'
+                    return '/song_list.html?offset=0&size=100'
                     break;
 
                 case 'playlist_list':
@@ -214,6 +214,11 @@
 				});
 		}
 		
+        history.pushState(null, document.title, location.href);
+        window.addEventListener('popstate', function (event) {
+            history.pushState(null, document.title, location.href);
+        });
+
 		// Menu-Items ->> Output
 		document.addEventListener('DOMContentLoaded', function () {
 			const logo = document.getElementById('logo');

@@ -499,13 +499,19 @@ SBIDSong::refreshDependents(bool forcedFlag)
 
 //	Static methods
 SBSqlQueryModel*
-SBIDSong::retrieveAllSongs(const QChar& startsWith)
+SBIDSong::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
     //	List songs with actual online performance only
     QString whereClause;
+    QString limitClause;
+
     if(startsWith!=QChar('\x0'))
     {
         whereClause=QString("WHERE LOWER(LEFT(s.title,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
     }
     const QString q=QString
     (
@@ -530,12 +536,16 @@ SBIDSong::retrieveAllSongs(const QChar& startsWith)
         "%4 "
         "ORDER BY "
             "3,5,7 "
-
+        "OFFSET "
+            "%5 "
+        "%6 "
     )
         .arg(SBKey::Song)
         .arg(SBKey::Performer)
         .arg(SBKey::Album)
         .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
     ;
     return new SBSqlQueryModel(q);
 }
@@ -960,40 +970,28 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
 
                 //	newSongPtr->refreshDependents(1);		UNCOMMENT BEFORE DEPLOY
                 ScreenItem from(orgSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 ScreenItem to(newSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 st->replace(from,to);
-                qDebug() << SB_DEBUG_INFO;
             }
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
-        qDebug() << SB_DEBUG_INFO;
         if(mergedFlag || songTitleChangedFlag)
         {
-            qDebug() << SB_DEBUG_INFO;
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
             ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
 
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-        qDebug() << SB_DEBUG_INFO;
     }
     else
     {
         dal->restore(restorePoint);
     }
-    qDebug() << SB_DEBUG_INFO;
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-    qDebug() << SB_DEBUG_INFO;
 
     return 0;
 

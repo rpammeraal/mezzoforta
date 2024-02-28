@@ -11,7 +11,7 @@ public:
     SBHtmlSongsAll();
 
     static QString songDetail(QString html, const QString& key);
-    static QString retrieveAllSongs(const QChar& startsWith);
+    static QString retrieveAllSongs(const QChar& startsWith, qsizetype offset=0, qsizetype size=0);
 
 private:
     static QString _getIconLocation(const SBIDOnlinePerformancePtr& opPtr);

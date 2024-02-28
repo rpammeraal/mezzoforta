@@ -26,6 +26,8 @@ QString
 SBHtmlSongsAll::songDetail(QString html, const QString& key)
 {
     QString contents;
+    html.replace('\n',"");
+    html.replace('\t'," ");
 
     SBKey songKey=SBKey(key.toLatin1());
 
@@ -92,7 +94,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             }
             if(numPlayables)
             {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemMajorTitleOnly\">Albums:</P></TD></TR>")+table;
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Albums:</P></TD></TR>")+table;
             }
             html.replace(albums,table);
 
@@ -101,7 +103,8 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             table=QString();
             if(allPlaylists.count())
             {
-                table=QString("<TR><TD class=\"SBItemMajor\">Playlists:</TD></TR><TR><TD class=\"SBItemMinor\">");
+                table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Playlists:</TD></TR>");
+                table+=QString("<TR><TD colspan=\"3\" class=\"SBItemMinor\">");
                 QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(allPlaylists);
                 while(it.hasNext())
                 {
@@ -110,9 +113,10 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 
                     if(plPtr)
                     {
-                        table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(plPtr->playlistName());
+                        table+=QString("<LI><A class=\"SBItemMajor\">%1</A></LI>").arg(plPtr->playlistName());
                     }
                 }
+                table+=QString("</TD></TR>");
             }
             html.replace(playlists,table);
 
@@ -121,7 +125,8 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             table=QString();
             if(allCharts.count())
             {
-                table=QString("<TR><TD class=\"SBItemMajorTitleOnly\">Charts:</TD></TR><TR><TD>");
+                table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Charts:</TD></TR>");
+                table+=QString("<TR><TD colspan=\"3\" class=\"SBItemMinor\">");
                 QMapIterator<SBIDChartPerformancePtr, SBIDChartPtr> it(allCharts);
                 while(it.hasNext())
                 {
@@ -132,6 +137,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                         table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(cPtr->chartName());
                     }
                 }
+                table+=QString("</TD></TR>");
             }
             html.replace(charts,table);
 
@@ -140,7 +146,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             const QString songLyrics=sPtr->lyrics().replace("\n","<BR>");
             if(songLyrics.size())
             {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemMajorTitleOnly\">Lyrics:</P></TD></TR>"
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Lyrics:</P></TD></TR>"
                               "<TR><TD colspan=\"3\"><P class=\"SBLyrics\">%1              </P></TD></TR>").arg(songLyrics);
             }
             html.replace(lyrics,table);
@@ -150,11 +156,11 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 }
 
 QString
-SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
+SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
     const static QString defaultIconPath("/images/SongIcon.png");
     QString table;
-    SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs(startsWith); //  this give us all songs. Only want songs with org performer
+    SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs(startsWith, offset, size); //  this give us all songs. Only want songs with org performer
 
     for(int i=0;i<sm->rowCount();i++)
     {
@@ -182,6 +188,10 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                 {
                     it.next();
                     iconLocation=_getIconLocation(it.value());
+                }
+                if(!iconLocation.size())
+                {
+                    iconLocation=defaultIconPath;
                 }
 
                 //	Start table row

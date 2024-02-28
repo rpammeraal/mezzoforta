@@ -159,7 +159,7 @@ WebService::_init()
             _availableResource[fi.fileName()]=c;
         }
     }
-    if(1)
+    if(0)
     {
         for (auto i = _availableResource.cbegin(), end = _availableResource.cend(); i != end; ++i)
         {
@@ -345,11 +345,15 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     else if(path==allSong)
     {
         const static QString p_start("start");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
         QString startStr=r.query().queryItemValue(p_start);
         QChar start(startStr.size()>0?startStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
 
         const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
-        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start));
+        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start,offsetStr.toInt(),sizeStr.toInt()));
     }
     else if(path==songDetail)
     {
