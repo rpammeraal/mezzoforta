@@ -15,11 +15,12 @@ SBHtmlSongsAll::SBHtmlSongsAll()
 {
 }
 
-static const QString orgPerformer=QString("___SB_ORIGINAL_PERFORMER___");
-static const QString otherPerformers=QString("___SB_OTHER_PERFORMERS___");
 static const QString albums=QString("___SB_ALBUMS___");
 static const QString playlists=QString("___SB_PLAYLISTS___");
 static const QString charts=QString("___SB_CHARTS___");
+static const QString lyrics=QString("___SB_LYRICS___");
+static const QString defaultIconPath("/images/SongIcon.png");
+static const QString empty;
 
 QString
 SBHtmlSongsAll::songDetail(QString html, const QString& key)
@@ -36,57 +37,62 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
         {
             QString table;
 
-            //  Original performer
-            SBKey originalPerformerKey=sPtr->songOriginalPerformerKey();
-            table=QString("<TR><TD class=\"SBItemMajorTitleOnly\">Original Performer</TD></TR>"
-                          "<TR><TD><LI><A class=\"SBItemMinor\">%1</A></LI></TD></TR>")
-                        .arg(sPtr->songOriginalPerformerName());
-            html.replace(orgPerformer,table);
-
-            //  Other performers
-            QMap<int,SBIDSongPerformancePtr> allPerformances=sPtr->songPerformances();
+            //  Create list of song instances (e.g. all instances on an album)
+            QVector<SBIDAlbumPerformancePtr> allAlbumPerformances=sPtr->allPerformances();
             table=QString();
-            if(allPerformances.count())
-            {
-                qsizetype count=0;
-                QMapIterator<int,SBIDSongPerformancePtr> it(allPerformances);
-                while(it.hasNext())
-                {
-                    it.next();
-                    SBIDSongPerformancePtr spPtr=it.value();
-                    if(spPtr)
-                    {
-                        if(originalPerformerKey!=spPtr->songPerformerKey())
-                        {
-                            //  Avoid original performer
-                            table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(spPtr->songPerformerName());
-                            count++;
-                        }
-                    }
-                }
-                if(count)
-                {
-                    table=QString("<TR><TD class=\"SBItemMajorTitleOnly\">Also performed by:</TD></TR><TR><TD>")
-                            +table;
-                }
-            }
-            html.replace(otherPerformers,table);
+            int numPlayables=0;
 
-            //  Albums
-            QVector<SBIDAlbumPerformancePtr> allAlbums=sPtr->allPerformances();
-            table=QString();
-            if(allAlbums.count())
+            if(allAlbumPerformances.count())
             {
-                table=QString("<TR><TD class=\"SBItemMajorTitleOnly\">Albums:</TD></TR><TR><TD>");
-                QVectorIterator<SBIDAlbumPerformancePtr> it(allAlbums);
-                while(it.hasNext())
+                QVectorIterator<SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
+                while(apIt.hasNext())
                 {
-                    SBIDAlbumPerformancePtr apPtr=it.next();
+                    const SBIDAlbumPerformancePtr apPtr=apIt.next();
                     if(apPtr)
                     {
-                        table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(apPtr->albumTitle());
+                        QString iconLocation;
+                        QString playerControlHTML;
+                        SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
+                        if(opPtr)
+                        {
+                            iconLocation=_getIconLocation(opPtr);
+                            playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                    .arg(opPtr->key().toString())
+                            ;
+                            numPlayables++;
+                        }
+                        else
+                        {
+                            iconLocation=defaultIconPath;
+                            playerControlHTML=empty;
+                        }
+
+                        QString row=QString(
+                            "<TR>"
+                                "<TD class=\"SBIconCell\" rowspan=\"2\">"
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</TD>"
+                                "<TD class=\"SBItemMajor\" >%2</TD>"
+                                "<TD class=\"playercontrol_button\" rowspan=\"2\">"
+                                    "%3"
+                                "</TD>"
+                            "</TR>"
+                            "<TR>"
+                                "<TD pos=\"84\" class=\"SBItemMinor\" >%4</TD>"
+                            "</TR>"
+                        )
+                            .arg(iconLocation)
+                            .arg(opPtr->albumTitle())
+                            .arg(playerControlHTML)
+                            .arg(opPtr->songPerformerName())
+                        ;
+                        table+=row;
                     }
                 }
+            }
+            if(numPlayables)
+            {
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemMajorTitleOnly\">Albums:</P></TD></TR>")+table;
             }
             html.replace(albums,table);
 
@@ -128,6 +134,16 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                 }
             }
             html.replace(charts,table);
+
+            //  Lyrics
+            table=QString();
+            const QString songLyrics=sPtr->lyrics().replace("\n","<BR>");
+            if(songLyrics.size())
+            {
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemMajorTitleOnly\">Lyrics:</P></TD></TR>"
+                              "<TR><TD colspan=\"3\"><P class=\"SBLyrics\">%1              </P></TD></TR>").arg(songLyrics);
+            }
+            html.replace(lyrics,table);
         }
     }
     return html;
@@ -162,49 +178,10 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
                 //  Find album icon first, if not exists, find performer icon.
                 SBKey opKey;
                 QMapIterator<int,SBIDOnlinePerformancePtr> it=sPtr->onlinePerformances();
-                while(it.hasNext() && !opKey.validFlag())
+                while(it.hasNext() && !iconLocation.size())
                 {
                     it.next();
-                    const SBIDOnlinePerformancePtr opPtr=it.value();
-                    if(opPtr)
-                    {
-                        opKey=opPtr->key();
-                        SBIDAlbumPtr aPtr=opPtr->albumPtr();
-                        if(aPtr)
-                        {
-                            const SBKey albumKey=aPtr->key();
-                            iconLocation=ExternalData::getCachePath(albumKey);
-                            if(QFile::exists(iconLocation))
-                            {
-                                iconKey=albumKey;
-                            }
-                            else
-                            {
-                                //  Try performer
-
-                                SBIDPerformerPtr pPtr=aPtr->albumPerformerPtr();
-                                if(pPtr)
-                                {
-                                    const SBKey performerKey=pPtr->key();
-                                    iconLocation=ExternalData::getCachePath(performerKey);
-
-                                    if(QFile::exists(iconLocation))
-                                    {
-                                        iconKey=performerKey;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if(!iconKey.validFlag())
-                {
-                    //	Retrieve std song icon
-                    iconLocation=defaultIconPath;
-                }
-                else
-                {
-                    iconLocation=QString("/icon/%1").arg(iconKey.toString());
+                    iconLocation=_getIconLocation(it.value());
                 }
 
                 //	Start table row
@@ -235,4 +212,51 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith)
         }
     }
     return table;
+}
+
+QString
+SBHtmlSongsAll::_getIconLocation(const SBIDOnlinePerformancePtr& opPtr)
+{
+    QString iconLocation;
+    SBKey iconKey;
+    SBKey opKey;
+    if(opPtr)
+    {
+        opKey=opPtr->key();
+        SBIDAlbumPtr aPtr=opPtr->albumPtr();
+        if(aPtr)
+        {
+            const SBKey albumKey=aPtr->key();
+            iconLocation=ExternalData::getCachePath(albumKey);
+            if(QFile::exists(iconLocation))
+            {
+                iconKey=albumKey;
+            }
+            else
+            {
+                //  Try performer
+                SBIDPerformerPtr pPtr=aPtr->albumPerformerPtr();
+                if(pPtr)
+                {
+                    const SBKey performerKey=pPtr->key();
+                    iconLocation=ExternalData::getCachePath(performerKey);
+
+                    if(QFile::exists(iconLocation))
+                    {
+                        iconKey=performerKey;
+                    }
+                }
+            }
+        }
+    }
+    if(!iconKey.validFlag())
+    {
+        //	Retrieve std song icon
+        iconLocation=defaultIconPath;
+    }
+    else
+    {
+        iconLocation=QString("/icon/%1").arg(iconKey.toString());
+    }
+    return iconLocation;
 }

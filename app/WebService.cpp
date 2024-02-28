@@ -240,6 +240,7 @@ WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
 QHttpServerResponse
 WebService::_getIconResource(QString path, const QHttpServerRequest& r)
 {
+    Q_UNUSED(r);
     const static QString defaultIconPath("/images/SongIcon.png");
     QString iconPath;
     const SBKey key=SBKey(path.toUtf8());

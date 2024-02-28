@@ -2,6 +2,11 @@ body {
 	font-family: Trebuchet MS;
 }
 
+table, th, td {
+  width: 100%;
+}
+
+
 .container {
   display: grid;
   width: 100%;
@@ -127,22 +132,28 @@ body {
 	justify-content: center;
 }
 .playercontrol_button {
-	position: relative;
+    text-align: right;
 	margin: 0 0px;
 	bottom: -5px;
 	cursor: pointer;
+    margin-right: 0px;
 }
 
 .playercontrol_button button {
+    text-align: right;
 	font-size: 150%;
     type="button";
     min-width=300px;
+    margin-right: 0px;
 }
 
 .SBIconDiv {
 	width: 50px;
 }
 
+.SBIconCell {
+    width: 50px;
+}
 
 .SBIcon {
 	width:40px;
@@ -196,3 +207,13 @@ body {
     type="button";
     min-width=300px;
 }
+
+.SBSongDetailTable {
+    border: 1px solid;
+}
+
+.SBLyrics {
+    margin-top: 0px;
+	font-weight: bold;
+}
+
