@@ -198,41 +198,57 @@
             alphabet_visible_toggle='hidden';
             menu_visible_toggle='hidden';
             output_visible_toggle='hidden';
+
+            pager_prev_button_toggle='hidden';
+            pager_next_button_toggle='hidden';
+
             switch(p_context) {
                 case 'album_detail': 
                     alphabet_visible_toggle='hidden';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
                     break;
 
                 case 'album_list': 
                     alphabet_visible_toggle='visible';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
+                    pager_prev_button_toggle='visible';
+                    pager_next_button_toggle='visible';
                     break;
 
                 case 'menu':
                     alphabet_visible_toggle='hidden';
                     menu_visible_toggle='visible';
                     output_visible_toggle='hidden';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
                     break;
 
                 case 'song_detail': 
                     alphabet_visible_toggle='hidden';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
                     break;
 
                 case 'song_list': 
                     alphabet_visible_toggle='visible';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
+                    pager_prev_button_toggle='visible';
+                    pager_next_button_toggle='visible';
                     break;
 
                 case 'playlist_list':
                     alphabet_visible_toggle='visible';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
+                    pager_prev_button_toggle='visible';
+                    pager_next_button_toggle='visible';
                     break;
             }
             const alphabet_div = document.getElementById('alphabet'); 
@@ -252,6 +268,14 @@
                 output_content_div.scrollTo(0,0);
                 output_content.scrollTo(0,0);
             }
+
+            const pager_prev_button_div = document.getElementById('sb_paging_prev_button'); 
+            console.log("Set visibility on pager_prev_button_div to",pager_prev_button_toggle);
+            pager_prev_button_div.style.visibility = pager_prev_button_toggle;
+
+            const pager_next_button_div = document.getElementById('sb_paging_next_button'); 
+            console.log("Set visibility on pager_next_button_div to",pager_next_button_toggle);
+            pager_next_button_div.style.visibility = pager_next_button_toggle;
 
             context=p_context;
         }
