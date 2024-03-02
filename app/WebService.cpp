@@ -181,8 +181,6 @@ WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
     {
         sbKey=SBKey();
     }
-    qDebug() << SB_DEBUG_INFO << "action=" << action;
-    qDebug() << SB_DEBUG_INFO << "sbKey=" << sbKey;
     const static QString prev("prev");
     const static QString stop("stop");
     const static QString play("play");
@@ -222,7 +220,7 @@ WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
 QHttpServerResponse
 WebService::_fourOhFour()
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_WARNING;
     return QHttpServerResponse::fromFile(":/www/404.html");
 }
 
@@ -294,6 +292,12 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
 QString
 WebService::_populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r)
 {
+    if(path!="status.html")
+    {
+        qDebug() << SB_DEBUG_INFO << resourcePath;
+        qDebug() << SB_DEBUG_INFO << path;
+    }
+
     QFile f(resourcePath);
     f.open(QFile::ReadOnly | QFile::Text);	//	ignore results. Always works, right?
     QTextStream f_str(&f);
@@ -344,16 +348,16 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     }
     else if(path==allSong)
     {
-        const static QString p_start("start");
+        const static QString p_letter("letter");
         const static QString p_offset("offset");
         const static QString p_size("size");
-        QString startStr=r.query().queryItemValue(p_start);
-        QChar start(startStr.size()>0?startStr[0]:'A');
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
         QString offsetStr=r.query().queryItemValue(p_offset);
         QString sizeStr=r.query().queryItemValue(p_size);
 
         const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
-        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start,offsetStr.toInt(),sizeStr.toInt()));
+        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(letter,offsetStr.toInt(),sizeStr.toInt()));
     }
     else if(path==songDetail)
     {

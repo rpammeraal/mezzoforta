@@ -35,36 +35,47 @@
             </div>
       </div>
       <div id="alphabet">
-            <div class="alphabet-item" link="/song_list.html?start=A&offset=0&size=100"><p>A</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=B&offset=0&size=100"><p>B</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=C&offset=0&size=100"><p>C</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=D&offset=0&size=100"><p>D</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=E&offset=0&size=100"><p>E</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=F&offset=0&size=100"><p>F</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=G&offset=0&size=100"><p>G</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=H&offset=0&size=100"><p>H</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=I&offset=0&size=100"><p>I</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=J&offset=0&size=100"><p>J</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=K&offset=0&size=100"><p>K</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=L&offset=0&size=100"><p>L</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=M&offset=0&size=100"><p>M</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=N&offset=0&size=100"><p>N</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=O&offset=0&size=100"><p>O</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=P&offset=0&size=100"><p>P</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Q&offset=0&size=100"><p>Q</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=R&offset=0&size=100"><p>R</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=S&offset=0&size=100"><p>S</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=T&offset=0&size=100"><p>T</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=U&offset=0&size=100"><p>U</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=V&offset=0&size=100"><p>V</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=W&offset=0&size=100"><p>W</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=X&offset=0&size=100"><p>X</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Y&offset=0&size=100"><p>Y</p></div>
-            <div class="alphabet-item" link="/song_list.html?start=Z&offset=0&size=100"><p>Z</p></div>
+            <div class="alphabet-item"><p>A</p></div>
+            <div class="alphabet-item"><p>B</p></div>
+            <div class="alphabet-item"><p>C</p></div>
+            <div class="alphabet-item"><p>D</p></div>
+            <div class="alphabet-item"><p>E</p></div>
+            <div class="alphabet-item"><p>F</p></div>
+            <div class="alphabet-item"><p>G</p></div>
+            <div class="alphabet-item"><p>H</p></div>
+            <div class="alphabet-item"><p>I</p></div>
+            <div class="alphabet-item"><p>J</p></div>
+            <div class="alphabet-item"><p>K</p></div>
+            <div class="alphabet-item"><p>L</p></div>
+            <div class="alphabet-item"><p>M</p></div>
+            <div class="alphabet-item"><p>N</p></div>
+            <div class="alphabet-item"><p>O</p></div>
+            <div class="alphabet-item"><p>P</p></div>
+            <div class="alphabet-item"><p>Q</p></div>
+            <div class="alphabet-item"><p>R</p></div>
+            <div class="alphabet-item"><p>S</p></div>
+            <div class="alphabet-item"><p>T</p></div>
+            <div class="alphabet-item"><p>U</p></div>
+            <div class="alphabet-item"><p>V</p></div>
+            <div class="alphabet-item"><p>W</p></div>
+            <div class="alphabet-item"><p>X</p></div>
+            <div class="alphabet-item"><p>Y</p></div>
+            <div class="alphabet-item"><p>Z</p></div>
+            <div class="alphabet-item"><p>*</p></div>
         </div>
         <div id="output">
-            <div id="output_header">output_header</div>
-            <div id="output_content">output_content</div>
+            <TABLE cols="3">
+                <TBODY>
+                    <TR>
+                        <TD><DIV id="output_header">output_header</DIV></TD>
+                        <TD><DIV id="sb_paging_prev_button" onclick="pager(null,null,'prev');"><BUTTON>Prev</BUTTON></DIV></TD>
+                        <TD><DIV id="sb_paging_next_button" onclick="pager(null,null,'next');"><BUTTON>Next</BUTTON></DIV></TD>
+                    </TR>
+                    <TR>
+                        <TD colspan="3"><div id="output_content">output_content</div></TD>
+                    </TR>
+                </TBODY>
+            </TABLE>
         </div>
         <div id="playerstatus"></div>
         <div id="playercontrol">
@@ -90,6 +101,9 @@
 
 		var StatusTemp = null;
 		var StatusURL = "/status.html";
+        var pager_offset=0;
+        const pager_size=100;
+        var pager_letter=null;
 
 		function StatusUpdate() {
 			var xhr = new XMLHttpRequest();
@@ -129,7 +143,7 @@
 
                 case 'song_list':
                     console.log("handle song_list");
-                    return '/song_list.html?offset=0&size=100'
+                    return '/song_list.html'
                     break;
 
                 case 'playlist_list':
@@ -248,21 +262,12 @@
                     console.log(new_context);
                     const url=retrieve_url(new_context);
                     console.log(url)
+            
+                    console.log('###########');
+                    console.log('menuItemText',menuItemText);
 
-					const xhr = new XMLHttpRequest();
-					xhr.onreadystatechange = function () {
-						if (xhr.readyState === 4 && xhr.status === 200) {
-							menuOutputContent.innerHTML = xhr.responseText;
-							menuOutputHeader.innerText = menuItemText;
-							// Toggle the classes to control visibility
-							menuOutput.classList.add('show');
-							menu.classList.add('hide');
-                            set_screen(new_context);
-						}
-					};
-
-					xhr.open('GET', url, true);
-					xhr.send();
+					menuOutputHeader.innerText = menuItemText;
+                    pager(new_context,'A',null);
 				});
 			});
 
@@ -270,28 +275,85 @@
 			alphabetItems.forEach(function (alphabetItem) {
 				alphabetItem.addEventListener('click', function () {
 
-					// Use the text of a Menu-Item in the Paragraph
-					const alphabetItemText = this.querySelector('p').innerText;
+					const first_letter = this.querySelector('p').innerText;
+                    pager(null,first_letter,'zoo');
 
-					// Use the name from the Paragraph and append .html
-                    const url = this.getAttribute('link');
-
-
-					const xhr = new XMLHttpRequest();
-					xhr.onreadystatechange = function () {
-						if (xhr.readyState === 4 && xhr.status === 200) {
-							menuOutputContent.innerHTML = xhr.responseText;
-							// Toggle the classes to control visibility
-							menuOutput.classList.add('show');
-							menu.classList.add('hide');
-						}
-					};
-
-					xhr.open('GET', url, true);
-					xhr.send();
 				});
 			});
 		});
+
+        function pager() {
+            var p_context=arguments[0];
+            var p_letter=arguments[1];
+            var p_action=arguments[2];
+
+            if(p_context==null) {
+                p_context=context;
+            }
+
+            if(p_letter==null) {
+                if(pager_letter==null) {
+                    pager_letter='A';
+                    pager_offset=0;
+                }
+                p_letter=pager_letter;
+            }
+
+            if(p_letter!=pager_letter)
+            {
+                pager_offset=0;
+                p_offset=0;
+                p_action=null;
+            }
+
+            if(p_action=='prev')
+            {
+                pager_offset=pager_offset - pager_size;
+            }
+            if(p_action=='next')
+            {
+                pager_offset=pager_offset + pager_size;
+            }
+
+
+
+			const menuOutputContent = document.getElementById('output_content');
+			var menuOutputHeader = document.getElementById('output_header');
+
+            var url=retrieve_url(p_context);
+            url=url.concat(`?letter=${p_letter}&offset=${pager_offset}&size=${pager_size}`);
+
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    menuOutputContent.innerHTML = xhr.responseText;
+                    set_screen(p_context);
+
+                    var has_prev=document.getElementById('sb_paging_prev_ind').querySelector('p').innerText;
+                    var has_next=document.getElementById('sb_paging_next_ind').querySelector('p').innerText;
+
+                    var prev_button=document.getElementById('sb_paging_prev_button').querySelector('button');
+                    if(has_prev==1) {
+                        prev_button.disabled=false; 
+                    }
+                    else {
+                        prev_button.disabled=true; 
+                    }
+
+                    var next_button=document.getElementById('sb_paging_next_button').querySelector('button');
+                    if(has_next==1) {
+                        next_button.disabled=false; 
+                    }
+                    else {
+                        next_button.disabled=true; 
+                    }
+                }
+            };
+
+            xhr.open('GET', url, true);
+            xhr.send();
+            pager_letter=p_letter;
+        }
 
         function open_page() {
             const new_context=arguments[0];

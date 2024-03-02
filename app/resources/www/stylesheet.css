@@ -4,6 +4,7 @@ body {
 
 table, th, td {
   width: 100%;
+  border: 1px solid;
 }
 
 
@@ -112,6 +113,7 @@ table, th, td {
 }
 
 #output_header {
+	font-size: 150%;
     grid-area: output_header;
 }
 #output_content {
@@ -226,5 +228,49 @@ table, th, td {
     margin-top: 0px;
 	font-weight: bold;
 	font-size: 125%;
+}
+
+#sb_paging_prev_ind {
+    top: -9999px;
+    position: absolute;
+    display: none;
+}
+
+#sb_paging_next_ind {
+    top: -9999px;
+    position: absolute;
+    display: none;
+}
+
+#sb_paging_prev_button {
+    text-align: right;
+	margin: 0 0px;
+	bottom: -5px;
+	cursor: pointer;
+    max-width: 300px;
+    margin-right: 0px;
+}
+
+#sb_paging_prev_button button {
+    text-align: right;
+	font-size: 150%;
+    type="button";
+    margin-right: 0px;
+}
+
+#sb_paging_next_button {
+    text-align: right;
+	margin: 0 0px;
+	bottom: -5px;
+	cursor: pointer;
+    max-width: 300px;
+    margin-right: 0px;
+}
+
+#sb_paging_next_button button {
+    text-align: right;
+	font-size: 150%;
+    type="button";
+    margin-right: 0px;
 }
 

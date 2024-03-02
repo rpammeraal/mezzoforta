@@ -160,9 +160,22 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
 {
     const static QString defaultIconPath("/images/SongIcon.png");
     QString table;
-    SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs(startsWith, offset, size); //  this give us all songs. Only want songs with org performer
 
-    for(int i=0;i<sm->rowCount();i++)
+    //  Let's retrieve size+1 songs to see if there is anything left after the
+    //  current batch.I
+    SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs(startsWith, offset, size+1);
+
+    bool moreSongsNext=0;
+    bool moreSongsPrev=(offset>0)?1:0;
+
+    qsizetype availableCount=sm->rowCount();
+    if(availableCount>size)
+    {
+        moreSongsNext=1;
+        availableCount=size;
+    }
+
+    for(int i=0;i<size;i++)
     {
         const SBKey songKey(sm->record(i).value(1).toByteArray());
         const SBKey performerKey(sm->record(i).value(3).toByteArray());
@@ -221,6 +234,9 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
             }
         }
     }
+    table+=QString("<DIV id=\"sb_paging_prev_ind\"><P>%1</P></DIV><DIV id=\"sb_paging_next_ind\"><P>%2</P></DIV>")
+                 .arg(moreSongsPrev)
+                 .arg(moreSongsNext);
     return table;
 }
 
