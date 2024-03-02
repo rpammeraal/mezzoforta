@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "PlayManager.h"
 #include "PlayerController.h"
+#include "SBHtmlAlbumsAll.h"
 #include "SBHtmlSongsAll.h"
 
 using namespace Qt::StringLiterals;
@@ -239,7 +240,6 @@ QHttpServerResponse
 WebService::_getIconResource(QString path, const QHttpServerRequest& r)
 {
     Q_UNUSED(r);
-    const static QString defaultIconPath("/images/SongIcon.png");
     QString iconPath;
     const SBKey key=SBKey(path.toUtf8());
     if(key.validFlag())
@@ -247,12 +247,12 @@ WebService::_getIconResource(QString path, const QHttpServerRequest& r)
         iconPath=ExternalData::getCachePath(key);
         if(!QFile::exists(iconPath))
         {
-            iconPath=defaultIconPath;
+            iconPath=ExternalData::getDefaultIconPath();
         }
     }
     else
     {
-        iconPath=defaultIconPath;
+        iconPath=ExternalData::getDefaultIconPath();
     }
     return QHttpServerResponse::fromFile(iconPath);
 }
@@ -260,7 +260,7 @@ WebService::_getIconResource(QString path, const QHttpServerRequest& r)
 QHttpServerResponse
 WebService::_getImageResource(QString path, const QHttpServerRequest& r)
 {
-    qDebug() << SB_DEBUG_INFO << path;
+    //  qDebug() << SB_DEBUG_INFO << path;
     return WebService::_getResource(path,r,1);
 }
 
@@ -279,7 +279,7 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
     const static QString status(":/www/status.html");
     if(resourcePath!=status)
     {
-        qDebug() << SB_DEBUG_INFO << resourcePath;
+        //  qDebug() << SB_DEBUG_INFO << resourcePath;
     }
 
     if(isImage)
@@ -303,6 +303,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     QTextStream f_str(&f);
     QString str=f_str.readAll();
 
+    const static QString allAlbum("album_list.html");
     const static QString allSong("song_list.html");
     const static QString songDetail("song_detail.html");
     const static QString status("status.html");
@@ -345,6 +346,20 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
 
         const static QString SB_PLAYER_STATUS("___SB_PLAYER_STATUS___");
         str=str.replace(SB_PLAYER_STATUS,playerStatus);
+    }
+    else if(path==allAlbum)
+    {
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
+
+        const static QString SB_ALBUM_TABLE("___SB_ALBUM_TABLE___");
+        str=str.replace(SB_ALBUM_TABLE,SBHtmlAlbumsAll::retrieveAllAlbums(letter,offsetStr.toInt(),sizeStr.toInt()));
+        qDebug() << SB_DEBUG_INFO << str;
     }
     else if(path==allSong)
     {

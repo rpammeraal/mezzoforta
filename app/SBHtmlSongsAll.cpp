@@ -10,6 +10,7 @@
 #include "SBIDChart.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
+#include "SBHtmlAlbumsAll.h"
 
 SBHtmlSongsAll::SBHtmlSongsAll()
 {
@@ -19,7 +20,6 @@ static const QString albums=QString("___SB_ALBUMS___");
 static const QString playlists=QString("___SB_PLAYLISTS___");
 static const QString charts=QString("___SB_CHARTS___");
 static const QString lyrics=QString("___SB_LYRICS___");
-static const QString defaultIconPath("/images/SongIcon.png");
 static const QString empty;
 
 QString
@@ -65,7 +65,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                         }
                         else
                         {
-                            iconLocation=defaultIconPath;
+                            iconLocation=ExternalData::getDefaultIconPath();
                             playerControlHTML=empty;
                         }
 
@@ -158,7 +158,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 QString
 SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
-    const static QString defaultIconPath("/images/SongIcon.png");
     QString table;
 
     //  Let's retrieve size+1 songs to see if there is anything left after the
@@ -204,7 +203,7 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                 }
                 if(!iconLocation.size())
                 {
-                    iconLocation=defaultIconPath;
+                    iconLocation=ExternalData::getDefaultIconPath();
                 }
 
                 //	Start table row
@@ -244,45 +243,7 @@ QString
 SBHtmlSongsAll::_getIconLocation(const SBIDOnlinePerformancePtr& opPtr)
 {
     QString iconLocation;
-    SBKey iconKey;
-    SBKey opKey;
-    if(opPtr)
-    {
-        opKey=opPtr->key();
-        SBIDAlbumPtr aPtr=opPtr->albumPtr();
-        if(aPtr)
-        {
-            const SBKey albumKey=aPtr->key();
-            iconLocation=ExternalData::getCachePath(albumKey);
-            if(QFile::exists(iconLocation))
-            {
-                iconKey=albumKey;
-            }
-            else
-            {
-                //  Try performer
-                SBIDPerformerPtr pPtr=aPtr->albumPerformerPtr();
-                if(pPtr)
-                {
-                    const SBKey performerKey=pPtr->key();
-                    iconLocation=ExternalData::getCachePath(performerKey);
-
-                    if(QFile::exists(iconLocation))
-                    {
-                        iconKey=performerKey;
-                    }
-                }
-            }
-        }
-    }
-    if(!iconKey.validFlag())
-    {
-        //	Retrieve std song icon
-        iconLocation=defaultIconPath;
-    }
-    else
-    {
-        iconLocation=QString("/icon/%1").arg(iconKey.toString());
-    }
-    return iconLocation;
+    SB_RETURN_IF_NULL(opPtr,ExternalData::getDefaultIconPath());
+    SBIDAlbumPtr aPtr=opPtr->albumPtr();
+    return SBHtmlAlbumsAll::_getIconLocation(aPtr);
 }

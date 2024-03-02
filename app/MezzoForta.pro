@@ -12,6 +12,7 @@ QT_DEBUG_PLUGINS=1
 
 SOURCES += \
     Preferences.cpp \
+    SBHtmlAlbumsAll.cpp \
     SBHtmlSongsAll.cpp \
     SongAlbumNotes.cpp \
     SqlQuery.cpp \
@@ -149,6 +150,7 @@ HEADERS += \
     SBDialogRenamePlaylist.h \
     SBDialogSelectItem.h \
     SBDuration.h \
+    SBHtmlAlbumsAll.h \
     SBHtmlSongsAll.h \
     SBIDAlbum.h \
     SBIDAlbumPerformance.h \
