@@ -289,15 +289,22 @@ SBIDAlbum::albumPerformerPtr() const
 QString
 SBIDAlbum::albumPerformerName() const
 {
-    SBIDPerformerPtr pPtr=albumPerformerPtr();
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->performerName():QString());
 }
 
 QString
 SBIDAlbum::albumPerformerMBID() const
 {
-    SBIDPerformerPtr pPtr=albumPerformerPtr();
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->MBID():QString());
+}
+
+SBKey
+SBIDAlbum::albumPerformerKey() const
+{
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
+    return (pPtr?pPtr->key():SBKey());
 }
 
 ///	Operators

@@ -55,6 +55,7 @@ public:
     //	Redirectors
     QString albumPerformerName() const;
     QString albumPerformerMBID() const;
+    SBKey albumPerformerKey() const;
 
     //	Operators
     virtual operator QString() const;

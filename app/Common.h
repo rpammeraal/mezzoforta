@@ -161,6 +161,7 @@ public:
     static QString correctArticle(const QString& );
     static QString db_change_to_string(Common::db_change db_change);
     static QString escapeSingleQuotes(const QString &);
+    static QString escapeQuotesHTML(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return --ID; }
     static QVector<QStringList> parseCSVFile(const QString& string);

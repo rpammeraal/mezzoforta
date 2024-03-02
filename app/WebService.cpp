@@ -292,6 +292,7 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
 QString
 WebService::_populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r)
 {
+    const static QString p_key("sb_key");
     if(path!="status.html")
     {
         qDebug() << SB_DEBUG_INFO << resourcePath;
@@ -305,6 +306,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
 
     const static QString allAlbum("album_list.html");
     const static QString allSong("song_list.html");
+    const static QString albumDetail("album_detail.html");
     const static QString songDetail("song_detail.html");
     const static QString status("status.html");
 
@@ -361,6 +363,11 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
         str=str.replace(SB_ALBUM_TABLE,SBHtmlAlbumsAll::retrieveAllAlbums(letter,offsetStr.toInt(),sizeStr.toInt()));
         qDebug() << SB_DEBUG_INFO << str;
     }
+    else if(path==albumDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlAlbumsAll::albumDetail(str,key);
+    }
     else if(path==allSong)
     {
         const static QString p_letter("letter");
@@ -376,8 +383,6 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     }
     else if(path==songDetail)
     {
-        const static QString SB_ORG_PERFORMER("___SB_ORG_PERFORMER___");
-        const static QString p_key("sb_key");
         const QString key=r.query().queryItemValue(p_key);
         str=SBHtmlSongsAll::songDetail(str,key);
     }

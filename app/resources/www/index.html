@@ -131,11 +131,43 @@
 
         console.log(context);
 
+        function get_hrt() {
+            p_context=arguments[0];
+            switch(p_context) {
+                case 'album_detail':
+                    return 'Album: ';
+                    break;
+
+                case 'album_list':
+                    return 'List of Albums: ';
+                    break;
+
+                case 'song_detail':
+                    return 'Song: ';
+                    break;
+
+                case 'song_list':
+                    return 'List of Songs: ';
+                    break;
+
+                case 'playlist_list':
+                    return 'Playlists: ';
+                    break;
+            }
+            console.log("retrieve_url: p_context not handled", p_context);
+            return '';
+        }
+
         function retrieve_url() {
             p_context=arguments[0];
             url='';
             console.log(p_context);
             switch(p_context) {
+                case 'album_detail':
+                    console.log("handle album_detail");
+                    return '/album_detail.html'
+                    break;
+
                 case 'album_list':
                     console.log("handle album_list");
                     return '/album_list.html'
@@ -167,6 +199,12 @@
             menu_visible_toggle='hidden';
             output_visible_toggle='hidden';
             switch(p_context) {
+                case 'album_detail': 
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    break;
+
                 case 'album_list': 
                     alphabet_visible_toggle='visible';
                     menu_visible_toggle='hidden';
@@ -367,14 +405,19 @@
         }
 
         function open_page() {
-            const new_context=arguments[0];
-            const sb_key=arguments[1];
-            const output_header=arguments[2];
-            console.log(new_context,sb_key);
+            console.log("### open_page()");
+            const p_context=arguments[0];
+            const p_sb_key=arguments[1];
+            const p_output_header=arguments[2];   //  output_header contains raw data, e.g. just song title, performer name et al 
+            console.log(p_context,p_sb_key);
 
-            var url=retrieve_url(new_context);
-            url=url.concat('?sb_key=',sb_key);
+            var url=retrieve_url(p_context);
+            url=url.concat('?sb_key=',p_sb_key);
             console.log(url);
+
+            var output_header=get_hrt(p_context)
+            console.log('output_header',output_header);
+            output_header=output_header.concat(p_output_header);
 
 			const menuOutputContent = document.getElementById('output_content');
 			const menuOutputHeader = document.getElementById('output_header');
@@ -386,9 +429,9 @@
                     // Toggle the classes to control visibility
                     //menuOutput.classList.add('show');   //  not used
                     menu.classList.add('hide');
-                    console.log("Calling set screen with",new_context);
+                    console.log("Calling set screen with",p_context);
 
-                    set_screen(new_context);
+                    set_screen(p_context);
                 }
             };
 

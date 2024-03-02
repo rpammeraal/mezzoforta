@@ -74,7 +74,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                 "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\" >%2</TD>"
+                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('album_detail','%5','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" rowspan=\"2\">"
                                     "%3"
                                 "</TD>"
@@ -84,9 +84,10 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                             "</TR>"
                         )
                             .arg(iconLocation)
-                            .arg(opPtr->albumTitle())
+                            .arg(Common::escapeQuotesHTML(opPtr->albumTitle()))
                             .arg(playerControlHTML)
-                            .arg(opPtr->songPerformerName())
+                            .arg(Common::escapeQuotesHTML(opPtr->songPerformerName()))
+                            .arg(apPtr->albumKey().toString())
                         ;
                         table+=row;
                     }
@@ -207,7 +208,6 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                 }
 
                 //	Start table row
-                const QString songTitle=sPtr->songTitle().replace("'","&rsquo;").replace("\"","&quot;");
                 const QString row=QString(
                     "<THEAD>"
                         "<TR>"
@@ -224,9 +224,9 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                         "</TR>"
                     "</THEAD>"
                 )
-                    .arg(songTitle)
+                    .arg(Common::escapeQuotesHTML(sPtr->songTitle()))
                     .arg(songKey.toString())
-                    .arg(sPtr->commonPerformerName())
+                    .arg(Common::escapeQuotesHTML(sPtr->commonPerformerName()))
                     .arg(iconLocation)
                 ;
                 table+=row;
