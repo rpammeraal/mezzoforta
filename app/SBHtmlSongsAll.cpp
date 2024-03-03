@@ -1,5 +1,5 @@
 #include <QFile>
-
+#include <QString>
 #include <QVectorIterator>
 
 #include "ExternalData.h"

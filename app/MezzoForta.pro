@@ -14,6 +14,7 @@ SOURCES += \
     Preferences.cpp \
     SBHtmlAlbumsAll.cpp \
     SBHtmlPerformersAll.cpp \
+    SBHtmlPlaylistsAll.cpp \
     SBHtmlSongsAll.cpp \
     SongAlbumNotes.cpp \
     SqlQuery.cpp \
@@ -153,6 +154,7 @@ HEADERS += \
     SBDuration.h \
     SBHtmlAlbumsAll.h \
     SBHtmlPerformersAll.h \
+    SBHtmlPlaylistsAll.h \
     SBHtmlSongsAll.h \
     SBIDAlbum.h \
     SBIDAlbumPerformance.h \

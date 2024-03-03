@@ -1,37 +1,10 @@
 <head>
-<style type="text/css">
-body {
-    font-family: "Trebuchet MS";
-	font-size: 50pt;
-	margin:30px;
-	background-color:#ECECEC;
-}
-</style>
-<script>
-function controlPlayer() {
-const xhr = new XMLHttpRequest();
-const url="/player/play?action=";
-const action=arguments[0];
-const key=arguments[1];
-const request=url.concat(action,'&key=',key);
-xhr.open("POST", request);
-xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-const body = JSON.stringify({
-  title: "",
-  body: ""
-});
-xhr.onload = () => {
-  if (xhr.readyState == 4 && xhr.status == 201) {
-    console.log(JSON.parse(xhr.responseText));
-  } else {
-    console.log(`Error: ${xhr.status}`);
-  }
-};
-xhr.send(body);
-
-}
-</script>
+	<link rel="stylesheet" href="/stylesheet.css">
 </head>
 <body>
-HELLO WORLD!
+<div id="SongList">
+	<table class="SongListTable">
+___SB_PLAYLIST_TABLE___
+	</table>
+</div>
 </body>

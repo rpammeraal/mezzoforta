@@ -8,6 +8,7 @@
 #include "PlayManager.h"
 #include "PlayerController.h"
 #include "SBHtmlAlbumsAll.h"
+#include "SBHtmlPlaylistsAll.h"
 #include "SBHtmlSongsAll.h"
 
 using namespace Qt::StringLiterals;
@@ -305,6 +306,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     QString str=f_str.readAll();
 
     const static QString allAlbum("album_list.html");
+    const static QString allPlaylist("playlist_list.html");
     const static QString allSong("song_list.html");
     const static QString albumDetail("album_detail.html");
     const static QString songDetail("song_detail.html");
@@ -367,6 +369,19 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
         const QString key=r.query().queryItemValue(p_key);
         str=SBHtmlAlbumsAll::albumDetail(str,key);
     }
+    else if(path==allPlaylist)
+    {
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
+
+        const static QString SB_PLAYLIST_TABLE("___SB_PLAYLIST_TABLE___");
+        str=str.replace(SB_PLAYLIST_TABLE,SBHtmlPlaylistsAll::retrieveAllPlaylists(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
     else if(path==allSong)
     {
         const static QString p_letter("letter");
@@ -389,6 +404,5 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     {
         //	Somehow do a 404 here
     }
-
     return str;
 }
