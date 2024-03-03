@@ -38,6 +38,14 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
 
             if(pPtr)
             {
+                QString playerControlHTML;
+
+                if(pPtr->itemID()!=SBIDPerformer::retrieveVariousPerformers()->itemID())
+                {
+                    playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                            .arg(pPtr->key().toString());
+
+                }
                 //  Performer
                 table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Performed By:</P></TD></TR>")+
                                 QString(
@@ -48,14 +56,12 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                         "<TD class=\"SBItemMajor\" >%2</TD>"
                                         "<TD class=\"playercontrol_button\" >"
 
-                                            "<P class=\"item_play_button\" onclick=\"control_player('play','%3');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
 
                                         "</TD>"
                                     "</TR>"
                                     )
                                     .arg(SBHtmlPerformersAll::_getIconLocation(pPtr))
                                     .arg(Common::escapeQuotesHTML(pPtr->performerName()))
-                                    .arg(pPtr->key().toString())
                     ;
             }
             html.replace(performer,table);
@@ -70,21 +76,34 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
             if(allAlbumPerformances.count())
             {
                 QMapIterator<int, SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
+                //  Remap so we can display songs in order of appearance on album
+                QMap<qsizetype,qsizetype> albumOrderMap;
+
                 while(apIt.hasNext())
                 {
                     apIt.next();
                     const SBIDAlbumPerformancePtr apPtr=apIt.value();
                     if(apPtr)
                     {
+                        albumOrderMap[apPtr->albumPosition()]=apIt.key();
+                    }
+                }
+
+                for(qsizetype i=0; i<albumOrderMap.size();i++)
+                {
+                    const SBIDAlbumPerformancePtr apPtr=allAlbumPerformances.value(albumOrderMap[i+1]);
+                    if(apPtr)
+                    {
                         QString playerControlHTML;
                         SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
                         if(opPtr)
                         {
-                            playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                            playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                     .arg(opPtr->key().toString())
                             ;
                             numPlayables++;
                         }
+
                         QString row=QString(
                             "<TR>"
                                 "<TD class=\"SBIconCell\" rowspan=\"2\">"
@@ -102,7 +121,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                             .arg(ExternalData::getDefaultIconPath())
                             .arg(Common::escapeQuotesHTML(apPtr->songTitle()))
                             .arg(playerControlHTML)
-                            .arg(Common::escapeQuotesHTML(opPtr->songPerformerName()))
+                            .arg(Common::escapeQuotesHTML(apPtr->songPerformerName()))
                             .arg(apPtr->songKey().toString())
                         ;
                         table+=row;
@@ -136,20 +155,16 @@ SBHtmlAlbumsAll::retrieveAllAlbums(const QChar& startsWith, qsizetype offset, qs
     if(availableCount>size)
     {
         moreAlbumsNext=1;
-        availableCount=size;
     }
 
-    qDebug() << SB_DEBUG_INFO << availableCount << size;
     for(int i=0;i<size;i++)
     {
         const SBKey albumKey(sm->record(i).value(0).toByteArray());
         const SBKey performerKey(sm->record(i).value(1).toByteArray());
         SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(albumKey);
-        qDebug() << SB_DEBUG_INFO << albumKey << sm->record(i).value(0).toByteArray();
 
         if(aPtr)
         {
-            qDebug() << SB_DEBUG_INFO << aPtr->genericDescription();
             //	Find icon to display
             QString iconLocation;
             SBKey iconKey;

@@ -274,3 +274,19 @@ table, th, td {
     margin-right: 0px;
 }
 
+#sb_context_play_button {
+    text-align: right;
+	margin: 0 0px;
+	bottom: -5px;
+	cursor: pointer;
+    margin-right: 0px;
+}
+
+#sb_context_play_button button {
+    text-align: right;
+	font-size: 150%;
+    type="button";
+    min-width=300px;
+    margin-right: 0px;
+}
+

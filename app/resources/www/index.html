@@ -68,6 +68,7 @@
                 <TBODY>
                     <TR>
                         <TD><DIV id="output_header">output_header</DIV></TD>
+                        <TD><DIV id="sb_context_play_button" onclick="control_player('play');"><BUTTON>&gt;</BUTTON></DIV></TD>
                         <TD><DIV id="sb_paging_prev_button" onclick="pager(null,null,'prev');"><BUTTON>Prev</BUTTON></DIV></TD>
                         <TD><DIV id="sb_paging_next_button" onclick="pager(null,null,'next');"><BUTTON>Next</BUTTON></DIV></TD>
                     </TR>
@@ -104,6 +105,7 @@
         var pager_offset=0;
         const pager_size=100;
         var pager_letter=null;
+        var current_key=null;
 
 		function StatusUpdate() {
 			var xhr = new XMLHttpRequest();
@@ -194,6 +196,8 @@
 
         function set_screen() {
             p_context=arguments[0];
+            p_key=arguments[1];
+
             console.log("Switch from",context,"to",p_context);
             alphabet_visible_toggle='hidden';
             menu_visible_toggle='hidden';
@@ -209,6 +213,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
+                    current_key=p_key;
                     break;
 
                 case 'album_list': 
@@ -217,6 +222,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
+                    current_key=null;
                     break;
 
                 case 'menu':
@@ -225,6 +231,7 @@
                     output_visible_toggle='hidden';
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
+                    current_key=null;
                     break;
 
                 case 'song_detail': 
@@ -233,6 +240,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
+                    current_key=p_key;
                     break;
 
                 case 'song_list': 
@@ -241,6 +249,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
+                    current_key=null;
                     break;
 
                 case 'playlist_list':
@@ -249,6 +258,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
+                    current_key=null;
                     break;
             }
             const alphabet_div = document.getElementById('alphabet'); 
@@ -283,9 +293,22 @@
         function control_player() {
             const xhr = new XMLHttpRequest();
             const url="/player/play?action=";
-            const action=arguments[0];
-            const key=arguments[1];
-            const request=url.concat(action,'&key=',key);
+            const p_action=arguments[0];
+            const p_key=arguments[1];
+
+            console.log("# player_control()");
+            console.log("p_key",p_key);
+            console.log("current_key",current_key);
+
+            var required_key=p_key;
+            if(required_key==null) {
+                required_key=current_key;
+            }
+            console.log("required_key",required_key);
+
+            const request=url.concat(p_action,'&key=',required_key);
+            console.log("request",request);
+
 			fetch(request)
 				.then(response => {
 					if (!response.ok) {
@@ -316,7 +339,7 @@
 				// Toggle the classes to control visibility
 				menuOutput.classList.remove('show');
 				menu.classList.remove('hide');
-                set_screen("menu");
+                set_screen("menu",null);
 
 			});
 
@@ -400,7 +423,7 @@
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     menuOutputContent.innerHTML = xhr.responseText;
-                    set_screen(p_context);
+                    set_screen(p_context,null);
 
                     var has_prev=document.getElementById('sb_paging_prev_ind').querySelector('p').innerText;
                     var has_next=document.getElementById('sb_paging_next_ind').querySelector('p').innerText;
@@ -455,7 +478,7 @@
                     menu.classList.add('hide');
                     console.log("Calling set screen with",p_context);
 
-                    set_screen(p_context);
+                    set_screen(p_context,p_sb_key);
                 }
             };
 
@@ -463,7 +486,7 @@
             xhr.send();
         }
 	
-        set_screen('menu');
+        set_screen('menu',null);
 
 	</script>
 </body>
