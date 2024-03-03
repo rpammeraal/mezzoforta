@@ -236,6 +236,7 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
     table+=QString("<DIV id=\"sb_paging_prev_ind\"><P>%1</P></DIV><DIV id=\"sb_paging_next_ind\"><P>%2</P></DIV>")
                  .arg(moreSongsPrev)
                  .arg(moreSongsNext);
+    sm->deleteLater();
     return table;
 }
 

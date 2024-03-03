@@ -288,7 +288,7 @@ SBIDPlaylist::createKey(int playlistID)
     return SBKey(SBKey::Playlist,playlistID);
 }
 
-SBSqlQueryModel
+SBSqlQueryModel*
 SBIDPlaylist::allPlaylists(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
     //	List songs with actual online performance only
@@ -323,7 +323,7 @@ SBIDPlaylist::allPlaylists(const QChar& startsWith, qsizetype offset, qsizetype 
         .arg(limitClause)
     ;
 
-    return SBSqlQueryModel(q);
+    return new SBSqlQueryModel(q);
 
 }
 

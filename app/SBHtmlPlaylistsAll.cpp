@@ -14,12 +14,12 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
 
     //  Let's retrieve size+1 albums to see if there is anything left after the
     //  current batch.I
-    SBSqlQueryModel qm=SBIDPlaylist::allPlaylists(startsWith, offset, size+1);
+    SBSqlQueryModel* qm=SBIDPlaylist::allPlaylists(startsWith, offset, size+1);
 
     bool moreNext=0;
     bool morePrev=(offset>0)?1:0;
 
-    qsizetype availableCount=qm.rowCount();
+    qsizetype availableCount=qm->rowCount();
     if(availableCount>size)
     {
         moreNext=1;
@@ -31,7 +31,7 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
 
     for(int i=0;i<size;i++)
     {
-        const SBKey playlistKey(qm.record(i).value(0).toByteArray());
+        const SBKey playlistKey(qm->record(i).value(0).toByteArray());
         SBIDPlaylistPtr pPtr=SBIDPlaylist::retrievePlaylist(playlistKey);
 
         if(pPtr)
@@ -63,6 +63,7 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
     table+=QString("<DIV id=\"sb_paging_prev_ind\"><P>%1</P></DIV><DIV id=\"sb_paging_next_ind\"><P>%2</P></DIV>")
                  .arg(morePrev)
                  .arg(moreNext);
+    qm->deleteLater();
     return table;
 }
 

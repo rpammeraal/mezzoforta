@@ -51,7 +51,7 @@ public:
 
     //	Static methods
     static SBKey createKey(int playlistID);
-    static SBSqlQueryModel allPlaylists(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
+    static SBSqlQueryModel* allPlaylists(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBIDPlaylistPtr retrievePlaylist(int playlistID);
     static SBIDPlaylistPtr retrievePlaylist(SBKey key);
     static void removePlaylistItemFromAllPlaylistsByKey(SBKey key);
