@@ -607,6 +607,7 @@ PlayManager::_loadRadio()
 //    }
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadRadio");
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+    qm->deleteLater();
 }
 
 void

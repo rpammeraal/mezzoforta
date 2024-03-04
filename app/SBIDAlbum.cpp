@@ -780,6 +780,7 @@ SBIDAlbum::mergeFrom(SBIDAlbumPtr& aPtrFrom)
             pdPtr->setAlbumID(this->albumID());
         }
     }
+    qm->deleteLater();
 }
 
 SBSqlQueryModel*

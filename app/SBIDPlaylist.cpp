@@ -387,7 +387,7 @@ SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
             pldPtr->setDeletedFlag();
         }
     }
-    delete qm;
+    qm->deleteLater();
 }
 
 ///	Protected methods

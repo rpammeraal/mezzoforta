@@ -600,6 +600,7 @@ SBIDSongPerformance::mergeFrom(SBIDSongPerformancePtr &spPtrFrom)
        }
     }
     spPtrFrom->setPreferredAlbumPerformanceID(this->preferredAlbumPerformanceID());
+    qm->deleteLater();
 }
 
 SBSqlQueryModel*

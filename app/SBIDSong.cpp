@@ -1401,7 +1401,7 @@ SBIDSong::_loadAlbumPerformances()
     //	Load performances including dependents, this will set its internal pointers
     _albumPerformances=apmgr->retrieveSet(qm);
 
-    delete qm;
+    qm->deleteLater();
 }
 
 void
