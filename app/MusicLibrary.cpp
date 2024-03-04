@@ -229,7 +229,7 @@ MusicLibrary::rescanMusicLibrary()
         }
         progressCurrentValue++;
     }
-    delete sqm;
+    delete sqm;sqm=NULL;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
 
     ///////////////////////////////////////////////////////////////////////////////////

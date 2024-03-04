@@ -32,24 +32,20 @@ BackgroundThread::processAlbumImages(const QStringList& mbids, const SBKey& key)
 void
 BackgroundThread::retrieveNextAlbumImageLocations()
 {
-    qDebug() << SB_DEBUG_INFO << _albumMBIDs.size();
     if(_albumMBIDs.size())
     {
         const QString mbid=_albumMBIDs.first();
         _albumMBIDs.pop_front();
-        qDebug() << SB_DEBUG_INFO << mbid;
 
         emit retrieveSingleAlbumImageLocations(mbid,_currentKey);
         return;
     }
-    qDebug() << SB_DEBUG_INFO << _albumMBIDs.size();
     emit done();
 }
 
 void
 BackgroundThread::retrieveImageData(const QStringList& urls, const SBKey& key)
 {
-    qDebug() << SB_DEBUG_INFO << urls;
     const static QString wget("wget");
 
     //	Locate wget

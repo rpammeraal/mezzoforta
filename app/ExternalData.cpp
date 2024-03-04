@@ -431,8 +431,8 @@ ExternalData::processSong(QNetworkReply *r)
     {
         //  Retrieve song
         const SBIDSongPtr sPtr=SBIDSong::retrieveSong(_currentKey);
-        const QString songTitle=_normalizeString(sPtr->songTitle());
         SB_RETURN_VOID_IF_NULL(sPtr);
+        const QString songTitle=_normalizeString(sPtr->songTitle());
 
         QByteArray a=r->readAll();
         QJsonParseError jpe;
@@ -1023,10 +1023,8 @@ ExternalData::_inspectJsonValue(const QJsonValue& jv, const QStringList& search,
                 if(debug) qDebug() << SB_DEBUG_INFO << ts << "array:";
                 QJsonArray ja=jv.toArray();
                 const QStringList result=_iterateJsonArray(ja,search,recursion+1,debug);
-                qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                 if(search.size() && result.size())
                 {
-                    qDebug() << SB_DEBUG_INFO << ts << SB_DEBUG_INFO << result.size();
                     return result;
                 }
                 break;
