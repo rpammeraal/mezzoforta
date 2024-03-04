@@ -20,29 +20,22 @@ SBTabSongsAll::handleEscapeKey()
 void
 SBTabSongsAll::preload()
 {
-    qDebug() << SB_DEBUG_INFO;
     _init();
-    qDebug() << SB_DEBUG_INFO;
     //	Allows some data models to be refreshed
     MainWindow* mw=Context::instance()->mainWindow();
-    qDebug() << SB_DEBUG_INFO;
     QSortFilterProxyModel* slP;
 
     //	Songlist
     SBSqlQueryModel* sm=SBIDSong::retrieveAllSongs();
-    qDebug() << SB_DEBUG_INFO;
     QList<bool> dragableColumns;
     dragableColumns.clear();
     //	dragableColumns << 0 << 0 << 0 << 1 << 0 << 0 << 1 << 0 << 0 << 1;
     dragableColumns << 0 << 0 << 1 << 0 << 1 << 0 << 1;
     sm->setDragableColumns(dragableColumns);
-    qDebug() << SB_DEBUG_INFO;
 
     slP=new QSortFilterProxyModel();
-    qDebug() << SB_DEBUG_INFO;
     slP->setSourceModel(sm);
     mw->ui.allSongsList->setModel(slP);
-    qDebug() << SB_DEBUG_INFO;
 
     mw->ui.allSongsList->setSortingEnabled(1);
     mw->ui.allSongsList->sortByColumn(2,Qt::AscendingOrder);
@@ -50,7 +43,6 @@ SBTabSongsAll::preload()
     mw->ui.allSongsList->setSelectionBehavior(QAbstractItemView::SelectItems);
     mw->ui.allSongsList->setFocusPolicy(Qt::StrongFocus);
     mw->ui.allSongsList->selectionModel();
-    qDebug() << SB_DEBUG_INFO;
 
     QHeaderView* hv;
 
@@ -59,22 +51,18 @@ SBTabSongsAll::preload()
     hv->setSortIndicator(2,Qt::AscendingOrder);
     hv->setSortIndicatorShown(1);
     hv->setSectionResizeMode(QHeaderView::Stretch);
-    qDebug() << SB_DEBUG_INFO;
 
     //	vertical header
     hv=mw->ui.allSongsList->verticalHeader();
     hv->setDefaultSectionSize(18);
     hv->hide();
     Common::hideColumns(mw->ui.allSongsList);
-    qDebug() << SB_DEBUG_INFO;
 
     //	drag & drop revisited.
     QTableView* allSongsList=mw->ui.allSongsList;
-    qDebug() << SB_DEBUG_INFO;
 
     allSongsList->setDragEnabled(true);
     allSongsList->setDropIndicatorShown(true);
-    qDebug() << SB_DEBUG_INFO;
 }
 
 ///	Public slots:

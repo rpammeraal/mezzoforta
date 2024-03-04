@@ -804,6 +804,7 @@ SBIDPerformer::mergeFrom(SBIDPerformerPtr &pPtrFrom)
             pdPtr->setPerformerID(this->performerID());
         }
     }
+    qm->deleteLater();
 }
 
 SBSqlQueryModel*
@@ -1136,7 +1137,7 @@ SBIDPerformer::_loadAlbumsFromDB() const
     {
         SBIDAlbumPtr aPtr=it.next();
     }
-    delete qm;
+    qm->deleteLater();
     return albums;
 }
 

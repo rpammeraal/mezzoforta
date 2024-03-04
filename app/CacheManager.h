@@ -1,6 +1,9 @@
 #ifndef CACHEMANAGER_H
 #define CACHEMANAGER_H
 
+#include <QMap>
+#include <QString>
+
 #include "CacheTemplate.h"
 #include "SBIDAlbum.h"
 #include "SBIDAlbumPerformance.h"

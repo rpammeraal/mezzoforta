@@ -350,5 +350,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
 
     currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
+
     return currentScreenItem;
 }
