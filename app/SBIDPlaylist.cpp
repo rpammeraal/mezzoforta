@@ -324,7 +324,6 @@ SBIDPlaylist::allPlaylists(const QChar& startsWith, qsizetype offset, qsizetype 
     ;
 
     return new SBSqlQueryModel(q);
-
 }
 
 SBIDPlaylistPtr

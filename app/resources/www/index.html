@@ -205,6 +205,7 @@
 
             pager_prev_button_toggle='hidden';
             pager_next_button_toggle='hidden';
+            sb_context_play_button_toggle='hidden';
 
             switch(p_context) {
                 case 'album_detail': 
@@ -214,6 +215,7 @@
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
                     current_key=p_key;
+                    sb_context_play_button_toggle='visible';
                     break;
 
                 case 'album_list': 
@@ -223,6 +225,7 @@
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
                     current_key=null;
+                    sb_context_play_button_toggle='hidden';
                     break;
 
                 case 'menu':
@@ -232,6 +235,7 @@
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
                     current_key=null;
+                    sb_context_play_button_toggle='hidden';
                     break;
 
                 case 'song_detail': 
@@ -240,6 +244,7 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
+                    sb_context_play_button_toggle='visible';
                     current_key=p_key;
                     break;
 
@@ -250,15 +255,17 @@
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
                     current_key=null;
+                    sb_context_play_button_toggle='hidden';
                     break;
 
                 case 'playlist_list':
-                    alphabet_visible_toggle='visible';
+                    alphabet_visible_toggle='hidden';
                     menu_visible_toggle='hidden';
                     output_visible_toggle='visible';
-                    pager_prev_button_toggle='visible';
-                    pager_next_button_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
                     current_key=null;
+                    sb_context_play_button_toggle='hidden';
                     break;
             }
             const alphabet_div = document.getElementById('alphabet'); 
@@ -286,6 +293,10 @@
             const pager_next_button_div = document.getElementById('sb_paging_next_button'); 
             console.log("Set visibility on pager_next_button_div to",pager_next_button_toggle);
             pager_next_button_div.style.visibility = pager_next_button_toggle;
+
+            const sb_context_play_button_div = document.getElementById('sb_context_play_button'); 
+            console.log("Set visibility on sb_context_play_button_div to",sb_context_play_button_toggle);
+            sb_context_play_button_div.style.visibility = sb_context_play_button_toggle;
 
             context=p_context;
         }
@@ -487,6 +498,9 @@
         }
 	
         set_screen('menu',null);
+
+        //  NEXT:playbutton next to playlists header need to disappear.
+        //  follow logic of sb_paging_next/prev button 
 
 	</script>
 </body>

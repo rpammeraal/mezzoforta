@@ -371,13 +371,15 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     }
     else if(path==allPlaylist)
     {
-        const static QString p_letter("letter");
-        const static QString p_offset("offset");
-        const static QString p_size("size");
-        QString letterStr=r.query().queryItemValue(p_letter);
-        QChar letter(letterStr.size()>0?letterStr[0]:'A');
-        QString offsetStr=r.query().queryItemValue(p_offset);
-        QString sizeStr=r.query().queryItemValue(p_size);
+        //  const static QString p_letter("letter");
+        //  const static QString p_offset("offset");
+        //  const static QString p_size("size");
+        //  QString letterStr=r.query().queryItemValue(p_letter);
+
+        //  For now, no paging.
+        QChar letter(QChar('\x0'));                 //  letterStr.size()>0?letterStr[0]:'A';
+        QString offsetStr=0;                        //  r.query().queryItemValue(p_offset);
+        QString sizeStr=QString("1000000");         //  r.query().queryItemValue(p_size);
 
         const static QString SB_PLAYLIST_TABLE("___SB_PLAYLIST_TABLE___");
         str=str.replace(SB_PLAYLIST_TABLE,SBHtmlPlaylistsAll::retrieveAllPlaylists(letter,offsetStr.toInt(),sizeStr.toInt()));
