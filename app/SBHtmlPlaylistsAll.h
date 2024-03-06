@@ -8,6 +8,7 @@ class SBHtmlPlaylistsAll
 public:
     SBHtmlPlaylistsAll();
 
+    static QString playlistDetail(QString html, const QString& key);
     static QString retrieveAllPlaylists(const QChar& startsWith, qsizetype offset=0, qsizetype size=0);
 
 };

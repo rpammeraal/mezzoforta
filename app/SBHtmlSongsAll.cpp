@@ -74,7 +74,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                 "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('album_detail','%5','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%5','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" rowspan=\"2\">"
                                     "%3"
                                 "</TD>"
@@ -89,6 +89,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                             .arg(Common::escapeQuotesHTML(opPtr->songPerformerName()))
                             .arg(apPtr->albumKey().toString())
                         ;
+                        qDebug() << SB_DEBUG_INFO << row;
                         table+=row;
                     }
                 }
@@ -214,13 +215,13 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                             "<TD class=\"SBIconDiv\" rowspan=\"2\">"
                                 "<img class=\"SBIcon\" src=\"%4\"></img>"
                             "</TD>"
-                            "<TD class=\"SBItemMajor\" onclick=\"open_page('song_detail','%2','%1');\">%1</TD>"
+                            "<TD class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</TD>"
                             "<TD class=\"playercontrol_button\" rowspan=\"2\">"
                                 "<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
                             "</TD>"
                         "</TR>"
                         "<TR>"
-                            "<TD class=\"SBItemMinor\" onclick=\"open_page('song_detail','%2','%1');\">%3</TD>"
+                            "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">%3</TD>"
                         "</TR>"
                     "</THEAD>"
                 )

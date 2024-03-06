@@ -133,6 +133,41 @@
 
         console.log(context);
 
+        function sb_key_to_context() {
+            const p_key=arguments[0];
+            const args=p_key.split(':');
+            const sb_type=args[0];
+            const sb_id=args[1];
+            const r_context='menu';
+
+            console.log('sb_key_to_context:sb_type',sb_type);
+            switch(parseInt(sb_type)) {
+                case 1:
+                    return 'song_detail';
+                    break;
+
+                case 2:
+                    return 'performer_detail';
+                    break;
+
+                case 3:
+                    return 'album_detail';
+                    break;
+
+                case 4:
+                    return 'chart_detail';
+                    break;
+
+                case 5:
+                    return 'playlist_detail';
+                    break;
+
+            }
+            console.log('ERROR: sb_type not handled:',sb_type);
+            return 'menu';
+        }
+
+
         function get_hrt() {
             p_context=arguments[0];
             switch(p_context) {
@@ -144,6 +179,14 @@
                     return 'List of Albums: ';
                     break;
 
+                case 'playlist_detail':
+                    return 'Playlist: ';
+                    break;
+
+                case 'playlist_list':
+                    return 'Playlists: ';
+                    break;
+
                 case 'song_detail':
                     return 'Song: ';
                     break;
@@ -152,9 +195,6 @@
                     return 'List of Songs: ';
                     break;
 
-                case 'playlist_list':
-                    return 'Playlists: ';
-                    break;
             }
             console.log("retrieve_url: p_context not handled", p_context);
             return '';
@@ -175,6 +215,16 @@
                     return '/album_list.html'
                     break;
 
+                case 'playlist_detail':
+                    console.log("handle playlist_detail");
+                    return '/playlist_detail.html'
+                    break;
+
+                case 'playlist_list':
+                    console.log("handle playlist_list");
+                    return '/playlist_list.html'
+                    break;
+
                 case 'song_detail':
                     console.log("handle song_detail");
                     return '/song_detail.html'
@@ -183,11 +233,6 @@
                 case 'song_list':
                     console.log("handle song_list");
                     return '/song_list.html'
-                    break;
-
-                case 'playlist_list':
-                    console.log("handle playlist_list");
-                    return '/playlist_list.html'
                     break;
             }
             console.log("retrieve_url: p_context not handled", p_context);
@@ -238,6 +283,26 @@
                     sb_context_play_button_toggle='hidden';
                     break;
 
+                case 'playlist_detail': 
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
+                    current_key=p_key;
+                    sb_context_play_button_toggle='visible';
+                    break;
+
+                case 'playlist_list':
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
+                    current_key=null;
+                    sb_context_play_button_toggle='hidden';
+                    break;
+
                 case 'song_detail': 
                     alphabet_visible_toggle='hidden';
                     menu_visible_toggle='hidden';
@@ -254,16 +319,6 @@
                     output_visible_toggle='visible';
                     pager_prev_button_toggle='visible';
                     pager_next_button_toggle='visible';
-                    current_key=null;
-                    sb_context_play_button_toggle='hidden';
-                    break;
-
-                case 'playlist_list':
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
                     current_key=null;
                     sb_context_play_button_toggle='hidden';
                     break;
@@ -390,6 +445,7 @@
 		});
 
         function pager() {
+            console.log("### pager()");
             var p_context=arguments[0];
             var p_letter=arguments[1];
             var p_action=arguments[2];
@@ -464,10 +520,11 @@
 
         function open_page() {
             console.log("### open_page()");
-            const p_context=arguments[0];
-            const p_sb_key=arguments[1];
-            const p_output_header=arguments[2];   //  output_header contains raw data, e.g. just song title, performer name et al 
+            const p_sb_key=arguments[0];
+            const p_output_header=arguments[1];   //  output_header contains raw data, e.g. just song title, performer name et al 
             console.log(p_context,p_sb_key);
+
+            p_context=sb_key_to_context(p_sb_key);
 
             var url=retrieve_url(p_context);
             url=url.concat('?sb_key=',p_sb_key);
