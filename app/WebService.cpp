@@ -8,6 +8,7 @@
 #include "PlayManager.h"
 #include "PlayerController.h"
 #include "SBHtmlAlbumsAll.h"
+#include "SBHtmlPerformersAll.h"
 #include "SBHtmlPlaylistsAll.h"
 #include "SBHtmlSongsAll.h"
 
@@ -307,6 +308,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
 
     const static QString allAlbum("album_list.html");
     const static QString allPlaylist("playlist_list.html");
+    const static QString allPerformers("performer_list.html");
     const static QString allSong("song_list.html");
     const static QString albumDetail("album_detail.html");
     const static QString playlistDetail("playlist_detail.html");
@@ -384,6 +386,19 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
 
         const static QString SB_PLAYLIST_TABLE("___SB_PLAYLIST_TABLE___");
         str=str.replace(SB_PLAYLIST_TABLE,SBHtmlPlaylistsAll::retrieveAllPlaylists(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==allPerformers)
+    {
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
+
+        const static QString SB_PERFORMER_TABLE("___SB_PERFORMER_TABLE___");
+        str=str.replace(SB_PERFORMER_TABLE,SBHtmlPerformersAll::retrieveAllPerformers(letter,offsetStr.toInt(),sizeStr.toInt()));
     }
     else if(path==allSong)
     {

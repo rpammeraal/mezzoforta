@@ -10,6 +10,7 @@ class SBHtmlPerformersAll
 public:
     SBHtmlPerformersAll();
 
+    static QString retrieveAllPerformers(const QChar& startsWith, qsizetype offset=0, qsizetype size=0);
 protected:
     friend class SBHtmlAlbumsAll;
 

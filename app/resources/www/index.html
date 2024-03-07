@@ -14,7 +14,7 @@
                 <p>Playlists</p>
             </div>
 
-            <div class="menu-item">
+            <div class="menu-item" context="performer_list">
                 <img src="/images/NoBandPhoto.png" alt="Performers">
                 <p>Performers</p>
             </div>
@@ -179,6 +179,10 @@
                     return 'List of Albums: ';
                     break;
 
+                case 'performer_list':
+                    return 'List of Performers: ';
+                    break;
+
                 case 'playlist_detail':
                     return 'Playlist: ';
                     break;
@@ -213,6 +217,11 @@
                 case 'album_list':
                     console.log("handle album_list");
                     return '/album_list.html'
+                    break;
+
+                case 'performer_list':
+                    console.log("handle performer_list");
+                    return '/performer_list.html'
                     break;
 
                 case 'playlist_detail':
@@ -279,6 +288,16 @@
                     output_visible_toggle='hidden';
                     pager_prev_button_toggle='hidden';
                     pager_next_button_toggle='hidden';
+                    current_key=null;
+                    sb_context_play_button_toggle='hidden';
+                    break;
+
+                case 'performer_list': 
+                    alphabet_visible_toggle='visible';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    pager_prev_button_toggle='visible';
+                    pager_next_button_toggle='visible';
                     current_key=null;
                     sb_context_play_button_toggle='hidden';
                     break;

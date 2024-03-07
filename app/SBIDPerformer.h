@@ -65,6 +65,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
+    static SBSqlQueryModel* retrieveAllPerformers(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBIDPerformerPtr retrievePerformer(SBKey key);
     static SBIDPerformerPtr retrievePerformer(int performerID);
     static SBIDPerformerPtr retrieveVariousPerformers();
