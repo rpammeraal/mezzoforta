@@ -3,6 +3,7 @@
         <file alias="404.html">resources/www/404.html</file>
         <file alias="album_detail.html">resources/www/album_detail.html</file>
         <file alias="album_list.html">resources/www/album_list.html</file>
+        <file alias="chart_list.html">resources/www/chart_list.html</file>
         <file alias="content.html">resources/www/content.html</file>
         <file alias="index.html">resources/www/index.html</file>
         <file alias="performer_detail.html">resources/www/performer_detail.html</file>

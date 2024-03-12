@@ -8,6 +8,7 @@
 #include "PlayManager.h"
 #include "PlayerController.h"
 #include "SBHtmlAlbumsAll.h"
+#include "SBHtmlChartsAll.h"
 #include "SBHtmlPerformersAll.h"
 #include "SBHtmlPlaylistsAll.h"
 #include "SBHtmlSongsAll.h"
@@ -307,6 +308,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     QString str=f_str.readAll();
 
     const static QString allAlbum("album_list.html");
+    const static QString allChart("chart_list.html");
     const static QString allPlaylist("playlist_list.html");
     const static QString allPerformers("performer_list.html");
     const static QString allSong("song_list.html");
@@ -372,6 +374,21 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     {
         const QString key=r.query().queryItemValue(p_key);
         str=SBHtmlAlbumsAll::albumDetail(str,key);
+    }
+    else if(path==allChart)
+    {
+        //  const static QString p_letter("letter");
+        //  const static QString p_offset("offset");
+        //  const static QString p_size("size");
+        //  QString letterStr=r.query().queryItemValue(p_letter);
+
+        //  For now, no paging.
+        QChar letter(QChar('\x0'));                 //  letterStr.size()>0?letterStr[0]:'A';
+        QString offsetStr=0;                        //  r.query().queryItemValue(p_offset);
+        QString sizeStr=QString("1000000");         //  r.query().queryItemValue(p_size);
+
+        const static QString SB_CHART_TABLE("___SB_CHART_TABLE___");
+        str=str.replace(SB_CHART_TABLE,SBHtmlChartsAll::retrieveAllCharts(letter,offsetStr.toInt(),sizeStr.toInt()));
     }
     else if(path==allPlaylist)
     {

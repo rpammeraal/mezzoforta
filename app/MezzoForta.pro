@@ -13,6 +13,7 @@ QT_DEBUG_PLUGINS=1
 SOURCES += \
     Preferences.cpp \
     SBHtmlAlbumsAll.cpp \
+    SBHtmlChartsAll.cpp \
     SBHtmlPerformersAll.cpp \
     SBHtmlPlaylistsAll.cpp \
     SBHtmlSongsAll.cpp \
@@ -153,6 +154,7 @@ HEADERS += \
     SBDialogSelectItem.h \
     SBDuration.h \
     SBHtmlAlbumsAll.h \
+    SBHtmlChartsAll.h \
     SBHtmlPerformersAll.h \
     SBHtmlPlaylistsAll.h \
     SBHtmlSongsAll.h \
