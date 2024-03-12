@@ -53,7 +53,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                         "<TD class=\"SBIconCell\" >"
                                             "<img class=\"SBIcon\" src=\"%1\"></img>"
                                         "</TD>"
-                                        "<TD class=\"SBItemMajor\" >%2</TD>"
+                                        "<TD class=\"SBItemMajor\" onclick=\"open_page('%3','%2');\">%2</TD>"
                                         "<TD class=\"playercontrol_button\" >"
 
 
@@ -62,6 +62,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                     )
                                     .arg(SBHtmlPerformersAll::_getIconLocation(pPtr))
                                     .arg(Common::escapeQuotesHTML(pPtr->performerName()))
+                                    .arg(pPtr->key().toString())
                     ;
             }
             html.replace(performer,table);

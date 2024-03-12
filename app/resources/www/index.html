@@ -179,6 +179,10 @@
                     return 'List of Albums: ';
                     break;
 
+                case 'performer_detail':
+                    return 'Performer: ';
+                    break;
+
                 case 'performer_list':
                     return 'List of Performers: ';
                     break;
@@ -217,6 +221,11 @@
                 case 'album_list':
                     console.log("handle album_list");
                     return '/album_list.html'
+                    break;
+
+                case 'performer_detail':
+                    console.log("handle performer_detail");
+                    return '/performer_detail.html'
                     break;
 
                 case 'performer_list':
@@ -290,6 +299,16 @@
                     pager_next_button_toggle='hidden';
                     current_key=null;
                     sb_context_play_button_toggle='hidden';
+                    break;
+
+                case 'performer_detail': 
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
+                    sb_context_play_button_toggle='visible';
+                    current_key=p_key;
                     break;
 
                 case 'performer_list': 
