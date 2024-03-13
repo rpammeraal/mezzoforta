@@ -2,10 +2,99 @@
 
 #include "ExternalData.h"
 #include "SBIDChart.h"
+#include "SBIDChartPerformance.h"
+#include "SBIDSong.h"
 #include "SBHtmlChartsAll.h"
 #include "SBSqlQueryModel.h"
 
+static const QString songs=QString("___SB_SONGS___");
+
 SBHtmlChartsAll::SBHtmlChartsAll() {}
+
+QString
+SBHtmlChartsAll::chartDetail(QString html, const QString& key)
+{
+    QString contents;
+    html.replace('\n',"");
+    html.replace('\t'," ");
+
+    SBKey chartKey=SBKey(key.toLatin1());
+
+    if(chartKey.validFlag())
+    {
+        SBIDChartPtr cPtr=SBIDChart::retrieveChart(chartKey);
+
+        if(cPtr)
+        {
+            QString table;
+
+            //  Create list of song instances (e.g. all instances on an album)
+            QMap<int, SBIDChartPerformancePtr> allItems=cPtr->items();
+            table=QString();
+
+            if(allItems.count())
+            {
+                QMapIterator<int, SBIDChartPerformancePtr> apIt(allItems);
+                //  Remap so we can display songs in order of appearance on album
+                QMap<qsizetype,qsizetype> itemOrderMap;
+
+                while(apIt.hasNext())
+                {
+                    apIt.next();
+                    const SBIDChartPerformancePtr cpPtr=apIt.value();
+                    if(cpPtr)
+                    {
+                        itemOrderMap[cpPtr->chartPosition()]=apIt.key();
+                    }
+                }
+
+                for(qsizetype i=0; i<itemOrderMap.size();i++)
+                {
+                    const SBIDChartPerformancePtr cpPtr=allItems.value(itemOrderMap[i+1]);
+                    if(cpPtr)
+                    {
+                        SBKey itemKey;
+
+                        const SBIDSongPtr sPtr=cpPtr->songPtr();
+                        if(sPtr)
+                        {
+                            itemKey=sPtr->key();
+                        }
+
+
+                        QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                        .arg(sPtr->key().toString());
+                            ;
+
+                        QString row=QString(
+                            "<TR>"
+                                "<TD class=\"SBIconCell\" "
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</TD>"
+                                "<TD class=\"SBIconCell\">%5</TD>"
+                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"playercontrol_button\">"
+                                    "%3"
+                                "</TD>"
+                            "</TR>"
+                        )
+                            .arg(ExternalData::getDefaultIconPath())
+                            .arg(Common::escapeQuotesHTML(cpPtr->genericDescription()))
+                            .arg(playerControlHTML)
+                            .arg(itemKey.toString())
+                            .arg(cpPtr->chartPosition())
+                        ;
+                        table+=row;
+                    }
+                }
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>")+table;
+            }
+            html.replace(songs,table);
+        }
+    }
+    return html;
+
+}
 
 QString
 SBHtmlChartsAll::retrieveAllCharts(const QChar& startsWith, qsizetype offset, qsizetype size)

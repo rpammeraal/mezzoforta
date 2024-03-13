@@ -313,6 +313,7 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
     const static QString allPerformers("performer_list.html");
     const static QString allSong("song_list.html");
     const static QString albumDetail("album_detail.html");
+    const static QString chartDetail("chart_detail.html");
     const static QString playlistDetail("playlist_detail.html");
     const static QString performerDetail("performer_detail.html");
     const static QString songDetail("song_detail.html");
@@ -430,6 +431,11 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
 
         const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
         str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==chartDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlChartsAll::chartDetail(str,key);
     }
     else if(path==performerDetail)
     {

@@ -27,9 +27,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
         {
             QString table;
 
-
-            //  Items
-
             //  Create list of song instances (e.g. all instances on an album)
             QMap<int, SBIDPlaylistDetailPtr> allItems=pPtr->items();
             table=QString();

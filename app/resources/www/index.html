@@ -179,6 +179,10 @@
                     return 'List of Albums: ';
                     break;
 
+                case 'chart_detail':
+                    return 'Chart: ';
+                    break;
+
                 case 'chart_list':
                     return 'List of Charts: ';
                     break;
@@ -225,6 +229,11 @@
                 case 'album_list':
                     console.log("handle album_list");
                     return '/album_list.html'
+                    break;
+
+                case 'chart_detail':
+                    console.log("handle chart_detail");
+                    return '/chart_detail.html'
                     break;
 
                 case 'chart_list':
@@ -298,6 +307,16 @@
                     pager_next_button_toggle='visible';
                     current_key=null;
                     sb_context_play_button_toggle='hidden';
+                    break;
+
+                case 'chart_detail': 
+                    alphabet_visible_toggle='hidden';
+                    menu_visible_toggle='hidden';
+                    output_visible_toggle='visible';
+                    pager_prev_button_toggle='hidden';
+                    pager_next_button_toggle='hidden';
+                    sb_context_play_button_toggle='visible';
+                    current_key=p_key;
                     break;
 
                 case 'chart_list': 

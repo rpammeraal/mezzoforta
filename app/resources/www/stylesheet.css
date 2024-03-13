@@ -155,6 +155,8 @@ table, th, td {
 
 .SBIconCell {
     width: 40px;
+	font-size: 125%;
+	font-weight: bold;
 }
 
 .SBIcon {
