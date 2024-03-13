@@ -60,7 +60,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                         "</TD>"
                                     "</TR>"
                                     )
-                                    .arg(SBHtmlPerformersAll::_getIconLocation(pPtr))
+                                    .arg(SBHtmlPerformersAll::_getIconLocation(pPtr, SBKey::Performer))
                                     .arg(Common::escapeQuotesHTML(pPtr->performerName()))
                                     .arg(pPtr->key().toString())
                     ;
@@ -119,7 +119,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                 "<TD pos=\"84\" class=\"SBItemMinor\" onclick=\"open_page('%5','%2');\">%4</TD>"
                             "</TR>"
                         )
-                            .arg(ExternalData::getDefaultIconPath())
+                                          .arg(ExternalData::getDefaultIconPath(SBKey::Album))
                             .arg(Common::escapeQuotesHTML(apPtr->songTitle()))
                             .arg(playerControlHTML)
                             .arg(Common::escapeQuotesHTML(apPtr->songPerformerName()))
@@ -170,7 +170,7 @@ SBHtmlAlbumsAll::retrieveAllAlbums(const QChar& startsWith, qsizetype offset, qs
             QString iconLocation;
             SBKey iconKey;
 
-            iconLocation=_getIconLocation(aPtr);
+            iconLocation=_getIconLocation(aPtr,SBKey::Album);
 
             //	Start table row
             const QString row=QString(
@@ -206,9 +206,9 @@ SBHtmlAlbumsAll::retrieveAllAlbums(const QChar& startsWith, qsizetype offset, qs
 
 
 QString
-SBHtmlAlbumsAll::_getIconLocation(const SBIDAlbumPtr& aPtr)
+SBHtmlAlbumsAll::_getIconLocation(const SBIDAlbumPtr& aPtr,const SBKey::ItemType& defaultType)
 {
-    SB_RETURN_IF_NULL(aPtr,ExternalData::getDefaultIconPath());
+    SB_RETURN_IF_NULL(aPtr,ExternalData::getDefaultIconPath(defaultType));
     QString iconLocation;
     SBKey iconKey;
 
@@ -221,13 +221,13 @@ SBHtmlAlbumsAll::_getIconLocation(const SBIDAlbumPtr& aPtr)
     else
     {
         SBIDPerformerPtr pPtr=aPtr->albumPerformerPtr();
-        iconLocation=SBHtmlPerformersAll::_getIconLocation(pPtr);
+        iconLocation=SBHtmlPerformersAll::_getIconLocation(pPtr, defaultType);
     }
 
     if(!iconKey.validFlag())
     {
         //	Retrieve std song icon
-        iconLocation=ExternalData::getDefaultIconPath();
+        iconLocation=ExternalData::getDefaultIconPath(defaultType);
     }
     else
     {

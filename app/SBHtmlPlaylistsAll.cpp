@@ -30,7 +30,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
             //  Create list of song instances (e.g. all instances on an album)
             QMap<int, SBIDPlaylistDetailPtr> allItems=pPtr->items();
             table=QString();
-            int numItems=0;
 
             if(allItems.count())
             {
@@ -48,6 +47,7 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                     }
                 }
 
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>");
                 for(qsizetype i=0; i<itemOrderMap.size();i++)
                 {
                     const SBIDPlaylistDetailPtr pdPtr=allItems.value(itemOrderMap[i+1]);
@@ -76,7 +76,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                         QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                         .arg(pdPtr->key().toString());
                             ;
-                            numItems++;
 
                         QString row=QString(
                             "<TR>"
@@ -89,7 +88,7 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                                 "</TD>"
                             "</TR>"
                         )
-                            .arg(ExternalData::getDefaultIconPath())
+                            .arg(ExternalData::getDefaultIconPath(SBKey::Playlist))
                             .arg(Common::escapeQuotesHTML(pdPtr->genericDescription()))
                             .arg(playerControlHTML)
                             .arg(itemKey.toString())
@@ -98,10 +97,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                         table+=row;
                     }
                 }
-            }
-            if(numItems)
-            {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>")+table;
             }
             html.replace(songs,table);
         }
@@ -158,7 +153,7 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
             )
                 .arg(Common::escapeQuotesHTML(pPtr->playlistName()))
                 .arg(pPtr->key().toString())
-                .arg(ExternalData::getDefaultIconPath())
+                .arg(ExternalData::getDefaultIconPath(SBKey::Playlist))
             ;
             table+=row;
         }

@@ -54,11 +54,13 @@ SBHtmlChartsAll::chartDetail(QString html, const QString& key)
                     if(cpPtr)
                     {
                         SBKey itemKey;
+                        QString iconLocation;
 
                         const SBIDSongPtr sPtr=cpPtr->songPtr();
                         if(sPtr)
                         {
                             itemKey=sPtr->key();
+                            //  iconLocation=SBHtmlSongsAll::_getIconLocation(sPtr);    //  CWIP
                         }
 
 
@@ -78,7 +80,7 @@ SBHtmlChartsAll::chartDetail(QString html, const QString& key)
                                 "</TD>"
                             "</TR>"
                         )
-                            .arg(ExternalData::getDefaultIconPath())
+                            .arg(ExternalData::getDefaultIconPath(SBKey::Chart))
                             .arg(Common::escapeQuotesHTML(cpPtr->genericDescription()))
                             .arg(playerControlHTML)
                             .arg(itemKey.toString())
@@ -112,10 +114,9 @@ SBHtmlChartsAll::retrieveAllCharts(const QChar& startsWith, qsizetype offset, qs
     if(availableCount>size)
     {
         moreSongsNext=1;
-        availableCount=size;
     }
 
-    const static QString iconLocation=ExternalData::getDefaultIconPath();
+    const static QString iconLocation=ExternalData::getDefaultIconPath(SBKey::Chart);
     for(int i=0;i<size;i++)
     {
         const SBKey chartKey(sm->record(i).value(0).toByteArray());

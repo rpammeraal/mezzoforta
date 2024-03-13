@@ -50,7 +50,7 @@ SBHtmlPerformersAll::performerDetail(QString html, const QString& key)
 
                     if(rpPtr)
                     {
-                        iconLocation=_getIconLocation(rpPtr);
+                        iconLocation=_getIconLocation(rpPtr, SBKey::Performer);
                         playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                 .arg(rpPtr->key().toString());
                         const QString row=QString(
@@ -100,13 +100,13 @@ SBHtmlPerformersAll::performerDetail(QString html, const QString& key)
 
                             if(opPtr)
                             {
-                                iconLocation=SBHtmlSongsAll::_getIconLocation(opPtr);
+                                iconLocation=SBHtmlSongsAll::_getIconLocation(opPtr, SBKey::OnlinePerformance);
                                 playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                     .arg(opPtr->key().toString());
                             }
                             else
                             {
-                                iconLocation=ExternalData::getDefaultIconPath();
+                                iconLocation=ExternalData::getDefaultIconPath(SBKey::Performer);
                             }
 
                             const QString row=QString(
@@ -162,7 +162,7 @@ SBHtmlPerformersAll::performerDetail(QString html, const QString& key)
                                 "</TD>"
                             "</TR>"
                         )
-                            .arg(SBHtmlAlbumsAll::_getIconLocation(aPtr))
+                            .arg(SBHtmlAlbumsAll::_getIconLocation(aPtr, SBKey::Album))
                             .arg(Common::escapeQuotesHTML(aPtr->albumTitle()))
                             .arg(playerControlHTML)
                             .arg(aPtr->key().toString())
@@ -242,7 +242,7 @@ SBHtmlPerformersAll::retrieveAllPerformers(const QChar& startsWith, qsizetype of
             )
                 .arg(Common::escapeQuotesHTML(pPtr->performerName()))
                 .arg(pPtr->key().toString())
-                .arg(_getIconLocation(pPtr))
+                .arg(_getIconLocation(pPtr,SBKey::Performer))
             ;
             table+=row;
         }
@@ -255,9 +255,9 @@ SBHtmlPerformersAll::retrieveAllPerformers(const QChar& startsWith, qsizetype of
 }
 
 QString
-SBHtmlPerformersAll::_getIconLocation(const SBIDPerformerPtr& pPtr)
+SBHtmlPerformersAll::_getIconLocation(const SBIDPerformerPtr& pPtr, const SBKey::ItemType& defaultType)
 {
-    SB_RETURN_IF_NULL(pPtr,ExternalData::getDefaultIconPath());
+    SB_RETURN_IF_NULL(pPtr,ExternalData::getDefaultIconPath(defaultType));
 
     QString iconLocation;
     SBKey iconKey;
@@ -273,7 +273,7 @@ SBHtmlPerformersAll::_getIconLocation(const SBIDPerformerPtr& pPtr)
     if(!iconKey.validFlag())
     {
         //	Retrieve std song icon
-        iconLocation=ExternalData::getDefaultIconPath();
+        iconLocation=ExternalData::getDefaultIconPath(defaultType);
     }
     else
     {

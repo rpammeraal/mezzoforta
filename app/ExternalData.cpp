@@ -131,6 +131,38 @@ ExternalData::getCachePath(SBKey key)
     return f.toLower();
 }
 
+QString
+ExternalData::getDefaultIconPath(const SBKey::ItemType& itemType)
+{
+    switch(itemType)
+    {
+    case SBKey::Song:
+    case SBKey::SongPerformance:
+    case SBKey::OnlinePerformance:
+        return QString("/images/SongIcon.png");
+
+    case SBKey::Performer:
+        return QString("/images/NoBandPhoto.png");
+
+    case SBKey::Album:
+    case SBKey::AlbumPerformance:
+        return QString("/images/NoAlbumCover.png");
+
+    case SBKey::Chart:
+    case SBKey::ChartPerformance:
+        return QString("/images/ChartIcon.png");
+
+    case SBKey::Playlist:
+    case SBKey::PlaylistDetail:
+        return QString("/images/PlaylistIcon.png");
+
+    default:
+        qDebug() << SB_DEBUG_ERROR << "itemType" << itemType << "not handled.";
+        ;
+    }
+    return _defaultIconPath;
+}
+
 //  PUBLIC SLOTS
 void
 ExternalData::processAlbum(QNetworkReply *r)

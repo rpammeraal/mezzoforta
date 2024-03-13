@@ -40,7 +40,7 @@ public:
 
     //	Static methods
     QString static getCachePath(SBKey id);
-    inline QString static getDefaultIconPath() { return _defaultIconPath; }
+    QString static getDefaultIconPath(const SBKey::ItemType& itemType);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);

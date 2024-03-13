@@ -16,7 +16,7 @@ public:
 private:
     friend class SBHtmlPerformersAll;
 
-    static QString _getIconLocation(const SBIDOnlinePerformancePtr& opPtr);
+    static QString _getIconLocation(const SBIDOnlinePerformancePtr& opPtr, const SBKey::ItemType& defaultItem);
 
 };
 

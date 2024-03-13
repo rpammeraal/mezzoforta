@@ -17,7 +17,7 @@ protected:
     friend class SBHtmlPerformersAll;
     friend class SBHtmlSongsAll;
 
-    static QString _getIconLocation(const SBIDAlbumPtr& aPtr);
+    static QString _getIconLocation(const SBIDAlbumPtr& aPtr, const SBKey::ItemType& defaultType);
 };
 
 #endif // SBHTMLALBUMSALL_H

@@ -42,10 +42,10 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             //  Create list of song instances (e.g. all instances on an album)
             QVector<SBIDAlbumPerformancePtr> allAlbumPerformances=sPtr->allPerformances();
             table=QString();
-            int numPlayables=0;
 
             if(allAlbumPerformances.count())
             {
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Albums:</P></TD></TR>");
                 QVectorIterator<SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
                 while(apIt.hasNext())
                 {
@@ -57,15 +57,14 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                         SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
                         if(opPtr)
                         {
-                            iconLocation=_getIconLocation(opPtr);
+                            iconLocation=_getIconLocation(opPtr, SBKey::Album);
                             playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                     .arg(opPtr->key().toString())
                             ;
-                            numPlayables++;
                         }
                         else
                         {
-                            iconLocation=ExternalData::getDefaultIconPath();
+                            iconLocation=ExternalData::getDefaultIconPath(SBKey::Song);
                             playerControlHTML=empty;
                         }
 
@@ -89,14 +88,9 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                             .arg(Common::escapeQuotesHTML(opPtr->songPerformerName()))
                             .arg(apPtr->albumKey().toString())
                         ;
-                        qDebug() << SB_DEBUG_INFO << row;
                         table+=row;
                     }
                 }
-            }
-            if(numPlayables)
-            {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Albums:</P></TD></TR>")+table;
             }
             html.replace(albums,table);
 
@@ -106,7 +100,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             if(allPlaylists.count())
             {
                 table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Playlists:</TD></TR>");
-                table+=QString("<TR><TD colspan=\"3\" class=\"SBItemMinor\">");
                 QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(allPlaylists);
                 while(it.hasNext())
                 {
@@ -115,10 +108,29 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 
                     if(plPtr)
                     {
-                        table+=QString("<LI><A class=\"SBItemMajor\">%1</A></LI>").arg(plPtr->playlistName());
+                        QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                        .arg(plPtr->key().toString());
+                            ;
+                        QString row=QString(
+                            "<TR>"
+                                "<TD class=\"SBIconCell\" >"
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</TD>"
+                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"playercontrol_button\" >"
+                                    "%3"
+                                "</TD>"
+                            "</TR>"
+                        )
+                            .arg(ExternalData::getDefaultIconPath(SBKey::PlaylistDetail))
+                            .arg(Common::escapeQuotesHTML(plPtr->playlistName()))
+                            .arg(playerControlHTML)
+                            .arg(plPtr->key().toString())
+                        ;
+                        qDebug() << SB_DEBUG_INFO << row;
+                        table+=row;
                     }
                 }
-                table+=QString("</TD></TR>");
             }
             html.replace(playlists,table);
 
@@ -128,7 +140,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             if(allCharts.count())
             {
                 table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Charts:</TD></TR>");
-                table+=QString("<TR><TD colspan=\"3\" class=\"SBItemMinor\">");
                 QMapIterator<SBIDChartPerformancePtr, SBIDChartPtr> it(allCharts);
                 while(it.hasNext())
                 {
@@ -136,10 +147,28 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                     SBIDChartPtr cPtr=it.value();
                     if(cPtr)
                     {
-                        table+=QString("<LI><A class=\"SBItemMinor\">%1</A></LI>").arg(cPtr->chartName());
+                        QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                        .arg(cPtr->key().toString());
+                            ;
+                        QString row=QString(
+                            "<TR>"
+                                "<TD class=\"SBIconCell\" >"
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</TD>"
+                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"playercontrol_button\" >"
+                                    "%3"
+                                "</TD>"
+                            "</TR>"
+                        )
+                            .arg(ExternalData::getDefaultIconPath(SBKey::ChartPerformance))
+                            .arg(Common::escapeQuotesHTML(cPtr->chartName()))
+                            .arg(playerControlHTML)
+                            .arg(cPtr->key().toString())
+                        ;
+                        table+=row;
                     }
                 }
-                table+=QString("</TD></TR>");
             }
             html.replace(charts,table);
 
@@ -201,11 +230,11 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                 while(it.hasNext() && !iconLocation.size())
                 {
                     it.next();
-                    iconLocation=_getIconLocation(it.value());
+                    iconLocation=_getIconLocation(it.value(), SBKey::Performer);
                 }
                 if(!iconLocation.size())
                 {
-                    iconLocation=ExternalData::getDefaultIconPath();
+                    iconLocation=ExternalData::getDefaultIconPath(SBKey::Song);
                 }
 
                 //	Start table row
@@ -242,10 +271,10 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
 }
 
 QString
-SBHtmlSongsAll::_getIconLocation(const SBIDOnlinePerformancePtr& opPtr)
+SBHtmlSongsAll::_getIconLocation(const SBIDOnlinePerformancePtr& opPtr, const SBKey::ItemType& defaultType)
 {
     QString iconLocation;
-    SB_RETURN_IF_NULL(opPtr,ExternalData::getDefaultIconPath());
+    SB_RETURN_IF_NULL(opPtr,ExternalData::getDefaultIconPath(defaultType));
     SBIDAlbumPtr aPtr=opPtr->albumPtr();
-    return SBHtmlAlbumsAll::_getIconLocation(aPtr);
+    return SBHtmlAlbumsAll::_getIconLocation(aPtr,defaultType);
 }

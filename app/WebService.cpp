@@ -250,12 +250,12 @@ WebService::_getIconResource(QString path, const QHttpServerRequest& r)
         iconPath=ExternalData::getCachePath(key);
         if(!QFile::exists(iconPath))
         {
-            iconPath=ExternalData::getDefaultIconPath();
+            iconPath=ExternalData::getDefaultIconPath(SBKey::Song);
         }
     }
     else
     {
-        iconPath=ExternalData::getDefaultIconPath();
+        iconPath=ExternalData::getDefaultIconPath(SBKey::Song);
     }
     return QHttpServerResponse::fromFile(iconPath);
 }
