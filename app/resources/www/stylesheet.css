@@ -202,6 +202,21 @@ table, th, td {
     font-weight: bold;
 }
 
+.SBItemMajorSplit {
+    width: 50%;
+    margin-top: 10px;
+	font-size: 125%;
+	font-weight: bold;
+}
+
+.SBItemMajorSplit:hover {
+    color: dodgerblue;
+}
+
+.SBItemMajorSplit:active {
+    font-weight: bold;
+}
+
 .SBItemMinor {
     margin-top: 0px;
 	font-weight: bold;

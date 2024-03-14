@@ -28,10 +28,12 @@ public:
     //	Pointers
     SBIDSongPerformancePtr songPerformancePtr() const;
     SBIDSongPtr songPtr() const;
+    SBIDChartPtr chartPtr() const;
 
     //	Redirectors
     int songPerformerID() const;
     int songID() const;
+    inline int chartID() const { return _chartID; } ;
     QString songPerformerName() const;
     QString songTitle() const;
 
