@@ -179,6 +179,9 @@ table, th, td {
 	font-weight: bold;
 }
 
+.SBLineItem {
+    margin-top: 10px;
+}
 
 .SBItemMajorTitleOnly {
     width: 100%;

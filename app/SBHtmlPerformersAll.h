@@ -14,6 +14,7 @@ public:
     static QString retrieveAllPerformers(const QChar& startsWith, qsizetype offset=0, qsizetype size=0);
 protected:
     friend class SBHtmlAlbumsAll;
+    friend class SBHtmlSongsAll;
 
     static QString _getIconLocation(const SBIDPerformerPtr& pPtr, const SBKey::ItemType& defaultType);
 };

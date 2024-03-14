@@ -57,7 +57,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
 
 
                         //  Handle type of playlist detail
-                        qDebug() << SB_DEBUG_INFO << pdPtr->itemType();
                         if(pdPtr->consistOfItemType()==SBKey::OnlinePerformance)
                         {
                             const SBIDOnlinePerformancePtr opPtr=pdPtr->onlinePerformancePtr();
@@ -70,8 +69,6 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                         {
                             itemKey=pdPtr->childKey();
                         }
-                        qDebug() << SB_DEBUG_INFO << itemKey;
-
 
                         QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                         .arg(pdPtr->key().toString());
@@ -79,7 +76,7 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
 
                         QString row=QString(
                             "<TR>"
-                                "<TD class=\"SBIconCell\" "
+                                "<TD class=\"SBIconCell\" >"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
                                 "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"

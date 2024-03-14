@@ -4,6 +4,7 @@
 
 #include "ExternalData.h"
 #include "SBSqlQueryModel.h"
+#include "SBHtmlPerformersAll.h"
 #include "SBHtmlSongsAll.h"
 #include "SBIDAlbum.h"
 #include "SBIDChart.h"
@@ -18,6 +19,7 @@ SBHtmlSongsAll::SBHtmlSongsAll()
 }
 
 static const QString albums=QString("___SB_ALBUMS___");
+static const QString performers=QString("___SB_PERFORMERS___");
 static const QString playlists=QString("___SB_PLAYLISTS___");
 static const QString charts=QString("___SB_CHARTS___");
 static const QString lyrics=QString("___SB_LYRICS___");
@@ -40,13 +42,47 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
         {
             QString table;
 
-            //  Create list of song instances (e.g. all instances on an album)
+            //  Original performer
+            SBIDSongPerformancePtr spPtr=sPtr->originalSongPerformancePtr();
+            if(spPtr)
+            {
+                SBIDPerformerPtr pPtr=spPtr->performerPtr();
+                if(pPtr)
+                {
+                    table=QString("<TR><TD colspan=\"4\"><P class=\"SBItemSection\">Original Performer:</P></TD></TR>");
+                    QString playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                    .arg(pPtr->key().toString())
+                            ;
+
+                    QString row=QString(
+                        "<TR class=\"SBLineItem\" >"
+                            "<TD class=\"SBIconCell\" >"
+                                "<img class=\"SBIcon\" src=\"%1\"></img>"
+                            "</TD>"
+                            "<TD class=\"SBItemMajor\" colspan=\"2\" onclick=\"open_page('%4','%2');\">%2</TD>"
+                            "<TD class=\"playercontrol_button\" >"
+                                "%3"
+                            "</TD>"
+                        "</TR>"
+                    )
+                        .arg(SBHtmlPerformersAll::_getIconLocation(pPtr,SBKey::Performer))
+                        .arg(Common::escapeQuotesHTML(pPtr->performerName()))
+                        .arg(playerControlHTML)
+                        .arg(pPtr->key().toString())
+                        ;
+                    table+=row;
+                }
+            }
+            html.replace(performers,table);
+
+
+            //  Albums
             QVector<SBIDAlbumPerformancePtr> allAlbumPerformances=sPtr->allPerformances();
             table=QString();
 
             if(allAlbumPerformances.count())
             {
-                table=QString("<TR><TD colspan=\"5\"><P class=\"SBItemSection\">Albums:</P></TD></TR>");
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Albums:</P></TD></TR>");
                 QVectorIterator<SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
                 while(apIt.hasNext())
                 {
@@ -70,17 +106,17 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                         }
 
                         QString row=QString(
-                            "<TR>"
+                            "<TR class=\"SBLineItem\" >"
                                 "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\" colspan=\"3\" onclick=\"open_page('%5','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\" colspan=\"2\" onclick=\"open_page('%5','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" rowspan=\"2\">"
                                     "%3"
                                 "</TD>"
                             "</TR>"
                             "<TR>"
-                                "<TD pos=\"84\" colspan=\"3\" class=\"SBItemMinor\" >%4</TD>"
+                                "<TD class=\"SBItemMinor\" colspan=\"2\" onclick=\"open_page('%6','%4');\">&nbsp;&nbsp;&nbsp;&nbsp;%4</TD>"
                             "</TR>"
                         )
                             .arg(iconLocation)
@@ -88,6 +124,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                             .arg(playerControlHTML)
                             .arg(Common::escapeQuotesHTML(opPtr->songPerformerName()))
                             .arg(apPtr->albumKey().toString())
+                            .arg(apPtr->songPerformerKey().toString())
                         ;
                         table+=row;
                     }
@@ -100,7 +137,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             table=QString();
             if(allPlaylists.count())
             {
-                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Playlists:</TD></TR>");
+                table=QString("<TR><TD colspan=\"4\" class=\"SBItemSection\">Playlists:</TD></TR>");
                 QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(allPlaylists);
                 while(it.hasNext())
                 {
@@ -113,11 +150,11 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                                         .arg(plPtr->key().toString());
                             ;
                         QString row=QString(
-                            "<TR>"
+                            "<TR class=\"SBLineItem\" >"
                                 "<TD class=\"SBIconCell\" >"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\" colspan=\"3\" onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\" colspan=\"2\" onclick=\"open_page('%4','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" >"
                                     "%3"
                                 "</TD>"
@@ -128,7 +165,6 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                             .arg(playerControlHTML)
                             .arg(plPtr->key().toString())
                         ;
-                        qDebug() << SB_DEBUG_INFO << row;
                         table+=row;
                     }
                 }
@@ -155,7 +191,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                 }
 
                 //  Create html
-                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Playlists:</TD></TR>");
+                table=QString("<TR><TD colspan=\"4\" class=\"SBItemSection\">Charts:</TD></TR>");
                 QMultiMapIterator<int,SBIDChartPerformancePtr> mmIT(mm);
                 while(mmIT.hasNext())
                 {
@@ -188,18 +224,20 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                                         .arg(cPtr->key().toString());
                             ;
                         QString row=QString(
-                            "<TR>"
-                                "<TD class=\"SBIconCell\" >"
+                            "<TR class=\"SBLineItem\" >"
+                                "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBIconCell\" >"
+                                "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "%5"
                                 "</TD>"
-                                "<TD class=\"SBItemMajorSplit\" onclick=\"open_page('%6','%7');\">%7</TD>"
-                                "<TD class=\"SBItemMajorSplit\" onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\" onclick=\"open_page('%4','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" >"
                                     "%3"
                                 "</TD>"
+                            "</TR>"
+                            "<TR>"
+                                "<TD class=\"SBItemMinor\" onclick=\"open_page('%6','%7');\">&nbsp;&nbsp;&nbsp;&nbsp;%7</TD>"
                             "</TR>"
                         )
                             .arg(iconLocation)
