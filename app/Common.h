@@ -100,6 +100,11 @@ public:
         result_missing=3
     };
 
+    //  Hack to similate operator overloading on return type
+    struct retrieve_sbtablemodel {} as_sbtablemodel;
+    struct retrieve_qvector {} as_qvector;
+    struct retrieve_qmap {} as_qmap;
+
     class sb_parameters
     {
     public:
@@ -189,6 +194,7 @@ private:
 };
 
 QString convertByteArray2String(const QByteArray& a);
+
 
 #endif // COMMON_H
 

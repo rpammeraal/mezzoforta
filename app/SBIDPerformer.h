@@ -36,7 +36,8 @@ public:
     SBTableModel* albums() const;
     QVector<SBIDAlbumPtr> albumList() const;
     QVector<SBIDAlbumPerformancePtr> albumPerformances() const;
-    SBTableModel* charts() const;
+    SBTableModel* charts(Common::retrieve_sbtablemodel) const;
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> charts(Common::retrieve_qmap) const;
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;

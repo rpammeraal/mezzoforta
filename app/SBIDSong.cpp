@@ -186,16 +186,16 @@ SBIDSong::allPerformances()
 }
 
 SBTableModel*
-SBIDSong::charts(retrieve_sbtablemodel) const
+SBIDSong::charts(Common::retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=this->charts(SBIDSong::retrieve_qmap());
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=this->charts(Common::retrieve_qmap());
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
 }
 
 QMap<SBIDChartPerformancePtr, SBIDChartPtr>
-SBIDSong::charts(retrieve_qmap) const
+SBIDSong::charts(Common::retrieve_qmap) const
 {
     return Preloader::chartItems(*this);
 }
@@ -268,15 +268,15 @@ SBIDSong::numAlbumPerformances()
 }
 
 SBTableModel*
-SBIDSong::playlists(retrieve_sbtablemodel)
+SBIDSong::playlists(Common::retrieve_sbtablemodel)
 {
     SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(this->playlists(as_qvector));
+    tm->populatePlaylists(this->playlists(Common::retrieve_qvector()));
     return tm;
 }
 
 QVector<SBIDSong::PlaylistOnlinePerformance>
-SBIDSong::playlists(retrieve_qvector)
+SBIDSong::playlists(Common::retrieve_qvector)
 {
     getSemaphore();
     if(!_playlistOnlinePerformances.count())

@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QVector>
 
+#include "Common.h"
 #include "ExternalData.h"
 #include "SBHtmlAlbumsAll.h"
 #include "SBHtmlPerformersAll.h"
@@ -178,33 +179,49 @@ SBHtmlPerformersAll::performerDetail(QString html, const QString& key)
             html.replace(albums,table);
 
             //  Charts
-            SBTableModel* allCharts=pPtr->charts();
+            QMap<SBIDChartPerformancePtr, SBIDChartPtr> allCharts=pPtr->charts(Common::retrieve_qmap());
             table=QString();
 
-            if(allCharts->rowCount())
+            if(allCharts.count())
             {
-                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Charts:</TD></TR>");
-
-                for(qsizetype i=0; i<allCharts->rowCount();i++)
+                //  Need to reorder the list by chart position and then chart name.
+                QMultiMap<int, SBIDChartPerformancePtr> mm;
+                QMapIterator<SBIDChartPerformancePtr, SBIDChartPtr> it(allCharts);
+                while(it.hasNext())
                 {
-                    SBKey songKey=SBKey(allCharts->item(i,0)->data(Qt::DisplayRole).toString().toLatin1());
-                    SBKey chartKey=SBKey(allCharts->item(i,2)->data(Qt::DisplayRole).toString().toLatin1());
-                    int chartPosition=allCharts->item(i,4)->data(Qt::DisplayRole).toString().toInt();
+                    it.next();
+                    SBIDChartPerformancePtr cpPtr=it.key();
 
-                    qDebug() << SB_DEBUG_INFO << songKey << chartKey << chartPosition;
-
-                    SBIDSongPtr sPtr=SBIDSong::retrieveSong(songKey);
-                    SBIDChartPtr cPtr=SBIDChart::retrieveChart(chartKey);
-
-                    if(sPtr && cPtr)
+                    if(cpPtr)
                     {
-                        QString iconLocation;
+                        mm.insert(cpPtr->chartPosition(),cpPtr);
+                    }
+                }
 
-                        SBIDSongPerformancePtr spPtr=sPtr->originalSongPerformancePtr();
+                //  Create html
+                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Charts:</TD></TR>");
+                QMultiMapIterator<int,SBIDChartPerformancePtr> mmIT(mm);
+                while(mmIT.hasNext())
+                {
+                    mmIT.next();
+
+                    SBIDChartPerformancePtr cpPtr=mmIT.value();
+                    SBIDChartPtr cPtr=allCharts[cpPtr];
+
+                    if(cpPtr && cPtr)
+                    {
+                        int chartPosition=cpPtr->chartPosition();
+                        QString iconLocation;
+                        SBKey songKey;
+                        QString songTitle;
+
+                        SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
                         if(spPtr)
                         {
                             SBIDOnlinePerformancePtr opPtr=spPtr->preferredOnlinePerformancePtr();
                             iconLocation=SBHtmlSongsAll::_getIconLocation(opPtr,SBKey::ChartPerformance);
+                            songKey=spPtr->songKey();
+                            songTitle=spPtr->songTitle();
                         }
                         if(!iconLocation.size())
                         {
@@ -234,8 +251,8 @@ SBHtmlPerformersAll::performerDetail(QString html, const QString& key)
                             .arg(playerControlHTML)
                             .arg(cPtr->key().toString())
                             .arg(chartPosition)
-                            .arg(Common::escapeQuotesHTML(sPtr->songTitle()))
-                            .arg(sPtr->key().toString())
+                            .arg(Common::escapeQuotesHTML(songTitle))
+                            .arg(songKey.toString())
                         ;
                         table+=row;
                     }

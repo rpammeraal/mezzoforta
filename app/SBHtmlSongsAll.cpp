@@ -5,9 +5,10 @@
 #include "ExternalData.h"
 #include "SBSqlQueryModel.h"
 #include "SBHtmlSongsAll.h"
-#include "SBIDOnlinePerformance.h"
 #include "SBIDAlbum.h"
 #include "SBIDChart.h"
+#include "SBIDChartPerformance.h"
+#include "SBIDOnlinePerformance.h"
 #include "SBIDPerformer.h"
 #include "SBIDSong.h"
 #include "SBHtmlAlbumsAll.h"
@@ -45,7 +46,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
 
             if(allAlbumPerformances.count())
             {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Albums:</P></TD></TR>");
+                table=QString("<TR><TD colspan=\"5\"><P class=\"SBItemSection\">Albums:</P></TD></TR>");
                 QVectorIterator<SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
                 while(apIt.hasNext())
                 {
@@ -73,13 +74,13 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                 "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%5','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\" colspan=\"3\" onclick=\"open_page('%5','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" rowspan=\"2\">"
                                     "%3"
                                 "</TD>"
                             "</TR>"
                             "<TR>"
-                                "<TD pos=\"84\" class=\"SBItemMinor\" >%4</TD>"
+                                "<TD pos=\"84\" colspan=\"3\" class=\"SBItemMinor\" >%4</TD>"
                             "</TR>"
                         )
                             .arg(iconLocation)
@@ -95,11 +96,11 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             html.replace(albums,table);
 
             //  Playlists
-            QVector<SBIDSong::PlaylistOnlinePerformance> allPlaylists=sPtr->playlists(SBIDSong::retrieve_qvector());
+            QVector<SBIDSong::PlaylistOnlinePerformance> allPlaylists=sPtr->playlists(Common::retrieve_qvector());
             table=QString();
             if(allPlaylists.count())
             {
-                table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Playlists:</TD></TR>");
+                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Playlists:</TD></TR>");
                 QVectorIterator<SBIDSong::PlaylistOnlinePerformance> it(allPlaylists);
                 while(it.hasNext())
                 {
@@ -116,7 +117,7 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                 "<TD class=\"SBIconCell\" >"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"SBItemMajor\" colspan=\"3\" onclick=\"open_page('%4','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" >"
                                     "%3"
                                 "</TD>"
@@ -135,18 +136,54 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             html.replace(playlists,table);
 
             //  Charts
-            QMap<SBIDChartPerformancePtr, SBIDChartPtr> allCharts=sPtr->charts(SBIDSong::retrieve_qmap());
+            QMap<SBIDChartPerformancePtr, SBIDChartPtr> allCharts=sPtr->charts(Common::retrieve_qmap());
             table=QString();
             if(allCharts.count())
             {
-                table=QString("<TR><TD colspan=\"3\" class=\"SBItemSection\">Charts:</TD></TR>");
+                //  Need to reorder the list by chart position and then chart name.
+                QMultiMap<int, SBIDChartPerformancePtr> mm;
                 QMapIterator<SBIDChartPerformancePtr, SBIDChartPtr> it(allCharts);
                 while(it.hasNext())
                 {
                     it.next();
-                    SBIDChartPtr cPtr=it.value();
-                    if(cPtr)
+                    SBIDChartPerformancePtr cpPtr=it.key();
+
+                    if(cpPtr)
                     {
+                        mm.insert(cpPtr->chartPosition(),cpPtr);
+                    }
+                }
+
+                //  Create html
+                table=QString("<TR><TD colspan=\"5\" class=\"SBItemSection\">Playlists:</TD></TR>");
+                QMultiMapIterator<int,SBIDChartPerformancePtr> mmIT(mm);
+                while(mmIT.hasNext())
+                {
+                    mmIT.next();
+
+                    SBIDChartPerformancePtr cpPtr=mmIT.value();
+                    SBIDChartPtr cPtr=allCharts[cpPtr];
+
+                    if(cpPtr && cPtr)
+                    {
+                        int chartPosition=cpPtr->chartPosition();
+                        QString iconLocation;
+                        SBKey performerKey;
+                        QString performerName;
+
+                        SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
+                        if(spPtr)
+                        {
+                            SBIDOnlinePerformancePtr opPtr=spPtr->preferredOnlinePerformancePtr();
+                            iconLocation=SBHtmlSongsAll::_getIconLocation(opPtr,SBKey::ChartPerformance);
+                            performerKey=spPtr->songPerformerKey();
+                            performerName=spPtr->songPerformerName();
+                        }
+                        if(!iconLocation.size())
+                        {
+                            iconLocation=ExternalData::getDefaultIconPath(SBKey::ChartPerformance);
+                        }
+
                         QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                         .arg(cPtr->key().toString());
                             ;
@@ -155,16 +192,23 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
                                 "<TD class=\"SBIconCell\" >"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                                "<TD class=\"SBIconCell\" >"
+                                    "%5"
+                                "</TD>"
+                                "<TD class=\"SBItemMajorSplit\" onclick=\"open_page('%6','%7');\">%7</TD>"
+                                "<TD class=\"SBItemMajorSplit\" onclick=\"open_page('%4','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\" >"
                                     "%3"
                                 "</TD>"
                             "</TR>"
                         )
-                            .arg(ExternalData::getDefaultIconPath(SBKey::ChartPerformance))
+                            .arg(iconLocation)
                             .arg(Common::escapeQuotesHTML(cPtr->chartName()))
                             .arg(playerControlHTML)
                             .arg(cPtr->key().toString())
+                            .arg(chartPosition)
+                            .arg(performerKey.toString())
+                            .arg(Common::escapeQuotesHTML(performerName))
                         ;
                         table+=row;
                     }
@@ -177,8 +221,8 @@ SBHtmlSongsAll::songDetail(QString html, const QString& key)
             const QString songLyrics=sPtr->lyrics().replace("\n","<BR>");
             if(songLyrics.size())
             {
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Lyrics:</P></TD></TR>"
-                              "<TR><TD colspan=\"3\"><P class=\"SBLyrics\">%1              </P></TD></TR>").arg(songLyrics);
+                table=QString("<TR><TD colspan=\"5\"><P class=\"SBItemSection\">Lyrics:</P></TD></TR>"
+                              "<TR><TD colspan=\"5\"><P class=\"SBLyrics\">%1              </P></TD></TR>").arg(songLyrics);
             }
             html.replace(lyrics,table);
         }

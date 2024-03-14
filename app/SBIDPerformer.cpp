@@ -137,14 +137,20 @@ SBIDPerformer::albumPerformances() const
 }
 
 SBTableModel*
-SBIDPerformer::charts() const
+SBIDPerformer::charts(Common::retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=this->charts(Common::retrieve_qmap());
 
     tm->populateChartsByItemType(SBKey::Performer,list);
 
     return tm;
+}
+
+QMap<SBIDChartPerformancePtr,SBIDChartPtr>
+SBIDPerformer::charts(Common::retrieve_qmap) const
+{
+    return Preloader::chartItems(*this);
 }
 
 int

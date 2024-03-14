@@ -31,11 +31,6 @@ public:
         SBIDOnlinePerformancePtr opPtr;
     };
 
-    //  Hack to similate operator overloading on return type
-    struct retrieve_sbtablemodel {} as_sbtablemodel;
-    struct retrieve_qvector {} as_qvector;
-    struct retrieve_qmap {} as_qmap;
-
     //	Ctors, dtors
     SBIDSong(SBIDSong& c);
     ~SBIDSong();
@@ -54,8 +49,8 @@ public:
     //	Song specific methods
     SBTableModel* albums();
     QVector<SBIDAlbumPerformancePtr> allPerformances();
-    SBTableModel* charts(retrieve_sbtablemodel) const;
-    QMap<SBIDChartPerformancePtr, SBIDChartPtr> charts(retrieve_qmap) const;
+    SBTableModel* charts(Common::retrieve_sbtablemodel) const;
+    QMap<SBIDChartPerformancePtr, SBIDChartPtr> charts(Common::retrieve_qmap) const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
@@ -64,8 +59,8 @@ public:
     inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition);
     QVector<int> performerIDList();
-    SBTableModel* playlists(retrieve_sbtablemodel);
-    QVector<SBIDSong::PlaylistOnlinePerformance> playlists(retrieve_qvector);
+    SBTableModel* playlists(Common::retrieve_sbtablemodel);
+    QVector<SBIDSong::PlaylistOnlinePerformance> playlists(Common::retrieve_qvector);
     inline int songID() const { return itemID(); }
     QMap<int,SBIDSongPerformancePtr> songPerformances();
     inline QString songTitle() const { return _songTitle; }

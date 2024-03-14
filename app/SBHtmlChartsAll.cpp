@@ -81,7 +81,7 @@ SBHtmlChartsAll::chartDetail(QString html, const QString& key)
                             "</TR>"
                         )
                             .arg(ExternalData::getDefaultIconPath(SBKey::Chart))
-                            .arg(Common::escapeQuotesHTML(cpPtr->genericDescription()))
+                            .arg(Common::escapeQuotesHTML(cpPtr->songTitle()))
                             .arg(playerControlHTML)
                             .arg(itemKey.toString())
                             .arg(cpPtr->chartPosition())
