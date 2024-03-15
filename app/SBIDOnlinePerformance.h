@@ -45,6 +45,7 @@ public:
     QString albumTitle() const;
     SBDuration duration() const;
     int songID() const;
+    SBKey songKey() const;
     int songPerformanceID() const;
     SBKey songPerformerKey() const;
     int songPerformerID() const;

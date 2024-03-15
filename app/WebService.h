@@ -23,6 +23,7 @@ private:
     static QHttpServerResponse		_fourOhFour();
     static QHttpServerResponse		_getImageResource(QString path, const QHttpServerRequest& r);
     static QHttpServerResponse		_getHTMLResource(QString path, const QHttpServerRequest& r);
+    static QHttpServerResponse		_getIconResource(QString path, const QHttpServerRequest& r);
     static QHttpServerResponse		_getResource(QString path, const QHttpServerRequest& r, bool isImage=0);
     static QString                  _populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r);
 };

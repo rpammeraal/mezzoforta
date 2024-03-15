@@ -5,41 +5,80 @@
 #include "BackgroundThread.h"
 #include "Common.h"
 #include "Context.h"
-#include "SBTabSongsAll.h"
+#include "ExternalData.h"
 
 BackgroundThread::BackgroundThread(QObject *parent) : QObject(parent)
 {
-    init();
 }
 
-//	CODE LEFT UNCOMMENTED AS EXAMPLE
-//void
-//BackgroundThread::recalculateAllPlaylistDurations() const
-//{
-//    qDebug() << SB_DEBUG_INFO << "semaphore start";
-//    s_cpd->acquire(1);
-
-//    SBIDPlaylist::recalculateAllPlaylistDurations();
-
-//    qDebug() << SB_DEBUG_INFO << "semaphore release";
-//    s_cpd->release(1);
-//}
-void
-BackgroundThread::reload() const
+static const QStringList binPaths =
 {
-    qDebug() << SB_DEBUG_INFO << "semaphore start";
-    s_cpd->acquire(1);
+    "/bin/",
+    "/usr/bin/",
+    "/usr/local/bin/",
+    "/opt/homebrew/bin/"
+};
 
-    SBTabSongsAll* tabSA=Context::instance()->tabSongsAll();
-    SB_RETURN_VOID_IF_NULL(tabSA);
-    tabSA->preload();
-    qDebug() << SB_DEBUG_INFO << "semaphore release";
-    s_cpd->release(1);
+void
+BackgroundThread::processAlbumImages(const QStringList& mbids, const SBKey& key)
+{
+    //  A collaborate process of iterating...
+    _currentKey=key;
+    _albumMBIDs << mbids;
 
+    retrieveNextAlbumImageLocations();
 }
 
 void
-BackgroundThread::init()
+BackgroundThread::retrieveNextAlbumImageLocations()
 {
-    s_cpd=new QSemaphore(1);
+    if(_albumMBIDs.size())
+    {
+        const QString mbid=_albumMBIDs.first();
+        _albumMBIDs.pop_front();
+
+        emit retrieveSingleAlbumImageLocations(mbid,_currentKey);
+        return;
+    }
+    emit done();
+}
+
+void
+BackgroundThread::retrieveImageData(const QStringList& urls, const SBKey& key)
+{
+    const static QString wget("wget");
+
+    //	Locate wget
+    for ( const auto& i : binPaths )
+    {
+        const QString wgetPath=i + wget;
+
+        if(QFile::exists(wgetPath))
+        {
+            //	Retrieve image with wget
+            const QString imageLocation=ExternalData::getCachePath(key);
+            QStringList arguments;
+            for(const auto& url: urls)
+            {
+                arguments << url << "-O" << imageLocation;
+                QProcess runWget(NULL);
+
+                runWget.start(wgetPath,arguments);
+                runWget.waitForFinished();
+
+                if(runWget.exitStatus()==QProcess::NormalExit)
+                {
+                    emit imageDataReady(imageLocation,key);
+                    return; //  only need to get one image for the same SBKey
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_WARNING << "Unable to run " << wget;
+                    qDebug() << SB_DEBUG_WARNING << runWget.readAll();
+                }
+            }
+            return;
+        }
+    }
+    qDebug() << SB_DEBUG_WARNING << "Unable to locate" << wget << "in the following directories:" << binPaths;
 }

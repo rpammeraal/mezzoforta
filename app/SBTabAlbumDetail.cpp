@@ -135,13 +135,24 @@ SBTabAlbumDetail::refreshAlbumReviews()
 }
 
 void
-SBTabAlbumDetail::setAlbumImage(const QPixmap& p)
+SBTabAlbumDetail::setAlbumImage(const QPixmap& p, const SBKey& key)
 {
     QWidget* w=QApplication::focusWidget();
-    setImage(p,Context::instance()->mainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().key());
-    if(w)
+    const SBKey currentKey=this->currentScreenItem().key();
+    if(key.validFlag()==0 || (key.validFlag() && key==currentKey))
     {
-        w->setFocus();
+        //	Allow to clear image (key.validFlag()==0) OR
+        //	Only set image if keys correspond.
+        setImage(p,Context::instance()->mainWindow()->ui.labelAlbumDetailIcon, this->currentScreenItem().key());
+
+        if(w)
+        {
+            w->setFocus();
+        }
+    }
+    else if(key.validFlag())
+    {
+        qDebug() << SB_DEBUG_WARNING << "Image received for key=" << key << ", current key=" << currentKey;
     }
 }
 
@@ -236,6 +247,11 @@ SBTabAlbumDetail::_init()
         SBLabel* l=mw->ui.labelAlbumDetailIcon;
         connect(l, SIGNAL(customContextMenuRequested(QPoint)),
                 this, SLOT(showContextMenuLabel(QPoint)));
+
+        //	Get external data
+        connect(&_ed, &ExternalData::imageDataReady, this, &SBTabAlbumDetail::setAlbumImage);
+        connect(&_ed, &ExternalData::albumWikipediaPageAvailable, this, &SBTabAlbumDetail::setAlbumWikipediaPage);
+        connect(&_ed, &ExternalData::albumReviewsAvailable, this, &SBTabAlbumDetail::setAlbumReviews);
     }
 }
 
@@ -265,17 +281,8 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     //	Clear image
     setAlbumImage(QPixmap());
 
-    //	Get external data
-    ExternalData* ed=new ExternalData();
-    connect(ed, SIGNAL(imageDataReady(QPixmap)),
-            this, SLOT(setAlbumImage(QPixmap)));
-    connect(ed, SIGNAL(albumWikipediaPageAvailable(QString)),
-            this, SLOT(setAlbumWikipediaPage(QString)));
-    connect(ed, SIGNAL(albumReviewsAvailable(QList<QString>)),
-            this, SLOT(setAlbumReviews(QList<QString>)));
-
     //	Album cover image
-    ed->loadAlbumData(aPtr->key());
+    _ed.loadAlbumData(aPtr->key());
 
     //	Populate record detail tab
     mw->ui.labelAlbumDetailAlbumTitle->setText(aPtr->albumTitle());
@@ -343,5 +350,6 @@ SBTabAlbumDetail::_populate(const ScreenItem &si)
     mw->ui.labelAlbumDetailAlbumDetail->setText(details);
 
     currentScreenItem.setSubtabID(mw->ui.tabAlbumDetailLists->currentIndex());
+
     return currentScreenItem;
 }

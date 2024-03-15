@@ -229,7 +229,7 @@ MusicLibrary::rescanMusicLibrary()
         }
         progressCurrentValue++;
     }
-    delete sqm;
+    delete sqm;sqm=NULL;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +237,6 @@ MusicLibrary::rescanMusicLibrary()
     ///////////////////////////////////////////////////////////////////////////////////
     QMutableVectorIterator<MLentityPtr> feIT(foundEntities);
     QVector<MLentityPtr> newEntities;
-    int numNewSongs=0;
 
     progressCurrentValue=0;
     progressMaxValue=foundEntities.count();

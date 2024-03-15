@@ -209,6 +209,13 @@ SBIDOnlinePerformance::songID() const
     return (apPtr?apPtr->songID():-1);
 }
 
+SBKey
+SBIDOnlinePerformance::songKey() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songKey():SBKey());
+}
+
 int
 SBIDOnlinePerformance::songPerformanceID() const
 {
@@ -366,7 +373,7 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
             "rp.record_position, "
             "rp.record_performance_id, "
             "op.online_performance_id, "
-            "op.path "
+            "REPLACE(op.path,'//','/') "
         "FROM "
             "___SB_SCHEMA_NAME___online_performance op "
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -377,11 +384,10 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
                     "rp.record_id=r.record_id "
         "ORDER BY "
             "2 "
-        "%2 "
+        "%1 "
     )
             .arg(limitClause)
     ;
-
     return new SBSqlQueryModel(q);
 }
 

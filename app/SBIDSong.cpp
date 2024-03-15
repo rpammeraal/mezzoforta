@@ -37,7 +37,7 @@ SBIDSong::commonPerformerName() const
 QString
 SBIDSong::genericDescription() const
 {
-    return QString("Song - %1 / %2 (Not Available)")
+    return QString("Song - %1 / %2")
         .arg(this->text())
         .arg(this->songOriginalPerformerName())
     ;
@@ -186,12 +186,18 @@ SBIDSong::allPerformances()
 }
 
 SBTableModel*
-SBIDSong::charts() const
+SBIDSong::charts(Common::retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=this->charts(Common::retrieve_qmap());
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
+}
+
+QMap<SBIDChartPerformancePtr, SBIDChartPtr>
+SBIDSong::charts(Common::retrieve_qmap) const
+{
+    return Preloader::chartItems(*this);
 }
 
 void
@@ -262,7 +268,15 @@ SBIDSong::numAlbumPerformances()
 }
 
 SBTableModel*
-SBIDSong::playlists()
+SBIDSong::playlists(Common::retrieve_sbtablemodel)
+{
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePlaylists(this->playlists(Common::retrieve_qvector()));
+    return tm;
+}
+
+QVector<SBIDSong::PlaylistOnlinePerformance>
+SBIDSong::playlists(Common::retrieve_qvector)
 {
     getSemaphore();
     if(!_playlistOnlinePerformances.count())
@@ -270,11 +284,11 @@ SBIDSong::playlists()
         //	Playlists may not be loaded -- retrieve again
         this->_loadPlaylists();
     }
-    SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_playlistOnlinePerformances);
     releaseSemaphore();
-    return tm;
+
+    return _playlistOnlinePerformances;
 }
+
 
 QMap<int,SBIDSongPerformancePtr>
 SBIDSong::songPerformances()
@@ -421,6 +435,17 @@ SBIDSong::songOriginalPerformerName() const
     return (spPtr?spPtr->songPerformerName():QString());
 }
 
+SBKey
+SBIDSong::songOriginalPerformerKey() const
+{
+    SBIDSongPerformancePtr spPtr=originalSongPerformancePtr();
+    SB_RETURN_IF_NULL(spPtr,SBKey());
+
+    SBIDPerformerPtr pPtr=spPtr->performerPtr();
+    SB_RETURN_IF_NULL(pPtr,SBKey());
+    return pPtr->key();
+}
+
 int
 SBIDSong::songOriginalPerformerID() const
 {
@@ -474,13 +499,19 @@ SBIDSong::refreshDependents(bool forcedFlag)
 
 //	Static methods
 SBSqlQueryModel*
-SBIDSong::retrieveAllSongs(const QChar& startsWith)
+SBIDSong::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
     //	List songs with actual online performance only
     QString whereClause;
+    QString limitClause;
+
     if(startsWith!=QChar('\x0'))
     {
         whereClause=QString("WHERE LOWER(LEFT(s.title,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
     }
     const QString q=QString
     (
@@ -505,14 +536,17 @@ SBIDSong::retrieveAllSongs(const QChar& startsWith)
         "%4 "
         "ORDER BY "
             "3,5,7 "
-
+        "OFFSET "
+            "%5 "
+        "%6 "
     )
         .arg(SBKey::Song)
         .arg(SBKey::Performer)
         .arg(SBKey::Album)
         .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
     ;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -936,40 +970,28 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
 
                 //	newSongPtr->refreshDependents(1);		UNCOMMENT BEFORE DEPLOY
                 ScreenItem from(orgSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 ScreenItem to(newSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 st->replace(from,to);
-                qDebug() << SB_DEBUG_INFO;
             }
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
-        qDebug() << SB_DEBUG_INFO;
         if(mergedFlag || songTitleChangedFlag)
         {
-            qDebug() << SB_DEBUG_INFO;
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
             ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
 
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-        qDebug() << SB_DEBUG_INFO;
     }
     else
     {
         dal->restore(restorePoint);
     }
-    qDebug() << SB_DEBUG_INFO;
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-    qDebug() << SB_DEBUG_INFO;
 
     return 0;
 
@@ -1379,7 +1401,7 @@ SBIDSong::_loadAlbumPerformances()
     //	Load performances including dependents, this will set its internal pointers
     _albumPerformances=apmgr->retrieveSet(qm);
 
-    delete qm;
+    qm->deleteLater();
 }
 
 void

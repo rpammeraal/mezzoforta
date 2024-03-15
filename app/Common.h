@@ -27,6 +27,7 @@ class QTableView;
 #define SB_RETURN_IF_NULL(x,y) if(!x) { SB_DEBUG_IF_NULL(x); return (y); }
 #define SB_RETURN_NULL_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return NULL; }
 #define SB_RETURN_VOID_IF_NULL(x) if(!x) { SB_DEBUG_IF_NULL(x); return; }
+#define SB_RETURN_VOID_ERROR_IF_NOT_NULL(x,e) if(x) { qDebug() << SB_DEBUG_ERROR << e; return; }
 
 #define SB_REPLACE_UNDERSCORE(x) QString(x).replace(QChar('_'),QString("___SB_UNDERSCORE_123___"))
 #define SB_SONG_ID "sb_song_id"
@@ -99,6 +100,11 @@ public:
         result_missing=3
     };
 
+    //  Hack to similate operator overloading on return type
+    struct retrieve_sbtablemodel {} as_sbtablemodel;
+    struct retrieve_qvector {} as_qvector;
+    struct retrieve_qmap {} as_qmap;
+
     class sb_parameters
     {
     public:
@@ -160,6 +166,7 @@ public:
     static QString correctArticle(const QString& );
     static QString db_change_to_string(Common::db_change db_change);
     static QString escapeSingleQuotes(const QString &);
+    static QString escapeQuotesHTML(const QString &);
     static void hideColumns(QTableView* tv);
     static int nextID() { return --ID; }
     static QVector<QStringList> parseCSVFile(const QString& string);
@@ -187,6 +194,7 @@ private:
 };
 
 QString convertByteArray2String(const QByteArray& a);
+
 
 #endif // COMMON_H
 

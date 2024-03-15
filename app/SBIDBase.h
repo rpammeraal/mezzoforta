@@ -67,12 +67,13 @@ public:
     QString MBID() const { return _sb_mbid; }
     int modelPosition() const { return _sb_model_position; }
     inline bool reloadFlag() const { return _reloadFlag; }
+    inline bool hasChanges() const { return _changedFlag; }
 
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }
     void setModelPosition(int modelPosition) { _sb_model_position=modelPosition; }
-    void setMBID(const QString& mbid) { _sb_mbid=mbid; setChangedFlag(); }
-    void setURL(const QString& url) { _url=url; setChangedFlag(); }	//	CWIPneed to save this in DB instantly
+    void setMBID(const QString& mbid) { if(mbid!=_sb_mbid) { _sb_mbid=mbid; setChangedFlag(); } }
+    void setURL(const QString& url) { if(url!=_url) { _url=url; setChangedFlag(); } }	//	CWIPneed to save this in DB instantly}
 
     void showDebug(const QString& title) const;
 

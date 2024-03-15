@@ -166,6 +166,14 @@ SBIDAlbumPerformance::songID() const
     return (spPtr?spPtr->songID():-1);
 }
 
+SBKey
+SBIDAlbumPerformance::songKey() const
+{
+    const SBIDSongPtr sPtr=songPtr();
+    SB_RETURN_IF_NULL(sPtr,SBKey());
+    return sPtr->key();
+}
+
 int
 SBIDAlbumPerformance::songPerformanceID() const
 {

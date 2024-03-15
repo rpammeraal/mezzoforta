@@ -46,6 +46,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
+    static SBSqlQueryModel* allCharts(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBKey createKey(int chartID);
     static SBIDChartPtr retrieveChart(int chartID);
     static SBIDChartPtr retrieveChart(SBKey key);

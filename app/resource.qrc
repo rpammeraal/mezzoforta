@@ -1,11 +1,18 @@
 <RCC>
     <qresource prefix="/www">
         <file alias="404.html">resources/www/404.html</file>
-        <file alias="playlist_list.html">resources/www/playlist_list.html</file>
+        <file alias="album_detail.html">resources/www/album_detail.html</file>
+        <file alias="album_list.html">resources/www/album_list.html</file>
+        <file alias="chart_detail.html">resources/www/chart_detail.html</file>
+        <file alias="chart_list.html">resources/www/chart_list.html</file>
         <file alias="content.html">resources/www/content.html</file>
-        <file alias="detail_song.html">resources/www/detail_song.html</file>
         <file alias="index.html">resources/www/index.html</file>
+        <file alias="performer_detail.html">resources/www/performer_detail.html</file>
+        <file alias="performer_list.html">resources/www/performer_list.html</file>
+        <file alias="playlist_detail.html">resources/www/playlist_detail.html</file>
+        <file alias="playlist_list.html">resources/www/playlist_list.html</file>
         <file alias="redirect.html">resources/www/redirect.html</file>
+        <file alias="song_detail.html">resources/www/song_detail.html</file>
         <file alias="song_list.html">resources/www/song_list.html</file>
         <file alias="status.html">resources/www/status.html</file>
         <file alias="stylesheet.css">resources/www/stylesheet.css</file>

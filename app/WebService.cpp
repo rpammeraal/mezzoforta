@@ -7,6 +7,10 @@
 #include "Common.h"
 #include "PlayManager.h"
 #include "PlayerController.h"
+#include "SBHtmlAlbumsAll.h"
+#include "SBHtmlChartsAll.h"
+#include "SBHtmlPerformersAll.h"
+#include "SBHtmlPlaylistsAll.h"
 #include "SBHtmlSongsAll.h"
 
 using namespace Qt::StringLiterals;
@@ -52,7 +56,8 @@ WebService::_init()
     //     return u"%1/player/%2"_s.arg(host(request)).arg(path);
     // });
 
-    //_httpServer.route("/image/", [] (QString path, const QHttpServerRequest &request)
+    _httpServer.route("/icon/", WebService::_getIconResource);
+
     _httpServer.route("/images/", WebService::_getImageResource);
     // {
     //     qDebug() << SB_DEBUG_INFO << "image=" << path;
@@ -158,7 +163,7 @@ WebService::_init()
             _availableResource[fi.fileName()]=c;
         }
     }
-    if(1)
+    if(0)
     {
         for (auto i = _availableResource.cbegin(), end = _availableResource.cend(); i != end; ++i)
         {
@@ -180,8 +185,6 @@ WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
     {
         sbKey=SBKey();
     }
-    qDebug() << SB_DEBUG_INFO << "action=" << action;
-    qDebug() << SB_DEBUG_INFO << "sbKey=" << sbKey;
     const static QString prev("prev");
     const static QString stop("stop");
     const static QString play("play");
@@ -221,15 +224,8 @@ WebService::_controlPlayer(QString unused, const QHttpServerRequest& r)
 QHttpServerResponse
 WebService::_fourOhFour()
 {
-    qDebug() << SB_DEBUG_INFO;
+    qDebug() << SB_DEBUG_WARNING;
     return QHttpServerResponse::fromFile(":/www/404.html");
-}
-
-QHttpServerResponse
-WebService::_getImageResource(QString path, const QHttpServerRequest& r)
-{
-    qDebug() << SB_DEBUG_INFO << path;
-    return WebService::_getResource(path,r,1);
 }
 
 QHttpServerResponse
@@ -241,6 +237,34 @@ WebService::_getHTMLResource(QString path, const QHttpServerRequest& r)
         qDebug() << SB_DEBUG_INFO << path;
     }
     return WebService::_getResource(path,r);
+}
+
+QHttpServerResponse
+WebService::_getIconResource(QString path, const QHttpServerRequest& r)
+{
+    Q_UNUSED(r);
+    QString iconPath;
+    const SBKey key=SBKey(path.toUtf8());
+    if(key.validFlag())
+    {
+        iconPath=ExternalData::getCachePath(key);
+        if(!QFile::exists(iconPath))
+        {
+            iconPath=ExternalData::getDefaultIconPath(SBKey::Song);
+        }
+    }
+    else
+    {
+        iconPath=ExternalData::getDefaultIconPath(SBKey::Song);
+    }
+    return QHttpServerResponse::fromFile(iconPath);
+}
+
+QHttpServerResponse
+WebService::_getImageResource(QString path, const QHttpServerRequest& r)
+{
+    //  qDebug() << SB_DEBUG_INFO << path;
+    return WebService::_getResource(path,r,1);
 }
 
 QHttpServerResponse
@@ -258,7 +282,7 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
     const static QString status(":/www/status.html");
     if(resourcePath!=status)
     {
-        qDebug() << SB_DEBUG_INFO << resourcePath;
+        //  qDebug() << SB_DEBUG_INFO << resourcePath;
     }
 
     if(isImage)
@@ -271,16 +295,33 @@ WebService::_getResource(QString path, const QHttpServerRequest& r, bool isImage
 QString
 WebService::_populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r)
 {
+    const static QString p_key("sb_key");
+    if(path!="status.html")
+    {
+        qDebug() << SB_DEBUG_INFO << resourcePath;
+        qDebug() << SB_DEBUG_INFO << path;
+    }
+
     QFile f(resourcePath);
     f.open(QFile::ReadOnly | QFile::Text);	//	ignore results. Always works, right?
     QTextStream f_str(&f);
     QString str=f_str.readAll();
 
-    QString allSong("song_list.html");
-    QString status("status.html");
+    const static QString allAlbum("album_list.html");
+    const static QString allChart("chart_list.html");
+    const static QString allPlaylist("playlist_list.html");
+    const static QString allPerformers("performer_list.html");
+    const static QString allSong("song_list.html");
+    const static QString albumDetail("album_detail.html");
+    const static QString chartDetail("chart_detail.html");
+    const static QString playlistDetail("playlist_detail.html");
+    const static QString performerDetail("performer_detail.html");
+    const static QString songDetail("song_detail.html");
+    const static QString status("status.html");
 
-    if(path==status)
+    if(path==status)    //  CWIP: rename to playerstatus
     {
+        //  Player status
         PlayerController* pc=Context::instance()->playerController();
 
         QString playerStatus;
@@ -317,21 +358,103 @@ WebService::_populateData(const QString& resourcePath, const QString& path, cons
         const static QString SB_PLAYER_STATUS("___SB_PLAYER_STATUS___");
         str=str.replace(SB_PLAYER_STATUS,playerStatus);
     }
+    else if(path==allAlbum)
+    {
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
+
+        const static QString SB_ALBUM_TABLE("___SB_ALBUM_TABLE___");
+        str=str.replace(SB_ALBUM_TABLE,SBHtmlAlbumsAll::retrieveAllAlbums(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==albumDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlAlbumsAll::albumDetail(str,key);
+    }
+    else if(path==allChart)
+    {
+        //  const static QString p_letter("letter");
+        //  const static QString p_offset("offset");
+        //  const static QString p_size("size");
+        //  QString letterStr=r.query().queryItemValue(p_letter);
+
+        //  For now, no paging.
+        QChar letter(QChar('\x0'));                 //  letterStr.size()>0?letterStr[0]:'A';
+        QString offsetStr=0;                        //  r.query().queryItemValue(p_offset);
+        QString sizeStr=QString("1000000");         //  r.query().queryItemValue(p_size);
+
+        const static QString SB_CHART_TABLE("___SB_CHART_TABLE___");
+        str=str.replace(SB_CHART_TABLE,SBHtmlChartsAll::retrieveAllCharts(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==allPlaylist)
+    {
+        //  const static QString p_letter("letter");
+        //  const static QString p_offset("offset");
+        //  const static QString p_size("size");
+        //  QString letterStr=r.query().queryItemValue(p_letter);
+
+        //  For now, no paging.
+        QChar letter(QChar('\x0'));                 //  letterStr.size()>0?letterStr[0]:'A';
+        QString offsetStr=0;                        //  r.query().queryItemValue(p_offset);
+        QString sizeStr=QString("1000000");         //  r.query().queryItemValue(p_size);
+
+        const static QString SB_PLAYLIST_TABLE("___SB_PLAYLIST_TABLE___");
+        str=str.replace(SB_PLAYLIST_TABLE,SBHtmlPlaylistsAll::retrieveAllPlaylists(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==allPerformers)
+    {
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
+
+        const static QString SB_PERFORMER_TABLE("___SB_PERFORMER_TABLE___");
+        str=str.replace(SB_PERFORMER_TABLE,SBHtmlPerformersAll::retrieveAllPerformers(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
     else if(path==allSong)
     {
-        const static QString p_start("start");
-        QString startStr=r.query().queryItemValue(p_start);
-        QChar start(startStr.size()>0?startStr[0]:'A');
-
-        QString allSongs;
+        const static QString p_letter("letter");
+        const static QString p_offset("offset");
+        const static QString p_size("size");
+        QString letterStr=r.query().queryItemValue(p_letter);
+        QChar letter(letterStr.size()>0?letterStr[0]:'A');
+        QString offsetStr=r.query().queryItemValue(p_offset);
+        QString sizeStr=r.query().queryItemValue(p_size);
 
         const static QString SB_SONG_TABLE("___SB_SONG_TABLE___");
-        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(start));
+        str=str.replace(SB_SONG_TABLE,SBHtmlSongsAll::retrieveAllSongs(letter,offsetStr.toInt(),sizeStr.toInt()));
+    }
+    else if(path==chartDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlChartsAll::chartDetail(str,key);
+    }
+    else if(path==performerDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlPerformersAll::performerDetail(str,key);
+    }
+    else if(path==playlistDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlPlaylistsAll::playlistDetail(str,key);
+    }
+    else if(path==songDetail)
+    {
+        const QString key=r.query().queryItemValue(p_key);
+        str=SBHtmlSongsAll::songDetail(str,key);
     }
     else
     {
         //	Somehow do a 404 here
     }
-
     return str;
 }

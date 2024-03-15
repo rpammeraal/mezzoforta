@@ -288,6 +288,44 @@ SBIDPlaylist::createKey(int playlistID)
     return SBKey(SBKey::Playlist,playlistID);
 }
 
+SBSqlQueryModel*
+SBIDPlaylist::allPlaylists(const QChar& startsWith, qsizetype offset, qsizetype size)
+{
+    //	List songs with actual online performance only
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(p.name,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(p.playlist_id AS VARCHAR) AS SB_ITEM_KEY, "
+            "p.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist p "
+        "%2 "
+        "ORDER BY "
+            "2 "
+        "OFFSET "
+            "%3 "
+        "%4 "
+    )
+        .arg(SBKey::Playlist)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
 SBIDPlaylistPtr
 SBIDPlaylist::retrievePlaylist(SBKey key)
 {
@@ -348,7 +386,7 @@ SBIDPlaylist::removePlaylistItemFromAllPlaylistsByKey(SBKey key)
             pldPtr->setDeletedFlag();
         }
     }
-    delete qm;
+    qm->deleteLater();
 }
 
 ///	Protected methods

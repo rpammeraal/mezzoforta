@@ -1,6 +1,6 @@
 QT       += core gui widgets sql xml network webenginewidgets multimedia httpserver
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql network webenginewidgets multimedia
 
 CONFIG 		+= c++11 import_plugins static sdk_no_version_check plugin
 QTPLUGIN    +=  QPSQL
@@ -12,6 +12,10 @@ QT_DEBUG_PLUGINS=1
 
 SOURCES += \
     Preferences.cpp \
+    SBHtmlAlbumsAll.cpp \
+    SBHtmlChartsAll.cpp \
+    SBHtmlPerformersAll.cpp \
+    SBHtmlPlaylistsAll.cpp \
     SBHtmlSongsAll.cpp \
     SongAlbumNotes.cpp \
     SqlQuery.cpp \
@@ -149,6 +153,10 @@ HEADERS += \
     SBDialogRenamePlaylist.h \
     SBDialogSelectItem.h \
     SBDuration.h \
+    SBHtmlAlbumsAll.h \
+    SBHtmlChartsAll.h \
+    SBHtmlPerformersAll.h \
+    SBHtmlPlaylistsAll.h \
     SBHtmlSongsAll.h \
     SBIDAlbum.h \
     SBIDAlbumPerformance.h \

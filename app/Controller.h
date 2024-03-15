@@ -14,7 +14,6 @@ class QSortFilterProxyModel;
 class QStandardItemModel;
 class QSqlDatabase;
 
-class BackgroundThread;
 class DataAccessLayer;
 class MainWindow;
 class DataEntityPlaylist;
@@ -69,7 +68,6 @@ protected:
 
 private:
     QApplication*     _app;
-    BackgroundThread* _bgt;
     bool              _initSuccessFull;
     QThread           _backgroundThread;
     SBKey             _logOnlinePerformanceKey;

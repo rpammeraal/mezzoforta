@@ -90,7 +90,14 @@ SBIDChartPerformance::songPtr() const
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* sMgr=cm->songMgr();
     return sMgr->retrieve(SBIDSong::createKey(this->songID()));
+}
 
+SBIDChartPtr
+    SBIDChartPerformance::chartPtr() const
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheChartMgr* cMgr=cm->chartMgr();
+    return cMgr->retrieve(SBIDChart::createKey(this->chartID()));
 }
 
 ///	Redirectors
