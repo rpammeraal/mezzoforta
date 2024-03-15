@@ -4,6 +4,7 @@
 #include "SBIDChart.h"
 #include "SBIDChartPerformance.h"
 #include "SBIDSong.h"
+#include "SBIDSongPerformance.h"
 #include "SBHtmlChartsAll.h"
 #include "SBSqlQueryModel.h"
 
@@ -34,6 +35,7 @@ SBHtmlChartsAll::chartDetail(QString html, const QString& key)
 
             if(allItems.count())
             {
+                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>");
                 QMapIterator<int, SBIDChartPerformancePtr> apIt(allItems);
                 //  Remap so we can display songs in order of appearance on album
                 QMap<qsizetype,qsizetype> itemOrderMap;
@@ -53,43 +55,59 @@ SBHtmlChartsAll::chartDetail(QString html, const QString& key)
                     const SBIDChartPerformancePtr cpPtr=allItems.value(itemOrderMap[i+1]);
                     if(cpPtr)
                     {
-                        SBKey itemKey;
+                        SBKey songKey;
                         QString iconLocation;
 
                         const SBIDSongPtr sPtr=cpPtr->songPtr();
                         if(sPtr)
                         {
-                            itemKey=sPtr->key();
+                            songKey=sPtr->key();
                             //  iconLocation=SBHtmlSongsAll::_getIconLocation(sPtr);    //  CWIP
                         }
 
+                        SBKey performerKey;
+
+                        const SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
+                        if(spPtr)
+                        {
+                            performerKey=spPtr->songPerformerKey();
+                        }
 
                         QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
                                                         .arg(sPtr->key().toString());
                             ;
 
                         QString row=QString(
-                            "<TR>"
-                                "<TD class=\"SBIconCell\" "
+                            "<TR class=\"SBLineItem\" >"
+                                "<TD class=\"SBIconCell\" rowspan=\"2\">"
                                     "<img class=\"SBIcon\" src=\"%1\"></img>"
                                 "</TD>"
-                                "<TD class=\"SBIconCell\">%5</TD>"
+                                "<TD class=\"SBIconCell\" rowspan=\"2\">%5</TD>"
                                 "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
                                 "<TD class=\"playercontrol_button\">"
                                     "%3"
                                 "</TD>"
                             "</TR>"
+                            "<TR>"
+                                "<TD class=\"SBItemMinor\" onclick=\"open_page('%7','%6');\">&nbsp;&nbsp;&nbsp;&nbsp;%6</TD>"
+                            "</TR>"
                         )
                             .arg(ExternalData::getDefaultIconPath(SBKey::Chart))
                             .arg(Common::escapeQuotesHTML(cpPtr->songTitle()))
                             .arg(playerControlHTML)
-                            .arg(itemKey.toString())
+                            .arg(songKey.toString())
                             .arg(cpPtr->chartPosition())
+                            .arg(cpPtr->songPerformerName())
+                            .arg(performerKey.toString())
                         ;
+                        if(cpPtr->chartPosition()==1)
+                        {
+                            qDebug() << SB_DEBUG_INFO << row;
+                        }
+
                         table+=row;
                     }
                 }
-                table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>")+table;
             }
             html.replace(songs,table);
         }
@@ -127,7 +145,7 @@ SBHtmlChartsAll::retrieveAllCharts(const QChar& startsWith, qsizetype offset, qs
             //	Start table row
             const QString row=QString(
                 "<THEAD>"
-                    "<TR>"
+                    "<TR class=\"SBLineItem\" >"
                         "<TD class=\"SBIconDiv\" >"
                             "<img class=\"SBIcon\" src=\"%3\"></img>"
                         "</TD>"
