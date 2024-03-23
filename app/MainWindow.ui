@@ -4706,6 +4706,7 @@ Click on 'All Songs' to continue.</string>
      <string>Tools</string>
     </property>
     <addaction name="menuRescanMusicLibrary"/>
+    <addaction name="menuConsistencyChecker"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -4785,6 +4786,11 @@ Click on 'All Songs' to continue.</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="menuConsistencyChecker">
+   <property name="text">
+    <string>Consisteny Checker</string>
    </property>
   </action>
  </widget>

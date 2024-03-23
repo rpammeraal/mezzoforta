@@ -117,6 +117,13 @@ Controller::setMusicLibraryDirectory()
 }
 
 void
+Controller::checkConsistency()
+{
+    MusicLibrary ml;
+    ml.consistencyCheck();
+}
+
+void
 Controller::rescanMusicLibrary()
 {
     MusicLibrary ml;
@@ -537,6 +544,11 @@ Controller::configureMenuItems(const QList<QAction *>& list)
         {
             connect(i,SIGNAL(triggered()),
                     this, SLOT(rescanMusicLibrary()));
+        }
+        else if(itemName=="menuConsistencyChecker")
+        {
+            connect(i,SIGNAL(triggered()),
+                    this, SLOT(checkConsistency()));
         }
         else
         {

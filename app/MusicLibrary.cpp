@@ -28,17 +28,14 @@ MusicLibrary::MusicLibrary(QObject *parent) : QObject(parent)
 void
 MusicLibrary::rescanMusicLibrary()
 {
-    PropertiesPtr properties=Context::instance()->properties();
+    const PropertiesPtr properties=Context::instance()->properties();
     DataAccessLayer* dal=Context::instance()->dataAccessLayer();
     const QString databaseRestorePoint=dal->createRestorePoint();
-    bool suppressDialogsFlag=Context::instance()->properties()->configValue(Configuration::sb_smart_import).toInt();
+    const bool suppressDialogsFlag=Context::instance()->properties()->configValue(Configuration::sb_smart_import).toInt();
 
 
-    const QString schema=properties->currentDatabaseSchema();
 
     //	Important lists: all have `path' as key (in lowercase)
-    QVector<MLentityPtr> foundEntities;
-    QHash<QString,MLperformancePtr> pathToSong;	//	existing songs as known in database
     QHash<QString,MLalbumPathPtr> directory2AlbumPathMap;	//	album path map
 
     //	SBIDManager
@@ -51,83 +48,14 @@ MusicLibrary::rescanMusicLibrary()
     _numNewPerformers=0;
     _numNewAlbums=0;
 
-    const int numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
-    int progressCurrentValue=0;
-    int progressMaxValue=numOnlinePerformances;
+    const qsizetype numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
+    qsizetype progressCurrentValue=0;
+    qsizetype progressMaxValue=numOnlinePerformances;
     ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles",progressCurrentValue,progressMaxValue);
 
-    const QString schemaRoot=
-        Context::instance()->properties()->musicLibraryDirectory()
-        +"/"
-        +schema
-        +(schema.length()?"/":"");
-
-    const QString mtaf=QString("j/john lennon/imagine/02 - crippled inside.flac");
-    const QString mtaf_song=QString("crippled");
-    const QString mtaf_performer=QString("john lennon");
-    const int mtaf_songID=24848;
-    QString keyFromFS;
-    QString keyFromDB;
-
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///	Section A:	Retrieve paths found in directory
-    ///////////////////////////////////////////////////////////////////////////////////
-    QDirIterator it(schemaRoot,
-                    QDir::AllDirs | QDir::AllEntries | QDir::Files | QDir::NoSymLinks | QDir::Readable,
-                    QDirIterator::Subdirectories);
-    QCoreApplication::processEvents();
-    int ID=9999;
     QElapsedTimer time; time.start();
-    while (it.hasNext())
-    {
-        it.next();
-        QFileInfo fi=it.fileInfo();
-        QString path=it.filePath().toUtf8();
-        if(fi.isFile())
-        {
-            path=path.mid(schemaRoot.length());
-            MLentity e;
-            e.ID=ID++;
-            e.filePath=path;
-            e.absoluteParentDirectoryPath=fi.absoluteDir().absolutePath();
-            e.parentDirectoryPath=e.absoluteParentDirectoryPath.mid(schemaRoot.length());
-            e.parentDirectoryName=fi.absoluteDir().dirName();
-            e.extension=fi.completeSuffix();
-            e.key=Common::removeAccents(e.filePath.toLower());
+    QVector<MLentityPtr> foundEntities=_retrievePaths(time,progressMaxValue);
 
-            if(e.key==mtaf)
-            {
-                keyFromFS=e.key;
-            }
-            if(AudioDecoderFactory::fileSupportedFlag(fi,0))
-            {
-                if(fi.size()<10*1024)
-                {
-                    e.errorMsg=QString("File size too short: %1 bytes").arg(fi.size());
-                }
-                foundEntities.append(std::make_shared<MLentity>(e));
-            }
-
-            //	Update dialogbox every half a second or so
-            if(time.elapsed()>700)
-            {
-                QString label=e.parentDirectoryName;
-                if(label.length()>40)
-                {
-                    label=label.left(30);
-                }
-                label="Scanning album "+label;
-                ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
-                if(progressCurrentValue+1>progressMaxValue)
-                {
-                    progressMaxValue=progressCurrentValue+1;
-                }
-                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles",progressCurrentValue,progressMaxValue);
-                time.restart();
-            }
-            progressCurrentValue++;
-        }
-    }
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles");
 
     if(0)
@@ -168,69 +96,31 @@ MusicLibrary::rescanMusicLibrary()
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section B:	Retrieve existing data
     ///////////////////////////////////////////////////////////////////////////////////
+    QHash<QString,MLperformancePtr> pathToSong=_retrieveExistingData(time);
+    QHash<QString,bool> existingPath=_initializeExistingPath(pathToSong);
 
-    //	For the next sections, set up a progress bar.
-
-    SBSqlQueryModel* sqm=SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended();
-
-    progressCurrentValue=0;
-    progressMaxValue=sqm->rowCount();
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving existing songs",1);
-    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
-    time.restart();
-
-    QHash<QString,bool> existingPath;
-    for(int i=0;i<sqm->rowCount();i++)
-    {
-        MLperformance performance;
-        performance.songID             =sqm->data(sqm->index(i,0)).toInt();
-        performance.songPerformerID    =sqm->data(sqm->index(i,1)).toInt();
-        performance.songPerformanceID  =sqm->data(sqm->index(i,2)).toInt();
-        performance.albumID            =sqm->data(sqm->index(i,3)).toInt();
-        performance.albumPerformerID   =sqm->data(sqm->index(i,4)).toInt();
-        performance.albumPosition      =sqm->data(sqm->index(i,5)).toInt();
-        performance.albumPerformanceID =sqm->data(sqm->index(i,6)).toInt();
-        performance.onlinePerformanceID=sqm->data(sqm->index(i,7)).toInt();
-        performance.path=sqm->data(sqm->index(i,8)).toString().replace("\\","");
-        performance.key=Common::removeAccents(performance.path.toLower());
-
-        pathToSong[performance.key]=std::make_shared<MLperformance>(performance);
-        existingPath[performance.key]=0;
-
-        if(performance.songID==mtaf_songID)
-        {
-            if(performance.songID==mtaf_songID && performance.key.contains(mtaf_song) && performance.key.contains(mtaf_performer))
-            {
-                keyFromDB=performance.key;
-            }
-
-//            QString b=Common::removeAccents(p,1);
-//            qDebug() << SB_DEBUG_INFO << b;
-
-//            QString t=pathToSongKey;
-//            for(int i=0;i<t.length();i++)
-//            {
-//                qDebug() << SB_DEBUG_INFO << i << t.at(i) << t.at(i).unicode();
-
-//            }
-        }
-
-        if(time.elapsed()>700)
-        {
-            QString label=performance.path;
-            if(label.length()>40)
-            {
-                label="..."+label.right(30);
-            }
-            label="Scanning song "+label;
-            ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
-            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
-            time.restart();
-        }
-        progressCurrentValue++;
-    }
-    delete sqm;sqm=NULL;
     ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting");
+
+    if(1)
+    {
+        QString search1a="genesis";
+        QString search1b="foxtrot";
+        QString search2="sunday bloody sunday";
+        qDebug() << SB_DEBUG_INFO << "Partial song list, looking for (" << search1a << " and " << search1b << ") or " << search2;
+        QHashIterator<QString,MLperformancePtr> ptsIT(pathToSong);
+
+        while(ptsIT.hasNext())
+        {
+            ptsIT.next();
+            QString key=ptsIT.key();
+
+            if((key.contains(search1a) && key.contains(search1b)) ||key.contains(search2))
+            {
+                qDebug() << SB_DEBUG_INFO << key;
+            }
+        }
+        qDebug() << SB_DEBUG_INFO << "Finish";
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///	Section C:	Determine new songs and retrieve meta data for these
@@ -257,7 +147,7 @@ MusicLibrary::rescanMusicLibrary()
             newEntities.append(ePtr);
 
             //	Populate meta data
-            MetaData md(schemaRoot+ePtr->filePath);
+            MetaData md(_getSchemaRoot()+ePtr->filePath);
 
             //	Primary meta data
             ePtr->albumPosition=md.albumPosition();
@@ -355,12 +245,12 @@ MusicLibrary::rescanMusicLibrary()
             if(e->errorFlag()==0)
             {
                 qDebug() << SB_DEBUG_INFO
+                         << e->key
                          << e->filePath
                          << e->songTitle
                          << e->songPerformerName
                          << e->albumTitle
                          << e->albumPosition
-                         << e->key
                 ;
                 ok++;
             }
@@ -1345,6 +1235,199 @@ MusicLibrary::validateEntityList(QVector<MLentityPtr>& list, QHash<QString,MLalb
     return 1;
 }
 
+void
+MusicLibrary::consistencyCheck() const
+{
+    const Qt::CaseSensitivity caseSensitive=_fileSystemCaseSensitive();
+    qDebug() << SB_DEBUG_INFO << "File system case sensitive:" << caseSensitive;
+
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Consistency Check",1);
+
+    const int numOnlinePerformances=SBIDOnlinePerformance::totalNumberOnlinePerformances()+100;
+    qsizetype progressMaxValue=numOnlinePerformances;
+    QElapsedTimer time; time.start();
+    QVector<MLentityPtr> foundEntities=_retrievePaths(time,progressMaxValue);
+
+    QHash<QString,MLperformancePtr> pathToSong=_retrieveExistingData(time);
+
+    //  For testing purposes only
+    bool doTest=0;
+    QString search("Getting In Tune");
+
+    //  Check if existing data can be found physically
+    QVector<QString> dbPath;
+    QHashIterator<QString,MLperformancePtr> itPTS(pathToSong);
+    while(itPTS.hasNext())
+    {
+        itPTS.next();
+        MLperformancePtr mpPtr=itPTS.value();
+        if(mpPtr->path.size()>0)
+        {
+            dbPath.append(mpPtr->path);
+            if(doTest && mpPtr->path.contains(search))
+            {
+                qDebug() << SB_DEBUG_INFO << "*****DB" << mpPtr->path;
+            }
+
+        }
+    }
+    std::sort(dbPath.begin(),dbPath.end());
+
+    //  Check if physical data is accounted for
+    QVector<QString> hdPath;
+    QVectorIterator<MLentityPtr> itFE(foundEntities);
+    while(itFE.hasNext())
+    {
+        MLentityPtr mePtr=itFE.next();
+        if(mePtr->filePath.size())
+        {
+            hdPath.append(mePtr->filePath);
+            if(doTest && mePtr->filePath.contains(search))
+            {
+                qDebug() << SB_DEBUG_INFO << "*****HD" << mePtr->filePath;
+            }
+        }
+    }
+    std::sort(hdPath.begin(),hdPath.end());
+
+    qDebug() << SB_DEBUG_INFO << "dbPath:" << dbPath.size();
+    qDebug() << SB_DEBUG_INFO << "hdPath:" << hdPath.size();
+
+    QVectorIterator<QString> itDP(dbPath);
+    QVectorIterator<QString> itHP(hdPath);
+    QString d;
+    QString h;
+    bool finish=0;
+    qsizetype total=0;
+    qsizetype matching=0;
+    if(itDP.hasNext() && !d.size())
+    {
+        d=itDP.next();
+    }
+    if(itHP.hasNext() && !h.size())
+    {
+        h=itHP.next();
+    }
+
+    qsizetype calcMax=std::max(dbPath.size(),hdPath.size());
+    QVector<QString> dbMissing;
+    QVector<QString> hdMissing;
+    do
+    {
+        bool incD=0;
+        bool incH=0;
+
+        if(!d.size() || !h.size())
+        {
+            finish=1;
+        }
+        else
+        {
+            //  qDebug() << SB_DEBUG_INFO << "d" << d << "h" << h;
+
+            //  if(d==h)
+            if(d.compare(h,caseSensitive)==0)
+            {
+                //  match
+                matching++;
+                incD=1;
+                incH=1;
+                //  qDebug() << SB_DEBUG_INFO << "\tsame";
+            }
+            else if(d<h)
+            {
+                //      D:  1   2   3   5   6
+                //      H:  1   2   5   6
+                //
+                //      D   H
+                //      0   0
+                //      1   1
+                //      2   2
+                //      3
+                //          4
+                //      5   5
+                //      6
+                //      7   7
+                qDebug() << SB_DEBUG_INFO << "\tMissing on hd:" << d;
+                incD=1;
+                hdMissing.append(d);
+            }
+            else if(d>h)
+            {
+                qDebug() << SB_DEBUG_INFO << "\tMissing in db:" << h;
+                incH=1;
+                dbMissing.append(h);
+            }
+
+            if(incD)
+            {
+                if(itDP.hasNext())
+                {
+                    //  qDebug() << SB_DEBUG_INFO << "\tincrease d";
+                    d=itDP.next();
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_INFO << "\tnothing left in d";
+                    finish=1;
+                }
+            }
+            if(incH)
+            {
+                if(itHP.hasNext())
+                {
+                    //  qDebug() << SB_DEBUG_INFO << "\tincrease h";
+                    h=itHP.next();
+                }
+                else
+                {
+                    qDebug() << SB_DEBUG_INFO << "\tnothing left in h";
+                    finish=1;
+                }
+            }
+        }
+
+        if(time.elapsed()>700)
+        {
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step3:retrieveMetaData",total++,calcMax);
+            time.restart();
+        }
+
+    }
+    while(!finish);
+
+    qDebug() << SB_DEBUG_INFO << "Total:" << total << "songs";
+    qDebug() << SB_DEBUG_INFO << "Matching:" << matching << "songs";
+    qDebug() << SB_DEBUG_INFO << "Missing in db:" << dbMissing.size();
+    //  Collect errors
+    QMap<QString,QString> errors;
+    for(auto result : dbMissing)
+    {
+        errors[result]="does not exists in the database";
+        qDebug() << SB_DEBUG_INFO << "not in db" << result;
+    }
+    qDebug() << SB_DEBUG_INFO << "Missing on hd:" << hdMissing.size();
+    for(auto result : hdMissing)
+    {
+        qDebug() << SB_DEBUG_INFO << "not on hd" << result;
+        errors[result]="is missing on hard drive";
+    }
+
+    ProgressDialog::instance()->hide();
+    ProgressDialog::instance()->stats();
+
+    if(errors.count())
+    {
+        MusicImportResult mir(errors);
+        mir.exec();
+    }
+    else
+    {
+        SBMessageBox::createSBMessageBox(QString("<center>Consistency Check Results:</center>"),"No errors detected.",QMessageBox::Information,QMessageBox::Ok,QMessageBox::Ok,QMessageBox::Ok,1);
+    }
+
+}
+
 QStringList
 MusicLibrary::_greatestHitsAlbums() const
 {
@@ -1412,4 +1495,197 @@ MusicLibrary::_addAlternativePerformerName(DataAccessLayer *dal, const QString& 
 
         _alternativePerformerName2CorrectPerformerName[altPerformerName]=correctPerformerName;
     }
+}
+
+Qt::CaseSensitivity
+MusicLibrary::_fileSystemCaseSensitive() const
+{
+    QTemporaryDir tmpDir;
+    if(tmpDir.isValid())
+    {
+        //  Create `foo' in tmpDir
+        QString fn=QString("%1/foo").arg(tmpDir.path());
+        {
+            //  Put in separate block, to make `foo' go out of scope
+            QFile foo(fn);
+            if (!foo.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                return Qt::CaseSensitive;
+            }
+
+            QTextStream out(&foo);
+            out << "\n";
+        }
+
+        //  Check if we can read with upper case filename
+        QString fnUC=fn.toUpper();
+
+        QFile FOO(fnUC);
+        if (!FOO.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            return Qt::CaseSensitive;
+        }
+
+        //  At this point the file is available in uppercase.
+        //  Now remove file.
+        QFile::remove(fn);
+        return Qt::CaseInsensitive;
+    }
+    return Qt::CaseSensitive;
+}
+
+QString
+MusicLibrary::_getSchemaRoot() const
+{
+    const PropertiesPtr properties=Context::instance()->properties();
+    const QString schema=properties->currentDatabaseSchema();
+
+    return QString("%1/%2%3")
+               .arg(Context::instance()->properties()->musicLibraryDirectory())
+               .arg(schema)
+               .arg((schema.length()?"/":""));
+}
+
+QHash<QString,bool>
+MusicLibrary::_initializeExistingPath(const QHash<QString,MusicLibrary::MLperformancePtr>& pathToSong) const
+{
+    QHash<QString,bool> existingPath;
+    QHashIterator<QString,MusicLibrary::MLperformancePtr> it(pathToSong);
+
+    while(it.hasNext())
+    {
+        it.next();
+        existingPath[it.key()]=0;
+    }
+    return existingPath;
+}
+
+QHash<QString,MusicLibrary::MLperformancePtr>
+MusicLibrary::_retrieveExistingData(QElapsedTimer& time) const
+{
+    QHash<QString,MLperformancePtr> pathToSong;
+
+    SBSqlQueryModel* sqm=SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended();
+
+    //	For the next sections, set up a progress bar.
+    qsizetype progressCurrentValue=0;
+    qsizetype progressMaxValue=sqm->rowCount();
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Retrieving existing songs",1);
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
+    time.restart();
+
+    //  For testing purposes only
+    bool doTest=0;
+    QString search("Puik Idee Ballade.ogg");
+
+    for(int i=0;i<sqm->rowCount();i++)
+    {
+        MLperformance performance;
+        performance.songID             =sqm->data(sqm->index(i,0)).toInt();
+        performance.songPerformerID    =sqm->data(sqm->index(i,1)).toInt();
+        performance.songPerformanceID  =sqm->data(sqm->index(i,2)).toInt();
+        performance.albumID            =sqm->data(sqm->index(i,3)).toInt();
+        performance.albumPerformerID   =sqm->data(sqm->index(i,4)).toInt();
+        performance.albumPosition      =sqm->data(sqm->index(i,5)).toInt();
+        performance.albumPerformanceID =sqm->data(sqm->index(i,6)).toInt();
+        performance.onlinePerformanceID=sqm->data(sqm->index(i,7)).toInt();
+        performance.path=sqm->data(sqm->index(i,8)).toString().replace("\\","");
+        performance.key=Common::removeAccents(performance.path.toLower());
+
+        pathToSong[performance.key]=std::make_shared<MLperformance>(performance);
+
+        if(doTest && performance.path.contains(search))
+        {
+            qDebug() << SB_DEBUG_INFO << "*****"
+                     << performance.songPerformanceID
+                     << performance.albumPerformanceID
+                     << performance.onlinePerformanceID
+                     << performance.path
+                ;
+        }
+
+        if(time.elapsed()>700)
+        {
+            QString label=performance.path;
+            if(label.length()>40)
+            {
+                label="..."+label.right(30);
+            }
+            label="Scanning song "+label;
+            ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
+            ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step2:retrieveExisting",progressCurrentValue,progressMaxValue);
+            time.restart();
+        }
+        progressCurrentValue++;
+    }
+    delete sqm;sqm=NULL;
+    return pathToSong;
+}
+
+QVector<MusicLibrary::MLentityPtr>
+MusicLibrary::_retrievePaths(QElapsedTimer& time, qsizetype progressMaxValue) const
+{
+    const QString schemaRoot=_getSchemaRoot();
+    QVector<MusicLibrary::MLentityPtr> foundEntities;
+    int progressCurrentValue=0;
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///	Section A:	Retrieve paths found in directory
+    ///////////////////////////////////////////////////////////////////////////////////
+    QDirIterator it(schemaRoot,
+                    QDir::AllDirs | QDir::AllEntries | QDir::Files | QDir::NoSymLinks | QDir::Readable,
+                    QDirIterator::Subdirectories);
+    QCoreApplication::processEvents();
+    int ID=9999;
+    while (it.hasNext())
+    {
+        it.next();
+        QFileInfo fi=it.fileInfo();
+        QString path=it.filePath().toUtf8();
+        if(fi.isFile())
+        {
+            path=path.mid(schemaRoot.length());
+            MLentity e;
+            e.ID=ID++;
+            e.filePath=path;
+            e.absoluteParentDirectoryPath=fi.absoluteDir().absolutePath();
+            e.parentDirectoryPath=e.absoluteParentDirectoryPath.mid(schemaRoot.length());
+            e.parentDirectoryName=fi.absoluteDir().dirName();
+            e.extension=fi.completeSuffix();
+            e.key=Common::removeAccents(e.filePath.toLower());
+
+            if(AudioDecoderFactory::fileSupportedFlag(fi,0))
+            {
+                if(fi.size()<10*1024)
+                {
+                    e.errorMsg=QString("File size too short: %1 bytes").arg(fi.size());
+                }
+                else
+                {
+                    foundEntities.append(std::make_shared<MLentity>(e));
+                }
+            }
+
+            //	Update dialogbox every half a second or so
+            if(time.elapsed()>700)
+            {
+                QString label=e.parentDirectoryName;
+                if(label.length()>40)
+                {
+                    label=label.left(30);
+                }
+                label="Scanning album "+label;
+                ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,label);
+                if(progressCurrentValue+1>progressMaxValue)
+                {
+                    progressMaxValue=progressCurrentValue+1;
+                }
+                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles",progressCurrentValue,progressMaxValue);
+                time.restart();
+            }
+            progressCurrentValue++;
+        }
+    }
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step1:retrieveFiles");
+    return foundEntities;
 }
