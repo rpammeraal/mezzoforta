@@ -29,6 +29,7 @@ public:
     public:
         MLperformance() { _init(); }
 
+        QString key;    //  lower caps version of path
         int songID;
         int songPerformerID;
         int songPerformanceID;
@@ -39,7 +40,6 @@ public:
         int onlinePerformanceID;
         QString path;
         bool pathExists;
-        QString key;
     private:
         void _init() { pathExists=0; }
     };
@@ -132,6 +132,7 @@ public:
 
     //	Public methods
     explicit MusicLibrary(QObject *parent = 0);
+    void consistencyCheck() const;
     void rescanMusicLibrary();
     bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, MusicLibrary::MLvalidationType validationType=MusicLibrary::validation_type_none, bool suppressDialogsFlag=false);
 
@@ -148,6 +149,11 @@ private:
     QMap<QString,QString> _alternativePerformerName2CorrectPerformerName;
 
 
+    Qt::CaseSensitivity _fileSystemCaseSensitive() const;
+    QString _getSchemaRoot() const;
+    QHash<QString,bool> _initializeExistingPath(const QHash<QString,MusicLibrary::MLperformancePtr>& pathToSong) const;
+    QHash<QString,MusicLibrary::MLperformancePtr> _retrieveExistingData(QElapsedTimer& time) const;
+    QVector<MusicLibrary::MLentityPtr> _retrievePaths(QElapsedTimer& time,qsizetype progressMaxValue) const;
     QString _retrieveCorrectPerformerName(DataAccessLayer* dal, const QString& altPerformerName);
     void _addAlternativePerformerName(DataAccessLayer* dal, const QString& altPerformerName,const QString& correctPerformerName);
 

@@ -54,6 +54,7 @@ public slots:
     void setMusicLibraryDirectory();
 
     //	MENU::Tools
+    void checkConsistency();
     void rescanMusicLibrary();
 
     //	Apply filters and selections
