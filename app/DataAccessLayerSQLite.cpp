@@ -426,7 +426,7 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
             PropertiesPtr properties=Context::instance()->properties();
             properties.reset();
 
-            if(dal.executeBatch(SQL,"Initializing Database",1,0)==0)
+            if(dal.executeBatch(SQL,QString(),"Initializing Database",1,0)==0)
             {
                 errorFlag=1;
                 errorMsg="Unable to create database";

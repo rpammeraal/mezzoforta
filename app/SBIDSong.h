@@ -49,7 +49,8 @@ public:
     //	Song specific methods
     SBTableModel* albums();
     QVector<SBIDAlbumPerformancePtr> allPerformances();
-    SBTableModel* charts() const;
+    SBTableModel* charts(Common::retrieve_sbtablemodel) const;
+    QMap<SBIDChartPerformancePtr, SBIDChartPtr> charts(Common::retrieve_qmap) const;
     void deleteIfOrphanized();
     inline QString lyrics() const { return _lyrics; }
     inline QString notes() const { return _notes; }
@@ -58,7 +59,8 @@ public:
     inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition);
     QVector<int> performerIDList();
-    SBTableModel* playlists();
+    SBTableModel* playlists(Common::retrieve_sbtablemodel);
+    QVector<SBIDSong::PlaylistOnlinePerformance> playlists(Common::retrieve_qvector);
     inline int songID() const { return itemID(); }
     QMap<int,SBIDSongPerformancePtr> songPerformances();
     inline QString songTitle() const { return _songTitle; }
@@ -75,6 +77,7 @@ public:
 
     //	Redirectors
     QString songOriginalPerformerName() const;
+    SBKey songOriginalPerformerKey() const;
     int songOriginalPerformerID() const;
     int songOriginalYear() const;
 
@@ -86,7 +89,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
-    static SBSqlQueryModel* retrieveAllSongs(const QChar& startsWith=QChar());
+    static SBSqlQueryModel* retrieveAllSongs(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBIDSongPtr retrieveSong(int songID);
     static SBIDSongPtr retrieveSong(SBKey key);
     static QString iconResourceLocationStatic();

@@ -289,15 +289,22 @@ SBIDAlbum::albumPerformerPtr() const
 QString
 SBIDAlbum::albumPerformerName() const
 {
-    SBIDPerformerPtr pPtr=albumPerformerPtr();
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->performerName():QString());
 }
 
 QString
 SBIDAlbum::albumPerformerMBID() const
 {
-    SBIDPerformerPtr pPtr=albumPerformerPtr();
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
     return (pPtr?pPtr->MBID():QString());
+}
+
+SBKey
+SBIDAlbum::albumPerformerKey() const
+{
+    const SBIDPerformerPtr pPtr=albumPerformerPtr();
+    return (pPtr?pPtr->key():SBKey());
 }
 
 ///	Operators
@@ -457,7 +464,7 @@ SBIDAlbum::retrieveUnknownAlbum()
 SBSqlQueryModel*
 SBIDAlbum::albumsByPerformer(int performerID)
 {
-    QString q=QString
+    const QString q=QString
     (
         "SELECT DISTINCT "
             "r.record_id, "
@@ -478,6 +485,49 @@ SBIDAlbum::albumsByPerformer(int performerID)
     ;
     return new SBSqlQueryModel(q);
 }
+
+SBSqlQueryModel*
+SBIDAlbum::allAlbums(const QChar& startsWith, qsizetype offset, qsizetype size)
+{
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(r.title,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT DISTINCT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(r.record_id AS VARCHAR) AS SB_ALBUM_KEY, "
+            "CAST(%2 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_PERFORMER_KET, "
+            "r.title, "
+            "a.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___record r "
+                "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "r.artist_id=a.artist_id "
+        "%3 "
+        "ORDER BY "
+            "3,4 "
+        "OFFSET "
+            "%4 "
+        "%5 "
+    )
+        .arg(SBKey::Album)
+        .arg(SBKey::Performer)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+}
+
 
 ///	Protected methods
 SBIDAlbum::SBIDAlbum():SBIDBase(SBKey::Album,-1)
@@ -604,7 +654,7 @@ SBIDAlbum::find(const Common::sb_parameters& tobeFound,SBIDAlbumPtr existingAlbu
                 "JOIN ___SB_SCHEMA_NAME___artist a ON "
                     "p.artist_id=a.artist_id "
         "WHERE "
-            "REPLACE(LOWER(p.title),' ','') = '%1' AND "
+            "LOWER(REGEXP_REPLACE(p.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' OR "
             "p.record_id!=(%3) "
         "UNION "
         "SELECT "

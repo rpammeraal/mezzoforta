@@ -137,14 +137,20 @@ SBIDPerformer::albumPerformances() const
 }
 
 SBTableModel*
-SBIDPerformer::charts() const
+SBIDPerformer::charts(Common::retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=Preloader::chartItems(*this);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> list=this->charts(Common::retrieve_qmap());
 
     tm->populateChartsByItemType(SBKey::Performer,list);
 
     return tm;
+}
+
+QMap<SBIDChartPerformancePtr,SBIDChartPtr>
+SBIDPerformer::charts(Common::retrieve_qmap) const
+{
+    return Preloader::chartItems(*this);
 }
 
 int
@@ -439,6 +445,44 @@ SBIDPerformer::refreshDependents(bool forcedFlag)
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDPerformer::retrieveAllPerformers(const QChar& startsWith, qsizetype offset, qsizetype size)
+{
+    //	List songs with actual online performance only
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(a.name,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_ITEM_KEY, "
+            "COALESCE(a.name,'n/a') AS performer "
+        "FROM "
+                "___SB_SCHEMA_NAME___artist a "
+        "%2 "
+        "ORDER BY "
+            "2 "
+        "OFFSET "
+            "%3 "
+        "%4 "
+    )
+        .arg(SBKey::Performer)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+    return new SBSqlQueryModel(q);
+
+}
+
 SBIDPerformerPtr
 SBIDPerformer::retrievePerformer(SBKey key)
 {
@@ -573,18 +617,21 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         "WITH allr AS "
         "("
             //	case 0
-            "SELECT "
+            "SELECT DISTINCT "
                 "0 AS match_rank, "
                 "s.artist_id "
+
             "FROM "
                 "___SB_SCHEMA_NAME___artist s "
-                    "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma ON "
-                        "ma.artist_alternative_name=s.name "
+                    "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma1 ON "
+                        "ma1.artist_correct_name = s.name AND "
+                  "LOWER(REGEXP_REPLACE(s.name, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
+              "LEFT JOIN ___SB_SCHEMA_NAME___artist_match ma2 ON "
+                  "ma2.artist_correct_name = s.name AND "
+                  "LOWER(REGEXP_REPLACE(ma2.artist_alternative_name, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
             "WHERE "
-                "REPLACE(LOWER(REPLACE(s.name,'''','')),' ','') = '%1' OR "
-                "REPLACE(LOWER(REPLACE(ma.artist_alternative_name,'''','')),' ','') = LOWER('%1') OR "
-                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' & ', 'and'),' ','') = LOWER('%1') OR "
-                "REPLACE(REPLACE(LOWER(REPLACE(s.name,'''','')), ' and ', '&'),' ','') = LOWER('%1')  "
+                "LOWER(REGEXP_REPLACE(s.name, '[^a-zA-Z0-9]+', '', 'g')) = '%1' OR "
+                "LOWER(REGEXP_REPLACE(ma2.artist_alternative_name, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
             "UNION "
             //	case 1
             "SELECT DISTINCT "
@@ -609,9 +656,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
                         "LOWER(SUBSTR(a.name,LENGTH(a.name)-LENGTH(t.word)+0))=','||LOWER(t.word)  "
                     ") "
                 ") OR "
-                "REPLACE(LOWER(a.name), ' ', '') = '%5' OR "
-                "REPLACE(LOWER(a.name), ' & ', 'and') = '%5' OR "
-                "REPLACE(LOWER(a.name), ' and ', '&') = '%5' "
+                "LOWER(REGEXP_REPLACE(a.name, '[^a-zA-Z0-9]+', '', 'g')) = '%5' "
             "UNION "
             //	case 2
             "SELECT DISTINCT "
@@ -701,7 +746,7 @@ SBIDPerformer::find(const Common::sb_parameters& tobeFound,SBIDPerformerPtr exis
         .arg(Common::escapeSingleQuotes(Common::removeArticles(tobeFound.performerName)))
         .arg(Common::escapeSingleQuotes(Common::comparable(Common::removeArticles(tobeFound.performerName))))
     ;
-    return new SBSqlQueryModel(q);
+    return new SBSqlQueryModel(q,-1,1);
 }
 
 SBIDPerformerPtr

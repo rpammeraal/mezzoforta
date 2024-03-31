@@ -304,8 +304,8 @@ SBIDSongPerformance::retrieveSongPerformanceByPerformer(const QString &songTitle
                     "p.artist_id=a.artist_id "
         "WHERE "
             "p.performance_id!=%1 AND "
-            "REPLACE(LOWER(s.title),' ','')='%2' AND "
-            "REPLACE(LOWER(a.name),' ','')='%3' "
+            "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%2' AND "
+            "LOWER(REGEXP_REPLACE(a.name, '[^a-zA-Z0-9]+', '', 'g')) = '%3' "
     )
         .arg(excludeSongPerformanceID)
         .arg(Common::escapeSingleQuotes(Common::comparable(songTitle)))
@@ -509,7 +509,7 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
                     "p.song_id=s.song_id "
                     "%4 "
         "WHERE "
-            "REPLACE(LOWER(s.title),' ','') = '%1' "
+            "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
         "UNION "
         //	soundex match, only if length of soundex > 0
         "SELECT "

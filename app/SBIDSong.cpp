@@ -186,12 +186,18 @@ SBIDSong::allPerformances()
 }
 
 SBTableModel*
-SBIDSong::charts() const
+SBIDSong::charts(Common::retrieve_sbtablemodel) const
 {
     SBTableModel* tm=new SBTableModel();
-    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=Preloader::chartItems(*this);
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> chartToPerformances=this->charts(Common::retrieve_qmap());
     tm->populateChartsByItemType(SBKey::Song,chartToPerformances);
     return tm;
+}
+
+QMap<SBIDChartPerformancePtr, SBIDChartPtr>
+SBIDSong::charts(Common::retrieve_qmap) const
+{
+    return Preloader::chartItems(*this);
 }
 
 void
@@ -262,7 +268,15 @@ SBIDSong::numAlbumPerformances()
 }
 
 SBTableModel*
-SBIDSong::playlists()
+SBIDSong::playlists(Common::retrieve_sbtablemodel)
+{
+    SBTableModel* tm=new SBTableModel();
+    tm->populatePlaylists(this->playlists(Common::retrieve_qvector()));
+    return tm;
+}
+
+QVector<SBIDSong::PlaylistOnlinePerformance>
+SBIDSong::playlists(Common::retrieve_qvector)
 {
     getSemaphore();
     if(!_playlistOnlinePerformances.count())
@@ -270,11 +284,11 @@ SBIDSong::playlists()
         //	Playlists may not be loaded -- retrieve again
         this->_loadPlaylists();
     }
-    SBTableModel* tm=new SBTableModel();
-    tm->populatePlaylists(_playlistOnlinePerformances);
     releaseSemaphore();
-    return tm;
+
+    return _playlistOnlinePerformances;
 }
+
 
 QMap<int,SBIDSongPerformancePtr>
 SBIDSong::songPerformances()
@@ -421,6 +435,17 @@ SBIDSong::songOriginalPerformerName() const
     return (spPtr?spPtr->songPerformerName():QString());
 }
 
+SBKey
+SBIDSong::songOriginalPerformerKey() const
+{
+    SBIDSongPerformancePtr spPtr=originalSongPerformancePtr();
+    SB_RETURN_IF_NULL(spPtr,SBKey());
+
+    SBIDPerformerPtr pPtr=spPtr->performerPtr();
+    SB_RETURN_IF_NULL(pPtr,SBKey());
+    return pPtr->key();
+}
+
 int
 SBIDSong::songOriginalPerformerID() const
 {
@@ -474,13 +499,19 @@ SBIDSong::refreshDependents(bool forcedFlag)
 
 //	Static methods
 SBSqlQueryModel*
-SBIDSong::retrieveAllSongs(const QChar& startsWith)
+SBIDSong::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsizetype size)
 {
     //	List songs with actual online performance only
     QString whereClause;
+    QString limitClause;
+
     if(startsWith!=QChar('\x0'))
     {
         whereClause=QString("WHERE LOWER(LEFT(s.title,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
     }
     const QString q=QString
     (
@@ -505,14 +536,17 @@ SBIDSong::retrieveAllSongs(const QChar& startsWith)
         "%4 "
         "ORDER BY "
             "3,5,7 "
-
+        "OFFSET "
+            "%5 "
+        "%6 "
     )
         .arg(SBKey::Song)
         .arg(SBKey::Performer)
         .arg(SBKey::Album)
         .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
     ;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -907,7 +941,7 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
 
     cm->debugShowChanges("before save");
     //const bool successFlag=cm->saveChanges("Saving Song",refreshData);
-    const bool successFlag=cm->saveChanges("Saving Song",0);	//	TAKE ABOVE VERSION
+    const bool successFlag=cm->saveChanges(QString(),"Saving Song",0);	//	TAKE ABOVE VERSION
 
     if(successFlag)
     {
@@ -936,40 +970,28 @@ SBIDSong::setAndSave(SBIDSongPtr orgSongPtr,const QString& editTitle, const QStr
 
                 //	newSongPtr->refreshDependents(1);		UNCOMMENT BEFORE DEPLOY
                 ScreenItem from(orgSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 ScreenItem to(newSongPtr->key());
-                qDebug() << SB_DEBUG_INFO;
                 st->replace(from,to);
-                qDebug() << SB_DEBUG_INFO;
             }
         }
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
-        qDebug() << SB_DEBUG_INFO;
         if(mergedFlag || songTitleChangedFlag)
         {
-            qDebug() << SB_DEBUG_INFO;
             ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
             ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-            qDebug() << SB_DEBUG_INFO;
             return 1;
         }
 
 
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
-        qDebug() << SB_DEBUG_INFO;
         ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-        qDebug() << SB_DEBUG_INFO;
     }
     else
     {
         dal->restore(restorePoint);
     }
-    qDebug() << SB_DEBUG_INFO;
     ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
-    qDebug() << SB_DEBUG_INFO;
 
     return 0;
 
@@ -1067,56 +1089,150 @@ SBIDSong::find(const Common::sb_parameters& p,SBIDSongPtr existingSongPtr)
     //	2	-	soundex match with any other artist (0 or more in data set).
     QString q=QString
     (
+        "WITH case01_raw AS "
+        "("
+            "SELECT DISTINCT "
+                "CASE WHEN p.artist_id=%3 THEN 0 ELSE 1 END AS matchRank, "
+                "s.song_id, "
+                "p.artist_id, "
+                "s.title, "
+                "s.notes, "
+                "l.lyrics, "
+                "s.original_performance_id, "
+                "CASE "
+                    "WHEN LOWER(s.title)='%2' THEN 0 "
+                    "WHEN LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' THEN 1 "
+                    "ELSE 2 "
+                "END AS title_rank "
+            "FROM "
+                "Rock.song s "
+                    "LEFT JOIN Rock.performance p ON "
+                        "p.song_id=s.song_id "
+                    "LEFT JOIN Rock.lyrics l ON "
+                        "s.song_id=l.song_id "
+            "WHERE "
+                "s.original_performance_id IS NOT NULL AND "
+                "( "
+                    "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' OR "
+                    "LOWER(s.title)='%2' OR "
+                    "s.song_id=%5  "
+                ") "
+        "), "
+        "case01_add_rank AS "
+        "( "
+            "SELECT "
+                "matchRank, "
+                "song_id, "
+                "artist_id, "
+                "title, "
+                "notes, "
+                "lyrics, "
+                "original_performance_id, "
+                "title_rank, "
+                "ROW_NUMBER() OVER(PARTITION BY matchRank ORDER BY title_rank, song_id) AS ranking "
+            "FROM "
+                "case01_raw "
+            "), "
+        "case0 AS "
+        "( "
+            "SELECT "
+                "matchRank, "
+                "song_id,  "
+                "artist_id, "
+                "title, "
+                "notes, "
+                "lyrics, "
+                "original_performance_id, "
+                "title_rank, "
+                "ranking "
+            "FROM  "
+                "case01_add_rank "
+            "WHERE "
+                "matchRank=0 AND "
+                "ranking=1 "
+        "), "
+        "case1 AS "
+        "( "
+            "SELECT "
+                "matchRank, "
+                "song_id, "
+                "artist_id, "
+                "title, "
+                "notes, "
+                "lyrics, "
+                "original_performance_id, "
+                "title_rank, "
+                "ranking "
+            "FROM  "
+                "case01_add_rank "
+            "WHERE "
+                "matchRank=1 "
+            "), "
+        "case2 AS "
+        "( "
+            "SELECT "
+                "2 AS matchRank, "
+                "s.song_id, "
+                "s.title, "
+                "s.notes, "
+                "l.lyrics, "
+                "s.original_performance_id "
+            "FROM "
+                "Rock.song s "
+                    "LEFT JOIN Rock.lyrics l ON "
+                        "s.song_id=l.song_id "
+            "WHERE "
+                "s.original_performance_id IS NOT NULL AND "
+                "( "
+                    "SUBSTR(s.soundex,1,LENGTH('%4'))='%4' "
+                ") AND "
+                "LENGTH(s.soundex)<= 2*LENGTH('%4') AND "
+                "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
+                "%6 "
+        ") "
         "SELECT "
-            "CASE WHEN p.artist_id=%2 THEN 0 ELSE 1 END AS matchRank, "
-            "s.song_id, "
-            "s.title, "
-            "s.notes, "
-            "l.lyrics, "
-            "s.original_performance_id "
+            "matchRank, "
+            "song_id, "
+            "title, "
+            "notes, "
+            "lyrics, "
+            "original_performance_id "
         "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "LEFT JOIN ___SB_SCHEMA_NAME___performance p ON "
-                    "p.song_id=s.song_id "
-                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-                    "s.song_id=l.song_id "
-        "WHERE "
-            "s.original_performance_id IS NOT NULL AND "
-            "( "
-                "REPLACE(LOWER(title),' ','') = '%1' OR "
-                "s.song_id=%5 "
-            ") "
-            "%4 "
+            "case0 "
         "UNION "
         "SELECT "
-            "2 AS matchRank, "
-            "s.song_id, "
-            "s.title, "
-            "s.notes, "
-            "l.lyrics, "
-            "s.original_performance_id "
+            "matchRank, "
+            "song_id, "
+            "title, "
+            "notes, "
+            "lyrics, "
+            "original_performance_id "
         "FROM "
-            "___SB_SCHEMA_NAME___song s "
-                "LEFT JOIN ___SB_SCHEMA_NAME___lyrics l ON "
-                    "s.song_id=l.song_id "
+            "case1 "
         "WHERE "
-            "s.original_performance_id IS NOT NULL AND "
-            "( "
-                "SUBSTR(s.soundex,1,LENGTH('%3'))='%3'  "
-                //"SUBSTR('%3',1,LENGTH(s.soundex))=s.soundex "
-            ") AND "
-            "length(s.soundex)<= 2*length('%3') AND "
-            "REPLACE(LOWER(s.title),' ','') != '%1' "
-            "%4 "
+            "song_id NOT IN (SELECT song_id FROM case0) "
+        "UNION "
+        "SELECT "
+            "matchRank, "
+            "song_id, "
+            "title, "
+            "notes, "
+            "lyrics, "
+            "original_performance_id "
+        "FROM "
+            "case2 "
+        "WHERE "
+            "song_id NOT IN (SELECT song_id FROM case0) AND "
+            "song_id NOT IN (SELECT song_id FROM case1) "
         "ORDER BY "
             "1,3 "
     )
         .arg(Common::escapeSingleQuotes(Common::comparable(p.songTitle)))
+        .arg(Common::escapeSingleQuotes(p.songTitle))
         .arg(p.performerID)
         .arg(newSoundex)
-        .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
         .arg(p.songID)
-        .arg(p.songTitle)
+        .arg(excludeSongID==-1?"":QString(" AND s.song_id!=%1").arg(excludeSongID))
     ;
     return new SBSqlQueryModel(q,-1,1);
 }

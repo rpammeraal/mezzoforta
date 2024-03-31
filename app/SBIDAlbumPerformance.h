@@ -59,6 +59,7 @@ public:
     int albumYear() const;
     QString path() const;
     int songID() const;
+    SBKey songKey() const;
     int songPerformanceID() const;
     int songPerformerID() const;
     SBKey songPerformerKey() const;
