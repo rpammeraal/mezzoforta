@@ -36,7 +36,8 @@ public:
     SBTableModel* albums() const;
     QVector<SBIDAlbumPtr> albumList() const;
     QVector<SBIDAlbumPerformancePtr> albumPerformances() const;
-    SBTableModel* charts() const;
+    SBTableModel* charts(Common::retrieve_sbtablemodel) const;
+    QMap<SBIDChartPerformancePtr,SBIDChartPtr> charts(Common::retrieve_qmap) const;
     inline QString notes() const { return _notes; }
     int numAlbums() const;
     int numSongs() const;
@@ -65,6 +66,7 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
+    static SBSqlQueryModel* retrieveAllPerformers(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBIDPerformerPtr retrievePerformer(SBKey key);
     static SBIDPerformerPtr retrievePerformer(int performerID);
     static SBIDPerformerPtr retrieveVariousPerformers();

@@ -134,7 +134,7 @@ public:
     explicit MusicLibrary(QObject *parent = 0);
     void consistencyCheck() const;
     void rescanMusicLibrary();
-    bool validateEntityList(QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, MusicLibrary::MLvalidationType validationType=MusicLibrary::validation_type_none, bool suppressDialogsFlag=false);
+    bool validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>& list,QHash<QString,MLalbumPathPtr>& directory2albumPathMap, MusicLibrary::MLvalidationType validationType=MusicLibrary::validation_type_none, bool suppressDialogsFlag=false);
 
 signals:
 
@@ -152,8 +152,8 @@ private:
     Qt::CaseSensitivity _fileSystemCaseSensitive() const;
     QString _getSchemaRoot() const;
     QHash<QString,bool> _initializeExistingPath(const QHash<QString,MusicLibrary::MLperformancePtr>& pathToSong) const;
-    QHash<QString,MusicLibrary::MLperformancePtr> _retrieveExistingData(QElapsedTimer& time) const;
-    QVector<MusicLibrary::MLentityPtr> _retrievePaths(QElapsedTimer& time,qsizetype progressMaxValue) const;
+    QHash<QString,MusicLibrary::MLperformancePtr> _retrieveExistingData(const QString& dialogOwner, QElapsedTimer& time) const;
+    QVector<MusicLibrary::MLentityPtr> _retrievePaths(const QString& dialogOwner,QElapsedTimer& time,qsizetype progressMaxValue) const;
     QString _retrieveCorrectPerformerName(DataAccessLayer* dal, const QString& altPerformerName);
     void _addAlternativePerformerName(DataAccessLayer* dal, const QString& altPerformerName,const QString& correctPerformerName);
 

@@ -165,7 +165,6 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
     QVector<MusicLibrary::MLentityPtr> chartContents;
     for(int i=1;i<contents.count();i++)
     {
-        qDebug() << SB_DEBUG_INFO << i;
         QStringList line=contents.at(i);
         if(line.count()!=3)
         {
@@ -173,36 +172,33 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
             return 0;
         }
 
-        qDebug() << SB_DEBUG_INFO << line;
         MusicLibrary::MLentity e;
-        qDebug() << SB_DEBUG_INFO << line.count();
-        qDebug() << SB_DEBUG_INFO << performerNameColumn;
-        qDebug() << SB_DEBUG_INFO << line.at(performerNameColumn);
         e.songPerformerName=line.at(performerNameColumn).trimmed();
-        qDebug() << SB_DEBUG_INFO;
         Common::toTitleCase(e.songPerformerName);
-        qDebug() << SB_DEBUG_INFO;
         e.songTitle=line.at(songTitleColumn).trimmed();
-        qDebug() << SB_DEBUG_INFO;
         Common::toTitleCase(e.songTitle);
-        qDebug() << SB_DEBUG_INFO;
         e.chartPosition=line.at(positionColumn).toInt();
-        qDebug() << SB_DEBUG_INFO;
         e.year=this->chartEndingDate().year();
-        qDebug() << SB_DEBUG_INFO;
 
         chartContents.append(std::make_shared<MusicLibrary::MLentity>(e));
-        qDebug() << SB_DEBUG_INFO;
     }
+
+
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Processing Chart",5);
+    ProgressDialog::instance()->setOwnerOnly(__SB_PRETTY_FUNCTION__);
+
 
     MusicLibrary ml;
     QHash<QString,MusicLibrary::MLalbumPathPtr> map;
-    ml.validateEntityList(chartContents,map,MusicLibrary::validation_type_chart);
+    ml.validateEntityList(__SB_PRETTY_FUNCTION__,chartContents,map,MusicLibrary::validation_type_chart);    //  dlg:#1
 
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Storing Chart",1);
     int progressCurrentValue=0;
     int progressMaxValue=chartContents.count();
-    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
+    const static QString dialogStep="storeChart";
+    ProgressDialog::instance()->setLabelText(__SB_PRETTY_FUNCTION__,"Validating Chart");                    //  dlg:#2-4
+    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,progressCurrentValue,progressMaxValue);
+
+    qDebug() << SB_DEBUG_INFO << progressMaxValue;
 
     QVectorIterator<MusicLibrary::MLentityPtr> it(chartContents);
     CacheManager* cMgr=Context::instance()->cacheManager();
@@ -240,7 +236,6 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
                     sPtr->setOriginalPerformanceID(spPtr->songPerformanceID());
                 }
 
-                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"storeChart",progressCurrentValue,progressMaxValue);
                 cpMgr->createInDB(p);
             }
         }
@@ -250,16 +245,19 @@ SBIDChart::import(const QString &fileName, bool truncateFlag)
             performerSong="Performer '" + ePtr->songPerformerName + "' with song '"+ePtr->songTitle+'"';
             errors[performerSong]=ePtr->errorMsg;
         }
-
-        if(errors.count())
-        {
-            MusicImportResult mir(errors);
-            mir.exec();
-        }
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,progressCurrentValue++,progressMaxValue);
     }
-    cMgr->saveChanges();
-    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"storeChart");
-    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,1);
+
+    if(errors.count())
+    {
+        MusicImportResult mir(errors);
+        mir.exec();
+    }
+
+    cMgr->saveChanges(__SB_PRETTY_FUNCTION__,"Saving Chart");
+    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,dialogStep);
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+    ProgressDialog::instance()->stats();
     ProgressDialog::instance()->hide();
 
     Context::instance()->chooser()->refresh();
@@ -309,6 +307,44 @@ SBIDChart::refreshDependents(bool forcedFlag)
 }
 
 //	Static methods
+SBSqlQueryModel*
+SBIDChart::allCharts(const QChar& startsWith, qsizetype offset, qsizetype size)
+{
+    //	List songs with actual online performance only
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(p.name,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(p.chart_id AS VARCHAR) AS SB_ITEM_KEY, "
+            "p.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___chart p "
+        "%2 "
+        "ORDER BY "
+            "2 "
+        "OFFSET "
+            "%3 "
+        "%4 "
+    )
+        .arg(SBKey::Chart)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+    return new SBSqlQueryModel(q);
+}
+
+
 SBKey
 SBIDChart::createKey(int chartID)
 {

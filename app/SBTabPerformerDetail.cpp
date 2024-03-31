@@ -473,7 +473,7 @@ SBTabPerformerDetail::_populate(const ScreenItem &si)
 
     //	Populate charts
     tv=mw->ui.performerDetailCharts;
-    tm=pPtr->charts();
+    tm=pPtr->charts(Common::retrieve_sbtablemodel());
     dragableColumns.clear();
     dragableColumns << 0 << 1 << 0 << 1 << 0;
     tm->setDragableColumns(dragableColumns);

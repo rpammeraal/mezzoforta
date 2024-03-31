@@ -63,10 +63,11 @@ Common::bindShortcut(QAbstractButton *button, const QKeySequence &shortcut)
 //	Comparable needs to be used to find items in the database:
 //	-	remove spaces (simplified, replace)
 //	-	lower case
+//  -   remove punctuation marks
 QString
 Common::comparable(const QString &s)
 {
-    return s.toLower().simplified().replace(" ","");
+    return s.toLower().simplified().replace(" ","").remove(QRegularExpression("[^a-zA-Z\\d\\s]"));
 }
 
 QString
@@ -115,10 +116,21 @@ Common::db_change_to_string(Common::db_change db_change)
 QString
 Common::escapeSingleQuotes(const QString &s)
 {
-    static QString singleQuote=QString("'");	//	No need to instantiate these every time this method is called.
-    static QString doubleQuotes=QString("''");
+    const static QString singleQuote("'");
+    const static QString doubleQuotes("''");
 
     return QString(s).replace(singleQuote,doubleQuotes);
+}
+
+QString
+Common::escapeQuotesHTML(const QString &s)
+{
+    const static QString singleQuote=QString("'");
+    const static QString replaceSingleQuote=QString("&rsquo;");
+    const static QString doubleQuotes=QString('"');
+    const static QString replaceDoubleQuotes=QString("&quot;");
+
+    return QString(s).replace(singleQuote,replaceSingleQuote).replace(doubleQuotes,replaceDoubleQuotes);
 }
 
 void

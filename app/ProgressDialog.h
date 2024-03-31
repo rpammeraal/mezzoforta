@@ -5,7 +5,7 @@
 
 //	Provides a simple progress dialog.
 //	Usage:
-//		ProgressDialog::instance()->show(<title>,<number of phases>);
+//		ProgressDialog::instance()->startDialog(<title>,<number of phases>);
 //		In each loop for a phase:
 //		ProgressDialog::instance()->update("SBIDChart::_loadPerformances",progressCurrentValue++,progressMaxValue);
 //
@@ -33,11 +33,12 @@ public:
     }
 
     void hide();
-    void startDialog(const QString& methodName, const QString& label, int numSteps);
-    void setLabelText(const QString& methodName, const QString& label);
-    void update(const QString& methodName, const QString& step, int currentValue, int maxValue);
-    void finishStep(const QString& methodName, const QString& step);
-    void finishDialog(const QString& methodName, bool hideBoxFlag=1);
+    void startDialog(const QString& owner, const QString& title, int numSteps);
+    void setLabelText(const QString& owner, const QString& label);
+    void setOwnerOnly(const QString& owner);
+    void update(const QString& owner, const QString& step, int currentValue, int maxValue);
+    void finishStep(const QString& owner, const QString& step);
+    void finishDialog(const QString& owner, bool hideBoxFlag=1);
     void stats() const;
 
 protected:
@@ -48,14 +49,16 @@ private:
     ~ProgressDialog();
 
     bool            _autoResetFlag;
-    QString         _prettyFunction;
+    QString         _owner;
     int             _numSteps;
     QProgressDialog _pd;
     QStringList     _stepList;
     bool            _visible;
     int             _prevOffset;
+    bool            _ownerOnly; //  only let `owner` make updates
 
     int             _tmpWidth;
+    QString         _initStr;
 
     void _init();
     void _reset();

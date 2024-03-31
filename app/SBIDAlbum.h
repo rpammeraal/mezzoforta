@@ -55,6 +55,7 @@ public:
     //	Redirectors
     QString albumPerformerName() const;
     QString albumPerformerMBID() const;
+    SBKey albumPerformerKey() const;
 
     //	Operators
     virtual operator QString() const;
@@ -72,6 +73,7 @@ public:
 
     //	Static methods
     static SBSqlQueryModel* albumsByPerformer(int performerID);
+    static SBSqlQueryModel* allAlbums(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;

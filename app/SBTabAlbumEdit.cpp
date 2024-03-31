@@ -1032,9 +1032,14 @@ SBTabAlbumEdit::save() const
         qDebug() << SB_DEBUG_INFO << "END";
     }
 
+    //  open up ProgressDialog
+    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Processing Album",4);
+    ProgressDialog::instance()->setOwnerOnly(__SB_PRETTY_FUNCTION__);
+
+
     //	D.	Validate
     MusicLibrary ml;
-    if(!ml.validateEntityList(songList,directory2AlbumPathMap,MusicLibrary::validation_type_album))
+    if(!ml.validateEntityList(__SB_PRETTY_FUNCTION__,songList,directory2AlbumPathMap,MusicLibrary::validation_type_album))  //  dlg:#1-3
     {
         return;
     }
@@ -1181,9 +1186,6 @@ SBTabAlbumEdit::save() const
 
     //	F.	Commit changes
 
-    //  open up ProgressDialog
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Save",1);
-
     successFlag=cm->saveChanges("Saving Album");
 
     if(successFlag)
@@ -1208,8 +1210,8 @@ SBTabAlbumEdit::save() const
             Context::instance()->controller()->updateStatusBarText(updateText);
 
         }
-        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Refreshing Data",1);
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",1,5);
+        const QString dialogStep("refresh");
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,1,5);
 
         //	Update screenstack, display notice, etc.
         updateText=QString("Saved album %1%2%3.")
@@ -1219,11 +1221,11 @@ SBTabAlbumEdit::save() const
         Context::instance()->controller()->updateStatusBarText(updateText);
 
         //	Update screenstack
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",2,5);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,2,5);
         currentScreenItem.setEditFlag(0);
         Context::instance()->screenStack()->updateSBIDInStack(currentScreenItem);
 
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",3,5);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,3,5);
         if(mergedFlag)
         {
             ScreenStack* st=Context::instance()->screenStack();
@@ -1234,19 +1236,20 @@ SBTabAlbumEdit::save() const
             st->replace(from,to);
         }
 
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"step:refresh",4,5);
+        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,dialogStep,4,5);
         if(mergedFlag || albumTitleChangedFlag)
         {
             mw->ui.tabAllSongs->preload();
         }
 
-        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"step:refresh");
-        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,dialogStep);
     }
     else
     {
         dal->restore(restorePoint);
     }
+
+    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
 
     //	G.	Close screen
     Context::instance()->navigator()->closeCurrentTab(1);

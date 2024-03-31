@@ -55,8 +55,9 @@ DataAccessLayer::addPostBatchSQL(const QStringList &sql)
     }
 }
 
+//  If no dialogOwner is given, start & finish our own progressdialog.
 bool
-DataAccessLayer::executeBatch(const QStringList &queries, const QString& progressDialogTitle, bool commitFlag, bool ignoreErrorsFlag) const
+DataAccessLayer::executeBatch(const QStringList &queries, const QString& dialogOwner, const QString& progressLabel, bool commitFlag, bool ignoreErrorsFlag) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -71,10 +72,16 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& progres
     int progressCurrentValue=0;
     int progressMaxValue=allQueries.count()+1;
     bool updateProgressDialogFlag=0;
-    if(progressDialogTitle.length())
+    QString currentDialogOwner=(dialogOwner.size()?dialogOwner:__SB_PRETTY_FUNCTION__);
+    const static QString dialogStep("saveItem");
+    if(currentDialogOwner.size()==0 && progressLabel.size())
     {
-        ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,progressDialogTitle,1);
-        ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"save",progressCurrentValue,progressMaxValue);
+        //  Allow us to create dialog if no owner is passed
+        ProgressDialog::instance()->startDialog(currentDialogOwner,progressLabel,1);
+    }
+    if(progressLabel.size())
+    {
+        ProgressDialog::instance()->update(currentDialogOwner,dialogStep,progressCurrentValue,progressMaxValue);
         updateProgressDialogFlag=1;
     }
 
@@ -103,7 +110,7 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& progres
             }
             if(updateProgressDialogFlag)
             {
-                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"save",progressCurrentValue++,progressMaxValue);
+                ProgressDialog::instance()->update(currentDialogOwner,dialogStep,progressCurrentValue++,progressMaxValue);
             }
         }
 
@@ -119,10 +126,10 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& progres
             db.rollback();
         }
     }
-    if(updateProgressDialogFlag)
+    ProgressDialog::instance()->finishStep(currentDialogOwner,dialogStep);
+    if(updateProgressDialogFlag && currentDialogOwner.size()==0)
     {
-        ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"save");
-        ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__,0);
+        ProgressDialog::instance()->finishDialog(currentDialogOwner,0);
     }
     qDebug() << "--	END OF BATCH;";
 
@@ -449,7 +456,7 @@ DataAccessLayer::addMissingDatabaseItems()
         QStringList SQL;
 
         SQL.append(allSQL[i]);
-        executeBatch(SQL,"Updating Database",1,1);
+        executeBatch(SQL,QString(),"Updating Database",1,1);
     }
 }
 
