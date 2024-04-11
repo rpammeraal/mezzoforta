@@ -34,7 +34,7 @@ public:
 
     void hide();
     void startDialog(const QString& owner, const QString& title, int numSteps);
-    void setLabelText(const QString& owner, const QString& label);
+    void setLabelText(const QString& owner, const QString& label, bool setOriginal=1);
     void setOwnerOnly(const QString& owner);
     void update(const QString& owner, const QString& step, int currentValue, int maxValue);
     void finishStep(const QString& owner, const QString& step);
@@ -53,6 +53,7 @@ private:
     int             _numSteps;
     QProgressDialog _pd;
     QStringList     _stepList;
+    QString         _orgLabel;
     bool            _visible;
     int             _prevOffset;
     bool            _ownerOnly; //  only let `owner` make updates

@@ -48,10 +48,14 @@ ProgressDialog::startDialog(const QString& owner,const QString& title, int numSt
 }
 
 void
-ProgressDialog::setLabelText(const QString& owner, const QString& label)
+ProgressDialog::setLabelText(const QString& owner, const QString& label, bool setOriginal)
 {
     if(!_ownerOnly || (owner==_owner))
     {
+        if(setOriginal)
+        {
+            _orgLabel=label;
+        }
         QString toDisplay=label;
         if(toDisplay.length()>50)
         {
@@ -126,11 +130,26 @@ ProgressDialog::update(const QString& owner, const QString& step, int currentVal
                          << "max value" << maxValue
                 ;
             }
-            int perc=currentValue*100/maxValue;
+            int perc=currentValue*100/maxValue;             //  actual % of progress
 
-            const int range=(100/_numSteps);
-            const int base=range * (_stepList.count()-1);
+            const int range=(100/_numSteps);                //  number of offsets we have in each phase
+            const int base=range * (_stepList.count()-1);   //  from where each offset takes place
             const int offset=base + (perc/_numSteps);
+
+            if(0)
+            {
+                qDebug() << SB_DEBUG_INFO
+                         << ":owner=" << owner
+                         << ":step=" << step
+                         << ":curr=" << currentValue
+                         << ":max=" << maxValue
+                         << ":%=" << perc
+                         << ":range=" << range
+                         << ":base=" << base
+                         << ":offset=" << offset
+                         << ":prevOffset=" << _prevOffset
+                    ;
+            }
 
             if(offset!=_prevOffset)
             {
@@ -138,6 +157,9 @@ ProgressDialog::update(const QString& owner, const QString& step, int currentVal
                 {
                     _pd.setValue(offset);
                     _prevOffset=offset;
+
+                    QString newLabel=QString("%1 [%2\%]").arg(_orgLabel).arg(perc);
+                    setLabelText(owner,newLabel,0);
                 }
             }
             QCoreApplication::processEvents();
