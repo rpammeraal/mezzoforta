@@ -9,6 +9,7 @@
 #include "Common.h"
 #include "Context.h"
 #include "ProgressDialog.h"
+#include "SBMessageBox.h"
 #include "SqlQuery.h"
 
 //	Singleton
@@ -57,7 +58,14 @@ DataAccessLayer::addPostBatchSQL(const QStringList &sql)
 
 //  If no dialogOwner is given, start & finish our own progressdialog.
 bool
-DataAccessLayer::executeBatch(const QStringList &queries, const QString& dialogOwner, const QString& progressLabel, bool commitFlag, bool ignoreErrorsFlag) const
+DataAccessLayer::executeBatch(
+    const QStringList &queries,
+    const QString& dialogOwner,
+    const QString& progressLabel,
+    const QString& dialogStep,
+    bool commitFlag,
+    bool ignoreErrorsFlag,
+    bool logging) const
 {
     //	Perform all queries in one transaction
     QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
@@ -69,11 +77,11 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& dialogO
     const_cast<DataAccessLayer *>(this)->_clearPostBatchSQL();
 
     //	Set up progress dialog
-    int progressCurrentValue=0;
-    int progressMaxValue=allQueries.count()+1;
+    const qsizetype allQueriesSize=allQueries.size();
     bool updateProgressDialogFlag=0;
     QString currentDialogOwner=(dialogOwner.size()?dialogOwner:__SB_PRETTY_FUNCTION__);
-    const static QString dialogStep("saveItem");
+    QString currentDialogStep=(dialogStep.size()?dialogStep:"saveItem");
+
     if(currentDialogOwner.size()==0 && progressLabel.size())
     {
         //  Allow us to create dialog if no owner is passed
@@ -81,20 +89,21 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& dialogO
     }
     if(progressLabel.size())
     {
-        ProgressDialog::instance()->update(currentDialogOwner,dialogStep,progressCurrentValue,progressMaxValue);
+        ProgressDialog::instance()->update(currentDialogOwner,currentDialogStep,0,allQueriesSize);
         updateProgressDialogFlag=1;
     }
 
     successFlag=db.transaction();
-    qDebug() << "BEGIN;";
+    if(logging) qDebug() << "BEGIN;";
     if(successFlag==1)
     {
-        for(int i=0;i<allQueries.size() && successFlag==1;i++)
+        QElapsedTimer time; time.start();
+        for(int i=0;i<allQueriesSize && successFlag==1;i++)
         {
             q=allQueries.at(i);
             this->customize(q);
 
-            qDebug().noquote() << q << ";";
+            if(logging) qDebug().noquote() << q << "; -- " << i;
 
             //	We want to use the native class, as our SqlQuery class
             //	aborts upon the first error. In our current scenario
@@ -106,32 +115,34 @@ DataAccessLayer::executeBatch(const QStringList &queries, const QString& dialogO
             {
                 errorMsg=e.text();
                 successFlag=0;
+                qDebug() << SB_DEBUG_ERROR << q;
                 qDebug() << SB_DEBUG_ERROR << errorMsg;
             }
-            if(updateProgressDialogFlag)
+            if(updateProgressDialogFlag && (time.elapsed()>700))
             {
-                ProgressDialog::instance()->update(currentDialogOwner,dialogStep,progressCurrentValue++,progressMaxValue);
+                ProgressDialog::instance()->update(currentDialogOwner,currentDialogStep,i,allQueriesSize);
+                time.restart();
             }
         }
 
         if(successFlag==1 && commitFlag==1)
         {
-            qDebug() << "COMMIT;";
+            if(logging) qDebug() << "COMMIT;";
             successFlag=db.commit();
         }
         if((successFlag==0 || commitFlag==0 ) && (ignoreErrorsFlag==0))
         {
             r=db.lastError();
-            qDebug() << "ROLLBACK;";
+            if(logging) qDebug() << "ROLLBACK;";
             db.rollback();
         }
     }
-    ProgressDialog::instance()->finishStep(currentDialogOwner,dialogStep);
+    ProgressDialog::instance()->finishStep(currentDialogOwner,currentDialogStep);
     if(updateProgressDialogFlag && currentDialogOwner.size()==0)
     {
         ProgressDialog::instance()->finishDialog(currentDialogOwner,0);
     }
-    qDebug() << "--	END OF BATCH;";
+    if(logging) qDebug() << "--	END OF BATCH;";
 
     if(successFlag==0 && ignoreErrorsFlag==0)
     {
@@ -335,6 +346,23 @@ DataAccessLayer::restore(const QString &restorePoint) const
     return executeBatch(SQL);
 }
 
+QSqlQuery
+DataAccessLayer::runSqlQuery(const QString& query) const
+{
+    QSqlDatabase db=QSqlDatabase::database(this->getConnectionName());
+    QSqlQuery sq(query,db);
+    QString errorMsg;
+    QSqlError e=sq.lastError();
+    if(e.isValid())
+    {
+        errorMsg=e.text();
+        qDebug() << SB_DEBUG_ERROR << query;
+        qDebug() << SB_DEBUG_ERROR << errorMsg;
+        SBMessageBox::databaseErrorMessageBox(query,e);
+    }
+    return sq;
+}
+
 DataAccessLayer&
 DataAccessLayer::operator=(const DataAccessLayer& c)
 {
@@ -371,7 +399,7 @@ DataAccessLayer::customize(QString &s) const
     return s.replace("___SB_SCHEMA_NAME___",_getSchemaName()).
       replace("___SB_DB_ISNULL___",getIsNull()).
       replace("___SB_DB_GETDATE___",getGetDate()).
-      replace("___SB_DB_GETDATETIME___",getGetDateTime());
+      replace("___sb_db_getdatetime___",getGetDateTime());
 }
 
 const QString&
@@ -456,7 +484,7 @@ DataAccessLayer::addMissingDatabaseItems()
         QStringList SQL;
 
         SQL.append(allSQL[i]);
-        executeBatch(SQL,QString(),"Updating Database",1,1);
+        executeBatch(SQL,QString(),"Updating Database",QString(),1,1);
     }
 }
 

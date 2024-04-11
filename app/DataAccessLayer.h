@@ -38,9 +38,10 @@ public:
     virtual ~DataAccessLayer();
 
     void addPostBatchSQL(const QStringList& sql);
-    bool executeBatch(const QStringList& allQueries,const QString& dialogOwber=QString(), const QString& progressLabel=QString(),bool commitFlag=1,bool ignoreErrorsFlag=0) const;
+    bool executeBatch(const QStringList& allQueries,const QString& dialogOwner=QString(), const QString& progressLabel=QString(),const QString& dialogStep=QString(), bool commitFlag=1,bool ignoreErrorsFlag=0, bool logging=1) const;
     QString createRestorePoint() const;
     bool restore(const QString& restorePoint) const;
+    QSqlQuery runSqlQuery(const QString& query) const;
 
     DataAccessLayer& operator= (const DataAccessLayer& c);
     friend QDebug operator<<(QDebug dbg, const DataAccessLayer& dal);
