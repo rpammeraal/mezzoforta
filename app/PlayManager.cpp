@@ -538,11 +538,13 @@ PlayManager::_loadRadio()
 
                 if(performerInList.contains(performerName))
                 {
+                    qDebug() << SB_DEBUG_WARNING << "performer already in list" << performerName << ". Number of rejects" << numberOfRejects;
                     addToPlaylist=0;
                     numberOfRejects++;
                     if(numberOfRejects>numPerformances)
                     {
                         //	Turn off logic after n (numPerformances) tries.
+                        SBMessageBox::standardWarningBox(QString("Turning off avoidDuplicatePerformer %1 %2").arg(numberOfRejects).arg(numPerformances));
                         avoidDuplicatePerformer=0;
                     }
                 }

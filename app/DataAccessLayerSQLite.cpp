@@ -387,7 +387,40 @@ DataAccessLayerSQLite::createDatabase(const struct DBManager::DatabaseCredential
                 "); \n"
             ));
 
-			SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
+            SQL.append(Common::escapeSingleQuotes(
+                "CREATE TABLE match \n"
+                "( \n"
+                    "file_path                          VARCHAR,\n"
+                    "parent_directory_name              VARCHAR,\n"
+                    "parent_directory_path              VARCHAR,\n"
+                    "absolute_parent_directory_path     VARCHAR,\n"
+                    "extension                          VARCHAR,\n"
+
+                    "record_title                       VARCHAR, \n"
+                    "record_position                    INT, \n"
+                    "record_id                          INTEGER, \n"
+                    "record_match_score                 INTEGER, \n"
+
+                    "record_artist_name                 VARCHAR, \n"
+                    "record_artist_name_cmp             VARCHAR, \n"
+                    "record_artist_id                   INTEGER, \n"
+                    "record_artist_soundex              VARCHAR, \n"
+                    "record_artist_match_score          INTEGER, \n"
+
+                    "song_artist_name                   VARCHAR, \n"
+                    "song_artist_name_cmp               VARCHAR, \n"
+                    "song_artist_id                     INTEGER, \n"
+                    "song_artist_soundex                VARCHAR, \n"
+                    "song_artist_match_score            INTEGER, \n"
+
+                    "song_title                         VARCHAR, \n"
+                    "song_id                            INTEGER, \n"
+                    "song_soundex                       VARCHAR, \n"
+                    "song_match_score                   INTEGER \n"
+                "); \n"
+            ));
+
+            SQL.append("INSERT INTO article VALUES ('the'),('de'),('het'),('een'),('el'),('la'),('der'),('die'),('das') ");
 
             //	Ideally, go thru regular path to have this done.
             SQL.append("INSERT INTO ___SB_SCHEMA_NAME___artist (artist_id,name,sort_name) VALUES(0,'VARIOUS ARTISTS','VARIOUS ARTISTS')");
