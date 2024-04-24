@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "PlayManager.h"
 
 #include "CacheManager.h"
@@ -447,11 +449,15 @@ PlayManager::_loadRadio()
     QMap<int,SBIDOnlinePerformancePtr> playList;
 
     int progressStep=0;
-    ProgressDialog::instance()->startDialog(__SB_PRETTY_FUNCTION__,"Starting Auto DJ",1);
-    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",progressStep,11);
+    int maxProgressStep=numberSongsToDisplay+1;
+    QString dialogStep;
+    const static QString dialogOwner("___SB_PRETTY_FUNCTION___");
+    ProgressDialog::instance()->startDialog(dialogOwner,"Starting Auto DJ",1);
 
+    dialogStep="stepA:retrieveMusic";
+    ProgressDialog::instance()->update(dialogOwner,dialogStep,0,numberSongsToDisplay);                                       //  dlg:#1
     SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0);
-    ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
+
 
     int numPerformances=qm->rowCount();
     if(numPerformances>numberSongsToDisplay)
@@ -460,6 +466,7 @@ PlayManager::_loadRadio()
         //	limit this to a 100 to make the view not too large.
         numPerformances=numberSongsToDisplay;
     }
+
     //	const int maxNumberAttempts=numberSongsToDisplay/2;
     int maxNumberToRandomize=qm->rowCount();
     //	If collection greater than 400, limit to 1st third of least recent played songs.
@@ -485,9 +492,11 @@ PlayManager::_loadRadio()
     bool selectingUnplayedSongsFirst=0;		//	this flag supersedes the selectingUnplayedSongsFirst
     int numberOfRejects=0;
     QSet<QString> performerInList;
+    QMap<int,bool> indexesDrawn;
 
     QString indexCovered=QString(".").repeated(maxNumberToRandomize+1);
     indexCovered+=QString("");
+    const int maxNumberOfRejectsMultiplier=2;
     while(index<numPerformances)
     {
         found=0;
@@ -495,6 +504,7 @@ PlayManager::_loadRadio()
 
         if(index<nextPlayedSongID-1)
         {
+            //  Pick never played song
             selectingUnplayedSongsFirst=1;
             idx=index;
         }
@@ -512,9 +522,13 @@ PlayManager::_loadRadio()
                     if(idx==rnd)
                     {
                         indexCovered.replace(i,1,'X');
+                        indexesDrawn[idx]=1;
                         found=1;
                     }
-                    idx++;
+                    else
+                    {
+                        idx++;
+                    }
                 }
             }
         }
@@ -538,14 +552,15 @@ PlayManager::_loadRadio()
 
                 if(performerInList.contains(performerName))
                 {
-                    qDebug() << SB_DEBUG_WARNING << "performer already in list" << performerName << ". Number of rejects" << numberOfRejects;
                     addToPlaylist=0;
                     numberOfRejects++;
-                    if(numberOfRejects>numPerformances)
+                    qDebug() << SB_DEBUG_WARNING << "performer already in list" << performerName << ". Number of rejects" << numberOfRejects;
+                    if(numberOfRejects>(numPerformances * maxNumberOfRejectsMultiplier))
                     {
                         //	Turn off logic after n (numPerformances) tries.
                         SBMessageBox::standardWarningBox(QString("Turning off avoidDuplicatePerformer %1 %2").arg(numberOfRejects).arg(numPerformances));
                         avoidDuplicatePerformer=0;
+                        qDebug() << SB_DEBUG_WARNING << "adding duplicate performers from now on. numberOfRejects:" << numberOfRejects << ". #performances max:" << (numPerformances * maxNumberOfRejectsMultiplier);
                     }
                 }
                 else
@@ -563,14 +578,12 @@ PlayManager::_loadRadio()
         if (addToPlaylist)
         {
             performerInList.insert(performerName);
-
+            qDebug() << SB_DEBUG_INFO << "Adding:" << index << "[" << idx << "]" << opPtr->songPerformerName() << opPtr->songTitle();
             playList[nextOpenSlotIndex++]=opPtr;
 
-            if(index==0 || songInterval==0 || index%songInterval==0 || index+1==numPerformances)
-            {
-                //	Update progress
-                ProgressDialog::instance()->update(__SB_PRETTY_FUNCTION__,"_loadRadio",++progressStep,11);
-            }
+            //	Update progress
+            ProgressDialog::instance()->update(dialogOwner,dialogStep,index,numberSongsToDisplay);                                       //  dlg:#1
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
             //	Load the 1st n songs as soon as we get n songs or load the remainder after all songs are retrieved
             if(index+1==firstBatchNumber || index+1==numPerformances)
@@ -598,17 +611,20 @@ PlayManager::_loadRadio()
             index++;
         }
     }
+    qDebug() << SB_DEBUG_INFO << nextOpenSlotIndex << playList.size() << index;
+    qDebug() << SB_DEBUG_INFO << indexesDrawn.keys();
 
-//    QString allIDX=" ";
-//    for(int i=0;i<indexCovered.length();i++)
-//    {
-//        if(indexCovered.contains(i))
-//        {
-//            allIDX+=QString("%1 ").arg(i);
-//        }
-//    }
-    ProgressDialog::instance()->finishStep(__SB_PRETTY_FUNCTION__,"_loadRadio");
-    ProgressDialog::instance()->finishDialog(__SB_PRETTY_FUNCTION__);
+    // QString allIDX=" ";
+    // for(int i=0;i<indexCovered.length();i++)
+    // {
+    //     if(indexCovered.contains(i))
+    //     {
+    //         allIDX+=QString("%1 ").arg(i);
+    //     }
+    // }
+
+    ProgressDialog::instance()->finishStep(dialogOwner,dialogStep);
+    ProgressDialog::instance()->finishDialog(dialogOwner);
     qm->deleteLater();
 }
 

@@ -390,6 +390,7 @@ Controller::setupUI()
     }
     */
 
+    if(0)
     {
         int maxNumberToRandomize=500;
         int numPerformances=2*26+10;
@@ -436,6 +437,86 @@ Controller::setupUI()
             }
             index++;
         }
+    }
+
+    if(0)
+    {
+        const qsizetype maxNumberToRandomize=5000;
+        const qsizetype numIterations=50000000;
+
+        QHash<qsizetype,qsizetype> d5000;
+        QHash<qsizetype,qsizetype> d500;
+        QHash<qsizetype,qsizetype> d50;
+        QHash<qsizetype,qsizetype> d5;
+
+        for(qsizetype i=0;i<5000;i++)
+        {
+            d5000[i]=0;
+        }
+        for(qsizetype i=0;i<500;i++)
+        {
+            d500[i]=0;
+        }
+        for(qsizetype i=0;i<50;i++)
+        {
+            d50[i]=0;
+        }
+        for(qsizetype i=0;i<5;i++)
+        {
+            d5[i]=0;
+        }
+
+        qDebug() << SB_DEBUG_INFO;
+        for(qsizetype i=0;i<numIterations;i++)
+        {
+            if(i % 100000==0)
+            {
+                qDebug() << SB_DEBUG_INFO << "Generated" << i << "random numbers";
+            }
+            qsizetype rnd=Common::randomOldestFirst(maxNumberToRandomize);
+
+            d5000[rnd]=d5000[rnd]+1;
+            rnd=rnd/10;
+            d500[rnd]=d500[rnd]+1;
+            rnd=rnd/10;
+            d50[rnd]=d50[rnd]+1;
+            rnd=rnd/10;
+            d5[rnd]=d5[rnd]+1;
+        }
+        for(qsizetype i=0;i<10;i++)
+        {
+            qDebug() << SB_DEBUG_INFO << i << d5000[i];
+        }
+        qDebug() << SB_DEBUG_INFO << d5000.size() << d500.size() << d50.size() << d5.size();
+
+        // 50 -> 50/10 ->
+        const qsizetype lineWidth=200;
+        qsizetype divider;
+        qsizetype total=0;
+        divider=d5000[0]/lineWidth;
+        qDebug() << SB_DEBUG_INFO << divider << d5000[0];
+        total=0;
+        for(qsizetype i=0;i<5000;i++)
+        {
+            qsizetype numChars=d5000[i]/divider;
+            QString indexCovered=QString("#").repeated(numChars);
+            total+=d5000[i];
+            if(i<200)
+            {
+                qDebug() << SB_DEBUG_INFO << QString::asprintf("%07d",i) << QString::asprintf("%07d",d5000[i]) << indexCovered;
+            }
+        }
+        qDebug() << SB_DEBUG_INFO << total;
+        divider=d50[0]/lineWidth;
+        total=0;
+        for(qsizetype i=0;i<d50.size();i++)
+        {
+            qsizetype numChars=d50[i]/divider;
+            QString indexCovered=QString("#").repeated(numChars);
+            total+=d50[i];
+            qDebug() << SB_DEBUG_INFO << QString::asprintf("%07d",i) << QString::asprintf("%07d",d50[i]) << indexCovered;
+        }
+        qDebug() << SB_DEBUG_INFO << total;
     }
 
     /*
