@@ -490,6 +490,7 @@ PlayManager::_loadRadio()
     //	Avoid having the same performer show up more than once.
     bool avoidDuplicatePerformer=1;			//	When we're loading unplayed songs
     bool selectingUnplayedSongsFirst=0;		//	this flag supersedes the selectingUnplayedSongsFirst
+    bool addedOldestSong=0;                 //  Flag for including the oldest song played first
     int numberOfRejects=0;
     QSet<QString> performerInList;
     QMap<int,bool> indexesDrawn;
@@ -510,8 +511,18 @@ PlayManager::_loadRadio()
         }
         else
         {
-            selectingUnplayedSongsFirst=0;
-            int rnd=Common::randomOldestFirst(maxNumberToRandomize);
+            int rnd=-1;
+            if(addedOldestSong==0)
+            {
+                //  Pick the very first song in list of online performances.
+                addedOldestSong=1;
+                rnd=index;  //  start with the oldest song played
+            }
+            else
+            {
+                selectingUnplayedSongsFirst=0;
+                rnd=Common::randomOldestFirst(maxNumberToRandomize);
+            }
 
             //	Find first untaken spot, counting untaken spots.
             idx=0;
