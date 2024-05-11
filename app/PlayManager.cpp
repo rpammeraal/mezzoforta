@@ -392,6 +392,27 @@ PlayManager::handlePlayingSong(SBIDOnlinePerformancePtr opPtr)
 }
 
 ///	Private methods
+qsizetype
+PlayManager::checkLast100Performers(const QMap<int,SBIDPerformerPtr>& last100Performers,const QString& performerName, qsizetype index) const
+{
+    for(int i=index;i<last100Performers.size();i++)
+    {
+        auto it=last100Performers.find(i);
+        if(it!=last100Performers.end())
+        {
+            SBIDPerformerPtr pPtr=it.value();
+            if(pPtr)
+            {
+                if(pPtr->performerName()==performerName)
+                {
+                    return i;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 void
 PlayManager::_init()
 {
@@ -459,7 +480,8 @@ PlayManager::_loadRadio()
     SBSqlQueryModel* qm=SBIDOnlinePerformance::retrieveAllOnlinePerformances(0);
 
 
-    int numPerformances=qm->rowCount();
+    const int numOnlinePerformances=qm->rowCount();
+    int numPerformances=numOnlinePerformances;
     if(numPerformances>numberSongsToDisplay)
     {
         //	DataEntityCurrentPlaylist::getAllOnlineSongs() may return more than 100,
@@ -468,7 +490,7 @@ PlayManager::_loadRadio()
     }
 
     //	const int maxNumberAttempts=numberSongsToDisplay/2;
-    int maxNumberToRandomize=qm->rowCount();
+    int maxNumberToRandomize=numOnlinePerformances;
     //	If collection greater than 400, limit to 1st third of least recent played songs.
     maxNumberToRandomize=(maxNumberToRandomize>(4 * numberSongsToDisplay)?maxNumberToRandomize/3:maxNumberToRandomize);
     //	If greater than 5000, limit to 5000 to avoid long term starvation.
@@ -489,11 +511,39 @@ PlayManager::_loadRadio()
 
     //	Avoid having the same performer show up more than once.
     bool avoidDuplicatePerformer=1;			//	When we're loading unplayed songs
+    bool avoidPreviouslyPlayedPerformers=(numOnlinePerformances>100)?1:0;
     bool selectingUnplayedSongsFirst=0;		//	this flag supersedes the selectingUnplayedSongsFirst
     bool addedOldestSong=0;                 //  Flag for including the oldest song played first
-    int numberOfRejects=0;
+    int numberOfRejectsDuplicatePerformer=0;
+    int numberOfRejectsPreviouslyPlayedPerformer=0;
     QSet<QString> performerInList;
     QMap<int,bool> indexesDrawn;
+
+    //  While we're at that, load the last 100 songs played, to make sure that, even when MezzoForta! is stopped,
+    //  we don't play the same performer more than once in 100 songs.
+    QMap<int,SBIDPerformerPtr> last100Performers;
+    for(int last100Index=0;last100Index<numberSongsToDisplay;last100Index++)
+    {
+        const int index=numOnlinePerformances+last100Index-100;
+        if(index>=0)
+        {
+            SBIDOnlinePerformancePtr opPtr=SBIDOnlinePerformance::retrieveOnlinePerformance(qm->record(index).value(0).toInt());
+
+            if(opPtr)
+            {
+                const SBKey pKey=opPtr->songPerformerKey();
+                SBIDPerformerPtr pPtr=SBIDPerformer::retrievePerformer(pKey);
+                if(pPtr)
+                {
+                    last100Performers[last100Index]=pPtr;
+                }
+            }
+        }
+    }
+    for(const auto index: last100Performers.keys())
+    {
+        qDebug() << SB_DEBUG_INFO << index << last100Performers[index]->performerName();
+    }
 
     QString indexCovered=QString(".").repeated(maxNumberToRandomize+1);
     indexCovered+=QString("");
@@ -564,14 +614,14 @@ PlayManager::_loadRadio()
                 if(performerInList.contains(performerName))
                 {
                     addToPlaylist=0;
-                    numberOfRejects++;
-                    qDebug() << SB_DEBUG_WARNING << "performer already in list" << performerName << ". Number of rejects" << numberOfRejects;
-                    if(numberOfRejects>(numPerformances * maxNumberOfRejectsMultiplier))
+                    numberOfRejectsDuplicatePerformer++;
+                    qDebug() << SB_DEBUG_WARNING << "*** performer already in list" << performerName << ". Number of rejects" << numberOfRejectsDuplicatePerformer;
+                    if(numberOfRejectsDuplicatePerformer>(numPerformances * maxNumberOfRejectsMultiplier))
                     {
                         //	Turn off logic after n (numPerformances) tries.
-                        SBMessageBox::standardWarningBox(QString("Turning off avoidDuplicatePerformer %1 %2").arg(numberOfRejects).arg(numPerformances));
+                        SBMessageBox::standardWarningBox(QString("Turning off avoidDuplicatePerformer %1 %2").arg(numberOfRejectsDuplicatePerformer).arg(numPerformances));
                         avoidDuplicatePerformer=0;
-                        qDebug() << SB_DEBUG_WARNING << "adding duplicate performers from now on. numberOfRejects:" << numberOfRejects << ". #performances max:" << (numPerformances * maxNumberOfRejectsMultiplier);
+                        qDebug() << SB_DEBUG_WARNING << "adding duplicate performers from now on. numberOfRejects:" << numberOfRejectsDuplicatePerformer << ". #performances max:" << (numPerformances * maxNumberOfRejectsMultiplier);
                     }
                 }
                 else
@@ -583,6 +633,23 @@ PlayManager::_loadRadio()
             {
                 //	Logic is (already) turned off.
                 addToPlaylist=1;
+            }
+            if(avoidPreviouslyPlayedPerformers)
+            {
+                const qsizetype prevPlayedIndex=checkLast100Performers(last100Performers,performerName,idx);
+                if(prevPlayedIndex)
+                {
+                    addToPlaylist=0;
+                    numberOfRejectsPreviouslyPlayedPerformer++;
+                    qDebug() << SB_DEBUG_WARNING << "### performer previously played in last 100" << performerName << "at position" << prevPlayedIndex << ". Number of rejects" << numberOfRejectsPreviouslyPlayedPerformer;
+                    if(numberOfRejectsPreviouslyPlayedPerformer>(numPerformances * maxNumberOfRejectsMultiplier))
+                    {
+                        //	Turn off logic after n (numPerformances) tries.
+                        SBMessageBox::standardWarningBox(QString("Turning off avoidDuplicatePerformer %1 %2").arg(numberOfRejectsPreviouslyPlayedPerformer).arg(numPerformances));
+                        avoidDuplicatePerformer=0;
+                        qDebug() << SB_DEBUG_WARNING << "adding duplicate performers from now on. numberOfRejects:" << numberOfRejectsPreviouslyPlayedPerformer << ". #performances max:" << (numPerformances * maxNumberOfRejectsMultiplier);
+                    }
+                }
             }
         }
 

@@ -114,6 +114,7 @@ HEADERS += \
     AudioDecoderWave.h \
     AudioDecoderWaveReader.h \
     BackgroundThread.h \
+    BuildDatetime.h \
     Cache.h \
     CacheManager.h \
     CacheTemplate.h \
@@ -200,6 +201,14 @@ FORMS += \
     SBDialogSelectItem.ui \
     SetupWizard.ui  \
 	SongAlbumNotes.ui
+
+#   Provision to include compile time
+buildtimeTarget.target = BuildDatetime.h
+buildtimeTarget.depends = FORCE
+buildtimeTarget.commands = touch $$PWD/BuildDatetime.h
+
+PRE_TARGETDEPS += BuildDatetime.h
+QMAKE_EXTRA_TARGETS += buildtimeTarget
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
