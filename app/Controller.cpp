@@ -9,6 +9,7 @@
 #include <QTimer>
 
 #include "BackgroundThread.h"
+#include "BuildDatetime.h"
 #include "Chooser.h"
 #include "Common.h"
 #include "Context.h"
@@ -255,7 +256,11 @@ Controller::openMainWindow(bool appStartUpFlag)
 
     configureMenus();
 
-    mw->setWindowTitle(mw->windowTitle() + " - " + dbm->databaseName() + " ("+Context::instance()->dataAccessLayer()->getDriverName()+")");
+    mw->setWindowTitle(
+        mw->windowTitle() + " - " +
+        dbm->databaseName() + " ("+Context::instance()->dataAccessLayer()->getDriverName()+")" + " - "
+        "Build: " + COMPILE_TIME
+    );
 
     SBIDSong::updateSoundexFields();
     SBIDPerformer::updateSoundexFields();

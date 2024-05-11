@@ -68,6 +68,7 @@ protected:
 private:
     bool _radioModeFlag;
 
+    qsizetype checkLast100Performers(const QMap<int,SBIDPerformerPtr>& last100Performers,const QString& performerName, qsizetype index) const;
     void _init();
     void _loadRadio();
     void _resetCurrentPlayID();
