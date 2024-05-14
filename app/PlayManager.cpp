@@ -634,9 +634,10 @@ PlayManager::_loadRadio()
                 //	Logic is (already) turned off.
                 addToPlaylist=1;
             }
-            if(avoidPreviouslyPlayedPerformers)
+
+            if(addToPlaylist && avoidPreviouslyPlayedPerformers)
             {
-                const qsizetype prevPlayedIndex=checkLast100Performers(last100Performers,performerName,idx);
+                const qsizetype prevPlayedIndex=checkLast100Performers(last100Performers,performerName,index);
                 if(prevPlayedIndex)
                 {
                     addToPlaylist=0;
