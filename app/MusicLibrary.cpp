@@ -602,6 +602,7 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
 
                     for(const auto& article: articles)
                     {
+                        const QString articleEscaped=Common::escapeSingleQuotes(article);
                         for(int matchSrcColumnType=0;matchSrcColumnType<matchSrcColumn.size();matchSrcColumnType++)
                         {
                             //  i=0:    match on match.<entity>_artist_name and artist.name
@@ -624,8 +625,8 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
                             for(const auto& andWord: andWords.keys())
                             {
                                 //  process article
-                                leftArg=QString("TRIM(REGEXP_REPLACE(LOWER(%1_artist_name_cmp),'\\y%2\\y','','g'))").arg(entity).arg(article);
-                                rightArg=QString("TRIM(REGEXP_REPLACE(LOWER(%1),'\\y%2\\y','','g'))").arg(matchSrcColumn[matchSrcColumnType]).arg(article);
+                                leftArg=QString("TRIM(REGEXP_REPLACE(LOWER(%1_artist_name_cmp),'\\y%2\\y','','g'))").arg(entity).arg(articleEscaped);
+                                rightArg=QString("TRIM(REGEXP_REPLACE(LOWER(%1),'\\y%2\\y','','g'))").arg(matchSrcColumn[matchSrcColumnType]).arg(articleEscaped);
 
                                 //  process andWord
                                 leftArg=QString("TRIM(REGEXP_REPLACE(%1,'\\y%2\\y','%3','g'))").arg(leftArg).arg(andWord).arg(andWords[andWord]);
@@ -658,7 +659,7 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
 
                                         .arg(entity)
                                         .arg(switchPerformerName)
-                                        .arg(article)
+                                        .arg(articleEscaped)
                                         .arg(matchSrcColumnType)
                                         .arg(andWord)
                                 )
@@ -725,7 +726,7 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
 
                                         .arg(entity)
                                         .arg(switchPerformerName)
-                                        .arg(article)
+                                        .arg(articleEscaped)
                                         .arg(matchSrcColumnType)
                                         .arg(andWord)
                                 )
