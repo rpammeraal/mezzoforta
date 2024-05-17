@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "PlayManager.h"
 
 #include "CacheManager.h"
@@ -464,13 +462,43 @@ PlayManager::_loadRadio()
     SBTabQueuedSongs* tqs=Context::instance()->tabQueuedSongs();
     const int firstBatchNumber=5;
     bool firstBatchLoaded=false;
-    const int numberSongsToDisplay=100;
     _radioModeFlag=1;
+
+    SBSqlQueryModel* stats=_loadStatistics();
+    const bool moreThan100SongsPresent=stats->record(0).value(0).toBool();
+    const bool moreThan100PerformersPresent=stats->record(0).value(1).toBool();
+    const bool moreThan100PerformancesPresent=stats->record(0).value(2).toBool();
+    int spread=stats->record(0).value(3).toInt();
+    const int numberSongsToDisplay=100;
+
+    qDebug() << SB_DEBUG_INFO
+             << moreThan100SongsPresent
+             << moreThan100PerformersPresent
+             << moreThan100PerformancesPresent
+             << spread
+             << numberSongsToDisplay
+        ;
+
+    //	Avoid having the same performer show up more than once.
+    bool avoidDuplicatePerformer=0;
+    bool avoidPreviouslyPlayedPerformers=0;
+
+    if(moreThan100SongsPresent && moreThan100PerformersPresent && moreThan100PerformancesPresent)
+    {
+        avoidDuplicatePerformer=1;
+    }
+    if(spread>=100)
+    {
+        avoidPreviouslyPlayedPerformers=1;
+    }
+
+    qDebug() << SB_DEBUG_INFO
+             << avoidDuplicatePerformer
+             << avoidPreviouslyPlayedPerformers
+        ;
 
     QMap<int,SBIDOnlinePerformancePtr> playList;
 
-    int progressStep=0;
-    int maxProgressStep=numberSongsToDisplay+1;
     QString dialogStep;
     const static QString dialogOwner("___SB_PRETTY_FUNCTION___");
     ProgressDialog::instance()->startDialog(dialogOwner,"Starting Auto DJ",1);
@@ -496,8 +524,6 @@ PlayManager::_loadRadio()
     //	If greater than 5000, limit to 5000 to avoid long term starvation.
     maxNumberToRandomize=(maxNumberToRandomize>5000?5000:maxNumberToRandomize);
 
-    int songInterval=numPerformances/10;
-
     bool found=1;
     int nextOpenSlotIndex=0;
     tqs->setViewLayout();
@@ -509,9 +535,7 @@ PlayManager::_loadRadio()
     {
     }
 
-    //	Avoid having the same performer show up more than once.
-    bool avoidDuplicatePerformer=1;			//	When we're loading unplayed songs
-    bool avoidPreviouslyPlayedPerformers=(numOnlinePerformances>100)?1:0;
+
     bool selectingUnplayedSongsFirst=0;		//	this flag supersedes the selectingUnplayedSongsFirst
     bool addedOldestSong=0;                 //  Flag for including the oldest song played first
     int numberOfRejectsDuplicatePerformer=0;
@@ -705,6 +729,59 @@ PlayManager::_loadRadio()
     ProgressDialog::instance()->finishStep(dialogOwner,dialogStep);
     ProgressDialog::instance()->finishDialog(dialogOwner);
     qm->deleteLater();
+}
+
+SBSqlQueryModel*
+PlayManager::_loadStatistics() const
+{
+    //	Main query
+    QString q=QString
+    (
+        "WITH distinct_op AS "
+        "( "
+            "SELECT "
+                "p.song_id, "
+                "p.artist_id, "
+                "op.online_performance_id "
+            "FROM "
+                "___SB_SCHEMA_NAME___online_performance op "
+                    "JOIN ___SB_SCHEMA_NAME___record_performance rp USING(record_performance_id) "
+                    "JOIN ___SB_SCHEMA_NAME___performance p USING(performance_id) "
+        "), "
+        "counts AS "
+        "( "
+            "SELECT "
+                "COUNT(DISTINCT song_id) AS num_songs, "
+                "COUNT(DISTINCT artist_id) AS num_performers, "
+                "COUNT(DISTINCT song_id::VARCHAR || '_' || artist_id::VARCHAR) AS num_op "
+            "FROM "
+                "distinct_op "
+        "), "
+        "max_spread AS "
+        "( "
+            "SELECT DISTINCT "
+                "artist_id, "
+                "(COUNT(song_id) OVER() * 1.0)/(COUNT(song_id) OVER(PARTITION BY artist_id)) AS max_spread "
+            "FROM "
+                "distinct_op "
+            "ORDER BY "
+                "2 "
+            "LIMIT "
+                "1 "
+        ") "
+        "SELECT "
+            "CASE WHEN num_songs>100 THEN True ELSE False END        AS songs_100, "
+            "CASE WHEN num_performers>100 THEN True ELSE False END   AS performers_100, "
+            "CASE WHEN num_op>100 THEN True ELSE False END           AS op_100, "
+            "max_spread.max_spread "
+        "FROM "
+            "counts, "
+            "max_spread "
+        ";"
+    );
+
+    return new SBSqlQueryModel(q);
+
 }
 
 void

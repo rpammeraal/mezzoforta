@@ -71,6 +71,7 @@ private:
     qsizetype checkLast100Performers(const QMap<int,SBIDPerformerPtr>& last100Performers,const QString& performerName, qsizetype index) const;
     void _init();
     void _loadRadio();
+    SBSqlQueryModel* _loadStatistics() const;
     void _resetCurrentPlayID();
     SBIDOnlinePerformancePtr _performanceAt(int index) const;
     void _setCurrentPlayID(int currentPlayID);
