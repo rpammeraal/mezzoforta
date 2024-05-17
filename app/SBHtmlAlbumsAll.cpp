@@ -116,7 +116,7 @@ SBHtmlAlbumsAll::albumDetail(QString html, const QString& key)
                                 "</TD>"
                             "</TR>"
                             "<TR>"
-                                "<TD pos=\"84\" class=\"SBItemMinor\" onclick=\"open_page('%5','%2');\">%4</TD>"
+                                "<TD pos=\"84\" class=\"SBItemMinor\" onclick=\"open_page('%5','%2');\">&nbsp;&nbsp;&nbsp;&nbsp;%4</TD>"
                             "</TR>"
                         )
                                           .arg(ExternalData::getDefaultIconPath(SBKey::Album))
@@ -185,7 +185,7 @@ SBHtmlAlbumsAll::retrieveAllAlbums(const QChar& startsWith, qsizetype offset, qs
                         "</TD>"
                     "</TR>"
                     "<TR>"
-                        "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">%3</TD>"
+                        "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">&nbsp;&nbsp;&nbsp;&nbsp;%3</TD>"
                     "</TR>"
                 "</THEAD>"
             )

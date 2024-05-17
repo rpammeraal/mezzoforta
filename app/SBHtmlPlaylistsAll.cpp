@@ -83,7 +83,16 @@ SBHtmlPlaylistsAll::playlistDetail(QString html, const QString& key)
                                 "<TD class=\"playercontrol_button\">"
                                     "%3"
                                 "</TD>"
-                            "</TR>"
+                            "</TR>"/*
+                            "<DIV>"
+                                "<DIV class=\"SBIconCell\" >"
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</DIV>"
+                                "<DIV class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</DIV>"
+                                "<DIV class=\"playercontrol_button\">"
+                                    "%3"
+                                "</DIV>"
+                            "</DIV>"*/
                         )
                             .arg(ExternalData::getDefaultIconPath(SBKey::Playlist))
                             .arg(Common::escapeQuotesHTML(pdPtr->genericDescription()))
@@ -135,8 +144,18 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
             SBKey iconKey;
 
             //	Start table row
-            const QString row=QString(
-                "<THEAD>"
+            const QString row=QString(/*
+                "<DIV>"
+                    "<DIV class=\"SBPlaylistRow\">"
+                        "<TABLE>"
+                        "<tr class=\"SBPlaylistRow\">"
+                            "<td class=\"SBIconDiv\" ><img class=\"SBIcon\" src=\"%3\"></img></td>"
+                            "<td class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</td>"
+                            "<td class=\"item_play_button\"><BUTTON type=\"button\" onclick=\"control_player('play','%2');\">&gt;</BUTTON></td>"
+                        "</tr>"
+                        "</TABLE>"
+                    "</DIV>"
+                "</DIV>"*/
                     "<TR>"
                         "<TD class=\"SBIconDiv\" >"
                             "<img class=\"SBIcon\" src=\"%3\"></img>"
@@ -146,7 +165,6 @@ SBHtmlPlaylistsAll::retrieveAllPlaylists(const QChar& startsWith, qsizetype offs
                             "<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
                         "</TD>"
                     "</TR>"
-                "</THEAD>"
             )
                 .arg(Common::escapeQuotesHTML(pPtr->playlistName()))
                 .arg(pPtr->key().toString())

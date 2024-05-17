@@ -332,7 +332,7 @@ SBHtmlSongsAll::retrieveAllSongs(const QChar& startsWith, qsizetype offset, qsiz
                             "</TD>"
                         "</TR>"
                         "<TR>"
-                            "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">%3</TD>"
+                            "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">&nbsp;&nbsp;&nbsp;&nbsp;%3</TD>"
                         "</TR>"
                     "</THEAD>"
                 )

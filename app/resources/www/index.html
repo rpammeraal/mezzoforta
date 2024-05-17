@@ -5,95 +5,123 @@
 </head>
 
 <body>
-
     <div class="container">
-        <div id="logo"></div>
-        <div id="menu">
-            <div class="menu-item" context="playlist_list">
-                <img src="/images/PlaylistIcon.png" alt="Playlists">
-                <p>Playlists</p>
-            </div>
+        <header>
+            <div id="logo"></div>
+            <div id="menu">
+                <div class="menu-item" context="playlist_list">
+                    <img src="/images/PlaylistIcon.png" alt="Playlists">
+                    <p>Playlists</p>
+                </div>
 
-            <div class="menu-item" context="performer_list">
-                <img src="/images/NoBandPhoto.png" alt="Performers">
-                <p>Performers</p>
-            </div>
+                <div class="menu-item" context="performer_list">
+                    <img src="/images/NoBandPhoto.png" alt="Performers">
+                    <p>Performers</p>
+                </div>
 
-            <div class="menu-item" context="album_list">
-                <img src="/images/NoAlbumCover.png" alt="Albums">
-                <p>Albums</p>
-            </div>
+                <div class="menu-item" context="album_list">
+                    <img src="/images/NoAlbumCover.png" alt="Albums">
+                    <p>Albums</p>
+                </div>
 
-            <div class="menu-item" context="song_list">
-                <img src="/images/SongIcon.png" alt="Songs">
-                <p>Songs</p>
-            </div>
+                <div class="menu-item" context="song_list">
+                    <img src="/images/SongIcon.png" alt="Songs">
+                    <p>Songs</p>
+                </div>
 
-            <div class="menu-item" context="chart_list">
-                <img src="/images/ChartIcon.png" alt="Charts">
-                <p>Charts</p>
+                <div class="menu-item" context="chart_list">
+                    <img src="/images/ChartIcon.png" alt="Charts">
+                    <p>Charts</p>
+                </div>
             </div>
-      </div>
-      <div id="alphabet">
-            <div class="alphabet-item"><p>A</p></div>
-            <div class="alphabet-item"><p>B</p></div>
-            <div class="alphabet-item"><p>C</p></div>
-            <div class="alphabet-item"><p>D</p></div>
-            <div class="alphabet-item"><p>E</p></div>
-            <div class="alphabet-item"><p>F</p></div>
-            <div class="alphabet-item"><p>G</p></div>
-            <div class="alphabet-item"><p>H</p></div>
-            <div class="alphabet-item"><p>I</p></div>
-            <div class="alphabet-item"><p>J</p></div>
-            <div class="alphabet-item"><p>K</p></div>
-            <div class="alphabet-item"><p>L</p></div>
-            <div class="alphabet-item"><p>M</p></div>
-            <div class="alphabet-item"><p>N</p></div>
-            <div class="alphabet-item"><p>O</p></div>
-            <div class="alphabet-item"><p>P</p></div>
-            <div class="alphabet-item"><p>Q</p></div>
-            <div class="alphabet-item"><p>R</p></div>
-            <div class="alphabet-item"><p>S</p></div>
-            <div class="alphabet-item"><p>T</p></div>
-            <div class="alphabet-item"><p>U</p></div>
-            <div class="alphabet-item"><p>V</p></div>
-            <div class="alphabet-item"><p>W</p></div>
-            <div class="alphabet-item"><p>X</p></div>
-            <div class="alphabet-item"><p>Y</p></div>
-            <div class="alphabet-item"><p>Z</p></div>
-            <div class="alphabet-item"><p>*</p></div>
+        </header>
+        <main>
+            <div id="output">
+                <div>
+                    <div id="output-top">
+                        <div><div id="output_header">output_header</div></div>
+                        
+                        <div id="top-control">
+                            <div id="top-play">
+                                <div id="sb_context_play_button" onclick="control_player('play');"><BUTTON>&gt;</BUTTON></div>
+                            </div>
+                            <div id="sb_paging_prev_button" onclick="pager(null,null,'prev');"><BUTTON>Prev</BUTTON></div>
+                            <div id="sb_paging_next_button" onclick="pager(null,null,'next');"><BUTTON>Next</BUTTON></div>
+                        </div>
+                    </div>
+                    <div id="output-container">
+                        <div id="output_content">output_content</div>
+                    </div>
+                </div>
+            </div>
+            <div id="alphabet-wrapper">
+                <div id="alphabet">
+                    <div class="alphabet-item"><a href="#output"><p>#</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>A</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>B</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>C</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>D</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>E</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>F</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>G</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>H</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>I</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>J</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>K</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>L</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>M</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>N</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>O</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>P</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Q</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>R</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>S</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>T</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>U</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>V</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>W</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>X</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Y</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Z</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>*</p></a></div>
+                    <div id="alp"></div>
+                </div>
+            </div>
+        </main>
+        <div id="footer">
+            <div id="footer-wrapper">
+                <div id="playerstatus">Welcome To MezzoForta...</div>
+                <div id="playercontrol">
+                    <div class="playercontrol_button" id="<<" onclick="control_player('prev')"><button>&lt;&lt;</button></div>
+                    <div class="playercontrol_button" id="[]" onclick="control_player('stop')"><button>[]</button></div>      
+                    <div class="playercontrol_button" id=">"  onclick="control_player('play')"><button>&gt;</button></div>     
+                    <div class="playercontrol_button" id=">>" onclick="control_player('next')"><button>&gt;&gt;</button></div>
+                </div>
+            </div>
         </div>
-        <div id="output">
-            <TABLE cols="3">
-                <TBODY>
-                    <TR>
-                        <TD><DIV id="output_header">output_header</DIV></TD>
-                        <TD><DIV id="sb_context_play_button" onclick="control_player('play');"><BUTTON>&gt;</BUTTON></DIV></TD>
-                        <TD><DIV id="sb_paging_prev_button" onclick="pager(null,null,'prev');"><BUTTON>Prev</BUTTON></DIV></TD>
-                        <TD><DIV id="sb_paging_next_button" onclick="pager(null,null,'next');"><BUTTON>Next</BUTTON></DIV></TD>
-                    </TR>
-                    <TR>
-                        <TD colspan="3"><div id="output_content">output_content</div></TD>
-                    </TR>
-                </TBODY>
-            </TABLE>
-        </div>
-        <div id="playerstatus"></div>
-        <div id="playercontrol">
-            <div class="playercontrol_button" id="<<" onclick="control_player('prev')"><button>&lt;&lt;</button></div>
-            <div class="playercontrol_button" id="[]" onclick="control_player('stop')"><button>[]</button></div>      
-            <div class="playercontrol_button" id=">"  onclick="control_player('play')"><button>&gt;</button></div>     
-            <div class="playercontrol_button" id=">>" onclick="control_player('next')"><button>&gt;&gt;</button></div>
-        </div>
+       
     </div>
 
 	<script>
-		// Wait till DOM is loaded //
+		
+        var foot = document.getElementById("footer-wrapper");
+        var alph = document.getElementById("alphabet");
+        var cont = document.getElementById("content");
+
+        // Wait till DOM is loaded //
 		document.addEventListener("DOMContentLoaded", function() {
 			document.body.style.transition = "opacity 1.5s ease";
 			document.body.style.opacity = 1;
+            cont.style.marginBottom=0;
+            alph.style.marginBottom=0;
 		});
 
+        function setMargin(){
+            height = foot.clientHeight;
+            console.log(height);
+            cont.style.marginBottom=height+"px";
+            alph.style.marginBottom=height+"px";
+        }
 		function statusInterval() {
 			setInterval(StatusUpdate, 2000);
 		}
@@ -280,154 +308,159 @@
             p_key=arguments[1];
 
             console.log("Switch from",context,"to",p_context);
-            alphabet_visible_toggle='hidden';
-            menu_visible_toggle='hidden';
-            output_visible_toggle='hidden';
+            alphabet_display_toggle='none';
+            menu_display_toggle='none';
+            output_display_toggle='none';
 
-            pager_prev_button_toggle='hidden';
-            pager_next_button_toggle='hidden';
-            sb_context_play_button_toggle='hidden';
+            pager_prev_button_toggle='none';
+            pager_next_button_toggle='none';
+            sb_context_play_button_toggle='none';
 
+            
             switch(p_context) {
                 case 'album_detail': 
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
                     current_key=p_key;
-                    sb_context_play_button_toggle='visible';
+                    sb_context_play_button_toggle='block';
                     break;
 
                 case 'album_list': 
-                    alphabet_visible_toggle='visible';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='visible';
-                    pager_next_button_toggle='visible';
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
                     break;
 
                 case 'chart_detail': 
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
-                    sb_context_play_button_toggle='visible';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
                     current_key=p_key;
                     break;
 
                 case 'chart_list': 
-                    alphabet_visible_toggle='visible';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='visible';
-                    pager_next_button_toggle='visible';
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
                     break;
 
                 case 'menu':
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='visible';
-                    output_visible_toggle='hidden';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='block';
+                    output_display_toggle='none';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
                     break;
 
                 case 'performer_detail': 
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
-                    sb_context_play_button_toggle='visible';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
                     current_key=p_key;
                     break;
 
                 case 'performer_list': 
-                    alphabet_visible_toggle='visible';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='visible';
-                    pager_next_button_toggle='visible';
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
+                    
                     break;
 
                 case 'playlist_detail': 
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
                     current_key=p_key;
-                    sb_context_play_button_toggle='visible';
+                    sb_context_play_button_toggle='block';
+                    
                     break;
 
                 case 'playlist_list':
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
                     break;
 
                 case 'song_detail': 
-                    alphabet_visible_toggle='hidden';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='hidden';
-                    pager_next_button_toggle='hidden';
-                    sb_context_play_button_toggle='visible';
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
                     current_key=p_key;
                     break;
 
                 case 'song_list': 
-                    alphabet_visible_toggle='visible';
-                    menu_visible_toggle='hidden';
-                    output_visible_toggle='visible';
-                    pager_prev_button_toggle='visible';
-                    pager_next_button_toggle='visible';
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
                     current_key=null;
-                    sb_context_play_button_toggle='hidden';
+                    sb_context_play_button_toggle='none';
                     break;
             }
-            const alphabet_div = document.getElementById('alphabet'); 
-            console.log("Set visibility on alphabet_div to",alphabet_visible_toggle);
-            alphabet_div.style.visibility = alphabet_visible_toggle;
+            const alphabet_div = document.getElementById('alphabet-wrapper'); 
+            console.log("Set display on alphabet_div to",alphabet_display_toggle);
+            alphabet_div.style.display = alphabet_display_toggle;
 
             const menu_div = document.getElementById('menu'); 
-            console.log("Set visibility on menu_div to",menu_visible_toggle);
-            menu_div.style.visibility = menu_visible_toggle;
+            console.log("Set display on menu_div to",menu_display_toggle);
+            menu_div.style.display = menu_display_toggle;
 
             const output_div = document.getElementById('output'); 
-            console.log("Set visibility on output_div to",output_visible_toggle);
-            output_div.style.visibility = output_visible_toggle;
+            console.log("Set display on output_div to",output_display_toggle);
+            output_div.style.display = output_display_toggle;
 
-            if(output_visible_toggle=='visible') {
+            if(output_display_toggle=='block') {
                 const output_content_div = document.getElementById('output_content'); 
                 output_content_div.scrollTo(0,0);
                 output_content.scrollTo(0,0);
             }
-
+            //Scroll to top
+            window.scrollTo(0,0);
+            
             const pager_prev_button_div = document.getElementById('sb_paging_prev_button'); 
-            console.log("Set visibility on pager_prev_button_div to",pager_prev_button_toggle);
-            pager_prev_button_div.style.visibility = pager_prev_button_toggle;
+            console.log("Set display on pager_prev_button_div to",pager_prev_button_toggle);
+            pager_prev_button_div.style.display = pager_prev_button_toggle;
 
             const pager_next_button_div = document.getElementById('sb_paging_next_button'); 
-            console.log("Set visibility on pager_next_button_div to",pager_next_button_toggle);
-            pager_next_button_div.style.visibility = pager_next_button_toggle;
+            console.log("Set display on pager_next_button_div to",pager_next_button_toggle);
+            pager_next_button_div.style.display = pager_next_button_toggle;
 
             const sb_context_play_button_div = document.getElementById('sb_context_play_button'); 
-            console.log("Set visibility on sb_context_play_button_div to",sb_context_play_button_toggle);
-            sb_context_play_button_div.style.visibility = sb_context_play_button_toggle;
+            console.log("Set display on sb_context_play_button_div to",sb_context_play_button_toggle);
+            sb_context_play_button_div.style.display = sb_context_play_button_toggle;
 
             context=p_context;
         }

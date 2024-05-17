@@ -1,27 +1,86 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+html{
+    scroll-behavior: smooth;
+}
 body {
-	font-family: Trebuchet MS;
+    font-family: Trebuchet MS;
 }
-
-table, th, td {
-  width: 100%;
-  border: 0px solid;
+::-webkit-scrollbar {
+    width: 10px;
 }
-
-
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgb(194, 194, 194);;
+    border-radius: 12px;
+}
+table,
+th,
+td {
+    width: 100%;
+    border: 0px solid;
+}
+button{
+    padding: 5px;
+    margin-right: 4px;
+    height: 100%;
+    padding: 5px;
+    font-size: 50%;
+    text-decoration: none;
+    border-radius: 2px;
+    border: 1px solid gray;
+    color: black;
+}
+a{
+    text-decoration: none;
+    color: black;
+}
+main {
+    display: flex;
+    justify-content: center;
+}
+.SongDetailTable tbody tr{
+    margin-bottom: 5px;
+}
+#PlaylistDetail table tbody tr{
+    margin-bottom: 5px;
+}
+.SongListTable tbody tr{
+    margin-bottom: 5px;
+}
+.AlbumDetailTable tbody tr{
+    margin-bottom: 5px;
+}
+#footer{
+    width: 100%;
+}
+#footer-wrapper{
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    background: #f8f7f7;
+}
 .container {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  grid-template-areas: "logo logo"
-  "menu alphabet"
-  "output alphabet"
-  "playerstatus playerstatus"
-  "playercontrol playercontrol";
-  grid-template-columns: auto 60px;
-  grid-template-rows: 75px auto auto 150px 100px;
+    display: block;
+    width: 100%;
+    height: 100%;
+    grid-template-areas: "logo logo"
+        "menu alphabet"
+        "output alphabet"
+        "playerstatus playerstatus"
+        "playercontrol playercontrol";
+    grid-template-columns: auto 60px;
+    grid-template-rows: 75px auto auto 150px 100px;
 }
-.container > div {
-  border: 0px dashed #888;
+
+.container>div {
+    border: 0px dashed #888;
 }
 
 #logo {
@@ -32,18 +91,19 @@ table, th, td {
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0 auto;
-	margin-bottom: 10px;
+    margin-bottom: 10px;
     top: 10px;
     left: 0%;
     right: 0%;
-	cursor: pointer;
+    cursor: pointer;
 }
 
 #menu {
-  grid-area: menu;
+    grid-area: menu;
 }
+
 #menu.hide {
-	display: none;
+    display: none;
 }
 
 .menu-item {
@@ -51,7 +111,7 @@ table, th, td {
     align-items: center;
     justify-content: space-between;
     padding: 2px;
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .menu-item img {
@@ -67,7 +127,7 @@ table, th, td {
 .menu-item::after {
     content: '>';
     margin-left: auto;
-	margin-right: 4px;
+    margin-right: 4px;
 }
 
 .menu-item:hover {
@@ -80,88 +140,125 @@ table, th, td {
 
 
 #alphabet {
-    overflow-y: auto;
+    overflow-y: scroll;
     grid-area: alphabet;
+    height: 100%;
+    position: fixed;
+    right: 0;
 }
-
-.alphabet-item {
-	font-size: 150%;
-    display: flex;
+#alphabet-wrapper{
+    width: 20%;
+    max-width: 50px;
+    margn-bottom: 100px;
+}
+.alphabet-item a {
+    font-size: 120%;
+    display: fixed;
     align-items: right;
     padding: 0px;
-	cursor: pointer;
+    cursor: pointer;
 }
-.alphabet-item:hover {
+
+.alphabet-item a:hover {
     color: dodgerblue;
 }
 
 .alphabet-item:active {
     font-weight: bold;
 }
-
+#alp{
+    height: 200px;
+}
+#top-control{
+    display: flex;
+    align-items: center;
+}
+#top-play{
+    display: flex;
+}
 #output {
-	transition: opacity 1s ease;
+    transition: opacity 1s ease;
+    /*
     height: -moz-calc(100vh - (75px + 150px + 100px));
     height: -webkit-calc(100vh - (75px + 150px + 100px));
 	height: calc(100vh - (75px + 150px + 100px));
+    */
     overflow-y: auto;
+    width: 80%;
+    margin-bottom: 100px;
 }
 
 #output.show {
-	display: block;
-	opacity: 1;
+    display: block;
+    opacity: 1;
 }
 
 #output_header {
-	font-size: 150%;
+    font-size: 150%;
     grid-area: output_header;
+    width: 100%;
 }
+
+#output-top{
+    display: flex;
+    margin-bottom: 15px;
+    width: 100%;
+    justify-content: space-between;
+}
+
 #output_content {
     grid-area: output_content;
-	scrollbar-color: grey transparent;
+    scrollbar-color: grey transparent;
     overflow-y: auto;
+    width: 100%;
 }
+
 #playerstatus {
     grid-area: playerstatus;
     align: center;
-	text-align: center;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
 }
+
 #playercontrol {
     grid-area: playercontrol;
-    align: center;
     display: flex;
-	text-align: center;
-	justify-content: center;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
 }
 .playercontrol_button {
-    text-align: right;
-	margin: 0 0px;
-	bottom: -5px;
-	cursor: pointer;
-    margin-right: 0px;
+    text-lign: right;
+    marin: 0 0px;
+    botom: -5px;
+    cursor: pointer;
+    margin-right: 3px;
 }
 
 .playercontrol_button button {
-    text-align: right;
-	font-size: 150%;
+    color: black !important;
+    text-alin: right;
+    font-sie: 150%;
     type="button";
     min-width=300px;
-    margin-right: 0px;
+    margin-riht: 0px;
 }
-
 .SBIconDiv {
-	width: 40px;
+    width: 40px;
 }
 
 .SBIconCell {
     width: 40px;
-	font-size: 125%;
-	font-weight: bold;
+    font-size: 125%;
+    font-weight: bold;
 }
 
 .SBIcon {
-	width:40px;
-	height:40px;
+    width: 40px;
+    height: 40px;
 }
 
 .SBIcon:hover {
@@ -171,12 +268,14 @@ table, th, td {
 .SBIcon:active {
     font-weight: bold;
 }
-
+.SBIconCell{
+    padding-right: 5px;
+}
 .SBItemSection {
     width: 100%;
     margin-top: 10px;
-	font-size: 200%;
-	font-weight: bold;
+    font-size: 200%;
+    font-weight: bold;
 }
 
 .SBLineItem {
@@ -186,15 +285,16 @@ table, th, td {
 .SBItemMajorTitleOnly {
     width: 100%;
     margin-top: 10px;
-	font-size: 125%;
-	font-weight: bold;
+    font-size: 125%;
+    font-weight: bold;
 }
 
 .SBItemMajor {
-    width: 100%;
-    margin-top: 10px;
-	font-size: 125%;
-	font-weight: bold;
+    widh: 100%;
+    margn-top: 10px;
+    font-sie: 125%;
+    coor: pink;
+    font-weight: bold;
 }
 
 .SBItemMajor:hover {
@@ -208,8 +308,8 @@ table, th, td {
 .SBItemMajorSplit {
     width: 50%;
     margin-top: 10px;
-	font-size: 125%;
-	font-weight: bold;
+    font-size: 125%;
+    font-weight: bold;
 }
 
 .SBItemMajorSplit:hover {
@@ -222,7 +322,7 @@ table, th, td {
 
 .SBItemMinor {
     margin-top: 0px;
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .SBItemMinor:hover {
@@ -235,8 +335,9 @@ table, th, td {
 
 .item_play_button {
     cursor: pointer;
-	font-size: 150%;
-    type="button";
+    display: inline;
+    font-size: 30px;
+    font-weight: bold;
     min-width=300px;
 }
 
@@ -246,8 +347,8 @@ table, th, td {
 
 .SBLyrics {
     margin-top: 0px;
-	font-weight: bold;
-	font-size: 125%;
+    font-weight: bold;
+    font-size: 125%;
 }
 
 #sb_paging_prev_ind {
@@ -263,50 +364,65 @@ table, th, td {
 }
 
 #sb_paging_prev_button {
-    text-align: right;
-	margin: 0 0px;
-	bottom: -5px;
-	cursor: pointer;
-    max-width: 300px;
-    margin-right: 0px;
+    txt-align: right;
+    mrgin: 0 0px;
+    bttom: -5px;
+    cursor: pointer;
+    ma-width: 300px;
+    margn-right: 0px;
 }
 
 #sb_paging_prev_button button {
-    text-align: right;
-	font-size: 150%;
+    txt-align: right;
+    widt: 30%;
+    fon-size: 150%;
     type="button";
     margin-right: 0px;
 }
 
 #sb_paging_next_button {
-    text-align: right;
-	margin: 0 0px;
-	bottom: -5px;
-	cursor: pointer;
+    tet-align: right;
+    mrgin: 0 0px;
+    bttom: -5px;
+    cursor: pointer;
     max-width: 300px;
-    margin-right: 0px;
+    mrgin-right: 0px;
 }
 
 #sb_paging_next_button button {
-    text-align: right;
-	font-size: 150%;
-    type="button";
-    margin-right: 0px;
+    color: black;
 }
 
 #sb_context_play_button {
     text-align: right;
-	margin: 0 0px;
-	bottom: -5px;
-	cursor: pointer;
+    margin: 0 0px;
+    bottom: -5px;
+    cursor: pointer;
     margin-right: 0px;
 }
 
 #sb_context_play_button button {
-    text-align: right;
-	font-size: 150%;
-    type="button";
-    min-width=300px;
     margin-right: 0px;
 }
 
+.SBPlaylistRow {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+/*phone*/
+@media only screen and (max-width: 425px){
+    #output-top{
+        display: block;
+        width: 100%;
+    }
+    #top-control{
+        display: flex;
+        heigt: 30px;
+        width: 100%;
+        align-items: center;
+        justify-content: space-evenly;
+    }
+}
