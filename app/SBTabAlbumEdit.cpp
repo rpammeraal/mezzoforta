@@ -6,6 +6,7 @@
 
 #include <QCompleter>
 #include <QDebug>
+#include <QItemDelegate>
 #include <QListIterator>
 
 #include "CacheManager.h"
@@ -331,91 +332,91 @@ private:
     SBIDAlbumPtr _albumPtr;
 };
 
-//class AlbumItemEditDelegate : public QItemDelegate
-//{
+class AlbumItemEditDelegate : public QItemDelegate
+{
 
-//public:
-//    AlbumItemEditDelegate(Common::sb_type type, QObject *parent = 0) : QItemDelegate(parent)
-//    {
-//        _type=type;
-//    }
+public:
+   AlbumItemEditDelegate(SBKey::ItemType type, QObject *parent = 0) : QItemDelegate(parent)
+   {
+       _type=type;
+   }
 
-//    ~AlbumItemEditDelegate()
-//    {
+   ~AlbumItemEditDelegate()
+   {
 
-//    }
+   }
 
-//    QWidget* createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
-//    {
-//        Q_UNUSED(option);
+   QWidget* createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+   {
+       Q_UNUSED(option);
 
-//        //	Figure out if record has been deleted
-//        bool isDeletedFlag=index.sibling(index.row(),0).data().toInt();
-//        if(isDeletedFlag)
-//        {
-//            return NULL;
-//        }
+       //	Figure out if record has been deleted
+       bool isDeletedFlag=index.sibling(index.row(),0).data().toInt();
+       if(isDeletedFlag)
+       {
+           return NULL;
+       }
 
-//        //	Not deleted
-//        QLineEdit* editor=new QLineEdit(parent);
-//        QCompleter* c;
+       //	Not deleted
+       QLineEdit* editor=new QLineEdit(parent);
+       QCompleter* c;
 
-//        qDebug() << SB_DEBUG_INFO << _type;
-//        CompleterFactory* cf=Context::instance()->completerFactory();
-//        switch(_type)
-//        {
-//            case Common::sb_type_performer:
-//                return NULL;
-//                c=cf->getCompleterPerformer();
-//            break;
+       qDebug() << SB_DEBUG_INFO << _type;
+       CompleterFactory* cf=Context::instance()->completerFactory();
+       switch(_type)
+       {
+            case SBKey::ItemType::Performer:
+               c=cf->getCompleterPerformer();
+               //return NULL;
+            break;
 
-//            case Common::sb_type_song:
-//                return NULL;
-//                c=cf->getCompleterSong();
-//            break;
+            case SBKey::ItemType::Song:
+               c=cf->getCompleterSong();
+               //return NULL;
+            break;
 
-//            default:
-//                c=NULL;
-//            break;
-//        }
+            default:
+               c=NULL;
+            break;
+       }
 
-//        editor->setCompleter(c);
-//        return editor;
-//    }
+       editor->setCompleter(c);
+       return editor;
+   }
 
-//    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
-//    {
-//        QItemDelegate::paint(painter,option,index);
-//    }
+   void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
+   {
+       QItemDelegate::paint(painter,option,index);
+   }
 
-//    void setEditorData(QWidget * editor, const QModelIndex & index) const
-//    {
+   void setEditorData(QWidget * editor, const QModelIndex & index) const
+   {
 
-//        QLineEdit* le = static_cast<QLineEdit*>(editor);
-//        QString value = index.model()->data(index, Qt::EditRole).toString();
-//        le->setText(value);
-//    }
+       QLineEdit* le = static_cast<QLineEdit*>(editor);
+       QString value = index.model()->data(index, Qt::EditRole).toString();
+       le->setText(value);
+   }
 
-//    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
-//    {
-//        QLineEdit *le = static_cast<QLineEdit*>(editor);
-//        model->setData(index, le->text(), Qt::EditRole);
-//    }
+   void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
+   {
+       QLineEdit *le = static_cast<QLineEdit*>(editor);
+       model->setData(index, le->text(), Qt::EditRole);
+   }
 
-//    QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
-//    {
-//        return QItemDelegate::sizeHint(option,index);
-//    }
+   QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+   {
+       return QItemDelegate::sizeHint(option,index);
+   }
 
-//    void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
-//    {
-//        Q_UNUSED(index);
-//        editor->setGeometry(option.rect);
-//    }
+   void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
+   {
+       Q_UNUSED(index);
+       editor->setGeometry(option.rect);
+   }
 
-//private:
-//    Common::sb_type _type;
-//};
+private:
+   SBKey::ItemType _type;
+};
 
 ///	Public methods
 SBTabAlbumEdit::SBTabAlbumEdit(QWidget* parent) : SBTab(parent,1)
@@ -478,6 +479,7 @@ SBTabAlbumEdit::hasEdits() const
 void
 SBTabAlbumEdit::handleClicked(const QModelIndex index)
 {
+    qDebug() << SB_DEBUG_INFO << index;
     if(index.column()==AlbumEditModel::sb_column_type::sb_column_mod_notes)
     {
         const MainWindow* mw=Context::instance()->mainWindow();
@@ -1353,8 +1355,9 @@ SBTabAlbumEdit::_init()
                 this, SLOT(showContextMenu(QPoint)));
 
         //	Regular select
-        connect(tv, SIGNAL(clicked(QModelIndex)),
-                this, SLOT(handleClicked(QModelIndex)));
+        // connect(tv, SIGNAL(clicked(QModelIndex)),
+        //         this, SLOT(handleClicked(QModelIndex)));
+        connect(tv, &QTableView::clicked, this, &SBTabAlbumEdit::handleClicked);
     }
 }
 
@@ -1423,8 +1426,8 @@ SBTabAlbumEdit::_populate(const ScreenItem &si)
     //	AlbumItemEditDelegate* aied;
     //aied=new AlbumItemEditDelegate(Common::sb_type_song,this);
     //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_songtitle,aied);
-    //aied=new AlbumItemEditDelegate(Common::sb_type_performer,this);
-    //tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
+    AlbumItemEditDelegate* aied=new AlbumItemEditDelegate(SBKey::ItemType::Performer,this);
+    tv->setItemDelegateForColumn(AlbumEditModel::sb_column_performername,aied);
 
     //	Set correct focus
     mw->ui.albumEditTitle->selectAll();

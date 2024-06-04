@@ -13,12 +13,16 @@ public:
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
+    virtual QString defaultIconResourceLocation() const;
     virtual QString genericDescription() const;
-    virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
+
+    //  Methods used for web interface
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const;
 
     //	SBIDOnlinePerformance specific methods
     inline int albumPerformanceID() const { return _albumPerformanceID; }

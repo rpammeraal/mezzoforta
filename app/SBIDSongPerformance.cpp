@@ -25,7 +25,7 @@ SBIDSongPerformance::commonPerformerName() const
 }
 
 QString
-SBIDSongPerformance::iconResourceLocation() const
+SBIDSongPerformance::defaultIconResourceLocation() const
 {
     return QString(":/images/SongIcon.png");
 }
@@ -49,6 +49,12 @@ SBIDSongPerformance::onlinePerformances(bool updateProgressDialogFlag) const
         list=apPtr->onlinePerformances(updateProgressDialogFlag);
     }
     return list;
+}
+
+SBIDPtr
+SBIDSongPerformance::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrieveSongPerformance(itemKey);
 }
 
 void

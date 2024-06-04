@@ -30,7 +30,7 @@ SBIDAlbumPerformance::commonPerformerName() const
 }
 
 QString
-SBIDAlbumPerformance::iconResourceLocation() const
+SBIDAlbumPerformance::defaultIconResourceLocation() const
 {
     return QString(":/images/SongIcon.png");
 }
@@ -57,6 +57,12 @@ SBIDAlbumPerformance::onlinePerformances(bool updateProgressDialogFlag) const
         list[0]=opPtr;
     }
     return list;
+}
+
+SBIDPtr
+SBIDAlbumPerformance::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrieveAlbumPerformance(itemKey);
 }
 
 void
@@ -164,6 +170,14 @@ SBIDAlbumPerformance::songID() const
 {
     SBIDSongPerformancePtr spPtr=songPerformancePtr();
     return (spPtr?spPtr->songID():-1);
+}
+
+SBKey
+SBIDAlbumPerformance::songKey() const
+{
+    const SBIDSongPtr sPtr=songPtr();
+    SB_RETURN_IF_NULL(sPtr,SBKey());
+    return sPtr->key();
 }
 
 int

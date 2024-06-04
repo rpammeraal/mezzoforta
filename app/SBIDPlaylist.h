@@ -23,12 +23,19 @@ public:
     //	Public methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
+    virtual QString defaultIconResourceLocation() const;
     virtual QString genericDescription() const;
-    virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
+
+    //  Methods used for web interface
+    virtual SBSqlQueryModel* allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const;
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const;
+    virtual QString HTMLDetailItem(QString htmlTemplate) const;
+    virtual QString HTMLListItem(const QSqlRecord& r) const;
 
     //	Methods specific to SBIDPlaylist
     bool addPlaylistItem(SBIDPtr ptr);
@@ -61,6 +68,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
+    template <class T> friend class WebTemplate;
     friend class Preloader;
 
     SBIDPlaylist();

@@ -38,15 +38,15 @@ SBIDAlbum::commonPerformerName() const
 }
 
 QString
-SBIDAlbum::genericDescription() const
+SBIDAlbum::defaultIconResourceLocation() const
 {
-    return "Album - "+this->text()+" by "+this->albumPerformerName();
+    return ":/images/NoAlbumCover.png";
 }
 
 QString
-SBIDAlbum::iconResourceLocation() const
+SBIDAlbum::genericDescription() const
 {
-    return ":/images/NoAlbumCover.png";
+    return "Album - "+this->text()+" by "+this->albumPerformerName();
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -105,6 +105,12 @@ SBIDAlbum::onlinePerformances(bool updateProgressDialogFlag) const
     return list;
 }
 
+SBIDPtr
+SBIDAlbum::retrieveItem(const SBKey& itemKey) const
+{
+    return retrieveAlbum(itemKey);
+}
+
 void
 SBIDAlbum::sendToPlayQueue(bool enqueueFlag)
 {
@@ -123,6 +129,227 @@ QString
 SBIDAlbum::type() const
 {
     return "album";
+}
+
+SBSqlQueryModel*
+SBIDAlbum::allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const
+{
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(r.title,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT DISTINCT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(r.record_id AS VARCHAR) AS SB_ALBUM_KEY, "
+            "CAST(%2 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_PERFORMER_KEY, "
+            "r.title, "
+            "a.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___record r "
+                "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
+                    "r.artist_id=a.artist_id "
+        "%3 "
+        "ORDER BY "
+            "r.title, "
+            "a.name "
+        "OFFSET "
+            "%4 "
+        "%5 "
+    )
+        .arg(SBKey::Album)
+        .arg(SBKey::Performer)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+    qDebug() << SB_DEBUG_INFO << q;
+    return new SBSqlQueryModel(q);
+}
+
+QString
+SBIDAlbum::getIconLocation(const SBKey::ItemType& fallbackType) const
+{
+    QString iconLocation;
+    SBKey iconKey;
+
+    iconLocation=ExternalData::getCachePath(this->key());
+    if(QFile::exists(iconLocation))
+    {
+        iconLocation=QString("/icon/%1").arg(iconKey.toString());
+    }
+    else
+    {
+        SBIDPerformerPtr pPtr=this->albumPerformerPtr();
+        if(pPtr)
+        {
+            iconLocation=pPtr->getIconLocation(fallbackType);
+        }
+        else
+        {
+           iconLocation=ExternalData::getDefaultIconPath(fallbackType);
+        }
+    }
+    return iconLocation;
+}
+
+QString
+SBIDAlbum::HTMLDetailItem(QString htmlTemplate) const
+{
+    QString contents;
+    htmlTemplate.replace('\n',"");
+    htmlTemplate.replace('\t'," ");
+
+    QString table;
+
+    SBIDPerformerPtr pPtr=this->albumPerformerPtr();
+
+    if(pPtr)
+    {
+        QString playerControlHTML;
+
+        if(pPtr->itemID()!=SBIDPerformer::retrieveVariousPerformers()->itemID())
+        {
+            playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                    .arg(pPtr->key().toString());
+
+        }
+        //  Performer
+        table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Performed By:</P></TD></TR>")+
+                        QString(
+                            "<TR>"
+                                "<TD class=\"SBIconCell\" >"
+                                    "<img class=\"SBIcon\" src=\"%1\"></img>"
+                                "</TD>"
+                                "<TD class=\"SBItemMajor\" onclick=\"open_page('%3','%2');\">%2</TD>"
+                                "<TD class=\"playercontrol_button\" >"
+
+
+                                "</TD>"
+                            "</TR>"
+                            )
+                            .arg(pPtr->getIconLocation(SBKey::Performer))
+                            .arg(Common::escapeQuotesHTML(pPtr->performerName()))
+                            .arg(pPtr->key().toString())
+            ;
+    }
+    htmlTemplate.replace(html_template_performer,table);
+
+    //  Songs
+
+    //  Create list of song instances (e.g. all instances on an album)
+    QMap<int, SBIDAlbumPerformancePtr> allAlbumPerformances=this->albumPerformances();
+    table=QString();
+    int numPlayables=0;
+
+    if(allAlbumPerformances.count())
+    {
+        QMapIterator<int, SBIDAlbumPerformancePtr> apIt(allAlbumPerformances);
+        //  Remap so we can display songs in order of appearance on album
+        QMap<qsizetype,qsizetype> albumOrderMap;
+
+        while(apIt.hasNext())
+        {
+            apIt.next();
+            const SBIDAlbumPerformancePtr apPtr=apIt.value();
+            if(apPtr)
+            {
+                albumOrderMap[apPtr->albumPosition()]=apIt.key();
+            }
+        }
+
+        for(qsizetype i=0; i<albumOrderMap.size();i++)
+        {
+            const SBIDAlbumPerformancePtr apPtr=allAlbumPerformances.value(albumOrderMap[i+1]);
+            if(apPtr)
+            {
+                QString playerControlHTML;
+                QString iconLocation;
+                SBIDOnlinePerformancePtr opPtr=apPtr->preferredOnlinePerformancePtr();
+                if(opPtr)
+                {
+                    playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                            .arg(opPtr->key().toString())
+                    ;
+                    iconLocation=opPtr->getIconLocation(SBKey::Song);
+                    numPlayables++;
+                }
+                else
+                {
+                    iconLocation=ExternalData::getDefaultIconPath(SBKey::Song);
+                }
+
+                QString row=QString(
+                    "<TR>"
+                        "<TD class=\"SBIconCell\" rowspan=\"2\">"
+                            "<img class=\"SBIcon\" src=\"%1\"></img>"
+                        "</TD>"
+                        "<TD class=\"SBItemMajor\"  onclick=\"open_page('%5','%2');\">%2</TD>"
+                        "<TD class=\"playercontrol_button\" rowspan=\"2\">"
+                            "%3"
+                        "</TD>"
+                    "</TR>"
+                    "<TR>"
+                        "<TD pos=\"84\" class=\"SBItemMinor\" onclick=\"open_page('%5','%2');\">&nbsp;&nbsp;&nbsp;&nbsp;%4</TD>"
+                    "</TR>"
+                )
+                    .arg(iconLocation)
+                    .arg(Common::escapeQuotesHTML(apPtr->songTitle()))
+                    .arg(playerControlHTML)
+                    .arg(Common::escapeQuotesHTML(apPtr->songPerformerName()))
+                    .arg(apPtr->songKey().toString())
+                ;
+                table+=row;
+            }
+        }
+    }
+    if(numPlayables)
+    {
+        table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>")+table;
+    }
+    htmlTemplate.replace(html_template_songs,table);
+    return htmlTemplate;
+}
+
+QString
+SBIDAlbum::HTMLListItem(const QSqlRecord& r) const
+{
+    const SBKey albumKey(r.value(0).toByteArray());
+    const SBKey performerKey(r.value(1).toByteArray());
+    SBIDAlbumPtr aPtr=SBIDAlbum::retrieveAlbum(albumKey);
+
+    if(aPtr)
+    {
+        return QString(
+            "<THEAD>"
+                "<TR>"
+                    "<TD class=\"SBIconDiv\" rowspan=\"2\">"
+                        "<img class=\"SBIcon\" src=\"%4\"></img>"
+                    "</TD>"
+                    "<TD class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</TD>"
+                    "<TD class=\"playercontrol_button\" rowspan=\"2\">"
+                        "<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
+                    "</TD>"
+                "</TR>"
+                "<TR>"
+                    "<TD class=\"SBItemMinor\" onclick=\"open_page('%2','%1');\">&nbsp;&nbsp;&nbsp;&nbsp;%3</TD>"
+                "</TR>"
+            "</THEAD>"
+        )
+            .arg(Common::escapeQuotesHTML(aPtr->albumTitle()))
+            .arg(albumKey.toString())
+            .arg(Common::escapeQuotesHTML(aPtr->albumPerformerName()))
+            .arg(getIconLocation(SBKey::Album))
+        ;
+    }
+    return empty;
 }
 
 SBIDAlbumPerformancePtr
@@ -485,49 +712,6 @@ SBIDAlbum::albumsByPerformer(int performerID)
     ;
     return new SBSqlQueryModel(q);
 }
-
-SBSqlQueryModel*
-SBIDAlbum::allAlbums(const QChar& startsWith, qsizetype offset, qsizetype size)
-{
-    QString whereClause;
-    QString limitClause;
-
-    if(startsWith!=QChar('\x0'))
-    {
-        whereClause=QString("WHERE LOWER(LEFT(r.title,1))='%1'").arg(startsWith.toLower());
-    }
-    if(size>0)
-    {
-        limitClause=QString("LIMIT %1").arg(size);
-    }
-    const QString q=QString
-    (
-        "SELECT DISTINCT "
-            "CAST(%1 AS VARCHAR)||':'||CAST(r.record_id AS VARCHAR) AS SB_ALBUM_KEY, "
-            "CAST(%2 AS VARCHAR)||':'||CAST(a.artist_id AS VARCHAR) AS SB_PERFORMER_KET, "
-            "r.title, "
-            "a.name "
-        "FROM "
-            "___SB_SCHEMA_NAME___record r "
-                "INNER JOIN ___SB_SCHEMA_NAME___artist a ON "
-                    "r.artist_id=a.artist_id "
-        "%3 "
-        "ORDER BY "
-            "3,4 "
-        "OFFSET "
-            "%4 "
-        "%5 "
-    )
-        .arg(SBKey::Album)
-        .arg(SBKey::Performer)
-        .arg(whereClause)
-        .arg(offset)
-        .arg(limitClause)
-    ;
-    qDebug() << SB_DEBUG_INFO << q;
-    return new SBSqlQueryModel(q);
-}
-
 
 ///	Protected methods
 SBIDAlbum::SBIDAlbum():SBIDBase(SBKey::Album,-1)

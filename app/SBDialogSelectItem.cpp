@@ -57,9 +57,9 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
             if(i==-2)
             {
                 //	Process new performerName
-                SBIDAlbumPtr tmpPtr=SBIDAlbum::retrieveUnknownAlbum();	//	only to get iconResourceLocation
-                imagePath=tmpPtr->iconResourceLocation();
-                //imagePath=SBIDBase::iconResourceLocation();
+                SBIDAlbumPtr tmpPtr=SBIDAlbum::retrieveUnknownAlbum();	//	only to get defaultIconResourceLocation
+                imagePath=tmpPtr->defaultIconResourceLocation();
+                //imagePath=SBIDBase::defaultIconResourceLocation();
                 currentKey=SBKey();
                 currentAlbumTitle=newAlbum.albumTitle;
                 currentAlbumPerformerName=newAlbum.performerName;
@@ -77,7 +77,7 @@ SBDialogSelectItem::selectAlbum(const Common::sb_parameters& newAlbum, const SBI
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {
-                    imagePath=currentAlbumPtr->iconResourceLocation();
+                    imagePath=currentAlbumPtr->defaultIconResourceLocation();
                 }
                 currentKey=currentAlbumPtr->key();
                 currentAlbumTitle=currentAlbumPtr->albumTitle();
@@ -183,7 +183,7 @@ SBDialogSelectItem::selectOnlinePerformanceFromSong(const SBIDSongPtr& songPtr, 
 
         if(imageFile.exists()==0)
         {
-            imagePath=opPtr->iconResourceLocation();
+            imagePath=opPtr->defaultIconResourceLocation();
         }
         l->setText(QString("<html><head><style type=text/css> "
                            "a:link {color:black; text-decoration:none;} "
@@ -236,7 +236,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
             {
                 //	Process new performerName
                 SBIDPerformerPtr tmpPtr=SBIDPerformer::retrieveVariousPerformers();
-                imagePath=tmpPtr->iconResourceLocation();
+                imagePath=tmpPtr->defaultIconResourceLocation();
                 currentKey=SBKey();
                 currentPerformerName=QString("Use as is: <B>%1</B>").arg(newPerformerName);
             }
@@ -247,7 +247,7 @@ SBDialogSelectItem::selectPerformer(const QString& newPerformerName,const SBIDPt
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {
-                    imagePath=currentPerformerPtr->iconResourceLocation();
+                    imagePath=currentPerformerPtr->defaultIconResourceLocation();
                 }
                 currentKey=currentPerformerPtr->key();
                 currentPerformerName=QString("Existing Performer: <B>%1</B>").arg(currentPerformerPtr->performerName());
@@ -349,7 +349,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                     QFile imageFile(imagePath);
                     if(imageFile.exists()==0)
                     {
-                        imagePath=pPtr->iconResourceLocation();
+                        imagePath=pPtr->defaultIconResourceLocation();
                     }
                     currentKey=sPtr->key();
                     currentSongPerformerName=pPtr->performerName();
@@ -381,7 +381,7 @@ SBDialogSelectItem::selectSong(const Common::sb_parameters& newSong,const SBIDPt
                 QFile imageFile(imagePath);
                 if(imageFile.exists()==0)
                 {
-                    imagePath=sPtr->iconResourceLocation();
+                    imagePath=sPtr->defaultIconResourceLocation();
                 }
                 currentKey=sPtr->key();
                 currentSongTitle=sPtr->songTitle();

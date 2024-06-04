@@ -38,17 +38,24 @@ public:
     //	Inherited methods
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
+    virtual QString defaultIconResourceLocation() const;
     virtual QString genericDescription() const;
-    virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual void setToReloadFlag();
     virtual QString text() const;
     virtual QString type() const;
 
+    //  Methods used for web interface
+    virtual SBSqlQueryModel* allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const;
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const;
+    virtual QString HTMLDetailItem(QString htmlTemplate) const;
+    virtual QString HTMLListItem(const QSqlRecord& r) const;
+
     //	Song specific methods
     SBTableModel* albums();
-    QVector<SBIDAlbumPerformancePtr> allPerformances();
+    QVector<SBIDAlbumPerformancePtr> allPerformances() const;
     SBTableModel* charts(Common::retrieve_sbtablemodel) const;
     QMap<SBIDChartPerformancePtr, SBIDChartPtr> charts(Common::retrieve_qmap) const;
     void deleteIfOrphanized();
@@ -59,8 +66,8 @@ public:
     inline int originalSongPerformanceID() const { return _originalSongPerformanceID; }
     SBIDAlbumPerformancePtr performance(int albumID, int albumPosition);
     QVector<int> performerIDList();
-    SBTableModel* playlists(Common::retrieve_sbtablemodel);
-    QVector<SBIDSong::PlaylistOnlinePerformance> playlists(Common::retrieve_qvector);
+    SBTableModel* playlists(Common::retrieve_sbtablemodel) const;
+    QVector<SBIDSong::PlaylistOnlinePerformance> playlists(Common::retrieve_qvector) const;
     inline int songID() const { return itemID(); }
     QMap<int,SBIDSongPerformancePtr> songPerformances();
     inline QString songTitle() const { return _songTitle; }
@@ -92,7 +99,6 @@ public:
     static SBSqlQueryModel* retrieveAllSongs(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBIDSongPtr retrieveSong(int songID);
     static SBIDSongPtr retrieveSong(SBKey key);
-    static QString iconResourceLocationStatic();
 
     //	Other
     static int setAndSave(SBIDSongPtr orgSongPtr, const QString& editTitle, const QString& editPerformerName, int editYearOfRelease, const QString& editNotes, const QString& editLyrics, QString& updateText, bool modifyScreenStack=0, bool refreshData=0);
@@ -102,6 +108,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
+    template <class T> friend class WebTemplate;
     friend class Preloader;
 
     SBIDSong();

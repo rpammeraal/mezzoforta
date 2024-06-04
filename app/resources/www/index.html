@@ -1,5 +1,674 @@
 <html>
-Hello World from MezzoForta!<p>
-This is index.html<p>
-Yoho!
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="stylesheet.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div id="logo"></div>
+            <div id="menu">
+                <div class="menu-item" context="playlist_list">
+                    <img src="/images/PlaylistIcon.png" alt="Playlists">
+                    <p>Playlists</p>
+                </div>
+
+                <div class="menu-item" context="performer_list">
+                    <img src="/images/NoBandPhoto.png" alt="Performers">
+                    <p>Performers</p>
+                </div>
+
+                <div class="menu-item" context="album_list">
+                    <img src="/images/NoAlbumCover.png" alt="Albums">
+                    <p>Albums</p>
+                </div>
+
+                <div class="menu-item" context="song_list">
+                    <img src="/images/SongIcon.png" alt="Songs">
+                    <p>Songs</p>
+                </div>
+
+                <div class="menu-item" context="chart_list">
+                    <img src="/images/ChartIcon.png" alt="Charts">
+                    <p>Charts</p>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div id="output">
+                <div>
+                    <div id="output-top">
+                        <div><div id="output_header">output_header</div></div>
+                        
+                        <div id="top-control">
+                            <div id="top-play">
+                                <div id="sb_context_play_button" onclick="control_player('play');"><BUTTON>&gt;</BUTTON></div>
+                            </div>
+                            <div id="sb_paging_prev_button" onclick="pager(null,null,'prev');"><BUTTON>Prev</BUTTON></div>
+                            <div id="sb_paging_next_button" onclick="pager(null,null,'next');"><BUTTON>Next</BUTTON></div>
+                        </div>
+                    </div>
+                    <div id="output-container">
+                        <div id="output_content">output_content</div>
+                    </div>
+                </div>
+            </div>
+            <div id="alphabet-wrapper">
+                <div id="alphabet">
+                    <div class="alphabet-item"><a href="#output"><p>#</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>A</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>B</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>C</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>D</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>E</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>F</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>G</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>H</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>I</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>J</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>K</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>L</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>M</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>N</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>O</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>P</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Q</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>R</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>S</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>T</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>U</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>V</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>W</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>X</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Y</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>Z</p></a></div>
+                    <div class="alphabet-item"><a href="#output"><p>*</p></a></div>
+                    <div id="alp"></div>
+                </div>
+            </div>
+        </main>
+        <div id="footer">
+            <div id="footer-wrapper">
+                <div id="playerstatus">Welcome To MezzoForta...</div>
+                <div id="playercontrol">
+                    <div class="playercontrol_button" id="<<" onclick="control_player('prev')"><button>&lt;&lt;</button></div>
+                    <div class="playercontrol_button" id="[]" onclick="control_player('stop')"><button>[]</button></div>      
+                    <div class="playercontrol_button" id=">"  onclick="control_player('play')"><button>&gt;</button></div>     
+                    <div class="playercontrol_button" id=">>" onclick="control_player('next')"><button>&gt;&gt;</button></div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+
+	<script>
+		
+        var foot = document.getElementById("footer-wrapper");
+        var alph = document.getElementById("alphabet");
+        var cont = document.getElementById("content");
+
+        // Wait till DOM is loaded //
+		document.addEventListener("DOMContentLoaded", function() {
+			document.body.style.transition = "opacity 1.5s ease";
+			document.body.style.opacity = 1;
+            cont.style.marginBottom=0;
+            alph.style.marginBottom=0;
+		});
+
+        function setMargin(){
+            height = foot.clientHeight;
+            console.log(height);
+            cont.style.marginBottom=height+"px";
+            alph.style.marginBottom=height+"px";
+        }
+		function statusInterval() {
+			setInterval(StatusUpdate, 2000);
+		}
+		
+		statusInterval();
+
+		var StatusTemp = null;
+		var StatusURL = "/status.html";
+        var pager_offset=0;
+        const pager_size=100;
+        var pager_letter=null;
+        var current_key=null;
+
+		function StatusUpdate() {
+			var xhr = new XMLHttpRequest();
+			var url = StatusURL + "?_=" + new Date().getTime();
+			
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == 4 && xhr.status == 200) {
+					var Content = xhr.responseText.trim();
+					if (StatusTemp !== Content) {
+					    var Element = document.getElementById("playerstatus");
+						StatusTemp = Content;
+						Element.innerHTML = Content;
+					}
+				}
+			};
+			
+			xhr.open("GET", url, true);
+			xhr.send();
+		}
+
+		StatusUpdate();
+
+		const loc = window.location.href + '/';
+        context = 'menu';
+
+        console.log(context);
+
+        function sb_key_to_context() {
+            const p_key=arguments[0];
+            const args=p_key.split(':');
+            const sb_type=args[0];
+            const sb_id=args[1];
+            const r_context='menu';
+
+            console.log('sb_key_to_context:sb_type',sb_type);
+            switch(parseInt(sb_type)) {
+                case 1:
+                    return 'song_detail';
+                    break;
+
+                case 2:
+                    return 'performer_detail';
+                    break;
+
+                case 3:
+                    return 'album_detail';
+                    break;
+
+                case 4:
+                    return 'chart_detail';
+                    break;
+
+                case 5:
+                    return 'playlist_detail';
+                    break;
+
+            }
+            console.log('ERROR: sb_type not handled:',sb_type);
+            return 'menu';
+        }
+
+
+        function get_hrt() {
+            p_context=arguments[0];
+            switch(p_context) {
+                case 'album_detail':
+                    return 'Album: ';
+                    break;
+
+                case 'album_list':
+                    return 'List of Albums: ';
+                    break;
+
+                case 'chart_detail':
+                    return 'Chart: ';
+                    break;
+
+                case 'chart_list':
+                    return 'List of Charts: ';
+                    break;
+
+                case 'performer_detail':
+                    return 'Performer: ';
+                    break;
+
+                case 'performer_list':
+                    return 'List of Performers: ';
+                    break;
+
+                case 'playlist_detail':
+                    return 'Playlist: ';
+                    break;
+
+                case 'playlist_list':
+                    return 'Playlists: ';
+                    break;
+
+                case 'song_detail':
+                    return 'Song: ';
+                    break;
+
+                case 'song_list':
+                    return 'List of Songs: ';
+                    break;
+
+            }
+            console.log("retrieve_url: p_context not handled", p_context);
+            return '';
+        }
+
+        function retrieve_url() {
+            p_context=arguments[0];
+            url='';
+            console.log(p_context);
+            switch(p_context) {
+                case 'album_detail':
+                    console.log("handle album_detail");
+                    return '/album_detail.html'
+                    break;
+
+                case 'album_list':
+                    console.log("handle album_list");
+                    return '/album_list.html'
+                    break;
+
+                case 'chart_detail':
+                    console.log("handle chart_detail");
+                    return '/chart_detail.html'
+                    break;
+
+                case 'chart_list':
+                    console.log("handle chart_list");
+                    return '/chart_list.html'
+                    break;
+
+                case 'performer_detail':
+                    console.log("handle performer_detail");
+                    return '/performer_detail.html'
+                    break;
+
+                case 'performer_list':
+                    console.log("handle performer_list");
+                    return '/performer_list.html'
+                    break;
+
+                case 'playlist_detail':
+                    console.log("handle playlist_detail");
+                    return '/playlist_detail.html'
+                    break;
+
+                case 'playlist_list':
+                    console.log("handle playlist_list");
+                    return '/playlist_list.html'
+                    break;
+
+                case 'song_detail':
+                    console.log("handle song_detail");
+                    return '/song_detail.html'
+                    break;
+
+                case 'song_list':
+                    console.log("handle song_list");
+                    return '/song_list.html'
+                    break;
+            }
+            console.log("retrieve_url: p_context not handled", p_context);
+            return '';
+        }
+
+        function set_screen() {
+            p_context=arguments[0];
+            p_key=arguments[1];
+
+            console.log("Switch from",context,"to",p_context);
+            alphabet_display_toggle='none';
+            menu_display_toggle='none';
+            output_display_toggle='none';
+
+            pager_prev_button_toggle='none';
+            pager_next_button_toggle='none';
+            sb_context_play_button_toggle='none';
+
+            
+            switch(p_context) {
+                case 'album_detail': 
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    current_key=p_key;
+                    sb_context_play_button_toggle='block';
+                    break;
+
+                case 'album_list': 
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    break;
+
+                case 'chart_detail': 
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
+                    current_key=p_key;
+                    break;
+
+                case 'chart_list': 
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    break;
+
+                case 'menu':
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='block';
+                    output_display_toggle='none';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    break;
+
+                case 'performer_detail': 
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
+                    current_key=p_key;
+                    break;
+
+                case 'performer_list': 
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    
+                    break;
+
+                case 'playlist_detail': 
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    current_key=p_key;
+                    sb_context_play_button_toggle='block';
+                    
+                    break;
+
+                case 'playlist_list':
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    break;
+
+                case 'song_detail': 
+                    alphabet_display_toggle='none';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='none';
+                    pager_next_button_toggle='none';
+                    sb_context_play_button_toggle='block';
+                    current_key=p_key;
+                    break;
+
+                case 'song_list': 
+                    alphabet_display_toggle='block';
+                    menu_display_toggle='none';
+                    output_display_toggle='block';
+                    pager_prev_button_toggle='block';
+                    pager_next_button_toggle='block';
+                    current_key=null;
+                    sb_context_play_button_toggle='none';
+                    break;
+            }
+            const alphabet_div = document.getElementById('alphabet-wrapper'); 
+            console.log("Set display on alphabet_div to",alphabet_display_toggle);
+            alphabet_div.style.display = alphabet_display_toggle;
+
+            const menu_div = document.getElementById('menu'); 
+            console.log("Set display on menu_div to",menu_display_toggle);
+            menu_div.style.display = menu_display_toggle;
+
+            const output_div = document.getElementById('output'); 
+            console.log("Set display on output_div to",output_display_toggle);
+            output_div.style.display = output_display_toggle;
+
+            if(output_display_toggle=='block') {
+                const output_content_div = document.getElementById('output_content'); 
+                output_content_div.scrollTo(0,0);
+                output_content.scrollTo(0,0);
+            }
+            //Scroll to top
+            window.scrollTo(0,0);
+            
+            const pager_prev_button_div = document.getElementById('sb_paging_prev_button'); 
+            console.log("Set display on pager_prev_button_div to",pager_prev_button_toggle);
+            pager_prev_button_div.style.display = pager_prev_button_toggle;
+
+            const pager_next_button_div = document.getElementById('sb_paging_next_button'); 
+            console.log("Set display on pager_next_button_div to",pager_next_button_toggle);
+            pager_next_button_div.style.display = pager_next_button_toggle;
+
+            const sb_context_play_button_div = document.getElementById('sb_context_play_button'); 
+            console.log("Set display on sb_context_play_button_div to",sb_context_play_button_toggle);
+            sb_context_play_button_div.style.display = sb_context_play_button_toggle;
+
+            context=p_context;
+        }
+
+        function control_player() {
+            const xhr = new XMLHttpRequest();
+            const url="/player/play?action=";
+            const p_action=arguments[0];
+            const p_key=arguments[1];
+
+            console.log("# player_control()");
+            console.log("p_key",p_key);
+            console.log("current_key",current_key);
+
+            var required_key=p_key;
+            if(required_key==null) {
+                required_key=current_key;
+            }
+            console.log("required_key",required_key);
+
+            const request=url.concat(p_action,'&key=',required_key);
+            console.log("request",request);
+
+			fetch(request)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('4 oh n0 4: ' + response.statusText);
+					}
+					return response.text();
+				})
+				.then(data => {
+
+				})
+				.catch(error => {
+					console.error(error);
+				});
+		}
+		
+        history.pushState(null, document.title, location.href);
+        window.addEventListener('popstate', function (event) {
+            history.pushState(null, document.title, location.href);
+        });
+
+		// Menu-Items ->> Output
+		document.addEventListener('DOMContentLoaded', function () {
+			const logo = document.getElementById('logo');
+			const menu = document.getElementById('menu');
+			const menuOutput = document.getElementById('output');
+
+			logo.addEventListener('click', function () {
+				// Toggle the classes to control visibility
+				menuOutput.classList.remove('show');
+				menu.classList.remove('hide');
+                set_screen("menu",null);
+
+			});
+
+			const menuItems = document.querySelectorAll('.menu-item');
+			const menuOutputContent = document.getElementById('output_content');
+			const menuOutputHeader = document.getElementById('output_header');
+
+			menuItems.forEach(function (menuItem) {
+				menuItem.addEventListener('click', function () {
+
+					// Use the text of a Menu-Item in the Paragraph
+					const menuItemText = this.querySelector('p').innerText;
+
+					// Use the name from the Paragraph and append .html
+                    const new_context = this.getAttribute('context');
+                    console.log(new_context);
+                    const url=retrieve_url(new_context);
+                    console.log(url)
+            
+                    console.log('###########');
+                    console.log('menuItemText',menuItemText);
+                    console.log('new_context',new_context);
+
+					menuOutputHeader.innerText = menuItemText;
+                    pager(new_context,'A',null);
+				});
+			});
+
+			const alphabetItems = document.querySelectorAll('.alphabet-item');
+			alphabetItems.forEach(function (alphabetItem) {
+				alphabetItem.addEventListener('click', function () {
+
+					const first_letter = this.querySelector('p').innerText;
+                    pager(null,first_letter,'zoo');
+
+				});
+			});
+		});
+
+        function pager() {
+            console.log("### pager()");
+            var p_context=arguments[0];
+            var p_letter=arguments[1];
+            var p_action=arguments[2];
+
+            if(p_context==null) {
+                p_context=context;
+            }
+
+            if(p_letter==null) {
+                if(pager_letter==null) {
+                    pager_letter='A';
+                    pager_offset=0;
+                }
+                p_letter=pager_letter;
+            }
+
+            if(p_letter!=pager_letter)
+            {
+                pager_offset=0;
+                p_offset=0;
+                p_action=null;
+            }
+
+            if(p_action=='prev')
+            {
+                pager_offset=pager_offset - pager_size;
+            }
+            if(p_action=='next')
+            {
+                pager_offset=pager_offset + pager_size;
+            }
+
+
+
+			const menuOutputContent = document.getElementById('output_content');
+			var menuOutputHeader = document.getElementById('output_header');
+
+            var url=retrieve_url(p_context);
+            url=url.concat(`?letter=${p_letter}&offset=${pager_offset}&size=${pager_size}`);
+
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    menuOutputContent.innerHTML = xhr.responseText;
+                    set_screen(p_context,null);
+
+                    var has_prev=document.getElementById('sb_paging_prev_ind').querySelector('p').innerText;
+                    var has_next=document.getElementById('sb_paging_next_ind').querySelector('p').innerText;
+
+                    var prev_button=document.getElementById('sb_paging_prev_button').querySelector('button');
+                    if(has_prev==1) {
+                        prev_button.disabled=false; 
+                    }
+                    else {
+                        prev_button.disabled=true; 
+                    }
+
+                    var next_button=document.getElementById('sb_paging_next_button').querySelector('button');
+                    if(has_next==1) {
+                        next_button.disabled=false; 
+                    }
+                    else {
+                        next_button.disabled=true; 
+                    }
+                }
+            };
+
+            xhr.open('GET', url, true);
+            xhr.send();
+            pager_letter=p_letter;
+        }
+
+        function open_page() {
+            console.log("### open_page()");
+            const p_sb_key=arguments[0];
+            const p_output_header=arguments[1];   //  output_header contains raw data, e.g. just song title, performer name et al 
+            console.log(p_context,p_sb_key);
+
+            p_context=sb_key_to_context(p_sb_key);
+
+            var url=retrieve_url(p_context);
+            url=url.concat('?sb_key=',p_sb_key);
+            console.log(url);
+
+            var output_header=get_hrt(p_context)
+            console.log('output_header',output_header);
+            output_header=output_header.concat(p_output_header);
+
+			const menuOutputContent = document.getElementById('output_content');
+			const menuOutputHeader = document.getElementById('output_header');
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    menuOutputContent.innerHTML = xhr.responseText;
+                    menuOutputHeader.innerText = output_header;
+                    // Toggle the classes to control visibility
+                    //menuOutput.classList.add('show');   //  not used
+                    menu.classList.add('hide');
+                    console.log("Calling set screen with",p_context);
+
+                    set_screen(p_context,p_sb_key);
+                }
+            };
+
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+	
+        set_screen('menu',null);
+
+        //  NEXT:playbutton next to playlists header need to disappear.
+        //  follow logic of sb_paging_next/prev button 
+
+	</script>
+</body>
 </html>
