@@ -1,0 +1,85 @@
+UPDATE rock.match SET song_id=NULL,song_match_score=NULL
+;
+UPDATE 
+    rock.match m
+SET 
+    song_match_score=0,
+    song_id=s.song_id
+FROM
+    rock.song s 
+        LEFT JOIN rock.performance p ON 
+            p.song_id=s.song_id 
+WHERE
+    LOWER(m.song_title)=LOWER(s.title) AND
+    m.song_artist_id=p.artist_id AND
+    m.song_match_score IS NULL
+;
+UPDATE 
+    rock.match m
+SET 
+    song_match_score=0,
+    song_id=s.song_id
+FROM
+    rock.song s 
+        LEFT JOIN rock.performance p ON 
+            p.song_id=s.song_id 
+WHERE
+    LOWER(REGEXP_REPLACE(m.song_title, '[^a-zA-Z0-9]+', '', 'g')) = LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) AND
+    m.song_artist_id=p.artist_id AND
+    m.song_match_score IS NULL
+;
+
+UPDATE 
+    rock.match m
+SET 
+    song_match_score=1,
+    song_id=s.song_id
+FROM
+    rock.song s 
+        LEFT JOIN rock.performance p ON 
+            p.song_id=s.song_id 
+WHERE
+    LOWER(m.song_title)=LOWER(s.title) AND
+    m.song_artist_id!=p.artist_id AND
+    m.song_match_score IS NULL
+;
+
+UPDATE 
+    rock.match m
+SET 
+    song_match_score=2,
+    song_id=s.song_id
+FROM
+    rock.song s 
+        LEFT JOIN rock.performance p ON 
+            p.song_id=s.song_id 
+WHERE
+    LOWER(LEFT(m.song_title,LEAST(LENGTH(m.song_title),LENGTH(s.title))))=LOWER(LEFT(s.title,LEAST(LENGTH(m.song_title),LENGTH(s.title)))) AND
+    m.song_artist_id=p.artist_id AND
+    m.song_match_score IS NULL
+;
+
+UPDATE 
+    rock.match m
+SET 
+    song_match_score=3,
+    song_id=s.song_id
+FROM
+    rock.song s 
+        LEFT JOIN rock.performance p ON 
+            p.song_id=s.song_id 
+WHERE
+    LOWER(LEFT(m.song_title,LEAST(LENGTH(m.song_title),LENGTH(s.title))))=LOWER(LEFT(s.title,LEAST(LENGTH(m.song_title),LENGTH(s.title)))) AND
+    m.song_artist_id!=p.artist_id AND
+    m.song_match_score IS NULL
+;
+
+SELECT
+    song_match_score,
+    COUNT(*)
+FROM
+    rock.match
+GROUP BY 1
+ORDER BY 1
+;
+

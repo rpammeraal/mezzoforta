@@ -1,6 +1,6 @@
 QT       += core gui widgets sql xml network webenginewidgets multimedia httpserver
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql xml network webenginewidgets multimedia
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets sql network webenginewidgets multimedia
 
 CONFIG 		+= c++11 import_plugins static sdk_no_version_check plugin
 QTPLUGIN    +=  QPSQL
@@ -187,9 +187,10 @@ HEADERS += \
     ScreenStack.h \
     SearchItemModel.h \
     SetupWizard.h \
-	SongAlbumNotes.h \
+    SongAlbumNotes.h \
     SqlQuery.h \
-    WebService.h
+    WebService.h \
+    WebTemplate.h
 
 FORMS += \
     DatabaseSelector.ui \
@@ -200,7 +201,7 @@ FORMS += \
     SBDialogRenamePlaylist.ui \
     SBDialogSelectItem.ui \
     SetupWizard.ui  \
-	SongAlbumNotes.ui
+    SongAlbumNotes.ui
 
 #   Provision to include compile time
 buildtimeTarget.target = BuildDatetime.h

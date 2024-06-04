@@ -220,7 +220,7 @@ SBTab::setImage(const QPixmap& p, QLabel* l, SBKey key) const
         SBIDPtr ptr=CacheManager::get(key);
         SB_RETURN_VOID_IF_NULL(ptr);
 
-        QPixmap q=QPixmap(ptr->iconResourceLocation());
+        QPixmap q=QPixmap(ptr->defaultIconResourceLocation());
         l->setPixmap(q);
     }
     else

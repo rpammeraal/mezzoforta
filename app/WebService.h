@@ -1,26 +1,33 @@
+#include <QHash>
 #ifndef MYHTTPSERVER
 #define MYHTTPSERVER
-#include <QCoreApplication>
-#include <QNetworkInterface>
-#include <iostream>
-#include <QObject>
-#include <QTcpSocket>
-#include <QTcpServer>
-#include <QDebug>
 
-class myHTTPserver : public QObject
+#include <QHttpServer>
+#include <QHttpServerResponse>
+
+static QHash<QString,QString>		_availableResource;
+
+class WebService : public QObject
 {
     Q_OBJECT
 public:
-    explicit myHTTPserver(QObject *parent = 0);
-    ~myHTTPserver();
-    QTcpSocket *socket ;
-public slots:
-    void myConnection();
+    explicit WebService();
+    ~WebService();
 private:
-    qint64 bytesAvailable() const;
-    QTcpServer *server;
-signals:
+    QHttpServer 					_httpServer;
+
+    void							_init();
+    bool							_isImage(const QString& path) const;
+
+    static QHttpServerResponse		_controlPlayer(QString unused, const QHttpServerRequest& r);
+    static QHttpServerResponse		_fourOhFour();
+    static QHttpServerResponse		_getImageResource(QString path, const QHttpServerRequest& r);
+    static QHttpServerResponse		_getHTMLResource(QString path, const QHttpServerRequest& r);
+    static QHttpServerResponse		_getIconResource(QString path, const QHttpServerRequest& r);
+    static QHttpServerResponse		_getResource(QString path, const QHttpServerRequest& r, bool isImage=0);
+    static QString                  _populateData(const QString& resourcePath, const QString& path, const QHttpServerRequest& r);
+
+    static bool                     _displayPlayButtons(const QHttpServerRequest& r);
 };
 
 #endif

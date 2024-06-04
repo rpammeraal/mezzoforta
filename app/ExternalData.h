@@ -21,6 +21,8 @@ struct NewsItem
     QString summary;
 };
 
+static const QString _defaultIconPath("/images/SongIcon.png");
+
 class ExternalData : public QObject
 {
     Q_OBJECT
@@ -38,6 +40,7 @@ public:
 
     //	Static methods
     QString static getCachePath(SBKey id);
+    QString static getDefaultIconPath(const SBKey::ItemType& itemType);
 
 signals:
     void albumWikipediaPageAvailable(const QString& url);

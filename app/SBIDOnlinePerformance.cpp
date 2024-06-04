@@ -40,6 +40,12 @@ SBIDOnlinePerformance::commonPerformerName() const
 }
 
 QString
+SBIDOnlinePerformance::defaultIconResourceLocation() const
+{
+    return QString("n/a");
+}
+
+QString
 SBIDOnlinePerformance::genericDescription() const
 {
     SBIDAlbumPerformancePtr apPtr=this->albumPerformancePtr();
@@ -59,12 +65,6 @@ SBIDOnlinePerformance::genericDescription() const
         .arg(this->songPerformerName())
         .arg(this->albumTitle())
     ;
-}
-
-QString
-SBIDOnlinePerformance::iconResourceLocation() const
-{
-    return QString("n/a");
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -98,6 +98,17 @@ QString
 SBIDOnlinePerformance::type() const
 {
     return QString("online performance");
+}
+
+QString
+SBIDOnlinePerformance::getIconLocation(const SBKey::ItemType& fallbackType) const
+{
+    SBIDSongPtr sPtr=songPtr();
+    if(sPtr)
+    {
+        return sPtr->getIconLocation(fallbackType);
+    }
+    return ExternalData::getDefaultIconPath(fallbackType);
 }
 
 //	SBIDOnlinePerformance specific methods
@@ -207,6 +218,13 @@ SBIDOnlinePerformance::songID() const
 {
     SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
     return (apPtr?apPtr->songID():-1);
+}
+
+SBKey
+SBIDOnlinePerformance::songKey() const
+{
+    SBIDAlbumPerformancePtr apPtr=albumPerformancePtr();
+    return (apPtr?apPtr->songKey():SBKey());
 }
 
 int
@@ -366,7 +384,7 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
             "rp.record_position, "
             "rp.record_performance_id, "
             "op.online_performance_id, "
-            "op.path "
+            "REPLACE(op.path,'//','/') "
         "FROM "
             "___SB_SCHEMA_NAME___online_performance op "
                 "JOIN ___SB_SCHEMA_NAME___record_performance rp ON "
@@ -377,11 +395,10 @@ SBIDOnlinePerformance::retrieveAllOnlinePerformancesExtended(int limit)
                     "rp.record_id=r.record_id "
         "ORDER BY "
             "2 "
-        "%2 "
+        "%1 "
     )
             .arg(limitClause)
     ;
-
     return new SBSqlQueryModel(q);
 }
 
@@ -469,6 +486,12 @@ SBIDOnlinePerformance::onlinePerformancesBySong_Preloader(int songID)
     )
         .arg(songID)
     ;
+}
+
+SBIDPtr
+SBIDOnlinePerformance::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrieveOnlinePerformance(itemKey);
 }
 
 void

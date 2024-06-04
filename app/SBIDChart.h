@@ -16,11 +16,18 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
     virtual QString genericDescription() const;
-    virtual QString iconResourceLocation() const;
+    virtual QString defaultIconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
+
+    //  Methods used for web interface
+    virtual SBSqlQueryModel* allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const;
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const;
+    virtual QString HTMLDetailItem(QString htmlTemplate) const;
+    virtual QString HTMLListItem(const QSqlRecord& r) const;
 
     //	Methods specific to SBIDChart
     inline int chartID() const { return itemID(); }
@@ -46,7 +53,6 @@ public:
     virtual void refreshDependents(bool forcedFlag=0);
 
     //	Static methods
-    static SBSqlQueryModel* allCharts(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
     static SBKey createKey(int chartID);
     static SBIDChartPtr retrieveChart(int chartID);
     static SBIDChartPtr retrieveChart(SBKey key);
@@ -56,6 +62,7 @@ public:
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
+    template <class T> friend class WebTemplate;
     friend class Preloader;
 
     SBIDChart();

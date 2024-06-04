@@ -45,13 +45,21 @@ public:
     //	Public virtual methods (Methods that only apply to subclasseses)
     virtual int commonPerformerID() const=0;
     virtual QString commonPerformerName() const=0;
+    virtual QString defaultIconResourceLocation() const=0;
     virtual QString genericDescription() const=0;
-    virtual QString iconResourceLocation() const=0;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const=0;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const =0;
     virtual void sendToPlayQueue(bool enqueueFlag=0)=0;
     virtual QString text() const=0;
     virtual QString type() const=0;
 
+    //  Methods used for web interface
+    virtual SBSqlQueryModel* allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const
+        { Q_UNUSED(startsWith); Q_UNUSED(offset); Q_UNUSED(size); return NULL; };
+    //  Create HTML to show item as it appears in a list
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const { Q_UNUSED(fallbackType); return QString(); };
+    virtual QString HTMLDetailItem(QString htmlTemplate) const { Q_UNUSED(htmlTemplate); return QString(); };
+    virtual QString HTMLListItem(const QSqlRecord& r) const { Q_UNUSED(r); return QString(); };
 
     //	Common Getters
     inline QString url() const { return _url; }
@@ -68,6 +76,7 @@ public:
     int modelPosition() const { return _sb_model_position; }
     inline bool reloadFlag() const { return _reloadFlag; }
     inline bool hasChanges() const { return _changedFlag; }
+
 
     //	Setters
     void setErrorMessage(const QString& errorMsg) { _errorMsg=errorMsg; }

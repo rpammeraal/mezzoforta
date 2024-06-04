@@ -9,21 +9,14 @@ SBKey::SBKey(ItemType itemType, int itemID):_itemType(itemType),_itemID(itemID)
 {
 }
 
+SBKey::SBKey(const QString& s)
+{
+    _initFromString(s);
+}
+
 SBKey::SBKey(const QByteArray &ba)
 {
-    QStringList l=QString(ba).split(":");
-    _init();
-    if(l.count()==2)
-    {
-        _itemType=(ItemType)l[0].toInt();
-        _itemID=l[1].toInt();
-
-        if(_itemType<0 || _itemType>ItemTypeCount() || _itemID<-1)
-        {
-            _itemType=Invalid;
-            _itemID=-1;
-        }
-    }
+    _initFromString(QString(ba));
 }
 
 SBKey::~SBKey()
@@ -87,4 +80,23 @@ SBKey::_init()
 {
     _itemType=Invalid;
     _itemID=-1;
+}
+
+void
+SBKey::_initFromString(const QString& s)
+{
+    QStringList l=s.split(":");
+    _init();
+    if(l.count()==2)
+    {
+        _itemType=(ItemType)l[0].toInt();
+        _itemID=l[1].toInt();
+
+        if(_itemType<0 || _itemType>ItemTypeCount() || _itemID<-1)
+        {
+            _itemType=Invalid;
+            _itemID=-1;
+        }
+    }
+
 }

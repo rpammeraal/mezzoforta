@@ -25,6 +25,7 @@ public:
 
     SBKey();
     SBKey(ItemType itemType, int itemID);
+    SBKey(const QString& s);
     SBKey(const QByteArray& ba);
     SBKey(const SBKey& k) = default;
     ~SBKey();
@@ -46,6 +47,7 @@ private:
     int      _itemID;
 
     void _init();
+    void _initFromString(const QString& s);
 };
 
 inline bool operator!=(const SBKey& s, const SBKey& t)

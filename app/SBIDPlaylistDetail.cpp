@@ -31,19 +31,19 @@ SBIDPlaylistDetail::commonPerformerName() const
 }
 
 QString
+SBIDPlaylistDetail::defaultIconResourceLocation() const
+{
+    SBIDPtr p=childPtr();
+    return (p?p->defaultIconResourceLocation():QString());
+}
+
+QString
 SBIDPlaylistDetail::genericDescription() const
 {
     QString g;
     SBIDPtr p=childPtr();
     g+=(p?p->genericDescription():QString());
     return g;
-}
-
-QString
-SBIDPlaylistDetail::iconResourceLocation() const
-{
-    SBIDPtr p=childPtr();
-    return (p?p->iconResourceLocation():QString());
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -57,6 +57,12 @@ SBIDPlaylistDetail::onlinePerformances(bool updateProgressDialogFlag) const
         list=p->onlinePerformances(updateProgressDialogFlag);
     }
     return list;
+}
+
+SBIDPtr
+SBIDPlaylistDetail::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrievePlaylistDetail(itemKey);
 }
 
 void

@@ -23,7 +23,7 @@ SBIDChartPerformance::commonPerformerName() const
 }
 
 QString
-SBIDChartPerformance::iconResourceLocation() const
+SBIDChartPerformance::defaultIconResourceLocation() const
 {
     return QString(":/images/SongIcon.png");
 }
@@ -47,6 +47,12 @@ SBIDChartPerformance::onlinePerformances(bool updateProgressDialogFlag) const
         list=spPtr->onlinePerformances(updateProgressDialogFlag);
     }
     return list;
+}
+
+SBIDPtr
+SBIDChartPerformance::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrieveChartPerformance(itemKey);
 }
 
 void
@@ -90,7 +96,14 @@ SBIDChartPerformance::songPtr() const
     CacheManager* cm=Context::instance()->cacheManager();
     CacheSongMgr* sMgr=cm->songMgr();
     return sMgr->retrieve(SBIDSong::createKey(this->songID()));
+}
 
+SBIDChartPtr
+    SBIDChartPerformance::chartPtr() const
+{
+    CacheManager* cm=Context::instance()->cacheManager();
+    CacheChartMgr* cMgr=cm->chartMgr();
+    return cMgr->retrieve(SBIDChart::createKey(this->chartID()));
 }
 
 ///	Redirectors

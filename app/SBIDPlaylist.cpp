@@ -37,15 +37,15 @@ SBIDPlaylist::commonPerformerName() const
 }
 
 QString
-SBIDPlaylist::genericDescription() const
+SBIDPlaylist::defaultIconResourceLocation() const
 {
-    return "Playlist - " + this->text();
+    return ":/images/PlaylistIcon.png";
 }
 
 QString
-SBIDPlaylist::iconResourceLocation() const
+SBIDPlaylist::genericDescription() const
 {
-    return ":/images/PlaylistIcon.png";
+    return "Playlist - " + this->text();
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -68,6 +68,12 @@ SBIDPlaylist::onlinePerformances(bool updateProgressDialogFlag) const
     return list;
 }
 
+SBIDPtr
+SBIDPlaylist::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrievePlaylist(itemKey);
+}
+
 void
 SBIDPlaylist::sendToPlayQueue(bool enqueueFlag)
 {
@@ -86,6 +92,173 @@ QString
 SBIDPlaylist::type() const
 {
     return "playlist";
+}
+
+SBSqlQueryModel*
+SBIDPlaylist::allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const
+{
+    //	List songs with actual online performance only
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(p.name,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(p.playlist_id AS VARCHAR) AS SB_ITEM_KEY, "
+            "p.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___playlist p "
+        "%2 "
+        "ORDER BY "
+            "2 "
+        "OFFSET "
+            "%3 "
+        "%4 "
+    )
+        .arg(SBKey::Playlist)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+
+    return new SBSqlQueryModel(q);
+}
+
+QString
+SBIDPlaylist::getIconLocation(const SBKey::ItemType& fallbackType) const
+{
+    return ExternalData::getDefaultIconPath(fallbackType);
+}
+
+QString
+SBIDPlaylist::HTMLDetailItem(QString htmlTemplate) const
+{
+    //  Create list of song instances (e.g. all instances on an album)
+    QMap<int, SBIDPlaylistDetailPtr> allItems=this->items();
+    QString table=QString();
+
+    if(allItems.count())
+    {
+        QMapIterator<int, SBIDPlaylistDetailPtr> apIt(allItems);
+        //  Remap so we can display songs in order of appearance on album
+        QMap<qsizetype,qsizetype> itemOrderMap;
+
+        while(apIt.hasNext())
+        {
+            apIt.next();
+            const SBIDPlaylistDetailPtr pdPtr=apIt.value();
+            if(pdPtr)
+            {
+                itemOrderMap[pdPtr->playlistPosition()]=apIt.key();
+            }
+        }
+
+        table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>");
+        for(qsizetype i=0; i<itemOrderMap.size();i++)
+        {
+            const SBIDPlaylistDetailPtr pdPtr=allItems.value(itemOrderMap[i+1]);
+            if(pdPtr)
+            {
+                SBKey itemKey;
+
+
+                //  Handle type of playlist detail
+                if(pdPtr->consistOfItemType()==SBKey::OnlinePerformance)
+                {
+                    const SBIDOnlinePerformancePtr opPtr=pdPtr->onlinePerformancePtr();
+                    if(opPtr)
+                    {
+                        itemKey=opPtr->songKey();
+                    }
+                }
+                else
+                {
+                    itemKey=pdPtr->childKey();
+                }
+
+                QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                .arg(pdPtr->key().toString());
+                    ;
+
+                QString row=QString(
+                    "<TR>"
+                        "<TD class=\"SBIconCell\" >"
+                            "<img class=\"SBIcon\" src=\"%1\"></img>"
+                        "</TD>"
+                        "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                        "<TD class=\"playercontrol_button\">"
+                            "%3"
+                        "</TD>"
+                    "</TR>"/*
+                    "<DIV>"
+                        "<DIV class=\"SBIconCell\" >"
+                            "<img class=\"SBIcon\" src=\"%1\"></img>"
+                        "</DIV>"
+                        "<DIV class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</DIV>"
+                        "<DIV class=\"playercontrol_button\">"
+                            "%3"
+                        "</DIV>"
+                    "</DIV>"*/
+                )
+                     .arg(this->getIconLocation(SBKey::Playlist))
+                    .arg(Common::escapeQuotesHTML(pdPtr->genericDescription()))
+                    .arg(playerControlHTML)
+                    .arg(itemKey.toString())
+                ;
+                qDebug() << SB_DEBUG_INFO << row;
+                table+=row;
+            }
+        }
+    }
+    htmlTemplate.replace(html_template_songs,table);
+    return htmlTemplate;
+}
+
+QString
+SBIDPlaylist::HTMLListItem(const QSqlRecord& r) const
+{
+    const SBKey playlistKey(r.value(0).toByteArray());
+    SBIDPlaylistPtr pPtr=SBIDPlaylist::retrievePlaylist(playlistKey);
+
+    if(pPtr)
+    {
+        //	Start table row
+        return QString(/*
+            "<DIV>"
+                "<DIV class=\"SBPlaylistRow\">"
+                    "<TABLE>"
+                    "<tr class=\"SBPlaylistRow\">"
+                        "<td class=\"SBIconDiv\" ><img class=\"SBIcon\" src=\"%3\"></img></td>"
+                        "<td class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</td>"
+                        "<td class=\"item_play_button\"><BUTTON type=\"button\" onclick=\"control_player('play','%2');\">&gt;</BUTTON></td>"
+                    "</tr>"
+                    "</TABLE>"
+                "</DIV>"
+            "</DIV>"*/
+                "<TR>"
+                    "<TD class=\"SBIconDiv\" >"
+                        "<img class=\"SBIcon\" src=\"%3\"></img>"
+                    "</TD>"
+                    "<TD class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</TD>"
+                    "<TD class=\"playercontrol_button\" >"
+                        "<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
+                    "</TD>"
+                "</TR>"
+        )
+            .arg(Common::escapeQuotesHTML(pPtr->playlistName()))
+            .arg(pPtr->key().toString())
+            .arg(this->getIconLocation(SBKey::Playlist))
+        ;
+    }
+    return empty;
 }
 
 //	Methods specific to SBIDPlaylist

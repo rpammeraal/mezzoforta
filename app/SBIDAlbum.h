@@ -23,12 +23,19 @@ public:
     virtual int commonPerformerID() const;
     virtual QString commonPerformerName() const;
 
+    virtual QString defaultIconResourceLocation() const;
     virtual QString genericDescription() const;
-    virtual QString iconResourceLocation() const;
     virtual QMap<int,SBIDOnlinePerformancePtr> onlinePerformances(bool updateProgressDialogFlag=0) const;
+    virtual SBIDPtr retrieveItem(const SBKey& itemKey) const;
     virtual void sendToPlayQueue(bool enqueueFlag=0);
     virtual QString text() const;
     virtual QString type() const;
+
+    //  Methods used for web interface
+    virtual SBSqlQueryModel* allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const;
+    virtual QString getIconLocation(const SBKey::ItemType& fallbackType) const;
+    virtual QString HTMLDetailItem(QString htmlTemplate) const;
+    virtual QString HTMLListItem(const QSqlRecord& r) const;
 
     //	Album specific methods
     inline int albumID() const { return itemID(); }
@@ -43,7 +50,7 @@ public:
     SBTableModel* tableModelPerformances() const;
     inline int albumYear() const { return _year; }
 
-    //	Setters
+    //	setters
     void setAlbumTitle(const QString& albumTitle) { if(albumTitle!=_albumTitle) { _albumTitle=albumTitle; setChangedFlag(); } }
     void setAlbumPerformerID(int performerID);
     void setYear(int year) { if(year!=_year) { _year=year; setChangedFlag(); } }
@@ -73,10 +80,10 @@ public:
 
     //	Static methods
     static SBSqlQueryModel* albumsByPerformer(int performerID);
-    static SBSqlQueryModel* allAlbums(const QChar& startsWith=QChar(), qsizetype offset=0, qsizetype size=0);
 
 protected:
     template <class T, class parentT> friend class CacheTemplate;
+    template <class T> friend class WebTemplate;
     friend class Preloader;
 
     SBIDAlbum();

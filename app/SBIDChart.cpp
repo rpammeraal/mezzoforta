@@ -39,15 +39,15 @@ SBIDChart::commonPerformerName() const
 }
 
 QString
-SBIDChart::genericDescription() const
+SBIDChart::defaultIconResourceLocation() const
 {
-    return "Chart - " + this->text();
+    return ":/images/ChartIcon.png";
 }
 
 QString
-SBIDChart::iconResourceLocation() const
+SBIDChart::genericDescription() const
 {
-    return ":/images/ChartIcon.png";
+    return "Chart - " + this->text();
 }
 
 QMap<int,SBIDOnlinePerformancePtr>
@@ -92,6 +92,12 @@ SBIDChart::onlinePerformances(bool updateProgressDialogFlag) const
     return list;
 }
 
+SBIDPtr
+SBIDChart::retrieveItem(const SBKey& itemKey) const
+{
+    return this->retrieveChart(itemKey);
+}
+
 void
 SBIDChart::sendToPlayQueue(bool enqueueFlag)
 {
@@ -110,6 +116,171 @@ QString
 SBIDChart::type() const
 {
     return "chart";
+}
+
+SBSqlQueryModel*
+SBIDChart::allItems(const QChar& startsWith, qsizetype offset, qsizetype size) const
+{
+    //	List songs with actual online performance only
+    QString whereClause;
+    QString limitClause;
+
+    if(startsWith!=QChar('\x0'))
+    {
+        whereClause=QString("WHERE LOWER(LEFT(p.name,1))='%1'").arg(startsWith.toLower());
+    }
+    if(size>0)
+    {
+        limitClause=QString("LIMIT %1").arg(size);
+    }
+    const QString q=QString
+    (
+        "SELECT "
+            "CAST(%1 AS VARCHAR)||':'||CAST(p.chart_id AS VARCHAR) AS SB_ITEM_KEY, "
+            "p.name "
+        "FROM "
+            "___SB_SCHEMA_NAME___chart p "
+        "%2 "
+        "ORDER BY "
+            "2 "
+        "OFFSET "
+            "%3 "
+        "%4 "
+    )
+        .arg(SBKey::Chart)
+        .arg(whereClause)
+        .arg(offset)
+        .arg(limitClause)
+    ;
+    return new SBSqlQueryModel(q);
+}
+
+QString
+SBIDChart::getIconLocation(const SBKey::ItemType& fallbackType) const
+{
+    return ExternalData::getDefaultIconPath(fallbackType);
+}
+
+QString
+SBIDChart::HTMLDetailItem(QString htmlTemplate) const
+{
+    QString contents;
+    htmlTemplate.replace('\n',"");
+    htmlTemplate.replace('\t'," ");
+
+    QString table;
+
+    //  Create list of song instances (e.g. all instances on an album)
+    QMap<int, SBIDChartPerformancePtr> allItems=this->items();
+    table=QString();
+
+    if(allItems.count())
+    {
+        table=QString("<TR><TD colspan=\"3\"><P class=\"SBItemSection\">Contains:</P></TD></TR>");
+        QMapIterator<int, SBIDChartPerformancePtr> apIt(allItems);
+        //  Remap so we can display songs in order of appearance on album
+        QMap<qsizetype,qsizetype> itemOrderMap;
+
+        while(apIt.hasNext())
+        {
+            apIt.next();
+            const SBIDChartPerformancePtr cpPtr=apIt.value();
+            if(cpPtr)
+            {
+                itemOrderMap[cpPtr->chartPosition()]=apIt.key();
+            }
+        }
+
+        for(qsizetype i=0; i<itemOrderMap.size();i++)
+        {
+            const SBIDChartPerformancePtr cpPtr=allItems.value(itemOrderMap[i+1]);
+            if(cpPtr)
+            {
+                SBKey songKey;
+                QString iconLocation;
+
+                const SBIDSongPtr sPtr=cpPtr->songPtr();
+                if(sPtr)
+                {
+                    songKey=sPtr->key();
+                    //  iconLocation=SBHtmlSongsAll::_getIconLocation(sPtr);    //  CWIP
+                }
+
+                SBKey performerKey;
+
+                const SBIDSongPerformancePtr spPtr=cpPtr->songPerformancePtr();
+                if(spPtr)
+                {
+                    performerKey=spPtr->songPerformerKey();
+                }
+
+                QString  playerControlHTML=QString("<P class=\"item_play_button\" onclick=\"control_player('play','%1');\"><BUTTON type=\"button\">&gt;</BUTTON></P>")
+                                                .arg(sPtr->key().toString());
+                    ;
+
+                QString row=QString(
+                    "<TR class=\"SBLineItem\" >"
+                        "<TD class=\"SBIconCell\" rowspan=\"2\">"
+                            "<img class=\"SBIcon\" src=\"%1\"></img>"
+                        "</TD>"
+                        "<TD class=\"SBIconCell\" rowspan=\"2\">%5</TD>"
+                        "<TD class=\"SBItemMajor\"  onclick=\"open_page('%4','%2');\">%2</TD>"
+                        "<TD class=\"playercontrol_button\">"
+                            "%3"
+                        "</TD>"
+                    "</TR>"
+                    "<TR>"
+                        "<TD class=\"SBItemMinor\" onclick=\"open_page('%7','%6');\">&nbsp;&nbsp;&nbsp;&nbsp;%6</TD>"
+                    "</TR>"
+                )
+                    .arg(ExternalData::getDefaultIconPath(SBKey::Chart))
+                    .arg(Common::escapeQuotesHTML(cpPtr->songTitle()))
+                    .arg(playerControlHTML)
+                    .arg(songKey.toString())
+                    .arg(cpPtr->chartPosition())
+                    .arg(cpPtr->songPerformerName())
+                    .arg(performerKey.toString())
+                ;
+                if(cpPtr->chartPosition()==1)
+                {
+                    qDebug() << SB_DEBUG_INFO << row;
+                }
+
+                table+=row;
+            }
+        }
+    }
+    htmlTemplate.replace(html_template_songs,table);
+    return htmlTemplate;
+}
+
+QString
+SBIDChart::HTMLListItem(const QSqlRecord& r) const
+{
+    const SBKey chartKey(r.value(0).toByteArray());
+    SBIDChartPtr cPtr=SBIDChart::retrieveChart(chartKey);
+
+    if(cPtr)
+    {
+        return QString(
+            "<THEAD>"
+                "<TR class=\"SBLineItem\" >"
+                    "<TD class=\"SBIconDiv\" >"
+                        "<img class=\"SBIcon\" src=\"%3\"></img>"
+                    "</TD>"
+                    "<TD class=\"SBItemMajor\" onclick=\"open_page('%2','%1');\">%1</TD>"
+                    "<TD class=\"playercontrol_button\" >"
+                        "<P class=\"item_play_button\" onclick=\"control_player('play','%2');\"><BUTTON type=\"button\">&gt;</BUTTON></P>"
+                    "</TD>"
+                "</TR>"
+            "</THEAD>"
+        )
+            .arg(Common::escapeQuotesHTML(cPtr->chartName()))
+            .arg(cPtr->key().toString())
+            .arg(this->getIconLocation(SBKey::Chart))
+        ;
+    }
+    return empty;
 }
 
 //	Methods specific to SBIDChart
@@ -311,44 +482,6 @@ SBIDChart::refreshDependents(bool forcedFlag)
 }
 
 //	Static methods
-SBSqlQueryModel*
-SBIDChart::allCharts(const QChar& startsWith, qsizetype offset, qsizetype size)
-{
-    //	List songs with actual online performance only
-    QString whereClause;
-    QString limitClause;
-
-    if(startsWith!=QChar('\x0'))
-    {
-        whereClause=QString("WHERE LOWER(LEFT(p.name,1))='%1'").arg(startsWith.toLower());
-    }
-    if(size>0)
-    {
-        limitClause=QString("LIMIT %1").arg(size);
-    }
-    const QString q=QString
-    (
-        "SELECT "
-            "CAST(%1 AS VARCHAR)||':'||CAST(p.chart_id AS VARCHAR) AS SB_ITEM_KEY, "
-            "p.name "
-        "FROM "
-            "___SB_SCHEMA_NAME___chart p "
-        "%2 "
-        "ORDER BY "
-            "2 "
-        "OFFSET "
-            "%3 "
-        "%4 "
-    )
-        .arg(SBKey::Chart)
-        .arg(whereClause)
-        .arg(offset)
-        .arg(limitClause)
-    ;
-    return new SBSqlQueryModel(q);
-}
-
-
 SBKey
 SBIDChart::createKey(int chartID)
 {

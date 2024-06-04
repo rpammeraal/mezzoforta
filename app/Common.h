@@ -71,6 +71,16 @@ static int ID=-1;
 
 static QVector<quint64> _randomDistribution;
 
+static QString empty;
+static const QString html_template_albums=QString("___SB_ALBUMS___");
+static const QString html_template_charts=QString("___SB_CHARTS___");
+static const QString html_template_lyrics=QString("___SB_LYRICS___");
+static const QString html_template_performer=QString("___SB_PERFORMER___");
+static const QString html_template_performers=QString("___SB_PERFORMERS___");
+static const QString html_template_playlists=QString("___SB_PLAYLISTS___");
+static const QString html_template_songs=QString("___SB_SONGS___");
+
+
 
 class Common
 {
