@@ -4,6 +4,7 @@
 #include "AudioDecoderOggVorbis.h"
 #include "AudioDecoderOggVorbisReader.h"
 #include "Common.h"
+#include "SBMessageBox.h"
 
 ///	Protected methods
 AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
@@ -68,6 +69,7 @@ AudioDecoderOggVorbis::AudioDecoderOggVorbis(const QString& fileName)
     if(resultCode!=0)
     {
         _error=QString("Could not open as an OGG file '%1'").arg(fileName);
+        SBMessageBox::standardWarningBox(_error);
         qDebug() << SB_DEBUG_ERROR << _error << resultCode;
         return;
     }

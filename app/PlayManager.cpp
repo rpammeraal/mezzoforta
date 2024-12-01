@@ -571,7 +571,7 @@ PlayManager::_loadRadio()
 
     QString indexCovered=QString(".").repeated(maxNumberToRandomize+1);
     indexCovered+=QString("");
-    const int maxNumberOfRejectsMultiplier=2;
+    const int maxNumberOfRejectsMultiplier=50;
     while(index<numPerformances)
     {
         found=0;

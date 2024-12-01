@@ -208,6 +208,18 @@ SBIDSongPerformance::findByFK(const Common::sb_parameters &p)
         {
             spPtr=matches[0][0];
         }
+        else
+        {
+            for (auto [key, value] : matches.asKeyValueRange())
+            {
+                qDebug() << SB_DEBUG_INFO << "key:" << key;
+                QList i=value;
+                for (auto& item: i)
+                {
+                    qDebug() << SB_DEBUG_INFO << "\tvalue=" << item->key();
+                }
+            }
+        }
     }
 
     return spPtr;
@@ -499,7 +511,8 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
             "___SB_SCHEMA_NAME___performance p "
         "WHERE "
             "p.song_id=%5 AND "
-            "p.artist_id=%2 "
+            "p.artist_id=%2 AND "
+            "'%1'='' "
         "UNION "
         //	match on title and optional performerID
         "SELECT "
@@ -515,7 +528,8 @@ SBIDSongPerformance::find(const Common::sb_parameters& tobeFound,SBIDSongPerform
                     "p.song_id=s.song_id "
                     "%4 "
         "WHERE "
-            "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' "
+            "LOWER(REGEXP_REPLACE(s.title, '[^a-zA-Z0-9]+', '', 'g')) = '%1' AND"
+            "'%1' !='' "
         "UNION "
         //	soundex match, only if length of soundex > 0
         "SELECT "

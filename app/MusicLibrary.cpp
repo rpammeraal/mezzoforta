@@ -649,7 +649,8 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
                                         "WHERE "
                                             "%3 = %4 AND "
                                             "COALESCE(%1_artist_name_cmp,'')!='' AND "
-                                            "m.song_artist_match_score IS NULL "
+                                            "m.%1_artist_match_score IS NULL "
+                                            "; "
                                             "-- %5:%6:%7:%8:%9"
                                     )
                                         .arg(entity)
@@ -716,7 +717,8 @@ MusicLibrary::validateEntityList(const QString& dialogOwner,QVector<MLentityPtr>
                                         "WHERE "
                                             "%3 = %4 AND "
                                             "COALESCE(%1_artist_name_cmp,'')!='' AND "
-                                            "m.song_artist_match_score IS NULL "
+                                            "m.%1_artist_match_score IS NULL "
+                                            "; "
                                             "-- %5:%6:%7:%8:%9"
                                     )
                                         .arg(entity)
